@@ -1,0 +1,3 @@
+provider: generic
+updaterCacheDirName: quests-desktop-updater-dev
+url: https://releases.quests.dev

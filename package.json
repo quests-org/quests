@@ -1,0 +1,71 @@
+{
+  "name": "quests-monorepo",
+  "version": "0.0.0",
+  "description": "The open-source app builder that builds and runs apps on your computer using any LLM.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/quests-org/quests"
+  },
+  "author": {
+    "name": "Quests",
+    "email": "oss@quests.dev"
+  },
+  "type": "module",
+  "files": [],
+  "scripts": {
+    "build": "turbo build",
+    "check": "turbo run check:format check:unused check:packages check:spelling check:md check:types check:lint --ui tui --continue=dependencies-successful --output-logs errors-only",
+    "check-and-test": "pnpm check test:ci",
+    "check:format": "prettier --check .",
+    "check:lint": "eslint . --max-warnings 0 --cache",
+    "check:md": "markdownlint \"**/*.md\" \".github/**/*.md\"",
+    "check:packages": "pnpm dedupe --check",
+    "check:spelling": "cspell --no-progress \"**\" \".github/**/*\" \".vscode/**/*\"",
+    "check:types": "tsc --noEmit",
+    "check:unused": "knip",
+    "check:workspace": "pnpm run -r --parallel check",
+    "dev:studio": "turbo run dev --filter=@quests/studio --filter=@quests/shim-client --ui tui",
+    "fix:unused": "knip --fix",
+    "format": "prettier --write \"**/*.{ts,tsx,md,json,css,mjs,js}\"",
+    "lint:fix": "eslint . --fix",
+    "tag-release": "turbo tag-release",
+    "test": "vitest",
+    "turbo:check-without-packages": "turbo check:format check:unused check:spelling check:md check:types check:lint --ui tui --continue=dependencies-successful --output-logs errors-only",
+    "turbo:check:format": "turbo check:format",
+    "turbo:check:lint": "turbo check:lint",
+    "turbo:check:lint:ci": "cross-env CI=true turbo check:lint",
+    "turbo:check:md": "turbo check:md",
+    "turbo:check:packages": "turbo check:packages",
+    "turbo:check:spelling": "turbo check:spelling",
+    "turbo:check:types": "turbo check:types --parallel",
+    "turbo:check:unused": "turbo check:unused",
+    "turbo:check:workspace": "turbo check:workspace",
+    "turbo:test:ci": "turbo test:ci"
+  },
+  "devDependencies": {
+    "@quests/eslint-config": "workspace:*",
+    "@quests/typescript-config": "workspace:*",
+    "@types/node": "22.16.0",
+    "cross-env": "^10.0.0",
+    "cspell": "^8.19.4",
+    "eslint": "^9.31.0",
+    "knip": "^5.62.0",
+    "markdownlint": "^0.35.0",
+    "markdownlint-cli": "^0.42.0",
+    "prettier": "^3.6.2",
+    "prettier-plugin-curly": "^0.3.2",
+    "prettier-plugin-sh": "^0.14.0",
+    "prettier-plugin-sql": "^0.19.2",
+    "tailwindcss": "^4.1.11",
+    "turbo": "^2.5.6",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "packageManager": "pnpm@10.13.1",
+  "engines": {
+    "node": ">=22.16.0"
+  },
+  "publishConfig": {
+    "provenance": true
+  }
+}

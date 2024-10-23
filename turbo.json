@@ -1,0 +1,70 @@
+{
+  "$schema": "./node_modules/turbo/schema.json",
+  "ui": "stream",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "env": [
+        "ANALYZE_BUILD",
+        "APP_BASE_URL",
+        "CI",
+        "DEV",
+        "ELECTRON_RENDERER_URL",
+        "FORCE_DEV_AUTO_UPDATE",
+        "NODE_ENV"
+      ],
+      "outputs": ["dist/**", "out/**"]
+    },
+    "build:mac": {
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "dependsOn": ["@quests/shim-client#build", "@quests/shim-server#build"],
+      "outputs": ["dist/**", "out/**"]
+    },
+    "build:mac:local": {
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "dependsOn": ["@quests/shim-client#build", "@quests/shim-server#build"],
+      "outputs": ["dist/**", "out/**"]
+    },
+    "check:unused": {
+      "dependsOn": ["^check:unused"]
+    },
+    "//#check:unused": {},
+    "//#check:packages": {
+      "inputs": ["pnpm-lock.yaml"]
+    },
+    "check:spelling": {
+      "dependsOn": ["^check:spelling"]
+    },
+    "//#check:spelling": {},
+    "check:md": {
+      "dependsOn": ["^check:md"]
+    },
+    "//#check:md": {},
+    "check:format": {
+      "dependsOn": ["^check:format"]
+    },
+    "//#check:format": {},
+    "check:lint": {
+      "dependsOn": ["^check:lint"]
+    },
+    "//#check:lint": {},
+    "check:types": {
+      "dependsOn": ["^check:types"]
+    },
+    "//#check:types": {},
+    "test:ci": {},
+    "dev": {
+      "cache": false,
+      "persistent": true,
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "dependsOn": ["@quests/shim-server#build"],
+      "outputs": ["dist/**", "out/**"]
+    },
+    "tag-release": {
+      "inputs": ["package.json"],
+      "outputs": [],
+      "cache": false
+    }
+  }
+}

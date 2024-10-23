@@ -1,0 +1,36 @@
+import { workspaceRouter } from "@quests/workspace/electron";
+
+import { api } from "./api";
+import { appState } from "./app-state";
+import { auth } from "./auth";
+import { debug } from "./debug";
+import { favorites } from "./favorites";
+import { gateway } from "./gateway";
+import { icon } from "./icon";
+import { preferences } from "./preferences";
+import { provider } from "./provider";
+import { sidebar } from "./sidebar";
+import { tabs } from "./tabs";
+import { telemetry } from "./telemetry";
+import { toolbar } from "./toolbar";
+import { user } from "./user";
+import { utils } from "./utils";
+
+export const router = {
+  api,
+  appState,
+  auth,
+  debug,
+  favorites,
+  gateway,
+  icon,
+  preferences,
+  provider,
+  sidebar,
+  tabs,
+  telemetry,
+  toolbar,
+  user,
+  utils,
+  workspace: workspaceRouter,
+};

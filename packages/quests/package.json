@@ -1,0 +1,20 @@
+{
+  "name": "quests",
+  "version": "0.0.1-alpha.0",
+  "description": "Quests SDK",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": {
+    "name": "Quests",
+    "email": "oss@quests.dev"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/quests-org/quests.git"
+  }
+}

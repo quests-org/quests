@@ -1,0 +1,7 @@
+{
+  "repoMap": {
+    "files": {
+      "exclude": ["zzz-test-2.txt"]
+    }
+  }
+}

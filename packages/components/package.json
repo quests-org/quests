@@ -1,0 +1,42 @@
+{
+  "name": "@quests/components",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Reusable React components for Quests",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/quests-org/quests"
+  },
+  "author": {
+    "name": "Quests",
+    "email": "oss@quests.dev"
+  },
+  "type": "module",
+  "exports": {
+    "./animated-logo": "./src/components/animated-logo.tsx",
+    "./logo": "./src/components/logo.tsx"
+  },
+  "scripts": {
+    "check:lint": "eslint . --max-warnings 0 --cache",
+    "check:types": "tsc --noEmit",
+    "dev": "vite",
+    "turbo:check": "turbo run check:types check:lint"
+  },
+  "dependencies": {
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  },
+  "devDependencies": {
+    "@quests/eslint-config": "workspace:*",
+    "@quests/typescript-config": "workspace:*",
+    "@tailwindcss/vite": "^4.1.10",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "tailwindcss": "^4.1.10",
+    "vite": "catalog:"
+  },
+  "engines": {
+    "node": ">=22.5"
+  }
+}

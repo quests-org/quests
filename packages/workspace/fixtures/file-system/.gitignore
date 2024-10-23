@@ -1,0 +1,5 @@
+ignored-file.txt
+*.ignored
+ignored-folder/
+!ignored-folder/except-me.txt
+repo-map.xml

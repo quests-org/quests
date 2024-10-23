@@ -1,0 +1,30 @@
+{
+  "name": "@quests/shim-server",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Server-side runtime injected into user apps",
+  "keywords": [],
+  "author": {
+    "name": "Quests",
+    "email": "oss@quests.dev"
+  },
+  "type": "module",
+  "scripts": {
+    "build": "esbuild src/index.ts --bundle --outfile=dist/index.cjs --platform=node --target=node22 --minify",
+    "check:lint": "eslint . --max-warnings 0 --cache",
+    "check:types": "tsc --noEmit",
+    "test": "pnpm build && APP_BASE_URL=http://localhost:3000 node dist/index.cjs",
+    "turbo:check": "turbo run check:types check:lint"
+  },
+  "dependencies": {
+    "@sentry/node": "^9.40.0"
+  },
+  "devDependencies": {
+    "@quests/eslint-config": "workspace:*",
+    "@quests/typescript-config": "workspace:*",
+    "esbuild": "^0.25.5"
+  },
+  "engines": {
+    "node": ">=22.5"
+  }
+}

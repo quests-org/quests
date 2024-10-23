@@ -1,0 +1,8 @@
+{
+  "extends": "@quests/typescript-config/base.json",
+  "include": ["*.ts"],
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Bundler"
+  }
+}

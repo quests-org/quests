@@ -1,0 +1,90 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - v*.*.*
+    branches:
+      - release/**
+
+jobs:
+  release:
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
+
+    strategy:
+      matrix:
+        os: [macos-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          # A fine-grained GitHub personal access token is required to checkout submodules
+          # https://github.com/actions/checkout/issues/287
+          # Permissions required:
+          # - Repository access to quests-org/quests & quests-org/registry
+          # - Read access to "Contents" and "Metadata"
+          # - Read/Write access to actions and workflows
+          token: ${{ secrets.CHECKOUT_ACCESS_TOKEN }}
+      - uses: ./.github/actions/setup-ripgrep-cache
+      - uses: ./.github/actions/prepare
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - if: matrix.os == 'ubuntu-latest'
+        name: build-linux
+        run: npm run build:linux
+        working-directory: apps/studio
+
+      - if: matrix.os == 'macos-latest'
+        name: setup-signing
+        run: |
+          mkdir -p ~/.private_keys
+          echo '${{ secrets.APPLE_API_KEY_DATA }}' > ~/.private_keys/AuthKey_${{ secrets.APPLE_API_KEY_ID }}.p8
+
+      - if: matrix.os == 'macos-latest'
+        name: build-mac
+        run: pnpm turbo build:mac --env-mode=loose
+        env:
+          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          APPLE_API_KEY: ~/.private_keys/AuthKey_${{ secrets.APPLE_API_KEY_ID }}.p8
+          APPLE_NOTARIZATION_ENABLED: ${{ vars.APPLE_NOTARIZATION_ENABLED }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          BUILDER_PUBLISH_S3_ENDPOINT: ${{ vars.BUILDER_PUBLISH_S3_ENDPOINT }}
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          MAIN_VITE_GOOGLE_CLIENT_ID: ${{ vars.MAIN_VITE_GOOGLE_CLIENT_ID }}
+          MAIN_VITE_GOOGLE_CLIENT_SECRET: ${{ secrets.MAIN_VITE_GOOGLE_CLIENT_SECRET }}
+          VITE_APP_PROTOCOL: ${{ vars.VITE_APP_PROTOCOL }}
+          VITE_POSTHOG_API_HOST: ${{ vars.VITE_POSTHOG_API_HOST }}
+          VITE_POSTHOG_API_KEY: ${{ vars.VITE_POSTHOG_API_KEY }}
+          VITE_QUESTS_API_BASE_URL: ${{ vars.VITE_QUESTS_API_BASE_URL }}
+
+      - if: matrix.os == 'macos-latest'
+        name: cleanup-signing
+        run: |
+          rm ~/.private_keys/AuthKey_${{ secrets.APPLE_API_KEY_ID }}.p8
+
+      - if: matrix.os == 'windows-latest'
+        name: build-win
+        run: npm run build:win
+        working-directory: apps/studio
+
+      - name: release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            apps/studio/dist/*.exe
+            apps/studio/dist/*.zip
+            apps/studio/dist/*.dmg
+            apps/studio/dist/*.AppImage
+            apps/studio/dist/*.snap
+            apps/studio/dist/*.deb
+            apps/studio/dist/*.rpm
+            apps/studio/dist/*.tar.gz
+            apps/studio/dist/*.yml
+            apps/studio/dist/*.blockmap

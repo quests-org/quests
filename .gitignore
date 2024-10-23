@@ -1,0 +1,35 @@
+coverage/
+node_modules/
+.tmp/
+
+.env*
+!.env.example
+
+# For local signing and notarization
+.private_keys/
+
+# misc
+.DS_Store
+*.pem
+
+# Vitest
+*.vitest-temp.json
+
+# TypeScript
+*.tsbuildinfo
+
+# Local folders
+*.local/
+
+# Turbo
+.turbo
+
+# Electron Builder
+/apps/studio/dist
+
+# ESLint
+.eslintcache
+
+# Wrangler, for Knip
+.wrangler/
+apps/web/.dev.vars

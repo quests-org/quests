@@ -1,0 +1,20 @@
+---
+globs: *ts,*.tsx,*.html
+alwaysApply: false
+---
+
+- Avoid `any` and NEVER use `as any`.
+- NEVER use non-null assertions (`!`).
+- We use kebab case for filenames.
+- We use non-default exports whenever possible.
+- NEVER add comments for sections of JSX like `{/* Header */}<Header />`
+- DO NOT fix ESLint `perfectionist/*` plugin issues, the editor will automatically fix them when the code is saved.
+
+## Tailwind Rules
+
+- Use `size-` over `w-` and `h-` when width and height are the same.
+- Use `gap-x-` or `gap-y-` over `space-x` or `space-y` for gap.
+
+## Zod Rules
+
+- Prefer `z.output` over `z.infer` for type inference.

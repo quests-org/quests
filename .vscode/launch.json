@@ -1,0 +1,159 @@
+{
+  "compounds": [
+    {
+      "configurations": [
+        "Debug Studio Main Process",
+        "Debug Studio Renderer Process",
+        "Dev Shim Client",
+        "Build Shim Server"
+      ],
+      "name": "🐛 Studio",
+      "presentation": {
+        "order": 1
+      },
+      "stopAll": true
+    },
+    {
+      "configurations": [
+        "Dev Studio Main Process",
+        "Dev Shim Client",
+        "Build Shim Server"
+      ],
+      "name": "🛠️ Studio",
+      "presentation": {
+        "order": 2
+      },
+      "stopAll": true
+    },
+    {
+      "configurations": [
+        "Debug Workspace CLI",
+        "Dev Shim Client",
+        "Build Shim Server"
+      ],
+      "name": "🐛 Workspace CLI",
+      "presentation": {
+        "order": 3
+      },
+      "stopAll": true
+    },
+    {
+      "configurations": [
+        "Debug Workspace CLI Watch Mode",
+        "Dev Shim Client",
+        "Build Shim Server"
+      ],
+      "name": "🐛 Workspace CLI Watch Mode",
+      "presentation": {
+        "order": 4
+      },
+      "stopAll": true
+    }
+  ],
+  "configurations": [
+    {
+      "cwd": "${workspaceRoot}/apps/studio",
+      "name": "Dev Studio Main Process",
+      "request": "launch",
+      "runtimeArgs": ["run", "dev"],
+      "runtimeExecutable": "npm",
+      "type": "node"
+    },
+    {
+      "cwd": "${workspaceRoot}/apps/studio",
+      "env": {
+        "REMOTE_DEBUGGING_PORT": "9160"
+      },
+      "internalConsoleOptions": "openOnFirstSessionStart",
+      "name": "Debug Studio Main Process",
+      "request": "launch",
+      "runtimeArgs": ["--sourcemap"],
+      "runtimeExecutable": "${workspaceRoot}/apps/studio/node_modules/.bin/electron-vite",
+      "type": "node",
+      "windows": {
+        "runtimeExecutable": "${workspaceRoot}/apps/studio/node_modules/.bin/electron-vite.cmd"
+      }
+    },
+    {
+      "name": "Debug Studio Renderer Process",
+      "port": 9160,
+      "presentation": {
+        "hidden": true
+      },
+      "request": "attach",
+      "timeout": 60000,
+      "type": "chrome",
+      "webRoot": "${workspaceRoot}/apps/studio/src"
+    },
+    {
+      "cwd": "${workspaceRoot}/packages/shim-client",
+      "internalConsoleOptions": "neverOpen",
+      "name": "Dev Shim Client",
+      "request": "launch",
+      "runtimeArgs": [
+        "vite",
+        "--configLoader",
+        "runner",
+        "--port",
+        "9150",
+        "--clearScreen",
+        "false"
+      ],
+      "runtimeExecutable": "npx",
+      "skipFiles": ["<node_internals>/**", "${workspaceRoot}/node_modules/**"],
+      "type": "node"
+    },
+    {
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}/packages/workspace",
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "name": "Debug Workspace CLI",
+      "program": "${workspaceFolder}/packages/workspace/scripts/run-workspace.ts",
+      "request": "launch",
+      "runtimeExecutable": "${workspaceRoot}/packages/workspace/node_modules/.bin/tsx",
+      "skipFiles": [
+        "<node_internals>/**",
+        "${workspaceFolder}/node_modules/**"
+      ],
+      "type": "node"
+    },
+    {
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}/packages/workspace",
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "name": "Debug Workspace CLI Watch Mode",
+      "program": "${workspaceFolder}/packages/workspace/scripts/run-workspace.ts",
+      "request": "launch",
+      "runtimeArgs": ["--watch"],
+      "runtimeExecutable": "${workspaceRoot}/packages/workspace/node_modules/.bin/tsx",
+      "skipFiles": [
+        "<node_internals>/**",
+        "${workspaceFolder}/node_modules/**"
+      ],
+      "type": "node"
+    },
+    {
+      "cwd": "${workspaceFolder}/packages/shim-server",
+      "internalConsoleOptions": "neverOpen",
+      "name": "Build Shim Server",
+      "request": "launch",
+      "runtimeArgs": ["run", "build"],
+      "runtimeExecutable": "npm",
+      "type": "node"
+    },
+    {
+      "args": ["run", "${relativeFile}"],
+      "name": "Debug Test Current File",
+      "program": "${workspaceRoot}/node_modules/vitest/vitest.mjs",
+      "request": "launch",
+      "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
+      "smartStep": true,
+      "type": "node"
+    }
+  ],
+  "version": "0.2.0"
+}

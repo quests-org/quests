@@ -1,0 +1,22 @@
+description: Prepares the repo for a typical CI job
+
+inputs:
+  token:
+    description: Required for downloading @vscode/ripgrep
+    required: true
+
+name: Prepare
+
+runs:
+  steps:
+    - uses: pnpm/action-setup@v4.1.0
+    - uses: actions/setup-node@v4.4.0
+      with:
+        cache: pnpm
+        node-version: "22"
+    - env:
+        GITHUB_TOKEN: ${{ inputs.token }}
+      name: install-dependencies
+      run: pnpm install --frozen-lockfile
+      shell: bash
+  using: composite

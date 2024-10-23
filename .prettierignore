@@ -1,0 +1,16 @@
+.all-contributorsrc
+.husky/
+coverage/
+pnpm-lock.yaml
+cspell.json
+llm-cache.local/
+worker-configuration.d.ts
+routeTree.gen.ts
+apps/api/drizzle/
+.next/
+.vercel/
+.open-next/
+cloudflare-env.d.ts
+dist/
+registry/
+**/out/

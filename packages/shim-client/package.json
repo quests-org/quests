@@ -1,0 +1,43 @@
+{
+  "name": "@quests/shim-client",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Client-side runtime injected into user apps",
+  "keywords": [],
+  "author": {
+    "name": "Quests",
+    "email": "oss@quests.dev"
+  },
+  "type": "module",
+  "scripts": {
+    "build": "vite build --configLoader runner",
+    "check:lint": "eslint . --max-warnings 0 --cache",
+    "check:types": "tsc --noEmit",
+    "dev": "vite --configLoader runner --port 9150",
+    "turbo:check": "turbo run check:types check:lint"
+  },
+  "dependencies": {
+    "@quests/shared": "workspace:*",
+    "@quests/workspace": "workspace:*",
+    "@sentry/browser": "^9.40.0",
+    "@tailwindcss/postcss": "^4.1.11",
+    "date-fns": "^4.1.0",
+    "lucide-react": "^0.456.0",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "tailwindcss": "^4.1.11"
+  },
+  "devDependencies": {
+    "@quests/eslint-config": "workspace:*",
+    "@quests/typescript-config": "workspace:*",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "postcss": "^8.5.3",
+    "vite": "catalog:",
+    "vite-plugin-css-injected-by-js": "^3.5.2"
+  },
+  "engines": {
+    "node": ">=22.5"
+  }
+}

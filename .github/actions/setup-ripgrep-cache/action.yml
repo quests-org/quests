@@ -1,0 +1,18 @@
+description: "Cache @vscode/ripgrep binary to avoid GitHub API rate limits"
+name: "Setup ripgrep cache"
+outputs:
+  cache-hit:
+    description: "A boolean value to indicate if a cache was hit"
+    value: ${{ steps.cache-ripgrep-restore.outputs.cache-hit }}
+runs:
+  steps:
+    - id: cache-ripgrep-restore
+      name: Cache @vscode/ripgrep bin
+      uses: actions/cache@v4
+      with:
+        key: vscode-ripgrep-bin-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('pnpm-lock.yaml') }}
+        path: |
+          node_modules/.pnpm/@vscode+ripgrep@*/node_modules/@vscode/ripgrep/bin/
+          node_modules/@vscode/ripgrep/bin/
+          /tmp/vscode-ripgrep-cache-*
+  using: "composite"

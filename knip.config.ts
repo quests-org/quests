@@ -1,0 +1,63 @@
+import type { KnipConfig } from "knip";
+
+const config: KnipConfig = {
+  ignore: ["registry/**/*"],
+  workspaces: {
+    ".": {
+      // Required because tailwindcss is loaded in root by Knip because of
+      // eslint-plugin-better-tailwindcss
+      ignoreDependencies: ["tailwindcss"],
+    },
+    "apps/api": {
+      entry: ["scripts/*.{ts,tsx}"],
+    },
+    "apps/studio": {
+      entry: [
+        "scripts/*.{ts,tsx}",
+        "src/client/components/ui/*",
+        "src/client/routeTree.gen.ts",
+        "src/client/router.tsx",
+        "src/client/main.tsx",
+        "src/electron-main/index.ts",
+        "src/electron-preload/index.ts",
+        "electron.vite.config.ts",
+        "src/index.html",
+        "electron-builder.ts",
+        "src/client/validate-env.ts",
+        // Used in development
+        "src/electron-main/rpc/middleware/logger.ts",
+      ],
+      ignore: ["fixtures/**/*", "templates/**/*", "__mocks__/**/*"],
+      ignoreBinaries: ["tail", "op"],
+      ignoreDependencies: [
+        "dugite", // Needed to ensure the git binary is available
+        "@vscode/ripgrep", // Maybe needed to ensure the ripgrep binary is available
+        "tw-animate-css",
+        "tailwindcss",
+        "@tailwindcss/typography",
+      ],
+      paths: {
+        "@/*": ["src/*"],
+      },
+      postcss: true, // Not getting picked up by the plugin
+    },
+    "packages/components": {
+      entry: ["index.html", "src/main.tsx"],
+      ignoreDependencies: ["tailwindcss"],
+    },
+    "packages/eslint-config": {
+      ignore: ["ignore.ts"],
+    },
+    "packages/shim-client": {
+      entry: ["src/client/index.ts", "src/iframe/index.tsx"],
+    },
+    "packages/shim-server": {},
+    "packages/typescript-config": {},
+    "packages/workspace": {
+      entry: ["__mocks__/*"],
+      ignore: ["fixtures/**/*"],
+    },
+  },
+};
+
+export default config;

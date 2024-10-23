@@ -1,0 +1,17 @@
+coverage/
+node_modules/
+.tmp/
+
+.env*
+!.env.development.example
+
+.DS_Store
+
+# Electron
+out/
+dist/
+
+# Turbo
+.turbo
+
+.eslintcache

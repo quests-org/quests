@@ -1,0 +1,186 @@
+diff --git a/dist/source/index.d.ts b/dist/source/index.d.ts
+index 921db5c7ae623eba8029b268928567b19aff69d7..c2564a002d1b9985770157e6717b763d9977e70e 100644
+--- a/dist/source/index.d.ts
++++ b/dist/source/index.d.ts
+@@ -1,10 +1,21 @@
+-import { type OnDidChangeCallback, type Options, type Unsubscribe, type OnDidAnyChangeCallback, type DotNotationKeyOf, type DotNotationValueOf, type PartialObjectDeep } from './types.js';
+-export default class Conf<T extends Record<string, any> = Record<string, unknown>> implements Iterable<[keyof T, T[keyof T]]> {
+-    #private;
+-    readonly path: string;
+-    readonly events: EventTarget;
+-    constructor(partialOptions?: Readonly<Partial<Options<T>>>);
+-    /**
++import {
++  type OnDidChangeCallback,
++  type Options,
++  type Unsubscribe,
++  type OnDidAnyChangeCallback,
++  type DotNotationKeyOf,
++  type DotNotationValueOf,
++  type PartialObjectDeep,
++} from "./types.js";
++export default class Conf<
++  T extends Record<string, any> = Record<string, unknown>,
++> implements Iterable<[keyof T, T[keyof T]]>
++{
++  #private;
++  readonly path: string;
++  readonly events: EventTarget;
++  constructor(partialOptions?: Readonly<Partial<Options<T>>>);
++  /**
+     Get an item.
+ 
+     @param key - The key of the item to get.
+@@ -12,67 +23,84 @@ export default class Conf<T extends Record<string, any> = Record<string, unknown
+ 
+     Tip: To get all items, see `.store`.
+     */
+-    get<Key extends keyof T>(key: Key): T[Key];
+-    get<Key extends keyof T>(key: Key, defaultValue: Required<T>[Key]): Required<T>[Key];
+-    get<Key extends DotNotationKeyOf<T>>(key: Key): DotNotationValueOf<T, Key>;
+-    get<Key extends DotNotationKeyOf<T>>(key: Key, defaultValue: NonNullable<DotNotationValueOf<T, Key>>): NonNullable<DotNotationValueOf<T, Key>>;
+-    get<Key extends string, Value = unknown>(key: Exclude<Key, DotNotationKeyOf<T>>, defaultValue?: Value): Value;
+-    /**
++  get<Key extends keyof T>(key: Key): T[Key];
++  get<Key extends keyof T>(
++    key: Key,
++    defaultValue: Required<T>[Key],
++  ): Required<T>[Key];
++  get<Key extends DotNotationKeyOf<T>>(key: Key): DotNotationValueOf<T, Key>;
++  get<Key extends DotNotationKeyOf<T>>(
++    key: Key,
++    defaultValue: NonNullable<DotNotationValueOf<T, Key>>,
++  ): NonNullable<DotNotationValueOf<T, Key>>;
++  get<Key extends string, Value = unknown>(
++    key: Exclude<Key, DotNotationKeyOf<T>>,
++    defaultValue?: Value,
++  ): Value;
++  /**
+     Set an item or multiple items at once.
+ 
+     @param {key|object} - You can use [dot-notation](https://github.com/sindresorhus/dot-prop) in a key to access nested properties. Or a hashmap of items to set at once.
+     @param value - Must be JSON serializable. Trying to set the type `undefined`, `function`, or `symbol` will result in a `TypeError`.
+     */
+-    set<Key extends keyof T>(key: Key, value?: T[Key]): void;
+-    set<Key extends DotNotationKeyOf<T>>(key: Key, Value?: DotNotationValueOf<T, Key>): void;
+-    set(key: string, value: unknown): void;
+-    set(object: PartialObjectDeep<T>): void;
+-    /**
++  set<Key extends keyof T>(key: Key, value?: T[Key]): void;
++  set<Key extends DotNotationKeyOf<T>>(
++    key: Key,
++    Value?: DotNotationValueOf<T, Key>,
++  ): void;
++  set(object: PartialObjectDeep<T>): void;
++  /**
+     Check if an item exists.
+ 
+     @param key - The key of the item to check.
+     */
+-    has<Key extends keyof T>(key: Key): boolean;
+-    has<Key extends DotNotationKeyOf<T>>(key: Key): boolean;
+-    /**
++  has<Key extends keyof T>(key: Key): boolean;
++  has<Key extends DotNotationKeyOf<T>>(key: Key): boolean;
++  /**
+     Reset items to their default values, as defined by the `defaults` or `schema` option.
+ 
+     @see `clear()` to reset all items.
+ 
+     @param keys - The keys of the items to reset.
+     */
+-    reset<Key extends keyof T>(...keys: Key[]): void;
+-    /**
++  reset<Key extends keyof T>(...keys: Key[]): void;
++  /**
+     Delete an item.
+ 
+     @param key - The key of the item to delete.
+     */
+-    delete<Key extends keyof T>(key: Key): void;
+-    delete<Key extends DotNotationKeyOf<T>>(key: Key): void;
+-    /**
++  delete<Key extends keyof T>(key: Key): void;
++  delete<Key extends DotNotationKeyOf<T>>(key: Key): void;
++  /**
+     Delete all items.
+ 
+     This resets known items to their default values, if defined by the `defaults` or `schema` option.
+     */
+-    clear(): void;
+-    /**
++  clear(): void;
++  /**
+     Watches the given `key`, calling `callback` on any changes.
+ 
+     @param key - The key to watch.
+     @param callback - A callback function that is called on any changes. When a `key` is first set `oldValue` will be `undefined`, and when a key is deleted `newValue` will be `undefined`.
+     @returns A function, that when called, will unsubscribe.
+     */
+-    onDidChange<Key extends keyof T>(key: Key, callback: OnDidChangeCallback<T[Key]>): Unsubscribe;
+-    onDidChange<Key extends DotNotationKeyOf<T>>(key: Key, callback: OnDidChangeCallback<DotNotationValueOf<T, Key>>): Unsubscribe;
+-    /**
++  onDidChange<Key extends keyof T>(
++    key: Key,
++    callback: OnDidChangeCallback<T[Key]>,
++  ): Unsubscribe;
++  onDidChange<Key extends DotNotationKeyOf<T>>(
++    key: Key,
++    callback: OnDidChangeCallback<DotNotationValueOf<T, Key>>,
++  ): Unsubscribe;
++  /**
+     Watches the whole config object, calling `callback` on any changes.
+ 
+     @param callback - A callback function that is called on any changes. When a `key` is first set `oldValue` will be `undefined`, and when a key is deleted `newValue` will be `undefined`.
+     @returns A function, that when called, will unsubscribe.
+     */
+-    onDidAnyChange(callback: OnDidAnyChangeCallback<T>): Unsubscribe;
+-    get size(): number;
+-    /**
++  onDidAnyChange(callback: OnDidAnyChangeCallback<T>): Unsubscribe;
++  get size(): number;
++  /**
+     Get all the config as an object or replace the current config with an object.
+ 
+     @example
+@@ -88,22 +116,22 @@ export default class Conf<T extends Record<string, any> = Record<string, unknown
+     };
+     ```
+     */
+-    get store(): T;
+-    set store(value: T);
+-    [Symbol.iterator](): IterableIterator<[keyof T, T[keyof T]]>;
+-    private _encryptData;
+-    private _handleChange;
+-    private readonly _deserialize;
+-    private readonly _serialize;
+-    private _validate;
+-    private _ensureDirectory;
+-    private _write;
+-    private _watch;
+-    private _migrate;
+-    private _containsReservedKey;
+-    private _isVersionInRangeFormat;
+-    private _shouldPerformMigration;
+-    private _get;
+-    private _set;
++  get store(): T;
++  set store(value: T);
++  [Symbol.iterator](): IterableIterator<[keyof T, T[keyof T]]>;
++  private _encryptData;
++  private _handleChange;
++  private readonly _deserialize;
++  private readonly _serialize;
++  private _validate;
++  private _ensureDirectory;
++  private _write;
++  private _watch;
++  private _migrate;
++  private _containsReservedKey;
++  private _isVersionInRangeFormat;
++  private _shouldPerformMigration;
++  private _get;
++  private _set;
+ }
+-export type { Options, Schema } from './types.js';
++export type { Options, Schema } from "./types.js";

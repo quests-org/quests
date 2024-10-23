@@ -1,0 +1,76 @@
+{
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "eslint.options": {
+    "cache": true,
+    "cacheLocation": ".eslintcache"
+  },
+  "eslint.probe": [
+    "javascript",
+    "javascriptreact",
+    "json",
+    "jsonc",
+    "markdown",
+    "typescript",
+    "typescriptreact",
+    "yaml"
+  ],
+  "eslint.rules.customizations": [
+    {
+      "rule": "*",
+      "severity": "warn"
+    }
+  ],
+  "eslint.useFlatConfig": true,
+  "eslint.validate": [
+    "json",
+    "jsonc",
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact",
+    "github-actions-workflow",
+    "yaml"
+  ],
+  "eslint.workingDirectories": [{ "mode": "auto" }],
+  "files.readonlyInclude": {
+    "**/routeTree.gen.ts": true
+  },
+  "files.watcherExclude": {
+    "**/.eslintcache": true,
+    "**/.git": true,
+    "**/.turbo": true,
+    "**/coverage": true,
+    "**/dist": true,
+    "**/node_modules": true,
+    "**/out": true,
+    "**/routeTree.gen.ts": true
+  },
+  // Can't use useIgnoreFiles because "files to include" still includes those
+  // results due to: https://github.com/microsoft/vscode/issues/26574
+  "search.exclude": {
+    "**/*.code-search": true,
+    "**/*.local": true,
+    "**/*.pem": true,
+    "**/*.tsbuildinfo": true,
+    "**/*.vitest-temp.json": true,
+    "**/.eslintcache": true,
+    "**/.private_keys": true,
+    "**/.tmp": true,
+    "**/.turbo": true,
+    "**/.wrangler": true,
+    "**/coverage": true,
+    "**/dist": true,
+    "**/node_modules": true,
+    "**/out": true
+  },
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "vitest.rootConfig": "vitest.config.ts",
+  "yaml.schemas": {
+    "https://json.schemastore.org/pnpm-workspace": ["pnpm-workspace.yaml"]
+  }
+}

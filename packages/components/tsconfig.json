@@ -1,0 +1,4 @@
+{
+  "extends": "@quests/typescript-config/react.json",
+  "include": ["src", "*.ts", "*.tsx"]
+}

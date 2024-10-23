@@ -1,0 +1,48 @@
+{
+  "name": "@quests/ai-gateway",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AI Gateway for Quests",
+  "keywords": [],
+  "author": {
+    "name": "Quests",
+    "email": "oss@quests.dev"
+  },
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "check:lint": "eslint . --max-warnings 0 --cache",
+    "check:types": "tsc --noEmit",
+    "test": "vitest",
+    "test:ci": "cross-env CI=true vitest",
+    "turbo:check": "turbo run check:types check:lint"
+  },
+  "dependencies": {
+    "@ai-sdk/anthropic": "^2.0.6",
+    "@ai-sdk/gateway": "^1.0.13",
+    "@ai-sdk/google": "^2.0.9",
+    "@ai-sdk/openai": "^2.0.19",
+    "@openrouter/ai-sdk-provider": "^1.1.2",
+    "@quests/shared": "workspace:*",
+    "ai": "catalog:",
+    "date-fns": "^4.1.0",
+    "hono": "catalog:",
+    "lru-cache": "^11.1.0",
+    "ollama-ai-provider-v2": "^1.2.1",
+    "radashi": "^12.6.0",
+    "typescript-result": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@ai-sdk/provider": "^2.0.0",
+    "@quests/eslint-config": "workspace:*",
+    "@quests/typescript-config": "workspace:*",
+    "@types/node": "^22.16.0",
+    "vitest": "catalog:"
+  },
+  "engines": {
+    "node": ">=22.5"
+  }
+}

@@ -1,0 +1,45 @@
+import type { LanguageModel, SystemModelMessage } from "ai";
+
+import { z } from "zod";
+
+import type { InternalToolName } from "../tools/all";
+import type { AnyAgentTool } from "../tools/types";
+
+import { type AppConfig } from "../lib/app-config/types";
+import { type SessionMessage } from "../schemas/session/message";
+import { type StoreId } from "../schemas/store-id";
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const AgentNameSchema = z.enum(["code"]);
+
+export interface Agent<T extends AgentTools> {
+  agentTools: T;
+  getSystemMessages: ({
+    appConfig,
+  }: {
+    appConfig: AppConfig;
+  }) => Promise<SystemModelMessage[]>;
+  getTools: () => Promise<AnyAgentTool[]>;
+  name: AgentName;
+  onFinish: (options: {
+    appConfig: AppConfig;
+    cheapModel: LanguageModel;
+    parentMessageId: StoreId.Message;
+    sessionId: StoreId.Session;
+    signal: AbortSignal;
+  }) => Promise<void>;
+  onStart: (options: {
+    appConfig: AppConfig;
+    sessionId: StoreId.Session;
+    signal: AbortSignal;
+  }) => Promise<void>;
+  shouldContinue: (options: {
+    messages: SessionMessage.WithParts[];
+  }) => Promise<boolean>;
+}
+
+export type AgentName = z.output<typeof AgentNameSchema>;
+
+export type AgentTools = Partial<Record<InternalToolName, AnyAgentTool>>;
+
+export type AnyAgent = Agent<AgentTools>;

@@ -1,0 +1,36 @@
+{
+  "name": "@quests/shared",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Shared utilities, types, and constants across packages",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/quests-org/quests"
+  },
+  "author": {
+    "name": "Quests",
+    "email": "oss@quests.dev"
+  },
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./icons": "./src/icons.ts",
+    "./merge-generators": "./src/merge-generators.ts"
+  },
+  "scripts": {
+    "check:lint": "eslint . --max-warnings 0 --cache",
+    "check:types": "tsc --noEmit",
+    "turbo:check": "turbo run check:types check:lint"
+  },
+  "dependencies": {
+    "lucide-react": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@quests/eslint-config": "workspace:*",
+    "@quests/typescript-config": "workspace:*"
+  },
+  "engines": {
+    "node": ">=22.5"
+  }
+}

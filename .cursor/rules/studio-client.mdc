@@ -1,0 +1,12 @@
+---
+description: Rules for the Studio.
+globs: apps/studio/**/*
+alwaysApply: false
+---
+
+## Project
+
+- The Studio is an Electron app.
+- The src/client folder contains the TanStack Router app.
+- shadcn components are installed in `@/client/components/ui`.
+- Use shadcn Tailwind colors for styling, e.g. `bg-background` instead of `bg-white`.

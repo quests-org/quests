@@ -1,0 +1,7 @@
+{
+  "extends": "./react.json",
+  "compilerOptions": {
+    "incremental": true,
+    "noEmit": true
+  }
+}

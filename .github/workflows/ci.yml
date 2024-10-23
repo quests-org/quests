@@ -1,0 +1,113 @@
+env:
+  DO_NOT_TRACK: "1"
+jobs:
+  check_format:
+    name: Check Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-ripgrep-cache
+      - uses: ./.github/actions/prepare
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: rharkor/caching-for-turbo@v1.8
+      - run: pnpm turbo:check:format
+  check_markdown:
+    name: Check Markdown
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-ripgrep-cache
+      - uses: ./.github/actions/prepare
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: rharkor/caching-for-turbo@v1.8
+      - run: pnpm turbo:check:md
+  check_packages:
+    name: Check Packages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-ripgrep-cache
+      - uses: ./.github/actions/prepare
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: rharkor/caching-for-turbo@v1.8
+      - run: pnpm turbo:check:packages
+  check_spelling:
+    name: Check Spelling
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-ripgrep-cache
+      - uses: ./.github/actions/prepare
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: rharkor/caching-for-turbo@v1.8
+      - run: pnpm turbo:check:spelling
+  check_unused:
+    name: Check Unused
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-ripgrep-cache
+      - uses: ./.github/actions/prepare
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: rharkor/caching-for-turbo@v1.8
+      - run: pnpm turbo:check:unused
+  lint:
+    name: Check ESLint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-ripgrep-cache
+      - uses: ./.github/actions/prepare
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: rharkor/caching-for-turbo@v1.8
+      - run: |
+          export NODE_OPTIONS="--max_old_space_size=4096"
+          pnpm turbo:check:lint:ci
+  prettier:
+    name: Check Prettier
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-ripgrep-cache
+      - uses: ./.github/actions/prepare
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: rharkor/caching-for-turbo@v1.8
+      - run: pnpm prettier --list-different
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-ripgrep-cache
+      - uses: ./.github/actions/prepare
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: rharkor/caching-for-turbo@v1.8
+      - run: pnpm turbo:test:ci
+      - uses: codecov/codecov-action@v3
+  type_check:
+    name: Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-ripgrep-cache
+      - uses: ./.github/actions/prepare
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: rharkor/caching-for-turbo@v1.8
+      - run: pnpm turbo:check:types
+
+name: CI
+
+on:
+  pull_request: ~
+  push:
+    branches:
+      - main
