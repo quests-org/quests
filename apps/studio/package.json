@@ -1,6 +1,6 @@
 {
   "name": "@quests/studio",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Electron desktop app for Quests",
   "repository": {
     "type": "git",
