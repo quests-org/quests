@@ -92,6 +92,9 @@ export type WorkspaceEvent =
       };
     }
   | {
+      type: "restartAllRuntimes";
+    }
+  | {
       type: "restartRuntime";
       value: { subdomain: AppSubdomain };
     }
@@ -408,6 +411,13 @@ export const workspaceMachine = setup({
           };
         }),
       ],
+    },
+    restartAllRuntimes: {
+      actions: ({ context }) => {
+        for (const runtimeRef of context.runtimeRefs.values()) {
+          runtimeRef.send({ type: "restart" });
+        }
+      },
     },
     restartRuntime: [
       {

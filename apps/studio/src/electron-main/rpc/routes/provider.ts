@@ -53,6 +53,9 @@ const remove = base
       providersStore.get("providers").filter((p) => p.id !== input.id),
     );
 
+    // Ensures environment variables inside the apps themselves are updated
+    context.workspaceRef.send({ type: "restartAllRuntimes" });
+
     context.workspaceConfig.captureEvent("provider.removed", {
       provider_type: provider.type,
     });
@@ -100,6 +103,9 @@ const create = base
     };
 
     providersStore.set("providers", [...existingProviders, newProvider]);
+
+    // Ensures environment variables inside the apps themselves are updated
+    context.workspaceRef.send({ type: "restartAllRuntimes" });
 
     context.workspaceConfig.captureEvent("provider.created", {
       provider_type: provider.type,
