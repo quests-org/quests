@@ -24,6 +24,7 @@
     "check:lint": "eslint . --max-warnings 0 --cache",
     "check:types": "tsc --noEmit",
     "dev": "electron-vite dev",
+    "dev:fresh": "ELECTRON_USE_NEW_USER_FOLDER=true pnpm run dev",
     "electron-vite": "electron-vite",
     "lint:fix": "eslint . --max-warnings 0 --fix",
     "start": "electron-vite preview",
