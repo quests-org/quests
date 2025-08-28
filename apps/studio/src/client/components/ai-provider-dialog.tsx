@@ -29,6 +29,7 @@ import { AlertCircle, ExternalLink } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { AIProviderIcon } from "./ai-provider-icon";
+import { Alert, AlertDescription } from "./ui/alert";
 
 interface AIProviderDialogProps {
   onOpenChange: (open: boolean) => void;
@@ -181,10 +182,10 @@ export function AIProviderDialog({
                 </SelectContent>
               </Select>
               {typeError && (
-                <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
-                  <AlertCircle className="h-4 w-4" />
-                  <span>{typeError}</span>
-                </div>
+                <Alert variant="destructive">
+                  <AlertCircle />
+                  <AlertDescription>{typeError}</AlertDescription>
+                </Alert>
               )}
               {selectedProviderType && providerMetadata && (
                 <div className="text-sm text-muted-foreground">
@@ -249,15 +250,17 @@ export function AIProviderDialog({
             </div>
           )}
           {!isCreatingNew && !providerMetadata?.requiresAPIKey && (
-            <div className="rounded-lg border bg-muted p-4 text-center text-sm text-muted-foreground">
-              No additional configuration required for this provider.
-            </div>
+            <Alert>
+              <AlertDescription className="text-center">
+                No additional configuration required for this provider.
+              </AlertDescription>
+            </Alert>
           )}
           {errorMessage && (
-            <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
-              <AlertCircle className="h-4 w-4" />
-              <span>{errorMessage}</span>
-            </div>
+            <Alert variant="destructive">
+              <AlertCircle />
+              <AlertDescription>{errorMessage}</AlertDescription>
+            </Alert>
           )}
         </div>
         <DialogFooter className="flex gap-2">
