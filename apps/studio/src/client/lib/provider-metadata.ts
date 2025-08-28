@@ -62,7 +62,7 @@ const PROVIDER_MAP: {
     apiKeyFormat: "vck_",
     apiKeyURL: `https://vercel.com/d?to=%2F%5Bteam%5D%2F%7E%2Fai%2Fapi-keys%3Futm_source%3D${UTM_SOURCE}&title=Get+an+API+Key`,
     description: "Access hundreds of models across many providers",
-    name: "Vercel",
+    name: "Vercel AI Gateway",
     url: `https://vercel.com/ai-gateway?utm_source=${UTM_SOURCE}`,
   }),
 };
