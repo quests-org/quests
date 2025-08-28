@@ -3,6 +3,7 @@ import {
   REGISTRY_DIR_NAME,
 } from "@/electron-main/constants";
 import { logger } from "@/electron-main/lib/electron-logger";
+import { is } from "@electron-toolkit/utils";
 import { aiGatewayApp, type AIGatewayProvider } from "@quests/ai-gateway";
 import {
   WORKSPACE_FOLDER,
@@ -136,6 +137,9 @@ export function createWorkspaceActor() {
       trashItem: (pathToTrash) => shell.trashItem(pathToTrash),
     },
     inspect(event) {
+      if (!is.dev) {
+        return;
+      }
       switch (event.type) {
         case "@xstate.action": {
           if (

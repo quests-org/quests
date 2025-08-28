@@ -207,9 +207,11 @@ export const spawnRuntimeLogic = fromCallback<
       }
       const processPromise = result.value;
       const { stderr, stdout } = processPromise;
-      // TODO: capture logs to disk / GUI
-      // Listen to streams and log them
+
       stderr.on("data", (data: Buffer) => {
+        if (process.env.NODE_ENV !== "development") {
+          return;
+        }
         // eslint-disable-next-line no-console
         console.error(
           "\u001B[31m[Port %d stderr]\u001B[0m %s",
@@ -217,7 +219,11 @@ export const spawnRuntimeLogic = fromCallback<
           data.toString().trim(),
         );
       });
+
       stdout.on("data", (data: Buffer) => {
+        if (process.env.NODE_ENV !== "development") {
+          return;
+        }
         // eslint-disable-next-line no-console
         console.log(
           "\u001B[36m[Port %d stdout]\u001B[0m %s",

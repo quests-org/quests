@@ -249,7 +249,6 @@ export class TabsManager {
   }
 
   public teardown() {
-    logger.info("Tearing down tabs");
     for (const tab of this.tabs) {
       this.closeTabView(tab);
     }
