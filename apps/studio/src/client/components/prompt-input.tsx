@@ -1,4 +1,4 @@
-import { AIProviderGuard } from "@/client/components/ai-provider-guard";
+import { AIProviderGuardDialog } from "@/client/components/ai-provider-guard-dialog";
 import { ModelPicker } from "@/client/components/model-picker";
 import { Button } from "@/client/components/ui/button";
 import {
@@ -9,7 +9,7 @@ import { cn } from "@/client/lib/utils";
 import { type AIGatewayModel } from "@quests/ai-gateway";
 import { useAtomValue } from "jotai";
 import { ArrowUp, Circle, Loader2, Square } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { hasAIProviderAtom } from "../atoms/has-ai-provider";
@@ -45,6 +45,12 @@ export function PromptInput({
   const [showAIProviderGuard, setShowAIProviderGuard] = useState(false);
   const textareaRef = useRef<HTMLDivElement>(null);
   const hasAIProvider = useAtomValue(hasAIProviderAtom);
+
+  useEffect(() => {
+    if (hasAIProvider) {
+      setShowAIProviderGuard(false);
+    }
+  }, [hasAIProvider]);
 
   const resetTextareaHeight = () => {
     if (textareaRef.current) {
@@ -159,7 +165,8 @@ export function PromptInput({
         </div>
       </TextareaContainer>
 
-      <AIProviderGuard
+      <AIProviderGuardDialog
+        description="You need to add an AI provider to submit prompts."
         onOpenChange={setShowAIProviderGuard}
         open={showAIProviderGuard}
       />

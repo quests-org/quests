@@ -1,5 +1,8 @@
 /* eslint-disable unicorn/filename-case */
 /* eslint-enable unicorn/filename-case */
+import { hasAIProviderAtom } from "@/client/atoms/has-ai-provider";
+import { AIProviderGuard } from "@/client/components/ai-provider-guard";
+import { AIProviderGuardDialog } from "@/client/components/ai-provider-guard-dialog";
 import { SmallAppIcon } from "@/client/components/app-icon";
 import { AppPreview } from "@/client/components/app-preview";
 import { Markdown } from "@/client/components/markdown";
@@ -21,7 +24,9 @@ import {
   notFound,
   useNavigate,
 } from "@tanstack/react-router";
+import { useAtomValue } from "jotai";
 import { ChevronRight, Plus } from "lucide-react";
+import { useState } from "react";
 
 export const Route = createFileRoute("/_app/discover/apps/$folderName")({
   component: RouteComponent,
@@ -68,8 +73,15 @@ function RouteComponent() {
   const createProjectFromPreviewMutation = useMutation(
     rpcClient.workspace.project.createFromPreview.mutationOptions(),
   );
+  const hasAIProvider = useAtomValue(hasAIProviderAtom);
+  const [showAIProviderGuard, setShowAIProviderGuard] = useState(false);
 
   const handleCreateProject = () => {
+    if (!hasAIProvider) {
+      setShowAIProviderGuard(true);
+      return;
+    }
+
     if (appDetails) {
       const sessionId = StoreId.newSessionId();
       createProjectFromPreviewMutation.mutate(
@@ -152,12 +164,18 @@ function RouteComponent() {
         </div>
 
         <div className="w-full h-[600px]">
-          <AppPreview
-            className="w-full h-full rounded-lg border border-border overflow-hidden flex flex-col"
-            preview={appDetails.preview}
-            showCloseButton={false}
-            showRemixButton={false}
-          />
+          {hasAIProvider ? (
+            <AppPreview
+              className="w-full h-full rounded-lg border border-border overflow-hidden flex flex-col"
+              preview={appDetails.preview}
+              showCloseButton={false}
+              showRemixButton={false}
+            />
+          ) : (
+            <div className="w-full h-full rounded-lg border border-border flex items-center justify-center bg-background">
+              <AIProviderGuard description="You need to add an AI provider to view app previews." />
+            </div>
+          )}
         </div>
 
         {appDetails.readme && (
@@ -165,6 +183,12 @@ function RouteComponent() {
             <Markdown markdown={appDetails.readme} />
           </div>
         )}
+
+        <AIProviderGuardDialog
+          description="You need to add an AI provider to create projects."
+          onOpenChange={setShowAIProviderGuard}
+          open={showAIProviderGuard}
+        />
       </div>
     </div>
   );
