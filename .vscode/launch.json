@@ -48,6 +48,19 @@
         "order": 4
       },
       "stopAll": true
+    },
+    {
+      "configurations": [
+        "Debug Studio Main Process Fresh",
+        "Debug Studio Renderer Process",
+        "Dev Shim Client",
+        "Build Shim Server"
+      ],
+      "name": "🐛 Studio Fresh",
+      "presentation": {
+        "order": 1
+      },
+      "stopAll": true
     }
   ],
   "configurations": [
@@ -66,6 +79,22 @@
       },
       "internalConsoleOptions": "openOnFirstSessionStart",
       "name": "Debug Studio Main Process",
+      "request": "launch",
+      "runtimeArgs": ["--sourcemap"],
+      "runtimeExecutable": "${workspaceRoot}/apps/studio/node_modules/.bin/electron-vite",
+      "type": "node",
+      "windows": {
+        "runtimeExecutable": "${workspaceRoot}/apps/studio/node_modules/.bin/electron-vite.cmd"
+      }
+    },
+    {
+      "cwd": "${workspaceRoot}/apps/studio",
+      "env": {
+        "ELECTRON_USE_NEW_USER_FOLDER": "true",
+        "REMOTE_DEBUGGING_PORT": "9160"
+      },
+      "internalConsoleOptions": "openOnFirstSessionStart",
+      "name": "Debug Studio Main Process Fresh",
       "request": "launch",
       "runtimeArgs": ["--sourcemap"],
       "runtimeExecutable": "${workspaceRoot}/apps/studio/node_modules/.bin/electron-vite",

@@ -39,7 +39,15 @@ import { initializeRPC } from "./rpc/initialize";
 import { openSettingsWindow } from "./windows/settings";
 
 if (is.dev) {
-  const DEV_APP_NAME = "Quests (Dev)";
+  let suffix = "";
+  if (process.env.ELECTRON_USE_NEW_USER_FOLDER === "true") {
+    suffix = ` (${Date.now().toString()})`;
+  }
+  const DEV_APP_NAME = `Quests (Dev${suffix})`;
+  if (suffix) {
+    logger.info(`Using user folder ${DEV_APP_NAME}`);
+  }
+
   // Sandbox userData during development to Quests/Quests (Dev)/*
   // Must be done as soon as possible because it's stateful
   app.setPath(
