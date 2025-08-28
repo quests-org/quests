@@ -10,7 +10,7 @@ export const Route = createFileRoute("/sidebar")({
 function SidebarPage() {
   return (
     <div
-      className="h-screen w-full overflow-hidden flex flex-col border-r border-border overflow-x-hidden"
+      className="h-screen w-full overflow-hidden flex flex-col border-r border-border overflow-x-hidden select-none"
       style={
         {
           "--sidebar-width": "250px",
