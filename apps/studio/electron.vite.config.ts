@@ -10,6 +10,9 @@ import { analyzer } from "vite-bundle-analyzer";
 import tsconfigPaths from "vite-tsconfig-paths";
 
 const isAnalyzing = process.env.ANALYZE_BUILD === "true";
+// Avoids random type error due to
+// https://github.com/aleclarson/vite-tsconfig-paths/issues/176
+const fixedTsConfigPaths = tsconfigPaths() as unknown as Plugin;
 
 const validateProductionEnv: Plugin = {
   configResolved(config) {
@@ -38,7 +41,7 @@ export default defineConfig({
     plugins: [
       ...(isAnalyzing ? [analyzer()] : []),
       validateProductionEnv,
-      tsconfigPaths(),
+      fixedTsConfigPaths,
       externalizeDepsPlugin({
         exclude: ["@quests/workspace", "@quests/shared", "@quests/ai-gateway"],
       }),
@@ -54,7 +57,7 @@ export default defineConfig({
     plugins: [
       ...(isAnalyzing ? [analyzer()] : []),
       validateProductionEnv,
-      tsconfigPaths(),
+      fixedTsConfigPaths,
       externalizeDepsPlugin(),
     ],
   },
@@ -70,7 +73,7 @@ export default defineConfig({
     plugins: [
       ...(isAnalyzing ? [analyzer()] : []),
       validateProductionEnv,
-      tsconfigPaths(),
+      fixedTsConfigPaths,
       tanstackRouter({
         autoCodeSplitting: true,
         generatedRouteTree: "./src/client/routeTree.gen.ts",
