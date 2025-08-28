@@ -26,6 +26,19 @@ All you need is an AI provider API key - everything runs locally on your compute
 
 ## Contributing
 
+> [!IMPORTANT]
+> **AI Assistance**
+>
+> Quests itself can be used for vibe coding, but the project is **not** vibe coded.
+>
+> If you use any AI assistance while contributing, this must be disclosed in your pull request along with the extent of usage (e.g., "code generation" vs "documentation only").
+
+We welcome high-quality contributions.
+
+- No messy or unfinished code
+- Use conventional commit messages (e.g. `feat: add new feature`)
+- Run `pnpm check-and-test` to validate your changes
+
 ### Monorepo
 
 Quests is organized as a monorepo with the following structure:
