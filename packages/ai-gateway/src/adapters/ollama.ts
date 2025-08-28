@@ -96,14 +96,17 @@ export const ollamaAdapter = setupProviderAdapter({
         async () => {
           const response = await fetch(url.toString(), { headers });
           if (!response.ok) {
-            throw new Error("API key verification failed");
+            throw new Error("Response not OK");
           }
           return true;
         },
         (error) =>
-          new TypedError.VerificationFailed("Failed to verify API key", {
-            cause: error,
-          }),
+          new TypedError.VerificationFailed(
+            "Ollama doesn't appear to be running",
+            {
+              cause: error,
+            },
+          ),
       );
       return result;
     });
