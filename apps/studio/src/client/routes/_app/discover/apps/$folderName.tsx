@@ -8,6 +8,11 @@ import { GithubLogo } from "@/client/components/service-icons";
 import { Button } from "@/client/components/ui/button";
 import { rpcClient } from "@/client/rpc/client";
 import { META_TAG_ICON_BACKGROUND, META_TAG_LUCIDE_ICON } from "@/shared/tabs";
+import {
+  GITHUB_ORG,
+  REGISTRY_REPO_NAME,
+  REGISTRY_REPO_URL,
+} from "@quests/shared";
 import { StoreId } from "@quests/workspace/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
@@ -124,12 +129,12 @@ function RouteComponent() {
               )}
               <a
                 className="flex items-center gap-1 hover:text-foreground transition-colors cursor-pointer"
-                href="https://github.com/quests-org/registry"
+                href={REGISTRY_REPO_URL}
                 rel="noopener noreferrer"
                 target="_blank"
               >
                 <GithubLogo className="size-5" />
-                quests-org/registry
+                {GITHUB_ORG}/{REGISTRY_REPO_NAME}
               </a>
             </div>
           </div>

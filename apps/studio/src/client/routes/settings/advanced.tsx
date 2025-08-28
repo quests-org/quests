@@ -1,6 +1,7 @@
 import { Label } from "@/client/components/ui/label";
 import { Switch } from "@/client/components/ui/switch";
 import { rpcClient } from "@/client/rpc/client";
+import { APP_REPO_URL } from "@quests/shared";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
@@ -60,7 +61,7 @@ function UsageMetrics() {
               Help Quests improve by submitting anonymous{" "}
               <a
                 className="text-blue-600 dark:text-blue-400 hover:underline"
-                href="https://github.com/quests-org/quests/blob/main/docs/usage-metrics.md"
+                href={`${APP_REPO_URL}/blob/main/docs/usage-metrics.md`}
                 rel="noopener noreferrer"
                 target="_blank"
               >
