@@ -4,14 +4,16 @@ import {
   type StoreId,
   type WorkspaceAppProject,
 } from "@quests/workspace/client";
-import { useQuery } from "@tanstack/react-query";
-import { useSearch } from "@tanstack/react-router";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
 import { useCallback, useMemo } from "react";
+import { toast } from "sonner";
 
 import { useAppState } from "../hooks/use-app-state";
 import { rpcClient } from "../rpc/client";
 import { AssistantMessage } from "./assistant-message";
+import { ChatErrorAlert } from "./chat-error-alert";
 import { DebugWrapper } from "./debug-wrapper";
 import { GitCommitCard } from "./git-commit-card";
 import { MessageError } from "./message-error";
@@ -48,6 +50,37 @@ export function SessionStream({
     from: "/_app/projects/$subdomain/",
   });
   const { data: appState } = useAppState({ subdomain: app.subdomain });
+  const navigate = useNavigate();
+
+  const createEmptySessionMutation = useMutation(
+    rpcClient.workspace.session.create.mutationOptions(),
+  );
+
+  const handleNewSession = () => {
+    createEmptySessionMutation.mutate(
+      { subdomain: app.subdomain },
+      {
+        onError: () => {
+          toast.error("Failed to create new chat");
+        },
+        onSuccess: (result) => {
+          void navigate({
+            params: {
+              subdomain: app.subdomain,
+            },
+            replace: true,
+            search: (prev) => ({
+              ...prev,
+              selectedSessionId: result.id,
+            }),
+            to: "/projects/$subdomain",
+          }).then(() => {
+            toast.success("New chat created");
+          });
+        },
+      },
+    );
+  };
 
   const isAnyAgentRunning = (appState?.sessionActors ?? []).some(
     (s) =>
@@ -211,6 +244,33 @@ export function SessionStream({
     return result;
   }, [messages, renderChatPart, isAnyAgentRunning]);
 
+  const shouldShowErrorRecoveryPrompt = useMemo(() => {
+    if (filterMode !== "chat" || messages.length === 0 || isAnyAgentRunning) {
+      return false;
+    }
+
+    let lastUserMessageIndex = -1;
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i]?.role === "user") {
+        lastUserMessageIndex = i;
+        break;
+      }
+    }
+    if (lastUserMessageIndex === -1) {
+      return false;
+    }
+
+    const messagesSinceLastUser = messages.slice(lastUserMessageIndex + 1);
+    return messagesSinceLastUser.some(
+      (message) =>
+        message.role === "assistant" &&
+        message.metadata.error &&
+        message.metadata.error.kind !== "aborted" &&
+        message.metadata.error.kind !== "invalid-tool-input" &&
+        message.metadata.error.kind !== "no-such-tool",
+    );
+  }, [filterMode, messages, isAnyAgentRunning]);
+
   // Render versions mode elements
   const versionElements = useMemo(() => {
     return gitCommitParts.map((part) => {
@@ -248,6 +308,10 @@ export function SessionStream({
           <div className="flex justify-center py-4">
             <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
           </div>
+        )}
+
+        {shouldShowErrorRecoveryPrompt && (
+          <ChatErrorAlert onStartNewChat={handleNewSession} />
         )}
 
         {filterMode === "chat" && !isAnyAgentAlive && messages.length > 0 && (
