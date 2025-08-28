@@ -51,10 +51,8 @@ export function AIProviderDialog({
   const providerMetadata = selectedProviderType
     ? getProviderMetadata(selectedProviderType)
     : undefined;
-  const [apiKeyValue, setApiKeyValue] = useState("");
-  const [typeError, setTypeError] = useState<null | string>(null);
-  const [apiKeyError, setApiKeyError] = useState<null | string>(null);
-  const [generalError, setGeneralError] = useState<null | string>(null);
+  const [apiKey, setAPIKey] = useState("");
+  const [errorMessage, setErrorMessage] = useState<null | string>(null);
 
   const createMutation = useMutation(
     rpcClient.provider.create.mutationOptions(),
@@ -65,54 +63,51 @@ export function AIProviderDialog({
 
   const isCreatingNew = provider === null;
 
-  // Reset state when dialog opens/closes
+  const typeError =
+    selectedProviderType && isCreatingNew
+      ? providers.some((p) => p.type === selectedProviderType)
+        ? "A provider of this type already exists."
+        : null
+      : null;
+
   useEffect(() => {
     if (open) {
-      setApiKeyValue("");
-      setTypeError(null);
-      setApiKeyError(null);
-      setGeneralError(null);
+      setAPIKey("");
+      setErrorMessage(null);
       setSelectedProviderType(provider?.type);
     }
   }, [open, provider]);
 
   const handleProviderTypeChange = (type: AIGatewayProvider.Type["type"]) => {
     setSelectedProviderType(type);
-    setTypeError(null);
-
-    // Check if this provider type already exists
-    const existingProvider = providers.find((p) => p.type === type);
-    if (existingProvider) {
-      setTypeError("A provider of this type already exists.");
-    }
+    setErrorMessage(null);
   };
 
   const handleApiKeyChange = (value: string) => {
-    setApiKeyValue(value);
-    setApiKeyError(null);
-    setGeneralError(null);
+    setAPIKey(value);
+    setErrorMessage(null);
   };
 
   const handleSave = async () => {
     if (
       !selectedProviderType ||
       typeError ||
-      (providerMetadata?.requiresAPIKey && !apiKeyValue)
+      (providerMetadata?.requiresAPIKey && !apiKey)
     ) {
       return;
     }
 
     await createMutation.mutateAsync(
       {
-        apiKey: providerMetadata?.requiresAPIKey ? apiKeyValue : "NOT_NEEDED",
+        apiKey: providerMetadata?.requiresAPIKey ? apiKey : "NOT_NEEDED",
         type: selectedProviderType,
       },
       {
         onError: (error) => {
           if (isDefinedError(error)) {
-            setApiKeyError("Invalid API key");
+            setErrorMessage(error.message);
           } else {
-            setGeneralError("Failed to save provider");
+            setErrorMessage("Failed to validate provider");
           }
         },
         onSuccess: () => {
@@ -131,7 +126,7 @@ export function AIProviderDialog({
       { id: provider.id },
       {
         onError: () => {
-          setGeneralError("Failed to remove provider");
+          setErrorMessage("Failed to remove provider");
         },
         onSuccess: () => {
           onSuccess?.();
@@ -164,12 +159,6 @@ export function AIProviderDialog({
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
-          {generalError && (
-            <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-md p-3">
-              <AlertCircle className="h-4 w-4 flex-shrink-0" />
-              <span>{generalError}</span>
-            </div>
-          )}
           {isCreatingNew && (
             <div className="space-y-2">
               <Label htmlFor="provider-type">Provider Type</Label>
@@ -254,21 +243,20 @@ export function AIProviderDialog({
                   placeholder={`${providerMetadata.apiKeyFormat ?? ""}...xyz123`}
                   spellCheck={false}
                   type="text"
-                  value={apiKeyValue}
+                  value={apiKey}
                 />
-              )}
-
-              {apiKeyError && (
-                <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
-                  <AlertCircle className="h-4 w-4" />
-                  <span>{apiKeyError}</span>
-                </div>
               )}
             </div>
           )}
           {!isCreatingNew && !providerMetadata?.requiresAPIKey && (
             <div className="rounded-lg border bg-muted p-4 text-center text-sm text-muted-foreground">
               No additional configuration required for this provider.
+            </div>
+          )}
+          {errorMessage && (
+            <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
+              <AlertCircle className="h-4 w-4" />
+              <span>{errorMessage}</span>
             </div>
           )}
         </div>
@@ -281,7 +269,7 @@ export function AIProviderDialog({
               disabled={
                 createMutation.isPending ||
                 !selectedProviderType ||
-                (providerMetadata?.requiresAPIKey && !apiKeyValue) ||
+                (providerMetadata?.requiresAPIKey && !apiKey) ||
                 Boolean(typeError)
               }
               onClick={handleSave}
