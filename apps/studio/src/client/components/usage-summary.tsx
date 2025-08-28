@@ -1,13 +1,16 @@
 import { formatNumber } from "@/client/lib/format-number";
 import { formatDuration } from "@/client/lib/format-time";
 import { type SessionMessage } from "@quests/workspace/client";
-import { useMemo } from "react";
+import { ChevronDown } from "lucide-react";
+import { useMemo, useState } from "react";
 
 interface UsageSummaryProps {
   messages: SessionMessage.WithParts[];
 }
 
 export function UsageSummary({ messages }: UsageSummaryProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
   const modelsUsed = useMemo(() => {
     const modelMap = new Map<string, { label: string; providerId?: string }>();
 
@@ -121,61 +124,111 @@ export function UsageSummary({ messages }: UsageSummaryProps) {
   }
 
   return (
-    <div className="text-[10px] text-muted-foreground/60 hover:text-muted-foreground transition-colors py-2 group">
-      <div className="flex items-center justify-between gap-6">
-        {modelsUsed.length > 0 && (
-          <div>{modelsUsed.map((m) => m.label).join(", ")}</div>
-        )}
-
-        {usage.totalTokens > 0 && (
-          <div className="tabular-nums text-right">
-            {formatNumber(usage.totalTokens)}{" "}
-            {usage.totalTokens === 1 ? "token" : "tokens"}
-          </div>
-        )}
-      </div>
-
-      <div className="invisible group-hover:visible flex items-center justify-between gap-6 mt-1">
-        {modelsUsed.length > 0 && (
-          <div>
-            {modelsUsed
-              .map((m) => (m.provider ? `${m.provider}/${m.id}` : m.id))
-              .join(", ")}
-          </div>
-        )}
-
-        {usage.totalTokens > 0 && (
-          <div className="tabular-nums text-right flex items-center gap-2">
-            {usage.inputTokens > 0 && (
-              <span>
-                {formatNumber(usage.inputTokens)} in +{" "}
-                {formatNumber(usage.outputTokens)} out
+    <div className="text-[10px] text-muted-foreground py-2">
+      <button
+        className="flex w-full items-center justify-between gap-2 text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+        onClick={() => {
+          setIsExpanded(!isExpanded);
+        }}
+      >
+        <div className="flex items-center justify-between w-full min-w-0">
+          <div className="flex items-center gap-2 min-w-0">
+            {modelsUsed.length > 0 && (
+              <span className="truncate">
+                {modelsUsed.map((m) => m.label).join(", ")}
               </span>
             )}
-            {usage.reasoningTokens > 0 && (
-              <span>{formatNumber(usage.reasoningTokens)} reasoning</span>
-            )}
-            {usage.cachedInputTokens > 0 && (
-              <span>{formatNumber(usage.cachedInputTokens)} cached</span>
-            )}
           </div>
-        )}
-      </div>
+          {usage.totalTokens > 0 && (
+            <span className="tabular-nums whitespace-nowrap">
+              {formatNumber(usage.totalTokens)}{" "}
+              {usage.totalTokens === 1 ? "token" : "tokens"}
+            </span>
+          )}
+        </div>
+        <ChevronDown
+          className={`size-3 transition-transform ${isExpanded ? "rotate-180" : ""}`}
+        />
+      </button>
 
-      {timing.requestCount > 0 && (
-        <div className="invisible group-hover:visible flex items-center justify-between gap-6 mt-1">
-          <div>Avg. Performance</div>
-          <div className="tabular-nums text-right flex items-center gap-2">
-            {timing.avgTokensPerSecond > 0 && (
-              <span>{Math.round(timing.avgTokensPerSecond)} tok/s</span>
-            )}
-            {timing.avgMsToFirstChunk > 0 && (
-              <span>{formatDuration(timing.avgMsToFirstChunk)} to start</span>
-            )}
-            {timing.avgMsToFinish > 0 && (
-              <span>{formatDuration(timing.avgMsToFinish)} duration</span>
-            )}
-          </div>
+      {isExpanded && (
+        <div className="mt-2 space-y-2 text-muted-foreground/80">
+          {modelsUsed.length > 0 && (
+            <div className="space-y-1">
+              <div className="font-medium">Models</div>
+              <div className="pl-2 text-muted-foreground/60">
+                {modelsUsed.map((model) => (
+                  <div key={model.id}>
+                    {model.provider
+                      ? `${model.provider}/${model.id}`
+                      : model.id}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {usage.totalTokens > 0 && (
+            <div className="space-y-1">
+              <div className="font-medium">Token Usage</div>
+              <div className="pl-2 space-y-1 tabular-nums text-muted-foreground/60">
+                {usage.inputTokens > 0 && (
+                  <div className="flex justify-between">
+                    <span>Input:</span>
+                    <span>{formatNumber(usage.inputTokens)}</span>
+                  </div>
+                )}
+                {usage.outputTokens > 0 && (
+                  <div className="flex justify-between">
+                    <span>Output:</span>
+                    <span>{formatNumber(usage.outputTokens)}</span>
+                  </div>
+                )}
+                {usage.reasoningTokens > 0 && (
+                  <div className="flex justify-between">
+                    <span>Reasoning:</span>
+                    <span>{formatNumber(usage.reasoningTokens)}</span>
+                  </div>
+                )}
+                {usage.cachedInputTokens > 0 && (
+                  <div className="flex justify-between">
+                    <span>Cached:</span>
+                    <span>{formatNumber(usage.cachedInputTokens)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between border-t border-muted pt-1 font-medium">
+                  <span>Total:</span>
+                  <span>{formatNumber(usage.totalTokens)}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {timing.requestCount > 0 && (
+            <div className="space-y-1">
+              <div className="font-medium">Performance</div>
+              <div className="pl-2 space-y-1 tabular-nums text-muted-foreground/60">
+                {timing.avgTokensPerSecond > 0 && (
+                  <div className="flex justify-between">
+                    <span>Speed:</span>
+                    <span>{Math.round(timing.avgTokensPerSecond)} tok/s</span>
+                  </div>
+                )}
+                {timing.avgMsToFirstChunk > 0 && (
+                  <div className="flex justify-between">
+                    <span>Time to start:</span>
+                    <span>{formatDuration(timing.avgMsToFirstChunk)}</span>
+                  </div>
+                )}
+                {timing.avgMsToFinish > 0 && (
+                  <div className="flex justify-between">
+                    <span>Duration:</span>
+                    <span>{formatDuration(timing.avgMsToFinish)}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
