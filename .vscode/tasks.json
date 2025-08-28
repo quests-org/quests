@@ -1,7 +1,7 @@
 {
   "tasks": [
     {
-      "detail": "pnpm check test:ci",
+      "detail": "Check and test the entire repo",
       "label": "npm: check-and-test",
       "presentation": {
         "clear": true,
