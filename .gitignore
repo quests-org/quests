@@ -32,4 +32,6 @@ node_modules/
 
 # Wrangler, for Knip
 .wrangler/
-apps/web/.dev.vars
+
+# Local VSCode Workspace
+local.code-workspace
