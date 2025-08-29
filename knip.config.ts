@@ -24,8 +24,6 @@ const config: KnipConfig = {
         "src/index.html",
         "electron-builder.ts",
         "src/client/validate-env.ts",
-        // Used in development
-        "src/electron-main/rpc/middleware/logger.ts",
       ],
       ignore: ["fixtures/**/*", "templates/**/*", "__mocks__/**/*"],
       ignoreBinaries: ["tail", "op"],
