@@ -58,9 +58,9 @@ export function VersionCommitMessage({
   }
 
   return (
-    <span className="text-sm text-foreground font-medium line-clamp-2 block">
+    <div className="text-sm text-foreground font-medium line-clamp-2">
       {gitRefInfo.commitMessage}
-    </span>
+    </div>
   );
 }
 
