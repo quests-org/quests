@@ -107,11 +107,7 @@ export function StudioSidebar({
       <SidebarContent>
         <NavPrimary items={data.navMain} />
         {favorites && favorites.length > 0 && (
-          <NavProjects
-            isFavorites={true}
-            projects={favorites}
-            title="Favorites"
-          />
+          <NavProjects isFavorites projects={favorites} title="Favorites" />
         )}
         {filteredProjects.length > 0 && (
           <NavProjects

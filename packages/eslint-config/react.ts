@@ -48,6 +48,7 @@ const config: ReturnType<typeof tseslint.config> = tseslint.config(
         "warn",
         { allowConstantExport: true },
       ],
+      "react/jsx-boolean-value": ["error", "never"], // isActive instead of isActive={true}
       // Ensures we don't use curly braces if not needed in props
       "react/jsx-curly-brace-presence": ["error", { props: "never" }],
       "react/prop-types": "off",

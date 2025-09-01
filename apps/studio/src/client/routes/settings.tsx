@@ -47,7 +47,7 @@ function SettingsLayout() {
         Settings
       </div>
       <div className="flex-1 px-3 overflow-y-auto">
-        <SidebarProvider className="min-h-0" defaultOpen={true}>
+        <SidebarProvider className="min-h-0" defaultOpen>
           <Sidebar className="bg-transparent" collapsible="none">
             <SidebarContent>
               <SidebarMenu>

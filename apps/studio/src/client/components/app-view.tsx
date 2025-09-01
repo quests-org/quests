@@ -61,7 +61,7 @@ export function AppView({ app }: AppViewProps) {
           Return to Project
         </Button>
       </AppLink>
-      <DropdownMenu modal={true}>
+      <DropdownMenu modal>
         <DropdownMenuTrigger asChild>
           <Button className="size-7" size="icon" variant="ghost">
             <MoreVertical className="h-4 w-4" />

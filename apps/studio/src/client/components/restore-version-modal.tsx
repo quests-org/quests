@@ -139,11 +139,11 @@ export function RestoreVersionModal({
 
         <div className="my-4 max-h-[300px] overflow-y-auto">
           <GitCommitCard
-            disableLink={true}
+            disableLink
             isLastGitCommit={false}
             isSelected={false}
             projectSubdomain={projectSubdomain}
-            showCommitMessage={true}
+            showCommitMessage
             versionRef={versionRef}
           />
         </div>

@@ -284,7 +284,7 @@ export function SessionStream({
           key={part.data.ref}
           projectSubdomain={app.subdomain}
           restoredFromRef={part.data.restoredFromRef}
-          showCommitMessage={true}
+          showCommitMessage
           versionRef={part.data.ref}
         />
       );
