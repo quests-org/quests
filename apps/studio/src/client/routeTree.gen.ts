@@ -28,6 +28,7 @@ import { Route as AppDiscoverIndexRouteImport } from './routes/_app/discover/ind
 import { Route as AppDebugIndexRouteImport } from './routes/_app/debug/index'
 import { Route as AppDebugComponentsRouteImport } from './routes/_app/debug/components'
 import { Route as AppDebugColorsRouteImport } from './routes/_app/debug/colors'
+import { Route as AppDebugBulkDeleteRouteImport } from './routes/_app/debug/bulk-delete'
 import { Route as AppProjectsSubdomainIndexRouteImport } from './routes/_app/projects/$subdomain/index'
 import { Route as AppProjectsSubdomainViewRouteImport } from './routes/_app/projects/$subdomain/view'
 import { Route as AppDiscoverAppsFolderNameRouteImport } from './routes/_app/discover/apps/$folderName'
@@ -125,6 +126,11 @@ const AppDebugColorsRoute = AppDebugColorsRouteImport.update({
   path: '/colors',
   getParentRoute: () => AppDebugRouteRoute,
 } as any)
+const AppDebugBulkDeleteRoute = AppDebugBulkDeleteRouteImport.update({
+  id: '/bulk-delete',
+  path: '/bulk-delete',
+  getParentRoute: () => AppDebugRouteRoute,
+} as any)
 const AppProjectsSubdomainIndexRoute =
   AppProjectsSubdomainIndexRouteImport.update({
     id: '/projects/$subdomain/',
@@ -157,6 +163,7 @@ export interface FileRoutesByFullPath {
   '/settings/advanced': typeof SettingsAdvancedRoute
   '/settings/providers': typeof SettingsProvidersRoute
   '/settings/': typeof SettingsIndexRoute
+  '/debug/bulk-delete': typeof AppDebugBulkDeleteRoute
   '/debug/colors': typeof AppDebugColorsRoute
   '/debug/components': typeof AppDebugComponentsRoute
   '/debug/': typeof AppDebugIndexRoute
@@ -177,6 +184,7 @@ export interface FileRoutesByTo {
   '/settings/advanced': typeof SettingsAdvancedRoute
   '/settings/providers': typeof SettingsProvidersRoute
   '/settings': typeof SettingsIndexRoute
+  '/debug/bulk-delete': typeof AppDebugBulkDeleteRoute
   '/debug/colors': typeof AppDebugColorsRoute
   '/debug/components': typeof AppDebugComponentsRoute
   '/debug': typeof AppDebugIndexRoute
@@ -202,6 +210,7 @@ export interface FileRoutesById {
   '/settings/advanced': typeof SettingsAdvancedRoute
   '/settings/providers': typeof SettingsProvidersRoute
   '/settings/': typeof SettingsIndexRoute
+  '/_app/debug/bulk-delete': typeof AppDebugBulkDeleteRoute
   '/_app/debug/colors': typeof AppDebugColorsRoute
   '/_app/debug/components': typeof AppDebugComponentsRoute
   '/_app/debug/': typeof AppDebugIndexRoute
@@ -226,6 +235,7 @@ export interface FileRouteTypes {
     | '/settings/advanced'
     | '/settings/providers'
     | '/settings/'
+    | '/debug/bulk-delete'
     | '/debug/colors'
     | '/debug/components'
     | '/debug/'
@@ -246,6 +256,7 @@ export interface FileRouteTypes {
     | '/settings/advanced'
     | '/settings/providers'
     | '/settings'
+    | '/debug/bulk-delete'
     | '/debug/colors'
     | '/debug/components'
     | '/debug'
@@ -270,6 +281,7 @@ export interface FileRouteTypes {
     | '/settings/advanced'
     | '/settings/providers'
     | '/settings/'
+    | '/_app/debug/bulk-delete'
     | '/_app/debug/colors'
     | '/_app/debug/components'
     | '/_app/debug/'
@@ -424,6 +436,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDebugColorsRouteImport
       parentRoute: typeof AppDebugRouteRoute
     }
+    '/_app/debug/bulk-delete': {
+      id: '/_app/debug/bulk-delete'
+      path: '/bulk-delete'
+      fullPath: '/debug/bulk-delete'
+      preLoaderRoute: typeof AppDebugBulkDeleteRouteImport
+      parentRoute: typeof AppDebugRouteRoute
+    }
     '/_app/projects/$subdomain/': {
       id: '/_app/projects/$subdomain/'
       path: '/projects/$subdomain'
@@ -449,12 +468,14 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppDebugRouteRouteChildren {
+  AppDebugBulkDeleteRoute: typeof AppDebugBulkDeleteRoute
   AppDebugColorsRoute: typeof AppDebugColorsRoute
   AppDebugComponentsRoute: typeof AppDebugComponentsRoute
   AppDebugIndexRoute: typeof AppDebugIndexRoute
 }
 
 const AppDebugRouteRouteChildren: AppDebugRouteRouteChildren = {
+  AppDebugBulkDeleteRoute: AppDebugBulkDeleteRoute,
   AppDebugColorsRoute: AppDebugColorsRoute,
   AppDebugComponentsRoute: AppDebugComponentsRoute,
   AppDebugIndexRoute: AppDebugIndexRoute,

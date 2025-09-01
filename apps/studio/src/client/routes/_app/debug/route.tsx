@@ -34,6 +34,15 @@ function RouteComponent() {
             >
               Colors
             </Link>
+            <Link
+              activeProps={{
+                className: linkActiveClasses,
+              }}
+              className={linkBaseClasses}
+              to="/debug/bulk-delete"
+            >
+              Bulk Delete
+            </Link>
           </div>
           <ThemeToggle />
         </nav>
