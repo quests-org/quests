@@ -46,8 +46,8 @@ function SettingsLayout() {
       <div className="px-6 pt-2 pb-4 [-webkit-app-region:drag] text-center font-semibold">
         Settings
       </div>
-      <div className="flex-1 p-3 overflow-y-auto">
-        <SidebarProvider defaultOpen={true}>
+      <div className="flex-1 px-3 overflow-y-auto">
+        <SidebarProvider className="min-h-0" defaultOpen={true}>
           <Sidebar className="bg-transparent" collapsible="none">
             <SidebarContent>
               <SidebarMenu>
