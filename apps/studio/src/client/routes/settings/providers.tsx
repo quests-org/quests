@@ -1,16 +1,13 @@
-import { AIProviderDialog } from "@/client/components/ai-provider-dialog";
+import { AddProviderDialog } from "@/client/components/add-provider-dialog";
+import { AIProviderEditDialog } from "@/client/components/ai-provider-edit-dialog";
 import { ProviderListItem } from "@/client/components/provider-list-item";
 import { Button } from "@/client/components/ui/button";
 import { rpcClient } from "@/client/rpc/client";
 import { type ClientAIProvider } from "@/shared/schemas/provider";
 import { useQuery } from "@tanstack/react-query";
-import {
-  createFileRoute,
-  useNavigate,
-  useSearch,
-} from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { z } from "zod";
 
 const ProvidersSearchSchema = z.object({
@@ -26,21 +23,11 @@ function SettingsProvidersPage() {
   const { data: providers } = useQuery(
     rpcClient.provider.live.list.experimental_liveOptions(),
   );
-  const { showNewProviderDialog } = useSearch({
-    from: "/settings/providers",
-  });
-  const navigate = useNavigate({ from: "/settings/providers" });
+  const { showNewProviderDialog } = Route.useSearch();
+  const navigate = Route.useNavigate();
 
   const [selectedProvider, setSelectedProvider] =
     useState<ClientAIProvider | null>(null);
-  const [isCreatingNew, setIsCreatingNew] = useState(false);
-
-  useEffect(() => {
-    if (showNewProviderDialog) {
-      setIsCreatingNew(true);
-      void navigate({ replace: true, search: {} });
-    }
-  }, [showNewProviderDialog, navigate]);
 
   return (
     <div className="space-y-6">
@@ -53,7 +40,7 @@ function SettingsProvidersPage() {
         </div>
         <Button
           onClick={() => {
-            setIsCreatingNew(true);
+            void navigate({ search: { showNewProviderDialog: true } });
           }}
           size="sm"
         >
@@ -81,7 +68,7 @@ function SettingsProvidersPage() {
       </div>
 
       {selectedProvider && (
-        <AIProviderDialog
+        <AIProviderEditDialog
           onOpenChange={(open) => {
             if (!open) {
               setSelectedProvider(null);
@@ -95,18 +82,17 @@ function SettingsProvidersPage() {
         />
       )}
 
-      {isCreatingNew && (
-        <AIProviderDialog
+      {showNewProviderDialog && (
+        <AddProviderDialog
           onOpenChange={(open) => {
             if (!open) {
-              setIsCreatingNew(false);
+              void navigate({ search: {} });
             }
           }}
           onSuccess={() => {
-            setIsCreatingNew(false);
+            void navigate({ search: {} });
           }}
-          open={isCreatingNew}
-          provider={null}
+          open={showNewProviderDialog}
           providers={providers ?? []}
         />
       )}
