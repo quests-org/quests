@@ -59,6 +59,7 @@ openaiApp.get("/models", async (c) => {
     data: uniqueModels.map((model) => ({
       id: model.canonicalId,
       object: "model",
+      owned_by: model.author,
     })),
     object: "list",
   };
