@@ -7,9 +7,7 @@ import { createTool } from "./create-tool";
 
 export const FileTree = createTool({
   description: dedent`
-    Displays the file structure of the codebase in a tree format.
-
-    - Use this tool to understand the file structure of the codebase.
+    Displays the file structure from the root of the codebase.
   `,
   execute: async ({ appConfig, signal }) => {
     const result = await fileTree(appConfig.appDir, { signal });
