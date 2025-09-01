@@ -33,5 +33,5 @@ node_modules/
 # Wrangler, for Knip
 .wrangler/
 
-# Local VSCode Workspace
-local.code-workspace
+# Code Workspaces
+*.code-workspace
