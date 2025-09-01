@@ -40,7 +40,7 @@ export const openaiAdapter = setupProviderAdapter({
     "gpt-4.1": ["coding"],
     "gpt-4.1-mini": ["coding", "cheap"],
     "gpt-4.1-nano": ["cheap"],
-    "gpt-5": ["coding", "recommended"],
+    "gpt-5": ["coding", "recommended", "default"],
     "gpt-5-mini": ["coding", "recommended", "cheap"],
     "gpt-5-nano": ["cheap"],
   },

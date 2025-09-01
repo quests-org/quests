@@ -13,14 +13,16 @@ import {
   ALL_PROVIDERS,
   getProviderMetadata,
 } from "@/client/lib/provider-metadata";
-import { rpcClient } from "@/client/rpc/client";
+import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
 import { type ClientAIProvider } from "@/shared/schemas/provider";
 import { isDefinedError } from "@orpc/client";
 import { type AIGatewayProvider } from "@quests/ai-gateway";
 import { useMutation } from "@tanstack/react-query";
+import { useAtom } from "jotai";
 import { AlertCircle, ArrowLeft, ExternalLink } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { selectedModelURIAtom } from "../atoms/selected-models";
 import { AIProviderIcon } from "./ai-provider-icon";
 import { Alert, AlertDescription } from "./ui/alert";
 import { Badge } from "./ui/badge";
@@ -40,6 +42,7 @@ export function AddProviderDialog({
   open,
   providers = [],
 }: AddProviderDialogProps) {
+  const [selectedModelURI, setSelectedModelURI] = useAtom(selectedModelURIAtom);
   const [stage, setStage] = useState<DialogStage>("provider-selection");
   const [selectedProviderType, setSelectedProviderType] = useState<
     AIGatewayProvider.Type["type"] | undefined
@@ -106,6 +109,15 @@ export function AddProviderDialog({
         },
       },
     );
+    if (providers.length === 0 || !selectedModelURI) {
+      const { models } = await vanillaRpcClient.gateway.models.list();
+      const defaultModel = models.find((model) =>
+        model.tags.includes("default"),
+      );
+      if (defaultModel) {
+        setSelectedModelURI(defaultModel.uri);
+      }
+    }
   };
 
   const handleClose = () => {

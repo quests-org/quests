@@ -121,6 +121,7 @@ export namespace AIGatewayModel {
   export const ModelTagSchema = z.enum([
     "coding",
     "cheap",
+    "default",
     "legacy",
     "recommended",
     "new",

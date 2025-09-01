@@ -33,7 +33,7 @@ export const googleAdapter = setupProviderAdapter({
   modelTags: {
     "models/gemini-2.5-flash": ["cheap"],
     "models/gemini-2.5-flash-lite": ["cheap"],
-    "models/gemini-2.5-pro": ["coding", "recommended"],
+    "models/gemini-2.5-pro": ["coding", "recommended", "default"],
   },
   providerType: "google",
 }).create(({ buildURL, getModelTags, providerType }) => ({
