@@ -1,4 +1,4 @@
-import type { LanguageModel, SystemModelMessage } from "ai";
+import type { LanguageModel, ModelMessage } from "ai";
 
 import { z } from "zod";
 
@@ -14,11 +14,11 @@ const AgentNameSchema = z.enum(["code"]);
 
 export interface Agent<T extends AgentTools> {
   agentTools: T;
-  getSystemMessages: ({
+  getMessages: ({
     appConfig,
   }: {
     appConfig: AppConfig;
-  }) => Promise<SystemModelMessage[]>;
+  }) => Promise<ModelMessage[]>;
   getTools: () => Promise<AnyAgentTool[]>;
   name: AgentName;
   onFinish: (options: {

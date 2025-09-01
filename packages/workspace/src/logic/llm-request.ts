@@ -1,4 +1,4 @@
-import type { LanguageModel, SystemModelMessage, ToolSet } from "ai";
+import type { LanguageModel, ModelMessage, ToolSet } from "ai";
 
 import { providerOptionsForModel } from "@quests/ai-gateway";
 import {
@@ -25,7 +25,7 @@ import { ToolNameSchema } from "../tools/name";
 
 interface LLMRequestInput {
   appConfig: AppConfig;
-  getSystemMessages: () => Promise<SystemModelMessage[]>;
+  getMessages: () => Promise<ModelMessage[]>;
   getTools: () => Promise<AnyAgentTool[]>;
   model: LanguageModel;
   sessionId: StoreId.Session;
@@ -90,7 +90,7 @@ export const llmRequestLogic = fromPromise<
   }
 
   const toolCalls: Record<string, SessionMessagePart.ToolPart> = {};
-  const systemMessages = await input.getSystemMessages();
+  const agentMessages = await input.getMessages();
   const messageResults = await Store.getMessagesWithParts(
     {
       appConfig: input.appConfig,
@@ -119,7 +119,7 @@ export const llmRequestLogic = fromPromise<
   }
 
   const modelMessages = [
-    ...systemMessages,
+    ...agentMessages,
     // Including all tools so they can run their toModelOutput even if they
     // are not used in this session
     ...SessionMessage.toModelMessages(messageResults.value, ALL_AI_SDK_TOOLS),

@@ -7,7 +7,7 @@ import { getIgnore } from "./get-ignore";
 
 export function fileTree(
   rootDir: AbsolutePath,
-  options: { signal: AbortSignal },
+  options?: { signal: AbortSignal },
 ) {
   return safeTry<
     string,

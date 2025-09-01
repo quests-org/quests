@@ -736,7 +736,7 @@ describe("sessionMachine", () => {
           agentTools: pick(TOOLS, ["Choose"]),
           name: "code",
         }).create(() => ({
-          getSystemMessages: AGENTS.code.getSystemMessages,
+          getMessages: AGENTS.code.getMessages,
           onFinish: AGENTS.code.onFinish,
           onStart: AGENTS.code.onStart,
           shouldContinue: AGENTS.code.shouldContinue,

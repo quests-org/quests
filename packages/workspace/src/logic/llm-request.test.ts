@@ -53,7 +53,7 @@ describe("llmRequestLogic", () => {
   function createTestMachine({
     beforeStream,
     chunks,
-    getSystemMessages = () =>
+    getMessages = () =>
       Promise.resolve([
         {
           content: "You are a helpful assistant.",
@@ -64,7 +64,7 @@ describe("llmRequestLogic", () => {
   }: {
     beforeStream?: () => Promise<void>;
     chunks: LanguageModelV2StreamPart[];
-    getSystemMessages?: () => Promise<SystemModelMessage[]>;
+    getMessages?: () => Promise<SystemModelMessage[]>;
     provider?: string;
   }) {
     const model = new MockLanguageModelV2({
@@ -122,7 +122,7 @@ describe("llmRequestLogic", () => {
                 // no-op
               },
               emitDeltas: true,
-              getSystemMessages,
+              getMessages,
               getTools: () => Promise.resolve(Object.values(TOOLS)),
               model,
               sessionId,
@@ -1218,7 +1218,7 @@ describe("llmRequestLogic", () => {
     it("handles user and assistant messages", async () => {
       const machine = createTestMachine({
         chunks: [],
-        getSystemMessages: () =>
+        getMessages: () =>
           Promise.resolve([
             {
               content: "You are a helpful assistant.",
@@ -1261,7 +1261,7 @@ describe("llmRequestLogic", () => {
 
       const machine = createTestMachine({
         chunks: [],
-        getSystemMessages: () =>
+        getMessages: () =>
           Promise.resolve([
             {
               content: "You are a helpful assistant.",
@@ -1358,7 +1358,7 @@ describe("llmRequestLogic", () => {
 
       const machine = createTestMachine({
         chunks: [],
-        getSystemMessages: () =>
+        getMessages: () =>
           Promise.resolve([
             {
               content: "You are a helpful assistant.",
@@ -1471,7 +1471,7 @@ describe("llmRequestLogic", () => {
 
       const machine = createTestMachine({
         chunks: [],
-        getSystemMessages: () =>
+        getMessages: () =>
           Promise.resolve([
             {
               content: "You are a helpful assistant.",
@@ -1590,7 +1590,7 @@ describe("llmRequestLogic", () => {
 
       const machine = createTestMachine({
         chunks: [],
-        getSystemMessages: () =>
+        getMessages: () =>
           Promise.resolve([
             {
               content: "You are a helpful assistant.",

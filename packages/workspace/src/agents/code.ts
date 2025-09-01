@@ -1,9 +1,13 @@
+import { type SystemModelMessage, type UserModelMessage } from "ai";
 import { err, ok, safeTry } from "neverthrow";
+import os from "node:os";
 import { dedent, pick } from "radashi";
 
 import { APP_NAME, WEBSITE_URL } from "../constants";
+import { fileTree } from "../lib/file-tree";
 import { git } from "../lib/git";
 import { GitCommands } from "../lib/git/commands";
+import { readFileWithAnyCase } from "../lib/read-file-with-any-case";
 import { Store } from "../lib/store";
 import { textForMessage } from "../lib/text-for-message";
 import { type SessionMessageDataPart } from "../schemas/session/message-data-part";
@@ -35,8 +39,8 @@ export const codeAgent = setupAgent({
   ]),
   name: "code",
 }).create(({ agentTools, name }) => ({
-  getSystemMessages: () => {
-    const systemMessage = {
+  getMessages: async ({ appConfig }) => {
+    const systemMessage: SystemModelMessage = {
       content: dedent`
         You are the ${name} agent inside ${APP_NAME}, a desktop app for building and running local apps.
 
@@ -100,10 +104,46 @@ export const codeAgent = setupAgent({
         - The \`./src/server\` folder contains the Hono code.
         - Lowercase, dash-case (kebab-case) for filenames (e.g. \`component-name.tsx\`), are already in use and preferred.
       `.trim(),
-      role: "system" as const,
+      role: "system",
     };
 
-    return Promise.resolve([systemMessage]);
+    const fileTreeResult = await fileTree(appConfig.appDir);
+
+    const agentsContent = await readFileWithAnyCase(
+      appConfig.appDir,
+      "AGENTS.md",
+    );
+
+    const userMessage: UserModelMessage = {
+      content: dedent`
+        <system_info>
+        Operating system: ${os.platform()} ${os.release()}
+        </system_info>
+
+        ${fileTreeResult.match(
+          (tree) => dedent`
+            <project_layout>
+            Below is a snapshot of the current workspace's file structure at the start of the conversation. This snapshot will NOT update during the conversation. It skips over .gitignore patterns.
+            ${tree}
+            </project_layout>
+          `,
+          () => "",
+        )}
+
+        ${
+          agentsContent
+            ? dedent`
+          <agents_md>
+          ${agentsContent}
+          </agents_md>
+        `
+            : ""
+        }
+      `.trim(),
+      role: "user",
+    };
+
+    return [systemMessage, userMessage];
   },
   onFinish: async ({ appConfig, parentMessageId, sessionId, signal }) => {
     await safeTry(async function* () {
