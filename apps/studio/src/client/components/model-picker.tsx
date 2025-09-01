@@ -16,7 +16,13 @@ import {
 import { cn } from "@/client/lib/utils";
 import { type AIGatewayModel } from "@quests/ai-gateway";
 import { useQuery } from "@tanstack/react-query";
-import { AlertCircle, Check, ChevronsUpDown, CircleOff } from "lucide-react";
+import {
+  AlertCircle,
+  Check,
+  ChevronsUpDown,
+  CircleOff,
+  Plus,
+} from "lucide-react";
 import { fork } from "radashi";
 import { useState } from "react";
 
@@ -196,7 +202,28 @@ export function ModelPicker({
         <Command>
           <CommandInput className="h-9" placeholder="Search models..." />
           <CommandList>
-            <CommandEmpty>No models found.</CommandEmpty>
+            <CommandEmpty>
+              <div className="flex flex-col items-center gap-3 py-6">
+                <p className="text-sm text-muted-foreground">No models found</p>
+                <Button
+                  onClick={() => {
+                    void vanillaRpcClient.preferences.openSettingsWindow({
+                      showNewProviderDialog: true,
+                      tab: "Providers",
+                    });
+                  }}
+                  size="sm"
+                  variant="outline"
+                >
+                  <Plus className="mr-2 size-4" />
+                  Add AI provider
+                </Button>
+                <p className="text-xs text-muted-foreground text-center max-w-64">
+                  The model you&apos;re looking for might be available from a
+                  different provider
+                </p>
+              </div>
+            </CommandEmpty>
             {errors && errors.length > 0 && (
               <CommandGroup heading="Errors">
                 {errors.map((error, index) => (
