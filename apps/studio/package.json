@@ -1,7 +1,7 @@
 {
   "name": "@quests/studio",
   "version": "1.0.4",
-  "description": "Electron desktop app for Quests",
+  "description": "Quests, the open-source app builder",
   "repository": {
     "type": "git",
     "url": "https://github.com/quests-org/quests"
@@ -20,7 +20,7 @@
     "build:mac": "electron-builder install-app-deps && pnpm run build && electron-builder --mac",
     "build:mac:local": "op run --no-masking --env-file=./.env.build --env-file=./.env.production -- pnpm run build:mac",
     "build:unpack": "npm run build && electron-builder --dir",
-    "build:win": "npm run build && electron-builder --win",
+    "build:windows": "npm run build && electron-builder --win",
     "check:lint": "eslint . --max-warnings 0 --cache",
     "check:types": "tsc --noEmit",
     "dev": "electron-vite dev",
