@@ -182,6 +182,15 @@
       "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
       "smartStep": true,
       "type": "node"
+    },
+    {
+      "address": "192.168.64.2",
+      "localRoot": "${workspaceFolder}",
+      "name": "Attach to Remote Main Studio Process",
+      "port": 9229,
+      "request": "attach",
+      "skipFiles": ["<node_internals>/**"],
+      "type": "node"
     }
   ],
   "version": "0.2.0"
