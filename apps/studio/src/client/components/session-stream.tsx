@@ -230,7 +230,11 @@ export function SessionStream({
             label="error"
           >
             <MessageError
-              defaultExpanded={isLastMessage && !isAnyAgentRunning}
+              defaultExpanded={
+                isLastMessage &&
+                !isAnyAgentRunning &&
+                message.metadata.error.kind !== "aborted"
+              }
               error={message.metadata.error}
               key={`error-${message.id}`}
             />
