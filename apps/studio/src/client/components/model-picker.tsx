@@ -45,6 +45,11 @@ const groupAndFilterModels = (models: AIGatewayModel.Type[]) => {
       model.tags.includes("recommended") && model.tags.includes("coding"),
   );
 
+  const [defaultRecommended, nonDefaultRecommended] = fork(
+    recommended,
+    (model) => model.tags.includes("default"),
+  );
+
   const [supportsTools, doesNotSupportTools] = fork(notRecommended, (model) =>
     model.features.includes("tools"),
   );
@@ -59,7 +64,7 @@ const groupAndFilterModels = (models: AIGatewayModel.Type[]) => {
 
   /* eslint-disable perfectionist/sort-objects */
   return {
-    Recommended: recommended,
+    Recommended: [...defaultRecommended, ...nonDefaultRecommended],
     New: newModels,
     Other: notLegacy,
     "May not support tools": doesNotSupportTools,

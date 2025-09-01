@@ -34,11 +34,21 @@ openaiApp.get("/models", async (c) => {
     { captureException: c.var.captureException },
   );
 
-  const [recommended, other] = fork(models, (model) =>
+  const [defaultModels, nonDefaultModels] = fork(models, (model) =>
+    model.tags.includes("default"),
+  );
+
+  const [defaultRecommended, defaultOther] = fork(defaultModels, (model) =>
+    model.tags.includes("recommended"),
+  );
+
+  const [recommended, other] = fork(nonDefaultModels, (model) =>
     model.tags.includes("recommended"),
   );
 
   const sortedModels = [
+    ...alphabetical(defaultRecommended, (model) => model.canonicalId),
+    ...alphabetical(defaultOther, (model) => model.canonicalId),
     ...alphabetical(recommended, (model) => model.canonicalId),
     ...alphabetical(other, (model) => model.canonicalId),
   ];
