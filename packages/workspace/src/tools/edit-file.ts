@@ -109,7 +109,10 @@ const LineTrimmedReplacer: Replacer = function* (content, find) {
       for (let k = 0; k < searchLines.length; k++) {
         const line = originalLines[i + k];
         if (line !== undefined) {
-          matchEndIndex += line.length + 1;
+          matchEndIndex += line.length;
+          if (k < searchLines.length - 1) {
+            matchEndIndex += 1; // Add newline character except for the last line
+          }
         }
       }
 
