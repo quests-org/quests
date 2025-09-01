@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { hasAIProviderAtom } from "../atoms/has-ai-provider";
 
 interface PromptInputProps {
+  autoFocus?: boolean;
   autoResizeMaxHeight?: number;
   className?: string;
   disabled?: boolean;
@@ -29,6 +30,7 @@ interface PromptInputProps {
 }
 
 export function PromptInput({
+  autoFocus = false,
   autoResizeMaxHeight = 400,
   className,
   disabled = false,
@@ -127,6 +129,7 @@ export function PromptInput({
         ref={textareaRef}
       >
         <TextareaInner
+          autoFocus={autoFocus}
           className="min-h-12"
           disabled={disabled}
           onChange={handleInputChange}

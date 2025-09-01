@@ -135,6 +135,7 @@ export function ProjectSidebar({
 
       <div className="p-4 border-t" ref={bottomSectionRef}>
         <PromptInput
+          autoFocus
           isLoading={
             createSessionWithMessage.isPending || createMessage.isPending
           }

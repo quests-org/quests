@@ -45,6 +45,7 @@ function RouteComponent() {
             </h1>
           </div>
           <PromptInput
+            autoFocus
             autoResizeMaxHeight={300}
             isLoading={createProjectMutation.isPending}
             modelURI={selectedModelURI}
