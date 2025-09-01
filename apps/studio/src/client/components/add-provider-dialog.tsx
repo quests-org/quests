@@ -23,6 +23,7 @@ import { useEffect, useState } from "react";
 
 import { AIProviderIcon } from "./ai-provider-icon";
 import { Alert, AlertDescription } from "./ui/alert";
+import { Badge } from "./ui/badge";
 
 interface AddProviderDialogProps {
   onOpenChange: (open: boolean) => void;
@@ -148,6 +149,15 @@ export function AddProviderDialog({
                 <div className="text-sm text-muted-foreground">
                   {providerInfo.description}
                 </div>
+                {providerInfo.tags.length > 0 && !isAlreadyAdded && (
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {providerInfo.tags.map((tag) => (
+                      <Badge key={tag} variant="brand-outline">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
                 {isAlreadyAdded && (
                   <div className="text-xs text-muted-foreground">
                     Already added

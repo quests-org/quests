@@ -8,6 +8,7 @@ interface ProviderMetadata<T extends AIGatewayProvider.Type["type"]> {
   description: string;
   name: string;
   requiresAPIKey: boolean;
+  tags: string[];
   type: T;
   url: string;
 }
@@ -29,6 +30,7 @@ const PROVIDER_MAP: {
     apiKeyURL: `https://console.anthropic.com/account/keys?${UTM_SOURCE}`,
     description: "Sonnet, Opus, and other Anthropic models",
     name: "Anthropic",
+    tags: [],
     url: `https://anthropic.com?${UTM_SOURCE}`,
   }),
   google: createProviderMetadata("google", {
@@ -36,12 +38,14 @@ const PROVIDER_MAP: {
     apiKeyURL: `https://aistudio.google.com/app/apikey?${UTM_SOURCE}`,
     description: "Gemini and other Google models",
     name: "Google",
+    tags: ["Free tier"],
     url: `https://ai.google.dev/?${UTM_SOURCE}`,
   }),
   ollama: createProviderMetadata("ollama", {
     description: "Run local models on your own machine",
     name: "Ollama",
     requiresAPIKey: false,
+    tags: [],
     url: `https://ollama.com?${UTM_SOURCE}`,
   }),
   openai: createProviderMetadata("openai", {
@@ -49,6 +53,7 @@ const PROVIDER_MAP: {
     apiKeyURL: `https://platform.openai.com/account/api-keys?${UTM_SOURCE}`,
     description: "GPT-5 and other OpenAI models",
     name: "OpenAI",
+    tags: [],
     url: `https://openai.com?${UTM_SOURCE}`,
   }),
   openrouter: createProviderMetadata("openrouter", {
@@ -56,6 +61,7 @@ const PROVIDER_MAP: {
     apiKeyURL: `https://openrouter.ai?${UTM_SOURCE}`,
     description: "Access an extensive catalog of models across providers",
     name: "OpenRouter",
+    tags: ["Free models"],
     url: `https://openrouter.ai?${UTM_SOURCE}`,
   }),
   vercel: createProviderMetadata("vercel", {
@@ -63,6 +69,7 @@ const PROVIDER_MAP: {
     apiKeyURL: `https://vercel.com/d?to=%2F%5Bteam%5D%2F%7E%2Fai%2Fapi-keys%3Futm_source%3D${UTM_SOURCE}&title=Get+an+API+Key`,
     description: "Access hundreds of models across many providers",
     name: "Vercel AI Gateway",
+    tags: ["$5 free per month"],
     url: `https://vercel.com/ai-gateway?utm_source=${UTM_SOURCE}`,
   }),
 };
