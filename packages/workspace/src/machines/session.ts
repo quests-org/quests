@@ -34,6 +34,7 @@ export interface SessionMachineParentEvent {
     actorId: string;
     appConfig: AppConfig;
     error?: unknown;
+    usedNonReadOnlyTools: boolean;
   };
 }
 
@@ -55,6 +56,8 @@ export const sessionMachine = setup({
     assignEventError: createAssignEventError(),
 
     clearAgentRef: assign({ agentRef: undefined }),
+
+    markUsedNonReadOnlyTools: assign({ usedNonReadOnlyTools: true }),
 
     stopAgent: ({ context }) => {
       if (context.agentRef) {
@@ -162,6 +165,7 @@ export const sessionMachine = setup({
       parentRef: ParentActorRef;
       queuedMessages: SessionMessage.UserWithParts[];
       sessionId: StoreId.Session;
+      usedNonReadOnlyTools: boolean;
     },
     events: {} as SessionMachineEvent,
     input: {} as {
@@ -187,6 +191,7 @@ export const sessionMachine = setup({
       parentRef: input.parentRef,
       queuedMessages: input.queuedMessages,
       sessionId: input.sessionId,
+      usedNonReadOnlyTools: false,
     };
   },
   id: "session",
@@ -310,6 +315,7 @@ export const sessionMachine = setup({
             Paused: {
               on: {
                 "agent.usingTool": {
+                  actions: "markUsedNonReadOnlyTools",
                   guard: ({ event }) => !event.value.readOnly,
                   target: "#session.Agent.UsingNonReadOnlyTools.Paused",
                 },
@@ -319,6 +325,7 @@ export const sessionMachine = setup({
             Running: {
               on: {
                 "agent.usingTool": {
+                  actions: "markUsedNonReadOnlyTools",
                   guard: ({ event }) => !event.value.readOnly,
                   target: "#session.Agent.UsingNonReadOnlyTools.Running",
                 },
@@ -339,6 +346,7 @@ export const sessionMachine = setup({
             actorId: self.id,
             appConfig: context.appConfig,
             error: context.error,
+            usedNonReadOnlyTools: context.usedNonReadOnlyTools,
           },
         });
       },

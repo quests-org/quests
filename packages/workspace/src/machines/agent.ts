@@ -280,6 +280,11 @@ export const agentMachine = setup({
         input: ({ context }) => {
           const [nextToolCall] = context.toolCallQueue;
           invariant(nextToolCall, "No tool call to execute");
+          const tool = getToolByType(nextToolCall.type);
+          context.parentRef.send({
+            type: "agent.usingTool",
+            value: tool,
+          });
           return {
             appConfig: context.appConfig,
             part: nextToolCall,

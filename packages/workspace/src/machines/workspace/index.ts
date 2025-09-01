@@ -449,7 +449,19 @@ export const workspaceMachine = setup({
         },
       },
     ],
-    "session.done": {
+    "session.done": [
+      {
+        actions: raise(({ event }) => {
+          return {
+            type: "restartRuntime",
+            value: { subdomain: event.value.appConfig.subdomain },
+          };
+        }),
+        guard: ({ event }) => event.value.usedNonReadOnlyTools,
+      },
+      {
+        // No restart needed if only read-only tools were used
+      },
       // TODO: Add this back once we have another way to show "done" sessions
       // in the UI because we want to garbage collect them eagerly.
       // actions: assign(({ context, event }) => {
@@ -466,7 +478,7 @@ export const workspaceMachine = setup({
       //     },
       //   };
       // }),
-    },
+    ],
     spawnRuntime: {
       actions: assign(({ context, event, spawn }) => {
         return {
