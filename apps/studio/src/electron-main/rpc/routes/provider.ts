@@ -8,6 +8,7 @@ import { getProviderAdapter } from "@quests/ai-gateway";
 import { ulid } from "ulid";
 import { z } from "zod";
 
+import { getAppStateStore } from "../../stores/app-state";
 import { getProvidersStore } from "../../stores/providers";
 import { cacheMiddleware } from "../middleware/cache";
 import { publisher } from "../publisher";
@@ -103,6 +104,9 @@ const create = base
     };
 
     providersStore.set("providers", [...existingProviders, newProvider]);
+
+    const appStateStore = getAppStateStore();
+    appStateStore.set("hasCompletedProviderSetup", true);
 
     // Ensures environment variables inside the apps themselves are updated
     context.workspaceRef.send({ type: "restartAllRuntimes" });
