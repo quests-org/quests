@@ -16,8 +16,10 @@ export interface Agent<T extends AgentTools> {
   agentTools: T;
   getMessages: ({
     appConfig,
+    envVariableNames,
   }: {
     appConfig: AppConfig;
+    envVariableNames: string[];
   }) => Promise<ModelMessage[]>;
   getTools: () => Promise<AnyAgentTool[]>;
   name: AgentName;

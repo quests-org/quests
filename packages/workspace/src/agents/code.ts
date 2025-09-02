@@ -28,7 +28,7 @@ function formatCommitMessage(text: string): string {
 export const codeAgent = setupAgent({
   agentTools: pick(TOOLS, [
     "EditFile",
-    "FileTree",
+    // "FileTree", will be re-added as list / ls tool
     "Glob",
     "Grep",
     "ReadFile",
@@ -39,7 +39,7 @@ export const codeAgent = setupAgent({
   ]),
   name: "code",
 }).create(({ agentTools, name }) => ({
-  getMessages: async ({ appConfig }) => {
+  getMessages: async ({ appConfig, envVariableNames }) => {
     const systemMessage: SystemModelMessage = {
       content: dedent`
         You are the ${name} agent inside ${APP_NAME}, a desktop app for building and running local apps.
@@ -136,6 +136,17 @@ export const codeAgent = setupAgent({
           <agents_md>
           ${agentsContent}
           </agents_md>
+        `
+            : ""
+        }
+        
+        ${
+          envVariableNames.length > 0
+            ? dedent`
+          <env_variables>
+          The following environment variables injected into the runtime are available:
+            ${envVariableNames.map((n) => `- ${n}`).join("\n")}
+          </env_variables>
         `
             : ""
         }

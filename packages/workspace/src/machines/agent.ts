@@ -343,8 +343,7 @@ export const agentMachine = setup({
         input: ({ context }) => {
           return {
             appConfig: context.appConfig,
-            getMessages: () =>
-              context.agent.getMessages({ appConfig: context.appConfig }),
+            getMessages: context.agent.getMessages,
             getTools: () => context.agent.getTools(),
             model: context.model,
             sessionId: context.sessionId,

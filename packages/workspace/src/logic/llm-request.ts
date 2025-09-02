@@ -1,6 +1,6 @@
-import type { LanguageModel, ModelMessage, ToolSet } from "ai";
+import type { LanguageModel, ToolSet } from "ai";
 
-import { providerOptionsForModel } from "@quests/ai-gateway";
+import { envForProviders, providerOptionsForModel } from "@quests/ai-gateway";
 import {
   APICallError,
   InvalidToolInputError,
@@ -12,6 +12,7 @@ import { fromPromise } from "xstate";
 
 import type { AnyAgentTool } from "../tools/types";
 
+import { type AnyAgent } from "../agents/types";
 import { addCacheControlToMessages } from "../lib/add-cache-control";
 import { type AppConfig } from "../lib/app-config/types";
 import { getCurrentDate } from "../lib/get-current-date";
@@ -22,10 +23,11 @@ import { SessionMessagePart } from "../schemas/session/message-part";
 import { StoreId } from "../schemas/store-id";
 import { ALL_AI_SDK_TOOLS } from "../tools/all";
 import { ToolNameSchema } from "../tools/name";
+import { getWorkspaceServerURL } from "./server/url";
 
 interface LLMRequestInput {
   appConfig: AppConfig;
-  getMessages: () => Promise<ModelMessage[]>;
+  getMessages: AnyAgent["getMessages"];
   getTools: () => Promise<AnyAgentTool[]>;
   model: LanguageModel;
   sessionId: StoreId.Session;
@@ -89,8 +91,15 @@ export const llmRequestLogic = fromPromise<
     return partsResult.isOk() ? partsResult.value : [];
   }
 
-  const toolCalls: Record<string, SessionMessagePart.ToolPart> = {};
-  const agentMessages = await input.getMessages();
+  const env = await envForProviders({
+    captureException: input.appConfig.workspaceConfig.captureException,
+    providers: input.appConfig.workspaceConfig.getAIProviders(),
+    workspaceServerURL: getWorkspaceServerURL(),
+  });
+  const agentMessages = await input.getMessages({
+    appConfig: input.appConfig,
+    envVariableNames: Object.keys(env),
+  });
   const messageResults = await Store.getMessagesWithParts(
     {
       appConfig: input.appConfig,
@@ -148,6 +157,7 @@ export const llmRequestLogic = fromPromise<
     return { message: assistantMessage, parts: await getCurrentParts() };
   }
 
+  const toolCalls: Record<string, SessionMessagePart.ToolPart> = {};
   try {
     const startTimestampMs = getCurrentDate().getTime();
     const result = streamText({
