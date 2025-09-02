@@ -1,4 +1,3 @@
-import { getMainWindow } from "@/electron-main/lib/main-window";
 import { getBackgroundColor } from "@/electron-main/lib/theme-utils";
 import { is } from "@electron-toolkit/utils";
 import { BrowserWindow, Menu, shell } from "electron";
@@ -24,7 +23,6 @@ export function openSettingsWindow(
     height: 700,
     minHeight: 500,
     minWidth: 600,
-    parent: getMainWindow() ?? undefined,
     show: false,
     title: "Settings",
     titleBarStyle: "hiddenInset",
