@@ -178,15 +178,18 @@ export const spawnRuntimeLogic = fromCallback<
         return;
       }
 
+      const providerEnv = await envForProviders({
+        captureException: appConfig.workspaceConfig.captureException,
+        providers: appConfig.workspaceConfig.getAIProviders(),
+        workspaceServerURL: getWorkspaceServerURL(),
+      });
+
       const result = await runPackageJsonScript({
         cwd: appConfig.appDir,
         script,
         scriptOptions: {
           env: {
-            ...envForProviders({
-              providers: appConfig.workspaceConfig.getAIProviders(),
-              workspaceServerURL: getWorkspaceServerURL(),
-            }),
+            ...providerEnv,
             // TODO: remove when Sentry is removed
             APP_BASE_URL: `http://${appConfig.subdomain}.${LOCAL_LOOPBACK_APPS_SERVER_DOMAIN}:${getWorkspaceServerPort()}`,
             NODE_OPTIONS: `--import ${esmImport(shimServerJSPath)}`,

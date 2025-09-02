@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { alphabetical, fork, unique } from "radashi";
+import { unique } from "radashi";
 import { z } from "zod";
 
 import { getProviderAdapter } from "../adapters/all";
@@ -9,6 +9,7 @@ import { fetchModelByString } from "../lib/fetch-model";
 import { fetchModelsForProviders } from "../lib/fetch-models";
 import { PROVIDER_API_PATH } from "../lib/provider-paths";
 import { providerProxy } from "../lib/provider-proxy";
+import { sortModelsByRecommended } from "../lib/sort-models-by-recommended";
 import { type AIGatewayEnv } from "../types";
 
 export const openaiApp = new Hono<AIGatewayEnv>();
@@ -34,24 +35,7 @@ openaiApp.get("/models", async (c) => {
     { captureException: c.var.captureException },
   );
 
-  const [defaultModels, nonDefaultModels] = fork(models, (model) =>
-    model.tags.includes("default"),
-  );
-
-  const [defaultRecommended, defaultOther] = fork(defaultModels, (model) =>
-    model.tags.includes("recommended"),
-  );
-
-  const [recommended, other] = fork(nonDefaultModels, (model) =>
-    model.tags.includes("recommended"),
-  );
-
-  const sortedModels = [
-    ...alphabetical(defaultRecommended, (model) => model.canonicalId),
-    ...alphabetical(defaultOther, (model) => model.canonicalId),
-    ...alphabetical(recommended, (model) => model.canonicalId),
-    ...alphabetical(other, (model) => model.canonicalId),
-  ];
+  const sortedModels = sortModelsByRecommended(models);
 
   const uniqueModels = unique(sortedModels, (model) => model.canonicalId);
 
