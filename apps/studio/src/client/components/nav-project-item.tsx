@@ -47,7 +47,7 @@ export function NavProjectItem({
           title={project.title}
           to="/projects/$subdomain"
         >
-          {isFavorites && project.icon && (
+          {project.icon && (
             <SmallAppIcon
               background={project.icon.background}
               icon={project.icon.lucide}
