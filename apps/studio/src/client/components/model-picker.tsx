@@ -15,7 +15,6 @@ import {
 } from "@/client/components/ui/popover";
 import { cn } from "@/client/lib/utils";
 import { type AIGatewayModel } from "@quests/ai-gateway";
-import { useQuery } from "@tanstack/react-query";
 import {
   AlertCircle,
   Check,
@@ -26,11 +25,15 @@ import {
 import { fork } from "radashi";
 import { useState } from "react";
 
-import { rpcClient, vanillaRpcClient } from "../rpc/client";
+import { vanillaRpcClient } from "../rpc/client";
 
 interface ModelPickerProps {
   className?: string;
   disabled?: boolean;
+  errors?: string[];
+  isError?: boolean;
+  isLoading?: boolean;
+  models?: AIGatewayModel.Type[];
   onBlur?: () => void;
   onFocus?: () => void;
   onValueChange: (value: AIGatewayModel.URI) => void;
@@ -76,6 +79,10 @@ const groupAndFilterModels = (models: AIGatewayModel.Type[]) => {
 export function ModelPicker({
   className = "",
   disabled = false,
+  errors,
+  isError = false,
+  isLoading = false,
+  models,
   onBlur,
   onFocus,
   onValueChange,
@@ -83,10 +90,6 @@ export function ModelPicker({
   value,
 }: ModelPickerProps) {
   const [open, setOpen] = useState(false);
-  const { data, isError, isLoading } = useQuery(
-    rpcClient.gateway.models.live.list.experimental_liveOptions(),
-  );
-  const { errors, models } = data ?? {};
 
   const selectedModel = models?.find((model) => model.uri === value);
 

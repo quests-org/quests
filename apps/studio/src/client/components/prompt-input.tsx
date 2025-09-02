@@ -7,12 +7,14 @@ import {
 } from "@/client/components/ui/textarea-container";
 import { cn } from "@/client/lib/utils";
 import { type AIGatewayModel } from "@quests/ai-gateway";
+import { useQuery } from "@tanstack/react-query";
 import { useAtomValue } from "jotai";
 import { ArrowUp, Circle, Loader2, Square } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { hasAIProviderAtom } from "../atoms/has-ai-provider";
+import { rpcClient } from "../rpc/client";
 
 interface PromptInputProps {
   autoFocus?: boolean;
@@ -48,6 +50,15 @@ export function PromptInput({
   const textareaRef = useRef<HTMLDivElement>(null);
   const hasAIProvider = useAtomValue(hasAIProviderAtom);
 
+  const {
+    data: modelsData,
+    isError: modelsIsError,
+    isLoading: modelsIsLoading,
+  } = useQuery(rpcClient.gateway.models.live.list.experimental_liveOptions());
+  const { errors: modelsErrors, models } = modelsData ?? {};
+
+  const selectedModel = models?.find((model) => model.uri === modelURI);
+
   useEffect(() => {
     if (hasAIProvider) {
       setShowAIProviderGuard(false);
@@ -81,7 +92,7 @@ export function PromptInput({
       return false;
     }
 
-    if (!modelURI) {
+    if (!modelURI || !selectedModel) {
       toast.error("Select a model");
       return false;
     }
@@ -120,7 +131,8 @@ export function PromptInput({
     adjustHeight();
   };
 
-  const canSubmit = !disabled && !isLoading && value.trim() && modelURI;
+  const canSubmit =
+    !disabled && !isLoading && value.trim() && modelURI && selectedModel;
 
   return (
     <>
@@ -142,6 +154,10 @@ export function PromptInput({
           {onModelChange && (
             <ModelPicker
               disabled={disabled}
+              errors={modelsErrors}
+              isError={modelsIsError}
+              isLoading={modelsIsLoading}
+              models={models}
               onValueChange={onModelChange}
               value={modelURI}
             />
