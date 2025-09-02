@@ -95,14 +95,6 @@ export const codeAgent = setupAgent({
         - When you make code changes, the user will see the updated versions automatically in their running application
         - You are working within a Git repository where commits happen automatically after each round of your code edits
         - Do NOT attempt to start, restart, or interact with development servers - this is handled automatically by the system
-        
-        ## AGENTS.md
-        - The primary language of the codebase is TypeScript.
-        - The \`./src/client\` folder contains the React code.
-        - \`./src/client/app.tsx\` is the main entry point for the React app.
-        - Use Tailwind CSS for styling. It's already installed and configured.
-        - The \`./src/server\` folder contains the Hono code.
-        - Lowercase, dash-case (kebab-case) for filenames (e.g. \`component-name.tsx\`), are already in use and preferred.
       `.trim(),
       role: "system",
     };
@@ -134,6 +126,7 @@ export const codeAgent = setupAgent({
           agentsContent
             ? dedent`
           <agents_md>
+          The AGENTS.md file provides detailed context and instructions specifically for coding agents.
           ${agentsContent}
           </agents_md>
         `
@@ -145,7 +138,7 @@ export const codeAgent = setupAgent({
             ? dedent`
           <env_variables>
           The following environment variables injected into the runtime are available:
-            ${envVariableNames.map((n) => `- ${n}`).join("\n")}
+          ${envVariableNames.map((n) => `- ${n}`).join("\n")}
           </env_variables>
         `
             : ""
