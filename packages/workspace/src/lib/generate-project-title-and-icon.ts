@@ -1,5 +1,6 @@
-import { DEFAULT_THEME_GRADIENT } from "@quests/shared/icons";
+import { DEFAULT_THEME_GRADIENT, THEMES } from "@quests/shared/icons";
 import { type LanguageModel } from "ai";
+import { draw } from "radashi";
 import { type z } from "zod";
 
 import { type QuestManifest } from "../schemas/quest-manifest";
@@ -41,8 +42,9 @@ export async function generateProjectTitleAndIcon({
   }
 
   if (iconResult.status === "fulfilled" && iconResult.value.isOk()) {
+    const randomTheme = draw(THEMES) ?? DEFAULT_THEME_GRADIENT;
     updates.icon = {
-      background: DEFAULT_THEME_GRADIENT,
+      background: randomTheme,
       lucide: iconResult.value.value,
     };
   }
