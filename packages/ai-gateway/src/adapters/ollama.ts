@@ -81,7 +81,7 @@ export const ollamaAdapter = setupProviderAdapter({
         } satisfies AIGatewayModel.Type;
       });
     }),
-  getEnv: (baseURL: string) => ({
+  getEnv: (baseURL) => ({
     OLLAMA_API_KEY: internalAPIKey(),
     OLLAMA_BASE_URL: `${baseURL}${PROVIDER_API_PATH.ollama}`,
   }),

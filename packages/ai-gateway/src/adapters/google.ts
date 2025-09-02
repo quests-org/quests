@@ -113,7 +113,7 @@ export const googleAdapter = setupProviderAdapter({
         } satisfies AIGatewayModel.Type;
       });
     }),
-  getEnv: (baseURL: string) => ({
+  getEnv: (baseURL) => ({
     // For @google/genai
     GEMINI_API_KEY: gatewayAPIKey(),
     GEMINI_BASE_URL: `${baseURL}${PROVIDER_API_PATH.google}`,

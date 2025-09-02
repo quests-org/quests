@@ -159,7 +159,7 @@ export const openrouterAdapter = setupProviderAdapter({
       }
       return validModels;
     }),
-  getEnv: (baseURL: string) => ({
+  getEnv: (baseURL) => ({
     OPENROUTER_API_KEY: internalAPIKey(),
     OPENROUTER_BASE_URL: `${baseURL}${PROVIDER_API_PATH.openrouter}`,
   }),

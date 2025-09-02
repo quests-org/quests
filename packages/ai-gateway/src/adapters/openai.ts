@@ -134,7 +134,7 @@ export const openaiAdapter = setupProviderAdapter({
         } satisfies AIGatewayModel.Type;
       });
     }),
-  getEnv: (baseURL: string) => ({
+  getEnv: (baseURL) => ({
     OPENAI_API_KEY: internalAPIKey(),
     OPENAI_BASE_URL: `${baseURL}${PROVIDER_API_PATH.openai}`,
   }),

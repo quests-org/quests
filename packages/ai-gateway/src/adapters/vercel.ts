@@ -118,7 +118,7 @@ export const vercelAdapter = setupProviderAdapter({
       }
       return validModels;
     }),
-  getEnv: (baseURL: string) => ({
+  getEnv: (baseURL) => ({
     AI_GATEWAY_API_KEY: internalAPIKey(),
     AI_GATEWAY_BASE_URL: `${baseURL}${PROVIDER_API_PATH.vercel}`,
   }),
