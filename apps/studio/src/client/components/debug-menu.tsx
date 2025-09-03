@@ -19,7 +19,13 @@ import { Textarea } from "@/client/components/ui/textarea";
 import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
 import { Link } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
-import { BarChart, Bug, Database, Route as RouteIcon } from "lucide-react";
+import {
+  BarChart,
+  Bug,
+  Database,
+  EyeOff,
+  Route as RouteIcon,
+} from "lucide-react";
 import { posthog } from "posthog-js";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -56,6 +62,7 @@ export function DebugMenu() {
   const [routerPanelIsOpen, setRouterPanelIsOpen] = useState(false);
   const [queryPanelIsOpen, setQueryPanelIsOpen] = useState(false);
   const [analyticsDialogIsOpen, setAnalyticsDialogIsOpen] = useState(false);
+  const [menuVisible, setMenuVisible] = useState(true);
   const [toolbarCode, setToolbarCode] = useState("");
   const [validationResult, setValidationResult] = useState<ValidationResult>({
     isValid: false,
@@ -148,6 +155,10 @@ export function DebugMenu() {
     setValidationResult({ isValid: false });
   };
 
+  if (!menuVisible) {
+    return null;
+  }
+
   return (
     <>
       <div className="fixed bottom-4 left-4 z-50">
@@ -195,6 +206,16 @@ export function DebugMenu() {
             >
               <BarChart className="size-4" />
               Analytics Toolbar
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="cursor-pointer"
+              onClick={() => {
+                setMenuVisible(false);
+                toast.success("Debug menu hidden!");
+              }}
+            >
+              <EyeOff className="size-4" />
+              Hide Debug Menu
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
