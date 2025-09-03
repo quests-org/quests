@@ -161,6 +161,7 @@ export const sessionMachine = setup({
       cheapModel: LanguageModel;
       error?: unknown;
       llmRequestTimeoutMs: number;
+      maxStepCount: number;
       model: LanguageModel;
       parentRef: ParentActorRef;
       queuedMessages: SessionMessage.UserWithParts[];
@@ -173,6 +174,7 @@ export const sessionMachine = setup({
       appConfig: AppConfig;
       cheapModel: LanguageModel;
       llmRequestTimeoutMs?: number;
+      maxStepCount?: number;
       model: LanguageModel;
       parentRef: ParentActorRef;
       queuedMessages: SessionMessage.UserWithParts[];
@@ -187,6 +189,7 @@ export const sessionMachine = setup({
       appConfig: input.appConfig,
       cheapModel: input.cheapModel,
       llmRequestTimeoutMs: input.llmRequestTimeoutMs ?? 120_000,
+      maxStepCount: input.maxStepCount ?? 25,
       model: input.model,
       parentRef: input.parentRef,
       queuedMessages: input.queuedMessages,
@@ -389,7 +392,7 @@ export const sessionMachine = setup({
                     appConfig: context.appConfig,
                     cheapModel: context.cheapModel,
                     llmRequestTimeoutMs: context.llmRequestTimeoutMs,
-                    maxStepCount: 25,
+                    maxStepCount: context.maxStepCount,
                     model: context.model,
                     parentMessageId: event.output.id,
                     parentRef: self,

@@ -178,6 +178,7 @@ describe("sessionMachine", () => {
     chunkSets = [],
     initialChunkDelaysMs = [],
     llmRequestTimeoutMs = 120_000,
+    maxStepCount,
     queuedMessages = [defaultQueuedMessage],
     sessionId = defaultSessionId,
   }: {
@@ -186,6 +187,7 @@ describe("sessionMachine", () => {
     chunkSets?: Part[][];
     initialChunkDelaysMs?: number[];
     llmRequestTimeoutMs?: number;
+    maxStepCount?: number;
     queuedMessages?: SessionMessage.UserWithParts[];
     sessionId?: StoreId.Session;
   }) {
@@ -229,6 +231,7 @@ describe("sessionMachine", () => {
         appConfig,
         cheapModel: model,
         llmRequestTimeoutMs,
+        maxStepCount,
         model,
         parentRef: {
           send: vi
@@ -918,6 +921,72 @@ describe("sessionMachine", () => {
           </session>"
         `);
       });
+    });
+
+    it("should enforce max step count when set to 2", async () => {
+      const actor = createTestActor({
+        chunkSets: [
+          [...readFileChunks],
+          [...readFileChunks],
+          [...readFileChunks],
+          [...finishChunks],
+        ],
+        maxStepCount: 2,
+      });
+
+      const session = await runTestMachine(actor);
+      expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
+        "<session title="Test session" count="4">
+          <user>
+            <text>Hello, I need help with something.</text>
+          </user>
+          <assistant finishReason="stop" tokens="0" model="mock-model-id" provider="mock-provider">
+            <step-start step="1" />
+            <tool tool="read_file" state="output-available" callId="test-call-1">
+              <input>
+                {
+                  "filePath": "test.txt"
+                }
+              </input>
+              <output>
+                {
+                  "content": "Hello, world!",
+                  "displayedLines": 1,
+                  "filePath": "./test.txt",
+                  "hasMoreLines": false,
+                  "offset": 0,
+                  "state": "exists",
+                  "totalLines": 1
+                }
+              </output>
+            </tool>
+          </assistant>
+          <assistant finishReason="stop" tokens="0" model="mock-model-id" provider="mock-provider">
+            <step-start step="2" />
+            <tool tool="read_file" state="output-available" callId="test-call-1">
+              <input>
+                {
+                  "filePath": "test.txt"
+                }
+              </input>
+              <output>
+                {
+                  "content": "Hello, world!",
+                  "displayedLines": 1,
+                  "filePath": "./test.txt",
+                  "hasMoreLines": false,
+                  "offset": 0,
+                  "state": "exists",
+                  "totalLines": 1
+                }
+              </output>
+            </tool>
+          </assistant>
+          <assistant finishReason="max-steps" model="quests-synthetic" provider="system">
+            <text>Maximum unattended steps (2) reached.</text>
+          </assistant>
+        </session>"
+      `);
     });
   });
 });

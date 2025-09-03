@@ -15,15 +15,13 @@ export function UsageSummary({ messages }: UsageSummaryProps) {
     const modelMap = new Map<string, { label: string; providerId?: string }>();
 
     for (const message of messages) {
-      if (message.role === "assistant" && message.metadata.modelId) {
+      if (
+        message.role === "assistant" &&
+        message.metadata.modelId &&
+        !message.metadata.synthetic
+      ) {
         const modelId = message.metadata.modelId;
         const providerId = message.metadata.providerId;
-
-        // We use this internally when making an assistant message manually
-        // TODO remove this once we have our own message type
-        if (modelId.toLowerCase() === "system") {
-          continue;
-        }
 
         modelMap.set(modelId, {
           label: modelId,

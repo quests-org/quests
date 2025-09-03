@@ -76,11 +76,16 @@ export namespace SessionMessage {
       "error", // model stopped because of an error
       "other", // model stopped for other reasons
       "unknown", // model stopped for other reasons
+      "max-steps", // stopped because of max steps
     ]),
     isSummary: z.boolean().optional(),
-    modelId: z.string(),
+    modelId: z.custom<"quests-synthetic" | (string & {})>(
+      // Custom string type to allow for TypeScript auto-completion
+      (v) => typeof v === "string",
+    ),
     msToFinish: z.number().optional(),
     msToFirstChunk: z.number().optional(),
+    synthetic: z.boolean().optional(), // When created by the workspace
     // Default just for compatibility on 2025-08-08, will remove later
     providerId: z.string().default("unknown"),
     usage: UsageSchema.partial().optional(),

@@ -21,27 +21,25 @@ export async function restoreVersion({
   sessionId: StoreId.Session;
   workspaceConfig: WorkspaceConfig;
 }) {
-  // Get the project config
   const projectConfig = createAppConfig({
     subdomain: projectSubdomain,
     workspaceConfig,
   });
 
   return safeTry(async function* () {
-    // Create assistant message at the beginning
     const assistantMessage: SessionMessage.Assistant = {
       id: StoreId.newMessageId(),
       metadata: {
         createdAt: new Date(),
         finishReason: "stop",
-        modelId: "system",
+        modelId: "quests-synthetic",
         providerId: "system",
         sessionId,
+        synthetic: true,
       },
       role: "assistant",
     };
 
-    // Save initial message with starting text
     yield* Store.saveMessage(assistantMessage, projectConfig);
 
     const refResult = yield* git(
@@ -55,7 +53,6 @@ export async function restoreVersion({
 
     const restoredToRef = refResult.stdout.toString().trim();
 
-    // Check if there are any uncommitted changes
     const statusResult = yield* git(
       GitCommands.status(),
       projectConfig.appDir,

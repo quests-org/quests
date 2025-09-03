@@ -105,9 +105,10 @@ export async function createProjectFromPreview(
           metadata: {
             createdAt: new Date(),
             finishReason: "stop",
-            modelId: "system",
+            modelId: "quests-synthetic",
             providerId: "system",
             sessionId,
+            synthetic: true,
           },
           parts: [
             {

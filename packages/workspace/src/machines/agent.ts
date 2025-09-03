@@ -15,12 +15,13 @@ import {
 import { type AnyAgent } from "../agents/types";
 import { type AppConfig } from "../lib/app-config/types";
 import { createAssignEventError } from "../lib/assign-event-error";
+import { getCurrentDate } from "../lib/get-current-date";
 import { isInteractiveTool } from "../lib/is-interactive-tool";
 import { logUnhandledEvent } from "../lib/log-unhandled-event";
 import { Store } from "../lib/store";
 import { llmRequestLogic } from "../logic/llm-request";
 import { SessionMessagePart } from "../schemas/session/message-part";
-import { type StoreId } from "../schemas/store-id";
+import { StoreId } from "../schemas/store-id";
 import { getToolByType, type ToolOutputByName } from "../tools/all";
 import { type AnyAgentTool } from "../tools/types";
 import {
@@ -106,6 +107,55 @@ export const agentMachine = setup({
         sessionId: input.sessionId,
         signal,
       });
+    }),
+
+    saveMaxStepsMessage: fromPromise<
+      // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+      void,
+      {
+        appConfig: AppConfig;
+        maxStepCount: number;
+        sessionId: StoreId.Session;
+      }
+    >(async ({ input, signal }) => {
+      const now = getCurrentDate();
+      const messageId = StoreId.newMessageId();
+
+      const result = await Store.saveMessageWithParts(
+        {
+          id: messageId,
+          metadata: {
+            createdAt: now,
+            finishReason: "max-steps",
+            modelId: "quests-synthetic",
+            providerId: "system",
+            sessionId: input.sessionId,
+            synthetic: true,
+          },
+          parts: [
+            {
+              metadata: {
+                createdAt: now,
+                endedAt: now,
+                id: StoreId.newPartId(),
+                messageId,
+                sessionId: input.sessionId,
+              },
+              text: `Maximum unattended steps (${input.maxStepCount}) reached.`,
+              type: "text",
+            },
+          ],
+          role: "assistant",
+        },
+        input.appConfig,
+        { signal },
+      );
+
+      if (result.isErr()) {
+        throw new Error(
+          `Failed to save max steps message: ${JSON.stringify(result.error)}`,
+        );
+      }
     }),
 
     shouldContinue: fromPromise<
@@ -490,7 +540,7 @@ export const agentMachine = setup({
           target: "LLMStreaming",
         },
         {
-          target: "Finishing",
+          target: "SavingMaxStepsMessage",
         },
       ],
     },
@@ -517,6 +567,19 @@ export const agentMachine = setup({
           }),
           target: "LLMStreaming",
         },
+      },
+    },
+
+    SavingMaxStepsMessage: {
+      invoke: {
+        input: ({ context }) => ({
+          appConfig: context.appConfig,
+          maxStepCount: context.maxStepCount,
+          sessionId: context.sessionId,
+        }),
+        onDone: "Finishing",
+        onError: { actions: "assignEventError", target: "Finishing" },
+        src: "saveMaxStepsMessage",
       },
     },
 

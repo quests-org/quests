@@ -6,7 +6,7 @@ import {
 } from "@quests/workspace/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate, useSearch } from "@tanstack/react-router";
-import { Loader2 } from "lucide-react";
+import { AlertTriangle, Loader2 } from "lucide-react";
 import { useCallback, useMemo } from "react";
 import { toast } from "sonner";
 
@@ -19,6 +19,8 @@ import { GitCommitCard } from "./git-commit-card";
 import { MessageError } from "./message-error";
 import { ReasoningMessage } from "./reasoning-message";
 import { ToolPart } from "./tool-part";
+import { Alert, AlertDescription } from "./ui/alert";
+import { Button } from "./ui/button";
 import { UnknownPart } from "./unknown-part";
 import { UsageSummary } from "./usage-summary";
 import { UserMessage } from "./user-message";
@@ -28,6 +30,7 @@ export type FilterMode = "chat" | "versions";
 interface SessionEventListProps {
   app: WorkspaceAppProject;
   filterMode: FilterMode;
+  onContinue?: () => void;
   selectedVersion?: string;
   sessionId: StoreId.Session;
 }
@@ -35,6 +38,7 @@ interface SessionEventListProps {
 export function SessionStream({
   app,
   filterMode,
+  onContinue,
   selectedVersion,
   sessionId,
 }: SessionEventListProps) {
@@ -275,6 +279,24 @@ export function SessionStream({
     );
   }, [filterMode, messages, isAnyAgentRunning]);
 
+  const shouldShowContinueButton = useMemo(() => {
+    if (
+      filterMode !== "chat" ||
+      messages.length === 0 ||
+      isAnyAgentRunning ||
+      !onContinue
+    ) {
+      return false;
+    }
+
+    const lastMessage = messages.at(-1);
+    return (
+      lastMessage &&
+      lastMessage.role === "assistant" &&
+      lastMessage.metadata.finishReason === "max-steps"
+    );
+  }, [filterMode, messages, isAnyAgentRunning, onContinue]);
+
   // Render versions mode elements
   const versionElements = useMemo(() => {
     return gitCommitParts.map((part) => {
@@ -316,6 +338,20 @@ export function SessionStream({
 
         {shouldShowErrorRecoveryPrompt && (
           <ChatErrorAlert onStartNewChat={handleNewSession} />
+        )}
+
+        {shouldShowContinueButton && (
+          <Alert className="mt-4" variant="warning">
+            <AlertTriangle />
+            <AlertDescription className="flex flex-col gap-3">
+              <div className="text-xs">
+                Agent was stopped due to reaching maximum unattended steps.
+              </div>
+              <Button onClick={onContinue} size="sm" variant="secondary">
+                Resume the agent
+              </Button>
+            </AlertDescription>
+          </Alert>
         )}
 
         {filterMode === "chat" && !isAnyAgentAlive && messages.length > 0 && (

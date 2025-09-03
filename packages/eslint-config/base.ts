@@ -69,6 +69,7 @@ export default tseslint.config(
         { fixStyle: "inline-type-imports" },
       ],
       "@typescript-eslint/no-deprecated": ERROR_IN_CI, // Too slow to run live
+      // "@typescript-eslint/no-invalid-void-type": "off", // Disabled until generics work https://github.com/typescript-eslint/typescript-eslint/issues/8113
       "@typescript-eslint/no-misused-promises": [
         "error",
         {

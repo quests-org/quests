@@ -60,6 +60,48 @@ export function ProjectSidebar({
     session.tags.includes("agent.alive"),
   );
 
+  const handleContinue = () => {
+    if (!selectedSessionId || !selectedModelURI) {
+      return;
+    }
+
+    const messageId = StoreId.newMessageId();
+    const createdAt = new Date();
+
+    createMessage.mutate(
+      {
+        message: {
+          id: messageId,
+          metadata: {
+            createdAt,
+            sessionId: selectedSessionId,
+          },
+          parts: [
+            {
+              metadata: {
+                createdAt,
+                id: StoreId.newPartId(),
+                messageId,
+                sessionId: selectedSessionId,
+              },
+              text: "Continue",
+              type: "text",
+            },
+          ],
+          role: "user",
+        },
+        modelURI: selectedModelURI,
+        sessionId: selectedSessionId,
+        subdomain: project.subdomain,
+      },
+      {
+        onSuccess: () => {
+          setFilterMode("chat");
+        },
+      },
+    );
+  };
+
   useEffect(() => {
     if (!bottomSectionRef.current) {
       return;
@@ -108,6 +150,7 @@ export function ProjectSidebar({
             <SessionStream
               app={project}
               filterMode={filterMode}
+              onContinue={handleContinue}
               selectedVersion={selectedVersion}
               sessionId={selectedSessionId}
             />
