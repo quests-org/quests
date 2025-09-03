@@ -1,4 +1,11 @@
-import { type ActorRefFrom, assign, log, setup, stopChild } from "xstate";
+import {
+  type ActorRefFrom,
+  assign,
+  log,
+  setup,
+  type SnapshotFrom,
+  stopChild,
+} from "xstate";
 
 import { type AppConfig } from "../lib/app-config/types";
 import { logUnhandledEvent } from "../lib/log-unhandled-event";
@@ -251,3 +258,4 @@ export const runtimeMachine = setup({
 });
 
 export type RuntimeActorRef = ActorRefFrom<typeof runtimeMachine>;
+export type RuntimeSnapshot = SnapshotFrom<typeof runtimeMachine>;

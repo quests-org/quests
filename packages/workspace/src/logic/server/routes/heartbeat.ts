@@ -2,6 +2,7 @@ import { APPS_SERVER_API_PATH } from "@quests/shared";
 import { Hono } from "hono";
 import { streamSSE } from "hono/streaming";
 import { isEqual } from "radashi";
+import { type Subscription } from "xstate";
 
 import { createAppConfig } from "../../../lib/app-config/create";
 import { isRunnable, registryAppExists } from "../../../lib/app-dir-utils";
@@ -13,6 +14,7 @@ import {
   removeExpiredPreview,
 } from "../../../lib/preview-cache";
 import { projectSubdomainForSubdomain } from "../../../lib/project-subdomain-for-subdomain";
+import { type RuntimeSnapshot } from "../../../machines/runtime";
 import { type AppError, type AppStatus } from "../../../types";
 import { type WorkspaceServerEnv } from "../types";
 import { uriDetailsForHost } from "../uri-details-for-host";
@@ -75,6 +77,16 @@ app.get("/heartbeat-stream", (c) => {
       });
       return;
     };
+
+    function pushSnapshotResponse(snapshot: RuntimeSnapshot) {
+      const tags = snapshot.tags as Set<AppStatus>;
+      const firstTag = tags.values().next().value ?? "unknown";
+
+      return pushResponse({
+        errors: snapshot.context.errors,
+        status: firstTag,
+      });
+    }
 
     const sendHeartbeat = async () => {
       const runtimeRef = c.var.getRuntimeRef(subdomain);
@@ -207,37 +219,54 @@ app.get("/heartbeat-stream", (c) => {
       });
 
       const snapshot = runtimeRef.getSnapshot();
-      const tags = snapshot.tags as Set<AppStatus>;
-      const firstTag = tags.values().next().value ?? "unknown";
-
-      return pushResponse({
-        errors: snapshot.context.errors,
-        status: firstTag,
-      });
+      return pushSnapshotResponse(snapshot);
     };
 
-    while (true) {
-      try {
-        await sendHeartbeat();
-        await stream.sleep(500);
-      } catch (error) {
-        c.var.workspaceConfig.captureException(
-          error instanceof Error ? error : new Error(String(error)),
-          {
-            scopes: ["workspace"],
-          },
-        );
-        await pushResponse({
-          errors: [
+    let runtimeRefSubscription: Subscription | undefined;
+    let previousTags: Set<string> | undefined;
+
+    try {
+      while (!c.req.raw.signal.aborted) {
+        const runtimeRef = c.var.getRuntimeRef(subdomain);
+
+        if (runtimeRef && !runtimeRefSubscription) {
+          // Ensures immediate updates without polling
+          runtimeRefSubscription = runtimeRef.subscribe((snapshot) => {
+            if (!previousTags || !isEqual(snapshot.tags, previousTags)) {
+              previousTags = snapshot.tags;
+              pushSnapshotResponse(snapshot).catch(() => {
+                /* Ignore */
+              });
+            }
+          });
+        }
+
+        try {
+          await sendHeartbeat();
+          await stream.sleep(500);
+        } catch (error) {
+          c.var.workspaceConfig.captureException(
+            error instanceof Error ? error : new Error(String(error)),
             {
-              createdAt: Date.now(),
-              message: "Internal server error",
-              type: "runtime",
+              scopes: ["workspace"],
             },
-          ],
-          status: "error",
-        });
-        break;
+          );
+          await pushResponse({
+            errors: [
+              {
+                createdAt: Date.now(),
+                message: "Internal server error",
+                type: "runtime",
+              },
+            ],
+            status: "error",
+          });
+          break;
+        }
+      }
+    } finally {
+      if (runtimeRefSubscription) {
+        runtimeRefSubscription.unsubscribe();
       }
     }
   });
