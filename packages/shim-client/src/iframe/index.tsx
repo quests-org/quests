@@ -1,5 +1,5 @@
 import { type HeartbeatResponse } from "@quests/workspace/for-shim";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 
 import { BottomView } from "./components/bottom-view";
@@ -26,43 +26,60 @@ export function App() {
     useState(false);
 
   const currentStatus = response?.status ?? null;
+  const currentStatusRef = useRef(currentStatus);
+  const retryAttemptsRef = useRef(0);
 
   useEffect(() => {
-    let isSubscribed = true;
+    currentStatusRef.current = currentStatus;
+  }, [currentStatus]);
 
-    const heartbeat = async () => {
-      if (!isSubscribed) {
-        return;
+  useEffect(() => {
+    let eventSource: EventSource | null = null;
+
+    const connectSSE = () => {
+      if (eventSource) {
+        eventSource.close();
       }
 
-      try {
-        const res = await fetch("/_quests/heartbeat", {
-          body: JSON.stringify({ heartbeat: true }),
-          headers: { "Content-Type": "application/json" },
-          method: "POST",
-        });
-        const newHeartbeat = (await res.json()) as HeartbeatResponse;
+      eventSource = new EventSource("/_quests/heartbeat-stream");
 
-        if (
-          currentStatus !== null &&
-          currentStatus !== "ready" &&
-          newHeartbeat.status === "ready"
-        ) {
-          sendParentMessage({ type: "reload-window" });
-        } else {
-          sendParentMessage({ type: "app-status", value: newHeartbeat.status });
+      eventSource.addEventListener("heartbeat", (event) => {
+        try {
+          const newHeartbeat = JSON.parse(
+            event.data as string,
+          ) as HeartbeatResponse;
+
+          retryAttemptsRef.current = 0;
+
+          const current = currentStatusRef.current;
+          if (
+            current !== null &&
+            current !== "ready" &&
+            newHeartbeat.status === "ready"
+          ) {
+            sendParentMessage({ type: "reload-window" });
+          } else {
+            sendParentMessage({
+              type: "app-status",
+              value: newHeartbeat.status,
+            });
+          }
+
+          if (
+            isFullScreenStatus(current) &&
+            !isFullScreenStatus(newHeartbeat.status)
+          ) {
+            setIsTransitioningFromError(true);
+          }
+
+          setPreviousStatus(current);
+          setResponse(newHeartbeat);
+        } catch {
+          // Failed to parse heartbeat data
         }
+      });
 
-        if (
-          isFullScreenStatus(currentStatus) &&
-          !isFullScreenStatus(newHeartbeat.status)
-        ) {
-          setIsTransitioningFromError(true);
-        }
-
-        setPreviousStatus(currentStatus);
-        setResponse(newHeartbeat);
-      } catch {
+      eventSource.addEventListener("error", () => {
         const fakeResponse: HeartbeatResponse = {
           errors: [
             {
@@ -74,21 +91,25 @@ export function App() {
           status: "error",
         };
 
-        setPreviousStatus(currentStatus);
+        const current = currentStatusRef.current;
+        setPreviousStatus(current);
         setResponse(fakeResponse);
-      }
 
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      await heartbeat();
+        eventSource?.close();
+
+        const baseDelay = Math.min(1000 * 2 ** retryAttemptsRef.current, 5000);
+        const jitter = Math.random() * 100;
+        retryAttemptsRef.current++;
+        setTimeout(connectSSE, baseDelay + jitter);
+      });
     };
 
-    // eslint-disable-next-line no-console
-    heartbeat().catch(console.error);
+    connectSSE();
 
     return () => {
-      isSubscribed = false;
+      eventSource?.close();
     };
-  }, [currentStatus]);
+  }, []);
 
   useEffect(() => {
     if (currentStatus === null) {

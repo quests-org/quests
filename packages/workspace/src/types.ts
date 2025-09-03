@@ -16,11 +16,6 @@ export interface AppError {
 
 export type AppStatus = (typeof APP_STATUSES)[number];
 
-export interface HeartbeatResponse {
-  errors: AppError[];
-  status: AppStatus;
-}
-
 export type RunPackageJsonScript = (options: {
   cwd: string;
   script: string;
