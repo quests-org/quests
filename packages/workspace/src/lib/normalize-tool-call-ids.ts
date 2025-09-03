@@ -1,12 +1,26 @@
 import type { ModelMessage } from "ai";
 
-export function normalizeToolCallIds(msgs: ModelMessage[]): ModelMessage[] {
-  return msgs.map((msg) => {
+import { isAnthropic } from "./is-anthropic";
+
+export function normalizeToolCallIds({
+  messages,
+  modelId,
+  providerId,
+}: {
+  messages: ModelMessage[];
+  modelId: string;
+  providerId: string;
+}): ModelMessage[] {
+  if (!isAnthropic({ modelId, providerId })) {
+    return messages;
+  }
+
+  return messages.map((message) => {
     if (
-      (msg.role === "assistant" || msg.role === "tool") &&
-      Array.isArray(msg.content)
+      (message.role === "assistant" || message.role === "tool") &&
+      Array.isArray(message.content)
     ) {
-      msg.content = msg.content.map((part) => {
+      message.content = message.content.map((part) => {
         if (
           (part.type === "tool-call" || part.type === "tool-result") &&
           "toolCallId" in part
@@ -21,6 +35,6 @@ export function normalizeToolCallIds(msgs: ModelMessage[]): ModelMessage[] {
         return part;
       });
     }
-    return msg;
+    return message;
   });
 }

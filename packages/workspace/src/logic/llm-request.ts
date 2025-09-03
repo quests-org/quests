@@ -13,15 +13,13 @@ import { fromPromise } from "xstate";
 import type { AnyAgentTool } from "../tools/types";
 
 import { type AnyAgent } from "../agents/types";
-import { addCacheControlToMessages } from "../lib/add-cache-control";
 import { type AppConfig } from "../lib/app-config/types";
 import { getCurrentDate } from "../lib/get-current-date";
-import { normalizeToolCallIds } from "../lib/normalize-tool-call-ids";
+import { prepareModelMessages } from "../lib/prepare-model-messages";
 import { Store } from "../lib/store";
-import { SessionMessage } from "../schemas/session/message";
+import { type SessionMessage } from "../schemas/session/message";
 import { SessionMessagePart } from "../schemas/session/message-part";
 import { StoreId } from "../schemas/store-id";
-import { ALL_AI_SDK_TOOLS } from "../tools/all";
 import { ToolNameSchema } from "../tools/name";
 import { getWorkspaceServerURL } from "./server/url";
 
@@ -127,16 +125,12 @@ export const llmRequestLogic = fromPromise<
     );
   }
 
-  const modelMessages = [
-    ...agentMessages,
-    // Including all tools so they can run their toModelOutput even if they
-    // are not used in this session
-    ...SessionMessage.toModelMessages(messageResults.value, ALL_AI_SDK_TOOLS),
-  ];
-
-  const preparedModelMessages = normalizeToolCallIds(
-    addCacheControlToMessages(modelMessages, providerId, modelId),
-  );
+  const preparedModelMessages = prepareModelMessages({
+    agentMessages,
+    modelId,
+    providerId,
+    sessionMessages: messageResults.value,
+  });
 
   await scopedStore.saveMessage(assistantMessage);
 

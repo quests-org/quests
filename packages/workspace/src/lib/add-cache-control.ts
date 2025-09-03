@@ -2,23 +2,29 @@ import type { ModelMessage } from "ai";
 
 import { unique } from "radashi";
 
+import { isAnthropic } from "./is-anthropic";
+
 // Apply cache control for Anthropic models
 // Read https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching
 // to understand why we're placing the cache control options the way we are
 // Adapted from
 // https://github.com/sst/opencode/blob/dev/packages/opencode/src/provider/transform.ts
-export function addCacheControlToMessages(
-  msgs: ModelMessage[],
-  providerID: string,
-  modelID: string,
-) {
-  if (
-    providerID === "anthropic" ||
-    modelID.includes("anthropic") ||
-    modelID.includes("claude")
-  ) {
-    const system = msgs.filter((msg) => msg.role === "system").slice(0, 2);
-    const final = msgs.filter((msg) => msg.role !== "system").slice(-2);
+export function addCacheControlToMessages({
+  messages,
+  modelId,
+  providerId,
+}: {
+  messages: ModelMessage[];
+  modelId: string;
+  providerId: string;
+}) {
+  if (isAnthropic({ modelId, providerId })) {
+    const system = messages
+      .filter((message) => message.role === "system")
+      .slice(0, 2);
+    const final = messages
+      .filter((message) => message.role !== "system")
+      .slice(-2);
 
     const providerOptions = {
       anthropic: {
@@ -35,14 +41,14 @@ export function addCacheControlToMessages(
       },
     };
 
-    for (const msg of unique([...system, ...final])) {
+    for (const message of unique([...system, ...final])) {
       const shouldUseContentOptions =
-        providerID !== "anthropic" &&
-        Array.isArray(msg.content) &&
-        msg.content.length > 0;
+        providerId !== "anthropic" &&
+        Array.isArray(message.content) &&
+        message.content.length > 0;
 
       if (shouldUseContentOptions) {
-        const lastContent = msg.content.at(-1);
+        const lastContent = message.content.at(-1);
         if (lastContent && typeof lastContent === "object") {
           lastContent.providerOptions = {
             ...lastContent.providerOptions,
@@ -52,11 +58,11 @@ export function addCacheControlToMessages(
         }
       }
 
-      msg.providerOptions = {
-        ...msg.providerOptions,
+      message.providerOptions = {
+        ...message.providerOptions,
         ...providerOptions,
       };
     }
   }
-  return msgs;
+  return messages;
 }
