@@ -1,4 +1,4 @@
 {
   "extends": "@quests/typescript-config/base.json",
-  "include": ["*.ts"]
+  "include": ["*.ts", "scripts"]
 }
