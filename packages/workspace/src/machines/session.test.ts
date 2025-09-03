@@ -1,3 +1,4 @@
+import { type LanguageModelV2StreamPart } from "@ai-sdk/provider";
 import { simulateReadableStream } from "ai";
 import { MockLanguageModelV2 } from "ai/test";
 import mockFs from "mock-fs";
@@ -102,7 +103,7 @@ describe("sessionMachine", () => {
       toolName: "read_file",
       type: "tool-call",
     },
-  ] as const;
+  ] as const satisfies LanguageModelV2StreamPart[];
 
   const writeFileChunks = [
     {
@@ -119,14 +120,14 @@ describe("sessionMachine", () => {
       toolName: "write_file",
       type: "tool-call",
     },
-  ] as const;
+  ] as const satisfies LanguageModelV2StreamPart[];
 
   const finishChunks = [
     { id: "1", type: "text-start" },
     { delta: "I'm done.", id: "1", type: "text-delta" },
     { id: "1", type: "text-end" },
     { finishReason: "stop", type: "finish", usage: mockUsage },
-  ] as const;
+  ] as const satisfies LanguageModelV2StreamPart[];
 
   const chooseToolCallId = "test-call-choose";
   const chooseChunks = [
@@ -144,7 +145,7 @@ describe("sessionMachine", () => {
       toolName: "choose",
       type: "tool-call",
     },
-  ] as const;
+  ] as const satisfies LanguageModelV2StreamPart[];
 
   beforeEach(async () => {
     const { execa } = await import("execa");
@@ -326,11 +327,7 @@ describe("sessionMachine", () => {
 
     it("should read and write a file", async () => {
       const actor = createTestActor({
-        chunkSets: [
-          [...readFileChunks],
-          [...writeFileChunks],
-          [...finishChunks],
-        ],
+        chunkSets: [readFileChunks, writeFileChunks, finishChunks],
       });
 
       const session = await runTestMachine(actor);
@@ -496,8 +493,8 @@ describe("sessionMachine", () => {
               toolName: "invalid_tool_name",
             },
           ],
-          [...readFileChunks],
-          [...finishChunks],
+          readFileChunks,
+          finishChunks,
         ],
       });
 
@@ -560,8 +557,8 @@ describe("sessionMachine", () => {
               toolCallId: "test-call-1",
             },
           ],
-          [...readFileChunks],
-          [...finishChunks],
+          readFileChunks,
+          finishChunks,
         ],
       });
 
@@ -621,9 +618,9 @@ describe("sessionMachine", () => {
       const neverMessage = "NEVER";
       const actor = createTestActor({
         chunkSets: [
-          [...readFileChunks],
-          [...readFileChunks],
-          [...finishChunks],
+          readFileChunks,
+          readFileChunks,
+          finishChunks,
           [
             { id: "1", type: "text-start" },
             { delta: neverMessage, id: "1", type: "text-delta" },
@@ -695,7 +692,7 @@ describe("sessionMachine", () => {
 
     it("should immediately exit when no tools are called", async () => {
       const actor = createTestActor({
-        chunkSets: [[...finishChunks]],
+        chunkSets: [finishChunks],
       });
 
       const session = await runTestMachine(actor);
@@ -714,7 +711,7 @@ describe("sessionMachine", () => {
 
     it("should stop agents during llm request", async () => {
       const actor = createTestActor({
-        chunkSets: [[...finishChunks]],
+        chunkSets: [finishChunks],
       });
       actor.start();
       await waitFor(actor, (state) =>
@@ -744,7 +741,7 @@ describe("sessionMachine", () => {
           onStart: AGENTS.code.onStart,
           shouldContinue: AGENTS.code.shouldContinue,
         })),
-        chunkSets: [[...chooseChunks], [...finishChunks]],
+        chunkSets: [chooseChunks, finishChunks],
       });
 
       actor.start();
@@ -807,10 +804,10 @@ describe("sessionMachine", () => {
     it("should retry and fail on timeout", async () => {
       const actor = createTestActor({
         chunkSets: [
-          [...readFileChunks],
-          [...readFileChunks],
-          [...readFileChunks],
-          [...finishChunks],
+          readFileChunks,
+          readFileChunks,
+          readFileChunks,
+          finishChunks,
         ],
         initialChunkDelaysMs: [1000, 1000, 1000],
         llmRequestTimeoutMs: 100,
@@ -876,11 +873,7 @@ describe("sessionMachine", () => {
 
       it("should stop agents during execution", async () => {
         const actor = createTestActor({
-          chunkSets: [
-            [...readFileChunks],
-            [...writeFileChunks],
-            [...finishChunks],
-          ],
+          chunkSets: [readFileChunks, writeFileChunks, finishChunks],
         });
         actor.start();
 
@@ -926,10 +919,10 @@ describe("sessionMachine", () => {
     it("should enforce max step count when set to 2", async () => {
       const actor = createTestActor({
         chunkSets: [
-          [...readFileChunks],
-          [...readFileChunks],
-          [...readFileChunks],
-          [...finishChunks],
+          readFileChunks,
+          readFileChunks,
+          readFileChunks,
+          finishChunks,
         ],
         maxStepCount: 2,
       });
