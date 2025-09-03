@@ -392,9 +392,8 @@ export const agentMachine = setup({
       invoke: {
         input: ({ context }) => {
           return {
+            agent: context.agent,
             appConfig: context.appConfig,
-            getMessages: context.agent.getMessages,
-            getTools: () => context.agent.getTools(),
             model: context.model,
             sessionId: context.sessionId,
             stepCount: context.stepCount,

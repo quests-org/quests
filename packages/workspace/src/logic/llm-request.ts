@@ -1,6 +1,6 @@
 import type { LanguageModel, ToolSet } from "ai";
 
-import { envForProviders, providerOptionsForModel } from "@quests/ai-gateway";
+import { providerOptionsForModel } from "@quests/ai-gateway";
 import {
   APICallError,
   InvalidToolInputError,
@@ -9,8 +9,6 @@ import {
   streamText,
 } from "ai";
 import { fromPromise } from "xstate";
-
-import type { AnyAgentTool } from "../tools/types";
 
 import { type AnyAgent } from "../agents/types";
 import { type AppConfig } from "../lib/app-config/types";
@@ -21,12 +19,10 @@ import { type SessionMessage } from "../schemas/session/message";
 import { SessionMessagePart } from "../schemas/session/message-part";
 import { StoreId } from "../schemas/store-id";
 import { ToolNameSchema } from "../tools/name";
-import { getWorkspaceServerURL } from "./server/url";
 
 interface LLMRequestInput {
+  agent: AnyAgent;
   appConfig: AppConfig;
-  getMessages: AnyAgent["getMessages"];
-  getTools: () => Promise<AnyAgentTool[]>;
   model: LanguageModel;
   sessionId: StoreId.Session;
   stepCount: number;
@@ -89,48 +85,31 @@ export const llmRequestLogic = fromPromise<
     return partsResult.isOk() ? partsResult.value : [];
   }
 
-  const env = await envForProviders({
-    captureException: input.appConfig.workspaceConfig.captureException,
-    providers: input.appConfig.workspaceConfig.getAIProviders(),
-    workspaceServerURL: getWorkspaceServerURL(),
-  });
-  const agentMessages = await input.getMessages({
-    appConfig: input.appConfig,
-    envVariableNames: Object.keys(env),
-  });
-  const messageResults = await Store.getMessagesWithParts(
-    {
-      appConfig: input.appConfig,
-      sessionId: input.sessionId,
-    },
-    { signal },
-  );
-  const agentTools = await input.getTools();
+  const agentTools = await input.agent.getTools();
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const tools: ToolSet = Object.fromEntries(
-    agentTools.map((tool) => [tool.name, tool.aiSDKTool()]),
+    agentTools.map((tool) => [tool.name as string, tool.aiSDKTool()]),
   );
+
+  const messagesResult = await prepareModelMessages({
+    agent: input.agent,
+    appConfig: input.appConfig,
+    modelId,
+    providerId,
+    sessionId: input.sessionId,
+    signal,
+  });
+
+  if (messagesResult.isErr()) {
+    throw new Error(
+      `Error preparing model messages: ${JSON.stringify(messagesResult.error)}`,
+    );
+  }
 
   if (signal.aborted) {
     abortMessage();
     return { message: assistantMessage, parts: await getCurrentParts() };
   }
-
-  if (messageResults.isErr()) {
-    throw new Error(
-      `Error loading messages from storage: ${JSON.stringify(
-        messageResults.error,
-      )}`,
-    );
-  }
-
-  const preparedModelMessages = prepareModelMessages({
-    agentMessages,
-    modelId,
-    providerId,
-    sessionMessages: messageResults.value,
-  });
 
   await scopedStore.saveMessage(assistantMessage);
 
@@ -157,7 +136,7 @@ export const llmRequestLogic = fromPromise<
     const result = streamText({
       abortSignal: signal,
       maxRetries: 0, // Handled outside this function
-      messages: preparedModelMessages,
+      messages: messagesResult.value,
       model: input.model,
       onError: () => {
         // These are thrown and handled by the catch block

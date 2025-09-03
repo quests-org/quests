@@ -117,13 +117,20 @@ describe("llmRequestLogic", () => {
         Start: {
           invoke: {
             input: () => ({
+              agent: {
+                agentTools: {},
+                getMessages,
+                getTools: () => Promise.resolve(Object.values(TOOLS)),
+                name: "code",
+                onFinish: () => Promise.resolve(),
+                onStart: () => Promise.resolve(),
+                shouldContinue: () => Promise.resolve(true),
+              },
               appConfig: projectAppConfig,
               captureEvent: () => {
                 // no-op
               },
               emitDeltas: true,
-              getMessages,
-              getTools: () => Promise.resolve(Object.values(TOOLS)),
               model,
               sessionId,
               stepCount: 1,
