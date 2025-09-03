@@ -190,6 +190,7 @@ export const spawnRuntimeLogic = fromCallback<
         scriptOptions: {
           env: {
             ...providerEnv,
+            QUESTS_INSIDE_STUDIO: "true", // Used by apps to detect if they are running inside Studio
             // TODO: remove when Sentry is removed
             APP_BASE_URL: `http://${appConfig.subdomain}.${LOCAL_LOOPBACK_APPS_SERVER_DOMAIN}:${getWorkspaceServerPort()}`,
             NODE_OPTIONS: `--import ${esmImport(shimServerJSPath)}`,
