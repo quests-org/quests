@@ -976,7 +976,7 @@ describe("sessionMachine", () => {
             </tool>
           </assistant>
           <assistant finishReason="max-steps" model="quests-synthetic" provider="system">
-            <text>Maximum unattended steps (2) reached.</text>
+            <text>Agent stopped due to maximum steps (2).</text>
           </assistant>
         </session>"
       `);

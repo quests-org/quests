@@ -141,7 +141,7 @@ export const agentMachine = setup({
                 messageId,
                 sessionId: input.sessionId,
               },
-              text: `Maximum unattended steps (${input.maxStepCount}) reached.`,
+              text: `Agent stopped due to maximum steps (${input.maxStepCount}).`,
               type: "text",
             },
           ],
