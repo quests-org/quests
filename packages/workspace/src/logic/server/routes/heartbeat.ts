@@ -57,7 +57,7 @@ app.get("/heartbeat-stream", (c) => {
 
   return streamSSE(c, async (stream) => {
     let lastResponse: HeartbeatResponse | null = null;
-    const sendStatus = async (
+    const pushResponse = async (
       response: HeartbeatResponse | { errors?: AppError[]; status: AppStatus },
     ) => {
       const normalizedResponse: HeartbeatResponse = {
@@ -105,7 +105,7 @@ app.get("/heartbeat-stream", (c) => {
                     },
                   });
 
-                  await sendStatus({ status: "loading" });
+                  await pushResponse({ status: "loading" });
                   return;
                 } catch (error) {
                   c.var.workspaceConfig.captureException(
@@ -127,7 +127,7 @@ app.get("/heartbeat-stream", (c) => {
               shouldCreate: false,
             },
           });
-          return sendStatus({ status: "loading" });
+          return pushResponse({ status: "loading" });
         }
 
         if (appConfig.type === "preview") {
@@ -136,7 +136,7 @@ app.get("/heartbeat-stream", (c) => {
             workspaceConfig: c.var.workspaceConfig,
           });
           if (!doesAppExist) {
-            return sendStatus({ status: "not-found" });
+            return pushResponse({ status: "not-found" });
           }
           c.var.parentRef.send({
             type: "workspaceServer.heartbeat",
@@ -146,7 +146,7 @@ app.get("/heartbeat-stream", (c) => {
               shouldCreate: true,
             },
           });
-          return sendStatus({ status: "loading" });
+          return pushResponse({ status: "loading" });
         }
 
         if (appConfig.type === "version") {
@@ -158,7 +158,7 @@ app.get("/heartbeat-stream", (c) => {
           );
 
           if (gitRefFolderResult.isErr()) {
-            return sendStatus({ status: "not-found" });
+            return pushResponse({ status: "not-found" });
           }
 
           const gitRef = gitRefFolderResult.value;
@@ -170,7 +170,7 @@ app.get("/heartbeat-stream", (c) => {
 
           const projectExists = await isRunnable(projectConfig.appDir);
           if (!projectExists) {
-            return sendStatus({ status: "not-found" });
+            return pushResponse({ status: "not-found" });
           }
 
           const gitRefResult = await git(
@@ -180,7 +180,7 @@ app.get("/heartbeat-stream", (c) => {
           );
 
           if (gitRefResult.isErr()) {
-            return sendStatus({ status: "not-found" });
+            return pushResponse({ status: "not-found" });
           }
 
           c.var.parentRef.send({
@@ -191,10 +191,10 @@ app.get("/heartbeat-stream", (c) => {
               shouldCreate: true,
             },
           });
-          return sendStatus({ status: "loading" });
+          return pushResponse({ status: "loading" });
         }
 
-        return sendStatus({ status: "not-runnable" });
+        return pushResponse({ status: "not-runnable" });
       }
 
       c.var.parentRef.send({
@@ -210,7 +210,10 @@ app.get("/heartbeat-stream", (c) => {
       const tags = snapshot.tags as Set<AppStatus>;
       const firstTag = tags.values().next().value ?? "unknown";
 
-      return sendStatus({ errors: snapshot.context.errors, status: firstTag });
+      return pushResponse({
+        errors: snapshot.context.errors,
+        status: firstTag,
+      });
     };
 
     while (true) {
@@ -224,7 +227,7 @@ app.get("/heartbeat-stream", (c) => {
             scopes: ["workspace"],
           },
         );
-        await sendStatus({
+        await pushResponse({
           errors: [
             {
               createdAt: Date.now(),
