@@ -43,7 +43,7 @@ export async function RuntimeList({
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <script src="https://cdn.tailwindcss.com"></script>
-        <title>Apps Server</title>
+        <title>Workspace Server</title>
         <script>
           let updateInterval;
           let isLive = true;
@@ -96,7 +96,7 @@ export async function RuntimeList({
           <div
             class="flex items-center justify-between mb-6 border-b border-neutral-700 pb-4"
           >
-            <h1 class="text-3xl font-bold">Apps Server</h1>
+            <h1 class="text-3xl font-bold">Workspace Server</h1>
             ${projectsWithExtra.length > 0
               ? html`<div class="flex items-center gap-3">
                   ${["ready", "loading", "error", "stopped"].map((status) => {
@@ -261,7 +261,7 @@ export async function RuntimeList({
             class="mt-8 pt-4 border-t border-neutral-700 text-xs text-neutral-500 flex flex-wrap justify-between"
           >
             <span>Last updated: ${new Date().toLocaleString()}</span>
-            <span>Apps Server running on port ${getWorkspaceServerPort()}</span>
+            <span>Running on port ${getWorkspaceServerPort()}</span>
             <span class="w-full text-center mt-2"
               >Auto-refreshing every 1s</span
             >

@@ -618,7 +618,7 @@ export const workspaceMachine = setup({
 
     "workspaceServer.error": {
       actions: log(({ event }) => {
-        return `Apps server error: ${event.value.error.message}`;
+        return `Workspace server error: ${event.value.error.message}`;
       }),
     },
 
@@ -711,7 +711,7 @@ export const workspaceMachine = setup({
 
     "workspaceServer.started": {
       actions: log(({ event }) => {
-        return `Apps server started on port ${event.value.port}`;
+        return `Workspace server started on port ${event.value.port}`;
       }),
     },
   },

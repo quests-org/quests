@@ -81,7 +81,7 @@ export const workspaceServerLogic = fromCallback<
     .then((port) => {
       if (port !== DEFAULT_APPS_SERVER_PORT) {
         input.workspaceConfig.captureException(
-          new Error("Apps server port is not the default port"),
+          new Error("Workspace server port is not the default port"),
           {
             apps_server_port: port,
             scopes: ["workspace"],
@@ -98,7 +98,7 @@ export const workspaceServerLogic = fromCallback<
     .catch(() => {
       input.parentRef.send({
         type: "workspaceServer.error",
-        value: { error: new Error("Failed to generate apps server port") },
+        value: { error: new Error("Failed to generate workspace server port") },
       });
     });
 

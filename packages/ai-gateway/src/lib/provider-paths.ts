@@ -11,7 +11,7 @@ export const PROVIDER_PATH: Record<AIGatewayProvider.Type["type"], string> = {
   vercel: "/vercel",
 };
 
-// Full path used by apps server to proxy requests to providers
+// Full path used by workspace server to proxy requests to providers
 export const PROVIDER_API_PATH: Record<AIGatewayProvider.Type["type"], string> =
   {
     anthropic: `${AI_GATEWAY_API_PATH}${PROVIDER_PATH.anthropic}`,
