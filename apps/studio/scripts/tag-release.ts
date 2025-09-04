@@ -7,18 +7,29 @@ import { updatePackage } from "write-package";
 /* eslint-disable no-console */
 async function main() {
   try {
+    const versionType = process.argv[2] as "minor" | "patch" | undefined;
+    const releaseType = versionType || "patch";
+
+    if (versionType && !["minor", "patch"].includes(versionType)) {
+      throw new Error(
+        `Invalid version type: ${versionType}. Must be "patch" or "minor"`,
+      );
+    }
+
     const packageJsonPath = path.join(process.cwd(), "package.json");
 
     const packageJson = await readPackage();
 
     const currentVersion = packageJson.version;
-    const newVersion = semver.inc(currentVersion, "patch");
+    const newVersion = semver.inc(currentVersion, releaseType);
 
     if (!newVersion) {
       throw new Error(`Failed to increment version from ${currentVersion}`);
     }
 
-    console.log(`Updating version from ${currentVersion} to ${newVersion}`);
+    console.log(
+      `Updating ${releaseType} version from ${currentVersion} to ${newVersion}`,
+    );
 
     await updatePackage(packageJsonPath, { version: newVersion });
 

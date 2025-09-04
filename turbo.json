@@ -61,11 +61,6 @@
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "dependsOn": ["@quests/shim-server#build"],
       "outputs": ["dist/**", "out/**"]
-    },
-    "tag-release": {
-      "inputs": ["package.json"],
-      "outputs": [],
-      "cache": false
     }
   }
 }
