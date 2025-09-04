@@ -1,4 +1,4 @@
-import type { LanguageModel, ModelMessage } from "ai";
+import type { LanguageModel } from "ai";
 
 import { z } from "zod";
 
@@ -9,18 +9,19 @@ import { type AppConfig } from "../lib/app-config/types";
 import { type SessionMessage } from "../schemas/session/message";
 import { type StoreId } from "../schemas/store-id";
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const AgentNameSchema = z.enum(["code"]);
+export const AgentNameSchema = z.enum(["code"]);
 
 export interface Agent<T extends AgentTools> {
   agentTools: T;
   getMessages: ({
     appConfig,
     envVariableNames,
+    sessionId,
   }: {
     appConfig: AppConfig;
     envVariableNames: string[];
-  }) => Promise<ModelMessage[]>;
+    sessionId: StoreId.Session;
+  }) => Promise<SessionMessage.ContextWithParts[]>;
   getTools: () => Promise<AnyAgentTool[]>;
   name: AgentName;
   onFinish: (options: {

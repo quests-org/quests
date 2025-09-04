@@ -333,7 +333,7 @@ describe("sessionMachine", () => {
       const session = await runTestMachine(actor);
       expect(sessionToShorthand(session)).toMatchInlineSnapshot(
         `
-        "<session title="Test session" count="4">
+        "<session title="Test session" count="6">
           <user>
             <text>Hello, I need help with something.</text>
           </user>
@@ -381,6 +381,8 @@ describe("sessionMachine", () => {
             <text state="done">I'm done.</text>
             <data-gitCommit ref="rev-parse HEAD executed successfully in /tmp/workspace/projects/pj-test" />
           </assistant>
+          <session-context code realRole="system" />
+          <session-context code realRole="user" />
         </session>"
       `,
       );
@@ -453,7 +455,7 @@ describe("sessionMachine", () => {
         projectAppConfig,
       );
       expect(sessionToShorthand(sessionResult)).toMatchInlineSnapshot(`
-        "<session title="Test session" count="2">
+        "<session title="Test session" count="4">
           <user>
             <text>Hello, I need help with something.</text>
           </user>
@@ -461,6 +463,8 @@ describe("sessionMachine", () => {
             <step-start step="1" />
             <text state="done">First session</text>
           </assistant>
+          <session-context code realRole="system" />
+          <session-context code realRole="user" />
         </session>"
       `);
 
@@ -470,7 +474,7 @@ describe("sessionMachine", () => {
       );
       expect(sessionToShorthand(sessionResult2)).toMatchInlineSnapshot(
         `
-        "<session title="Second session" count="2">
+        "<session title="Second session" count="4">
           <user>
             <text>Second user message</text>
           </user>
@@ -478,6 +482,8 @@ describe("sessionMachine", () => {
             <step-start step="1" />
             <text state="done">Second assistant message</text>
           </assistant>
+          <session-context code realRole="system" />
+          <session-context code realRole="user" />
         </session>"
       `,
       );
@@ -500,7 +506,7 @@ describe("sessionMachine", () => {
 
       const session = await runTestMachine(actor);
       expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
-        "<session title="Test session" count="4">
+        "<session title="Test session" count="6">
           <user>
             <text>Hello, I need help with something.</text>
           </user>
@@ -540,6 +546,8 @@ describe("sessionMachine", () => {
             <step-start step="3" />
             <text state="done">I'm done.</text>
           </assistant>
+          <session-context code realRole="system" />
+          <session-context code realRole="user" />
         </session>"
       `);
     });
@@ -564,7 +572,7 @@ describe("sessionMachine", () => {
 
       const session = await runTestMachine(actor);
       expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
-        "<session title="Test session" count="4">
+        "<session title="Test session" count="6">
           <user>
             <text>Hello, I need help with something.</text>
           </user>
@@ -610,6 +618,8 @@ describe("sessionMachine", () => {
             <step-start step="3" />
             <text state="done">I'm done.</text>
           </assistant>
+          <session-context code realRole="system" />
+          <session-context code realRole="user" />
         </session>"
       `);
     });
@@ -636,7 +646,7 @@ describe("sessionMachine", () => {
       const session = await runTestMachine(actor);
       expect(sessionToShorthand(session)).not.toContain(neverMessage);
       expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
-        "<session title="Test session" count="4">
+        "<session title="Test session" count="6">
           <user>
             <text>Hello, I need help with something.</text>
           </user>
@@ -686,6 +696,8 @@ describe("sessionMachine", () => {
             <step-start step="3" />
             <text state="done">I'm done.</text>
           </assistant>
+          <session-context code realRole="system" />
+          <session-context code realRole="user" />
         </session>"
       `);
     });
@@ -697,7 +709,7 @@ describe("sessionMachine", () => {
 
       const session = await runTestMachine(actor);
       expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
-        "<session title="Test session" count="2">
+        "<session title="Test session" count="4">
           <user>
             <text>Hello, I need help with something.</text>
           </user>
@@ -705,6 +717,8 @@ describe("sessionMachine", () => {
             <step-start step="1" />
             <text state="done">I'm done.</text>
           </assistant>
+          <session-context code realRole="system" />
+          <session-context code realRole="user" />
         </session>"
       `);
     });
@@ -769,7 +783,7 @@ describe("sessionMachine", () => {
 
       const session = await runTestMachine(actor);
       expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
-        "<session title="Test session" count="3">
+        "<session title="Test session" count="5">
           <user>
             <text>Hello, I need help with something.</text>
           </user>
@@ -797,6 +811,8 @@ describe("sessionMachine", () => {
             <step-start step="2" />
             <text state="done">I'm done.</text>
           </assistant>
+          <session-context code realRole="system" />
+          <session-context code realRole="user" />
         </session>"
       `);
     });
@@ -815,7 +831,7 @@ describe("sessionMachine", () => {
 
       const session = await runTestMachine(actor);
       expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
-        "<session title="Test session" count="5">
+        "<session title="Test session" count="7">
           <user>
             <text>Hello, I need help with something.</text>
           </user>
@@ -850,6 +866,8 @@ describe("sessionMachine", () => {
             <step-start step="4" />
             <text state="done">I'm done.</text>
           </assistant>
+          <session-context code realRole="system" />
+          <session-context code realRole="user" />
         </session>"
       `);
     });
@@ -897,7 +915,7 @@ describe("sessionMachine", () => {
 
         const session = await runTestMachine(actor);
         expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
-          "<session title="Test session" count="2">
+          "<session title="Test session" count="4">
             <user>
               <text>Hello, I need help with something.</text>
             </user>
@@ -911,6 +929,8 @@ describe("sessionMachine", () => {
                 </input>
               </tool>
             </assistant>
+            <session-context code realRole="system" />
+            <session-context code realRole="user" />
           </session>"
         `);
       });
@@ -929,7 +949,7 @@ describe("sessionMachine", () => {
 
       const session = await runTestMachine(actor);
       expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
-        "<session title="Test session" count="4">
+        "<session title="Test session" count="6">
           <user>
             <text>Hello, I need help with something.</text>
           </user>
@@ -975,6 +995,8 @@ describe("sessionMachine", () => {
               </output>
             </tool>
           </assistant>
+          <session-context code realRole="system" />
+          <session-context code realRole="user" />
           <assistant finishReason="max-steps" model="quests-synthetic" provider="system">
             <text>Agent stopped due to maximum steps (2).</text>
           </assistant>

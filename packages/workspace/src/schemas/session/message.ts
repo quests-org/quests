@@ -1,6 +1,13 @@
-import { convertToModelMessages, type ModelMessage, type ToolSet } from "ai";
+import { type SyntheticModelId } from "@quests/shared";
+import {
+  convertToModelMessages,
+  type ModelMessage,
+  type ToolSet,
+  type UIMessage,
+} from "ai";
 import { z } from "zod";
 
+import { AgentNameSchema } from "../../agents/types";
 import { StoreId } from "../store-id";
 import { SessionMessagePart } from "./message-part";
 
@@ -60,6 +67,10 @@ export namespace SessionMessage {
     createdAt: z.date(),
     sessionId: StoreId.SessionSchema,
   });
+  const ContextMetadataSchema = BaseMetadataSchema.extend({
+    agentName: AgentNameSchema,
+    realRole: z.enum(["system", "user", "assistant"]),
+  });
   const SystemMetadataSchema = BaseMetadataSchema;
   const UserMetadataSchema = BaseMetadataSchema;
   const AssistantMetadataSchema = BaseMetadataSchema.extend({
@@ -79,7 +90,7 @@ export namespace SessionMessage {
       "max-steps", // stopped because of max steps
     ]),
     isSummary: z.boolean().optional(),
-    modelId: z.custom<"quests-synthetic" | (string & {})>(
+    modelId: z.custom<(string & {}) | SyntheticModelId>(
       // Custom string type to allow for TypeScript auto-completion
       (v) => typeof v === "string",
     ),
@@ -133,6 +144,17 @@ export namespace SessionMessage {
   });
   export type UserWithParts = z.output<typeof UserSchemaWithParts>;
 
+  export const ContextSchema = z.object({
+    id: StoreId.MessageSchema,
+    metadata: ContextMetadataSchema,
+    role: z.literal("session-context"),
+  });
+  export type Context = z.output<typeof ContextSchema>;
+  export const ContextSchemaWithParts = ContextSchema.extend({
+    parts: z.array(SessionMessagePart.CoercedSchema),
+  });
+  export type ContextWithParts = z.output<typeof ContextSchemaWithParts>;
+
   // -----
   // Union
   // -----
@@ -140,12 +162,14 @@ export namespace SessionMessage {
     UserSchema,
     SystemSchema,
     AssistantSchema,
+    ContextSchema,
   ]);
 
   export const WithPartsSchema = z.discriminatedUnion("role", [
     UserSchemaWithParts,
     SystemSchemaWithParts,
     AssistantSchemaWithParts,
+    ContextSchemaWithParts,
   ]);
 
   export type Type = z.output<typeof Schema>;
@@ -158,7 +182,7 @@ export namespace SessionMessage {
     messages: WithParts[],
     tools: ToolSet,
   ): ModelMessage[] {
-    const filteredMessages = messages.map((message) => ({
+    const uiMessages: UIMessage[] = messages.map((message) => ({
       ...message,
       parts: message.parts
         .filter(
@@ -170,7 +194,11 @@ export namespace SessionMessage {
             part.state === "output-error",
         )
         .map(SessionMessagePart.toUIPart),
+      role:
+        message.role === "session-context"
+          ? message.metadata.realRole
+          : message.role,
     }));
-    return convertToModelMessages(filteredMessages, { tools });
+    return convertToModelMessages(uiMessages, { tools });
   }
 }

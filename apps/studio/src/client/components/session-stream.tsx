@@ -14,10 +14,12 @@ import { useAppState } from "../hooks/use-app-state";
 import { rpcClient } from "../rpc/client";
 import { AssistantMessage } from "./assistant-message";
 import { ChatErrorAlert } from "./chat-error-alert";
+import { ContextMessages } from "./context-messages";
 import { DebugWrapper } from "./debug-wrapper";
 import { GitCommitCard } from "./git-commit-card";
 import { MessageError } from "./message-error";
 import { ReasoningMessage } from "./reasoning-message";
+import { ContextMessage } from "./session-context-message";
 import { ToolPart } from "./tool-part";
 import { Alert, AlertDescription } from "./ui/alert";
 import { Button } from "./ui/button";
@@ -42,7 +44,11 @@ export function SessionStream({
   selectedVersion,
   sessionId,
 }: SessionEventListProps) {
-  const { data: messages = [] } = useQuery(
+  const {
+    data: messages = [],
+    error,
+    isLoading,
+  } = useQuery(
     rpcClient.workspace.message.live.listWithParts.experimental_liveOptions({
       input: {
         sessionId,
@@ -115,12 +121,25 @@ export function SessionStream({
           return null;
         }
 
-        if (message.role === "user") {
-          return <UserMessage key={part.metadata.id} part={part} />;
-        } else if (message.role === "assistant") {
-          return <AssistantMessage key={part.metadata.id} part={part} />;
-        } else {
-          return null;
+        switch (message.role) {
+          case "assistant": {
+            return <AssistantMessage key={part.metadata.id} part={part} />;
+          }
+          case "session-context": {
+            return (
+              <ContextMessage
+                key={part.metadata.id}
+                message={message}
+                part={part}
+              />
+            );
+          }
+          case "user": {
+            return <UserMessage key={part.metadata.id} part={part} />;
+          }
+          default: {
+            return null;
+          }
         }
       }
 
@@ -186,18 +205,35 @@ export function SessionStream({
     [gitCommitParts, selectedVersion, app.subdomain, isAnyAgentRunning],
   );
 
-  const chatElements = useMemo(() => {
-    const result: React.ReactNode[] = [];
+  const { contextMessages, regularMessages } = useMemo(() => {
+    const result = {
+      contextMessages: [] as SessionMessage.ContextWithParts[],
+      regularMessages: [] as SessionMessage.WithParts[],
+    };
+
+    for (const message of messages) {
+      if (message.role === "session-context") {
+        result.contextMessages.push(message);
+      } else {
+        result.regularMessages.push(message);
+      }
+    }
+
+    return result;
+  }, [messages]);
+
+  const { chatElements } = useMemo(() => {
+    const newChatElements: React.ReactNode[] = [];
     let lastSummaryEndIndex = 0;
 
-    for (const [messageIndex, message] of messages.entries()) {
+    for (const [messageIndex, message] of regularMessages.entries()) {
       if (message.role === "user" && messageIndex > 0) {
-        const messagesForSummary = messages.slice(
+        const messagesForSummary = regularMessages.slice(
           lastSummaryEndIndex,
           messageIndex,
         );
         if (messagesForSummary.length > 0) {
-          result.push(
+          newChatElements.push(
             <DebugWrapper
               data={messagesForSummary}
               key={`usage-before-${message.id}`}
@@ -226,7 +262,7 @@ export function SessionStream({
       }
 
       if (message.role === "assistant" && message.metadata.error) {
-        const isLastMessage = messageIndex === messages.length - 1;
+        const isLastMessage = messageIndex === regularMessages.length - 1;
         messageElements.push(
           <DebugWrapper
             data={message.metadata.error}
@@ -246,11 +282,13 @@ export function SessionStream({
         );
       }
 
-      result.push(...messageElements);
+      newChatElements.push(...messageElements);
     }
 
-    return result;
-  }, [messages, renderChatPart, isAnyAgentRunning]);
+    return {
+      chatElements: newChatElements,
+    };
+  }, [regularMessages, renderChatPart, isAnyAgentRunning]);
 
   const shouldShowErrorRecoveryPrompt = useMemo(() => {
     if (filterMode !== "chat" || messages.length === 0 || isAnyAgentRunning) {
@@ -319,13 +357,28 @@ export function SessionStream({
 
   return (
     <>
-      {messages.length === 0 && !isActive && (
+      {isLoading && (
+        <div className="flex justify-center py-4">
+          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+        </div>
+      )}
+      {error && (
+        <ChatErrorAlert
+          message={`Failed to load messages: ${error.message || "Unknown error occurred"}`}
+          onStartNewChat={handleNewSession}
+        />
+      )}
+
+      {messages.length === 0 && !isActive && !error && !isLoading && (
         <div className="text-center text-muted-foreground text-xs">
           {filterMode === "versions" ? "No versions yet" : "No messages yet"}
         </div>
       )}
 
       <div className="w-full flex flex-col gap-2">
+        {filterMode === "chat" && contextMessages.length > 0 && (
+          <ContextMessages messages={contextMessages} />
+        )}
         <div className="flex flex-col gap-2">
           {filterMode === "chat" ? chatElements : versionElements}
         </div>

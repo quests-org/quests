@@ -37,6 +37,7 @@
     "@sentry/core": "^9.40.0",
     "@vscode/ripgrep": "^1.15.13",
     "ai": "catalog:",
+    "date-fns": "^4.1.0",
     "db0": "^0.3.1",
     "detect-port": "^2.1.0",
     "dugite": "3.0.0-rc11",

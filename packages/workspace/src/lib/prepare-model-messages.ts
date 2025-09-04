@@ -1,5 +1,6 @@
 import { envForProviders } from "@quests/ai-gateway";
-import { ok } from "neverthrow";
+import { differenceInMinutes } from "date-fns";
+import { ok, Result } from "neverthrow";
 
 import { type AnyAgent } from "../agents/types";
 import { getWorkspaceServerURL } from "../logic/server/url";
@@ -10,6 +11,8 @@ import { addCacheControlToMessages } from "./add-cache-control";
 import { type AppConfig } from "./app-config/types";
 import { normalizeToolCallIds } from "./normalize-tool-call-ids";
 import { Store } from "./store";
+
+const STALE_MESSAGE_THRESHOLD_MINUTES = 60;
 
 export async function prepareModelMessages({
   agent,
@@ -42,20 +45,88 @@ export async function prepareModelMessages({
   }
   const messages = messageResults.value;
 
-  const agentMessages = await agent.getMessages({
-    appConfig,
-    envVariableNames: Object.keys(env),
-  });
+  const existingSessionContextMessages = messages.filter(
+    (message): message is SessionMessage.ContextWithParts =>
+      message.role === "session-context" &&
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      message.metadata.agentName === agent.name,
+  );
 
+  let contextMessages: SessionMessage.ContextWithParts[];
+
+  async function createAndSaveContextMessages() {
+    const newContextMessages = await agent.getMessages({
+      appConfig,
+      envVariableNames: Object.keys(env),
+      sessionId,
+    });
+
+    const saveResults = await Promise.all(
+      newContextMessages.map((message) =>
+        Store.saveMessageWithParts(message, appConfig, { signal }),
+      ),
+    );
+
+    const combinedResult = Result.combine(saveResults);
+    if (combinedResult.isErr()) {
+      return combinedResult;
+    }
+
+    return ok(newContextMessages);
+  }
+
+  if (existingSessionContextMessages.length > 0) {
+    const now = new Date();
+    const hasStaleMessage = existingSessionContextMessages.some(
+      (message) =>
+        differenceInMinutes(now, message.metadata.createdAt) >
+        STALE_MESSAGE_THRESHOLD_MINUTES,
+    );
+
+    if (hasStaleMessage) {
+      for (const existingMessage of existingSessionContextMessages) {
+        const removeResult = await Store.removeMessage(
+          existingMessage.id,
+          existingMessage.metadata.sessionId,
+          appConfig,
+          { signal },
+        );
+
+        if (removeResult.isErr()) {
+          return removeResult;
+        }
+      }
+
+      const createResult = await createAndSaveContextMessages();
+      if (createResult.isErr()) {
+        return createResult;
+      }
+      contextMessages = createResult.value;
+    } else {
+      contextMessages = existingSessionContextMessages;
+    }
+  } else {
+    const createResult = await createAndSaveContextMessages();
+    if (createResult.isErr()) {
+      return createResult;
+    }
+    contextMessages = createResult.value;
+  }
+
+  // Including all tools so they can run their toModelOutput even if they
+  // are not used in this session
   const modelMessages = [
-    ...agentMessages,
-    // Including all tools so they can run their toModelOutput even if they
-    // are not used in this session
+    ...SessionMessage.toModelMessages(contextMessages, ALL_AI_SDK_TOOLS),
     ...SessionMessage.toModelMessages(messages, ALL_AI_SDK_TOOLS),
   ];
 
+  // AI SDK requires system messages to be first for some providers
+  const modelMessagesWithSystemFirst = modelMessages.sort((a, b) =>
+    a.role === "system" ? -1 : b.role === "system" ? 1 : 0,
+  );
+
   const cachedModelMessages = addCacheControlToMessages({
-    messages: modelMessages,
+    messages: modelMessagesWithSystemFirst,
     modelId,
     providerId,
   });

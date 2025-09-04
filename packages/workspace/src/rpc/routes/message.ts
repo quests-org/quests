@@ -129,6 +129,7 @@ const live = {
       yield call(listWithParts, input, { context, signal });
 
       const messageUpdates = publisher.subscribe("message.updated", { signal });
+      const messageRemoved = publisher.subscribe("message.removed", { signal });
       const partUpdates = publisher.subscribe("part.updated", { signal });
 
       async function* filterBySubdomain(generator: typeof messageUpdates) {
@@ -141,6 +142,7 @@ const live = {
 
       for await (const _ of mergeGenerators([
         filterBySubdomain(messageUpdates),
+        filterBySubdomain(messageRemoved),
         filterBySubdomain(partUpdates),
       ])) {
         yield call(listWithParts, input, { context, signal });

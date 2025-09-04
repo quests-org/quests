@@ -8,6 +8,11 @@ import {
 } from "../schemas/subdomains";
 
 export const publisher = new EventPublisher<{
+  "message.removed": {
+    messageId: StoreId.Message;
+    sessionId: StoreId.Session;
+    subdomain: AppSubdomain;
+  };
   "message.updated": {
     messageId: StoreId.Message;
     sessionId: StoreId.Session;

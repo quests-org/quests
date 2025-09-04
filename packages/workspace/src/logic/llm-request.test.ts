@@ -3,13 +3,14 @@ import {
   type LanguageModelV2Prompt,
   type LanguageModelV2StreamPart,
 } from "@ai-sdk/provider";
-import { simulateReadableStream, type SystemModelMessage } from "ai";
+import { simulateReadableStream } from "ai";
 import { MockLanguageModelV2 } from "ai/test";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { type ActorRefFrom, createActor, setup, waitFor } from "xstate";
 
 import { Store } from "../lib/store";
 import { RelativePathSchema } from "../schemas/paths";
+import { type SessionMessage } from "../schemas/session/message";
 import { SessionMessagePart } from "../schemas/session/message-part";
 import { StoreId } from "../schemas/store-id";
 import { ProjectSubdomainSchema } from "../schemas/subdomains";
@@ -37,6 +38,31 @@ describe("llmRequestLogic", () => {
   };
   let prompts: LanguageModelV2Prompt[] = [];
   const mockDate = new Date("2013-08-31T12:00:00.000Z");
+  const mockMessageId = StoreId.newMessageId();
+  const mockMessages: SessionMessage.ContextWithParts[] = [
+    {
+      id: mockMessageId,
+      metadata: {
+        agentName: "code",
+        createdAt: mockDate,
+        realRole: "assistant",
+        sessionId,
+      },
+      parts: [
+        {
+          metadata: {
+            createdAt: mockDate,
+            id: StoreId.newPartId(),
+            messageId: mockMessageId,
+            sessionId,
+          },
+          text: "You are a helpful assistant.",
+          type: "text",
+        },
+      ],
+      role: "session-context",
+    },
+  ];
 
   beforeEach(async () => {
     prompts = [];
@@ -53,18 +79,12 @@ describe("llmRequestLogic", () => {
   function createTestMachine({
     beforeStream,
     chunks,
-    getMessages = () =>
-      Promise.resolve([
-        {
-          content: "You are a helpful assistant.",
-          role: "system",
-        },
-      ]),
+    getMessages = () => Promise.resolve(mockMessages),
     provider = "mock-provider",
   }: {
     beforeStream?: () => Promise<void>;
     chunks: LanguageModelV2StreamPart[];
-    getMessages?: () => Promise<SystemModelMessage[]>;
+    getMessages?: () => Promise<SessionMessage.ContextWithParts[]>;
     provider?: string;
   }) {
     const model = new MockLanguageModelV2({
@@ -180,6 +200,28 @@ describe("llmRequestLogic", () => {
     expect(messages).toMatchInlineSnapshot(`
       [
         {
+          "id": "msg_00000000018888888888888889",
+          "metadata": {
+            "agentName": "code",
+            "createdAt": 2013-08-31T12:00:00.000Z,
+            "realRole": "assistant",
+            "sessionId": "ses_00000000018888888888888888",
+          },
+          "parts": [
+            {
+              "metadata": {
+                "createdAt": 2013-08-31T12:00:00.000Z,
+                "id": "prt_0000000001888888888888888A",
+                "messageId": "msg_00000000018888888888888889",
+                "sessionId": "ses_00000000018888888888888888",
+              },
+              "text": "You are a helpful assistant.",
+              "type": "text",
+            },
+          ],
+          "role": "session-context",
+        },
+        {
           "id": "msg_00000000Z88888888888888888",
           "metadata": {
             "completionTokensPerSecond": 2,
@@ -253,6 +295,28 @@ describe("llmRequestLogic", () => {
     const { messages } = await runTestMachine(machine);
     expect(messages).toMatchInlineSnapshot(`
       [
+        {
+          "id": "msg_00000000018888888888888889",
+          "metadata": {
+            "agentName": "code",
+            "createdAt": 2013-08-31T12:00:00.000Z,
+            "realRole": "assistant",
+            "sessionId": "ses_00000000018888888888888888",
+          },
+          "parts": [
+            {
+              "metadata": {
+                "createdAt": 2013-08-31T12:00:00.000Z,
+                "id": "prt_0000000001888888888888888A",
+                "messageId": "msg_00000000018888888888888889",
+                "sessionId": "ses_00000000018888888888888888",
+              },
+              "text": "You are a helpful assistant.",
+              "type": "text",
+            },
+          ],
+          "role": "session-context",
+        },
         {
           "id": "msg_00000000Z98888888888888888",
           "metadata": {
@@ -331,6 +395,28 @@ describe("llmRequestLogic", () => {
     expect(messages).toMatchInlineSnapshot(`
       [
         {
+          "id": "msg_00000000018888888888888889",
+          "metadata": {
+            "agentName": "code",
+            "createdAt": 2013-08-31T12:00:00.000Z,
+            "realRole": "assistant",
+            "sessionId": "ses_00000000018888888888888888",
+          },
+          "parts": [
+            {
+              "metadata": {
+                "createdAt": 2013-08-31T12:00:00.000Z,
+                "id": "prt_0000000001888888888888888A",
+                "messageId": "msg_00000000018888888888888889",
+                "sessionId": "ses_00000000018888888888888888",
+              },
+              "text": "You are a helpful assistant.",
+              "type": "text",
+            },
+          ],
+          "role": "session-context",
+        },
+        {
           "id": "msg_00000000ZA8888888888888888",
           "metadata": {
             "completionTokensPerSecond": 2,
@@ -408,6 +494,28 @@ describe("llmRequestLogic", () => {
     const { messages } = await runTestMachine(machine);
     expect(messages).toMatchInlineSnapshot(`
       [
+        {
+          "id": "msg_00000000018888888888888889",
+          "metadata": {
+            "agentName": "code",
+            "createdAt": 2013-08-31T12:00:00.000Z,
+            "realRole": "assistant",
+            "sessionId": "ses_00000000018888888888888888",
+          },
+          "parts": [
+            {
+              "metadata": {
+                "createdAt": 2013-08-31T12:00:00.000Z,
+                "id": "prt_0000000001888888888888888A",
+                "messageId": "msg_00000000018888888888888889",
+                "sessionId": "ses_00000000018888888888888888",
+              },
+              "text": "You are a helpful assistant.",
+              "type": "text",
+            },
+          ],
+          "role": "session-context",
+        },
         {
           "id": "msg_00000000ZB8888888888888888",
           "metadata": {
@@ -490,6 +598,28 @@ describe("llmRequestLogic", () => {
     const { messages } = await runTestMachine(machine);
     expect(messages).toMatchInlineSnapshot(`
       [
+        {
+          "id": "msg_00000000018888888888888889",
+          "metadata": {
+            "agentName": "code",
+            "createdAt": 2013-08-31T12:00:00.000Z,
+            "realRole": "assistant",
+            "sessionId": "ses_00000000018888888888888888",
+          },
+          "parts": [
+            {
+              "metadata": {
+                "createdAt": 2013-08-31T12:00:00.000Z,
+                "id": "prt_0000000001888888888888888A",
+                "messageId": "msg_00000000018888888888888889",
+                "sessionId": "ses_00000000018888888888888888",
+              },
+              "text": "You are a helpful assistant.",
+              "type": "text",
+            },
+          ],
+          "role": "session-context",
+        },
         {
           "id": "msg_00000000ZC8888888888888888",
           "metadata": {
@@ -576,6 +706,28 @@ describe("llmRequestLogic", () => {
     expect(messages).toMatchInlineSnapshot(`
       [
         {
+          "id": "msg_00000000018888888888888889",
+          "metadata": {
+            "agentName": "code",
+            "createdAt": 2013-08-31T12:00:00.000Z,
+            "realRole": "assistant",
+            "sessionId": "ses_00000000018888888888888888",
+          },
+          "parts": [
+            {
+              "metadata": {
+                "createdAt": 2013-08-31T12:00:00.000Z,
+                "id": "prt_0000000001888888888888888A",
+                "messageId": "msg_00000000018888888888888889",
+                "sessionId": "ses_00000000018888888888888888",
+              },
+              "text": "You are a helpful assistant.",
+              "type": "text",
+            },
+          ],
+          "role": "session-context",
+        },
+        {
           "id": "msg_00000000ZD8888888888888888",
           "metadata": {
             "completionTokensPerSecond": 2,
@@ -644,6 +796,28 @@ describe("llmRequestLogic", () => {
     const { messages } = await runTestMachine(machine);
     expect(messages).toMatchInlineSnapshot(`
       [
+        {
+          "id": "msg_00000000018888888888888889",
+          "metadata": {
+            "agentName": "code",
+            "createdAt": 2013-08-31T12:00:00.000Z,
+            "realRole": "assistant",
+            "sessionId": "ses_00000000018888888888888888",
+          },
+          "parts": [
+            {
+              "metadata": {
+                "createdAt": 2013-08-31T12:00:00.000Z,
+                "id": "prt_0000000001888888888888888A",
+                "messageId": "msg_00000000018888888888888889",
+                "sessionId": "ses_00000000018888888888888888",
+              },
+              "text": "You are a helpful assistant.",
+              "type": "text",
+            },
+          ],
+          "role": "session-context",
+        },
         {
           "id": "msg_00000000ZE8888888888888888",
           "metadata": {
@@ -725,6 +899,28 @@ describe("llmRequestLogic", () => {
     expect(messages).toMatchInlineSnapshot(`
       [
         {
+          "id": "msg_00000000018888888888888889",
+          "metadata": {
+            "agentName": "code",
+            "createdAt": 2013-08-31T12:00:00.000Z,
+            "realRole": "assistant",
+            "sessionId": "ses_00000000018888888888888888",
+          },
+          "parts": [
+            {
+              "metadata": {
+                "createdAt": 2013-08-31T12:00:00.000Z,
+                "id": "prt_0000000001888888888888888A",
+                "messageId": "msg_00000000018888888888888889",
+                "sessionId": "ses_00000000018888888888888888",
+              },
+              "text": "You are a helpful assistant.",
+              "type": "text",
+            },
+          ],
+          "role": "session-context",
+        },
+        {
           "id": "msg_00000000ZF8888888888888888",
           "metadata": {
             "completionTokensPerSecond": 2.5,
@@ -794,6 +990,28 @@ describe("llmRequestLogic", () => {
     const { messages } = await runTestMachine(machine);
     expect(messages).toMatchInlineSnapshot(`
       [
+        {
+          "id": "msg_00000000018888888888888889",
+          "metadata": {
+            "agentName": "code",
+            "createdAt": 2013-08-31T12:00:00.000Z,
+            "realRole": "assistant",
+            "sessionId": "ses_00000000018888888888888888",
+          },
+          "parts": [
+            {
+              "metadata": {
+                "createdAt": 2013-08-31T12:00:00.000Z,
+                "id": "prt_0000000001888888888888888A",
+                "messageId": "msg_00000000018888888888888889",
+                "sessionId": "ses_00000000018888888888888888",
+              },
+              "text": "You are a helpful assistant.",
+              "type": "text",
+            },
+          ],
+          "role": "session-context",
+        },
         {
           "id": "msg_00000000ZG8888888888888888",
           "metadata": {
@@ -870,6 +1088,28 @@ describe("llmRequestLogic", () => {
     expect(messages).toMatchInlineSnapshot(`
       [
         {
+          "id": "msg_00000000018888888888888889",
+          "metadata": {
+            "agentName": "code",
+            "createdAt": 2013-08-31T12:00:00.000Z,
+            "realRole": "assistant",
+            "sessionId": "ses_00000000018888888888888888",
+          },
+          "parts": [
+            {
+              "metadata": {
+                "createdAt": 2013-08-31T12:00:00.000Z,
+                "id": "prt_0000000001888888888888888A",
+                "messageId": "msg_00000000018888888888888889",
+                "sessionId": "ses_00000000018888888888888888",
+              },
+              "text": "You are a helpful assistant.",
+              "type": "text",
+            },
+          ],
+          "role": "session-context",
+        },
+        {
           "id": "msg_00000000ZH8888888888888888",
           "metadata": {
             "completionTokensPerSecond": 2,
@@ -939,6 +1179,28 @@ describe("llmRequestLogic", () => {
     const { messages } = await runTestMachine(machine);
     expect(messages).toMatchInlineSnapshot(`
       [
+        {
+          "id": "msg_00000000018888888888888889",
+          "metadata": {
+            "agentName": "code",
+            "createdAt": 2013-08-31T12:00:00.000Z,
+            "realRole": "assistant",
+            "sessionId": "ses_00000000018888888888888888",
+          },
+          "parts": [
+            {
+              "metadata": {
+                "createdAt": 2013-08-31T12:00:00.000Z,
+                "id": "prt_0000000001888888888888888A",
+                "messageId": "msg_00000000018888888888888889",
+                "sessionId": "ses_00000000018888888888888888",
+              },
+              "text": "You are a helpful assistant.",
+              "type": "text",
+            },
+          ],
+          "role": "session-context",
+        },
         {
           "id": "msg_00000000ZJ8888888888888888",
           "metadata": {
@@ -1017,6 +1279,28 @@ describe("llmRequestLogic", () => {
       expect(messages).toMatchInlineSnapshot(`
         [
           {
+            "id": "msg_00000000018888888888888889",
+            "metadata": {
+              "agentName": "code",
+              "createdAt": 2013-08-31T12:00:00.000Z,
+              "realRole": "assistant",
+              "sessionId": "ses_00000000018888888888888888",
+            },
+            "parts": [
+              {
+                "metadata": {
+                  "createdAt": 2013-08-31T12:00:00.000Z,
+                  "id": "prt_0000000001888888888888888A",
+                  "messageId": "msg_00000000018888888888888889",
+                  "sessionId": "ses_00000000018888888888888888",
+                },
+                "text": "You are a helpful assistant.",
+                "type": "text",
+              },
+            ],
+            "role": "session-context",
+          },
+          {
             "id": "msg_00000000ZK8888888888888888",
             "metadata": {
               "createdAt": 2013-08-31T12:00:00.000Z,
@@ -1073,6 +1357,28 @@ describe("llmRequestLogic", () => {
       expect(messages).toMatchInlineSnapshot(`
         [
           {
+            "id": "msg_00000000018888888888888889",
+            "metadata": {
+              "agentName": "code",
+              "createdAt": 2013-08-31T12:00:00.000Z,
+              "realRole": "assistant",
+              "sessionId": "ses_00000000018888888888888888",
+            },
+            "parts": [
+              {
+                "metadata": {
+                  "createdAt": 2013-08-31T12:00:00.000Z,
+                  "id": "prt_0000000001888888888888888A",
+                  "messageId": "msg_00000000018888888888888889",
+                  "sessionId": "ses_00000000018888888888888888",
+                },
+                "text": "You are a helpful assistant.",
+                "type": "text",
+              },
+            ],
+            "role": "session-context",
+          },
+          {
             "id": "msg_00000000ZM8888888888888888",
             "metadata": {
               "createdAt": 2013-08-31T12:00:00.000Z,
@@ -1114,6 +1420,28 @@ describe("llmRequestLogic", () => {
       const { messages } = await runTestMachine(machine);
       expect(messages).toMatchInlineSnapshot(`
         [
+          {
+            "id": "msg_00000000018888888888888889",
+            "metadata": {
+              "agentName": "code",
+              "createdAt": 2013-08-31T12:00:00.000Z,
+              "realRole": "assistant",
+              "sessionId": "ses_00000000018888888888888888",
+            },
+            "parts": [
+              {
+                "metadata": {
+                  "createdAt": 2013-08-31T12:00:00.000Z,
+                  "id": "prt_0000000001888888888888888A",
+                  "messageId": "msg_00000000018888888888888889",
+                  "sessionId": "ses_00000000018888888888888888",
+                },
+                "text": "You are a helpful assistant.",
+                "type": "text",
+              },
+            ],
+            "role": "session-context",
+          },
           {
             "id": "msg_00000000ZN8888888888888888",
             "metadata": {
@@ -1225,13 +1553,6 @@ describe("llmRequestLogic", () => {
     it("handles user and assistant messages", async () => {
       const machine = createTestMachine({
         chunks: [],
-        getMessages: () =>
-          Promise.resolve([
-            {
-              content: "You are a helpful assistant.",
-              role: "system",
-            },
-          ]),
       });
       const actor = createActor(machine);
       actor.start();
@@ -1240,9 +1561,15 @@ describe("llmRequestLogic", () => {
         [
           [
             {
-              "content": "You are a helpful assistant.",
+              "content": [
+                {
+                  "providerOptions": undefined,
+                  "text": "You are a helpful assistant.",
+                  "type": "text",
+                },
+              ],
               "providerOptions": undefined,
-              "role": "system",
+              "role": "assistant",
             },
             {
               "content": [
@@ -1268,22 +1595,21 @@ describe("llmRequestLogic", () => {
 
       const machine = createTestMachine({
         chunks: [],
-        getMessages: () =>
-          Promise.resolve([
-            {
-              content: "You are a helpful assistant.",
-              role: "system",
-            },
-          ]),
       });
       await runTestMachine(machine);
       expect(prompts).toMatchInlineSnapshot(`
         [
           [
             {
-              "content": "You are a helpful assistant.",
+              "content": [
+                {
+                  "providerOptions": undefined,
+                  "text": "You are a helpful assistant.",
+                  "type": "text",
+                },
+              ],
               "providerOptions": undefined,
-              "role": "system",
+              "role": "assistant",
             },
             {
               "content": [
@@ -1365,22 +1691,21 @@ describe("llmRequestLogic", () => {
 
       const machine = createTestMachine({
         chunks: [],
-        getMessages: () =>
-          Promise.resolve([
-            {
-              content: "You are a helpful assistant.",
-              role: "system",
-            },
-          ]),
       });
       await runTestMachine(machine);
       expect(prompts).toMatchInlineSnapshot(`
         [
           [
             {
-              "content": "You are a helpful assistant.",
+              "content": [
+                {
+                  "providerOptions": undefined,
+                  "text": "You are a helpful assistant.",
+                  "type": "text",
+                },
+              ],
               "providerOptions": undefined,
-              "role": "system",
+              "role": "assistant",
             },
             {
               "content": [
@@ -1478,22 +1803,21 @@ describe("llmRequestLogic", () => {
 
       const machine = createTestMachine({
         chunks: [],
-        getMessages: () =>
-          Promise.resolve([
-            {
-              content: "You are a helpful assistant.",
-              role: "system",
-            },
-          ]),
       });
       await runTestMachine(machine);
       expect(prompts).toMatchInlineSnapshot(`
         [
           [
             {
-              "content": "You are a helpful assistant.",
+              "content": [
+                {
+                  "providerOptions": undefined,
+                  "text": "You are a helpful assistant.",
+                  "type": "text",
+                },
+              ],
               "providerOptions": undefined,
-              "role": "system",
+              "role": "assistant",
             },
             {
               "content": [
@@ -1597,13 +1921,6 @@ describe("llmRequestLogic", () => {
 
       const machine = createTestMachine({
         chunks: [],
-        getMessages: () =>
-          Promise.resolve([
-            {
-              content: "You are a helpful assistant.",
-              role: "system",
-            },
-          ]),
         provider: "anthropic",
       });
       await runTestMachine(machine);
@@ -1620,30 +1937,15 @@ describe("llmRequestLogic", () => {
         [
           [
             {
-              "content": "You are a helpful assistant.",
-              "providerOptions": {
-                "anthropic": {
-                  "cacheControl": {
-                    "type": "ephemeral",
-                  },
+              "content": [
+                {
+                  "providerOptions": undefined,
+                  "text": "You are a helpful assistant.",
+                  "type": "text",
                 },
-                "bedrock": {
-                  "cachePoint": {
-                    "type": "ephemeral",
-                  },
-                },
-                "openaiCompatible": {
-                  "cache_control": {
-                    "type": "ephemeral",
-                  },
-                },
-                "openrouter": {
-                  "cache_control": {
-                    "type": "ephemeral",
-                  },
-                },
-              },
-              "role": "system",
+              ],
+              "providerOptions": undefined,
+              "role": "assistant",
             },
             {
               "content": [
@@ -1721,6 +2023,164 @@ describe("llmRequestLogic", () => {
               "role": "assistant",
             },
           ],
+        ]
+      `);
+    });
+
+    it("replaces stale agent messages", async () => {
+      const staleDate = new Date("2013-08-31T10:00:00.000Z");
+      const staleMessageId = StoreId.newMessageId();
+      const oldText = "You are an old assistant that should be replaced.";
+
+      await Store.saveMessageWithParts(
+        {
+          id: staleMessageId,
+          metadata: {
+            agentName: "code",
+            createdAt: staleDate,
+            realRole: "system",
+            sessionId,
+          },
+          parts: [
+            {
+              metadata: {
+                createdAt: staleDate,
+                id: StoreId.newPartId(),
+                messageId: staleMessageId,
+                sessionId,
+              },
+              text: oldText,
+              type: "text",
+            },
+          ],
+          role: "session-context",
+        },
+        projectAppConfig,
+      );
+
+      const machine = createTestMachine({
+        chunks: [
+          { id: "1", type: "text-start" },
+          { delta: "Response text", id: "1", type: "text-delta" },
+          { id: "1", type: "text-end" },
+        ],
+      });
+
+      const { messages } = await runTestMachine(machine);
+      expect(
+        JSON.stringify(messages),
+        "Old message should be replaced",
+      ).not.toContain(oldText);
+      expect(messages).toMatchInlineSnapshot(`
+        [
+          {
+            "id": "msg_00000000018888888888888889",
+            "metadata": {
+              "agentName": "code",
+              "createdAt": 2013-08-31T12:00:00.000Z,
+              "realRole": "assistant",
+              "sessionId": "ses_00000000018888888888888888",
+            },
+            "parts": [
+              {
+                "metadata": {
+                  "createdAt": 2013-08-31T12:00:00.000Z,
+                  "id": "prt_0000000001888888888888888A",
+                  "messageId": "msg_00000000018888888888888889",
+                  "sessionId": "ses_00000000018888888888888888",
+                },
+                "text": "You are a helpful assistant.",
+                "type": "text",
+              },
+            ],
+            "role": "session-context",
+          },
+          {
+            "id": "msg_0000000001888888888888888B",
+            "metadata": {
+              "createdAt": 2013-08-31T12:00:00.000Z,
+              "sessionId": "ses_00000000018888888888888888",
+            },
+            "parts": [
+              {
+                "metadata": {
+                  "createdAt": 2013-08-31T12:00:00.000Z,
+                  "id": "prt_00000000ZS8888888888888888",
+                  "messageId": "msg_0000000001888888888888888B",
+                  "sessionId": "ses_00000000018888888888888888",
+                },
+                "state": "done",
+                "text": "Do something",
+                "type": "text",
+              },
+            ],
+            "role": "user",
+          },
+          {
+            "id": "msg_0000000001888888888888888C",
+            "metadata": {
+              "createdAt": 2013-08-31T12:00:00.000Z,
+              "finishReason": "stop",
+              "modelId": "mock-model-id",
+              "providerId": "mock-provider",
+              "sessionId": "ses_00000000018888888888888888",
+              "usage": {
+                "cachedInputTokens": 1,
+                "inputTokens": 2,
+                "outputTokens": 3,
+                "reasoningTokens": 4,
+                "totalTokens": 9,
+              },
+            },
+            "parts": [],
+            "role": "assistant",
+          },
+          {
+            "id": "msg_00000000ZS888888888888888B",
+            "metadata": {
+              "completionTokensPerSecond": 2,
+              "createdAt": 2013-08-31T12:00:00.000Z,
+              "finishReason": "stop",
+              "finishedAt": 2013-08-31T12:00:07.000Z,
+              "modelId": "mock-model-id",
+              "msToFinish": 5000,
+              "msToFirstChunk": 2000,
+              "providerId": "mock-provider",
+              "sessionId": "ses_00000000018888888888888888",
+              "usage": {
+                "cachedInputTokens": 0,
+                "inputTokens": 3,
+                "outputTokens": 10,
+                "reasoningTokens": 0,
+                "totalTokens": 13,
+              },
+            },
+            "parts": [
+              {
+                "metadata": {
+                  "createdAt": 2013-08-31T12:00:02.000Z,
+                  "id": "prt_00000000ZS888888888888888C",
+                  "messageId": "msg_00000000ZS888888888888888B",
+                  "sessionId": "ses_00000000018888888888888888",
+                  "stepCount": 1,
+                },
+                "type": "step-start",
+              },
+              {
+                "metadata": {
+                  "createdAt": 2013-08-31T12:00:04.000Z,
+                  "endedAt": 2013-08-31T12:00:05.000Z,
+                  "id": "prt_00000000ZS888888888888888D",
+                  "messageId": "msg_00000000ZS888888888888888B",
+                  "sessionId": "ses_00000000018888888888888888",
+                },
+                "state": "done",
+                "text": "Response text",
+                "type": "text",
+              },
+            ],
+            "role": "assistant",
+          },
         ]
       `);
     });

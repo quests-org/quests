@@ -116,6 +116,9 @@ function messageToShorthand(message: SessionMessage.WithParts): string {
         ? `<assistant${finishReason}${tokens}${modelId}${provider}>\n${indent(parts.join("\n"))}\n</assistant>`
         : `<assistant${finishReason}${tokens}${modelId}${provider} />`;
     }
+    case "session-context": {
+      return `<session-context ${message.metadata.agentName} realRole="${message.metadata.realRole}" />`;
+    }
     case "system": {
       return parts.length > 0
         ? `<system>\n${indent(parts.join("\n"))}\n</system>`

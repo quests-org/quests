@@ -247,6 +247,36 @@ export namespace Store {
     });
   }
 
+  export function removeMessage(
+    messageId: StoreId.Message,
+    sessionId: StoreId.Session,
+    appConfig: AppConfig,
+    { signal }: { signal?: AbortSignal } = {},
+  ) {
+    return safeTry(async function* () {
+      const storage = yield* getSessionsStoreStorage(appConfig);
+
+      const partIds = yield* getPartIds(sessionId, messageId, appConfig, {
+        signal,
+      });
+      for (const partId of partIds) {
+        await storage.removeItem(
+          StorageKey.part(sessionId, messageId, partId),
+          { signal },
+        );
+      }
+      await storage.removeItem(StorageKey.message(sessionId, messageId), {
+        signal,
+      });
+      publisher.publish("message.removed", {
+        messageId,
+        sessionId,
+        subdomain: appConfig.subdomain,
+      });
+      return ok(undefined);
+    });
+  }
+
   export function removeSession(
     sessionId: StoreId.Session,
     appConfig: AppConfig,
