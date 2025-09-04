@@ -1,16 +1,17 @@
 import { rgPath } from "@vscode/ripgrep";
 import { spawn } from "node:child_process";
 import fs from "node:fs/promises";
+import path from "node:path";
 
 import { type AbsolutePath } from "../schemas/paths";
 import { absolutePathJoin } from "./absolute-path-join";
 import { fileExists } from "./file-exists";
 
-// If @vscode/ripgrep is in an .asar file, then the binary is unpacked.
-// via https://github.com/microsoft/vscode/blob/8a872a495016409403717ac25e7d666492edb7f2/src/vs/workbench/services/search/node/ripgrepFileSearch.ts#L18
+// Fix the path to the ripgrep binary if it's in an .asar file
+// via https://github.com/desktop/dugite/blob/0a316c7028f073ad05cea17fe219324e7ef13967/lib/git-environment.ts#L24
 const RG_DISK_PATH = rgPath.replace(
-  /\/app\.asar\/node_modules/,
-  "/app.asar.unpacked/node_modules",
+  /[\\/]app.asar[\\/]/,
+  `${path.sep}app.asar.unpacked${path.sep}`,
 );
 
 interface GrepMatch {
