@@ -55,6 +55,10 @@ export function ProjectSidebar({
     subdomain: project.subdomain,
   });
 
+  useEffect(() => {
+    setSelectedModelURI(initialSelectedModelURI);
+  }, [initialSelectedModelURI]);
+
   const sessionActors = appState?.sessionActors ?? [];
   const isAgentAlive = sessionActors.some((session) =>
     session.tags.includes("agent.alive"),
