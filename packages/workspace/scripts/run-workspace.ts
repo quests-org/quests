@@ -190,6 +190,7 @@ const actor = createActor(workspaceMachine, {
             return;
           }
           if (
+            event.event.type === "agent.usingTool" ||
             event.event.type === "workspaceServer.heartbeat" ||
             event.event.type === "updateHeartbeat"
           ) {
