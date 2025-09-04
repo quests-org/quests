@@ -19,6 +19,7 @@
     "build:dev": "electron-vite build --mode development --sourcemap",
     "build:linux": "electron-vite build && electron-builder --linux",
     "build:mac": "electron-builder install-app-deps && pnpm run build && electron-builder --mac",
+    "build:mac:dev": "pnpm run build:dev && electron-builder --mac",
     "build:mac:local": "op run --no-masking --env-file=./.env.build --env-file=./.env.production -- pnpm run build:mac",
     "build:unpack": "npm run build && electron-builder --dir",
     "build:windows": "npm run build && electron-builder --win",
