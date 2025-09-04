@@ -1,6 +1,7 @@
 import { envForProviders } from "@quests/ai-gateway";
 import { differenceInMinutes } from "date-fns";
 import { ok, Result } from "neverthrow";
+import { alphabetical } from "radashi";
 
 import { type AnyAgent } from "../agents/types";
 import { getWorkspaceServerURL } from "../logic/server/url";
@@ -45,11 +46,22 @@ export async function prepareModelMessages({
   }
   const messages = messageResults.value;
 
-  const existingSessionContextMessages = messages.filter(
-    (message): message is SessionMessage.ContextWithParts =>
+  function isSessionContextMessage(
+    message: SessionMessage.WithParts,
+  ): message is SessionMessage.ContextWithParts {
+    return (
       message.role === "session-context" &&
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      message.metadata.agentName === agent.name,
+      message.metadata.agentName === agent.name
+    );
+  }
+
+  const existingSessionContextMessages = messages.filter(
+    isSessionContextMessage,
+  );
+
+  const nonContextMessages = messages.filter(
+    (message) => !isSessionContextMessage(message),
   );
 
   let contextMessages: SessionMessage.ContextWithParts[];
@@ -113,12 +125,18 @@ export async function prepareModelMessages({
     contextMessages = createResult.value;
   }
 
-  // Including all tools so they can run their toModelOutput even if they
-  // are not used in this session
-  const modelMessages = [
-    ...SessionMessage.toModelMessages(contextMessages, ALL_AI_SDK_TOOLS),
-    ...SessionMessage.toModelMessages(messages, ALL_AI_SDK_TOOLS),
+  const orderedMessages = [
+    // ulid sorts oldest to newest
+    ...alphabetical(contextMessages, (message) => message.id),
+    ...alphabetical(nonContextMessages, (message) => message.id),
   ];
+
+  // Including all tools so they can run their toModelOutput even if they are
+  // not used in this session
+  const modelMessages = SessionMessage.toModelMessages(
+    orderedMessages,
+    ALL_AI_SDK_TOOLS,
+  );
 
   // AI SDK requires system messages to be first for some providers
   const modelMessagesWithSystemFirst = modelMessages.sort((a, b) =>
