@@ -6,6 +6,13 @@ import { type AbsolutePath } from "../schemas/paths";
 import { absolutePathJoin } from "./absolute-path-join";
 import { fileExists } from "./file-exists";
 
+// If @vscode/ripgrep is in an .asar file, then the binary is unpacked.
+// via https://github.com/microsoft/vscode/blob/8a872a495016409403717ac25e7d666492edb7f2/src/vs/workbench/services/search/node/ripgrepFileSearch.ts#L18
+const RG_DISK_PATH = rgPath.replace(
+  /\/app\.asar\/node_modules/,
+  "/app.asar.unpacked/node_modules",
+);
+
 interface GrepMatch {
   lineNum: number;
   lineText: string;
@@ -55,7 +62,7 @@ export async function grep(
     // Add the search pattern
     args.push(pattern, options.searchPath || "./");
 
-    const ripgrep = spawn(rgPath, args, {
+    const ripgrep = spawn(RG_DISK_PATH, args, {
       cwd: rootDir,
       signal: options.signal,
     });
