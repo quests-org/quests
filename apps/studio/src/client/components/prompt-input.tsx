@@ -152,15 +152,17 @@ export function PromptInput({
 
         <div className="flex items-center gap-2 justify-end pt-2">
           {onModelChange && (
-            <ModelPicker
-              disabled={disabled}
-              errors={modelsErrors}
-              isError={modelsIsError}
-              isLoading={modelsIsLoading}
-              models={models}
-              onValueChange={onModelChange}
-              value={modelURI}
-            />
+            <div className="flex-1 min-w-0">
+              <ModelPicker
+                disabled={disabled}
+                errors={modelsErrors}
+                isError={modelsIsError}
+                isLoading={modelsIsLoading}
+                models={models}
+                onValueChange={onModelChange}
+                value={modelURI}
+              />
+            </div>
           )}
 
           <Button

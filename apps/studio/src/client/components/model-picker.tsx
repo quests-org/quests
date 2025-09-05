@@ -13,19 +13,16 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/client/components/ui/popover";
+import { getProviderMetadata } from "@/client/lib/provider-metadata";
 import { cn } from "@/client/lib/utils";
 import { type AIGatewayModel } from "@quests/ai-gateway";
-import {
-  AlertCircle,
-  Check,
-  ChevronsUpDown,
-  CircleOff,
-  Plus,
-} from "lucide-react";
+import { AlertCircle, Check, ChevronDown, CircleOff, Plus } from "lucide-react";
 import { fork } from "radashi";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { vanillaRpcClient } from "../rpc/client";
+import { AIProviderIcon } from "./ai-provider-icon";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 interface ModelPickerProps {
   className?: string;
@@ -34,8 +31,6 @@ interface ModelPickerProps {
   isError?: boolean;
   isLoading?: boolean;
   models?: AIGatewayModel.Type[];
-  onBlur?: () => void;
-  onFocus?: () => void;
   onValueChange: (value: AIGatewayModel.URI) => void;
   placeholder?: string;
   value?: AIGatewayModel.URI;
@@ -83,8 +78,6 @@ export function ModelPicker({
   isError = false,
   isLoading = false,
   models,
-  onBlur,
-  onFocus,
   onValueChange,
   placeholder = "Select a model",
   value,
@@ -92,6 +85,14 @@ export function ModelPicker({
   const [open, setOpen] = useState(false);
 
   const selectedModel = models?.find((model) => model.uri === value);
+
+  const groupedModels = useMemo(
+    () =>
+      models
+        ? groupAndFilterModels(models)
+        : ({} as ReturnType<typeof groupAndFilterModels>),
+    [models],
+  );
 
   const isSelectDisabled = disabled || isLoading || isError;
 
@@ -114,18 +115,23 @@ export function ModelPicker({
     }
 
     return (
-      <div className="flex items-center justify-between w-full">
-        <span className="truncate">{selectedModel.canonicalId}</span>
-        <div className="flex items-center gap-1 ml-2 shrink-0">
-          {selectedModel.tags.includes("legacy") && (
-            <Badge className="text-xs px-1 py-0" variant="outline">
-              legacy
-            </Badge>
-          )}
-          <span className="text-muted-foreground text-xs">
-            {selectedModel.params.provider}
-          </span>
-        </div>
+      <div className="flex items-center gap-1.5 min-w-0">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="shrink-0">
+              <AIProviderIcon
+                className="size-3 opacity-90"
+                type={selectedModel.params.provider}
+              />
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{getProviderMetadata(selectedModel.params.provider).name}</p>
+          </TooltipContent>
+        </Tooltip>
+        <span className="truncate text-xs min-w-0 flex-1">
+          {selectedModel.canonicalId}
+        </span>
       </div>
     );
   };
@@ -169,14 +175,12 @@ export function ModelPicker({
     return (
       <Button
         disabled={disabled}
-        onBlur={onBlur}
         onClick={() => {
           void vanillaRpcClient.preferences.openSettingsWindow({
             showNewProviderDialog: true,
             tab: "Providers",
           });
         }}
-        onFocus={onFocus}
         size="sm"
         variant="outline"
       >
@@ -190,26 +194,27 @@ export function ModelPicker({
       <PopoverTrigger asChild>
         <Button
           aria-expanded={open}
-          className={cn(!selectedModel && "text-muted-foreground", className)}
+          className={cn(
+            "flex items-center justify-between text-left h-auto px-2 py-1",
+            !selectedModel && "text-muted-foreground",
+            "max-w-full",
+            className,
+          )}
           disabled={isSelectDisabled}
-          onBlur={() => {
-            if (!open) {
-              onBlur?.();
-            }
-          }}
-          onFocus={onFocus}
           role="combobox"
           size="sm"
-          variant="outline"
+          variant="ghost"
         >
-          {getModelDisplayValue()}
-          <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
+          <div className="flex items-center w-full min-w-0">
+            {getModelDisplayValue()}
+          </div>
+          <ChevronDown className="size-4 shrink-0 opacity-70" />
         </Button>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-80 p-0">
         <Command>
           <CommandInput className="h-9" placeholder="Search models..." />
-          <CommandList>
+          <CommandList className="max-h-82">
             <CommandEmpty>
               <div className="flex flex-col items-center gap-3 py-6">
                 <p className="text-sm text-muted-foreground">No models found</p>
@@ -258,7 +263,7 @@ export function ModelPicker({
             )}
             {models &&
               models.length > 0 &&
-              Object.entries(groupAndFilterModels(models)).map(
+              Object.entries(groupedModels).map(
                 ([groupName, modelGroup]) =>
                   modelGroup.length > 0 && (
                     <CommandGroup heading={groupName} key={groupName}>
@@ -281,13 +286,22 @@ export function ModelPicker({
                                   : "opacity-0",
                               )}
                             />
-                            <div className="flex flex-col">
+                            <div className="flex flex-col gap-1">
                               <span className="text-sm">
                                 {model.canonicalId}
                               </span>
-                              <span className="text-xs text-muted-foreground">
-                                {model.params.provider}
-                              </span>
+                              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                <AIProviderIcon
+                                  className="size-3 flex-shrink-0"
+                                  type={model.params.provider}
+                                />
+                                <span>
+                                  {
+                                    getProviderMetadata(model.params.provider)
+                                      .name
+                                  }
+                                </span>
+                              </div>
                             </div>
                           </div>
                           <div className="flex items-center gap-1 ml-2">
