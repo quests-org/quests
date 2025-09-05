@@ -1,4 +1,4 @@
-import { type ShimIFrameMessage } from "@quests/shared";
+import { type ShimIFrameMessage } from "@quests/shared/shim";
 import { SHIM_IFRAME_BASE_PATH } from "@quests/workspace/for-shim";
 import * as Sentry from "@sentry/browser";
 
