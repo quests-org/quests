@@ -65,9 +65,16 @@ export const vercelAdapter = setupProviderAdapter({
   },
   features: ["openai/chat-completions"],
   fetchModels: (provider) =>
-    Result.gen(async function* () {
+    Result.gen(function* () {
       const gatewayProvider = createGateway({ apiKey: provider.apiKey });
-      const { models } = await gatewayProvider.getAvailableModels();
+      const { models } = yield* Result.try(
+        async () => await gatewayProvider.getAvailableModels(),
+        (error) =>
+          new TypedError.Fetch(
+            "Fetching models from Vercel AI Gateway failed",
+            { cause: error },
+          ),
+      );
 
       const validModels: AIGatewayModel.Type[] = [];
 
