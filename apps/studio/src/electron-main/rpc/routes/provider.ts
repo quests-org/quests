@@ -4,7 +4,7 @@ import {
   StoreAIProviderSchema,
 } from "@/shared/schemas/provider";
 import { call, eventIterator } from "@orpc/server";
-import { getProviderAdapter } from "@quests/ai-gateway";
+import { fetchCredits, getProviderAdapter } from "@quests/ai-gateway";
 import { ulid } from "ulid";
 import { z } from "zod";
 
@@ -17,13 +17,6 @@ const ClientStudioAIProviderSchema = StoreAIProviderSchema.omit({
   apiKey: true,
 }).extend({
   maskedApiKey: z.string(),
-});
-
-const OpenRouterCreditsResponseSchema = z.object({
-  data: z.object({
-    total_credits: z.number(),
-    total_usage: z.number(),
-  }),
 });
 
 const list = base.output(z.array(ClientStudioAIProviderSchema)).handler(() => {
@@ -125,35 +118,28 @@ const credits = base
     });
   })
   .use(cacheMiddleware)
+  .errors({ FETCH_FAILED: {} })
   .input(z.object({ provider: z.enum(["openrouter"]) }))
   .handler(async ({ errors }) => {
     const providersStore = getProvidersStore();
-    // TODO: support multiple providers
-    const apiKey = providersStore
+    const provider = providersStore
       .get("providers")
-      .find((p) => p.type === "openrouter")?.apiKey;
+      .find((p) => p.type === "openrouter");
 
-    if (!apiKey) {
-      throw errors.UNAUTHORIZED();
+    if (!provider) {
+      throw errors.NOT_FOUND();
     }
 
-    const response = await fetch("https://openrouter.ai/api/v1/credits", {
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-      },
-      method: "GET",
-    });
-
-    if (!response.ok) {
-      throw errors.UNAUTHORIZED();
+    const result = await fetchCredits(provider);
+    if (!result.ok) {
+      if (result.error.type === "gateway-not-found-error") {
+        throw errors.NOT_FOUND({ message: result.error.message });
+      }
+      throw errors.FETCH_FAILED({ message: result.error.message });
     }
-
-    const creditsData = OpenRouterCreditsResponseSchema.parse(
-      await response.json(),
-    );
 
     return {
-      credits: creditsData.data,
+      credits: result.value,
     };
   });
 

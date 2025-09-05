@@ -5,6 +5,7 @@ export { providerOptionsForModel } from "./lib/ai-sdk-provider-options";
 export { envForProviders } from "./lib/env-for-providers";
 export type * from "./lib/errors";
 export * from "./lib/fetch-ai-sdk-model";
+export { fetchCredits } from "./lib/fetch-credits";
 export * from "./lib/fetch-models";
 export { parseModelURI } from "./lib/parse-model-uri";
 export { providerForModelURI } from "./lib/provider-for-model-uri";
