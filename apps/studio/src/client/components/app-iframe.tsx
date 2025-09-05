@@ -10,7 +10,9 @@ interface AppIFrameProps {
 }
 
 export function AppIFrame({ app, iframeRef }: AppIFrameProps) {
-  const [isCoverDismissed, setIsCoverDismissed] = useState(false);
+  const [coverState, setCoverState] = useState<
+    "dismissed" | "hidden" | "hiding" | "visible"
+  >("hidden");
   const wasActiveRef = useRef(false);
 
   const { data: appState } = useAppState({
@@ -21,16 +23,30 @@ export function AppIFrame({ app, iframeRef }: AppIFrameProps) {
     session.tags.includes("agent.running"),
   );
 
-  // Reset dismissal only if we were previously active and now we're not
+  // Keep cover visible briefly after session ends to prevent modal being
+  // dismissed right before the app reboots
   useEffect(() => {
-    if (wasActiveRef.current && !hasRunningSession && isCoverDismissed) {
-      setIsCoverDismissed(false);
+    if (hasRunningSession) {
+      setCoverState((current) =>
+        current === "dismissed" ? "dismissed" : "visible",
+      );
+      wasActiveRef.current = true;
+    } else if (wasActiveRef.current) {
+      setCoverState((current) =>
+        current === "dismissed" ? "dismissed" : "hiding",
+      );
+      const timeoutId = setTimeout(() => {
+        setCoverState("hidden");
+        wasActiveRef.current = false;
+      }, 2000);
+      return () => {
+        clearTimeout(timeoutId);
+      };
     }
+    return;
+  }, [hasRunningSession]);
 
-    wasActiveRef.current = hasRunningSession;
-  }, [hasRunningSession, isCoverDismissed]);
-
-  const shouldShowCover = hasRunningSession && !isCoverDismissed;
+  const shouldShowCover = coverState === "visible" || coverState === "hiding";
 
   return (
     <div className="relative size-full">
@@ -50,7 +66,7 @@ export function AppIFrame({ app, iframeRef }: AppIFrameProps) {
             <button
               className="ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
               onClick={() => {
-                setIsCoverDismissed(true);
+                setCoverState("dismissed");
               }}
               type="button"
             >
