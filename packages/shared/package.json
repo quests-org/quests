@@ -15,7 +15,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./icons": "./src/icons.ts",
-    "./merge-generators": "./src/merge-generators.ts"
+    "./merge-generators": "./src/merge-generators.ts",
+    "./shim": "./src/shim.ts"
   },
   "scripts": {
     "check:lint": "eslint . --max-warnings 0 --cache",
