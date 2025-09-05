@@ -171,7 +171,7 @@ export function ModelPicker({
     return tags;
   };
 
-  if (models && models.length === 0) {
+  if (!errors && models && models.length === 0) {
     return (
       <Button
         disabled={disabled}
@@ -241,12 +241,14 @@ export function ModelPicker({
               <CommandGroup heading="Errors">
                 {errors.map((error, index) => (
                   <CommandItem
-                    className="flex items-center py-2 text-destructive cursor-default"
+                    className="flex items-center py-2 cursor-default data-[disabled]:opacity-80!"
                     disabled
                     key={index}
                   >
-                    <AlertCircle className="mr-2 size-4 shrink-0" />
-                    <span className="text-sm">{error}</span>
+                    <AlertCircle className="mr-2 size-4 shrink-0 text-destructive" />
+                    <span className="text-xs line-clamp-2 break-words">
+                      {error}
+                    </span>
                   </CommandItem>
                 ))}
               </CommandGroup>
