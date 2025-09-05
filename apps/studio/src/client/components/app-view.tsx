@@ -45,7 +45,7 @@ export function AppView({ app }: AppViewProps) {
   const centerContent = (
     <div className="flex flex-1 justify-center">
       <Input
-        className="text-center flex-1 py-0 text-xs md:text-xs h-7 pr-20"
+        className="text-center flex-1 py-0 text-xs md:text-xs h-7"
         readOnly
         value={app.urls.localhost}
       />
