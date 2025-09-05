@@ -19,7 +19,7 @@ import { isDefinedError } from "@orpc/client";
 import { type AIGatewayProvider } from "@quests/ai-gateway";
 import { useMutation } from "@tanstack/react-query";
 import { useAtom } from "jotai";
-import { AlertCircle, ArrowLeft, ExternalLink } from "lucide-react";
+import { AlertCircle, ExternalLink } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { selectedModelURIAtom } from "../atoms/selected-models";
@@ -120,10 +120,6 @@ export function AddProviderDialog({
     }
   };
 
-  const handleClose = () => {
-    onOpenChange(false);
-  };
-
   const renderProviderSelection = () => (
     <>
       <DialogHeader>
@@ -154,8 +150,11 @@ export function AddProviderDialog({
                 }}
                 type="button"
               >
-                <div className="flex items-center gap-3">
-                  <AIProviderIcon type={providerInfo.type} />
+                <div className="flex items-center gap-2">
+                  <AIProviderIcon
+                    className="opacity-80 size-4.5"
+                    type={providerInfo.type}
+                  />
                   <div className="font-medium">{providerInfo.name}</div>
                 </div>
                 <div className="text-sm text-muted-foreground">
@@ -180,16 +179,6 @@ export function AddProviderDialog({
           })}
         </div>
       </div>
-      <DialogFooter>
-        <Button
-          autoFocus // To avoid focusing the first provider
-          onClick={handleClose}
-          type="button"
-          variant="secondary"
-        >
-          Cancel
-        </Button>
-      </DialogFooter>
     </>
   );
 
@@ -197,18 +186,10 @@ export function AddProviderDialog({
     <>
       <DialogHeader>
         <DialogTitle className="flex items-center gap-2">
-          <Button
-            className="h-6 w-6 p-0"
-            onClick={handleBackToSelection}
-            size="sm"
-            type="button"
-            variant="ghost"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          {providerMetadata
-            ? `Configure ${providerMetadata.name}`
-            : "Configure Provider"}
+          {selectedProviderType && (
+            <AIProviderIcon type={selectedProviderType} />
+          )}
+          {providerMetadata?.name ?? "Provider"}
         </DialogTitle>
         <DialogDescription>
           {selectedProviderType
@@ -245,6 +226,7 @@ export function AddProviderDialog({
             </div>
 
             <Input
+              autoFocus
               className="font-mono"
               id="api-key"
               onChange={(e) => {
@@ -272,8 +254,12 @@ export function AddProviderDialog({
         )}
       </div>
       <DialogFooter className="flex gap-2">
-        <Button onClick={handleClose} type="button" variant="secondary">
-          Cancel
+        <Button
+          onClick={handleBackToSelection}
+          type="button"
+          variant="secondary"
+        >
+          Back
         </Button>
         <Button
           disabled={
