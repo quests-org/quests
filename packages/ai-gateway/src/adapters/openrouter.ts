@@ -4,6 +4,7 @@ import { Result } from "typescript-result";
 import { z } from "zod";
 
 import { TypedError } from "../lib/errors";
+import { fetchCredits } from "../lib/fetch-credits";
 import { fetchJson } from "../lib/fetch-json";
 import { isModelNew } from "../lib/is-model-new";
 import { internalAPIKey } from "../lib/key-for-provider";
@@ -165,25 +166,18 @@ export const openrouterAdapter = setupProviderAdapter({
   }),
   setAuthHeaders,
   verifyAPIKey: ({ apiKey, baseURL }) => {
-    return Result.fromAsync(async () => {
-      const headers = new Headers({ "Content-Type": "application/json" });
-      setAuthHeaders(headers, apiKey);
-      const url = new URL(buildURL({ baseURL, path: "/v1/credits" }));
-
-      const result = Result.try(
-        async () => {
-          const response = await fetch(url.toString(), { headers });
-          if (!response.ok) {
-            throw new Error("API key verification failed");
-          }
-          return true;
-        },
+    return fetchCredits({
+      apiKey,
+      baseURL,
+      cacheIdentifier: "not-used", // Not sent with this request
+      type: "openrouter",
+    })
+      .map(() => true)
+      .mapError(
         (error) =>
           new TypedError.VerificationFailed("Failed to verify API key", {
             cause: error,
           }),
       );
-      return result;
-    });
   },
 }));
