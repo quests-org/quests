@@ -246,7 +246,7 @@ rl.on("line", (input) => {
           ],
           role: "user",
         },
-        // modelId: "anthropic/claude-sonnet-4?provider=anthropic",
+        // modelURI: "anthropic/claude-sonnet-4?provider=anthropic",
         // modelURI: "openai/gpt-5-mini?provider=openai",
         // modelURI: "google/gemini-2.5-pro?provider=google",
         modelURI: "google/gemini-2.5-flash?provider=google",
