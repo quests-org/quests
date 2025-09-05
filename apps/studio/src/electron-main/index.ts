@@ -380,6 +380,9 @@ async function createWindow() {
 
   mainWindow.on("resize", saveState);
   mainWindow.on("move", saveState);
+  mainWindow.on("ready-to-show", () => {
+    showWindow(mainWindow);
+  });
 
   toolbar = await createToolbar({ baseWindow: mainWindow });
 
@@ -430,10 +433,6 @@ async function createWindow() {
       menu.popup({ window: mainWindow });
     });
   }
-
-  mainWindow.on("ready-to-show", () => {
-    showWindow(mainWindow);
-  });
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
     void shell.openExternal(details.url);
