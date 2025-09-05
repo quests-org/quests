@@ -15,6 +15,7 @@ import { SubdomainPartSchema } from "../schemas/subdomain-part";
 import {
   type AppSubdomain,
   AppSubdomainSchema,
+  PREVIEW_SUBDOMAIN_PART,
   type PreviewSubdomain,
   PreviewSubdomainSchema,
   type ProjectSubdomain,
@@ -29,6 +30,7 @@ import { createAppConfig } from "./app-config/create";
 import { getSandboxesDir } from "./app-dir-utils";
 import { folderNameForSubdomain } from "./folder-name-for-subdomain";
 import {
+  isPreviewSubdomain,
   isProjectSubdomain,
   isSandboxSubdomain,
   isVersionSubdomain,
@@ -146,17 +148,16 @@ export async function getApp<T extends AppSubdomain>(
   }
 
   // Handle preview, project, and version subdomains
-  const type = subdomain.split("-")[0];
 
   let appDir: AppDir;
   let parent: "previews" | "projects";
 
-  if (type === "preview") {
+  if (isPreviewSubdomain(subdomain)) {
     appDir = AppDirSchema.parse(
       path.resolve(workspaceConfig.previewsDir, rawFolderName.value),
     );
     parent = "previews";
-  } else if (type === "project") {
+  } else if (isProjectSubdomain(subdomain)) {
     appDir = AppDirSchema.parse(
       path.resolve(workspaceConfig.projectsDir, rawFolderName.value),
     );
@@ -304,7 +305,7 @@ async function createWorkspaceApp({
   }
 
   if (parent === "projects") {
-    const possibleSubdomain = `project-${folderNameResult.data}`;
+    const possibleSubdomain = folderNameResult.data;
     const rawSubdomain = ProjectSubdomainSchema.safeParse(possibleSubdomain);
 
     if (!rawSubdomain.success) {
@@ -333,7 +334,7 @@ async function createWorkspaceApp({
   }
 
   if (parent === "previews") {
-    const possibleSubdomain = `preview-${folderNameResult.data}`;
+    const possibleSubdomain = `${folderNameResult.data}.${PREVIEW_SUBDOMAIN_PART}`;
     const rawSubdomain = PreviewSubdomainSchema.safeParse(possibleSubdomain);
 
     if (!rawSubdomain.success) {

@@ -113,17 +113,17 @@ async function initTelemetry() {
 
         // Redact project subdomains from URLs and paths
         $current_url: {
-          pattern: /\/projects\/project-[a-z0-9]+/g,
+          pattern: /\/projects\/[a-z0-9]+/g,
           replacement: "/projects/:project_subdomain",
           type: "regex",
         },
         $pathname: {
-          pattern: /\/projects\/project-[a-z0-9]+/g,
+          pattern: /\/projects\/[a-z0-9]+/g,
           replacement: "/projects/:project_subdomain",
           type: "regex",
         },
         $session_entry_url: {
-          pattern: /\/projects\/project-[a-z0-9]+/g,
+          pattern: /\/projects\/[a-z0-9]+/g,
           replacement: "/projects/:project_subdomain",
           type: "regex",
         },

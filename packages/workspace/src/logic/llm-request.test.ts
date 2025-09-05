@@ -26,7 +26,7 @@ vi.mock(import("../lib/get-current-date"));
 
 describe("llmRequestLogic", () => {
   const projectAppConfig = createMockAppConfig(
-    ProjectSubdomainSchema.parse(`project-mock`),
+    ProjectSubdomainSchema.parse(`mock`),
   );
   const sessionId = StoreId.newSessionId();
   const mockUsage = {

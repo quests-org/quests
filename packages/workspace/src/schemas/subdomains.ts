@@ -2,65 +2,35 @@ import { z } from "zod";
 
 import { type SubdomainPart, validateSubdomainPart } from "./subdomain-part";
 
-export type PreviewSubdomain = `preview-${SubdomainPart}`;
-export type ProjectSubdomain = `project-${SubdomainPart}`;
+export const PREVIEW_SUBDOMAIN_PART = "preview" as const;
+export type PreviewSubdomain = `${SubdomainPart}.${PreviewSubdomainPart}`;
+export type ProjectSubdomain = SubdomainPart;
+
 export type SandboxSubdomain = `sandbox-${SubdomainPart}.${ProjectSubdomain}`;
 export type VersionSubdomain = `version-${SubdomainPart}.${ProjectSubdomain}`;
+type PreviewSubdomainPart = typeof PREVIEW_SUBDOMAIN_PART;
 
-function createPrefixValidation(
-  ctx: z.core.ParsePayload,
+function validateSubdomainPrefix(
+  ctx: z.core.$RefinementCtx,
   val: string,
   prefix: string,
   name: string,
 ) {
   if (!val.startsWith(prefix)) {
-    ctx.issues.push({
+    ctx.addIssue({
       code: "custom",
       fatal: true,
       input: val,
       message: `${name} subdomain must start with '${prefix}'`,
     });
-    return false;
   }
-  return true;
 }
 
-function createSimpleSubdomainSchema<T>(prefix: string, name: string) {
-  return z.custom<T>().check((ctx) => {
-    const val = ctx.value;
-
+export const PreviewSubdomainSchema = z
+  .custom<PreviewSubdomain>()
+  .superRefine((val, ctx) => {
     if (typeof val !== "string") {
-      ctx.issues.push({
-        code: "custom",
-        fatal: true,
-        input: val,
-        message: "Subdomain must be a string",
-      });
-      return;
-    }
-
-    if (!createPrefixValidation(ctx, val, prefix, name)) {
-      return;
-    }
-
-    const subdomainPart = val.slice(prefix.length);
-    validateSubdomainPart(subdomainPart, ctx);
-  });
-}
-
-export const PreviewSubdomainSchema =
-  createSimpleSubdomainSchema<PreviewSubdomain>("preview-", "Preview");
-
-export const ProjectSubdomainSchema =
-  createSimpleSubdomainSchema<ProjectSubdomain>("project-", "Project");
-
-export const SandboxSubdomainSchema = z
-  .custom<SandboxSubdomain>()
-  .check((ctx) => {
-    const val = ctx.value;
-
-    if (typeof val !== "string") {
-      ctx.issues.push({
+      ctx.addIssue({
         code: "custom",
         fatal: true,
         input: val,
@@ -71,42 +41,87 @@ export const SandboxSubdomainSchema = z
 
     const parts = val.split(".");
     if (parts.length !== 2) {
-      ctx.issues.push({
+      ctx.addIssue({
+        code: "custom",
+        fatal: true,
+        input: val,
+        message:
+          "Preview subdomains must have exactly two parts (e.g., name.preview)",
+      });
+    }
+
+    const [previewPart, suffix] = parts as [string, string];
+
+    if (suffix !== PREVIEW_SUBDOMAIN_PART) {
+      ctx.addIssue({
+        code: "custom",
+        fatal: true,
+        input: val,
+        message: `Preview subdomains must end with '.${PREVIEW_SUBDOMAIN_PART}'`,
+      });
+    }
+
+    validateSubdomainPart(previewPart, ctx);
+  });
+
+export const ProjectSubdomainSchema = z
+  .custom<ProjectSubdomain>()
+  .superRefine((val, ctx) => {
+    if (typeof val !== "string") {
+      ctx.addIssue({
+        code: "custom",
+        fatal: true,
+        input: val,
+        message: "Subdomain must be a string",
+      });
+    }
+
+    if (val === PREVIEW_SUBDOMAIN_PART) {
+      ctx.addIssue({
+        code: "custom",
+        fatal: true,
+        input: val,
+        message: "Project subdomains cannot be 'preview'",
+      });
+    }
+
+    validateSubdomainPart(val, ctx);
+  });
+
+export const SandboxSubdomainSchema = z
+  .custom<SandboxSubdomain>()
+  .superRefine((val, ctx) => {
+    if (typeof val !== "string") {
+      ctx.addIssue({
+        code: "custom",
+        fatal: true,
+        input: val,
+        message: "Subdomain must be a string",
+      });
+    }
+
+    const parts = val.split(".");
+    if (parts.length !== 2) {
+      ctx.addIssue({
         code: "custom",
         fatal: true,
         input: val,
         message:
           "Sandbox subdomains must have exactly two parts (e.g., sandbox-name.project-name)",
       });
-      return;
     }
 
     const [sandboxPart, projectPart] = parts as [string, string];
 
-    if (
-      !createPrefixValidation(
-        ctx,
-        sandboxPart,
-        "sandbox-",
-        "First part of sandbox",
-      )
-    ) {
-      return;
-    }
-
-    if (
-      !createPrefixValidation(
-        ctx,
-        projectPart,
-        "project-",
-        "Second part of sandbox",
-      )
-    ) {
-      return;
-    }
+    validateSubdomainPrefix(
+      ctx,
+      sandboxPart,
+      "sandbox-",
+      "First part of sandbox",
+    );
 
     const sandboxSubdomainPart = sandboxPart.slice("sandbox-".length);
-    const projectSubdomainPart = projectPart.slice("project-".length);
+    const projectSubdomainPart = projectPart;
 
     validateSubdomainPart(sandboxSubdomainPart, ctx);
     validateSubdomainPart(projectSubdomainPart, ctx);
@@ -114,57 +129,38 @@ export const SandboxSubdomainSchema = z
 
 export const VersionSubdomainSchema = z
   .custom<VersionSubdomain>()
-  .check((ctx) => {
-    const val = ctx.value;
-
+  .superRefine((val, ctx) => {
     if (typeof val !== "string") {
-      ctx.issues.push({
+      ctx.addIssue({
         code: "custom",
         fatal: true,
         input: val,
         message: "Subdomain must be a string",
       });
-      return;
     }
 
     const parts = val.split(".");
     if (parts.length !== 2) {
-      ctx.issues.push({
+      ctx.addIssue({
         code: "custom",
         fatal: true,
         input: val,
         message:
           "Version subdomains must have exactly two parts (e.g., version-commit.project-name)",
       });
-      return;
     }
 
     const [versionPart, projectPart] = parts as [string, string];
 
-    if (
-      !createPrefixValidation(
-        ctx,
-        versionPart,
-        "version-",
-        "First part of version",
-      )
-    ) {
-      return;
-    }
-
-    if (
-      !createPrefixValidation(
-        ctx,
-        projectPart,
-        "project-",
-        "Second part of version",
-      )
-    ) {
-      return;
-    }
+    validateSubdomainPrefix(
+      ctx,
+      versionPart,
+      "version-",
+      "First part of version",
+    );
 
     const versionSubdomainPart = versionPart.slice("version-".length);
-    const projectSubdomainPart = projectPart.slice("project-".length);
+    const projectSubdomainPart = projectPart;
 
     validateSubdomainPart(versionSubdomainPart, ctx);
     validateSubdomainPart(projectSubdomainPart, ctx);

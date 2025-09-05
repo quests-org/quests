@@ -11,7 +11,7 @@ export function newProjectConfig({
   workspaceConfig: WorkspaceConfig;
 }): CreateAppConfigReturn<ProjectSubdomain> {
   return createAppConfig({
-    subdomain: `project-${folderName}`,
+    subdomain: folderName,
     workspaceConfig,
   });
 }

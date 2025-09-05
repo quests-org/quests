@@ -14,7 +14,7 @@ vi.mock(import("../lib/get-current-date"));
 
 describe("Glob", () => {
   const projectAppConfig = createMockAppConfig(
-    ProjectSubdomainSchema.parse("project-test"),
+    ProjectSubdomainSchema.parse("test"),
   );
 
   beforeEach(() => {

@@ -11,7 +11,12 @@ import {
 import { type WorkspaceConfig } from "../../types";
 import { getSandboxesDir } from "../app-dir-utils";
 import { folderNameForSubdomain } from "../folder-name-for-subdomain";
-import { isVersionSubdomain } from "../is-app";
+import {
+  isPreviewSubdomain,
+  isProjectSubdomain,
+  isSandboxSubdomain,
+  isVersionSubdomain,
+} from "../is-app";
 import { projectSubdomainForSubdomain } from "../project-subdomain-for-subdomain";
 import { type AppConfig } from "./types";
 
@@ -37,15 +42,15 @@ export function createAppConfig<T extends AppSubdomain>({
   subdomain: T;
   workspaceConfig: WorkspaceConfig;
 }): CreateAppConfigReturn<T> {
-  if (isPreviewSubdomain(subdomain)) {
-    return createPreviewConfig(
+  if (isProjectSubdomain(subdomain)) {
+    return createProjectConfig(
       subdomain,
       workspaceConfig,
     ) as CreateAppConfigReturn<T>;
   }
 
-  if (isProjectSubdomain(subdomain)) {
-    return createProjectConfig(
+  if (isPreviewSubdomain(subdomain)) {
+    return createPreviewConfig(
       subdomain,
       workspaceConfig,
     ) as CreateAppConfigReturn<T>;
@@ -168,18 +173,6 @@ function createVersionConfig(
     type: "version",
     workspaceConfig,
   };
-}
-
-function isPreviewSubdomain(subdomain: string): subdomain is PreviewSubdomain {
-  return subdomain.startsWith("preview-");
-}
-
-function isProjectSubdomain(subdomain: string): subdomain is ProjectSubdomain {
-  return subdomain.startsWith("project-");
-}
-
-function isSandboxSubdomain(subdomain: string): subdomain is SandboxSubdomain {
-  return subdomain.startsWith("sandbox-") && subdomain.includes(".");
 }
 
 function isValidProjectPart(part: string): part is ProjectSubdomain {

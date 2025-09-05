@@ -1,6 +1,9 @@
 import { err, ok } from "neverthrow";
 
-import { type AppSubdomain } from "../schemas/subdomains";
+import {
+  type AppSubdomain,
+  PREVIEW_SUBDOMAIN_PART,
+} from "../schemas/subdomains";
 
 export function folderNameForSubdomain(subdomain: AppSubdomain) {
   // Handle sandbox subdomains which have format: sandbox-{name}.{project-subdomain}
@@ -27,14 +30,18 @@ export function folderNameForSubdomain(subdomain: AppSubdomain) {
     return ok(versionPart.slice("version-".length));
   }
 
-  // Handle preview and project subdomains
-  const parts = subdomain.split("-");
-  if (parts.length < 2) {
-    return err({
-      message: "Invalid subdomain format",
-      type: "schema-error" as const,
-    });
+  // Handle preview subdomains which have format: {name}.preview
+  if (subdomain.endsWith(`.${PREVIEW_SUBDOMAIN_PART}`)) {
+    const [previewPart] = subdomain.split(".");
+    if (!previewPart) {
+      return err({
+        message: "Invalid preview subdomain format",
+        type: "schema-error" as const,
+      });
+    }
+    return ok(previewPart);
   }
 
-  return ok(parts.slice(1).join("-"));
+  // Handle project subdomains (no prefix, just the subdomain part)
+  return ok(subdomain);
 }
