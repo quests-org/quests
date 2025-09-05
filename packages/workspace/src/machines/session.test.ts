@@ -56,7 +56,7 @@ type Part =
 describe("sessionMachine", () => {
   const projectFolder = "pj-test";
   const projectAppConfig = createMockAppConfig(
-    ProjectSubdomainSchema.parse(`project-${projectFolder}`),
+    ProjectSubdomainSchema.parse(projectFolder),
   );
   const defaultSessionId = StoreId.newSessionId();
   const mockDate = new Date("2025-01-01T00:00:00.000Z");

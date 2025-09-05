@@ -18,7 +18,7 @@ vi.mock(import("../lib/get-current-date"));
 
 describe("executeToolCallMachine", () => {
   const projectAppConfig = createMockAppConfig(
-    ProjectSubdomainSchema.parse("project-test"),
+    ProjectSubdomainSchema.parse("test"),
     {
       runShellCommand: vi.fn().mockImplementation((command: string) => {
         if (command.includes("throw-error")) {

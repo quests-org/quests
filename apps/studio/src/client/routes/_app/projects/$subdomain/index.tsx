@@ -3,6 +3,7 @@ import { ProjectSidebar } from "@/client/components/project-sidebar";
 import { ProjectToolbar } from "@/client/components/project-toolbar";
 import { VersionOverlay } from "@/client/components/version-overlay";
 import { useProjectRouteSync } from "@/client/hooks/use-project-route-sync";
+import { migrateProjectSubdomain } from "@/client/lib/migrate-project-subdomain";
 import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
 import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
 import { safe } from "@orpc/client";
@@ -44,6 +45,17 @@ export const Route = createFileRoute("/_app/projects/$subdomain/")({
 
     if (error) {
       if (isDefined && error.code === "NOT_FOUND") {
+        const migration = migrateProjectSubdomain(params.subdomain);
+
+        if (migration.didMigrate) {
+          // eslint-disable-next-line @typescript-eslint/only-throw-error
+          throw redirect({
+            to: "/projects/$subdomain",
+            params: {
+              subdomain: migration.subdomain,
+            },
+          });
+        }
         // eslint-disable-next-line @typescript-eslint/only-throw-error
         throw notFound();
       }

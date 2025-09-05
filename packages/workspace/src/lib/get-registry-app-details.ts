@@ -54,7 +54,7 @@ export async function getRegistryAppDetails(
   try {
     const parsedAppDir = AppDirSchema.parse(appDir);
     const previewSubdomain = PreviewSubdomainSchema.parse(
-      `preview-${subdomainPart.data}`,
+      `${subdomainPart.data}.preview`,
     );
 
     // Read all metadata in parallel for better performance

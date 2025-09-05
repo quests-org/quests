@@ -8,9 +8,7 @@ import { TOOLS } from "./all";
 import { Grep } from "./grep";
 
 function createFixturesAppConfig() {
-  const mockConfig = createMockAppConfig(
-    ProjectSubdomainSchema.parse("project-test"),
-  );
+  const mockConfig = createMockAppConfig(ProjectSubdomainSchema.parse("test"));
   // Override appDir to point to fixtures directory
   const appDir = AppDirSchema.parse(
     path.join(import.meta.dirname, "../../fixtures/file-system"),

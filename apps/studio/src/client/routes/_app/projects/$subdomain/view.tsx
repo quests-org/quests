@@ -1,5 +1,6 @@
 import { AppView } from "@/client/components/app-view";
 import { useProjectRouteSync } from "@/client/hooks/use-project-route-sync";
+import { migrateProjectSubdomain } from "@/client/lib/migrate-project-subdomain";
 import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
 import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
 import { safe } from "@orpc/client";
@@ -9,7 +10,7 @@ import {
   keepPreviousData,
   useQuery,
 } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
 
 /* eslint-disable perfectionist/sort-objects */
 export const Route = createFileRoute("/_app/projects/$subdomain/view")({
@@ -20,6 +21,32 @@ export const Route = createFileRoute("/_app/projects/$subdomain/view")({
         subdomain: ProjectSubdomainSchema.parse(rawParams.subdomain),
       };
     },
+  },
+  beforeLoad: async ({ params }) => {
+    const [error, _, isDefined] = await safe(
+      vanillaRpcClient.workspace.project.bySubdomain({
+        subdomain: params.subdomain,
+      }),
+    );
+
+    if (error) {
+      if (isDefined && error.code === "NOT_FOUND") {
+        const migration = migrateProjectSubdomain(params.subdomain);
+
+        if (migration.didMigrate) {
+          // eslint-disable-next-line @typescript-eslint/only-throw-error
+          throw redirect({
+            to: "/projects/$subdomain/view",
+            params: {
+              subdomain: migration.subdomain,
+            },
+          });
+        }
+        // eslint-disable-next-line @typescript-eslint/only-throw-error
+        throw notFound();
+      }
+      throw error;
+    }
   },
   component: RouteComponent,
   head: async ({ params }) => {

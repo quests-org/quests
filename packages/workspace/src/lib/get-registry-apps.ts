@@ -5,6 +5,7 @@ import { z } from "zod";
 import { REGISTRY_APPS_FOLDER } from "../constants";
 import { AppDirSchema } from "../schemas/paths";
 import { SubdomainPartSchema } from "../schemas/subdomain-part";
+import { PREVIEW_SUBDOMAIN_PART } from "../schemas/subdomains";
 import { type WorkspaceConfig } from "../types";
 import { absolutePathJoin } from "./absolute-path-join";
 
@@ -41,7 +42,7 @@ export async function getRegistryApps(
         return RegistryAppSchema.parse({
           appDir,
           folderName: entry.name,
-          previewSubdomain: `preview-${SubdomainPartSchema.parse(entry.name)}`,
+          previewSubdomain: `${SubdomainPartSchema.parse(entry.name)}.${PREVIEW_SUBDOMAIN_PART}`,
         });
       });
   } catch (error) {
