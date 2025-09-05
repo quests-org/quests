@@ -84,7 +84,7 @@ export function App() {
           errors: [
             {
               createdAt: Date.now(),
-              message: "Failed to connect to apps router",
+              message: "Failed to connect to workspace server",
               type: "router",
             },
           ],
