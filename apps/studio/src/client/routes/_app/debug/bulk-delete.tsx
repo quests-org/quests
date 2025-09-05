@@ -149,7 +149,7 @@ function RouteComponent() {
               >
                 <Checkbox
                   checked={selectedProjects.has(project.subdomain)}
-                  id={`project-${project.subdomain}`}
+                  id={project.subdomain}
                   onCheckedChange={(checked) => {
                     handleSelectProject(project.subdomain, checked === true);
                   }}
