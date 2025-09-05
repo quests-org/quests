@@ -19,7 +19,7 @@ import { isDefinedError } from "@orpc/client";
 import { type AIGatewayProvider } from "@quests/ai-gateway";
 import { useMutation } from "@tanstack/react-query";
 import { useAtom } from "jotai";
-import { AlertCircle, ExternalLink } from "lucide-react";
+import { AlertCircle, ChefHat, ExternalLink } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { selectedModelURIAtom } from "../atoms/selected-models";
@@ -129,6 +129,15 @@ export function AddProviderDialog({
         </DialogDescription>
       </DialogHeader>
       <div className="py-4">
+        {providers.length === ALL_PROVIDERS.length && (
+          <Alert className="mb-4">
+            <ChefHat className="size-4 animate-bounce" />
+            <AlertDescription>
+              Wow, you added all of the providers. It&apos;s time to get
+              cooking.
+            </AlertDescription>
+          </Alert>
+        )}
         <div className="grid grid-cols-2 gap-3">
           {ALL_PROVIDERS.map((providerInfo) => {
             const isAlreadyAdded = providers.some(
