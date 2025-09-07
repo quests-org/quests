@@ -4,14 +4,14 @@ import path from "node:path";
 
 import { type AbsolutePath } from "../schemas/paths";
 import { absolutePathJoin } from "./absolute-path-join";
-import { fileExists } from "./file-exists";
+import { pathExists } from "./path-exists";
 
 export async function getIgnore(
   rootDir: AbsolutePath,
   options?: { signal?: AbortSignal },
 ) {
   const gitIgnorePath = absolutePathJoin(rootDir, ".gitignore");
-  const exists = await fileExists(gitIgnorePath);
+  const exists = await pathExists(gitIgnorePath);
   if (!exists) {
     return nodeIgnore();
   }

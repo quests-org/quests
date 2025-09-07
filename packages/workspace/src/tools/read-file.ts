@@ -8,8 +8,8 @@ import { z } from "zod";
 
 import { absolutePathJoin } from "../lib/absolute-path-join";
 import { addLineNumbers } from "../lib/add-line-numbers";
-import { fileExists } from "../lib/file-exists";
 import { fixRelativePath } from "../lib/fix-relative-path";
+import { pathExists } from "../lib/path-exists";
 import { RelativePathSchema } from "../schemas/paths";
 import { BaseInputSchema } from "./base";
 import { createTool } from "./create-tool";
@@ -78,7 +78,7 @@ export const ReadFile = createTool({
     }
 
     const absolutePath = absolutePathJoin(appConfig.appDir, fixedPath);
-    const exists = await fileExists(absolutePath);
+    const exists = await pathExists(absolutePath);
 
     if (!exists) {
       // Try to provide helpful suggestions
