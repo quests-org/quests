@@ -7,8 +7,8 @@ import { dedent, sift } from "radashi";
 import { z } from "zod";
 
 import { absolutePathJoin } from "../lib/absolute-path-join";
-import { fileExists } from "../lib/file-exists";
 import { fixRelativePath } from "../lib/fix-relative-path";
+import { pathExists } from "../lib/path-exists";
 import { writeFileWithDir } from "../lib/write-file-with-dir";
 import { RelativePathSchema } from "../schemas/paths";
 import { BaseInputSchema } from "./base";
@@ -489,7 +489,7 @@ export const EditFile = createTool({
     }
 
     const absolutePath = absolutePathJoin(appConfig.appDir, fixedPath);
-    const exists = await fileExists(absolutePath);
+    const exists = await pathExists(absolutePath);
 
     if (!exists) {
       return err({

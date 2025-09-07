@@ -5,7 +5,7 @@ import path from "node:path";
 
 import { type AbsolutePath } from "../schemas/paths";
 import { absolutePathJoin } from "./absolute-path-join";
-import { fileExists } from "./file-exists";
+import { pathExists } from "./path-exists";
 
 // Fix the path to the ripgrep binary if it's in an .asar file
 // via https://github.com/desktop/dugite/blob/0a316c7028f073ad05cea17fe219324e7ef13967/lib/git-environment.ts#L24
@@ -38,7 +38,7 @@ export async function grep(
     sort?: "none" | "path";
   } = {},
 ): Promise<GrepResult> {
-  const exists = await fileExists(rootDir);
+  const exists = await pathExists(rootDir);
   if (!exists) {
     return {
       matches: [],

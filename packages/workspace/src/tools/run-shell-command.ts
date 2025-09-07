@@ -8,8 +8,8 @@ import { z } from "zod";
 import type { AppConfig } from "../lib/app-config/types";
 
 import { absolutePathJoin } from "../lib/absolute-path-join";
-import { fileExists } from "../lib/file-exists";
 import { fixRelativePath } from "../lib/fix-relative-path";
+import { pathExists } from "../lib/path-exists";
 import { BaseInputSchema } from "./base";
 import { createTool } from "./create-tool";
 
@@ -202,7 +202,7 @@ async function handleMvCommand(
     fixedDestResult.value,
   );
 
-  const sourceExists = await fileExists(absoluteSourcePath);
+  const sourceExists = await pathExists(absoluteSourcePath);
   if (!sourceExists) {
     return err(
       createError(`mv: cannot stat '${sourcePath}': No such file or directory`),
@@ -285,7 +285,7 @@ async function handleRmCommand(
     fixedPathResult.value,
   );
 
-  const exists = await fileExists(absolutePath);
+  const exists = await pathExists(absolutePath);
   if (!exists) {
     return err(
       createError(

@@ -5,8 +5,8 @@ import { dedent, sift } from "radashi";
 import { z } from "zod";
 
 import { absolutePathJoin } from "../lib/absolute-path-join";
-import { fileExists } from "../lib/file-exists";
 import { fixRelativePath } from "../lib/fix-relative-path";
+import { pathExists } from "../lib/path-exists";
 import { writeFileWithDir } from "../lib/write-file-with-dir";
 import { RelativePathSchema } from "../schemas/paths";
 import { BaseInputSchema } from "./base";
@@ -35,7 +35,7 @@ export const WriteFile = createTool({
     }
 
     const absolutePath = absolutePathJoin(appConfig.appDir, fixedPath);
-    const isNewFile = !(await fileExists(absolutePath));
+    const isNewFile = !(await pathExists(absolutePath));
 
     try {
       await writeFileWithDir(absolutePath, input.content, { signal });
