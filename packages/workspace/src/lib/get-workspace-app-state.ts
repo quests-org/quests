@@ -5,7 +5,7 @@ import { type SessionTag, type WorkspaceAppState } from "../schemas/app-state";
 import { type AppSubdomain } from "../schemas/subdomains";
 import { getWorkspaceAppForSubdomain } from "./get-workspace-app-for-subdomain";
 
-export function getWorkspaceAppState({
+export async function getWorkspaceAppState({
   subdomain,
   workspaceRef,
 }: {
@@ -15,10 +15,7 @@ export function getWorkspaceAppState({
   const snapshot = workspaceRef.getSnapshot();
   const context = snapshot.context;
 
-  const appResult = getWorkspaceAppForSubdomain(subdomain);
-  if (appResult.isErr()) {
-    return appResult;
-  }
+  const app = await getWorkspaceAppForSubdomain(subdomain, context.config);
 
   const sessionRefs = context.sessionRefsBySubdomain.get(subdomain) ?? [];
   const sessionActors = sessionRefs.map((sessionRef) => {
@@ -31,7 +28,7 @@ export function getWorkspaceAppState({
   });
 
   const workspaceAppState: WorkspaceAppState = {
-    app: appResult.value,
+    app,
     checkoutVersionRefActor: { status: "does-not-exist" },
     createPreviewRefActor: { status: "does-not-exist" },
     sessionActors,

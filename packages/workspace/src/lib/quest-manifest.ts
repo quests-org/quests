@@ -9,6 +9,7 @@ import {
 } from "../schemas/quest-manifest";
 import { type ProjectSubdomain } from "../schemas/subdomains";
 import { type WorkspaceConfig } from "../types";
+import { absolutePathJoin } from "./absolute-path-join";
 import { createAppConfig } from "./app-config/create";
 
 export async function getProjectQuestManifest(
@@ -26,7 +27,7 @@ export async function getProjectQuestManifest(
 export async function getQuestManifest(
   appDir: AppDir,
 ): Promise<QuestManifest | undefined> {
-  const questConfigPath = path.join(appDir, QUEST_MANIFEST_FILE_NAME);
+  const questConfigPath = absolutePathJoin(appDir, QUEST_MANIFEST_FILE_NAME);
 
   try {
     const configContent = await fs.readFile(questConfigPath, "utf8");

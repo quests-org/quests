@@ -67,16 +67,15 @@ export async function getRegistryAppDetails(
     const title = questsConfig?.name ?? folderName;
     const description = questsConfig?.description;
 
-    const previewResult = getWorkspaceAppForSubdomain(previewSubdomain);
-
-    if (previewResult.isErr()) {
-      return null;
-    }
+    const preview = await getWorkspaceAppForSubdomain(
+      previewSubdomain,
+      workspaceConfig,
+    );
 
     return {
       description,
       icon: questsConfig?.icon,
-      preview: previewResult.value,
+      preview,
       readme,
       screenshotPath,
       title,

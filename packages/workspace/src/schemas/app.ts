@@ -9,10 +9,12 @@ import {
 } from "./subdomains";
 
 const WorkspaceAppBaseSchema = z.object({
+  createdAt: z.date(),
   description: QuestManifestSchema.shape.description.optional(),
   folderName: z.string(),
   icon: QuestManifestSchema.shape.icon.optional(),
   title: z.string(),
+  updatedAt: z.date(),
   urls: z.object({
     localhost: z.string(),
     loopback: z.string(),
