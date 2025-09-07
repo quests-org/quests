@@ -178,8 +178,7 @@ export const spawnRuntimeLogic = fromCallback<
         return;
       }
 
-      const providerEnv = await envForProviders({
-        captureException: appConfig.workspaceConfig.captureException,
+      const providerEnv = envForProviders({
         providers: appConfig.workspaceConfig.getAIProviders(),
         workspaceServerURL: getWorkspaceServerURL(),
       });
