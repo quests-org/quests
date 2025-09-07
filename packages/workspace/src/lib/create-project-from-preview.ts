@@ -9,12 +9,10 @@ import { Store } from "../lib/store";
 import { type Session } from "../schemas/session";
 import { type SessionMessageDataPart } from "../schemas/session/message-data-part";
 import { StoreId } from "../schemas/store-id";
-import { type SubdomainPart } from "../schemas/subdomain-part";
 import { type WorkspaceConfig } from "../types";
 import { type AppConfigPreview } from "./app-config/types";
 
 interface CreateProjectFromPreviewOptions {
-  newFolderName: SubdomainPart;
   previewConfig: AppConfigPreview;
   sessionId: StoreId.Session;
   workspaceConfig: WorkspaceConfig;
@@ -22,7 +20,6 @@ interface CreateProjectFromPreviewOptions {
 
 export async function createProjectFromPreview(
   {
-    newFolderName,
     previewConfig,
     sessionId,
     workspaceConfig,
@@ -30,8 +27,7 @@ export async function createProjectFromPreview(
   { signal }: { signal?: AbortSignal } = {},
 ) {
   return safeTry(async function* () {
-    const projectConfig = newProjectConfig({
-      folderName: newFolderName,
+    const projectConfig = await newProjectConfig({
       workspaceConfig,
     });
 
