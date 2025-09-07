@@ -30,8 +30,7 @@ export async function prepareModelMessages({
   sessionId: StoreId.Session;
   signal: AbortSignal;
 }) {
-  const env = await envForProviders({
-    captureException: appConfig.workspaceConfig.captureException,
+  const env = envForProviders({
     providers: appConfig.workspaceConfig.getAIProviders(),
     workspaceServerURL: getWorkspaceServerURL(),
   });

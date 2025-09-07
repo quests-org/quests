@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { DEFAULT_OPENAI_MODEL } from "../constants";
 import { AIGatewayModel } from "../schemas/model";
 import { findModelByString } from "./find-model-by-string";
 import { modelToURI } from "./model-to-uri";
@@ -215,5 +216,42 @@ describe("findModelByString", () => {
         expect(result.model?.author).toBe(expectedAuthor);
       },
     );
+  });
+
+  describe("default model", () => {
+    it("should find model with default tag when searching for default model", () => {
+      const result = findModelByString(DEFAULT_OPENAI_MODEL, [
+        createMockModel({
+          author: "openai",
+          canonicalId: "not-it-1",
+          provider: "openai",
+          providerId: "not-it-1",
+        }),
+        createMockModel({
+          author: "openai",
+          canonicalId: "not-it-2",
+          provider: "openai",
+          providerId: "not-it-2",
+        }),
+        {
+          ...createMockModel({
+            author: "openai",
+            canonicalId: "default-model",
+            provider: "openai",
+            providerId: "default-model",
+          }),
+          tags: ["default"],
+        },
+        createMockModel({
+          author: "anthropic",
+          canonicalId: "not-it-3",
+          provider: "anthropic",
+          providerId: "not-it-3",
+        }),
+      ]);
+      expect(result).toBeDefined();
+      expect(result.model?.canonicalId).toBe("default-model");
+      expect(result.model?.tags).toContain("default");
+    });
   });
 });
