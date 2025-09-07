@@ -4,7 +4,7 @@ import {
   StoreAIProviderSchema,
 } from "@/shared/schemas/provider";
 import { call, eventIterator } from "@orpc/server";
-import { fetchCredits, getProviderAdapter } from "@quests/ai-gateway";
+import { getProviderAdapter } from "@quests/ai-gateway";
 import { ulid } from "ulid";
 import { z } from "zod";
 
@@ -120,21 +120,24 @@ const credits = base
   .use(cacheMiddleware)
   .errors({ FETCH_FAILED: {} })
   .input(z.object({ provider: z.enum(["openrouter"]) }))
-  .handler(async ({ errors }) => {
+  .handler(async ({ errors, input }) => {
     const providersStore = getProvidersStore();
     const provider = providersStore
       .get("providers")
-      .find((p) => p.type === "openrouter");
+      .find((p) => p.type === input.provider);
 
     if (!provider) {
       throw errors.NOT_FOUND();
     }
 
-    const result = await fetchCredits(provider);
+    const adapter = getProviderAdapter(provider.type);
+    if (!adapter.fetchCredits) {
+      throw errors.NOT_FOUND({
+        message: "Provider does not support fetching credits",
+      });
+    }
+    const result = await adapter.fetchCredits(provider);
     if (!result.ok) {
-      if (result.error.type === "gateway-not-found-error") {
-        throw errors.NOT_FOUND({ message: result.error.message });
-      }
       throw errors.FETCH_FAILED({ message: result.error.message });
     }
 
