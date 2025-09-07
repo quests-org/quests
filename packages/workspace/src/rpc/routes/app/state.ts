@@ -13,8 +13,8 @@ const bySubdomain = base
   .handler(async function* ({ context, errors, input, signal }) {
     const { workspaceRef } = context;
 
-    const getOrThrow = () => {
-      const result = getWorkspaceAppState({
+    const getOrThrow = async () => {
+      const result = await getWorkspaceAppState({
         subdomain: input.subdomain,
         workspaceRef,
       });

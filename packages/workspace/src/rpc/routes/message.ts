@@ -108,6 +108,12 @@ const create = base
 
       const messageText = textForMessage(message);
 
+      if (appConfig.type === "project") {
+        publisher.publish("project.updated", {
+          subdomain: appConfig.subdomain,
+        });
+      }
+
       context.workspaceConfig.captureEvent("message.created", {
         length: messageText.length,
         modelId: model.modelId,

@@ -1,5 +1,8 @@
 import { type SubdomainPart } from "../../schemas/subdomain-part";
-import { type ProjectSubdomain } from "../../schemas/subdomains";
+import {
+  type ProjectSubdomain,
+  ProjectSubdomainSchema,
+} from "../../schemas/subdomains";
 import { type WorkspaceConfig } from "../../types";
 import { createAppConfig, type CreateAppConfigReturn } from "./create";
 
@@ -11,7 +14,7 @@ export function newProjectConfig({
   workspaceConfig: WorkspaceConfig;
 }): CreateAppConfigReturn<ProjectSubdomain> {
   return createAppConfig({
-    subdomain: folderName,
+    subdomain: ProjectSubdomainSchema.parse(folderName),
     workspaceConfig,
   });
 }

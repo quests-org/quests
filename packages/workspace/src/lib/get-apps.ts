@@ -1,7 +1,7 @@
 import { err, ok, type Result } from "neverthrow";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { alphabetical } from "radashi";
+import { assign, sort } from "radashi";
 
 import {
   type WorkspaceApp,
@@ -29,6 +29,7 @@ import { type WorkspaceConfig } from "../types";
 import { createAppConfig } from "./app-config/create";
 import { getSandboxesDir } from "./app-dir-utils";
 import { folderNameForSubdomain } from "./folder-name-for-subdomain";
+import { getAppDirTimestamps } from "./get-app-dir-timestamps";
 import {
   isPreviewSubdomain,
   isProjectSubdomain,
@@ -112,7 +113,7 @@ export async function getApp<T extends AppSubdomain>(
     }
 
     // Create the sandbox app
-    const sandboxResult = await createWorkspaceApp({
+    const sandboxResult = await workspaceApp({
       appDir: sandboxDir,
       parent: parent.value,
     });
@@ -135,9 +136,10 @@ export async function getApp<T extends AppSubdomain>(
     }
 
     // Create the version app directly without checking directory existence
-    const versionResult = createWorkspaceAppForVersion({
+    const versionResult = await workspaceAppForVersion({
       parent: parent.value,
       subdomain,
+      workspaceConfig,
     });
 
     if (versionResult.isErr()) {
@@ -180,7 +182,7 @@ export async function getApp<T extends AppSubdomain>(
   }
 
   // Create the workspace app
-  const appResult = await createWorkspaceApp({
+  const appResult = await workspaceApp({
     appDir,
     parent,
   });
@@ -194,14 +196,28 @@ export async function getApp<T extends AppSubdomain>(
 
 export async function getProjects(
   workspaceConfig: WorkspaceConfig,
-  limit?: number,
+  options: {
+    direction?: "asc" | "desc";
+    limit?: number;
+    sortBy?: "createdAt" | "updatedAt";
+  } = {},
 ): Promise<{ projects: WorkspaceAppProject[]; total: number }> {
+  const { direction, limit, sortBy } = assign(
+    {
+      direction: "desc",
+      sortBy: "updatedAt",
+    },
+    options,
+  );
   const projects: WorkspaceAppProject[] = [];
+  const sortByFn =
+    sortBy === "createdAt"
+      ? (project: WorkspaceAppProject) => project.createdAt.getTime()
+      : (project: WorkspaceAppProject) => project.updatedAt.getTime();
 
-  // Process project apps only
   const projectAppDirs = await appDirsInRootDir(workspaceConfig.projectsDir);
   for (const appDir of projectAppDirs) {
-    const projectApp = await createWorkspaceApp({
+    const projectApp = await workspaceApp({
       appDir,
       parent: "projects",
     });
@@ -210,15 +226,13 @@ export async function getProjects(
     }
   }
 
-  // Sort by folder name in reverse alphabetical order (newest first based on folder naming)
-  const sortedProjects = alphabetical(
+  const sortedProjects = sort(
     projects,
-    (project) => project.folderName,
-  ).reverse();
+    (project) => (direction === "asc" ? 1 : -1) * sortByFn(project),
+  );
 
   const total = sortedProjects.length;
 
-  // Apply limit if specified
   if (limit !== undefined) {
     return { projects: sortedProjects.slice(0, limit), total };
   }
@@ -240,7 +254,7 @@ export async function getSandboxesForProject(
   const sandboxes: WorkspaceAppSandbox[] = [];
 
   for (const sandboxDir of sandboxDirs) {
-    const sandboxApp = await createWorkspaceApp({
+    const sandboxApp = await workspaceApp({
       appDir: sandboxDir,
       parent: projectApp,
     });
@@ -274,7 +288,6 @@ async function appDirsInRootDir(rootDir: AbsolutePath): Promise<AppDir[]> {
     return [];
   }
 }
-
 async function computeAppTitle(
   appDir: AppDir,
   folderName: string,
@@ -287,7 +300,7 @@ async function computeAppTitle(
   }
 }
 
-async function createWorkspaceApp({
+async function workspaceApp({
   appDir,
   parent,
 }: {
@@ -319,6 +332,7 @@ async function createWorkspaceApp({
     const questsConfig = await getQuestManifest(appDir);
 
     const projectApp: WorkspaceAppProject = {
+      ...(await getAppDirTimestamps(appDir)),
       description: questsConfig?.description,
       folderName: rawFolderName,
       icon: questsConfig?.icon,
@@ -344,10 +358,10 @@ async function createWorkspaceApp({
       });
     }
 
-    // Compute title from manifest or fallback to folder name
     const title = await computeAppTitle(appDir, rawFolderName);
 
     const previewApp: WorkspaceAppPreview = {
+      ...(await getAppDirTimestamps(appDir)),
       folderName: rawFolderName,
       subdomain: rawSubdomain.data,
       title,
@@ -360,17 +374,16 @@ async function createWorkspaceApp({
     return ok(previewApp);
   }
 
-  // Try sandbox first
   const possibleSandboxSubdomain = `sandbox-${folderNameResult.data}.${parent.subdomain}`;
   const sandboxSubdomainResult = SandboxSubdomainSchema.safeParse(
     possibleSandboxSubdomain,
   );
 
   if (sandboxSubdomainResult.success) {
-    // Compute title from manifest or fallback to folder name
     const title = await computeAppTitle(appDir, rawFolderName);
 
     const sandboxApp: WorkspaceAppSandbox = {
+      ...(await getAppDirTimestamps(appDir)),
       folderName: rawFolderName,
       project: parent,
       subdomain: sandboxSubdomainResult.data,
@@ -384,17 +397,16 @@ async function createWorkspaceApp({
     return ok(sandboxApp);
   }
 
-  // Try version
   const possibleVersionSubdomain = `version-${folderNameResult.data}.${parent.subdomain}`;
   const versionSubdomainResult = VersionSubdomainSchema.safeParse(
     possibleVersionSubdomain,
   );
 
   if (versionSubdomainResult.success) {
-    // Compute title from manifest or fallback to folder name
     const title = await computeAppTitle(appDir, rawFolderName);
 
     const versionApp: WorkspaceAppVersion = {
+      ...(await getAppDirTimestamps(appDir)),
       folderName: rawFolderName,
       project: parent,
       subdomain: versionSubdomainResult.data,
@@ -414,12 +426,14 @@ async function createWorkspaceApp({
   });
 }
 
-function createWorkspaceAppForVersion({
+async function workspaceAppForVersion({
   parent,
   subdomain,
+  workspaceConfig,
 }: {
   parent: WorkspaceAppProject;
   subdomain: AppSubdomain;
+  workspaceConfig: WorkspaceConfig;
 }) {
   const rawFolderName = folderNameForSubdomain(subdomain);
   if (rawFolderName.isErr()) {
@@ -437,7 +451,13 @@ function createWorkspaceAppForVersion({
     });
   }
 
+  const versionConfig = createAppConfig({
+    subdomain: versionSubdomainResult.data,
+    workspaceConfig,
+  });
+
   const versionApp: WorkspaceAppVersion = {
+    ...(await getAppDirTimestamps(versionConfig.appDir)),
     folderName: rawFolderName.value,
     project: parent,
     subdomain: versionSubdomainResult.data,

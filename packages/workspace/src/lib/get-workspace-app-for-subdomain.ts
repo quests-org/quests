@@ -1,5 +1,3 @@
-import { err, ok, type Result, safeTry } from "neverthrow";
-
 import {
   type WorkspaceApp,
   type WorkspaceAppPreview,
@@ -10,15 +8,13 @@ import {
 import {
   type AppSubdomain,
   type PreviewSubdomain,
-  PreviewSubdomainSchema,
   type ProjectSubdomain,
-  ProjectSubdomainSchema,
   type SandboxSubdomain,
-  SandboxSubdomainSchema,
   type VersionSubdomain,
-  VersionSubdomainSchema,
 } from "../schemas/subdomains";
-import { folderNameForSubdomain } from "./folder-name-for-subdomain";
+import { type WorkspaceConfig } from "../types";
+import { createAppConfig } from "./app-config/create";
+import { getAppDirTimestamps } from "./get-app-dir-timestamps";
 import { projectSubdomainForSubdomain } from "./project-subdomain-for-subdomain";
 import { localhostUrl, loopbackUrl } from "./url-for-subdomain";
 
@@ -32,81 +28,65 @@ type GetWorkspaceAppResult<T extends AppSubdomain> = T extends PreviewSubdomain
         ? WorkspaceAppVersion
         : WorkspaceApp;
 
-export function getWorkspaceAppForSubdomain<T extends AppSubdomain>(
+export async function getWorkspaceAppForSubdomain<T extends AppSubdomain>(
   subdomain: T,
-): Result<
-  GetWorkspaceAppResult<T>,
-  {
-    message: string;
-    type: "schema-error";
-  }
-> {
-  return safeTry(function* () {
-    const folderName = yield* folderNameForSubdomain(subdomain);
-    const previewResult = PreviewSubdomainSchema.safeParse(subdomain);
-    if (previewResult.success) {
-      return ok({
-        folderName,
-        subdomain: previewResult.data,
-        title: folderName,
-        type: "preview",
-        urls: {
-          localhost: localhostUrl(subdomain),
-          loopback: loopbackUrl(subdomain),
-        },
-      } satisfies WorkspaceAppPreview as unknown as GetWorkspaceAppResult<T>);
-    }
-    const projectResult = ProjectSubdomainSchema.safeParse(subdomain);
-    if (projectResult.success) {
-      return ok({
-        folderName,
-        subdomain: projectResult.data,
-        title: folderName,
-        type: "project",
-        urls: {
-          localhost: localhostUrl(subdomain),
-          loopback: loopbackUrl(subdomain),
-        },
-      } satisfies WorkspaceAppProject as unknown as GetWorkspaceAppResult<T>);
-    }
-    const sandboxResult = SandboxSubdomainSchema.safeParse(subdomain);
-    if (sandboxResult.success) {
-      const project = yield* getWorkspaceAppForSubdomain(
-        projectSubdomainForSubdomain(sandboxResult.data),
-      );
-      return ok({
-        folderName,
+  workspaceConfig: WorkspaceConfig,
+): Promise<GetWorkspaceAppResult<T>> {
+  const appConfig = createAppConfig({ subdomain, workspaceConfig });
+
+  const timestamps = await getAppDirTimestamps(appConfig.appDir);
+
+  const baseApp: Omit<WorkspaceApp, "project" | "subdomain"> = {
+    createdAt: timestamps.createdAt,
+    folderName: appConfig.folderName,
+    title: appConfig.folderName,
+    type: appConfig.type,
+    updatedAt: timestamps.updatedAt,
+    urls: {
+      localhost: localhostUrl(appConfig.subdomain),
+      loopback: loopbackUrl(appConfig.subdomain),
+    },
+  };
+
+  if (appConfig.type === "version" || appConfig.type === "sandbox") {
+    const projectSubdomain = projectSubdomainForSubdomain(appConfig.subdomain);
+    const project = await getWorkspaceAppForSubdomain(
+      projectSubdomain,
+      workspaceConfig,
+    );
+    if (appConfig.type === "version") {
+      return {
+        ...baseApp,
         project,
-        subdomain: sandboxResult.data,
-        title: folderName,
-        type: "sandbox",
-        urls: {
-          localhost: localhostUrl(subdomain),
-          loopback: loopbackUrl(subdomain),
-        },
-      } satisfies WorkspaceAppSandbox as unknown as GetWorkspaceAppResult<T>);
+        subdomain: appConfig.subdomain,
+        type: "version",
+      } satisfies WorkspaceAppVersion as unknown as GetWorkspaceAppResult<T>;
     }
 
-    const versionResult = VersionSubdomainSchema.safeParse(subdomain);
-    if (versionResult.success) {
-      const project = yield* getWorkspaceAppForSubdomain(
-        projectSubdomainForSubdomain(versionResult.data),
-      );
-      return ok({
-        folderName,
-        project,
-        subdomain: versionResult.data,
-        title: folderName,
-        type: "version",
-        urls: {
-          localhost: localhostUrl(subdomain),
-          loopback: loopbackUrl(subdomain),
-        },
-      } satisfies WorkspaceAppVersion as unknown as GetWorkspaceAppResult<T>);
-    }
-    return err({
-      message: "Subdomain does not match any known type",
-      type: "schema-error" as const,
-    });
-  });
+    return {
+      ...baseApp,
+      project,
+      subdomain: appConfig.subdomain,
+      type: "sandbox",
+    } satisfies WorkspaceAppSandbox as unknown as GetWorkspaceAppResult<T>;
+  }
+
+  if (appConfig.type === "preview") {
+    return {
+      ...baseApp,
+      subdomain: appConfig.subdomain,
+      type: "preview",
+    } satisfies WorkspaceAppPreview as unknown as GetWorkspaceAppResult<T>;
+  }
+
+  return {
+    ...baseApp,
+    subdomain: appConfig.subdomain,
+    title: appConfig.folderName,
+    type: appConfig.type,
+    urls: {
+      localhost: localhostUrl(appConfig.subdomain),
+      loopback: loopbackUrl(appConfig.subdomain),
+    },
+  } satisfies WorkspaceAppProject as unknown as GetWorkspaceAppResult<T>;
 }

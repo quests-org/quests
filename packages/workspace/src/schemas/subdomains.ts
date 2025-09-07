@@ -4,7 +4,7 @@ import { type SubdomainPart, validateSubdomainPart } from "./subdomain-part";
 
 export const PREVIEW_SUBDOMAIN_PART = "preview" as const;
 export type PreviewSubdomain = `${SubdomainPart}.${PreviewSubdomainPart}`;
-export type ProjectSubdomain = SubdomainPart;
+export type ProjectSubdomain = SubdomainPart & z.$brand<"ProjectSubdomain">;
 
 export type SandboxSubdomain = `sandbox-${SubdomainPart}.${ProjectSubdomain}`;
 export type VersionSubdomain = `version-${SubdomainPart}.${ProjectSubdomain}`;

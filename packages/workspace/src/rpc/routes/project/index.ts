@@ -87,18 +87,22 @@ const ProjectsWithTotalSchema = z.object({
   total: z.number(),
 });
 
-const ListInputSchema = z.union([
-  z.object({
+const ListInputSchema = z
+  .object({
+    direction: z.enum(["asc", "desc"]).optional(),
     limit: z.number().optional(),
-  }),
-  z.void(),
-]);
+    sortBy: z.enum(["createdAt", "updatedAt"]).optional(),
+  })
+  .default({
+    direction: "desc",
+    sortBy: "updatedAt",
+  });
 
 const list = base
   .input(ListInputSchema)
   .output(ProjectsWithTotalSchema)
   .handler(async ({ context, input }) => {
-    return getProjects(context.workspaceConfig, input?.limit);
+    return getProjects(context.workspaceConfig, input);
   });
 
 const create = base
@@ -200,20 +204,17 @@ const create = base
         },
       });
 
-      const workspaceAppResult = getWorkspaceAppForSubdomain(
+      const workspaceApp = await getWorkspaceAppForSubdomain(
         result.value.projectConfig.subdomain,
+        context.workspaceConfig,
       );
-
-      if (workspaceAppResult.isErr()) {
-        throw toORPCError(workspaceAppResult.error, errors);
-      }
 
       context.workspaceConfig.captureEvent("project.created", {
         modelId: model.modelId,
         providerId: model.provider,
       });
 
-      return workspaceAppResult.value;
+      return workspaceApp;
     },
   );
 
@@ -256,19 +257,16 @@ const createFromPreview = base
         subdomain: result.value.projectConfig.subdomain,
       });
 
-      const workspaceAppResult = getWorkspaceAppForSubdomain(
+      const workspaceApp = await getWorkspaceAppForSubdomain(
         result.value.projectConfig.subdomain,
+        context.workspaceConfig,
       );
-
-      if (workspaceAppResult.isErr()) {
-        throw toORPCError(workspaceAppResult.error, errors);
-      }
 
       context.workspaceConfig.captureEvent("project.created_from_preview", {
         preview_folder_name: previewConfig.folderName,
       });
 
-      return workspaceAppResult.value;
+      return workspaceApp;
     },
   );
 
