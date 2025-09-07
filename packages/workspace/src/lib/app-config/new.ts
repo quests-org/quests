@@ -1,20 +1,19 @@
-import { type SubdomainPart } from "../../schemas/subdomain-part";
 import {
   type ProjectSubdomain,
   ProjectSubdomainSchema,
 } from "../../schemas/subdomains";
 import { type WorkspaceConfig } from "../../types";
+import { generateNewFolderName } from "../generate-folder-name";
 import { createAppConfig, type CreateAppConfigReturn } from "./create";
 
-export function newProjectConfig({
-  folderName,
+export async function newProjectConfig({
   workspaceConfig,
 }: {
-  folderName: SubdomainPart;
   workspaceConfig: WorkspaceConfig;
-}): CreateAppConfigReturn<ProjectSubdomain> {
+}): Promise<CreateAppConfigReturn<ProjectSubdomain>> {
+  const projectName = await generateNewFolderName(workspaceConfig.projectsDir);
   return createAppConfig({
-    subdomain: ProjectSubdomainSchema.parse(folderName),
+    subdomain: ProjectSubdomainSchema.parse(projectName),
     workspaceConfig,
   });
 }

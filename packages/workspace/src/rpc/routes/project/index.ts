@@ -1,7 +1,6 @@
 import { call, eventIterator } from "@orpc/server";
 import { AIGatewayModel, fetchCheapAISDKModel } from "@quests/ai-gateway";
 import { mergeGenerators } from "@quests/shared/merge-generators";
-import { ulid } from "ulid";
 import { z } from "zod";
 
 import { createAppConfig } from "../../../lib/app-config/create";
@@ -18,7 +17,6 @@ import { getWorkspaceServerURL } from "../../../logic/server/url";
 import { WorkspaceAppProjectSchema } from "../../../schemas/app";
 import { SessionMessage } from "../../../schemas/session/message";
 import { StoreId } from "../../../schemas/store-id";
-import { SubdomainPartSchema } from "../../../schemas/subdomain-part";
 import {
   PreviewSubdomainSchema,
   ProjectSubdomainSchema,
@@ -138,9 +136,7 @@ const create = base
         throw toORPCError(error, errors);
       }
 
-      const newFolderName = SubdomainPartSchema.parse(ulid().toLowerCase());
-      const projectConfig = newProjectConfig({
-        folderName: newFolderName,
+      const projectConfig = await newProjectConfig({
         workspaceConfig: context.workspaceConfig,
       });
 
@@ -233,7 +229,6 @@ const createFromPreview = base
       input: { previewSubdomain, sessionId },
       signal,
     }) => {
-      const newFolderName = SubdomainPartSchema.parse(ulid().toLowerCase());
       const previewConfig = createAppConfig({
         subdomain: previewSubdomain,
         workspaceConfig: context.workspaceConfig,
@@ -241,7 +236,6 @@ const createFromPreview = base
 
       const result = await createProjectFromPreview(
         {
-          newFolderName,
           previewConfig,
           sessionId,
           workspaceConfig: context.workspaceConfig,
