@@ -38,6 +38,13 @@ interface SetupProviderAdapter<
   ) => SharedV2ProviderOptions | undefined;
   buildURL: (options: { baseURL?: string; path: string }) => string;
   features: AdapterFeatures[];
+  fetchCredits?: (provider: AIGatewayProvider.Type) => AsyncResult<
+    {
+      total_credits: number;
+      total_usage: number;
+    },
+    TypedError.Fetch
+  >;
   fetchModels: (
     provider: AIGatewayProvider.Type,
     { captureException }: { captureException: CaptureExceptionFunction },

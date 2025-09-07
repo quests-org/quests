@@ -4,14 +4,21 @@ import { Result } from "typescript-result";
 import { z } from "zod";
 
 import { TypedError } from "../lib/errors";
-import { fetchCredits } from "../lib/fetch-credits";
 import { fetchJson } from "../lib/fetch-json";
 import { isModelNew } from "../lib/is-model-new";
 import { internalAPIKey } from "../lib/key-for-provider";
 import { modelToURI } from "../lib/model-to-uri";
 import { PROVIDER_API_PATH } from "../lib/provider-paths";
 import { AIGatewayModel } from "../schemas/model";
+import { type AIGatewayProvider } from "../schemas/provider";
 import { setupProviderAdapter } from "./setup";
+
+const OpenRouterCreditsResponseSchema = z.object({
+  data: z.object({
+    total_credits: z.number(),
+    total_usage: z.number(),
+  }),
+});
 
 const KNOWN_MODEL_IDS = [
   "openai/gpt-5",
@@ -66,118 +73,153 @@ export const openrouterAdapter = setupProviderAdapter({
     "z-ai/glm-4.5-air": ["coding", "recommended"],
   },
   providerType: "openrouter",
-}).create(({ buildURL, getModelTags, providerType }) => ({
-  aiSDKModel: (model, { cacheIdentifier, workspaceServerURL }) => {
-    return createOpenRouter({
-      apiKey: internalAPIKey(),
-      baseURL: `${workspaceServerURL}${PROVIDER_API_PATH.openrouter}`,
-      extraBody: {
-        user: cacheIdentifier,
-      },
-      headers: {
-        "HTTP-Referer": ATTRIBUTION_URL,
-        "X-Title": ATTRIBUTION_NAME,
-      },
-    })(model.providerId);
-  },
-  features: ["openai/chat-completions"],
-  fetchModels: (provider) =>
-    Result.gen(function* () {
-      const headers = new Headers({
-        "Content-Type": "application/json",
-      });
+}).create(({ buildURL, getModelTags, providerType }) => {
+  function fetchCredits(provider: AIGatewayProvider.Type) {
+    return Result.fromAsync(async () => {
+      const headers = new Headers({ "Content-Type": "application/json" });
       setAuthHeaders(headers, provider.apiKey);
-
-      const data = yield* fetchJson({
-        headers,
-        url: buildURL({ baseURL: provider.baseURL, path: "/v1/models" }),
-      });
-
-      const modelsResult = yield* Result.try(
-        () => OpenRouterModelsResponseSchema.parse(data),
-        (error) =>
-          new TypedError.Parse(
-            `Failed to validate models from ${provider.type}`,
-            { cause: error },
-          ),
+      const url = new URL(
+        buildURL({
+          baseURL: provider.baseURL,
+          path: "/v1/credits",
+        }),
       );
 
-      const validModels: AIGatewayModel.Type[] = [];
-      for (const model of modelsResult.data) {
-        const providerId = AIGatewayModel.ProviderIdSchema.parse(model.id);
-        const [modelAuthor, modelId] = providerId.split("/");
-        if (!modelAuthor || !modelId) {
-          return Result.error(
-            new TypedError.Parse(
-              `Invalid model ID for openrouter: ${model.id}`,
-            ),
+      const result = Result.try(
+        async () => {
+          const response = await fetch(url.toString(), { headers });
+          if (!response.ok) {
+            throw new Error("Failed to fetch credits");
+          }
+          const creditsData = OpenRouterCreditsResponseSchema.parse(
+            await response.json(),
           );
-        }
 
-        const canonicalModelId = yield* Result.try(
-          () => AIGatewayModel.CanonicalIdSchema.parse(modelId),
+          return creditsData.data;
+        },
+        (error) =>
+          new TypedError.Fetch("Failed to fetch credits", {
+            cause: error,
+          }),
+      );
+      return result;
+    });
+  }
+
+  return {
+    aiSDKModel: (model, { cacheIdentifier, workspaceServerURL }) => {
+      return createOpenRouter({
+        apiKey: internalAPIKey(),
+        baseURL: `${workspaceServerURL}${PROVIDER_API_PATH.openrouter}`,
+        extraBody: {
+          user: cacheIdentifier,
+        },
+        headers: {
+          "HTTP-Referer": ATTRIBUTION_URL,
+          "X-Title": ATTRIBUTION_NAME,
+        },
+      })(model.providerId);
+    },
+    features: ["openai/chat-completions"],
+    fetchCredits,
+    fetchModels: (provider) =>
+      Result.gen(function* () {
+        const headers = new Headers({
+          "Content-Type": "application/json",
+        });
+        setAuthHeaders(headers, provider.apiKey);
+
+        const data = yield* fetchJson({
+          headers,
+          url: buildURL({ baseURL: provider.baseURL, path: "/v1/models" }),
+        });
+
+        const modelsResult = yield* Result.try(
+          () => OpenRouterModelsResponseSchema.parse(data),
           (error) =>
             new TypedError.Parse(
-              `Failed to parse canonical model ID: ${modelId}`,
+              `Failed to validate models from ${provider.type}`,
               { cause: error },
             ),
         );
 
-        const features: AIGatewayModel.ModelFeatures[] = [];
+        const validModels: AIGatewayModel.Type[] = [];
+        for (const model of modelsResult.data) {
+          const providerId = AIGatewayModel.ProviderIdSchema.parse(model.id);
+          const [modelAuthor, modelId] = providerId.split("/");
+          if (!modelAuthor || !modelId) {
+            return Result.error(
+              new TypedError.Parse(
+                `Invalid model ID for openrouter: ${model.id}`,
+              ),
+            );
+          }
 
-        if (model.architecture.input_modalities.includes("text")) {
-          features.push("inputText");
-        }
-        if (model.architecture.output_modalities.includes("text")) {
-          features.push("outputText");
-        }
-        if (model.supported_parameters?.includes("tools")) {
-          features.push("tools");
-        }
+          const canonicalModelId = yield* Result.try(
+            () => AIGatewayModel.CanonicalIdSchema.parse(modelId),
+            (error) =>
+              new TypedError.Parse(
+                `Failed to parse canonical model ID: ${modelId}`,
+                { cause: error },
+              ),
+          );
 
-        const tags = getModelTags(providerId);
-        if (isModelNew(model.created)) {
-          tags.push("new");
-        }
+          const features: AIGatewayModel.ModelFeatures[] = [];
 
-        validModels.push({
-          author: modelAuthor,
-          canonicalId: canonicalModelId,
-          features,
-          params: { provider: providerType },
-          providerId,
-          source: {
-            providerType,
-            value: model,
-          },
-          tags,
-          uri: modelToURI({
+          if (model.architecture.input_modalities.includes("text")) {
+            features.push("inputText");
+          }
+          if (model.architecture.output_modalities.includes("text")) {
+            features.push("outputText");
+          }
+          if (model.supported_parameters?.includes("tools")) {
+            features.push("tools");
+          }
+
+          const tags = getModelTags(providerId);
+          if (isModelNew(model.created)) {
+            tags.push("new");
+          }
+
+          validModels.push({
             author: modelAuthor,
             canonicalId: canonicalModelId,
+            features,
             params: { provider: providerType },
-          }),
-        } satisfies AIGatewayModel.Type);
-      }
-      return validModels;
+            providerId,
+            source: {
+              providerType,
+              value: model,
+            },
+            tags,
+            uri: modelToURI({
+              author: modelAuthor,
+              canonicalId: canonicalModelId,
+              params: { provider: providerType },
+            }),
+          } satisfies AIGatewayModel.Type);
+        }
+        return validModels;
+      }),
+    getEnv: (baseURL) => ({
+      OPENROUTER_API_KEY: internalAPIKey(),
+      OPENROUTER_BASE_URL: `${baseURL}${PROVIDER_API_PATH.openrouter}`,
     }),
-  getEnv: (baseURL) => ({
-    OPENROUTER_API_KEY: internalAPIKey(),
-    OPENROUTER_BASE_URL: `${baseURL}${PROVIDER_API_PATH.openrouter}`,
-  }),
-  setAuthHeaders,
-  verifyAPIKey: ({ apiKey, baseURL }) => {
-    return fetchCredits({
-      apiKey,
-      baseURL,
-      cacheIdentifier: "not-used", // Not sent with this request
-      type: "openrouter",
-    })
-      .map(() => true)
-      .mapError(
-        (error) =>
-          new TypedError.VerificationFailed("Failed to verify API key", {
-            cause: error,
-          }),
-      );
-  },
-}));
+    setAuthHeaders,
+    verifyAPIKey: ({ apiKey, baseURL }) => {
+      return fetchCredits({
+        apiKey,
+        baseURL,
+        cacheIdentifier: "not-used", // Not sent with this request
+        type: "openrouter",
+      })
+        .map(() => true)
+        .mapError(
+          (error) =>
+            new TypedError.VerificationFailed("Failed to verify API key", {
+              cause: error,
+            }),
+        );
+    },
+  };
+});
