@@ -195,7 +195,7 @@ export function ModelPicker({
         <Button
           aria-expanded={open}
           className={cn(
-            "flex items-center justify-between text-left h-auto px-2 py-1",
+            "flex items-center justify-between text-left h-auto py-1 px-1.5!",
             !selectedModel && "text-muted-foreground",
             "max-w-full",
             className,
