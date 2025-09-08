@@ -37,7 +37,7 @@ export function ToolbarFavoriteAction({
   return (
     <>
       <Button
-        className={cn(compact && "size-7", "py-1")}
+        className={cn(compact && "size-7")}
         onClick={() => {
           if (isFavorite) {
             handleUnfavorite();
@@ -45,7 +45,7 @@ export function ToolbarFavoriteAction({
             setSettingsDialogMode("favorites");
           }
         }}
-        size="icon"
+        size="sm"
         variant="ghost"
       >
         {isFavorite ? (

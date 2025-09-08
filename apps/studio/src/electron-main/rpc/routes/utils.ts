@@ -2,9 +2,10 @@ import { base } from "@/electron-main/rpc/base";
 import { publisher } from "@/electron-main/rpc/publisher";
 import { ProjectSubdomainSchema } from "@quests/workspace/client";
 import { createAppConfig } from "@quests/workspace/electron";
-import { shell } from "electron";
+import { shell, webContents } from "electron";
 import { exec } from "node:child_process";
 import fs from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
 import { z } from "zod";
@@ -91,6 +92,84 @@ const openAppIn = base
     }
   });
 
+const takeScreenshot = base
+  .errors({
+    SCREENSHOT_FAILED: {
+      message: "Failed to take screenshot",
+    },
+  })
+  .input(
+    z.object({
+      bounds: z
+        .object({
+          height: z.number(),
+          width: z.number(),
+          x: z.number(),
+          y: z.number(),
+        })
+        .optional(),
+      subdomain: ProjectSubdomainSchema,
+    }),
+  )
+  .output(
+    z.object({
+      filename: z.string(),
+      filepath: z.string(),
+    }),
+  )
+  .handler(async ({ context, errors, input }) => {
+    try {
+      const webContent = webContents.fromId(context.webContentsId);
+      if (!webContent) {
+        throw errors.SCREENSHOT_FAILED({ message: "Web contents not found" });
+      }
+
+      const image = input.bounds
+        ? await webContent.capturePage({
+            height: Math.round(input.bounds.height),
+            width: Math.round(input.bounds.width),
+            x: Math.round(input.bounds.x),
+            y: Math.round(input.bounds.y),
+          })
+        : await webContent.capturePage();
+
+      const buffer = image.toPNG();
+
+      const timestamp = new Date().toISOString().replaceAll(/[:.]/g, "-");
+      const filename = `${input.subdomain}-screenshot-${timestamp}.png`;
+      const downloadsPath = path.join(os.homedir(), "Downloads");
+      const filepath = path.join(downloadsPath, filename);
+
+      await fs.writeFile(filepath, buffer);
+
+      return { filename, filepath };
+    } catch (error) {
+      throw errors.SCREENSHOT_FAILED({
+        message: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
+  });
+
+const showFileInFolder = base
+  .errors({
+    FILE_NOT_FOUND: {
+      message: "File not found",
+    },
+  })
+  .input(
+    z.object({
+      filepath: z.string(),
+    }),
+  )
+  .handler(async ({ errors, input }) => {
+    try {
+      await fs.access(input.filepath);
+      shell.showItemInFolder(input.filepath);
+    } catch {
+      throw errors.FILE_NOT_FOUND();
+    }
+  });
+
 const live = {
   serverExceptions: base.handler(async function* ({ signal }) {
     for await (const payload of publisher.subscribe("server-exception", {
@@ -106,4 +185,6 @@ export const utils = {
   live,
   openAppIn,
   openExternalLink,
+  showFileInFolder,
+  takeScreenshot,
 };

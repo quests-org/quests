@@ -8,12 +8,13 @@ import { rpcClient } from "@/client/rpc/client";
 import { type WorkspaceAppProject } from "@quests/workspace/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
+  Camera,
   ChevronDown,
   ExternalLinkIcon,
   FolderOpenIcon,
-  PencilIcon,
   PenLine,
   SettingsIcon,
+  Share,
   Terminal,
 } from "lucide-react";
 import { useState } from "react";
@@ -31,26 +32,25 @@ import {
   AlertDialogTitle,
 } from "./ui/alert-dialog";
 import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "./ui/dialog";
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
 
 interface ProjectHeaderToolbarProps {
+  iframeRef: React.RefObject<HTMLIFrameElement | null>;
   project: WorkspaceAppProject;
 }
 
-export function ProjectHeaderToolbar({ project }: ProjectHeaderToolbarProps) {
+export function ProjectHeaderToolbar({
+  iframeRef,
+  project,
+}: ProjectHeaderToolbarProps) {
   const { data: favoriteProjects } = useQuery(
     rpcClient.favorites.live.listProjects.experimental_liveOptions(),
   );
@@ -58,20 +58,19 @@ export function ProjectHeaderToolbar({ project }: ProjectHeaderToolbarProps) {
     "favorites" | "settings" | undefined
   >(undefined);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [showRenameDialog, setShowRenameDialog] = useState(false);
-  const [newName, setNewName] = useState("");
 
   const isFavorite = favoriteProjects?.some(
     (favorite) => favorite.subdomain === project.subdomain,
   );
 
   const { isPending, trashApp } = useTrashApp({ navigateOnDelete: true });
-  const { isPending: isRenameLoading, mutateAsync: renameApp } = useMutation(
-    rpcClient.workspace.project.updateName.mutationOptions(),
-  );
 
   const openExternalLinkMutation = useMutation(
     rpcClient.utils.openExternalLink.mutationOptions(),
+  );
+
+  const showFileInFolderMutation = useMutation(
+    rpcClient.utils.showFileInFolder.mutationOptions(),
   );
 
   const openAppInMutation = useMutation(
@@ -79,6 +78,30 @@ export function ProjectHeaderToolbar({ project }: ProjectHeaderToolbarProps) {
       onError: (error) => {
         toast.error("Failed to open in app", {
           description: error.message,
+        });
+      },
+    }),
+  );
+
+  const takeScreenshotMutation = useMutation(
+    rpcClient.utils.takeScreenshot.mutationOptions({
+      onError: (error) => {
+        toast.error("Failed to take screenshot", {
+          description: error.message,
+        });
+      },
+      onSuccess: (result) => {
+        toast.success(`Screenshot saved to Downloads`, {
+          action: {
+            label: isMacOS() ? "Reveal in Finder" : "Show File",
+            onClick: () => {
+              showFileInFolderMutation.mutate({
+                filepath: result.filepath,
+              });
+            },
+          },
+          closeButton: true,
+          dismissible: true,
         });
       },
     }),
@@ -93,26 +116,35 @@ export function ProjectHeaderToolbar({ project }: ProjectHeaderToolbarProps) {
     }
   };
 
-  const handleRename = async () => {
-    if (!newName.trim()) {
-      toast.error("Please enter a valid name");
-      return;
-    }
-    try {
-      await renameApp({
-        newName: newName.trim(),
-        subdomain: project.subdomain,
-      });
-      toast.success("Project renamed successfully");
-      setShowRenameDialog(false);
-      setNewName("");
-    } catch {
-      toast.error("Failed to rename project");
-    }
-  };
-
   const handleOpenExternalClick = () => {
     openExternalLinkMutation.mutate({ url: project.urls.localhost });
+  };
+
+  const handleTakeScreenshot = async () => {
+    if (!iframeRef.current) {
+      toast.error("Unable to capture screenshot", {
+        description: "Iframe not found",
+      });
+      return;
+    }
+
+    // Allow the dropdown close animation to complete
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    const iframe = iframeRef.current;
+    const rect = iframe.getBoundingClientRect();
+
+    const bounds = {
+      height: rect.height,
+      width: rect.width,
+      x: rect.left,
+      y: rect.top,
+    };
+
+    takeScreenshotMutation.mutate({
+      bounds,
+      subdomain: project.subdomain,
+    });
   };
 
   return (
@@ -136,24 +168,74 @@ export function ProjectHeaderToolbar({ project }: ProjectHeaderToolbarProps) {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" side="bottom">
               <DropdownMenuItem
-                onSelect={() => {
-                  setNewName(project.title);
-                  setShowRenameDialog(true);
-                }}
-              >
-                <PencilIcon className="h-4 w-4" />
-                <span>Rename</span>
-              </DropdownMenuItem>
-
-              <DropdownMenuItem
-                className="flex justify-between"
                 onClick={() => {
                   setSettingsDialogMode("settings");
                 }}
               >
                 <SettingsIcon className="h-4 w-4" />
-                <span>App Settings</span>
+                <span>Settings</span>
               </DropdownMenuItem>
+
+              <DropdownMenuSeparator />
+
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  <PenLine className="h-4 w-4 mr-2" />
+                  <span>Open In</span>
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      void openAppInMutation.mutateAsync({
+                        subdomain: project.subdomain,
+                        type: "terminal",
+                      });
+                    }}
+                  >
+                    <Terminal className="h-4 w-4" />
+                    Open in Terminal
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      void openAppInMutation.mutateAsync({
+                        subdomain: project.subdomain,
+                        type: "cursor",
+                      });
+                    }}
+                  >
+                    <PenLine className="h-4 w-4" />
+                    Open in Cursor
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      void openAppInMutation.mutateAsync({
+                        subdomain: project.subdomain,
+                        type: "vscode",
+                      });
+                    }}
+                  >
+                    <ExternalLinkIcon className="h-4 w-4" />
+                    Open in VS Code
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      void openAppInMutation.mutateAsync({
+                        subdomain: project.subdomain,
+                        type: "show-in-folder",
+                      });
+                    }}
+                  >
+                    <FolderOpenIcon className="h-4 w-4" />
+                    {isMacOS() ? "Reveal in Finder" : "Show in File Manager"}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleOpenExternalClick}>
+                    <ExternalLinkIcon className="h-4 w-4" />
+                    Open in External Browser
+                  </DropdownMenuItem>
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
+
+              <DropdownMenuSeparator />
 
               <DropdownMenuItem
                 className="text-destructive focus:bg-destructive/15 focus:text-destructive"
@@ -168,51 +250,17 @@ export function ProjectHeaderToolbar({ project }: ProjectHeaderToolbarProps) {
           </DropdownMenu>
 
           <div className="flex items-center gap-2">
-            <ToolbarFavoriteAction compact project={project} />
+            <ToolbarFavoriteAction project={project} />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button
-                  className="gap-1 px-2 py-1 h-10"
-                  size="sm"
-                  variant="ghost"
-                >
-                  <PenLine className="h-4 w-4" />
-                  <ChevronDown className="h-3 w-3" />
+                <Button className="gap-1" size="sm" variant="ghost">
+                  <Share className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  onClick={() => {
-                    void openAppInMutation.mutateAsync({
-                      subdomain: project.subdomain,
-                      type: "terminal",
-                    });
-                  }}
-                >
-                  <Terminal className="h-4 w-4 mr-2" />
-                  Open in Terminal
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => {
-                    void openAppInMutation.mutateAsync({
-                      subdomain: project.subdomain,
-                      type: "cursor",
-                    });
-                  }}
-                >
-                  <PenLine className="h-4 w-4 mr-2" />
-                  Open in Cursor
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => {
-                    void openAppInMutation.mutateAsync({
-                      subdomain: project.subdomain,
-                      type: "vscode",
-                    });
-                  }}
-                >
-                  <ExternalLinkIcon className="h-4 w-4 mr-2" />
-                  Open in VS Code
+                <DropdownMenuItem onClick={handleTakeScreenshot}>
+                  <Camera className="h-4 w-4" />
+                  Screenshot
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => {
@@ -222,12 +270,8 @@ export function ProjectHeaderToolbar({ project }: ProjectHeaderToolbarProps) {
                     });
                   }}
                 >
-                  <FolderOpenIcon className="h-4 w-4 mr-2" />
+                  <FolderOpenIcon className="h-4 w-4" />
                   {isMacOS() ? "Reveal in Finder" : "Show in File Manager"}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleOpenExternalClick}>
-                  <ExternalLinkIcon className="h-4 w-4 mr-2" />
-                  Open in External Browser
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -258,38 +302,6 @@ export function ProjectHeaderToolbar({ project }: ProjectHeaderToolbarProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      <Dialog onOpenChange={setShowRenameDialog} open={showRenameDialog}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Rename Project</DialogTitle>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label className="text-right" htmlFor="name">
-                Name
-              </Label>
-              <Input
-                className="col-span-3"
-                id="name"
-                onChange={(e) => {
-                  setNewName(e.target.value);
-                }}
-                value={newName}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              disabled={isRenameLoading}
-              onClick={handleRename}
-              type="submit"
-            >
-              {isRenameLoading ? "Saving..." : "Save changes"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       <AppFavoriteDialog
         dialogTitle={

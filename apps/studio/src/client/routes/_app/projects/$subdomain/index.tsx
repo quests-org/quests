@@ -155,7 +155,7 @@ function RouteComponent() {
 
   return (
     <div className="flex flex-col h-dvh w-full">
-      <ProjectHeaderToolbar project={project} />
+      <ProjectHeaderToolbar iframeRef={iframeRef} project={project} />
 
       <div className="flex flex-1">
         <ProjectSidebar
@@ -164,7 +164,7 @@ function RouteComponent() {
           selectedVersion={selectedVersion}
         />
 
-        <div className="flex-1 flex flex-col p-2 bg-secondary border-l border-t rounded-md">
+        <div className="flex-1 flex flex-col p-2 bg-secondary border-l border-t rounded-tl-md">
           <div className="flex-1 flex flex-col bg-background border rounded-lg shadow-sm overflow-hidden">
             <ProjectToolbar
               iframeRef={iframeRef}
