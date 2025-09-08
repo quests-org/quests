@@ -1,7 +1,7 @@
 import { StoreId, type WorkspaceAppProject } from "@quests/workspace/client";
 import { skipToken, useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate, useSearch } from "@tanstack/react-router";
-import { Bug, History, MoreVertical, Plus, Trash2 } from "lucide-react";
+import { Bug, History, MoreVertical, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -49,9 +49,6 @@ export function SessionMenu({ project }: SessionMenuProps) {
   const [showJsonViewer, setShowJsonViewer] = useState(false);
   const [jsonViewerData, setJsonViewerData] = useState<unknown>(null);
 
-  const createEmptySessionMutation = useMutation(
-    rpcClient.workspace.session.create.mutationOptions(),
-  );
   const removeSessionMutation = useMutation(
     rpcClient.workspace.session.remove.mutationOptions(),
   );
@@ -66,32 +63,6 @@ export function SessionMenu({ project }: SessionMenuProps) {
         : skipToken,
     }),
   });
-
-  const handleNewSession = () => {
-    createEmptySessionMutation.mutate(
-      { subdomain: project.subdomain },
-      {
-        onError: () => {
-          toast.error("Failed to create new chat");
-        },
-        onSuccess: (result) => {
-          void navigate({
-            params: {
-              subdomain: project.subdomain,
-            },
-            replace: true,
-            search: (prev) => ({
-              ...prev,
-              selectedSessionId: result.id,
-            }),
-            to: "/projects/$subdomain",
-          }).then(() => {
-            toast.success("New chat created");
-          });
-        },
-      },
-    );
-  };
 
   const handleDeleteSession = () => {
     if (!selectedSessionId) {
@@ -196,14 +167,6 @@ export function SessionMenu({ project }: SessionMenuProps) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem
-            disabled={createEmptySessionMutation.isPending}
-            onClick={handleNewSession}
-          >
-            <Plus className="h-4 w-4" />
-            New Chat
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
           <DropdownMenuSub>
             <DropdownMenuSubTrigger>
               <div className="flex items-center gap-2">

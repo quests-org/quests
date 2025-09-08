@@ -3,8 +3,9 @@ import { type WorkspaceAppProject } from "@quests/workspace/client";
 import { StoreId } from "@quests/workspace/client";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate, useSearch } from "@tanstack/react-router";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Plus } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { useStickToBottom } from "use-stick-to-bottom";
 
 import { useAppState } from "../hooks/use-app-state";
@@ -42,6 +43,9 @@ export function ProjectSidebar({
   );
   const stopSessions = useMutation(
     rpcClient.workspace.session.stop.mutationOptions(),
+  );
+  const createEmptySession = useMutation(
+    rpcClient.workspace.session.create.mutationOptions(),
   );
 
   const bottomSectionRef = useRef<HTMLDivElement>(null);
@@ -106,6 +110,32 @@ export function ProjectSidebar({
     );
   };
 
+  const handleNewSession = () => {
+    createEmptySession.mutate(
+      { subdomain: project.subdomain },
+      {
+        onError: () => {
+          toast.error("Failed to create new chat");
+        },
+        onSuccess: (result) => {
+          void navigate({
+            params: {
+              subdomain: project.subdomain,
+            },
+            replace: true,
+            search: (prev) => ({
+              ...prev,
+              selectedSessionId: result.id,
+            }),
+            to: "/projects/$subdomain",
+          }).then(() => {
+            toast.success("New chat created");
+          });
+        },
+      },
+    );
+  };
+
   useEffect(() => {
     if (!bottomSectionRef.current) {
       return;
@@ -125,26 +155,31 @@ export function ProjectSidebar({
   }, []);
 
   return (
-    <div className="w-96 shrink-0 border-r bg-background flex flex-col relative">
-      <div className="p-2 border-b">
-        <div className="flex items-center gap-2">
+    <div className="w-96 shrink-0 bg-background flex flex-col relative">
+      <div className="p-2">
+        <div className="flex items-center justify-between gap-2">
           <Tabs
-            className="flex-1"
             onValueChange={(value) => {
               setFilterMode(value as FilterMode);
             }}
             value={filterMode}
           >
-            <TabsList className="w-full">
-              <TabsTrigger className="flex-1" value="chat">
-                Chat
-              </TabsTrigger>
-              <TabsTrigger className="flex-1" value="versions">
-                Versions
-              </TabsTrigger>
+            <TabsList>
+              <TabsTrigger value="chat">Chat</TabsTrigger>
+              <TabsTrigger value="versions">Versions</TabsTrigger>
             </TabsList>
           </Tabs>
-          <SessionMenu project={project} />
+          <div className="flex items-center gap-2">
+            <Button
+              disabled={createEmptySession.isPending}
+              onClick={handleNewSession}
+              size="icon"
+              variant="ghost"
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
+            <SessionMenu project={project} />
+          </div>
         </div>
       </div>
 

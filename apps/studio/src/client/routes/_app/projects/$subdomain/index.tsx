@@ -1,4 +1,5 @@
 import { AppIFrame } from "@/client/components/app-iframe";
+import { ProjectHeaderToolbar } from "@/client/components/project-header-toolbar";
 import { ProjectSidebar } from "@/client/components/project-sidebar";
 import { ProjectToolbar } from "@/client/components/project-toolbar";
 import { VersionOverlay } from "@/client/components/version-overlay";
@@ -153,32 +154,38 @@ function RouteComponent() {
   }
 
   return (
-    <div className="flex h-dvh w-full">
-      <ProjectSidebar
-        project={project}
-        selectedModelURI={projectState.selectedModelURI}
-        selectedVersion={selectedVersion}
-      />
+    <div className="flex flex-col h-dvh w-full">
+      <ProjectHeaderToolbar project={project} />
 
-      <div className="flex-1 flex flex-col">
-        <ProjectToolbar
-          iframeRef={iframeRef}
+      <div className="flex flex-1">
+        <ProjectSidebar
           project={project}
-          subdomain={subdomain}
+          selectedModelURI={projectState.selectedModelURI}
+          selectedVersion={selectedVersion}
         />
-        <div className="flex-1 relative">
-          <AppIFrame
-            app={project}
-            iframeRef={iframeRef}
-            key={project.subdomain}
-          />
 
-          {selectedVersion && (
-            <VersionOverlay
-              projectSubdomain={subdomain}
-              versionRef={selectedVersion}
+        <div className="flex-1 flex flex-col p-2 bg-secondary border-l border-t rounded-md">
+          <div className="flex-1 flex flex-col bg-background border rounded-lg shadow-sm overflow-hidden">
+            <ProjectToolbar
+              iframeRef={iframeRef}
+              project={project}
+              subdomain={subdomain}
             />
-          )}
+            <div className="flex-1 relative">
+              <AppIFrame
+                app={project}
+                iframeRef={iframeRef}
+                key={project.subdomain}
+              />
+
+              {selectedVersion && (
+                <VersionOverlay
+                  projectSubdomain={subdomain}
+                  versionRef={selectedVersion}
+                />
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>

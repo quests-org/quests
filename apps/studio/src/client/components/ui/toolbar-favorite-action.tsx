@@ -37,7 +37,7 @@ export function ToolbarFavoriteAction({
   return (
     <>
       <Button
-        className={cn(compact && "size-7")}
+        className={cn(compact && "size-7", "py-1")}
         onClick={() => {
           if (isFavorite) {
             handleUnfavorite();
