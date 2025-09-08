@@ -43,7 +43,7 @@ export async function restoreVersion({
     yield* Store.saveMessage(assistantMessage, projectConfig);
 
     const refResult = yield* git(
-      GitCommands.revParse(gitRef),
+      GitCommands.verifyCommitRef(gitRef),
       projectConfig.appDir,
       { signal: AbortSignal.timeout(5000) },
     ).mapErr(() => ({

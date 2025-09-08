@@ -37,7 +37,7 @@ export async function getGitRefInfo(
   });
 
   const refResult = await git(
-    GitCommands.revParse(gitRef),
+    GitCommands.verifyCommitRef(gitRef),
     projectConfig.appDir,
     { signal: AbortSignal.timeout(5000) },
   );

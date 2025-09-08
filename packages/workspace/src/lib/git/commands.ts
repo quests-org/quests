@@ -65,4 +65,9 @@ export namespace GitCommands {
   export function status() {
     return ["status", "--porcelain"];
   }
+
+  export function verifyCommitRef(ref: string) {
+    // ^commit is necessary to ensure it identifies a commit
+    return ["rev-parse", "--verify", `${ref}^{commit}`];
+  }
 }
