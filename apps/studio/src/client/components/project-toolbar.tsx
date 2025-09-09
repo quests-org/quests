@@ -3,7 +3,7 @@ import {
   type ProjectSubdomain,
   type WorkspaceAppProject,
 } from "@quests/workspace/client";
-import { Fullscreen } from "lucide-react";
+import { Maximize2 } from "lucide-react";
 
 import { AppToolbar } from "./app-toolbar";
 import { Button } from "./ui/button";
@@ -26,7 +26,7 @@ export function ProjectToolbar({
         <TooltipTrigger asChild>
           <AppLink params={{ subdomain }} to="/projects/$subdomain/view">
             <Button size="icon" variant="ghost">
-              <Fullscreen className="h-4 w-4" />
+              <Maximize2 className="h-4 w-4" />
             </Button>
           </AppLink>
         </TooltipTrigger>

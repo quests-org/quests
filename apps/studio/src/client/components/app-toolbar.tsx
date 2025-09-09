@@ -40,7 +40,7 @@ export function AppToolbar({
     <div
       className={cn(
         "bg-background flex flex-wrap items-center border-b shadow-sm",
-        compact ? "px-2 py-1 gap-1" : "gap-2 px-2 py-2.5",
+        compact ? "px-2 py-2 gap-1" : "gap-2 px-2 py-2.5",
         className,
       )}
     >

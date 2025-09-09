@@ -54,9 +54,9 @@ export function AppView({ app }: AppViewProps) {
     <div className="flex shrink-0 items-center gap-1">
       <ToolbarFavoriteAction compact project={app} />
       <AppLink params={{ subdomain: app.subdomain }} to="/projects/$subdomain">
-        <Button className="text-xs h-7" size="sm" variant="outline">
+        <Button className="text-xs h-7" size="sm" variant="ghost">
           <FolderPen className="h-3 w-3" />
-          Return to Project
+          Open Project
         </Button>
       </AppLink>
       <DropdownMenu modal>
@@ -79,7 +79,7 @@ export function AppView({ app }: AppViewProps) {
             }}
           >
             <Settings className="text-muted-foreground" />
-            <span>App Settings</span>
+            <span>Settings</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
