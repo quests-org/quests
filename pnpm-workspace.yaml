@@ -25,24 +25,19 @@ catalog:
   wrangler: ^4.25.0
   zod: ^4.1.3
 
+configDependencies:
+  "@pnpm/plugin-trusted-deps": 0.1.0+sha512-OK05vSZpezQHcS7Y0T5A25QXDbBRtRq52s76eOkMgp9v8ifNrIR8pjIGqrUFUn0PwKLt2i+U1LPYB+RWi1xjaQ==
+
+onlyBuiltDependenciesFile: node_modules/.pnpm-config/@pnpm/plugin-trusted-deps/allow.json
+
 onlyBuiltDependencies:
   - "@parcel/watcher"
   - "@swc/core"
   - "@tailwindcss/oxide"
-  - "@vscode/ripgrep"
-  - better-sqlite3
-  - dugite
-  - electron
-  - electron-winstaller
-  - esbuild
-  - msw
   - oxc-resolver
-  - sharp
-  - tree-sitter
+  - core-js
   - tree-sitter-javascript
-  - tree-sitter-typescript
   - unrs-resolver
-  - workerd
 
 patchedDependencies:
   conf@14.0.0: patches/conf@14.0.0.patch
