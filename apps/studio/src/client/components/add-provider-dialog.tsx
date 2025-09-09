@@ -12,14 +12,17 @@ import { Label } from "@/client/components/ui/label";
 import {
   ALL_PROVIDERS,
   getProviderMetadata,
+  RECOMMENDED_TAG,
+  SORTED_PROVIDERS,
 } from "@/client/lib/provider-metadata";
+import { cn } from "@/client/lib/utils";
 import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
 import { type ClientAIProvider } from "@/shared/schemas/provider";
 import { isDefinedError } from "@orpc/client";
 import { type AIGatewayProvider } from "@quests/ai-gateway";
 import { useMutation } from "@tanstack/react-query";
 import { useAtom } from "jotai";
-import { AlertCircle, ChefHat, ExternalLink } from "lucide-react";
+import { AlertCircle, Award, ChefHat, ExternalLink } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { selectedModelURIAtom } from "../atoms/selected-models";
@@ -139,17 +142,18 @@ export function AddProviderDialog({
           </Alert>
         )}
         <div className="grid grid-cols-2 gap-3">
-          {ALL_PROVIDERS.map((providerInfo) => {
+          {SORTED_PROVIDERS.map((providerInfo) => {
             const isAlreadyAdded = providers.some(
               (p) => p.type === providerInfo.type,
             );
             return (
               <button
-                className={`p-3 rounded-lg border text-left transition-colors flex flex-col gap-2 ${
+                className={cn(
+                  "p-3 rounded-lg border text-left transition-colors flex flex-col gap-2 min-h-34",
                   isAlreadyAdded
                     ? "border-muted bg-muted/50 cursor-not-allowed opacity-60"
-                    : "border-border hover:border-ring hover:bg-accent cursor-pointer"
-                }`}
+                    : "border-border hover:border-ring hover:bg-accent cursor-pointer",
+                )}
                 disabled={isAlreadyAdded}
                 key={providerInfo.type}
                 onClick={() => {
@@ -170,9 +174,17 @@ export function AddProviderDialog({
                   {providerInfo.description}
                 </div>
                 {providerInfo.tags.length > 0 && !isAlreadyAdded && (
-                  <div className="flex flex-wrap gap-1 mt-1">
+                  <div className="flex flex-wrap gap-2 mt-auto">
                     {providerInfo.tags.map((tag) => (
-                      <Badge key={tag} variant="brand-outline">
+                      <Badge
+                        key={tag}
+                        variant={
+                          tag === RECOMMENDED_TAG ? "brand-outline" : "outline"
+                        }
+                      >
+                        {tag === RECOMMENDED_TAG && (
+                          <Award className="size-3" />
+                        )}
                         {tag}
                       </Badge>
                     ))}
@@ -286,7 +298,7 @@ export function AddProviderDialog({
 
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-xl">
         {stage === "provider-selection"
           ? renderProviderSelection()
           : renderConfiguration()}

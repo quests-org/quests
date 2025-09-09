@@ -1,6 +1,8 @@
 import { type AIGatewayProvider } from "@quests/ai-gateway";
+import { sort } from "radashi";
 
 const UTM_SOURCE = "quests.dev";
+export const RECOMMENDED_TAG = "Recommended";
 
 interface ProviderMetadata<T extends AIGatewayProvider.Type["type"]> {
   apiKeyFormat?: string;
@@ -61,7 +63,7 @@ const PROVIDER_MAP: {
     apiKeyURL: `https://openrouter.ai?${UTM_SOURCE}`,
     description: "Access an extensive catalog of models across providers",
     name: "OpenRouter",
-    tags: ["Free models"],
+    tags: [RECOMMENDED_TAG, "Free models"],
     url: `https://openrouter.ai?${UTM_SOURCE}`,
   }),
   vercel: createProviderMetadata("vercel", {
@@ -75,6 +77,11 @@ const PROVIDER_MAP: {
 };
 
 export const ALL_PROVIDERS = Object.values(PROVIDER_MAP);
+export const SORTED_PROVIDERS = sort(
+  ALL_PROVIDERS,
+  (provider) => Number(provider.tags.includes(RECOMMENDED_TAG)),
+  true,
+);
 
 export function getProviderMetadata(type: AIGatewayProvider.Type["type"]) {
   return PROVIDER_MAP[type];

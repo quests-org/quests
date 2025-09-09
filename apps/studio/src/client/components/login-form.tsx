@@ -9,7 +9,7 @@ import { ArrowLeft, ArrowRight, CircleCheck, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import { ALL_PROVIDERS } from "../lib/provider-metadata";
+import { SORTED_PROVIDERS } from "../lib/provider-metadata";
 import { telemetry } from "../lib/telemetry";
 import { AIProviderIcon } from "./ai-provider-icon";
 
@@ -291,7 +291,7 @@ export function LoginForm({
                 variant="outline"
               >
                 <div className="flex items-center gap-1 mr-2">
-                  {ALL_PROVIDERS.map(({ type }) => (
+                  {SORTED_PROVIDERS.map(({ type }) => (
                     <AIProviderIcon className="size-4" key={type} type={type} />
                   ))}
                 </div>
