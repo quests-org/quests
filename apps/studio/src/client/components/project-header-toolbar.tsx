@@ -6,6 +6,8 @@ import { isMacOS } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
 import { type WorkspaceAppProject } from "@quests/workspace/client";
 import { useMutation } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
+import ColorHash from "color-hash";
 import {
   Camera,
   ChevronDown,
@@ -16,10 +18,11 @@ import {
   Share,
   Terminal,
 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { TrashIcon } from "./icons";
+import { RestoreVersionModal } from "./restore-version-modal";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,14 +38,26 @@ interface ProjectHeaderToolbarProps {
   iframeRef: React.RefObject<HTMLIFrameElement | null>;
   onDeleteClick: () => void;
   project: WorkspaceAppProject;
+  selectedVersion?: string;
 }
 
 export function ProjectHeaderToolbar({
   iframeRef,
   onDeleteClick,
   project,
+  selectedVersion,
 }: ProjectHeaderToolbarProps) {
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
+  const [restoreModalOpen, setRestoreModalOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const hashColor = useMemo(() => {
+    if (!selectedVersion) {
+      return;
+    }
+    const colorHash = new ColorHash();
+    return colorHash.hex(selectedVersion);
+  }, [selectedVersion]);
 
   const openExternalLinkMutation = useMutation(
     rpcClient.utils.openExternalLink.mutationOptions(),
@@ -115,6 +130,19 @@ export function ProjectHeaderToolbar({
       bounds,
       subdomain: project.subdomain,
     });
+  };
+
+  const handleExitVersion = () => {
+    void navigate({
+      from: "/projects/$subdomain",
+      params: { subdomain: project.subdomain },
+      replace: true,
+      search: (prev) => ({ ...prev, selectedVersion: undefined }),
+    });
+  };
+
+  const handleRestoreVersion = () => {
+    setRestoreModalOpen(true);
   };
 
   return (
@@ -218,31 +246,56 @@ export function ProjectHeaderToolbar({
           </DropdownMenu>
 
           <div className="flex items-center">
-            <ToolbarFavoriteAction project={project} />
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button className="gap-1" size="sm" variant="ghost">
-                  <Share className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={handleTakeScreenshot}>
-                  <Camera className="h-4 w-4" />
-                  Screenshot
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => {
-                    void openAppInMutation.mutateAsync({
-                      subdomain: project.subdomain,
-                      type: "show-in-folder",
-                    });
-                  }}
+            {selectedVersion ? (
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={handleExitVersion}
+                  size="sm"
+                  variant="secondary"
                 >
-                  <FolderOpenIcon className="h-4 w-4" />
-                  {isMacOS() ? "Reveal in Finder" : "Show in File Manager"}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                  Exit
+                </Button>
+                <Button
+                  className="text-foreground"
+                  onClick={handleRestoreVersion}
+                  size="sm"
+                  style={{
+                    backgroundColor: `${hashColor ?? ""}50`,
+                  }}
+                  variant="default"
+                >
+                  Restore this version
+                </Button>
+              </div>
+            ) : (
+              <>
+                <ToolbarFavoriteAction project={project} />
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button className="gap-1" size="sm" variant="ghost">
+                      <Share className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={handleTakeScreenshot}>
+                      <Camera className="h-4 w-4" />
+                      Screenshot
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => {
+                        void openAppInMutation.mutateAsync({
+                          subdomain: project.subdomain,
+                          type: "show-in-folder",
+                        });
+                      }}
+                    >
+                      <FolderOpenIcon className="h-4 w-4" />
+                      {isMacOS() ? "Reveal in Finder" : "Show in File Manager"}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -253,6 +306,21 @@ export function ProjectHeaderToolbar({
         open={settingsDialogOpen}
         subdomain={project.subdomain}
       />
+
+      {selectedVersion && (
+        <RestoreVersionModal
+          isOpen={restoreModalOpen}
+          onClose={() => {
+            setRestoreModalOpen(false);
+          }}
+          onRestore={() => {
+            // The modal handles the restore logic and navigation
+            setRestoreModalOpen(false);
+          }}
+          projectSubdomain={project.subdomain}
+          versionRef={selectedVersion}
+        />
+      )}
     </>
   );
 }

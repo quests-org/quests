@@ -11,22 +11,26 @@ import {
 } from "./version-info";
 
 interface GitCommitCardProps {
+  disableBorder?: boolean;
   disableLink?: boolean;
   isLastGitCommit?: boolean;
   isSelected?: boolean;
   projectSubdomain: ProjectSubdomain;
   restoredFromRef?: string;
   showCommitMessage?: boolean;
+  showFullCommitMessage?: boolean;
   versionRef: string;
 }
 
 export function GitCommitCard({
+  disableBorder = false,
   disableLink = false,
   isLastGitCommit = false,
   isSelected = false,
   projectSubdomain,
   restoredFromRef,
   showCommitMessage = true,
+  showFullCommitMessage = false,
   versionRef,
 }: GitCommitCardProps) {
   // For the last commit when no version is selected (implicitly selected),
@@ -44,6 +48,7 @@ export function GitCommitCard({
             ? "border-secondary-foreground hover:bg-muted/30"
             : "hover:bg-muted/50"),
         disableLink && "border-border",
+        disableBorder && "border-0",
       )}
     >
       <div className="flex flex-col gap-3">
@@ -72,6 +77,7 @@ export function GitCommitCard({
         {showCommitMessage && (
           <VersionCommitMessage
             projectSubdomain={projectSubdomain}
+            showFullMessage={showFullCommitMessage}
             versionRef={versionRef}
           />
         )}

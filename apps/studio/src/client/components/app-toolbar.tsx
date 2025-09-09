@@ -39,7 +39,7 @@ export function AppToolbar({
   return (
     <div
       className={cn(
-        "bg-background flex flex-wrap items-center border-b shadow-sm",
+        "bg-background flex items-center border-b shadow-sm",
         compact ? "px-2 py-2 gap-1" : "gap-2 px-2 py-2.5",
         className,
       )}
@@ -87,10 +87,10 @@ export function AppToolbar({
         </Tooltip>
       </div>
 
-      <div className="flex-1 flex items-center gap-1">
+      <div className="flex-1 flex items-center gap-1 min-w-0">
         {centerContent ?? (
           <Input
-            className="flex-1 text-center"
+            className="flex-1 text-center min-w-0"
             readOnly
             value={app.urls.localhost}
           />

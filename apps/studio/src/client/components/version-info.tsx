@@ -10,6 +10,7 @@ import { Badge } from "./ui/badge";
 
 interface VersionCommitMessageProps {
   projectSubdomain: ProjectSubdomain;
+  showFullMessage?: boolean;
   versionRef: string;
 }
 
@@ -38,6 +39,7 @@ interface VersionRestoredFooterProps {
 
 export function VersionCommitMessage({
   projectSubdomain,
+  showFullMessage = false,
   versionRef,
 }: VersionCommitMessageProps) {
   const { data: gitRefInfo } = useQuery(
@@ -58,7 +60,9 @@ export function VersionCommitMessage({
   }
 
   return (
-    <div className="text-sm text-foreground font-medium line-clamp-2">
+    <div
+      className={`text-sm text-foreground font-medium ${showFullMessage ? "" : "line-clamp-2"}`}
+    >
       {gitRefInfo.commitMessage}
     </div>
   );
