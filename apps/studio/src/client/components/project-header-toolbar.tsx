@@ -1,12 +1,12 @@
-import { AppFavoriteDialog } from "@/client/components/app-favorite-dialog";
 import { SmallAppIcon } from "@/client/components/app-icon";
+import { ProjectSettingsDialog } from "@/client/components/project-settings-dialog";
 import { Button } from "@/client/components/ui/button";
 import { ToolbarFavoriteAction } from "@/client/components/ui/toolbar-favorite-action";
 import { useTrashApp } from "@/client/hooks/use-trash-app";
 import { isMacOS } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
 import { type WorkspaceAppProject } from "@quests/workspace/client";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import {
   Camera,
   ChevronDown,
@@ -51,17 +51,8 @@ export function ProjectHeaderToolbar({
   iframeRef,
   project,
 }: ProjectHeaderToolbarProps) {
-  const { data: favoriteProjects } = useQuery(
-    rpcClient.favorites.live.listProjects.experimental_liveOptions(),
-  );
-  const [settingsDialogMode, setSettingsDialogMode] = useState<
-    "favorites" | "settings" | undefined
-  >(undefined);
+  const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-
-  const isFavorite = favoriteProjects?.some(
-    (favorite) => favorite.subdomain === project.subdomain,
-  );
 
   const { isPending, trashApp } = useTrashApp({ navigateOnDelete: true });
 
@@ -169,7 +160,7 @@ export function ProjectHeaderToolbar({
             <DropdownMenuContent align="end" side="bottom">
               <DropdownMenuItem
                 onClick={() => {
-                  setSettingsDialogMode("settings");
+                  setSettingsDialogOpen(true);
                 }}
               >
                 <SettingsIcon className="h-4 w-4" />
@@ -249,7 +240,7 @@ export function ProjectHeaderToolbar({
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center">
             <ToolbarFavoriteAction project={project} />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -303,18 +294,10 @@ export function ProjectHeaderToolbar({
         </AlertDialogContent>
       </AlertDialog>
 
-      <AppFavoriteDialog
-        dialogTitle={
-          settingsDialogMode === "favorites"
-            ? "Add Favorite"
-            : "Project Settings"
-        }
-        isFavorite={!!isFavorite}
-        mode={settingsDialogMode ?? "settings"}
-        onOpenChange={(open) => {
-          setSettingsDialogMode(open ? "favorites" : undefined);
-        }}
-        open={!!settingsDialogMode}
+      <ProjectSettingsDialog
+        dialogTitle="Project Settings"
+        onOpenChange={setSettingsDialogOpen}
+        open={settingsDialogOpen}
         subdomain={project.subdomain}
       />
     </>

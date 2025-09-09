@@ -18,7 +18,6 @@ const update = base
         background: z.string(),
         lucide: AppIconsSchema,
       }),
-      isFavorite: z.boolean().optional(),
       name: z.string(),
       subdomain: ProjectSubdomainSchema,
     }),
@@ -32,15 +31,10 @@ const update = base
     });
 
     publisher.publish("project.quest-manifest-updated", {
-      isFavorite: input.isFavorite,
       subdomain: input.subdomain,
     });
 
-    if (input.isFavorite) {
-      context.workspaceConfig.captureEvent("favorite.added");
-    } else {
-      context.workspaceConfig.captureEvent("project.updated");
-    }
+    context.workspaceConfig.captureEvent("project.updated");
   });
 
 const bySubdomain = base

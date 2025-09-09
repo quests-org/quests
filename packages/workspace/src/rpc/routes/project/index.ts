@@ -177,7 +177,6 @@ const create = base
         model: cheapModel,
         onUpdate: () => {
           publisher.publish("project.quest-manifest-updated", {
-            isFavorite: undefined,
             subdomain: projectConfig.subdomain,
           });
         },
@@ -301,7 +300,6 @@ const updateName = base
       name: input.newName,
     });
     publisher.publish("project.quest-manifest-updated", {
-      isFavorite: undefined,
       subdomain: input.subdomain,
     });
 

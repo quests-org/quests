@@ -25,7 +25,6 @@ export const publisher = new EventPublisher<{
     subdomain: AppSubdomain;
   };
   "project.quest-manifest-updated": {
-    isFavorite: boolean | undefined;
     subdomain: ProjectSubdomain;
   };
   "project.removed": {

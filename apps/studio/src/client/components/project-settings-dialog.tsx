@@ -10,7 +10,7 @@ import {
 } from "@quests/shared/icons";
 import { type ProjectSubdomain } from "@quests/workspace/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { ChevronDown, SaveIcon, Star } from "lucide-react";
+import { ChevronDown, SaveIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { IconMap } from "./app-icons";
@@ -34,23 +34,19 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
-interface AppFavoriteDialogProps {
+interface ProjectSettingsDialogProps {
   dialogTitle: string;
-  isFavorite: boolean;
-  mode: "favorites" | "settings";
   onOpenChange: (open: boolean) => void;
   open: boolean;
   subdomain: ProjectSubdomain;
 }
 
-export function AppFavoriteDialog({
+export function ProjectSettingsDialog({
   dialogTitle,
-  isFavorite,
-  mode,
   onOpenChange,
   open,
   subdomain,
-}: AppFavoriteDialogProps) {
+}: ProjectSettingsDialogProps) {
   const [title, setTitle] = useState("");
   const [theme, setTheme] = useState<null | string>(null);
   const [icon, setIcon] = useState<IconName>(ICON_DEFAULT);
@@ -103,14 +99,13 @@ export function AppFavoriteDialog({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [questConfig, open]);
 
-  const handleSave = async (options: { isFavorite: boolean }) => {
+  const handleSave = async () => {
     await updateQuestConfig({
       description: questConfig?.description,
       icon: {
         background: theme ?? DEFAULT_THEME_GRADIENT,
         lucide: icon,
       },
-      isFavorite: options.isFavorite,
       name: title,
       subdomain,
     });
@@ -127,9 +122,7 @@ export function AppFavoriteDialog({
       return;
     }
 
-    await (mode === "settings"
-      ? handleSave({ isFavorite })
-      : handleSave({ isFavorite: true }));
+    await handleSave();
   };
 
   return (
@@ -288,18 +281,10 @@ export function AppFavoriteDialog({
             >
               Cancel
             </Button>
-            {mode === "favorites" && (
-              <Button disabled={isLoading || !title.trim()} type="submit">
-                <Star className="h-4 w-4" />
-                Favorite
-              </Button>
-            )}
-            {mode === "settings" && (
-              <Button disabled={isLoading || !title.trim()} type="submit">
-                <SaveIcon className="h-4 w-4" />
-                Save
-              </Button>
-            )}
+            <Button disabled={isLoading || !title.trim()} type="submit">
+              <SaveIcon className="h-4 w-4" />
+              Save
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

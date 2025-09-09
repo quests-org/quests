@@ -12,6 +12,23 @@ import {
 } from "@quests/workspace/electron";
 import { z } from "zod";
 
+const add = base
+  .input(
+    z.object({
+      subdomain: ProjectSubdomainSchema,
+    }),
+  )
+  .output(z.void())
+  .handler(({ context, input }) => {
+    const favoritesStore = getFavoritesStore();
+    const favorites = favoritesStore.get("favorites");
+    if (!favorites.includes(input.subdomain)) {
+      const updatedFavorites = [...favorites, input.subdomain];
+      favoritesStore.set("favorites", updatedFavorites);
+    }
+    context.workspaceConfig.captureEvent("favorite.added");
+  });
+
 const remove = base
   .input(
     z.object({
@@ -116,6 +133,7 @@ const live = {
 };
 
 export const favorites = {
+  add,
   live,
   remove,
 };

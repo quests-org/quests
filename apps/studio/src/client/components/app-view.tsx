@@ -1,6 +1,6 @@
-import { AppFavoriteDialog } from "@/client/components/app-favorite-dialog";
 import { AppIFrame } from "@/client/components/app-iframe";
 import { AppToolbar } from "@/client/components/app-toolbar";
+import { ProjectSettingsDialog } from "@/client/components/project-settings-dialog";
 import { Button } from "@/client/components/ui/button";
 import {
   DropdownMenu,
@@ -30,9 +30,7 @@ export function AppView({ app }: AppViewProps) {
   const isFavorite = favoriteProjects?.some(
     (favorite) => favorite.subdomain === app.subdomain,
   );
-  const [settingsDialogMode, setSettingsDialogMode] = useState<
-    "favorites" | "settings" | undefined
-  >(undefined);
+  const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
 
   const { mutateAsync: removeFavorite } = useMutation(
     rpcClient.favorites.remove.mutationOptions(),
@@ -77,7 +75,7 @@ export function AppView({ app }: AppViewProps) {
           )}
           <DropdownMenuItem
             onClick={() => {
-              setSettingsDialogMode("settings");
+              setSettingsDialogOpen(true);
             }}
           >
             <Settings className="text-muted-foreground" />
@@ -100,16 +98,10 @@ export function AppView({ app }: AppViewProps) {
       <div className="flex-1 h-full w-full">
         <AppIFrame app={app} iframeRef={iframeRef} />
       </div>
-      <AppFavoriteDialog
-        dialogTitle={
-          settingsDialogMode === "favorites" ? "Add Favorite" : "App Settings"
-        }
-        isFavorite={!!isFavorite}
-        mode={settingsDialogMode ?? "settings"}
-        onOpenChange={(open) => {
-          setSettingsDialogMode(open ? "favorites" : undefined);
-        }}
-        open={settingsDialogMode !== undefined}
+      <ProjectSettingsDialog
+        dialogTitle="App Settings"
+        onOpenChange={setSettingsDialogOpen}
+        open={settingsDialogOpen}
         subdomain={app.subdomain}
       />
     </div>
