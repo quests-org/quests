@@ -169,14 +169,14 @@ export function ProjectSidebar({
               <TabsTrigger value="versions">Versions</TabsTrigger>
             </TabsList>
           </Tabs>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center">
             <Button
               disabled={createEmptySession.isPending}
               onClick={handleNewSession}
-              size="icon"
+              size="sm"
               variant="ghost"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="size-4" />
             </Button>
             <SessionMenu project={project} />
           </div>

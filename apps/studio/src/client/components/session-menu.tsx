@@ -162,7 +162,7 @@ export function SessionMenu({ project }: SessionMenuProps) {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button className="h-10 w-10 shrink-0" size="icon" variant="ghost">
+          <Button size="sm" variant="ghost">
             <MoreVertical className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
