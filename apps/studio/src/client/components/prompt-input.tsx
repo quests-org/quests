@@ -10,7 +10,7 @@ import { type AIGatewayModel } from "@quests/ai-gateway";
 import { useQuery } from "@tanstack/react-query";
 import { useAtomValue } from "jotai";
 import { ArrowUp, Circle, Loader2, Square } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { hasAIProviderAtom } from "../atoms/has-ai-provider";
@@ -31,7 +31,11 @@ interface PromptInputProps {
   placeholder?: string;
 }
 
-export function PromptInput({
+export interface PromptInputRef {
+  focus: () => void;
+}
+
+export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(({
   autoFocus = false,
   autoResizeMaxHeight = 400,
   className,
@@ -44,11 +48,18 @@ export function PromptInput({
   onStop,
   onSubmit,
   placeholder = "Type a message",
-}: PromptInputProps) {
+}, ref) => {
   const [value, setValue] = useState("");
   const [showAIProviderGuard, setShowAIProviderGuard] = useState(false);
   const textareaRef = useRef<HTMLDivElement>(null);
+  const textareaInnerRef = useRef<HTMLTextAreaElement>(null);
   const hasAIProvider = useAtomValue(hasAIProviderAtom);
+
+  useImperativeHandle(ref, () => ({
+    focus: () => {
+      textareaInnerRef.current?.focus();
+    },
+  }));
 
   const {
     data: modelsData,
@@ -141,6 +152,7 @@ export function PromptInput({
         ref={textareaRef}
       >
         <TextareaInner
+          ref={textareaInnerRef}
           autoFocus={autoFocus}
           className="min-h-12"
           disabled={disabled}
@@ -193,4 +205,6 @@ export function PromptInput({
       />
     </>
   );
-}
+});
+
+PromptInput.displayName = "PromptInput";

@@ -84,8 +84,6 @@ export function SessionStream({
               selectedSessionId: result.id,
             }),
             to: "/projects/$subdomain",
-          }).then(() => {
-            toast.success("New chat created");
           });
         },
       },

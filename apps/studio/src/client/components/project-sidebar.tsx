@@ -49,6 +49,7 @@ export function ProjectSidebar({
   );
 
   const bottomSectionRef = useRef<HTMLDivElement>(null);
+  const promptInputRef = useRef<{ focus: () => void }>(null);
   const [bottomSectionHeight, setBottomSectionHeight] = useState(0);
   const [filterMode, setFilterMode] = useState<FilterMode>("chat");
   const [selectedModelURI, setSelectedModelURI] = useState<
@@ -129,7 +130,7 @@ export function ProjectSidebar({
             }),
             to: "/projects/$subdomain",
           }).then(() => {
-            toast.success("New chat created");
+            promptInputRef.current?.focus();
           });
         },
       },
@@ -314,6 +315,7 @@ export function ProjectSidebar({
               );
             }
           }}
+          ref={promptInputRef}
         />
       </div>
     </div>
