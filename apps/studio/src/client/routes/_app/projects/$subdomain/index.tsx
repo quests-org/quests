@@ -154,10 +154,10 @@ function RouteComponent() {
   }
 
   return (
-    <div className="flex flex-col h-dvh w-full">
+    <div className="flex flex-col h-dvh w-full overflow-hidden">
       <ProjectHeaderToolbar iframeRef={iframeRef} project={project} />
 
-      <div className="flex flex-1">
+      <div className="flex flex-1 overflow-hidden">
         <ProjectSidebar
           project={project}
           selectedModelURI={projectState.selectedModelURI}
