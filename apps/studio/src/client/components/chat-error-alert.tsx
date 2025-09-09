@@ -11,7 +11,7 @@ export function ChatErrorAlert({
   onStartNewChat: () => void;
 }) {
   return (
-    <Alert className="mt-4" variant="destructive">
+    <Alert className="mt-4" variant="warning">
       <AlertTriangle />
       <AlertDescription className="flex flex-col gap-3">
         {message && <div className="text-xs">{message}</div>}
