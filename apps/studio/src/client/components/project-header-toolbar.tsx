@@ -2,7 +2,6 @@ import { SmallAppIcon } from "@/client/components/app-icon";
 import { ProjectSettingsDialog } from "@/client/components/project-settings-dialog";
 import { Button } from "@/client/components/ui/button";
 import { ToolbarFavoriteAction } from "@/client/components/ui/toolbar-favorite-action";
-import { useTrashApp } from "@/client/hooks/use-trash-app";
 import { isMacOS } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
 import { type WorkspaceAppProject } from "@quests/workspace/client";
@@ -22,16 +21,6 @@ import { toast } from "sonner";
 
 import { TrashIcon } from "./icons";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "./ui/alert-dialog";
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -44,17 +33,16 @@ import {
 
 interface ProjectHeaderToolbarProps {
   iframeRef: React.RefObject<HTMLIFrameElement | null>;
+  onDeleteClick: () => void;
   project: WorkspaceAppProject;
 }
 
 export function ProjectHeaderToolbar({
   iframeRef,
+  onDeleteClick,
   project,
 }: ProjectHeaderToolbarProps) {
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-
-  const { isPending, trashApp } = useTrashApp({ navigateOnDelete: true });
 
   const openExternalLinkMutation = useMutation(
     rpcClient.utils.openExternalLink.mutationOptions(),
@@ -97,15 +85,6 @@ export function ProjectHeaderToolbar({
       },
     }),
   );
-
-  const handleDelete = async () => {
-    try {
-      await trashApp(project.subdomain);
-      setShowDeleteDialog(false);
-    } catch {
-      toast.error("Failed to delete project");
-    }
-  };
 
   const handleOpenExternalClick = () => {
     openExternalLinkMutation.mutate({ url: project.urls.localhost });
@@ -230,9 +209,7 @@ export function ProjectHeaderToolbar({
 
               <DropdownMenuItem
                 className="text-destructive focus:bg-destructive/15 focus:text-destructive"
-                onSelect={() => {
-                  setShowDeleteDialog(true);
-                }}
+                onSelect={onDeleteClick}
               >
                 <TrashIcon />
                 <span>Delete</span>
@@ -269,30 +246,6 @@ export function ProjectHeaderToolbar({
           </div>
         </div>
       </div>
-
-      <AlertDialog onOpenChange={setShowDeleteDialog} open={showDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will move your project to the trash.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              asChild
-              className="text-white"
-              disabled={isPending}
-              onClick={handleDelete}
-            >
-              <Button variant="destructive">
-                {isPending ? "Deleting..." : "Continue"}
-              </Button>
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
 
       <ProjectSettingsDialog
         dialogTitle="Project Settings"

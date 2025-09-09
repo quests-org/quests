@@ -1,4 +1,5 @@
 import { AppIFrame } from "@/client/components/app-iframe";
+import { ProjectDeleteDialog } from "@/client/components/project-delete-dialog";
 import { ProjectHeaderToolbar } from "@/client/components/project-header-toolbar";
 import { ProjectSidebar } from "@/client/components/project-sidebar";
 import { ProjectToolbar } from "@/client/components/project-toolbar";
@@ -14,13 +15,19 @@ import {
   keepPreviousData,
   useQuery,
 } from "@tanstack/react-query";
-import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
-import { useRef } from "react";
+import {
+  createFileRoute,
+  notFound,
+  redirect,
+  useNavigate,
+} from "@tanstack/react-router";
+import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 
 const projectSearchSchema = z.object({
   selectedSessionId: StoreId.SessionSchema.optional(),
   selectedVersion: z.string().optional(),
+  showDelete: z.boolean().optional(),
 });
 
 function title(projectTitle?: string) {
@@ -108,8 +115,24 @@ export const Route = createFileRoute("/_app/projects/$subdomain/")({
 
 function RouteComponent() {
   const { subdomain } = Route.useParams();
-  const { selectedVersion } = Route.useSearch();
+  const { selectedVersion, showDelete } = Route.useSearch();
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const navigate = useNavigate();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+  useEffect(() => {
+    if (showDelete) {
+      setShowDeleteDialog(true);
+      void navigate({
+        from: "/projects/$subdomain",
+        params: {
+          subdomain,
+        },
+        replace: true,
+        search: (prev) => ({ ...prev, showDelete: undefined }),
+      });
+    }
+  }, [showDelete, navigate, subdomain]);
 
   const {
     data: project,
@@ -155,7 +178,13 @@ function RouteComponent() {
 
   return (
     <div className="flex flex-col h-dvh w-full overflow-hidden">
-      <ProjectHeaderToolbar iframeRef={iframeRef} project={project} />
+      <ProjectHeaderToolbar
+        iframeRef={iframeRef}
+        onDeleteClick={() => {
+          setShowDeleteDialog(true);
+        }}
+        project={project}
+      />
 
       <div className="flex flex-1 overflow-hidden">
         <ProjectSidebar
@@ -188,6 +217,12 @@ function RouteComponent() {
           </div>
         </div>
       </div>
+
+      <ProjectDeleteDialog
+        onOpenChange={setShowDeleteDialog}
+        open={showDeleteDialog}
+        project={project}
+      />
     </div>
   );
 }
