@@ -33,20 +33,20 @@ const SAFE_PROTOCOLS = new Set(["http:", "https:", "mailto:", "tel:"]);
 const EDITORS_BY_PLATFORM: Record<string, EditorConfig[]> = {
   darwin: [
     { appName: "Cursor", id: "cursor", name: "Cursor" },
-    { appName: "Visual Studio Code", id: "vscode", name: "VSCode" },
+    { appName: "Visual Studio Code", id: "vscode", name: "VS Code" },
     { appName: "iTerm", id: "iterm", name: "iTerm" },
     { appName: "Terminal", id: "terminal", name: "Terminal" },
   ],
   linux: [
     { appName: "Cursor", id: "cursor", name: "Cursor" },
-    { appName: "code", id: "vscode", name: "VSCode" },
+    { appName: "code", id: "vscode", name: "VS Code" },
     { appName: "gnome-terminal", id: "terminal", name: "Terminal" },
     { appName: "konsole", id: "terminal", name: "Konsole" },
     { appName: "xterm", id: "terminal", name: "XTerm" },
   ],
   win32: [
     { appName: "Cursor", id: "cursor", name: "Cursor" },
-    { appName: "Visual Studio Code", id: "vscode", name: "VSCode" },
+    { appName: "Visual Studio Code", id: "vscode", name: "VS Code" },
     { appName: "Windows Terminal", id: "terminal", name: "Windows Terminal" },
     { appName: "Command Prompt", id: "cmd", name: "Command Prompt" },
     { appName: "PowerShell", id: "powershell", name: "PowerShell" },
