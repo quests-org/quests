@@ -93,7 +93,7 @@ export function NavProjectItem({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
+    if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
       e.preventDefault();
       void handleSaveEdit();
     } else if (e.key === "Escape") {
