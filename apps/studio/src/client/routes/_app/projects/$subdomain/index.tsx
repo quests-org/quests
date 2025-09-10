@@ -3,6 +3,7 @@ import { ProjectDeleteDialog } from "@/client/components/project-delete-dialog";
 import { ProjectHeaderToolbar } from "@/client/components/project-header-toolbar";
 import { ProjectSidebar } from "@/client/components/project-sidebar";
 import { ProjectToolbar } from "@/client/components/project-toolbar";
+import { VersionOverlay } from "@/client/components/version-overlay";
 import { useProjectRouteSync } from "@/client/hooks/use-project-route-sync";
 import { migrateProjectSubdomain } from "@/client/lib/migrate-project-subdomain";
 import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
@@ -207,6 +208,13 @@ function RouteComponent() {
                 iframeRef={iframeRef}
                 key={project.subdomain}
               />
+
+              {selectedVersion && (
+                <VersionOverlay
+                  projectSubdomain={subdomain}
+                  versionRef={selectedVersion}
+                />
+              )}
             </div>
           </div>
         </div>

@@ -105,7 +105,7 @@ export function ProjectToolbar({
           </TooltipTrigger>
           <TooltipContent
             arrowClassName="bg-background fill-background border-b border-r border-border"
-            className="max-w-md p-0 bg-background text-foreground border border-border"
+            className="min-w-xs max-w-md p-0 bg-background text-foreground border border-border"
             side="bottom"
           >
             <GitCommitCard

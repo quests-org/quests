@@ -61,7 +61,7 @@ export function VersionCommitMessage({
 
   return (
     <div
-      className={`text-sm text-foreground font-medium ${showFullMessage ? "" : "line-clamp-2"}`}
+      className={`text-sm text-foreground font-medium text-wrap ${showFullMessage ? "" : "line-clamp-2"}`}
     >
       {gitRefInfo.commitMessage}
     </div>
