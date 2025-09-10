@@ -14,13 +14,14 @@ import { type WorkspaceAppProject } from "@quests/workspace/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import {
-  Camera,
   ChevronDown,
+  Clipboard,
   ExternalLinkIcon,
   FolderOpenIcon,
   MessageCircle,
   PanelLeftClose,
   PenLine,
+  Save,
   SettingsIcon,
   Terminal,
 } from "lucide-react";
@@ -112,6 +113,19 @@ export function ProjectHeaderToolbar({
     }),
   );
 
+  const copyScreenshotMutation = useMutation(
+    rpcClient.utils.copyScreenshotToClipboard.mutationOptions({
+      onError: (error) => {
+        toast.error("Failed to copy screenshot", {
+          description: error.message,
+        });
+      },
+      onSuccess: () => {
+        toast.success("Screenshot copied to clipboard");
+      },
+    }),
+  );
+
   const { data: supportedEditors = [] } = useQuery<SupportedEditor[]>(
     rpcClient.utils.getSupportedEditors.queryOptions(),
   );
@@ -142,6 +156,33 @@ export function ProjectHeaderToolbar({
     };
 
     takeScreenshotMutation.mutate({
+      bounds,
+      subdomain: project.subdomain,
+    });
+  };
+
+  const handleCopyScreenshot = async () => {
+    if (!iframeRef.current) {
+      toast.error("Unable to capture screenshot", {
+        description: "Iframe not found",
+      });
+      return;
+    }
+
+    // Allow the dropdown close animation to complete
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    const iframe = iframeRef.current;
+    const rect = iframe.getBoundingClientRect();
+
+    const bounds = {
+      height: rect.height,
+      width: rect.width,
+      x: rect.left,
+      y: rect.top,
+    };
+
+    copyScreenshotMutation.mutate({
       bounds,
       subdomain: project.subdomain,
     });
@@ -348,10 +389,15 @@ export function ProjectHeaderToolbar({
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={handleTakeScreenshot}>
-                      <Camera className="h-4 w-4" />
-                      Screenshot
+                    <DropdownMenuItem onClick={handleCopyScreenshot}>
+                      <Clipboard className="h-4 w-4" />
+                      Copy Screenshot
                     </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleTakeScreenshot}>
+                      <Save className="h-4 w-4" />
+                      Save Screenshot
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onClick={() => {
                         void openAppInMutation.mutateAsync({

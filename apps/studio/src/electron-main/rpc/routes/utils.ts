@@ -6,9 +6,13 @@ import type {
 
 import { base } from "@/electron-main/rpc/base";
 import { publisher } from "@/electron-main/rpc/publisher";
+import {
+  OpenAppInTypeSchema,
+  SupportedEditorSchema,
+} from "@/shared/schemas/editors";
 import { ProjectSubdomainSchema } from "@quests/workspace/client";
 import { createAppConfig } from "@quests/workspace/electron";
-import { shell, webContents } from "electron";
+import { clipboard, shell, webContents } from "electron";
 import { exec } from "node:child_process";
 import fs from "node:fs/promises";
 import os from "node:os";
@@ -307,6 +311,52 @@ const takeScreenshot = base
     }
   });
 
+const copyScreenshotToClipboard = base
+  .errors({
+    SCREENSHOT_FAILED: {
+      message: "Failed to take screenshot",
+    },
+  })
+  .input(
+    z.object({
+      bounds: z
+        .object({
+          height: z.number(),
+          width: z.number(),
+          x: z.number(),
+          y: z.number(),
+        })
+        .optional(),
+      subdomain: ProjectSubdomainSchema,
+    }),
+  )
+  .output(z.object({ success: z.boolean() }))
+  .handler(async ({ context, errors, input }) => {
+    try {
+      const webContent = webContents.fromId(context.webContentsId);
+      if (!webContent) {
+        throw errors.SCREENSHOT_FAILED({ message: "Web contents not found" });
+      }
+
+      const image = input.bounds
+        ? await webContent.capturePage({
+            height: Math.round(input.bounds.height),
+            width: Math.round(input.bounds.width),
+            x: Math.round(input.bounds.x),
+            y: Math.round(input.bounds.y),
+          })
+        : await webContent.capturePage();
+
+      clipboard.writeImage(image);
+
+      return { success: true };
+    } catch (error) {
+      throw errors.SCREENSHOT_FAILED({
+        message: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
+  });
+
 const showFileInFolder = base
   .errors({
     FILE_NOT_FOUND: {
@@ -328,22 +378,7 @@ const showFileInFolder = base
   });
 
 const getSupportedEditors = base
-  .output(
-    z.array(
-      z.object({
-        available: z.boolean(),
-        id: z.enum([
-          "cursor",
-          "iterm",
-          "terminal",
-          "vscode",
-          "cmd",
-          "powershell",
-        ]),
-        name: z.string(),
-      }),
-    ),
-  )
+  .output(z.array(SupportedEditorSchema))
   .handler(async () => {
     if (supportedEditorsCache !== null) {
       return supportedEditorsCache;
@@ -363,6 +398,7 @@ const live = {
 };
 
 export const utils = {
+  copyScreenshotToClipboard,
   getSupportedEditors,
   imageDataURI,
   live,
