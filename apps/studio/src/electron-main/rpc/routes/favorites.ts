@@ -12,6 +12,23 @@ import {
 } from "@quests/workspace/electron";
 import { z } from "zod";
 
+const add = base
+  .input(
+    z.object({
+      subdomain: ProjectSubdomainSchema,
+    }),
+  )
+  .output(z.void())
+  .handler(({ context, input }) => {
+    const favoritesStore = getFavoritesStore();
+    const favorites = favoritesStore.get("favorites");
+    if (!favorites.includes(input.subdomain)) {
+      const updatedFavorites = [...favorites, input.subdomain];
+      favoritesStore.set("favorites", updatedFavorites);
+    }
+    context.workspaceConfig.captureEvent("favorite.added");
+  });
+
 const remove = base
   .input(
     z.object({
@@ -92,10 +109,6 @@ const live = {
     const projectUpdates = workspacePublisher.subscribe("project.updated", {
       signal,
     });
-    const projectQuestManifestUpdates = workspacePublisher.subscribe(
-      "project.quest-manifest-updated",
-      { signal },
-    );
     const projectRemoved = workspacePublisher.subscribe("project.removed", {
       signal,
     });
@@ -105,7 +118,6 @@ const live = {
 
     for await (const _payload of mergeGenerators([
       projectUpdates,
-      projectQuestManifestUpdates,
       projectRemoved,
       favoritesUpdated,
     ])) {
@@ -116,6 +128,7 @@ const live = {
 };
 
 export const favorites = {
+  add,
   live,
   remove,
 };

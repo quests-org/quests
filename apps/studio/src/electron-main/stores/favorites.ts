@@ -3,7 +3,6 @@ import { publisher } from "@/electron-main/rpc/publisher";
 import { ProjectSubdomainSchema } from "@quests/workspace/client";
 import { workspacePublisher } from "@quests/workspace/electron";
 import Store from "electron-store";
-import { unique } from "radashi";
 import { z } from "zod";
 
 const FavoritesSchema = z.object({
@@ -38,19 +37,6 @@ export const getFavoritesStore = (): Store<FavoritesState> => {
     FAVORITES_STORE.onDidChange("favorites", () => {
       publisher.publish("favorites.updated", null);
     });
-
-    workspacePublisher.subscribe(
-      "project.quest-manifest-updated",
-      (payload) => {
-        if (!payload.isFavorite) {
-          return;
-        }
-        const favoritesStore = getFavoritesStore();
-        const favorites = favoritesStore.get("favorites");
-        const updatedFavorites = unique([...favorites, payload.subdomain]);
-        favoritesStore.set("favorites", updatedFavorites);
-      },
-    );
 
     workspacePublisher.subscribe("project.removed", (payload) => {
       const favoritesStore = getFavoritesStore();

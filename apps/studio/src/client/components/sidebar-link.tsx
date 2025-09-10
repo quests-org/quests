@@ -8,8 +8,16 @@ export function SidebarLink(props: LinkProps & React.ComponentProps<"a">) {
     rpcClient.tabs.navigateCurrent.mutationOptions(),
   );
   const { mutate: addTab } = useMutation(rpcClient.tabs.add.mutationOptions());
-  const { onAuxClick, onClick, onMouseDown, params, target, to, ...rest } =
-    props;
+  const {
+    onAuxClick,
+    onClick,
+    onMouseDown,
+    params,
+    search,
+    target,
+    to,
+    ...rest
+  } = props;
   const router = useRouter();
 
   const handleMouseDown = React.useCallback(
@@ -30,20 +38,20 @@ export function SidebarLink(props: LinkProps & React.ComponentProps<"a">) {
       // Handle middle click via auxclick event (more reliable for some browsers)
       if (e.button === 1) {
         e.preventDefault();
-        const location = router.buildLocation({ params, to });
+        const location = router.buildLocation({ params, search, to });
         addTab({ urlPath: location.href });
       }
       if (onAuxClick) {
         onAuxClick(e);
       }
     },
-    [addTab, onAuxClick, params, router, to],
+    [addTab, onAuxClick, params, router, search, to],
   );
 
   const handleClick = React.useCallback(
     (e: React.MouseEvent<HTMLAnchorElement>) => {
       e.preventDefault();
-      const location = router.buildLocation({ params, to });
+      const location = router.buildLocation({ params, search, to });
 
       // Handle left clicks and ctrl/cmd + left click
       if (e.button === 0) {
@@ -58,7 +66,7 @@ export function SidebarLink(props: LinkProps & React.ComponentProps<"a">) {
         onClick(e);
       }
     },
-    [addTab, navigateCurrent, onClick, to, params, router],
+    [addTab, navigateCurrent, onClick, params, router, search, to],
   );
 
   return (
@@ -68,6 +76,7 @@ export function SidebarLink(props: LinkProps & React.ComponentProps<"a">) {
       onClick={handleClick}
       onMouseDown={handleMouseDown}
       params={params}
+      search={search}
       target={target}
       to={to}
     />

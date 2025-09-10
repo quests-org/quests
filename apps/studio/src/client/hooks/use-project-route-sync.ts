@@ -11,10 +11,8 @@ export function useProjectRouteSync(project?: WorkspaceAppProject) {
     }
     void router.invalidate({
       filter: (m) =>
-        (m.routeId === "/_app/projects/$subdomain/" &&
-          m.params.subdomain === project.subdomain) ||
-        (m.routeId === "/_app/projects/$subdomain/view" &&
-          m.params.subdomain === project.subdomain),
+        m.routeId === "/_app/projects/$subdomain/" &&
+        m.params.subdomain === project.subdomain,
     });
   }, [router, project]);
 }

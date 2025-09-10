@@ -5,15 +5,12 @@ import {
 } from "@quests/workspace/client";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { RotateCcw, X } from "lucide-react";
 import { useRef, useState } from "react";
 
 import { useShimIFrame } from "../lib/iframe-messenger";
 import { rpcClient } from "../rpc/client";
 import { AppIFrame } from "./app-iframe";
 import { RestoreVersionModal } from "./restore-version-modal";
-import { Button } from "./ui/button";
-import { VersionCommitMessage, VersionHeader } from "./version-info";
 
 interface VersionOverlayProps {
   projectSubdomain: ProjectSubdomain;
@@ -71,44 +68,9 @@ export function VersionOverlay({
   }
 
   return (
-    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex">
+    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex z-50">
       <div className="w-full h-full bg-background/95 flex flex-col overflow-hidden">
-        <div className="flex items-start justify-between p-4 border-b bg-background/90 shrink-0">
-          <div className="max-w-md min-w-0 flex flex-col gap-2">
-            <VersionHeader versionRef={versionRef} />
-            <VersionCommitMessage
-              projectSubdomain={projectSubdomain}
-              versionRef={versionRef}
-            />
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Button
-              onClick={() => {
-                setShowRestoreModal(true);
-              }}
-              size="sm"
-              variant="outline"
-            >
-              <RotateCcw className="size-4 mr-1" />
-              Restore
-            </Button>
-            <Link
-              className="p-1 hover:bg-muted rounded-md transition-colors"
-              from="/projects/$subdomain"
-              params={{
-                subdomain: ProjectSubdomainSchema.parse(projectSubdomain),
-              }}
-              search={(prev) => ({ ...prev, selectedVersion: undefined })}
-            >
-              <X className="size-4" />
-            </Link>
-          </div>
-        </div>
-
-        <div className="flex-1 min-h-0">
-          <AppIFrame app={app} iframeRef={iframeRef} key={app.subdomain} />
-        </div>
+        <AppIFrame app={app} iframeRef={iframeRef} key={app.subdomain} />
       </div>
 
       <RestoreVersionModal

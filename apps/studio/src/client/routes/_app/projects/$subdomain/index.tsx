@@ -1,9 +1,12 @@
 import { AppIFrame } from "@/client/components/app-iframe";
+import { ProjectDeleteDialog } from "@/client/components/project-delete-dialog";
+import { ProjectHeaderToolbar } from "@/client/components/project-header-toolbar";
+import { ProjectIFrameToolbar } from "@/client/components/project-iframe-toolbar";
 import { ProjectSidebar } from "@/client/components/project-sidebar";
-import { ProjectToolbar } from "@/client/components/project-toolbar";
 import { VersionOverlay } from "@/client/components/version-overlay";
 import { useProjectRouteSync } from "@/client/hooks/use-project-route-sync";
 import { migrateProjectSubdomain } from "@/client/lib/migrate-project-subdomain";
+import { cn } from "@/client/lib/utils";
 import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
 import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
 import { safe } from "@orpc/client";
@@ -13,13 +16,19 @@ import {
   keepPreviousData,
   useQuery,
 } from "@tanstack/react-query";
-import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
-import { useRef } from "react";
+import {
+  createFileRoute,
+  notFound,
+  redirect,
+  useNavigate,
+} from "@tanstack/react-router";
+import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 
 const projectSearchSchema = z.object({
   selectedSessionId: StoreId.SessionSchema.optional(),
   selectedVersion: z.string().optional(),
+  showDelete: z.boolean().optional(),
 });
 
 function title(projectTitle?: string) {
@@ -107,8 +116,25 @@ export const Route = createFileRoute("/_app/projects/$subdomain/")({
 
 function RouteComponent() {
   const { subdomain } = Route.useParams();
-  const { selectedVersion } = Route.useSearch();
+  const { selectedVersion, showDelete } = Route.useSearch();
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const navigate = useNavigate();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  useEffect(() => {
+    if (showDelete) {
+      setShowDeleteDialog(true);
+      void navigate({
+        from: "/projects/$subdomain",
+        params: {
+          subdomain,
+        },
+        replace: true,
+        search: (prev) => ({ ...prev, showDelete: undefined }),
+      });
+    }
+  }, [showDelete, navigate, subdomain]);
 
   const {
     data: project,
@@ -153,34 +179,64 @@ function RouteComponent() {
   }
 
   return (
-    <div className="flex h-dvh w-full">
-      <ProjectSidebar
+    <div className="flex flex-col h-dvh w-full overflow-hidden">
+      <ProjectHeaderToolbar
+        iframeRef={iframeRef}
+        onDeleteClick={() => {
+          setShowDeleteDialog(true);
+        }}
+        onSidebarToggle={() => {
+          setSidebarCollapsed(!sidebarCollapsed);
+        }}
         project={project}
-        selectedModelURI={projectState.selectedModelURI}
         selectedVersion={selectedVersion}
+        sidebarCollapsed={sidebarCollapsed}
       />
 
-      <div className="flex-1 flex flex-col">
-        <ProjectToolbar
-          iframeRef={iframeRef}
+      <div className="flex flex-1 overflow-hidden">
+        <ProjectSidebar
+          collapsed={sidebarCollapsed}
           project={project}
-          subdomain={subdomain}
+          selectedModelURI={projectState.selectedModelURI}
+          selectedVersion={selectedVersion}
         />
-        <div className="flex-1 relative">
-          <AppIFrame
-            app={project}
-            iframeRef={iframeRef}
-            key={project.subdomain}
-          />
 
-          {selectedVersion && (
-            <VersionOverlay
-              projectSubdomain={subdomain}
-              versionRef={selectedVersion}
-            />
+        <div
+          className={cn(
+            "flex-1 flex flex-col p-2 bg-secondary border-t",
+            !sidebarCollapsed && "border-l rounded-tl-md",
           )}
+        >
+          <div className="flex-1 flex flex-col bg-background border rounded-lg shadow-sm overflow-hidden">
+            <ProjectIFrameToolbar
+              iframeRef={iframeRef}
+              project={project}
+              selectedVersion={selectedVersion}
+              subdomain={subdomain}
+            />
+            <div className="flex-1 relative">
+              <AppIFrame
+                app={project}
+                iframeRef={iframeRef}
+                key={project.subdomain}
+              />
+
+              {selectedVersion && (
+                <VersionOverlay
+                  projectSubdomain={subdomain}
+                  versionRef={selectedVersion}
+                />
+              )}
+            </div>
+          </div>
         </div>
       </div>
+
+      <ProjectDeleteDialog
+        onOpenChange={setShowDeleteDialog}
+        open={showDeleteDialog}
+        project={project}
+      />
     </div>
   );
 }

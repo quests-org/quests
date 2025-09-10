@@ -24,10 +24,9 @@ const live = {
     .handler(async function* ({ context, input, signal }) {
       yield call(bySubdomain, input, { context, signal });
 
-      for await (const payload of publisher.subscribe(
-        "project.quest-manifest-updated",
-        { signal },
-      )) {
+      for await (const payload of publisher.subscribe("project.updated", {
+        signal,
+      })) {
         if (payload.subdomain === input.subdomain) {
           yield call(bySubdomain, input, { context, signal });
         }

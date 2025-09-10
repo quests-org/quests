@@ -73,6 +73,8 @@
     "winstaller",
     "workerd",
     "worktree",
-    "XAPI"
+    "XAPI",
+    "iterm",
+    "konsole"
   ]
 }

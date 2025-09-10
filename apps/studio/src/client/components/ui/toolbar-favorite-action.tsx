@@ -1,11 +1,9 @@
-import { AppFavoriteDialog } from "@/client/components/app-favorite-dialog";
 import { Button } from "@/client/components/ui/button";
 import { cn } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
 import { type WorkspaceAppProject } from "@quests/workspace/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Star } from "lucide-react";
-import { useState } from "react";
 
 interface ToolbarFavoriteActionProps {
   compact?: boolean;
@@ -22,53 +20,44 @@ export function ToolbarFavoriteAction({
   const isFavorite = favoriteProjects?.some(
     (favorite) => favorite.subdomain === project.subdomain,
   );
-  const [settingsDialogMode, setSettingsDialogMode] = useState<
-    "favorites" | "settings" | undefined
-  >(undefined);
 
   const { mutateAsync: removeFavorite } = useMutation(
     rpcClient.favorites.remove.mutationOptions(),
+  );
+
+  const { mutateAsync: addFavorite } = useMutation(
+    rpcClient.favorites.add.mutationOptions(),
   );
 
   const handleUnfavorite = () => {
     void removeFavorite({ subdomain: project.subdomain });
   };
 
+  const handleAddFavorite = async () => {
+    await addFavorite({ subdomain: project.subdomain });
+  };
+
   return (
-    <>
-      <Button
-        className={cn(compact && "size-7")}
-        onClick={() => {
-          if (isFavorite) {
-            handleUnfavorite();
-          } else {
-            setSettingsDialogMode("favorites");
-          }
-        }}
-        size="icon"
-        variant="ghost"
-      >
-        {isFavorite ? (
-          <Star className="h-4 w-4 fill-amber-500 text-amber-500" />
-        ) : (
-          <Star className="h-4 w-4" />
-        )}
-        <span className="sr-only">
-          {isFavorite ? "Unfavorite Project" : "Favorite Project"}
-        </span>
-      </Button>
-      <AppFavoriteDialog
-        dialogTitle={
-          settingsDialogMode === "favorites" ? "Add Favorite" : "App Settings"
+    <Button
+      className={cn(compact && "size-7")}
+      onClick={() => {
+        if (isFavorite) {
+          handleUnfavorite();
+        } else {
+          void handleAddFavorite();
         }
-        isFavorite={!!isFavorite}
-        mode={settingsDialogMode ?? "settings"}
-        onOpenChange={(open) => {
-          setSettingsDialogMode(open ? "favorites" : undefined);
-        }}
-        open={settingsDialogMode !== undefined}
-        subdomain={project.subdomain}
-      />
-    </>
+      }}
+      size="sm"
+      variant="ghost"
+    >
+      {isFavorite ? (
+        <Star className="h-4 w-4 fill-amber-500 text-amber-500" />
+      ) : (
+        <Star className="h-4 w-4" />
+      )}
+      <span className="sr-only">
+        {isFavorite ? "Unfavorite Project" : "Favorite Project"}
+      </span>
+    </Button>
   );
 }

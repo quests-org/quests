@@ -3,8 +3,9 @@ import { type WorkspaceAppProject } from "@quests/workspace/client";
 import { StoreId } from "@quests/workspace/client";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate, useSearch } from "@tanstack/react-router";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Plus } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { useStickToBottom } from "use-stick-to-bottom";
 
 import { useAppState } from "../hooks/use-app-state";
@@ -16,12 +17,14 @@ import { Button } from "./ui/button";
 import { Tabs, TabsList, TabsTrigger } from "./ui/tabs";
 
 interface ProjectSidebarProps {
+  collapsed?: boolean;
   project: WorkspaceAppProject;
   selectedModelURI?: AIGatewayModel.URI;
   selectedVersion?: string;
 }
 
 export function ProjectSidebar({
+  collapsed = false,
   project,
   selectedModelURI: initialSelectedModelURI,
   selectedVersion,
@@ -43,8 +46,12 @@ export function ProjectSidebar({
   const stopSessions = useMutation(
     rpcClient.workspace.session.stop.mutationOptions(),
   );
+  const createEmptySession = useMutation(
+    rpcClient.workspace.session.create.mutationOptions(),
+  );
 
   const bottomSectionRef = useRef<HTMLDivElement>(null);
+  const promptInputRef = useRef<{ focus: () => void }>(null);
   const [bottomSectionHeight, setBottomSectionHeight] = useState(0);
   const [filterMode, setFilterMode] = useState<FilterMode>("chat");
   const [selectedModelURI, setSelectedModelURI] = useState<
@@ -106,6 +113,32 @@ export function ProjectSidebar({
     );
   };
 
+  const handleNewSession = () => {
+    createEmptySession.mutate(
+      { subdomain: project.subdomain },
+      {
+        onError: () => {
+          toast.error("Failed to create new chat");
+        },
+        onSuccess: (result) => {
+          void navigate({
+            params: {
+              subdomain: project.subdomain,
+            },
+            replace: true,
+            search: (prev) => ({
+              ...prev,
+              selectedSessionId: result.id,
+            }),
+            to: "/projects/$subdomain",
+          }).then(() => {
+            promptInputRef.current?.focus();
+          });
+        },
+      },
+    );
+  };
+
   useEffect(() => {
     if (!bottomSectionRef.current) {
       return;
@@ -125,26 +158,36 @@ export function ProjectSidebar({
   }, []);
 
   return (
-    <div className="w-96 shrink-0 border-r bg-background flex flex-col relative">
-      <div className="p-2 border-b">
-        <div className="flex items-center gap-2">
+    <div
+      className={`bg-background flex flex-col relative transition-all duration-300 ease-in-out ${
+        collapsed ? "w-0 overflow-hidden" : "w-96 shrink-0"
+      }`}
+    >
+      <div className="p-2">
+        <div className="flex items-center justify-between gap-2">
           <Tabs
-            className="flex-1"
             onValueChange={(value) => {
               setFilterMode(value as FilterMode);
             }}
             value={filterMode}
           >
-            <TabsList className="w-full">
-              <TabsTrigger className="flex-1" value="chat">
-                Chat
-              </TabsTrigger>
-              <TabsTrigger className="flex-1" value="versions">
-                Versions
-              </TabsTrigger>
+            <TabsList>
+              <TabsTrigger value="chat">Chat</TabsTrigger>
+              <TabsTrigger value="versions">Versions</TabsTrigger>
             </TabsList>
           </Tabs>
-          <SessionMenu project={project} />
+          <div className="flex items-center">
+            <Button
+              disabled={createEmptySession.isPending}
+              onClick={handleNewSession}
+              size="sm"
+              title="New Chat"
+              variant="ghost"
+            >
+              <Plus className="size-4" />
+            </Button>
+            <SessionMenu project={project} />
+          </div>
         </div>
       </div>
 
@@ -180,107 +223,128 @@ export function ProjectSidebar({
         </Button>
       )}
 
-      <div className="p-4 border-t" ref={bottomSectionRef}>
-        <PromptInput
-          autoFocus
-          isLoading={
-            createSessionWithMessage.isPending || createMessage.isPending
-          }
-          isStoppable={isAgentAlive}
-          isSubmittable={!isAgentAlive}
-          modelURI={selectedModelURI}
-          onModelChange={setSelectedModelURI}
-          onStop={() => {
-            stopSessions.mutate({ subdomain: project.subdomain });
-          }}
-          onSubmit={({ modelURI, prompt }) => {
-            const promptText = prompt.trim();
-            const messageId = StoreId.newMessageId();
-            const createdAt = new Date();
-
-            if (selectedSessionId) {
-              createMessage.mutate(
-                {
-                  message: {
-                    id: messageId,
-                    metadata: {
-                      createdAt,
-                      sessionId: selectedSessionId,
-                    },
-                    parts: [
-                      {
-                        metadata: {
-                          createdAt,
-                          id: StoreId.newPartId(),
-                          messageId,
-                          sessionId: selectedSessionId,
-                        },
-                        text: promptText,
-                        type: "text",
-                      },
-                    ],
-                    role: "user",
-                  },
-                  modelURI,
-                  sessionId: selectedSessionId,
-                  subdomain: project.subdomain,
-                },
-                {
-                  onSuccess: () => {
-                    setFilterMode("chat");
-                  },
-                },
-              );
-            } else {
-              const sessionId = StoreId.newSessionId();
-
-              createSessionWithMessage.mutate(
-                {
-                  message: {
-                    id: messageId,
-                    metadata: {
-                      createdAt,
-                      sessionId,
-                    },
-                    parts: [
-                      {
-                        metadata: {
-                          createdAt,
-                          id: StoreId.newPartId(),
-                          messageId,
-                          sessionId,
-                        },
-                        text: promptText,
-                        type: "text",
-                      },
-                    ],
-                    role: "user",
-                  },
-                  modelURI,
-                  sessionId,
-                  subdomain: project.subdomain,
-                },
-                {
-                  onSuccess: () => {
-                    setFilterMode("chat");
-                    void navigate({
-                      params: {
-                        subdomain: project.subdomain,
-                      },
-                      replace: true,
-                      search: (prev) => ({
-                        ...prev,
-                        selectedSessionId: sessionId,
-                      }),
-                      to: "/projects/$subdomain",
-                    });
-                  },
-                },
-              );
+      {filterMode === "chat" && (
+        <div className="p-4 border-t" ref={bottomSectionRef}>
+          <PromptInput
+            autoFocus
+            isLoading={
+              createSessionWithMessage.isPending || createMessage.isPending
             }
-          }}
-        />
-      </div>
+            isStoppable={isAgentAlive}
+            isSubmittable={!isAgentAlive}
+            modelURI={selectedModelURI}
+            onModelChange={setSelectedModelURI}
+            onStop={() => {
+              stopSessions.mutate({ subdomain: project.subdomain });
+            }}
+            onSubmit={({ modelURI, prompt }) => {
+              const promptText = prompt.trim();
+              const messageId = StoreId.newMessageId();
+              const createdAt = new Date();
+
+              if (selectedSessionId) {
+                createMessage.mutate(
+                  {
+                    message: {
+                      id: messageId,
+                      metadata: {
+                        createdAt,
+                        sessionId: selectedSessionId,
+                      },
+                      parts: [
+                        {
+                          metadata: {
+                            createdAt,
+                            id: StoreId.newPartId(),
+                            messageId,
+                            sessionId: selectedSessionId,
+                          },
+                          text: promptText,
+                          type: "text",
+                        },
+                      ],
+                      role: "user",
+                    },
+                    modelURI,
+                    sessionId: selectedSessionId,
+                    subdomain: project.subdomain,
+                  },
+                  {
+                    onSuccess: () => {
+                      setFilterMode("chat");
+                      void scrollToBottom();
+                      if (selectedVersion) {
+                        void navigate({
+                          params: {
+                            subdomain: project.subdomain,
+                          },
+                          replace: true,
+                          search: (prev) => ({
+                            ...prev,
+                            selectedVersion: undefined,
+                          }),
+                          to: "/projects/$subdomain",
+                        });
+                      }
+                    },
+                  },
+                );
+              } else {
+                const sessionId = StoreId.newSessionId();
+
+                createSessionWithMessage.mutate(
+                  {
+                    message: {
+                      id: messageId,
+                      metadata: {
+                        createdAt,
+                        sessionId,
+                      },
+                      parts: [
+                        {
+                          metadata: {
+                            createdAt,
+                            id: StoreId.newPartId(),
+                            messageId,
+                            sessionId,
+                          },
+                          text: promptText,
+                          type: "text",
+                        },
+                      ],
+                      role: "user",
+                    },
+                    modelURI,
+                    sessionId,
+                    subdomain: project.subdomain,
+                  },
+                  {
+                    onSuccess: () => {
+                      setFilterMode("chat");
+                      void scrollToBottom();
+                      void navigate({
+                        params: {
+                          subdomain: project.subdomain,
+                        },
+                        replace: true,
+                        search: (prev) => ({
+                          ...prev,
+                          selectedSessionId: sessionId,
+                          selectedVersion: selectedVersion
+                            ? undefined
+                            : prev.selectedVersion,
+                        }),
+                        to: "/projects/$subdomain",
+                      });
+                    },
+                  },
+                );
+              }
+            }}
+            ref={promptInputRef}
+          />
+        </div>
+      )}
     </div>
   );
 }
