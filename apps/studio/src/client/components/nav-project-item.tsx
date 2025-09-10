@@ -22,9 +22,9 @@ import { useMutation } from "@tanstack/react-query";
 import {
   ArrowUpRight,
   Edit2,
-  Fullscreen,
+  Maximize2,
   MoreHorizontal,
-  PinOff,
+  StarOff,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -188,8 +188,8 @@ export function NavProjectItem({
               to="/projects/$subdomain/view"
             >
               <DropdownMenuItem>
-                <Fullscreen className="text-muted-foreground" />
-                <span>Launch App</span>
+                <Maximize2 className="text-muted-foreground" />
+                <span>Open Fullscreen</span>
               </DropdownMenuItem>
             </SidebarLink>
             <DropdownMenuSeparator />
@@ -203,7 +203,7 @@ export function NavProjectItem({
                   onRemoveFavorite(project.subdomain);
                 }}
               >
-                <PinOff className="text-muted-foreground" />
+                <StarOff className="text-muted-foreground" />
                 <span>Remove from Favorites</span>
               </DropdownMenuItem>
             )}
