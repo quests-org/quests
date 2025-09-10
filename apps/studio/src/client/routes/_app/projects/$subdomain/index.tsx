@@ -29,7 +29,6 @@ const projectSearchSchema = z.object({
   selectedSessionId: StoreId.SessionSchema.optional(),
   selectedVersion: z.string().optional(),
   showDelete: z.boolean().optional(),
-  sidebarCollapsed: z.boolean().optional(),
 });
 
 function title(projectTitle?: string) {
@@ -117,10 +116,11 @@ export const Route = createFileRoute("/_app/projects/$subdomain/")({
 
 function RouteComponent() {
   const { subdomain } = Route.useParams();
-  const { selectedVersion, showDelete, sidebarCollapsed } = Route.useSearch();
+  const { selectedVersion, showDelete } = Route.useSearch();
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const navigate = useNavigate();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   useEffect(() => {
     if (showDelete) {
@@ -186,15 +186,7 @@ function RouteComponent() {
           setShowDeleteDialog(true);
         }}
         onSidebarToggle={() => {
-          void navigate({
-            from: "/projects/$subdomain",
-            params: { subdomain },
-            replace: true,
-            search: (prev) => ({
-              ...prev,
-              sidebarCollapsed: !sidebarCollapsed,
-            }),
-          });
+          setSidebarCollapsed(!sidebarCollapsed);
         }}
         project={project}
         selectedVersion={selectedVersion}

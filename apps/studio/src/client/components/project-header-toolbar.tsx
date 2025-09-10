@@ -248,7 +248,7 @@ export function ProjectHeaderToolbar({
             </DropdownMenu>
 
             <Button
-              className="ml-1 transition-all duration-300 ease-in-out h-7 inline-flex items-center"
+              className="ml-1 transition-all duration-300 ease-in-out h-7 inline-flex items-center select-none"
               onClick={onSidebarToggle}
               size="sm"
               title={sidebarCollapsed ? "Show sidebar" : "Hide sidebar"}
@@ -284,7 +284,11 @@ export function ProjectHeaderToolbar({
                 <ToolbarFavoriteAction project={project} />
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button className="gap-1 h-7" size="sm" variant="secondary">
+                    <Button
+                      className="gap-1 h-7 select-none"
+                      size="sm"
+                      variant="secondary"
+                    >
                       Share
                     </Button>
                   </DropdownMenuTrigger>
