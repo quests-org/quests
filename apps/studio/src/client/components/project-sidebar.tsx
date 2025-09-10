@@ -271,6 +271,20 @@ export function ProjectSidebar({
                 {
                   onSuccess: () => {
                     setFilterMode("chat");
+                    void scrollToBottom();
+                    if (selectedVersion) {
+                      void navigate({
+                        params: {
+                          subdomain: project.subdomain,
+                        },
+                        replace: true,
+                        search: (prev) => ({
+                          ...prev,
+                          selectedVersion: undefined,
+                        }),
+                        to: "/projects/$subdomain",
+                      });
+                    }
                   },
                 },
               );
@@ -306,6 +320,7 @@ export function ProjectSidebar({
                 {
                   onSuccess: () => {
                     setFilterMode("chat");
+                    void scrollToBottom();
                     void navigate({
                       params: {
                         subdomain: project.subdomain,
@@ -314,6 +329,9 @@ export function ProjectSidebar({
                       search: (prev) => ({
                         ...prev,
                         selectedSessionId: sessionId,
+                        selectedVersion: selectedVersion
+                          ? undefined
+                          : prev.selectedVersion,
                       }),
                       to: "/projects/$subdomain",
                     });
