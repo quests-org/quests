@@ -22,6 +22,21 @@
       "dependsOn": ["@quests/shim-client#build", "@quests/shim-server#build"],
       "outputs": ["dist/**", "out/**"]
     },
+    "build:mac:dev": {
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "dependsOn": ["@quests/shim-client#build", "@quests/shim-server#build"],
+      "outputs": ["dist/**", "out/**"]
+    },
+    "build:windows": {
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "dependsOn": ["@quests/shim-client#build", "@quests/shim-server#build"],
+      "outputs": ["dist/**", "out/**"]
+    },
+    "build:windows:dev": {
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "dependsOn": ["@quests/shim-client#build", "@quests/shim-server#build"],
+      "outputs": ["dist/**", "out/**"]
+    },
     "build:mac:local": {
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "dependsOn": ["@quests/shim-client#build", "@quests/shim-server#build"],
