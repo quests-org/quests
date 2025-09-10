@@ -1,11 +1,10 @@
-import { AppLink } from "@/client/components/app-link";
 import {
   type ProjectSubdomain,
   type WorkspaceAppProject,
 } from "@quests/workspace/client";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import ColorHash from "color-hash";
-import { Maximize2 } from "lucide-react";
+import { ExternalLinkIcon } from "lucide-react";
 import { useMemo } from "react";
 
 import { rpcClient } from "../rpc/client";
@@ -50,24 +49,24 @@ export function ProjectToolbar({
     enabled: !!selectedVersion,
   });
 
+  const openExternalLinkMutation = useMutation(
+    rpcClient.utils.openExternalLink.mutationOptions(),
+  );
+
+  const handleOpenExternalClick = () => {
+    openExternalLinkMutation.mutate({ url: project.urls.localhost });
+  };
+
   const centerActions = (
     <>
       <Tooltip>
         <TooltipTrigger asChild>
-          {selectedVersion ? (
-            <Button disabled size="icon" variant="ghost">
-              <Maximize2 className="h-4 w-4" />
-            </Button>
-          ) : (
-            <AppLink params={{ subdomain }} to="/projects/$subdomain/view">
-              <Button size="icon" variant="ghost">
-                <Maximize2 className="h-4 w-4" />
-              </Button>
-            </AppLink>
-          )}
+          <Button onClick={handleOpenExternalClick} size="icon" variant="ghost">
+            <ExternalLinkIcon className="h-4 w-4" />
+          </Button>
         </TooltipTrigger>
         <TooltipContent>
-          <p>Full screen</p>
+          <p>Open in external browser</p>
         </TooltipContent>
       </Tooltip>
     </>

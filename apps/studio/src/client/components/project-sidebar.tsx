@@ -17,12 +17,14 @@ import { Button } from "./ui/button";
 import { Tabs, TabsList, TabsTrigger } from "./ui/tabs";
 
 interface ProjectSidebarProps {
+  collapsed?: boolean;
   project: WorkspaceAppProject;
   selectedModelURI?: AIGatewayModel.URI;
   selectedVersion?: string;
 }
 
 export function ProjectSidebar({
+  collapsed = false,
   project,
   selectedModelURI: initialSelectedModelURI,
   selectedVersion,
@@ -156,7 +158,11 @@ export function ProjectSidebar({
   }, []);
 
   return (
-    <div className="w-96 shrink-0 bg-background flex flex-col relative">
+    <div
+      className={`bg-background flex flex-col relative transition-all duration-300 ease-in-out ${
+        collapsed ? "w-0 overflow-hidden" : "w-96 shrink-0"
+      }`}
+    >
       <div className="p-2">
         <div className="flex items-center justify-between gap-2">
           <Tabs

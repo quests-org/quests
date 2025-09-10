@@ -6,6 +6,7 @@ import { ProjectToolbar } from "@/client/components/project-toolbar";
 import { VersionOverlay } from "@/client/components/version-overlay";
 import { useProjectRouteSync } from "@/client/hooks/use-project-route-sync";
 import { migrateProjectSubdomain } from "@/client/lib/migrate-project-subdomain";
+import { cn } from "@/client/lib/utils";
 import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
 import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
 import { safe } from "@orpc/client";
@@ -28,6 +29,7 @@ const projectSearchSchema = z.object({
   selectedSessionId: StoreId.SessionSchema.optional(),
   selectedVersion: z.string().optional(),
   showDelete: z.boolean().optional(),
+  sidebarCollapsed: z.boolean().optional(),
 });
 
 function title(projectTitle?: string) {
@@ -115,7 +117,7 @@ export const Route = createFileRoute("/_app/projects/$subdomain/")({
 
 function RouteComponent() {
   const { subdomain } = Route.useParams();
-  const { selectedVersion, showDelete } = Route.useSearch();
+  const { selectedVersion, showDelete, sidebarCollapsed } = Route.useSearch();
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const navigate = useNavigate();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -183,18 +185,36 @@ function RouteComponent() {
         onDeleteClick={() => {
           setShowDeleteDialog(true);
         }}
+        onSidebarToggle={() => {
+          void navigate({
+            from: "/projects/$subdomain",
+            params: { subdomain },
+            replace: true,
+            search: (prev) => ({
+              ...prev,
+              sidebarCollapsed: !sidebarCollapsed,
+            }),
+          });
+        }}
         project={project}
         selectedVersion={selectedVersion}
+        sidebarCollapsed={sidebarCollapsed}
       />
 
       <div className="flex flex-1 overflow-hidden">
         <ProjectSidebar
+          collapsed={sidebarCollapsed}
           project={project}
           selectedModelURI={projectState.selectedModelURI}
           selectedVersion={selectedVersion}
         />
 
-        <div className="flex-1 flex flex-col p-2 bg-secondary border-l border-t rounded-tl-md">
+        <div
+          className={cn(
+            "flex-1 flex flex-col p-2 bg-secondary border-t",
+            !sidebarCollapsed && "border-l rounded-tl-md",
+          )}
+        >
           <div className="flex-1 flex flex-col bg-background border rounded-lg shadow-sm overflow-hidden">
             <ProjectToolbar
               iframeRef={iframeRef}

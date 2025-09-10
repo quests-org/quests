@@ -22,11 +22,11 @@ import { useMutation } from "@tanstack/react-query";
 import {
   ArrowUpRight,
   Edit2,
-  Maximize2,
+  ExternalLinkIcon,
   MoreHorizontal,
   StarOff,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { AppStatusIcon } from "./app-status-icon";
 import { TrashIcon } from "./icons";
@@ -47,17 +47,13 @@ export function NavProjectItem({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(project.title);
-  const inputRef = useRef<HTMLInputElement>(null);
 
   const { isPending: isRenameLoading, mutateAsync: renameProject } =
     useMutation(rpcClient.workspace.project.updateName.mutationOptions());
 
-  useEffect(() => {
-    if (isEditing && inputRef.current) {
-      inputRef.current.focus();
-      inputRef.current.select();
-    }
-  }, [isEditing]);
+  const openExternalLinkMutation = useMutation(
+    rpcClient.utils.openExternalLink.mutationOptions(),
+  );
 
   useEffect(() => {
     if (!isEditing) {
@@ -106,6 +102,10 @@ export function NavProjectItem({
     }
   };
 
+  const handleOpenExternalClick = () => {
+    openExternalLinkMutation.mutate({ url: project.urls.localhost });
+  };
+
   return (
     <SidebarMenuItem className="group" key={project.subdomain}>
       {isEditing ? (
@@ -118,6 +118,7 @@ export function NavProjectItem({
             />
           )}
           <Input
+            autoFocus
             className="h-7 text-sm"
             disabled={isRenameLoading}
             onBlur={() => {
@@ -127,7 +128,6 @@ export function NavProjectItem({
               setEditValue(e.target.value);
             }}
             onKeyDown={handleKeyDown}
-            ref={inputRef}
             value={editValue}
           />
         </div>
@@ -172,7 +172,7 @@ export function NavProjectItem({
           </DropdownMenuTrigger>
           <DropdownMenuContent
             align="end"
-            className="w-48 rounded-lg"
+            className="w-56 rounded-lg"
             side="bottom"
           >
             <DropdownMenuItem
@@ -181,17 +181,12 @@ export function NavProjectItem({
               }}
             >
               <ArrowUpRight className="text-muted-foreground" />
-              <span>Open in New Tab</span>
+              <span>Open in new tab</span>
             </DropdownMenuItem>
-            <SidebarLink
-              params={{ subdomain: project.subdomain }}
-              to="/projects/$subdomain/view"
-            >
-              <DropdownMenuItem>
-                <Maximize2 className="text-muted-foreground" />
-                <span>Open Fullscreen</span>
-              </DropdownMenuItem>
-            </SidebarLink>
+            <DropdownMenuItem onClick={handleOpenExternalClick}>
+              <ExternalLinkIcon className="text-muted-foreground" />
+              <span>Open in external browser</span>
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleStartEdit}>
               <Edit2 className="text-muted-foreground" />
@@ -204,7 +199,7 @@ export function NavProjectItem({
                 }}
               >
                 <StarOff className="text-muted-foreground" />
-                <span>Remove from Favorites</span>
+                <span>Remove favorite</span>
               </DropdownMenuItem>
             )}
             <SidebarLink
