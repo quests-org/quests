@@ -15,6 +15,7 @@ import { SessionMenu } from "./session-menu";
 import { type FilterMode, SessionStream } from "./session-stream";
 import { Button } from "./ui/button";
 import { Tabs, TabsList, TabsTrigger } from "./ui/tabs";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 interface ProjectSidebarProps {
   collapsed?: boolean;
@@ -177,15 +178,21 @@ export function ProjectSidebar({
             </TabsList>
           </Tabs>
           <div className="flex items-center">
-            <Button
-              disabled={createEmptySession.isPending}
-              onClick={handleNewSession}
-              size="sm"
-              title="New Chat"
-              variant="ghost"
-            >
-              <Plus className="size-4" />
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  disabled={createEmptySession.isPending}
+                  onClick={handleNewSession}
+                  size="sm"
+                  variant="ghost"
+                >
+                  <Plus className="size-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>New chat</p>
+              </TooltipContent>
+            </Tooltip>
             <SessionMenu project={project} />
           </div>
         </div>

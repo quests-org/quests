@@ -229,7 +229,7 @@ export function SessionMenu({ project }: SessionMenuProps) {
       <Dialog onOpenChange={setShowDeleteModal} open={showDeleteModal}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Delete Chat</DialogTitle>
+            <DialogTitle>Delete chat</DialogTitle>
             <DialogDescription asChild>
               <div className="space-y-2">
                 <p>
