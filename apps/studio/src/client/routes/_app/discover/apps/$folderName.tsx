@@ -168,8 +168,6 @@ function RouteComponent() {
             <AppPreview
               className="w-full h-full rounded-lg border border-border overflow-hidden flex flex-col"
               preview={appDetails.preview}
-              showCloseButton={false}
-              showRemixButton={false}
             />
           ) : (
             <div className="w-full h-full rounded-lg border border-border flex items-center justify-center bg-background">

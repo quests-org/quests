@@ -15,7 +15,6 @@ interface AppToolbarProps {
   centerActions?: ReactNode;
   centerContent?: ReactNode;
   className?: string;
-  compact?: boolean;
   disabled?: boolean;
   iframeRef: React.RefObject<HTMLIFrameElement | null>;
   rightActions?: ReactNode;
@@ -26,7 +25,6 @@ export function AppToolbar({
   centerActions,
   centerContent,
   className,
-  compact = false,
   disabled = false,
   iframeRef,
   rightActions,
@@ -39,14 +37,13 @@ export function AppToolbar({
   return (
     <div
       className={cn(
-        "bg-background flex items-center border-b shadow-sm",
-        compact ? "px-2 py-2 gap-1" : "gap-2 px-2 py-2.5",
+        "bg-background flex items-center border-b shadow-sm px-2 py-1.5 gap-1",
         className,
       )}
     >
       <div className="flex items-center gap-1 pr-1">
         <Button
-          className={cn(compact && "size-6")}
+          className="size-6"
           disabled={disabled}
           onClick={shimIFrame.historyBack}
           size="icon"
@@ -55,7 +52,7 @@ export function AppToolbar({
           <ChevronLeft className="h-4 w-4" />
         </Button>
         <Button
-          className={cn(compact && "size-6")}
+          className="size-6"
           disabled={disabled}
           onClick={shimIFrame.historyForward}
           size="icon"
@@ -66,7 +63,7 @@ export function AppToolbar({
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              className={cn(compact && "size-6")}
+              className="size-6"
               disabled={disabled}
               onClick={async () => {
                 await restartRuntimeMutation.mutateAsync({
@@ -90,7 +87,7 @@ export function AppToolbar({
       <div className="flex-1 flex items-center gap-1 min-w-0">
         {centerContent ?? (
           <Input
-            className="flex-1 text-center min-w-0"
+            className="flex-1 text-center min-w-0 text-xs md:text-xs h-8 font-medium"
             readOnly
             value={app.urls.localhost}
           />
