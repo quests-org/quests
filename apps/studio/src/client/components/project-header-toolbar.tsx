@@ -28,17 +28,9 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 
-const EDITOR_ICON_MAP: Record<SupportedEditorId, typeof PenLine> = {
-  cmd: Terminal,
-  cursor: PenLine,
-  iterm: Terminal,
-  powershell: Terminal,
-  terminal: Terminal,
-  vscode: PenLine,
-};
-
 import { TrashIcon } from "./icons";
 import { RestoreVersionModal } from "./restore-version-modal";
+import { CMD, Cursor, ITerm, MacOSTerminal, VSCode } from "./service-icons";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -49,6 +41,18 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
+
+const EDITOR_ICON_MAP: Record<
+  SupportedEditorId,
+  React.ComponentType<{ className?: string }>
+> = {
+  cmd: CMD,
+  cursor: Cursor,
+  iterm: ITerm,
+  powershell: Terminal,
+  terminal: MacOSTerminal,
+  vscode: VSCode,
+};
 
 interface ProjectHeaderToolbarProps {
   iframeRef: React.RefObject<HTMLIFrameElement | null>;
@@ -391,11 +395,11 @@ export function ProjectHeaderToolbar({
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={handleCopyScreenshot}>
                       <Clipboard className="h-4 w-4" />
-                      Copy Screenshot
+                      Copy screenshot
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={handleTakeScreenshot}>
                       <Save className="h-4 w-4" />
-                      Save Screenshot
+                      Save screenshot
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
