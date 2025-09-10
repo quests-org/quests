@@ -331,7 +331,7 @@ export function ProjectHeaderToolbar({
                 </Button>
               </div>
             ) : (
-              <>
+              <div className="flex items-center gap-2">
                 <ToolbarFavoriteAction project={project} />
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -361,7 +361,7 @@ export function ProjectHeaderToolbar({
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-              </>
+              </div>
             )}
           </div>
         </div>
