@@ -3,6 +3,7 @@ import fs from "node:fs/promises";
 import { type AppDir } from "../schemas/paths";
 import { absolutePathJoin } from "./absolute-path-join";
 import { getAppPrivateDir } from "./app-dir-utils";
+import { getCurrentDate } from "./get-current-date";
 import { pathExists } from "./path-exists";
 
 export async function getAppDirTimestamps(appDir: AppDir) {
@@ -29,9 +30,10 @@ export async function getAppDirTimestamps(appDir: AppDir) {
     }
   }
 
+  const now = getCurrentDate();
   // If all paths are missing, return oldest possible date to sort to bottom
   return {
-    createdAt: new Date(0),
-    updatedAt: new Date(0),
+    createdAt: now,
+    updatedAt: now,
   };
 }
