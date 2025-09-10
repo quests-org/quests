@@ -1,8 +1,7 @@
 import type {
-  OpenAppInType,
   SupportedEditor,
   SupportedEditorId,
-} from "@/shared/types/editors";
+} from "@/shared/schemas/editors";
 
 import { SmallAppIcon } from "@/client/components/app-icon";
 import { ProjectSettingsDialog } from "@/client/components/project-settings-dialog";
@@ -10,6 +9,7 @@ import { Button } from "@/client/components/ui/button";
 import { ToolbarFavoriteAction } from "@/client/components/ui/toolbar-favorite-action";
 import { cn, isMacOS } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
+import { OpenAppInTypeSchema } from "@/shared/schemas/editors";
 import { type WorkspaceAppProject } from "@quests/workspace/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
@@ -245,7 +245,9 @@ export function ProjectHeaderToolbar({
                                     onClick={() => {
                                       void openAppInMutation.mutateAsync({
                                         subdomain: project.subdomain,
-                                        type: editor.id as OpenAppInType,
+                                        type: OpenAppInTypeSchema.parse(
+                                          editor.id,
+                                        ),
                                       });
                                     }}
                                   >
@@ -269,7 +271,9 @@ export function ProjectHeaderToolbar({
                                     onClick={() => {
                                       void openAppInMutation.mutateAsync({
                                         subdomain: project.subdomain,
-                                        type: editor.id as OpenAppInType,
+                                        type: OpenAppInTypeSchema.parse(
+                                          editor.id,
+                                        ),
                                       });
                                     }}
                                   >

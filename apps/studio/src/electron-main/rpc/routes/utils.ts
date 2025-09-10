@@ -1,4 +1,8 @@
-import type { EditorConfig, SupportedEditor } from "@/shared/types/editors";
+import type {
+  OpenAppInType,
+  SupportedEditor,
+  SupportedEditorId,
+} from "@/shared/schemas/editors";
 
 import { base } from "@/electron-main/rpc/base";
 import { publisher } from "@/electron-main/rpc/publisher";
@@ -11,6 +15,12 @@ import os from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
 import { z } from "zod";
+
+interface EditorConfig {
+  appName: string;
+  id: SupportedEditorId;
+  name: string;
+}
 
 const execAsync = promisify(exec);
 
@@ -47,7 +57,7 @@ const DETECTION_COMMANDS = {
   win32: (appName: string) => `where "${appName}"`,
 } as const;
 
-const WINDOWS_COMMAND_MAP: Record<string, string> = {
+const WINDOWS_COMMAND_MAP: Partial<Record<SupportedEditorId, string>> = {
   cmd: "cmd",
   cursor: "cursor",
   powershell: "powershell",
@@ -78,7 +88,9 @@ const OPEN_COMMANDS = {
   win32: (command: string, appDir: string) => `${command} "${appDir}"`,
 } as const;
 
-const APP_COMMAND_MAP: Record<string, Record<string, string>> = {
+const APP_COMMAND_MAP: Partial<
+  Record<SupportedEditorId, Record<string, string>>
+> = {
   cursor: { darwin: "Cursor", linux: "cursor", win32: "cursor" },
   terminal: {
     darwin: "Terminal",
@@ -88,9 +100,8 @@ const APP_COMMAND_MAP: Record<string, Record<string, string>> = {
   vscode: { darwin: "Visual Studio Code", linux: "code", win32: "code" },
 };
 
-const SPECIAL_COMMANDS: Record<
-  string,
-  (appDir: string, platform: string) => string
+const SPECIAL_COMMANDS: Partial<
+  Record<SupportedEditorId, (appDir: string, platform: string) => string>
 > = {
   cmd: (appDir: string, platform: string) => {
     if (platform !== "win32") {
@@ -113,12 +124,17 @@ const SPECIAL_COMMANDS: Record<
 };
 
 const getOpenCommand = (
-  type: string,
+  type: OpenAppInType,
   appDir: string,
   platform: string,
 ): string => {
-  if (SPECIAL_COMMANDS[type]) {
-    return SPECIAL_COMMANDS[type](appDir, platform);
+  if (type === "show-in-folder") {
+    throw new Error("show-in-folder should be handled separately");
+  }
+
+  const specialCommand = SPECIAL_COMMANDS[type];
+  if (specialCommand) {
+    return specialCommand(appDir, platform);
   }
 
   const appCommands = APP_COMMAND_MAP[type];
@@ -207,15 +223,7 @@ const openAppIn = base
   .input(
     z.object({
       subdomain: ProjectSubdomainSchema,
-      type: z.enum([
-        "cursor",
-        "show-in-folder",
-        "terminal",
-        "vscode",
-        "iterm",
-        "cmd",
-        "powershell",
-      ]),
+      type: OpenAppInTypeSchema,
     }),
   )
   .handler(async ({ context, errors, input }) => {
