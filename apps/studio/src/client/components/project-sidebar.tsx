@@ -223,56 +223,105 @@ export function ProjectSidebar({
         </Button>
       )}
 
-      <div className="p-4 border-t" ref={bottomSectionRef}>
-        <PromptInput
-          autoFocus
-          isLoading={
-            createSessionWithMessage.isPending || createMessage.isPending
-          }
-          isStoppable={isAgentAlive}
-          isSubmittable={!isAgentAlive}
-          modelURI={selectedModelURI}
-          onModelChange={setSelectedModelURI}
-          onStop={() => {
-            stopSessions.mutate({ subdomain: project.subdomain });
-          }}
-          onSubmit={({ modelURI, prompt }) => {
-            const promptText = prompt.trim();
-            const messageId = StoreId.newMessageId();
-            const createdAt = new Date();
+      {filterMode === "chat" && (
+        <div className="p-4 border-t" ref={bottomSectionRef}>
+          <PromptInput
+            autoFocus
+            isLoading={
+              createSessionWithMessage.isPending || createMessage.isPending
+            }
+            isStoppable={isAgentAlive}
+            isSubmittable={!isAgentAlive}
+            modelURI={selectedModelURI}
+            onModelChange={setSelectedModelURI}
+            onStop={() => {
+              stopSessions.mutate({ subdomain: project.subdomain });
+            }}
+            onSubmit={({ modelURI, prompt }) => {
+              const promptText = prompt.trim();
+              const messageId = StoreId.newMessageId();
+              const createdAt = new Date();
 
-            if (selectedSessionId) {
-              createMessage.mutate(
-                {
-                  message: {
-                    id: messageId,
-                    metadata: {
-                      createdAt,
-                      sessionId: selectedSessionId,
-                    },
-                    parts: [
-                      {
-                        metadata: {
-                          createdAt,
-                          id: StoreId.newPartId(),
-                          messageId,
-                          sessionId: selectedSessionId,
-                        },
-                        text: promptText,
-                        type: "text",
+              if (selectedSessionId) {
+                createMessage.mutate(
+                  {
+                    message: {
+                      id: messageId,
+                      metadata: {
+                        createdAt,
+                        sessionId: selectedSessionId,
                       },
-                    ],
-                    role: "user",
+                      parts: [
+                        {
+                          metadata: {
+                            createdAt,
+                            id: StoreId.newPartId(),
+                            messageId,
+                            sessionId: selectedSessionId,
+                          },
+                          text: promptText,
+                          type: "text",
+                        },
+                      ],
+                      role: "user",
+                    },
+                    modelURI,
+                    sessionId: selectedSessionId,
+                    subdomain: project.subdomain,
                   },
-                  modelURI,
-                  sessionId: selectedSessionId,
-                  subdomain: project.subdomain,
-                },
-                {
-                  onSuccess: () => {
-                    setFilterMode("chat");
-                    void scrollToBottom();
-                    if (selectedVersion) {
+                  {
+                    onSuccess: () => {
+                      setFilterMode("chat");
+                      void scrollToBottom();
+                      if (selectedVersion) {
+                        void navigate({
+                          params: {
+                            subdomain: project.subdomain,
+                          },
+                          replace: true,
+                          search: (prev) => ({
+                            ...prev,
+                            selectedVersion: undefined,
+                          }),
+                          to: "/projects/$subdomain",
+                        });
+                      }
+                    },
+                  },
+                );
+              } else {
+                const sessionId = StoreId.newSessionId();
+
+                createSessionWithMessage.mutate(
+                  {
+                    message: {
+                      id: messageId,
+                      metadata: {
+                        createdAt,
+                        sessionId,
+                      },
+                      parts: [
+                        {
+                          metadata: {
+                            createdAt,
+                            id: StoreId.newPartId(),
+                            messageId,
+                            sessionId,
+                          },
+                          text: promptText,
+                          type: "text",
+                        },
+                      ],
+                      role: "user",
+                    },
+                    modelURI,
+                    sessionId,
+                    subdomain: project.subdomain,
+                  },
+                  {
+                    onSuccess: () => {
+                      setFilterMode("chat");
+                      void scrollToBottom();
                       void navigate({
                         params: {
                           subdomain: project.subdomain,
@@ -280,69 +329,22 @@ export function ProjectSidebar({
                         replace: true,
                         search: (prev) => ({
                           ...prev,
-                          selectedVersion: undefined,
+                          selectedSessionId: sessionId,
+                          selectedVersion: selectedVersion
+                            ? undefined
+                            : prev.selectedVersion,
                         }),
                         to: "/projects/$subdomain",
                       });
-                    }
-                  },
-                },
-              );
-            } else {
-              const sessionId = StoreId.newSessionId();
-
-              createSessionWithMessage.mutate(
-                {
-                  message: {
-                    id: messageId,
-                    metadata: {
-                      createdAt,
-                      sessionId,
                     },
-                    parts: [
-                      {
-                        metadata: {
-                          createdAt,
-                          id: StoreId.newPartId(),
-                          messageId,
-                          sessionId,
-                        },
-                        text: promptText,
-                        type: "text",
-                      },
-                    ],
-                    role: "user",
                   },
-                  modelURI,
-                  sessionId,
-                  subdomain: project.subdomain,
-                },
-                {
-                  onSuccess: () => {
-                    setFilterMode("chat");
-                    void scrollToBottom();
-                    void navigate({
-                      params: {
-                        subdomain: project.subdomain,
-                      },
-                      replace: true,
-                      search: (prev) => ({
-                        ...prev,
-                        selectedSessionId: sessionId,
-                        selectedVersion: selectedVersion
-                          ? undefined
-                          : prev.selectedVersion,
-                      }),
-                      to: "/projects/$subdomain",
-                    });
-                  },
-                },
-              );
-            }
-          }}
-          ref={promptInputRef}
-        />
-      </div>
+                );
+              }
+            }}
+            ref={promptInputRef}
+          />
+        </div>
+      )}
     </div>
   );
 }
