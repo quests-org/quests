@@ -1,8 +1,8 @@
 import { AppIFrame } from "@/client/components/app-iframe";
 import { ProjectDeleteDialog } from "@/client/components/project-delete-dialog";
 import { ProjectHeaderToolbar } from "@/client/components/project-header-toolbar";
+import { ProjectIFrameToolbar } from "@/client/components/project-iframe-toolbar";
 import { ProjectSidebar } from "@/client/components/project-sidebar";
-import { ProjectToolbar } from "@/client/components/project-toolbar";
 import { VersionOverlay } from "@/client/components/version-overlay";
 import { useProjectRouteSync } from "@/client/hooks/use-project-route-sync";
 import { migrateProjectSubdomain } from "@/client/lib/migrate-project-subdomain";
@@ -216,7 +216,7 @@ function RouteComponent() {
           )}
         >
           <div className="flex-1 flex flex-col bg-background border rounded-lg shadow-sm overflow-hidden">
-            <ProjectToolbar
+            <ProjectIFrameToolbar
               iframeRef={iframeRef}
               project={project}
               selectedVersion={selectedVersion}

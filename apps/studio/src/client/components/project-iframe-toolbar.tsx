@@ -18,19 +18,19 @@ import {
   TooltipTrigger,
 } from "./ui/tooltip";
 
-interface ProjectToolbarProps {
+interface ProjectIFrameToolbarProps {
   iframeRef: React.RefObject<HTMLIFrameElement | null>;
   project: WorkspaceAppProject;
   selectedVersion?: string;
   subdomain: ProjectSubdomain;
 }
 
-export function ProjectToolbar({
+export function ProjectIFrameToolbar({
   iframeRef,
   project,
   selectedVersion,
   subdomain,
-}: ProjectToolbarProps) {
+}: ProjectIFrameToolbarProps) {
   const hashColor = useMemo(() => {
     if (!selectedVersion) {
       return;
