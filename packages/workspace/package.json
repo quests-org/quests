@@ -46,6 +46,7 @@
     "hono": "catalog:",
     "ignore": "^7.0.3",
     "neverthrow": "^8.1.1",
+    "node-pty": "1.1.0-beta34",
     "radashi": "^12.6.0",
     "read-pkg": "^9.0.1",
     "superjson": "^2.2.2",
