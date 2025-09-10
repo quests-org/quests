@@ -1,3 +1,5 @@
+import type { EditorConfig, SupportedEditor } from "@/shared/types/editors";
+
 import { base } from "@/electron-main/rpc/base";
 import { publisher } from "@/electron-main/rpc/publisher";
 import { ProjectSubdomainSchema } from "@quests/workspace/client";
@@ -13,6 +15,155 @@ import { z } from "zod";
 const execAsync = promisify(exec);
 
 const SAFE_PROTOCOLS = new Set(["http:", "https:", "mailto:", "tel:"]);
+
+const EDITORS_BY_PLATFORM: Record<string, EditorConfig[]> = {
+  darwin: [
+    { appName: "Cursor", id: "cursor", name: "Cursor" },
+    { appName: "Visual Studio Code", id: "vscode", name: "Visual Studio Code" },
+    { appName: "iTerm", id: "iterm", name: "iTerm" },
+    { appName: "Terminal", id: "terminal", name: "Terminal" },
+  ],
+  linux: [
+    { appName: "Cursor", id: "cursor", name: "Cursor" },
+    { appName: "code", id: "vscode", name: "Visual Studio Code" },
+    { appName: "gnome-terminal", id: "terminal", name: "Terminal" },
+    { appName: "konsole", id: "terminal", name: "Konsole" },
+    { appName: "xterm", id: "terminal", name: "XTerm" },
+  ],
+  win32: [
+    { appName: "Cursor", id: "cursor", name: "Cursor" },
+    { appName: "Visual Studio Code", id: "vscode", name: "Visual Studio Code" },
+    { appName: "Windows Terminal", id: "terminal", name: "Windows Terminal" },
+    { appName: "Command Prompt", id: "cmd", name: "Command Prompt" },
+    { appName: "PowerShell", id: "powershell", name: "PowerShell" },
+  ],
+};
+
+let supportedEditorsCache: null | SupportedEditor[] = null;
+
+const DETECTION_COMMANDS = {
+  darwin: (appName: string) => `open -Ra "${appName}"`,
+  linux: (appName: string) => `which ${appName}`,
+  win32: (appName: string) => `where "${appName}"`,
+} as const;
+
+const WINDOWS_COMMAND_MAP: Record<string, string> = {
+  cmd: "cmd",
+  cursor: "cursor",
+  powershell: "powershell",
+  terminal: "wt",
+  vscode: "code",
+};
+
+const getDetectionCommand = (
+  editor: EditorConfig,
+  platform: string,
+): string => {
+  if (platform === "win32") {
+    const command = WINDOWS_COMMAND_MAP[editor.id];
+    if (command) {
+      return `where ${command}`;
+    }
+  }
+
+  const commandFn =
+    DETECTION_COMMANDS[platform as keyof typeof DETECTION_COMMANDS];
+  return commandFn(editor.appName);
+};
+
+const OPEN_COMMANDS = {
+  darwin: (appName: string, appDir: string) =>
+    `open -a "${appName}" "${appDir}"`,
+  linux: (command: string, appDir: string) => `${command} "${appDir}"`,
+  win32: (command: string, appDir: string) => `${command} "${appDir}"`,
+} as const;
+
+const APP_COMMAND_MAP: Record<string, Record<string, string>> = {
+  cursor: { darwin: "Cursor", linux: "cursor", win32: "cursor" },
+  terminal: {
+    darwin: "Terminal",
+    linux: "gnome-terminal --working-directory",
+    win32: "wt -d",
+  },
+  vscode: { darwin: "Visual Studio Code", linux: "code", win32: "code" },
+};
+
+const SPECIAL_COMMANDS: Record<
+  string,
+  (appDir: string, platform: string) => string
+> = {
+  cmd: (appDir: string, platform: string) => {
+    if (platform !== "win32") {
+      throw new Error("Command Prompt is only available on Windows");
+    }
+    return `cmd /c "cd /d "${appDir}" && cmd"`;
+  },
+  iterm: (appDir: string, platform: string) => {
+    if (platform !== "darwin") {
+      throw new Error("iTerm is only available on macOS");
+    }
+    return `open -a "iTerm" "${appDir}"`;
+  },
+  powershell: (appDir: string, platform: string) => {
+    if (platform !== "win32") {
+      throw new Error("PowerShell is only available on Windows");
+    }
+    return `powershell -NoExit -Command "Set-Location '${appDir}'"`;
+  },
+};
+
+const getOpenCommand = (
+  type: string,
+  appDir: string,
+  platform: string,
+): string => {
+  if (SPECIAL_COMMANDS[type]) {
+    return SPECIAL_COMMANDS[type](appDir, platform);
+  }
+
+  const appCommands = APP_COMMAND_MAP[type];
+  if (!appCommands) {
+    throw new Error(`Unknown app type: ${type}`);
+  }
+
+  const command = appCommands[platform];
+  if (!command) {
+    throw new Error(`${type} is not supported on ${platform}`);
+  }
+
+  const commandFn = OPEN_COMMANDS[platform as keyof typeof OPEN_COMMANDS];
+  return commandFn(command, appDir);
+};
+
+const checkEditorAvailability = async (
+  editor: EditorConfig,
+): Promise<SupportedEditor> => {
+  const platform = os.platform();
+
+  try {
+    const command = getDetectionCommand(editor, platform);
+    await execAsync(command);
+    return { available: true, id: editor.id, name: editor.name };
+  } catch {
+    return { available: false, id: editor.id, name: editor.name };
+  }
+};
+
+const initializeSupportedEditorsCache = async () => {
+  if (supportedEditorsCache !== null) {
+    return supportedEditorsCache;
+  }
+
+  const platform = os.platform();
+  const editors = EDITORS_BY_PLATFORM[platform] ?? [];
+
+  const supportedEditors = await Promise.all(
+    editors.map(checkEditorAvailability),
+  );
+
+  supportedEditorsCache = supportedEditors;
+  return supportedEditors;
+};
 
 const openExternalLink = base
   .errors({
@@ -56,7 +207,15 @@ const openAppIn = base
   .input(
     z.object({
       subdomain: ProjectSubdomainSchema,
-      type: z.enum(["cursor", "show-in-folder", "terminal", "vscode"]),
+      type: z.enum([
+        "cursor",
+        "show-in-folder",
+        "terminal",
+        "vscode",
+        "iterm",
+        "cmd",
+        "powershell",
+      ]),
     }),
   )
   .handler(async ({ context, errors, input }) => {
@@ -66,24 +225,14 @@ const openAppIn = base
       workspaceConfig: snapshot.context.config,
     });
 
+    const platform = os.platform();
+
     try {
-      switch (input.type) {
-        case "cursor": {
-          await execAsync(`open -a "Cursor" "${appConfig.appDir}"`);
-          break;
-        }
-        case "show-in-folder": {
-          shell.showItemInFolder(appConfig.appDir);
-          break;
-        }
-        case "terminal": {
-          await execAsync(`open -a "Terminal" "${appConfig.appDir}"`);
-          break;
-        }
-        case "vscode": {
-          await execAsync(`code "${appConfig.appDir}"`);
-          break;
-        }
+      if (input.type === "show-in-folder") {
+        shell.showItemInFolder(appConfig.appDir);
+      } else {
+        const command = getOpenCommand(input.type, appConfig.appDir, platform);
+        await execAsync(command);
       }
     } catch (error) {
       throw errors.ERROR_OPENING_APP({
@@ -170,6 +319,31 @@ const showFileInFolder = base
     }
   });
 
+const getSupportedEditors = base
+  .output(
+    z.array(
+      z.object({
+        available: z.boolean(),
+        id: z.enum([
+          "cursor",
+          "iterm",
+          "terminal",
+          "vscode",
+          "cmd",
+          "powershell",
+        ]),
+        name: z.string(),
+      }),
+    ),
+  )
+  .handler(async () => {
+    if (supportedEditorsCache !== null) {
+      return supportedEditorsCache;
+    }
+
+    return await initializeSupportedEditorsCache();
+  });
+
 const live = {
   serverExceptions: base.handler(async function* ({ signal }) {
     for await (const payload of publisher.subscribe("server-exception", {
@@ -181,6 +355,7 @@ const live = {
 };
 
 export const utils = {
+  getSupportedEditors,
   imageDataURI,
   live,
   openAppIn,

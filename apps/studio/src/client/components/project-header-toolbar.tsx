@@ -1,3 +1,9 @@
+import type {
+  OpenAppInType,
+  SupportedEditor,
+  SupportedEditorId,
+} from "@/shared/types/editors";
+
 import { SmallAppIcon } from "@/client/components/app-icon";
 import { ProjectSettingsDialog } from "@/client/components/project-settings-dialog";
 import { Button } from "@/client/components/ui/button";
@@ -5,7 +11,7 @@ import { ToolbarFavoriteAction } from "@/client/components/ui/toolbar-favorite-a
 import { cn, isMacOS } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
 import { type WorkspaceAppProject } from "@quests/workspace/client";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import {
   Camera,
@@ -20,6 +26,15 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+
+const EDITOR_ICON_MAP: Record<SupportedEditorId, typeof PenLine> = {
+  cmd: Terminal,
+  cursor: PenLine,
+  iterm: Terminal,
+  powershell: Terminal,
+  terminal: Terminal,
+  vscode: PenLine,
+};
 
 import { TrashIcon } from "./icons";
 import { RestoreVersionModal } from "./restore-version-modal";
@@ -95,6 +110,10 @@ export function ProjectHeaderToolbar({
         });
       },
     }),
+  );
+
+  const { data: supportedEditors = [] } = useQuery<SupportedEditor[]>(
+    rpcClient.utils.getSupportedEditors.queryOptions(),
   );
 
   const handleOpenExternalClick = () => {
@@ -188,50 +207,82 @@ export function ProjectHeaderToolbar({
                       onClick={() => {
                         void openAppInMutation.mutateAsync({
                           subdomain: project.subdomain,
-                          type: "terminal",
-                        });
-                      }}
-                    >
-                      <Terminal className="h-4 w-4" />
-                      Open in Terminal
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => {
-                        void openAppInMutation.mutateAsync({
-                          subdomain: project.subdomain,
-                          type: "cursor",
-                        });
-                      }}
-                    >
-                      <PenLine className="h-4 w-4" />
-                      Open in Cursor
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => {
-                        void openAppInMutation.mutateAsync({
-                          subdomain: project.subdomain,
-                          type: "vscode",
-                        });
-                      }}
-                    >
-                      <ExternalLinkIcon className="h-4 w-4" />
-                      Open in VS Code
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => {
-                        void openAppInMutation.mutateAsync({
-                          subdomain: project.subdomain,
                           type: "show-in-folder",
                         });
                       }}
                     >
                       <FolderOpenIcon className="h-4 w-4" />
-                      {isMacOS() ? "Reveal in Finder" : "Show in File Manager"}
+                      {isMacOS() ? "Reveal in Finder" : "Show in file manager"}
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={handleOpenExternalClick}>
                       <ExternalLinkIcon className="h-4 w-4" />
-                      Open in External Browser
+                      External browser
                     </DropdownMenuItem>
+
+                    {(() => {
+                      const availableEditors = supportedEditors.filter(
+                        (editor) =>
+                          editor.available &&
+                          ["cursor", "vscode"].includes(editor.id),
+                      );
+                      const availableTerminals = supportedEditors.filter(
+                        (editor) =>
+                          editor.available &&
+                          ["iterm", "terminal"].includes(editor.id),
+                      );
+
+                      return (
+                        <>
+                          {availableEditors.length > 0 && (
+                            <>
+                              <DropdownMenuSeparator />
+                              {availableEditors.map((editor) => {
+                                const Icon = EDITOR_ICON_MAP[editor.id];
+
+                                return (
+                                  <DropdownMenuItem
+                                    key={editor.id}
+                                    onClick={() => {
+                                      void openAppInMutation.mutateAsync({
+                                        subdomain: project.subdomain,
+                                        type: editor.id as OpenAppInType,
+                                      });
+                                    }}
+                                  >
+                                    <Icon className="h-4 w-4" />
+                                    {editor.name}
+                                  </DropdownMenuItem>
+                                );
+                              })}
+                            </>
+                          )}
+
+                          {availableTerminals.length > 0 && (
+                            <>
+                              <DropdownMenuSeparator />
+                              {availableTerminals.map((editor) => {
+                                const Icon = EDITOR_ICON_MAP[editor.id];
+
+                                return (
+                                  <DropdownMenuItem
+                                    key={editor.id}
+                                    onClick={() => {
+                                      void openAppInMutation.mutateAsync({
+                                        subdomain: project.subdomain,
+                                        type: editor.id as OpenAppInType,
+                                      });
+                                    }}
+                                  >
+                                    <Icon className="h-4 w-4" />
+                                    {editor.name}
+                                  </DropdownMenuItem>
+                                );
+                              })}
+                            </>
+                          )}
+                        </>
+                      );
+                    })()}
                   </DropdownMenuSubContent>
                 </DropdownMenuSub>
 
