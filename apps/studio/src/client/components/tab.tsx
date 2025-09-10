@@ -41,11 +41,7 @@ interface Props {
 export const Tab = ({ isSelected, item, onClick, onRemove }: Props) => {
   const matches = useMatchesForPathname(item.pathname);
 
-  const match = matches.find(
-    (m) =>
-      m.routeId === "/_app/projects/$subdomain/view" ||
-      m.routeId === "/_app/projects/$subdomain/",
-  );
+  const match = matches.find((m) => m.routeId === "/_app/projects/$subdomain/");
 
   const rawSubdomain = match?.params.subdomain.split("?")[0];
   const parsedSubdomainResult = rawSubdomain
