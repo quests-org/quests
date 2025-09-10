@@ -37,7 +37,7 @@ export function AppToolbar({
   return (
     <div
       className={cn(
-        "bg-background flex items-center border-b shadow-sm px-2 py-1.5 gap-1",
+        "bg-background flex items-center border-b px-2 py-1.5 gap-1 rounded-tl-lg",
         className,
       )}
     >

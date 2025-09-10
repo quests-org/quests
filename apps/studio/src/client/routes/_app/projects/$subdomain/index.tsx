@@ -203,31 +203,29 @@ function RouteComponent() {
 
         <div
           className={cn(
-            "flex-1 flex flex-col p-2 bg-secondary border-t",
-            !sidebarCollapsed && "border-l rounded-tl-md",
+            "flex-1 flex flex-col p-2 bg-secondary border-t overflow-hidden",
+            !sidebarCollapsed && "border-l rounded-tl-lg",
           )}
         >
-          <div className="flex-1 flex flex-col bg-background border rounded-lg shadow-sm overflow-hidden">
-            <ProjectIFrameToolbar
+          <ProjectIFrameToolbar
+            iframeRef={iframeRef}
+            project={project}
+            selectedVersion={selectedVersion}
+            subdomain={subdomain}
+          />
+          <div className="flex-1 relative">
+            <AppIFrame
+              app={project}
               iframeRef={iframeRef}
-              project={project}
-              selectedVersion={selectedVersion}
-              subdomain={subdomain}
+              key={project.subdomain}
             />
-            <div className="flex-1 relative">
-              <AppIFrame
-                app={project}
-                iframeRef={iframeRef}
-                key={project.subdomain}
-              />
 
-              {selectedVersion && (
-                <VersionOverlay
-                  projectSubdomain={subdomain}
-                  versionRef={selectedVersion}
-                />
-              )}
-            </div>
+            {selectedVersion && (
+              <VersionOverlay
+                projectSubdomain={subdomain}
+                versionRef={selectedVersion}
+              />
+            )}
           </div>
         </div>
       </div>
