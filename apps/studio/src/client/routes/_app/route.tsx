@@ -19,7 +19,7 @@ function RouteComponent() {
   useServerExceptionNotifications();
 
   return (
-    <div className="flex h-full flex-col relative bg-background">
+    <div className="flex h-full flex-col relative bg-background min-h-dvh">
       <Outlet />
 
       {import.meta.env.DEV && (
