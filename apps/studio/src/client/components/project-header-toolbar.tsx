@@ -255,15 +255,7 @@ export function ProjectHeaderToolbar({
                 >
                   Exit
                 </Button>
-                <Button
-                  className="text-foreground"
-                  onClick={handleRestoreVersion}
-                  size="sm"
-                  style={{
-                    backgroundColor: `${hashColor ?? ""}50`,
-                  }}
-                  variant="default"
-                >
+                <Button onClick={handleRestoreVersion} size="sm">
                   Restore this version
                 </Button>
               </div>
