@@ -14,6 +14,7 @@ import {
   spawnRuntimeLogic,
   type SpawnRuntimeRef,
 } from "../logic/spawn-runtime";
+import * as spawnRuntimePtyLogic from "../logic/spawn-runtime-pty";
 import { type AbsolutePath } from "../schemas/paths";
 import {
   type AppError,
@@ -30,6 +31,7 @@ interface RunErrorValue {
 
 type RuntimeEvent =
   | SpawnRuntimeEvent
+  | spawnRuntimePtyLogic.SpawnRuntimeEvent
   | { type: "restart" }
   | { type: "saveError"; value: AppError }
   | { type: "updateHeartbeat"; value: { createdAt: number } };
@@ -59,6 +61,7 @@ export const runtimeMachine = setup({
 
   actors: {
     spawnRuntimeLogic,
+    spawnRuntimePtyLogic: spawnRuntimePtyLogic.spawnRuntimePtyLogic,
   },
 
   types: {
@@ -70,6 +73,7 @@ export const runtimeMachine = setup({
       retryCount: number;
       runPackageJsonScript: RunPackageJsonScript;
       shimServerJSPath: AbsolutePath;
+      spawnRuntimePtyRef?: spawnRuntimePtyLogic.SpawnRuntimePtyRef;
       spawnRuntimeRef?: SpawnRuntimeRef;
     },
     events: {} as RuntimeEvent,
@@ -216,12 +220,11 @@ export const runtimeMachine = setup({
 
     SpawningRuntime: {
       entry: assign(({ context, self, spawn }) => ({
-        spawnRuntimeRef: spawn("spawnRuntimeLogic", {
+        spawnRuntimePtyRef: spawn("spawnRuntimePtyLogic", {
           input: {
             appConfig: context.appConfig,
             attempt: context.retryCount,
             parentRef: self,
-            runPackageJsonScript: context.runPackageJsonScript,
             shimServerJSPath: context.shimServerJSPath,
           },
         }),
