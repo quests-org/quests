@@ -26,6 +26,7 @@ import { Route as AppDebugRouteRouteImport } from './routes/_app/debug/route'
 import { Route as AppProjectsIndexRouteImport } from './routes/_app/projects/index'
 import { Route as AppDiscoverIndexRouteImport } from './routes/_app/discover/index'
 import { Route as AppDebugIndexRouteImport } from './routes/_app/debug/index'
+import { Route as AppDebugPtyRouteImport } from './routes/_app/debug/pty'
 import { Route as AppDebugComponentsRouteImport } from './routes/_app/debug/components'
 import { Route as AppDebugColorsRouteImport } from './routes/_app/debug/colors'
 import { Route as AppDebugBulkDeleteRouteImport } from './routes/_app/debug/bulk-delete'
@@ -116,6 +117,11 @@ const AppDebugIndexRoute = AppDebugIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppDebugRouteRoute,
 } as any)
+const AppDebugPtyRoute = AppDebugPtyRouteImport.update({
+  id: '/pty',
+  path: '/pty',
+  getParentRoute: () => AppDebugRouteRoute,
+} as any)
 const AppDebugComponentsRoute = AppDebugComponentsRouteImport.update({
   id: '/components',
   path: '/components',
@@ -166,6 +172,7 @@ export interface FileRoutesByFullPath {
   '/debug/bulk-delete': typeof AppDebugBulkDeleteRoute
   '/debug/colors': typeof AppDebugColorsRoute
   '/debug/components': typeof AppDebugComponentsRoute
+  '/debug/pty': typeof AppDebugPtyRoute
   '/debug/': typeof AppDebugIndexRoute
   '/discover': typeof AppDiscoverIndexRoute
   '/projects': typeof AppProjectsIndexRoute
@@ -187,6 +194,7 @@ export interface FileRoutesByTo {
   '/debug/bulk-delete': typeof AppDebugBulkDeleteRoute
   '/debug/colors': typeof AppDebugColorsRoute
   '/debug/components': typeof AppDebugComponentsRoute
+  '/debug/pty': typeof AppDebugPtyRoute
   '/debug': typeof AppDebugIndexRoute
   '/discover': typeof AppDiscoverIndexRoute
   '/projects': typeof AppProjectsIndexRoute
@@ -213,6 +221,7 @@ export interface FileRoutesById {
   '/_app/debug/bulk-delete': typeof AppDebugBulkDeleteRoute
   '/_app/debug/colors': typeof AppDebugColorsRoute
   '/_app/debug/components': typeof AppDebugComponentsRoute
+  '/_app/debug/pty': typeof AppDebugPtyRoute
   '/_app/debug/': typeof AppDebugIndexRoute
   '/_app/discover/': typeof AppDiscoverIndexRoute
   '/_app/projects/': typeof AppProjectsIndexRoute
@@ -238,6 +247,7 @@ export interface FileRouteTypes {
     | '/debug/bulk-delete'
     | '/debug/colors'
     | '/debug/components'
+    | '/debug/pty'
     | '/debug/'
     | '/discover'
     | '/projects'
@@ -259,6 +269,7 @@ export interface FileRouteTypes {
     | '/debug/bulk-delete'
     | '/debug/colors'
     | '/debug/components'
+    | '/debug/pty'
     | '/debug'
     | '/discover'
     | '/projects'
@@ -284,6 +295,7 @@ export interface FileRouteTypes {
     | '/_app/debug/bulk-delete'
     | '/_app/debug/colors'
     | '/_app/debug/components'
+    | '/_app/debug/pty'
     | '/_app/debug/'
     | '/_app/discover/'
     | '/_app/projects/'
@@ -422,6 +434,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDebugIndexRouteImport
       parentRoute: typeof AppDebugRouteRoute
     }
+    '/_app/debug/pty': {
+      id: '/_app/debug/pty'
+      path: '/pty'
+      fullPath: '/debug/pty'
+      preLoaderRoute: typeof AppDebugPtyRouteImport
+      parentRoute: typeof AppDebugRouteRoute
+    }
     '/_app/debug/components': {
       id: '/_app/debug/components'
       path: '/components'
@@ -471,6 +490,7 @@ interface AppDebugRouteRouteChildren {
   AppDebugBulkDeleteRoute: typeof AppDebugBulkDeleteRoute
   AppDebugColorsRoute: typeof AppDebugColorsRoute
   AppDebugComponentsRoute: typeof AppDebugComponentsRoute
+  AppDebugPtyRoute: typeof AppDebugPtyRoute
   AppDebugIndexRoute: typeof AppDebugIndexRoute
 }
 
@@ -478,6 +498,7 @@ const AppDebugRouteRouteChildren: AppDebugRouteRouteChildren = {
   AppDebugBulkDeleteRoute: AppDebugBulkDeleteRoute,
   AppDebugColorsRoute: AppDebugColorsRoute,
   AppDebugComponentsRoute: AppDebugComponentsRoute,
+  AppDebugPtyRoute: AppDebugPtyRoute,
   AppDebugIndexRoute: AppDebugIndexRoute,
 }
 

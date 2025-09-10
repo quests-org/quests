@@ -43,6 +43,15 @@ function RouteComponent() {
             >
               Bulk Delete
             </Link>
+            <Link
+              activeProps={{
+                className: linkActiveClasses,
+              }}
+              className={linkBaseClasses}
+              to="/debug/pty"
+            >
+              PTY Terminal
+            </Link>
           </div>
           <ThemeToggle />
         </nav>

@@ -1,5 +1,7 @@
 import dotenv from "dotenv";
 import { type Configuration } from "electron-builder";
+import fs from "node:fs";
+import path from "node:path";
 
 if (process.env.CI !== "true") {
   dotenv.config({
@@ -11,6 +13,69 @@ if (process.env.CI !== "true") {
  * @see https://www.electron.build/#documentation
  */
 const config: Configuration = {
+  afterPack(context) {
+    // eslint-disable-next-line no-console
+    console.log("Creating symlinks in afterPack...");
+    const appOutDir = context.appOutDir;
+    const appName = context.packager.appInfo.productFilename;
+    const appPath = path.join(appOutDir, `${appName}.app`);
+    const resourcesPath = path.join(appPath, "Contents", "Resources");
+    const asarUnpackedPath = path.join(resourcesPath, "app.asar.unpacked");
+    const binDir = path.join(asarUnpackedPath, "bin");
+
+    const createBinaryPath = (packagePath: string, binFile: string) =>
+      path.join(asarUnpackedPath, "node_modules", packagePath, "bin", binFile);
+
+    const binaries = [
+      {
+        symlink: "pnpm",
+        target: createBinaryPath("pnpm", "pnpm.cjs"),
+      },
+      {
+        symlink: "git",
+        target: createBinaryPath("dugite/git", "git"),
+      },
+      {
+        symlink: "rg",
+        target: createBinaryPath("@vscode/ripgrep", "rg"),
+      },
+      {
+        symlink: "pnpx",
+        target: createBinaryPath("pnpm", "pnpx.cjs"),
+      },
+      {
+        symlink: "node",
+        target: path.join(appPath, "Contents", "MacOS", appName),
+      },
+    ];
+
+    try {
+      if (!fs.existsSync(binDir)) {
+        fs.mkdirSync(binDir, { recursive: true });
+        // eslint-disable-next-line no-console
+        console.log(`Created bin directory: ${binDir}`);
+      }
+
+      for (const binary of binaries) {
+        const targetFile = binary.target;
+        const symlinkPath = path.join(binDir, binary.symlink);
+
+        if (fs.existsSync(targetFile)) {
+          const relativePath = path.relative(binDir, targetFile);
+          fs.symlinkSync(relativePath, symlinkPath);
+          // eslint-disable-next-line no-console
+          console.log(`Symlink created: ${symlinkPath} -> ${relativePath}`);
+        } else {
+          // eslint-disable-next-line no-console
+          console.warn(`Target file not found: ${targetFile}`);
+        }
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error("Failed to create symlinks");
+      throw error;
+    }
+  },
   appId: "com.finalpoint.quests",
   appImage: {
     artifactName: "${productName}-${os}-${version}-${arch}.${ext}",
@@ -56,13 +121,13 @@ const config: Configuration = {
     "!**/.vscode/*",
     "!electron.vite.config.{js,ts,mjs,cjs}",
     "!fixtures/*",
-    "!llm-cache.local/*",
     "!scripts/*",
+    "!dev-bin/*",
     "!src/*",
     "!**/.turbo/*",
     "!{.env,.env.*,.npmrc,pnpm-lock.yaml}",
     "!{.eslintignore,eslint.config.ts,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md,.eslintcache,drizzle.config.ts,vitest.config.ts,tsconfig.tsbuildinfo,postcss.config.cjs,components.json}",
-    "!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}",
+    "!{tsconfig.json}",
   ],
   linux: {
     artifactName: "${productName}-${os}-${version}-${arch}.${ext}",
