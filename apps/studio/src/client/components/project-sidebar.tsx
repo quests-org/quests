@@ -322,9 +322,7 @@ export function ProjectSidebar({
               );
             }
           }}
-          projectSubdomain={project.subdomain}
           ref={promptInputRef}
-          selectedVersion={selectedVersion}
         />
       </div>
     </div>

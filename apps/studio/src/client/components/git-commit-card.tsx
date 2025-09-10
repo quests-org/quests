@@ -18,7 +18,6 @@ interface GitCommitCardProps {
   projectSubdomain: ProjectSubdomain;
   restoredFromRef?: string;
   showCommitMessage?: boolean;
-  showFileChanges?: boolean;
   showFullCommitMessage?: boolean;
   versionRef: string;
 }
@@ -31,7 +30,6 @@ export function GitCommitCard({
   projectSubdomain,
   restoredFromRef,
   showCommitMessage = true,
-  showFileChanges = true,
   showFullCommitMessage = false,
   versionRef,
 }: GitCommitCardProps) {
@@ -84,12 +82,10 @@ export function GitCommitCard({
           />
         )}
 
-        {showFileChanges && (
-          <VersionFileChanges
-            projectSubdomain={projectSubdomain}
-            versionRef={versionRef}
-          />
-        )}
+        <VersionFileChanges
+          projectSubdomain={projectSubdomain}
+          versionRef={versionRef}
+        />
 
         {restoredFromRef && (
           <VersionRestoredFooter

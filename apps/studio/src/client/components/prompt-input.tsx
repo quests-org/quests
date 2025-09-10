@@ -5,10 +5,8 @@ import {
   TextareaContainer,
   TextareaInner,
 } from "@/client/components/ui/textarea-container";
-import { VersionPromptModal } from "@/client/components/version-prompt-modal";
 import { cn } from "@/client/lib/utils";
 import { type AIGatewayModel } from "@quests/ai-gateway";
-import { type ProjectSubdomain } from "@quests/workspace/client";
 import { useQuery } from "@tanstack/react-query";
 import { useAtomValue } from "jotai";
 import { ArrowUp, Circle, Loader2, Square } from "lucide-react";
@@ -37,8 +35,6 @@ interface PromptInputProps {
   onStop?: () => void;
   onSubmit: (value: { modelURI: AIGatewayModel.URI; prompt: string }) => void;
   placeholder?: string;
-  projectSubdomain?: ProjectSubdomain;
-  selectedVersion?: string;
 }
 
 interface PromptInputRef {
@@ -60,18 +56,11 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
       onStop,
       onSubmit,
       placeholder = "Type a message",
-      projectSubdomain,
-      selectedVersion,
     },
     ref,
   ) => {
     const [value, setValue] = useState("");
     const [showAIProviderGuard, setShowAIProviderGuard] = useState(false);
-    const [showVersionPromptModal, setShowVersionPromptModal] = useState(false);
-    const [pendingPrompt, setPendingPrompt] = useState<null | {
-      modelURI: AIGatewayModel.URI;
-      prompt: string;
-    }>(null);
     const textareaRef = useRef<HTMLDivElement>(null);
     const textareaInnerRef = useRef<HTMLTextAreaElement>(null);
     const hasAIProvider = useAtomValue(hasAIProviderAtom);
@@ -144,15 +133,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
         return;
       }
 
-      const promptText = value.trim();
-
-      if (selectedVersion && projectSubdomain) {
-        setPendingPrompt({ modelURI, prompt: promptText });
-        setShowVersionPromptModal(true);
-        return;
-      }
-
-      onSubmit({ modelURI, prompt: promptText });
+      onSubmit({ modelURI, prompt: value.trim() });
       setValue("");
       resetTextareaHeight();
     };
@@ -171,21 +152,6 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
     const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       setValue(e.target.value);
       adjustHeight();
-    };
-
-    const handleVersionModalClose = () => {
-      setShowVersionPromptModal(false);
-      setPendingPrompt(null);
-    };
-
-    const handleVersionModalContinue = () => {
-      if (pendingPrompt) {
-        onSubmit(pendingPrompt);
-        setValue("");
-        resetTextareaHeight();
-      }
-      setShowVersionPromptModal(false);
-      setPendingPrompt(null);
     };
 
     const canSubmit =
@@ -249,17 +215,6 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
           onOpenChange={setShowAIProviderGuard}
           open={showAIProviderGuard}
         />
-
-        {selectedVersion && projectSubdomain && pendingPrompt && (
-          <VersionPromptModal
-            isOpen={showVersionPromptModal}
-            onClose={handleVersionModalClose}
-            onContinue={handleVersionModalContinue}
-            projectSubdomain={projectSubdomain}
-            prompt={pendingPrompt.prompt}
-            versionRef={selectedVersion}
-          />
-        )}
       </>
     );
   },
