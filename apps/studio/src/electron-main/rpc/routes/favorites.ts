@@ -109,10 +109,6 @@ const live = {
     const projectUpdates = workspacePublisher.subscribe("project.updated", {
       signal,
     });
-    const projectQuestManifestUpdates = workspacePublisher.subscribe(
-      "project.quest-manifest-updated",
-      { signal },
-    );
     const projectRemoved = workspacePublisher.subscribe("project.removed", {
       signal,
     });
@@ -122,7 +118,6 @@ const live = {
 
     for await (const _payload of mergeGenerators([
       projectUpdates,
-      projectQuestManifestUpdates,
       projectRemoved,
       favoritesUpdated,
     ])) {

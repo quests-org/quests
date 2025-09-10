@@ -24,9 +24,6 @@ export const publisher = new EventPublisher<{
     sessionId: StoreId.Session;
     subdomain: AppSubdomain;
   };
-  "project.quest-manifest-updated": {
-    subdomain: ProjectSubdomain;
-  };
   "project.removed": {
     subdomain: ProjectSubdomain;
   };

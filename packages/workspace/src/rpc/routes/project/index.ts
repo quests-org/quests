@@ -176,7 +176,7 @@ const create = base
         message,
         model: cheapModel,
         onUpdate: () => {
-          publisher.publish("project.quest-manifest-updated", {
+          publisher.publish("project.updated", {
             subdomain: projectConfig.subdomain,
           });
         },
@@ -299,7 +299,7 @@ const updateName = base
     await updateQuestManifest(input.subdomain, context.workspaceConfig, {
       name: input.newName,
     });
-    publisher.publish("project.quest-manifest-updated", {
+    publisher.publish("project.updated", {
       subdomain: input.subdomain,
     });
 
@@ -314,15 +314,8 @@ const live = {
       yield call(bySubdomain, input, { context, signal });
 
       const projectUpdates = publisher.subscribe("project.updated", { signal });
-      const projectQuestConfigUpdates = publisher.subscribe(
-        "project.quest-manifest-updated",
-        { signal },
-      );
 
-      for await (const payload of mergeGenerators([
-        projectUpdates,
-        projectQuestConfigUpdates,
-      ])) {
+      for await (const payload of projectUpdates) {
         if (payload.subdomain === input.subdomain) {
           yield call(bySubdomain, input, { context, signal });
         }
@@ -335,17 +328,9 @@ const live = {
       yield call(list, input, { context, signal });
 
       const projectUpdates = publisher.subscribe("project.updated", { signal });
-      const projectQuestManifestUpdates = publisher.subscribe(
-        "project.quest-manifest-updated",
-        { signal },
-      );
       const projectRemoved = publisher.subscribe("project.removed", { signal });
 
-      for await (const _ of mergeGenerators([
-        projectUpdates,
-        projectQuestManifestUpdates,
-        projectRemoved,
-      ])) {
+      for await (const _ of mergeGenerators([projectUpdates, projectRemoved])) {
         yield call(list, input, { context, signal });
       }
     }),

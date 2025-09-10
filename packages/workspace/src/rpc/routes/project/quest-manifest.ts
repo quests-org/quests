@@ -30,7 +30,7 @@ const update = base
       name: input.name,
     });
 
-    publisher.publish("project.quest-manifest-updated", {
+    publisher.publish("project.updated", {
       subdomain: input.subdomain,
     });
 
