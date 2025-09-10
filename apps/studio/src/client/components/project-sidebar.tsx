@@ -175,6 +175,7 @@ export function ProjectSidebar({
               disabled={createEmptySession.isPending}
               onClick={handleNewSession}
               size="sm"
+              title="New Chat"
               variant="ghost"
             >
               <Plus className="size-4" />
