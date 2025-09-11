@@ -190,6 +190,7 @@ export const spawnRuntimeLogic = fromCallback<
         timeout.controller.signal,
       ]);
 
+      timeout.start();
       const result = await runPackageJsonScript({
         cwd: appConfig.appDir,
         script,

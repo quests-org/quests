@@ -9,6 +9,7 @@ export async function runDiagnostics(
   { signal }: { signal: AbortSignal },
 ): Promise<string | undefined> {
   const timeout = cancelableTimeout(15_000);
+  timeout.start();
 
   const diagnosticsSignal = AbortSignal.any([
     signal,

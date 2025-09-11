@@ -8,19 +8,35 @@ export class TimeoutError extends Error {
 export function cancelableTimeout(ms: number) {
   const controller = new AbortController();
   let canceled = false;
-  const timeoutId = setTimeout(() => {
-    if (!canceled) {
-      controller.abort(new TimeoutError(ms));
+  let timeoutId: NodeJS.Timeout | null = null;
+  let started = false;
+
+  const start = () => {
+    if (started || canceled) {
+      return;
     }
-  }, ms);
+    started = true;
+    timeoutId = setTimeout(() => {
+      if (!canceled) {
+        controller.abort(new TimeoutError(ms));
+      }
+    }, ms);
+  };
+
   controller.signal.addEventListener("abort", () => {
-    clearTimeout(timeoutId);
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
   });
+
   return {
     cancel: () => {
       canceled = true;
-      clearTimeout(timeoutId);
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
     },
     controller,
+    start,
   };
 }
