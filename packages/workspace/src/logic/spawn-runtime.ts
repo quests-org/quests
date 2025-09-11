@@ -20,8 +20,9 @@ import { LOCAL_LOOPBACK_APPS_SERVER_DOMAIN } from "./server/constants";
 import { getWorkspaceServerPort, getWorkspaceServerURL } from "./server/url";
 
 const BASE_PORT = 9200;
-const BASE_RUN_TIMEOUT = 15_000;
-const RUN_TIMEOUT_MULTIPLIER = 5000;
+const BASE_RUN_TIMEOUT_MS = 15_000;
+const RUN_TIMEOUT_MULTIPLIER_MS = 5000;
+const INSTALL_TIMEOUT_MS = 300_000;
 
 // Port management system
 const usedPorts = new Set<number>();
@@ -93,24 +94,25 @@ export const spawnRuntimeLogic = fromCallback<
   }) => {
     const abortController = new AbortController();
     const timeout = cancelableTimeout(
-      BASE_RUN_TIMEOUT + attempt * RUN_TIMEOUT_MULTIPLIER,
+      BASE_RUN_TIMEOUT_MS + attempt * RUN_TIMEOUT_MULTIPLIER_MS,
     );
-    const signal = AbortSignal.any([
-      abortController.signal,
-      timeout.controller.signal,
-    ]);
-
     let port = findAvailablePort();
     reservePort(port);
 
     async function main() {
+      const installTimeout = cancelableTimeout(INSTALL_TIMEOUT_MS);
+      const installSignal = AbortSignal.any([
+        abortController.signal,
+        installTimeout.controller.signal,
+      ]);
       const installResult = await appConfig.workspaceConfig.runShellCommand(
         "pnpm install",
         {
           cwd: appConfig.appDir,
-          signal,
+          signal: installSignal,
         },
       );
+      installTimeout.cancel();
       if (installResult.isErr()) {
         parentRef.send({
           type: "spawnRuntime.error.install-failed",
@@ -182,6 +184,11 @@ export const spawnRuntimeLogic = fromCallback<
         providers: appConfig.workspaceConfig.getAIProviders(),
         workspaceServerURL: getWorkspaceServerURL(),
       });
+
+      const signal = AbortSignal.any([
+        abortController.signal,
+        timeout.controller.signal,
+      ]);
 
       const result = await runPackageJsonScript({
         cwd: appConfig.appDir,
