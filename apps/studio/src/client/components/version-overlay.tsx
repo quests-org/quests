@@ -70,7 +70,12 @@ export function VersionOverlay({
   return (
     <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex z-50">
       <div className="w-full h-full bg-background/95 flex flex-col overflow-hidden">
-        <AppIFrame app={app} iframeRef={iframeRef} key={app.subdomain} />
+        <AppIFrame
+          app={app}
+          className="rounded-b-lg overflow-hidden"
+          iframeRef={iframeRef}
+          key={app.subdomain}
+        />
       </div>
 
       <RestoreVersionModal

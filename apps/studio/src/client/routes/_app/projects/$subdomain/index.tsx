@@ -216,6 +216,7 @@ function RouteComponent() {
           <div className="flex-1 relative">
             <AppIFrame
               app={project}
+              className="rounded-b-lg overflow-hidden"
               iframeRef={iframeRef}
               key={project.subdomain}
             />

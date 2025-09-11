@@ -3,13 +3,15 @@ import { XIcon } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 
 import { useAppState } from "../hooks/use-app-state";
+import { cn } from "../lib/utils";
 
 interface AppIFrameProps {
   app: WorkspaceApp;
+  className?: string;
   iframeRef?: React.RefObject<HTMLIFrameElement | null>;
 }
 
-export function AppIFrame({ app, iframeRef }: AppIFrameProps) {
+export function AppIFrame({ app, className, iframeRef }: AppIFrameProps) {
   const [coverState, setCoverState] = useState<
     "dismissed" | "hidden" | "hiding" | "visible"
   >("hidden");
@@ -49,7 +51,7 @@ export function AppIFrame({ app, iframeRef }: AppIFrameProps) {
   const shouldShowCover = coverState === "visible" || coverState === "hiding";
 
   return (
-    <div className="relative size-full">
+    <div className={cn("relative size-full", className)}>
       <iframe
         allow="accelerometer; camera; encrypted-media; display-capture; geolocation; gyroscope; microphone; midi; payment; usb; xr-spatial-tracking; clipboard-read; clipboard-write"
         allowFullScreen
