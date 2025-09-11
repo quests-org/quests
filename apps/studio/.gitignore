@@ -15,3 +15,6 @@ dist/
 .turbo
 
 .eslintcache
+
+# Electron Vite's Temp Files
+electron.vite.config*.mjs
