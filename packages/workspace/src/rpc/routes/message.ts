@@ -1,5 +1,5 @@
 import { call, eventIterator } from "@orpc/server";
-import { AIGatewayModel, fetchCheapAISDKModel } from "@quests/ai-gateway";
+import { AIGatewayModel } from "@quests/ai-gateway";
 import { mergeGenerators } from "@quests/shared/merge-generators";
 import { z } from "zod";
 
@@ -87,23 +87,9 @@ const create = base
         selectedModelURI: modelURI,
       });
 
-      const cheapModelResult = await fetchCheapAISDKModel(
-        modelURI,
-        context.workspaceConfig.getAIProviders(),
-        {
-          captureException: context.workspaceConfig.captureException,
-          workspaceServerURL: getWorkspaceServerURL(),
-        },
-      );
-      const [cheapModel, cheapModelError] = cheapModelResult.toTuple();
-
-      if (cheapModelError) {
-        throw errors.NOT_FOUND({ message: cheapModelError.message });
-      }
-
       context.workspaceRef.send({
         type: "addMessage",
-        value: { cheapModel, message, model, sessionId, subdomain },
+        value: { message, model, sessionId, subdomain },
       });
 
       const messageText = textForMessage(message);

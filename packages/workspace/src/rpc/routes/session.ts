@@ -1,5 +1,5 @@
 import { call } from "@orpc/server";
-import { AIGatewayModel, fetchCheapAISDKModel } from "@quests/ai-gateway";
+import { AIGatewayModel } from "@quests/ai-gateway";
 import { z } from "zod";
 
 import { createAppConfig } from "../../lib/app-config/create";
@@ -161,25 +161,9 @@ const createWithMessage = base
       throw toORPCError(error, errors);
     }
 
-    const cheapModelResult = await fetchCheapAISDKModel(
-      input.modelURI,
-      context.workspaceConfig.getAIProviders(),
-      {
-        captureException: context.workspaceConfig.captureException,
-        workspaceServerURL: getWorkspaceServerURL(),
-      },
-    );
-
-    const [cheapModel, cheapModelError] = cheapModelResult.toTuple();
-
-    if (cheapModelError) {
-      throw toORPCError(cheapModelError, errors);
-    }
-
     context.workspaceRef.send({
       type: "createSession",
       value: {
-        cheapModel,
         message: input.message,
         model,
         sessionId: input.sessionId,

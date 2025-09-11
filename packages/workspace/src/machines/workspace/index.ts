@@ -64,7 +64,6 @@ export type WorkspaceEvent =
   | {
       type: "addMessage";
       value: {
-        cheapModel: LanguageModel;
         message: SessionMessage.UserWithParts;
         model: LanguageModel;
         sessionId: StoreId.Session;
@@ -74,7 +73,6 @@ export type WorkspaceEvent =
   | {
       type: "createSession";
       value: {
-        cheapModel: LanguageModel;
         message: SessionMessage.UserWithParts;
         model: LanguageModel;
         sessionId: StoreId.Session;
@@ -85,7 +83,6 @@ export type WorkspaceEvent =
       type: "internal.spawnSession";
       value: {
         appConfig: AppConfig;
-        cheapModel: LanguageModel;
         message: SessionMessage.UserWithParts;
         model: LanguageModel;
         sessionId: StoreId.Session;
@@ -319,7 +316,6 @@ export const workspaceMachine = setup({
             type: "internal.spawnSession",
             value: {
               appConfig,
-              cheapModel: event.value.cheapModel,
               message: event.value.message,
               model: event.value.model,
               sessionId: event.value.sessionId,
@@ -356,7 +352,6 @@ export const workspaceMachine = setup({
           type: "internal.spawnSession",
           value: {
             appConfig,
-            cheapModel: event.value.cheapModel,
             message: event.value.message,
             model: event.value.model,
             sessionId: event.value.sessionId,
@@ -379,13 +374,11 @@ export const workspaceMachine = setup({
           };
         }),
         assign(({ context, event, self, spawn }) => {
-          const { appConfig, cheapModel, message, model, sessionId } =
-            event.value;
+          const { appConfig, message, model, sessionId } = event.value;
           const sessionMachineRef = spawn("sessionMachine", {
             input: {
               agent: AGENTS.code,
               appConfig,
-              cheapModel,
               model,
               parentRef: self,
               queuedMessages: [message],

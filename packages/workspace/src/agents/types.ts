@@ -26,7 +26,7 @@ export interface Agent<T extends AgentTools> {
   name: AgentName;
   onFinish: (options: {
     appConfig: AppConfig;
-    cheapModel: LanguageModel;
+    model: LanguageModel;
     parentMessageId: StoreId.Message;
     sessionId: StoreId.Session;
     signal: AbortSignal;

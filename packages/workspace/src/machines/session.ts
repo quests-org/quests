@@ -158,7 +158,6 @@ export const sessionMachine = setup({
       agent: AnyAgent;
       agentRef?: AgentMachineActorRef;
       appConfig: AppConfig;
-      cheapModel: LanguageModel;
       error?: unknown;
       llmRequestTimeoutMs: number;
       maxStepCount: number;
@@ -172,7 +171,6 @@ export const sessionMachine = setup({
     input: {} as {
       agent: AnyAgent;
       appConfig: AppConfig;
-      cheapModel: LanguageModel;
       llmRequestTimeoutMs?: number;
       maxStepCount?: number;
       model: LanguageModel;
@@ -187,7 +185,6 @@ export const sessionMachine = setup({
     return {
       agent: input.agent,
       appConfig: input.appConfig,
-      cheapModel: input.cheapModel,
       llmRequestTimeoutMs: input.llmRequestTimeoutMs ?? 120_000,
       maxStepCount: input.maxStepCount ?? 25,
       model: input.model,
@@ -390,7 +387,6 @@ export const sessionMachine = setup({
                   input: {
                     agent: context.agent,
                     appConfig: context.appConfig,
-                    cheapModel: context.cheapModel,
                     llmRequestTimeoutMs: context.llmRequestTimeoutMs,
                     maxStepCount: context.maxStepCount,
                     model: context.model,

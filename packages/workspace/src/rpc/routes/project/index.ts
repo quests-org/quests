@@ -1,5 +1,5 @@
 import { call, eventIterator } from "@orpc/server";
-import { AIGatewayModel, fetchCheapAISDKModel } from "@quests/ai-gateway";
+import { AIGatewayModel } from "@quests/ai-gateway";
 import { mergeGenerators } from "@quests/shared/merge-generators";
 import { z } from "zod";
 
@@ -156,25 +156,10 @@ const create = base
         selectedModelURI: modelURI,
       });
 
-      const cheapModelResult = await fetchCheapAISDKModel(
-        modelURI,
-        context.workspaceConfig.getAIProviders(),
-        {
-          captureException: context.workspaceConfig.captureException,
-          workspaceServerURL: getWorkspaceServerURL(),
-        },
-      );
-
-      const [cheapModel, cheapModelError] = cheapModelResult.toTuple();
-
-      if (cheapModelError) {
-        throw errors.NOT_FOUND({ message: cheapModelError.message });
-      }
-
       // Not awaiting promise here because we want to return the project immediately
       generateProjectTitleAndIcon({
         message,
-        model: cheapModel,
+        model,
         onUpdate: () => {
           publisher.publish("project.updated", {
             subdomain: projectConfig.subdomain,
@@ -191,7 +176,6 @@ const create = base
       context.workspaceRef.send({
         type: "createSession",
         value: {
-          cheapModel,
           message,
           model,
           sessionId,

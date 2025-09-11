@@ -230,7 +230,6 @@ describe("sessionMachine", () => {
       input: {
         agent,
         appConfig,
-        cheapModel: model,
         llmRequestTimeoutMs,
         maxStepCount,
         model,

@@ -79,14 +79,14 @@ export const agentMachine = setup({
       {
         agent: AnyAgent;
         appConfig: AppConfig;
-        cheapModel: LanguageModel;
+        model: LanguageModel;
         parentMessageId: StoreId.Message;
         sessionId: StoreId.Session;
       }
     >(async ({ input, signal }) => {
       await input.agent.onFinish({
         appConfig: input.appConfig,
-        cheapModel: input.cheapModel,
+        model: input.model,
         parentMessageId: input.parentMessageId,
         sessionId: input.sessionId,
         signal,
@@ -199,7 +199,6 @@ export const agentMachine = setup({
     context: {} as {
       agent: AnyAgent;
       appConfig: AppConfig;
-      cheapModel: LanguageModel;
       error?: unknown;
       llmRequestTimeoutMs: number;
       maxRetryCount: number;
@@ -219,7 +218,6 @@ export const agentMachine = setup({
     input: {} as {
       agent: AnyAgent;
       appConfig: AppConfig;
-      cheapModel: LanguageModel;
       llmRequestTimeoutMs: number;
       maxStepCount: number;
       model: LanguageModel;
@@ -234,7 +232,6 @@ export const agentMachine = setup({
   context: ({ input }) => ({
     agent: input.agent,
     appConfig: input.appConfig,
-    cheapModel: input.cheapModel,
     llmRequestTimeoutMs: input.llmRequestTimeoutMs,
     maxRetryCount: 3,
     maxStepCount: input.maxStepCount || 1,
@@ -370,7 +367,7 @@ export const agentMachine = setup({
         input: ({ context }) => ({
           agent: context.agent,
           appConfig: context.appConfig,
-          cheapModel: context.cheapModel,
+          model: context.model,
           parentMessageId: context.parentMessageId,
           sessionId: context.sessionId,
         }),

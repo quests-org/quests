@@ -9,8 +9,6 @@ import { type AIGatewayModel } from "../schemas/model";
 import { type AIGatewayProvider } from "../schemas/provider";
 import { TypedError } from "./errors";
 import { fetchModelByURI } from "./fetch-model";
-import { fetchModelsForProvider } from "./fetch-models";
-import { providerForModelURI } from "./provider-for-model-uri";
 
 export async function fetchAISDKModel(
   modelURI: AIGatewayModel.URI,
@@ -37,35 +35,6 @@ export async function fetchAISDKModel(
     }
     return adapter.aiSDKModel(model, {
       cacheIdentifier: provider.cacheIdentifier,
-      workspaceServerURL,
-    });
-  });
-}
-
-export async function fetchCheapAISDKModel(
-  modelURI: AIGatewayModel.URI,
-  providers: AIGatewayProvider.Type[],
-  {
-    captureException,
-    workspaceServerURL,
-  }: {
-    captureException: CaptureExceptionFunction;
-    workspaceServerURL: WorkspaceServerURL;
-  },
-) {
-  return Result.gen(async function* () {
-    const modelProvider = yield* providerForModelURI(modelURI, providers);
-    const models = yield* await fetchModelsForProvider(modelProvider, {
-      captureException,
-    });
-    const model = models.find((m) => m.tags.includes("cheap")) ?? models[0];
-
-    if (!model) {
-      return Result.error(new TypedError.NotFound("No cheap model found"));
-    }
-    const adapter = getProviderAdapter(model.params.provider);
-    return adapter.aiSDKModel(model, {
-      cacheIdentifier: modelProvider.cacheIdentifier,
       workspaceServerURL,
     });
   });
