@@ -57,7 +57,7 @@ export function AppIFrame({ app, className, iframeRef }: AppIFrameProps) {
         allowFullScreen
         className="size-full bg-white"
         ref={iframeRef}
-        sandbox="allow-downloads allow-forms allow-modals allow-pointer-lock allow-popups allow-presentation allow-same-origin allow-scripts"
+        sandbox="allow-downloads allow-forms allow-modals allow-pointer-lock allow-popups allow-same-origin allow-scripts"
         src={app.urls.localhost}
         title={`${app.subdomain} preview`}
       />
