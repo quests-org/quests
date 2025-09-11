@@ -51,6 +51,7 @@ function ToolbarPage() {
             mr-2
             w-full flex-1 h-svh
           `,
+          !isMacOS() && "pr-[9rem]",
         )}
       >
         <div className="flex items-center min-w-0 flex-1 [-webkit-app-region:no-drag] h-full pt-1">
