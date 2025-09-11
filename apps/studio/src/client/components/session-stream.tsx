@@ -367,10 +367,17 @@ export function SessionStream({
         />
       )}
 
-      {messages.length === 0 && !isActive && !error && !isLoading && (
-        <div className="text-center text-muted-foreground text-xs">
-          {filterMode === "versions" ? "No versions yet" : "No messages yet"}
-        </div>
+      {!isActive && !error && !isLoading && (
+        <>
+          {((filterMode === "chat" && messages.length === 0) ||
+            (filterMode === "versions" && gitCommitParts.length === 0)) && (
+            <div className="flex items-center justify-center h-32">
+              <div className="text-center text-muted-foreground/50">
+                {filterMode === "chat" ? "No messages yet" : "No versions yet"}
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       <div className="w-full flex flex-col gap-2">
