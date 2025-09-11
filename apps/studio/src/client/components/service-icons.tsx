@@ -39,7 +39,7 @@ export function Cursor({ className }: { className?: string }) {
     >
       <path
         d="m16 30l12-20v14zM4 10l12-8l12 8zm0 0l12 6v14L4 24z"
-        fill="#e0e0e0"
+        fill="currentColor"
         fillRule="evenodd"
       />
     </svg>
