@@ -191,7 +191,7 @@ export function ProjectHeaderToolbar({
 
   return (
     <>
-      <div className="bg-background shadow-sm pl-3 pr-2 py-1 w-full">
+      <div className="bg-background pl-3 pr-2 py-1 w-full">
         <div className="flex items-center justify-between">
           <div
             className={cn(
