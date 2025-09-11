@@ -186,7 +186,7 @@ export const sessionMachine = setup({
       agent: input.agent,
       appConfig: input.appConfig,
       llmRequestTimeoutMs: input.llmRequestTimeoutMs ?? 120_000,
-      maxStepCount: input.maxStepCount ?? 25,
+      maxStepCount: input.maxStepCount ?? 50,
       model: input.model,
       parentRef: input.parentRef,
       queuedMessages: input.queuedMessages,
