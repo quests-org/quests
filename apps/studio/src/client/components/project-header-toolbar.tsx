@@ -146,18 +146,10 @@ export function ProjectHeaderToolbar({
       return;
     }
 
+    const bounds = getScreenshotBounds(iframeRef.current);
+
     // Allow the dropdown close animation to complete
     await new Promise((resolve) => setTimeout(resolve, 100));
-
-    const iframe = iframeRef.current;
-    const rect = iframe.getBoundingClientRect();
-
-    const bounds = {
-      height: rect.height,
-      width: rect.width,
-      x: rect.left,
-      y: rect.top,
-    };
 
     takeScreenshotMutation.mutate({
       bounds,
@@ -173,18 +165,10 @@ export function ProjectHeaderToolbar({
       return;
     }
 
+    const bounds = getScreenshotBounds(iframeRef.current);
+
     // Allow the dropdown close animation to complete
     await new Promise((resolve) => setTimeout(resolve, 100));
-
-    const iframe = iframeRef.current;
-    const rect = iframe.getBoundingClientRect();
-
-    const bounds = {
-      height: rect.height,
-      width: rect.width,
-      x: rect.left,
-      y: rect.top,
-    };
 
     copyScreenshotMutation.mutate({
       bounds,
@@ -444,4 +428,15 @@ export function ProjectHeaderToolbar({
       )}
     </>
   );
+}
+
+function getScreenshotBounds(iframeElement: HTMLIFrameElement) {
+  const rect = iframeElement.getBoundingClientRect();
+
+  return {
+    height: rect.height,
+    width: rect.width,
+    x: rect.left,
+    y: rect.top,
+  };
 }
