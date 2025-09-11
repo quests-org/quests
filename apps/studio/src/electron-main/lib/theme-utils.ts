@@ -6,21 +6,7 @@ export function getBackgroundColor(): string {
   return shouldUseDarkMode() ? "#181818" : "#ffffff";
 }
 
-export function watchThemePreferenceAndApply(): void {
-  const preferencesStore = getPreferencesStore();
-  applyNativeThemeFromPreferences();
-  preferencesStore.onDidChange("theme", () => {
-    applyNativeThemeFromPreferences();
-  });
-}
-
-function applyNativeThemeFromPreferences(): void {
-  const preferencesStore = getPreferencesStore();
-  const theme = preferencesStore.get("theme");
-  nativeTheme.themeSource = theme;
-}
-
-function shouldUseDarkMode(): boolean {
+export function shouldUseDarkMode(): boolean {
   const preferencesStore = getPreferencesStore();
   const theme = preferencesStore.get("theme");
 
@@ -38,4 +24,19 @@ function shouldUseDarkMode(): boolean {
       return false;
     }
   }
+}
+
+export function watchThemePreferenceAndApply(callback?: () => void): void {
+  const preferencesStore = getPreferencesStore();
+  applyNativeThemeFromPreferences();
+  preferencesStore.onDidChange("theme", () => {
+    applyNativeThemeFromPreferences();
+    callback?.();
+  });
+}
+
+function applyNativeThemeFromPreferences(): void {
+  const preferencesStore = getPreferencesStore();
+  const theme = preferencesStore.get("theme");
+  nativeTheme.themeSource = theme;
 }

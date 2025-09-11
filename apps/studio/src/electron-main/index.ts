@@ -7,7 +7,7 @@ import {
   initializeElectronLogging,
   logger,
 } from "@/electron-main/lib/electron-logger";
-import { setMainWindow } from "@/electron-main/lib/main-window";
+import { getMainWindow, setMainWindow } from "@/electron-main/lib/main-window";
 import { createToolbar } from "@/electron-main/lib/toolbar";
 import { StudioAppUpdater } from "@/electron-main/lib/update";
 import { mainAppUrl } from "@/electron-main/lib/urls";
@@ -25,6 +25,7 @@ import {
   BrowserWindow,
   Menu,
   type MenuItemConstructorOptions,
+  nativeTheme,
   protocol,
   shell,
 } from "electron";
@@ -34,7 +35,10 @@ import path from "node:path";
 import icon from "../../resources/icon.png?asset";
 import { createWorkspaceActor } from "./lib/create-workspace-actor";
 import { registerTelemetry } from "./lib/register-telemetry";
-import { watchThemePreferenceAndApply } from "./lib/theme-utils";
+import {
+  shouldUseDarkMode,
+  watchThemePreferenceAndApply,
+} from "./lib/theme-utils";
 import { initializeRPC } from "./rpc/initialize";
 import { openSettingsWindow } from "./windows/settings";
 
@@ -346,11 +350,7 @@ async function createWindow() {
     trafficLightPosition: { x: 12, y: 12 },
     ...(process.platform === "linux" ? { icon } : {}),
     frame: false,
-    titleBarOverlay: {
-      color: "#2d2829",
-      height: 40,
-      symbolColor: "#ffffff",
-    },
+    titleBarOverlay: getTitleBarOverlay(),
     vibrancy: "sidebar",
     visualEffectState: "active",
     webPreferences: {
@@ -442,6 +442,15 @@ async function createWindow() {
   return mainWindow;
 }
 
+function getTitleBarOverlay() {
+  const isDark = shouldUseDarkMode();
+  return {
+    color: isDark ? "#272a2d" : "#e7e8ec",
+    height: 40,
+    symbolColor: isDark ? "#ffffff" : "#3f3f3f",
+  };
+}
+
 protocol.registerSchemesAsPrivileged([
   {
     privileges: {
@@ -457,6 +466,13 @@ app.setAsDefaultProtocolClient(APP_PROTOCOL);
 
 registerTelemetry(app);
 
+function updateTitleBarOverlay() {
+  const mainWindow = getMainWindow();
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.setTitleBarOverlay(getTitleBarOverlay());
+  }
+}
+
 // eslint-disable-next-line unicorn/prefer-top-level-await
 void app.whenReady().then(async () => {
   // Default open or close DevTools by F12 in development
@@ -467,7 +483,12 @@ void app.whenReady().then(async () => {
   });
 
   createApplicationMenu();
-  watchThemePreferenceAndApply();
+  watchThemePreferenceAndApply(updateTitleBarOverlay);
+
+  nativeTheme.on("updated", () => {
+    updateTitleBarOverlay();
+  });
+
   appUpdater = new StudioAppUpdater({
     renderHandlers: renderHandlersProxy,
   });
