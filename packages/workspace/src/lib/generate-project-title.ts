@@ -6,6 +6,8 @@ import { dedent } from "radashi";
 import { type SessionMessage } from "../schemas/session/message";
 import { textForMessage } from "./text-for-message";
 
+const MAX_TITLE_WORDS = 5;
+
 const SYSTEM_PROMPT = dedent`<task>
     Generate a project title from the user message.
     </task>
@@ -15,15 +17,17 @@ const SYSTEM_PROMPT = dedent`<task>
     </context>
 
     <rules>
-    - Max 50 chars, single line
+    - Maximum ${MAX_TITLE_WORDS} words, single line
     - Do not use the word "app", "project", or anything other than a descriptive title for the functionality
     - Return ONLY the title text, nothing else
+    - Keep it concise and descriptive
     </rules>
 
     <examples>
     "Build a todo app" → "Todos"
     "Create a chat application with file uploads" → "Chat with Files"
     "Make a kanban board for project management" → "Kanban Board"
+    "Build a complex inventory management system" → "Inventory Management System"
     </examples>
   `.trim();
 
@@ -51,7 +55,11 @@ export function generateProjectTitle({
         throw new Error("No title generated");
       }
 
-      return title.text.trim();
+      const trimmedTitle = title.text.trim();
+      const words = trimmedTitle.split(/\s+/);
+      const limitedTitle = words.slice(0, MAX_TITLE_WORDS).join(" ");
+
+      return limitedTitle;
     })(),
     (error: unknown) => ({
       message: `Failed to generate project title: ${error instanceof Error ? error.message : String(error)}`,
