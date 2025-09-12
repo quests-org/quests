@@ -1,21 +1,25 @@
-import { APP_ICONS } from "@quests/shared/icons";
+import {
+  SELECTABLE_APP_ICONS,
+  SelectableAppIconsSchema,
+} from "@quests/shared/icons";
 import { generateText } from "ai";
 import { type LanguageModel } from "ai";
 import { ResultAsync } from "neverthrow";
 import { dedent } from "radashi";
-import { z } from "zod";
 
 import { type SessionMessage } from "../schemas/session/message";
 import { textForMessage } from "./text-for-message";
 
-const IconNameSchema = z.enum(APP_ICONS).default(APP_ICONS[0]);
+const IconNameSchema = SelectableAppIconsSchema.default(
+  SELECTABLE_APP_ICONS[0],
+);
 
 const SYSTEM_PROMPT = dedent`<task>
     Pick the best icon name from <icon-list> the given app description.
     </task>
 
     <icon-list>
-    ${APP_ICONS.map((icon) => `- ${icon}`).join("\n")}
+    ${SELECTABLE_APP_ICONS.map((icon) => `- ${icon}`).join("\n")}
     </icon-list>
 
     <rules>

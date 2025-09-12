@@ -3,7 +3,7 @@ import { z } from "zod";
 
 type CustomIconName = "quests";
 
-export const APP_ICONS = [
+export const SELECTABLE_APP_ICONS = [
   "library",
   "activity",
   "alarm-clock",
@@ -61,13 +61,11 @@ export const APP_ICONS = [
   "pen",
   "pencil",
   "phone",
-  "scan",
   "search",
   "settings",
   "shopping-cart",
   "smartphone",
   "sparkles",
-  "square-dashed",
   "star",
   "sun",
   "tablet",
@@ -87,8 +85,16 @@ export const APP_ICONS = [
   "view",
   "wallet",
   "wifi",
-  "x",
   "zap",
+] as const satisfies (CustomIconName | LucideIconName)[];
+
+export const SelectableAppIconsSchema = z.enum(SELECTABLE_APP_ICONS);
+
+export const APP_ICONS = [
+  ...SELECTABLE_APP_ICONS,
+  "scan", // Removed, but for backwards compatibility
+  "x", // Removed, but for backwards compatibility
+  "square-dashed", // The default, but not selectable
   "quests",
 ] as const satisfies (CustomIconName | LucideIconName)[];
 

@@ -2,10 +2,10 @@ import { AppIcon } from "@/client/components/app-icon";
 import { cn } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
 import {
-  APP_ICONS,
   DEFAULT_THEME_GRADIENT,
   ICON_DEFAULT,
   type IconName,
+  SELECTABLE_APP_ICONS,
   THEMES,
 } from "@quests/shared/icons";
 import { type ProjectSubdomain } from "@quests/workspace/client";
@@ -187,7 +187,7 @@ export function ProjectSettingsDialog({
                             <CommandEmpty>No icons found.</CommandEmpty>
                             <CommandGroup>
                               <div className="grid grid-cols-6 gap-2 p-2">
-                                {APP_ICONS.map((iconOption) => {
+                                {SELECTABLE_APP_ICONS.map((iconOption) => {
                                   const IconOption = IconMap[iconOption];
                                   return (
                                     <CommandItem
