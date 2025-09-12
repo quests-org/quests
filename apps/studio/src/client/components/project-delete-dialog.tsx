@@ -1,8 +1,13 @@
+import { SmallAppIcon } from "@/client/components/app-icon";
 import { Button } from "@/client/components/ui/button";
 import { useTrashApp } from "@/client/hooks/use-trash-app";
+import { isMacOS } from "@/client/lib/utils";
 import { type WorkspaceAppProject } from "@quests/workspace/client";
+import { useQuery } from "@tanstack/react-query";
+import { GitCommitVertical, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 
+import { rpcClient } from "../rpc/client";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,6 +31,20 @@ export function ProjectDeleteDialog({
   project,
 }: ProjectDeleteDialogProps) {
   const { isPending, trashApp } = useTrashApp({ navigateOnDelete: true });
+  const isMac = isMacOS();
+  const trashTerminology = isMac ? "Trash" : "Recycle Bin";
+
+  const { data: commitsData } = useQuery(
+    rpcClient.workspace.project.git.commits.list.queryOptions({
+      input: { projectSubdomain: project.subdomain },
+    }),
+  );
+
+  const { data: messageCount } = useQuery(
+    rpcClient.workspace.message.count.queryOptions({
+      input: { subdomain: project.subdomain },
+    }),
+  );
 
   const handleDelete = async () => {
     try {
@@ -41,12 +60,39 @@ export function ProjectDeleteDialog({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>
-            Delete <b>{project.title}</b>?
+            Delete &ldquo;{project.title}&rdquo; project?
           </AlertDialogTitle>
           <AlertDialogDescription>
-            This will move the &ldquo;<b>{project.title}</b>&rdquo; project to
-            the trash.
+            This project will be moved to your system {trashTerminology}. You
+            can restore it from there if needed.
           </AlertDialogDescription>
+          <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg border">
+            <SmallAppIcon
+              background={project.icon?.background}
+              icon={project.icon?.lucide}
+              size="lg"
+            />
+            <div className="flex flex-col gap-1">
+              <div className="font-medium text-foreground">{project.title}</div>
+              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                {commitsData?.commits && commitsData.commits.length > 1 && (
+                  <div className="flex items-center gap-1">
+                    <GitCommitVertical className="size-3" />
+                    <span>{commitsData.commits.length} versions</span>
+                  </div>
+                )}
+                {messageCount !== undefined && messageCount > 0 && (
+                  <div className="flex items-center gap-1">
+                    <MessageSquare className="size-3" />
+                    <span>{messageCount} messages</span>
+                  </div>
+                )}
+              </div>
+              <div className="text-xs text-muted-foreground/70">
+                {project.urls.localhost}
+              </div>
+            </div>
+          </div>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
@@ -57,7 +103,9 @@ export function ProjectDeleteDialog({
             onClick={handleDelete}
           >
             <Button variant="destructive">
-              {isPending ? "Deleting..." : "Delete"}
+              {isPending
+                ? `Moving to ${trashTerminology}...`
+                : `Move to ${trashTerminology}`}
             </Button>
           </AlertDialogAction>
         </AlertDialogFooter>

@@ -108,6 +108,34 @@ const create = base
     },
   );
 
+const count = base
+  .input(
+    z.object({
+      sessionId: StoreId.SessionSchema.optional(),
+      subdomain: AppSubdomainSchema,
+    }),
+  )
+  .output(z.number())
+  .handler(async ({ context, errors, input }) => {
+    const { sessionId, subdomain } = input;
+    const { workspaceConfig } = context;
+    const appConfig = createAppConfig({
+      subdomain,
+      workspaceConfig,
+    });
+
+    const messageIds = sessionId
+      ? await Store.getMessageIds(sessionId, appConfig)
+      : await Store.getAllMessageIds(appConfig);
+
+    if (messageIds.isErr()) {
+      const error = toORPCError(messageIds.error, errors);
+      throw error;
+    }
+
+    return messageIds.value.length;
+  });
+
 const live = {
   listWithParts: base
     .input(
@@ -148,6 +176,7 @@ const live = {
 };
 
 export const message = {
+  count,
   create,
   list: listWithParts,
   live,

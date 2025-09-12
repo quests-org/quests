@@ -13,6 +13,22 @@ import { setParsedStorageItem } from "./set-parsed-storage-item";
 import { StorageKey } from "./storage-key";
 
 export namespace Store {
+  export function getAllMessageIds(
+    appConfig: AppConfig,
+    { signal }: { signal?: AbortSignal } = {},
+  ) {
+    return safeTry(async function* () {
+      const storage = yield* getSessionsStoreStorage(appConfig);
+
+      const messageKeys = await storage.getKeys(StorageKey.MESSAGES_KEY, {
+        signal,
+      });
+
+      const allMessageIds = messageKeys.map(StorageKey.extractMessageId);
+      return ok(allMessageIds);
+    });
+  }
+
   export function getMessageIds(
     sessionId: StoreId.Session,
     appConfig: AppConfig,

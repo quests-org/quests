@@ -2,6 +2,7 @@ import { StoreId } from "../schemas/store-id";
 
 export namespace StorageKey {
   const SEPARATOR = ":";
+  export const MESSAGES_KEY = "messages";
 
   export function extractMessageId(messageKey: string): StoreId.Message {
     return StoreId.MessageSchema.parse(messageKey.split(SEPARATOR).at(-1));
@@ -23,7 +24,7 @@ export namespace StorageKey {
   }
 
   export function messages(sessionId: StoreId.Session) {
-    return ["messages", sessionId].join(SEPARATOR);
+    return [MESSAGES_KEY, sessionId].join(SEPARATOR);
   }
 
   export function part(
