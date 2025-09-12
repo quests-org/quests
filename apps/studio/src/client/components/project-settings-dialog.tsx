@@ -174,7 +174,13 @@ export function ProjectSettingsDialog({
                           <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-80 p-0">
+                      <PopoverContent
+                        className="w-80 p-0"
+                        onWheel={(e) => {
+                          // Fixes scrolling on the popover content
+                          e.stopPropagation();
+                        }}
+                      >
                         <Command>
                           <div className="flex flex-1 items-center border-b">
                             <CommandInput
