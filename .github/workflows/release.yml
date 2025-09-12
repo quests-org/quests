@@ -38,6 +38,14 @@ jobs:
         run: npm run build:linux
         working-directory: apps/studio
 
+      - if: matrix.os == 'ubuntu-latest'
+        name: upload-linux-artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-build-artifacts
+          path: apps/studio/dist/
+          retention-days: 30
+
       - if: matrix.os == 'macos-latest'
         name: setup-signing
         run: |
@@ -69,10 +77,26 @@ jobs:
         run: |
           rm ~/.private_keys/AuthKey_${{ secrets.APPLE_API_KEY_ID }}.p8
 
+      - if: matrix.os == 'macos-latest'
+        name: upload-macos-artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-build-artifacts
+          path: apps/studio/dist/
+          retention-days: 30
+
       - if: matrix.os == 'windows-latest'
         name: build-win
         run: npm run build:win
         working-directory: apps/studio
+
+      - if: matrix.os == 'windows-latest'
+        name: upload-windows-artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build-artifacts
+          path: apps/studio/dist/
+          retention-days: 30
 
       - name: release
         uses: softprops/action-gh-release@v2
