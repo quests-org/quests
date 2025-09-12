@@ -3,10 +3,10 @@ packages:
   - apps/*
 
 catalog:
-  "@orpc/client": ^1.8.5
+  "@orpc/client": ^1.8.8
   "@orpc/openapi": ^1.7.4
-  "@orpc/server": ^1.8.5
-  "@orpc/tanstack-query": ^1.8.5
+  "@orpc/server": ^1.8.8
+  "@orpc/tanstack-query": ^1.8.8
   "@orpc/zod": ^1.7.4
   "@types/react": ^19.1.8
   "@types/react-dom": ^19.1.6
