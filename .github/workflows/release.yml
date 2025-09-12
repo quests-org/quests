@@ -52,7 +52,12 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: linux-build-artifacts
-          path: apps/studio/dist/
+          path: |
+            apps/studio/dist/*.AppImage
+            apps/studio/dist/*.deb
+            apps/studio/dist/*.snap
+            apps/studio/dist/latest-linux.yml
+            apps/studio/dist/*.blockmap
           retention-days: 30
 
       - if: matrix.os == 'macos-latest'
@@ -91,7 +96,11 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: macos-build-artifacts
-          path: apps/studio/dist/
+          path: |
+            apps/studio/dist/*.dmg
+            apps/studio/dist/*.zip
+            apps/studio/dist/*.yml
+            apps/studio/dist/*.blockmap
           retention-days: 30
 
       - if: matrix.os == 'windows-latest'
@@ -113,7 +122,11 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: windows-build-artifacts
-          path: apps/studio/dist/
+          path: |
+            apps/studio/dist/*.exe
+            apps/studio/dist/*.zip
+            apps/studio/dist/*.yml
+            apps/studio/dist/*.blockmap
           retention-days: 30
 
       - name: release
