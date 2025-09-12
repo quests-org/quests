@@ -28,8 +28,6 @@ catalog:
 configDependencies:
   "@pnpm/plugin-trusted-deps": 0.1.0+sha512-OK05vSZpezQHcS7Y0T5A25QXDbBRtRq52s76eOkMgp9v8ifNrIR8pjIGqrUFUn0PwKLt2i+U1LPYB+RWi1xjaQ==
 
-onlyBuiltDependenciesFile: node_modules/.pnpm-config/@pnpm/plugin-trusted-deps/allow.json
-
 onlyBuiltDependencies:
   - "@parcel/watcher"
   - "@swc/core"
@@ -38,6 +36,8 @@ onlyBuiltDependencies:
   - core-js
   - tree-sitter-javascript
   - unrs-resolver
+
+onlyBuiltDependenciesFile: node_modules/.pnpm-config/@pnpm/plugin-trusted-deps/allow.json
 
 patchedDependencies:
   conf@14.0.0: patches/conf@14.0.0.patch
