@@ -17,6 +17,11 @@
       ],
       "outputs": ["dist/**", "out/**"]
     },
+    "build:linux": {
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "dependsOn": ["@quests/shim-client#build", "@quests/shim-server#build"],
+      "outputs": ["dist/**", "out/**"]
+    },
     "build:mac": {
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "dependsOn": ["@quests/shim-client#build", "@quests/shim-server#build"],
