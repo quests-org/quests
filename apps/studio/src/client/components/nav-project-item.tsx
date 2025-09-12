@@ -25,11 +25,11 @@ import {
   ExternalLinkIcon,
   MoreHorizontal,
   StarOff,
+  TrashIcon,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { AppStatusIcon } from "./app-status-icon";
-import { TrashIcon } from "./icons";
 
 interface NavProjectItemProps {
   isFavorites: boolean;
@@ -207,8 +207,8 @@ export function NavProjectItem({
               search={{ showDelete: true }}
               to="/projects/$subdomain"
             >
-              <DropdownMenuItem className="text-destructive focus:bg-destructive/15 focus:text-destructive">
-                <TrashIcon />
+              <DropdownMenuItem variant="destructive">
+                <TrashIcon className="size-4" />
                 <span>Delete</span>
               </DropdownMenuItem>
             </SidebarLink>

@@ -22,11 +22,11 @@ import {
   Save,
   SettingsIcon,
   Terminal,
+  TrashIcon,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { TrashIcon } from "./icons";
 import { RestoreVersionModal } from "./restore-version-modal";
 import { CMD, Cursor, ITerm, MacOSTerminal, VSCode } from "./service-icons";
 import {
@@ -214,8 +214,8 @@ export function ProjectHeaderToolbar({
                 <DropdownMenuSeparator />
 
                 <DropdownMenuItem
-                  className="text-destructive focus:bg-destructive/15 focus:text-destructive"
                   onSelect={onDeleteClick}
+                  variant="destructive"
                 >
                   <TrashIcon />
                   <span>Delete</span>
