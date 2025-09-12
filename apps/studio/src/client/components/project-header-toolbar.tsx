@@ -16,11 +16,9 @@ import { useNavigate } from "@tanstack/react-router";
 import {
   ChevronDown,
   Clipboard,
-  ExternalLinkIcon,
   FolderOpenIcon,
   MessageCircle,
   PanelLeftClose,
-  PenLine,
   Save,
   SettingsIcon,
   Terminal,
@@ -36,9 +34,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 
@@ -74,10 +69,6 @@ export function ProjectHeaderToolbar({
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
   const [restoreModalOpen, setRestoreModalOpen] = useState(false);
   const navigate = useNavigate();
-
-  const openExternalLinkMutation = useMutation(
-    rpcClient.utils.openExternalLink.mutationOptions(),
-  );
 
   const showFileInFolderMutation = useMutation(
     rpcClient.utils.showFileInFolder.mutationOptions(),
@@ -133,10 +124,6 @@ export function ProjectHeaderToolbar({
   const { data: supportedEditors = [] } = useQuery<SupportedEditor[]>(
     rpcClient.utils.getSupportedEditors.queryOptions(),
   );
-
-  const handleOpenExternalClick = () => {
-    openExternalLinkMutation.mutate({ url: project.urls.localhost });
-  };
 
   const handleTakeScreenshot = async () => {
     if (!iframeRef.current) {
@@ -226,12 +213,73 @@ export function ProjectHeaderToolbar({
 
                 <DropdownMenuSeparator />
 
-                <DropdownMenuSub>
-                  <DropdownMenuSubTrigger>
-                    <PenLine className="h-4 w-4 mr-2" />
-                    <span>Open In</span>
-                  </DropdownMenuSubTrigger>
-                  <DropdownMenuSubContent>
+                <DropdownMenuItem
+                  className="text-destructive focus:bg-destructive/15 focus:text-destructive"
+                  onSelect={onDeleteClick}
+                >
+                  <TrashIcon />
+                  <span>Delete</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <Button
+              className="ml-1 transition-all duration-300 ease-in-out h-7 inline-flex items-center"
+              onClick={onSidebarToggle}
+              size="sm"
+              title={sidebarCollapsed ? "Show sidebar" : "Hide sidebar"}
+              variant={sidebarCollapsed ? "secondary" : "ghost"}
+            >
+              {sidebarCollapsed ? (
+                <>
+                  <MessageCircle className="h-4 w-4" />
+                  <span>Chat</span>
+                </>
+              ) : (
+                <PanelLeftClose className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+
+          <div className="flex items-center">
+            {selectedVersion ? (
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={handleExitVersion}
+                  size="sm"
+                  variant="secondary"
+                >
+                  Exit
+                </Button>
+                <Button onClick={handleRestoreVersion} size="sm">
+                  Restore this version
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <ToolbarFavoriteAction project={project} />
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button className="gap-1 h-7" size="sm" variant="secondary">
+                      <span>Open in</span>
+                      <div className="flex items-center gap-1">
+                        {(() => {
+                          const availableEditors = supportedEditors.filter(
+                            (editor) => editor.available,
+                          );
+                          const editorIcons = availableEditors.slice(0, 3);
+
+                          return editorIcons.map((editor) => {
+                            const Icon = EDITOR_ICON_MAP[editor.id];
+                            return (
+                              <Icon className="size-3.5" key={editor.id} />
+                            );
+                          });
+                        })()}
+                      </div>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
                     <DropdownMenuItem
                       onClick={() => {
                         void openAppInMutation.mutateAsync({
@@ -240,12 +288,23 @@ export function ProjectHeaderToolbar({
                         });
                       }}
                     >
-                      <FolderOpenIcon className="h-4 w-4" />
+                      {isMacOS() ? (
+                        <svg
+                          className="size-4"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          width="24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M21.001 3a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1h-18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zm-1 2h-8.465Q10.5 7.966 10.5 13h3a17 17 0 0 0-.107 2.877c1.226-.211 2.704-.777 4.027-1.71l1.135 1.665c-1.642 1.095-3.303 1.779-4.976 2.043q.078.555.184 1.125H20zM6.556 14.168l-1.11 1.664C7.603 17.27 9.793 18 12.001 18v-2c-1.792 0-3.602-.603-5.445-1.832M17 7a1 1 0 0 1 1 1v1a1 1 0 1 1-2 0V8a1 1 0 0 1 1-1M7 7c-.552 0-1 .452-1 1v1a1 1 0 1 0 2 0V8a1 1 0 0 0-1-1"
+                            fill="currentColor"
+                          />
+                        </svg>
+                      ) : (
+                        <FolderOpenIcon className="size-4" />
+                      )}
                       {isMacOS() ? "Reveal in Finder" : "Show in file manager"}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleOpenExternalClick}>
-                      <ExternalLinkIcon className="h-4 w-4" />
-                      External browser
                     </DropdownMenuItem>
 
                     {(() => {
@@ -316,63 +375,11 @@ export function ProjectHeaderToolbar({
                         </>
                       );
                     })()}
-                  </DropdownMenuSubContent>
-                </DropdownMenuSub>
-
-                <DropdownMenuSeparator />
-
-                <DropdownMenuItem
-                  className="text-destructive focus:bg-destructive/15 focus:text-destructive"
-                  onSelect={onDeleteClick}
-                >
-                  <TrashIcon />
-                  <span>Delete</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            <Button
-              className="ml-1 transition-all duration-300 ease-in-out h-7 inline-flex items-center select-none"
-              onClick={onSidebarToggle}
-              size="sm"
-              title={sidebarCollapsed ? "Show sidebar" : "Hide sidebar"}
-              variant={sidebarCollapsed ? "secondary" : "ghost"}
-            >
-              {sidebarCollapsed ? (
-                <>
-                  <MessageCircle className="h-4 w-4" />
-                  <span>Chat</span>
-                </>
-              ) : (
-                <PanelLeftClose className="h-4 w-4" />
-              )}
-            </Button>
-          </div>
-
-          <div className="flex items-center">
-            {selectedVersion ? (
-              <div className="flex items-center gap-2">
-                <Button
-                  onClick={handleExitVersion}
-                  size="sm"
-                  variant="secondary"
-                >
-                  Exit
-                </Button>
-                <Button onClick={handleRestoreVersion} size="sm">
-                  Restore this version
-                </Button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <ToolbarFavoriteAction project={project} />
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button
-                      className="gap-1 h-7 select-none"
-                      size="sm"
-                      variant="secondary"
-                    >
+                    <Button className="gap-1 h-7" size="sm" variant="secondary">
                       Share
                     </Button>
                   </DropdownMenuTrigger>
@@ -384,18 +391,6 @@ export function ProjectHeaderToolbar({
                     <DropdownMenuItem onClick={handleTakeScreenshot}>
                       <Save className="h-4 w-4" />
                       Save screenshot
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onClick={() => {
-                        void openAppInMutation.mutateAsync({
-                          subdomain: project.subdomain,
-                          type: "show-in-folder",
-                        });
-                      }}
-                    >
-                      <FolderOpenIcon className="h-4 w-4" />
-                      {isMacOS() ? "Reveal in Finder" : "Show in File Manager"}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
