@@ -468,7 +468,11 @@ registerTelemetry(app);
 
 function updateTitleBarOverlay() {
   const mainWindow = getMainWindow();
-  if (mainWindow && !mainWindow.isDestroyed()) {
+  if (
+    mainWindow &&
+    !mainWindow.isDestroyed() &&
+    (process.platform === "linux" || process.platform === "win32")
+  ) {
     mainWindow.setTitleBarOverlay(getTitleBarOverlay());
   }
 }
