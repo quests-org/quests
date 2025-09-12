@@ -8,3 +8,7 @@ export function cn(...inputs: ClassValue[]) {
 export function isMacOS(): boolean {
   return window.electron.process.platform === "darwin";
 }
+
+export function isWindows(): boolean {
+  return window.electron.process.platform === "win32";
+}

@@ -1,7 +1,7 @@
 import { SmallAppIcon } from "@/client/components/app-icon";
 import { Button } from "@/client/components/ui/button";
 import { useTrashApp } from "@/client/hooks/use-trash-app";
-import { isMacOS } from "@/client/lib/utils";
+import { isWindows } from "@/client/lib/utils";
 import { type WorkspaceAppProject } from "@quests/workspace/client";
 import { useQuery } from "@tanstack/react-query";
 import { GitCommitVertical, MessageSquare } from "lucide-react";
@@ -31,8 +31,7 @@ export function ProjectDeleteDialog({
   project,
 }: ProjectDeleteDialogProps) {
   const { isPending, trashApp } = useTrashApp({ navigateOnDelete: true });
-  const isMac = isMacOS();
-  const trashTerminology = isMac ? "Trash" : "Recycle Bin";
+  const trashTerminology = isWindows() ? "Recycle Bin" : "Trash";
 
   const { data: commitsData } = useQuery(
     rpcClient.workspace.project.git.commits.list.queryOptions({
