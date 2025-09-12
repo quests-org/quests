@@ -1,10 +1,12 @@
 import { ok, ResultAsync } from "neverthrow";
 import fs from "node:fs/promises";
 
+import { type AppDir } from "../schemas/paths";
 import { type ProjectSubdomain } from "../schemas/subdomains";
 import { type WorkspaceConfig } from "../types";
 import { absolutePathJoin } from "./absolute-path-join";
 import { createAppConfig } from "./app-config/create";
+import { getSandboxesDir } from "./app-dir-utils";
 import { pathExists } from "./path-exists";
 
 interface RemoveProjectOptions {
@@ -36,6 +38,8 @@ export async function trashProject({
         await fs.rm(nodeModulesPath, { force: true, recursive: true });
       }
 
+      await removeSandboxNodeModules(appConfig.appDir);
+
       await workspaceConfig.trashItem(appConfig.appDir);
 
       return ok({ subdomain });
@@ -45,4 +49,27 @@ export async function trashProject({
       type: "unknown" as const,
     }),
   );
+}
+
+async function removeSandboxNodeModules(appDir: AppDir): Promise<void> {
+  const sandboxesDir = getSandboxesDir(appDir);
+
+  if (!(await pathExists(sandboxesDir))) {
+    return;
+  }
+
+  const sandboxEntries = await fs.readdir(sandboxesDir, {
+    withFileTypes: true,
+  });
+
+  for (const entry of sandboxEntries) {
+    if (entry.isDirectory()) {
+      const sandboxPath = absolutePathJoin(sandboxesDir, entry.name);
+      const nodeModulesPath = absolutePathJoin(sandboxPath, "node_modules");
+
+      if (await pathExists(nodeModulesPath)) {
+        await fs.rm(nodeModulesPath, { force: true, recursive: true });
+      }
+    }
+  }
 }
