@@ -262,24 +262,7 @@ export function ProjectHeaderToolbar({
                   <DropdownMenuTrigger asChild>
                     <Button className="gap-1 h-7" size="sm" variant="secondary">
                       <span>Open in</span>
-                      <div className="flex items-center gap-1">
-                        {(() => {
-                          const availableEditors = supportedEditors.filter(
-                            (editor) => editor.available,
-                          );
-                          const editorIcons = availableEditors.slice(0, 3);
-
-                          return editorIcons.map((editor) => {
-                            const Icon = EDITOR_ICON_MAP[editor.id];
-                            return (
-                              <Icon
-                                className="size-3.5 opacity-80"
-                                key={editor.id}
-                              />
-                            );
-                          });
-                        })()}
-                      </div>
+                      <ChevronDown className="size-3.5 opacity-80" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
