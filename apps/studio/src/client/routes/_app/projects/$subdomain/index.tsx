@@ -207,19 +207,16 @@ function RouteComponent() {
             !sidebarCollapsed && "border-l rounded-tl-lg",
           )}
         >
-          <ProjectIFrameToolbar
-            iframeRef={iframeRef}
-            project={project}
-            selectedVersion={selectedVersion}
-            subdomain={subdomain}
-          />
-          <div className="flex-1 relative">
-            <AppIFrame
-              app={project}
-              className="rounded-b-lg overflow-hidden"
-              iframeRef={iframeRef}
-              key={project.subdomain}
-            />
+          <div className="flex-1 flex flex-col relative">
+            <ProjectIFrameToolbar iframeRef={iframeRef} project={project} />
+            <div className="flex-1 relative">
+              <AppIFrame
+                app={project}
+                className="rounded-b-lg overflow-hidden"
+                iframeRef={iframeRef}
+                key={project.subdomain}
+              />
+            </div>
 
             {selectedVersion && (
               <VersionOverlay

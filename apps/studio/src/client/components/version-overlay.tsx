@@ -3,14 +3,23 @@ import {
   ProjectSubdomainSchema,
   VersionSubdomainSchema,
 } from "@quests/workspace/client";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { useRef, useState } from "react";
+import ColorHash from "color-hash";
+import { ExternalLinkIcon } from "lucide-react";
+import { useMemo, useRef } from "react";
 
-import { useShimIFrame } from "../lib/iframe-messenger";
 import { rpcClient } from "../rpc/client";
 import { AppIFrame } from "./app-iframe";
-import { RestoreVersionModal } from "./restore-version-modal";
+import { AppToolbar } from "./app-toolbar";
+import { GitCommitCard } from "./git-commit-card";
+import { Button } from "./ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "./ui/tooltip";
 
 interface VersionOverlayProps {
   projectSubdomain: ProjectSubdomain;
@@ -21,18 +30,41 @@ export function VersionOverlay({
   projectSubdomain,
   versionRef,
 }: VersionOverlayProps) {
-  const [showRestoreModal, setShowRestoreModal] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const shimIFrame = useShimIFrame(iframeRef);
   const versionSubdomain = VersionSubdomainSchema.parse(
     `version-${versionRef}.${projectSubdomain}`,
   );
+
+  const hashColor = useMemo(() => {
+    const colorHash = new ColorHash();
+    return colorHash.hex(versionRef);
+  }, [versionRef]);
 
   const { data: app, isLoading } = useQuery(
     rpcClient.workspace.app.bySubdomain.queryOptions({
       input: { subdomain: versionSubdomain },
     }),
   );
+
+  const { data: gitRefInfo } = useQuery({
+    ...rpcClient.workspace.project.git.ref.queryOptions({
+      input: {
+        gitRef: versionRef,
+        projectSubdomain,
+      },
+    }),
+    enabled: !!versionRef,
+  });
+
+  const openExternalLinkMutation = useMutation(
+    rpcClient.utils.openExternalLink.mutationOptions(),
+  );
+
+  const handleOpenExternalClick = () => {
+    if (app) {
+      openExternalLinkMutation.mutate({ url: app.urls.localhost });
+    }
+  };
 
   if (isLoading) {
     return (
@@ -67,25 +99,88 @@ export function VersionOverlay({
     );
   }
 
-  return (
-    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex z-50">
-      <div className="w-full h-full bg-background/95 flex flex-col overflow-hidden">
-        <AppIFrame
-          app={app}
-          className="rounded-b-lg overflow-hidden"
-          iframeRef={iframeRef}
-          key={app.subdomain}
-        />
-      </div>
+  const centerActions = (
+    <>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            className="ml-1 size-6"
+            onClick={handleOpenExternalClick}
+            size="icon"
+            variant="ghost"
+          >
+            <ExternalLinkIcon className="h-4 w-4" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Open in external browser</p>
+        </TooltipContent>
+      </Tooltip>
+    </>
+  );
 
-      <RestoreVersionModal
-        isOpen={showRestoreModal}
-        onClose={() => {
-          setShowRestoreModal(false);
-        }}
-        onRestore={shimIFrame.reloadWindow}
-        projectSubdomain={projectSubdomain}
-        versionRef={versionRef}
+  const centerContent = (
+    <div className="flex-1 flex items-center justify-center min-w-0">
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div
+              className="text-xs file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input flex h-8 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive text-center items-center justify-center whitespace-nowrap overflow-hidden cursor-pointer font-medium"
+              style={{
+                backgroundColor: `${hashColor}20`,
+                borderColor: `${hashColor}50`,
+              }}
+            >
+              <span className="text-ellipsis min-w-0">
+                Viewing Version{" "}
+                <span className="font-mono font-semibold">
+                  {versionRef.slice(0, 8)}
+                </span>
+                {gitRefInfo?.commitMessage && (
+                  <>
+                    :{" "}
+                    {gitRefInfo.commitMessage.length > 50
+                      ? `${gitRefInfo.commitMessage.slice(0, 50)}...`
+                      : gitRefInfo.commitMessage}
+                  </>
+                )}
+              </span>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent
+            arrowClassName="bg-background fill-background border-b border-r border-border"
+            className="min-w-xs max-w-md p-0 bg-background text-foreground border border-border"
+            side="bottom"
+          >
+            <GitCommitCard
+              disableBorder
+              disableLink
+              isLastGitCommit={false}
+              isSelected={false}
+              projectSubdomain={projectSubdomain}
+              showCommitMessage
+              showFullCommitMessage
+              versionRef={versionRef}
+            />
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    </div>
+  );
+
+  return (
+    <div className="absolute inset-0 flex flex-col">
+      <AppToolbar
+        app={app}
+        centerActions={centerActions}
+        centerContent={centerContent}
+        iframeRef={iframeRef}
+      />
+      <AppIFrame
+        app={app}
+        className="rounded-b-lg overflow-hidden flex-1"
+        iframeRef={iframeRef}
+        key={app.subdomain}
       />
     </div>
   );
