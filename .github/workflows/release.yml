@@ -15,7 +15,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [macos-latest]
+        os: ${{ startsWith(github.ref, 'refs/heads/release/') && fromJSON('["ubuntu-latest", "windows-latest", "macos-latest"]') || fromJSON('["macos-latest"]') }}
 
     steps:
       - uses: actions/checkout@v4
