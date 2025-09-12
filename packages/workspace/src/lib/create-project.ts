@@ -62,7 +62,9 @@ export async function createProject(
     yield* git(GitCommands.init(), projectConfig.appDir, { signal });
     yield* git(GitCommands.addAll(), projectConfig.appDir, { signal });
     yield* git(
-      GitCommands.commitWithAuthor("Initial commit"),
+      GitCommands.commitWithAuthor(
+        `Project created from ${DEFAULT_TEMPLATE_NAME} template`,
+      ),
       projectConfig.appDir,
       { signal },
     );
