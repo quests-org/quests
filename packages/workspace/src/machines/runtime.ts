@@ -197,6 +197,7 @@ export const runtimeMachine = setup({
         actions: [
           "stopRuntime",
           assign(() => ({
+            errors: [],
             port: undefined,
             retryCount: 0,
             spawnRuntimeRef: undefined,
