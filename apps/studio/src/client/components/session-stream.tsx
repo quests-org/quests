@@ -26,6 +26,7 @@ import { Button } from "./ui/button";
 import { UnknownPart } from "./unknown-part";
 import { UsageSummary } from "./usage-summary";
 import { UserMessage } from "./user-message";
+import { VersionList } from "./version-list";
 
 export type FilterMode = "chat" | "versions";
 
@@ -333,26 +334,6 @@ export function SessionStream({
     );
   }, [filterMode, messages, isAnyAgentRunning, onContinue]);
 
-  // Render versions mode elements
-  const versionElements = useMemo(() => {
-    return gitCommitParts.map((part) => {
-      const isLast = part.data.ref === gitCommitParts.at(-1)?.data.ref;
-      return (
-        <GitCommitCard
-          isLastGitCommit={isLast}
-          isSelected={
-            selectedVersion === part.data.ref || (isLast && !selectedVersion)
-          }
-          key={part.data.ref}
-          projectSubdomain={app.subdomain}
-          restoredFromRef={part.data.restoredFromRef}
-          showCommitMessage
-          versionRef={part.data.ref}
-        />
-      );
-    });
-  }, [gitCommitParts, selectedVersion, app.subdomain]);
-
   return (
     <>
       {isLoading && (
@@ -367,25 +348,31 @@ export function SessionStream({
         />
       )}
 
-      {!isActive && !error && !isLoading && (
-        <>
-          {((filterMode === "chat" && messages.length === 0) ||
-            (filterMode === "versions" && gitCommitParts.length === 0)) && (
-            <div className="flex items-center justify-center h-32">
-              <div className="text-center text-muted-foreground/50">
-                {filterMode === "chat" ? "No messages yet" : "No versions yet"}
-              </div>
+      {!isActive &&
+        !error &&
+        !isLoading &&
+        filterMode === "chat" &&
+        messages.length === 0 && (
+          <div className="flex items-center justify-center h-32">
+            <div className="text-center text-muted-foreground/50">
+              No messages yet
             </div>
-          )}
-        </>
-      )}
+          </div>
+        )}
 
       <div className="w-full flex flex-col gap-2">
         {filterMode === "chat" && contextMessages.length > 0 && (
           <ContextMessages messages={contextMessages} />
         )}
         <div className="flex flex-col gap-2">
-          {filterMode === "chat" ? chatElements : versionElements}
+          {filterMode === "chat" ? (
+            chatElements
+          ) : (
+            <VersionList
+              projectSubdomain={app.subdomain}
+              selectedVersion={selectedVersion}
+            />
+          )}
         </div>
 
         {filterMode === "chat" && isActive && (

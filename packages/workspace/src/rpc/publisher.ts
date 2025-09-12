@@ -1,6 +1,7 @@
 import { EventPublisher } from "@orpc/server";
 
 import { type WorkspaceSnapshot } from "../machines/workspace";
+import { type SessionMessagePart } from "../schemas/session/message-part";
 import { type StoreId } from "../schemas/store-id";
 import {
   type AppSubdomain,
@@ -19,9 +20,7 @@ export const publisher = new EventPublisher<{
     subdomain: AppSubdomain;
   };
   "part.updated": {
-    messageId: StoreId.Message;
-    partId: StoreId.Part;
-    sessionId: StoreId.Session;
+    part: SessionMessagePart.Type;
     subdomain: AppSubdomain;
   };
   "project.removed": {

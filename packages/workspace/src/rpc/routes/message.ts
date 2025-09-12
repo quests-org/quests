@@ -124,7 +124,12 @@ const live = {
       const messageRemoved = publisher.subscribe("message.removed", { signal });
       const partUpdates = publisher.subscribe("part.updated", { signal });
 
-      async function* filterBySubdomain(generator: typeof messageUpdates) {
+      async function* filterBySubdomain(
+        generator:
+          | typeof messageRemoved
+          | typeof messageUpdates
+          | typeof partUpdates,
+      ) {
         for await (const payload of generator) {
           if (payload.subdomain === input.subdomain) {
             yield null;

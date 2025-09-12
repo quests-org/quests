@@ -1,4 +1,5 @@
 import { eventIterator } from "@orpc/server";
+import { isEqual } from "radashi";
 import { z } from "zod";
 
 import { getWorkspaceAppState } from "../../../lib/get-workspace-app-state";
@@ -26,13 +27,19 @@ const bySubdomain = base
       return result.value;
     };
 
-    yield getOrThrow();
+    let previousState = await getOrThrow();
+    yield previousState;
 
     for await (const _payload of publisher.subscribe(
       "workspaceActor.snapshot",
       { signal },
     )) {
-      yield getOrThrow();
+      const currentState = await getOrThrow();
+
+      if (!isEqual(currentState, previousState)) {
+        previousState = currentState;
+        yield currentState;
+      }
     }
   });
 

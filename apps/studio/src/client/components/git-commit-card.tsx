@@ -1,7 +1,6 @@
 import { cn } from "@/client/lib/utils";
 import { type ProjectSubdomain } from "@quests/workspace/client";
 import { Link } from "@tanstack/react-router";
-import { ChevronRight } from "lucide-react";
 
 import {
   VersionCommitMessage,
@@ -9,6 +8,7 @@ import {
   VersionHeader,
   VersionRestoredFooter,
 } from "./version-info";
+import { ViewIndicator } from "./view-indicator";
 
 interface GitCommitCardProps {
   disableBorder?: boolean;
@@ -58,20 +58,7 @@ export function GitCommitCard({
             versionRef={versionRef}
           />
 
-          {showViewIndicator && (
-            <div className="shrink-0">
-              {isSelected ? (
-                <div className="flex items-center gap-1.5 text-xs font-medium">
-                  Viewing
-                </div>
-              ) : (
-                <div className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors group">
-                  <span className="font-medium">View</span>
-                  <ChevronRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
-                </div>
-              )}
-            </div>
-          )}
+          {showViewIndicator && <ViewIndicator isSelected={isSelected} />}
         </div>
 
         {showCommitMessage && (

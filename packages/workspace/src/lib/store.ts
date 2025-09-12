@@ -423,9 +423,7 @@ export namespace Store {
       );
 
       publisher.publish("part.updated", {
-        messageId: savedPart.metadata.messageId,
-        partId: savedPart.metadata.id,
-        sessionId: savedPart.metadata.sessionId,
+        part: savedPart,
         subdomain: appConfig.subdomain,
       });
 

@@ -50,6 +50,14 @@ export namespace GitCommands {
     return ["init"];
   }
 
+  export function logWithDetails(limit?: number) {
+    const args = ["log", "--pretty=format:%H|%an|%ae|%at|%s"];
+    if (limit) {
+      args.push("-n", String(limit));
+    }
+    return args;
+  }
+
   export function revList(ref: string) {
     return ["rev-list", "--count", ref];
   }
