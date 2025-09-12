@@ -272,7 +272,10 @@ export function ProjectHeaderToolbar({
                           return editorIcons.map((editor) => {
                             const Icon = EDITOR_ICON_MAP[editor.id];
                             return (
-                              <Icon className="size-3.5" key={editor.id} />
+                              <Icon
+                                className="size-3.5 opacity-80"
+                                key={editor.id}
+                              />
                             );
                           });
                         })()}
