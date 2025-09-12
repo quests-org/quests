@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { html } from "hono/html";
 import { proxy } from "hono/proxy";
 
-import { SHIM_SCRIPT_PATH } from "../constants";
+import { FALLBACK_PAGE_META_NAME, SHIM_SCRIPT_PATH } from "../constants";
 import { RuntimeList } from "../runtime-list";
 import { type WorkspaceServerEnv } from "../types";
 import { uriDetailsForHost } from "../uri-details-for-host";
@@ -11,10 +11,12 @@ const SHIM_SCRIPT = html`<script
   src="${SHIM_SCRIPT_PATH}"
   type="module"
 ></script>`;
-const SHIM_PAGE = html`
+
+const FALLBACK_PAGE = html`
   <html>
     <head>
       ${SHIM_SCRIPT}
+      <meta name="${FALLBACK_PAGE_META_NAME}" content="true" />
     </head>
     <body></body>
   </html>
@@ -24,7 +26,7 @@ const app = new Hono<WorkspaceServerEnv>();
 
 app.all("/*", async (c, next) => {
   const shimScript = await SHIM_SCRIPT;
-  const shimPage = await SHIM_PAGE;
+  const fallbackPage = await FALLBACK_PAGE;
   const host = c.req.header("host") || "";
   const uriDetails = uriDetailsForHost(host);
 
@@ -45,19 +47,19 @@ app.all("/*", async (c, next) => {
     } else if (uriDetails.error === "invalid-domain") {
       return c.notFound();
     } else {
-      return c.html(SHIM_PAGE);
+      return c.html(fallbackPage);
     }
   }
 
   const { subdomain } = uriDetails.value;
   const runtimeRef = c.var.getRuntimeRef(subdomain);
   if (!runtimeRef) {
-    return c.html(SHIM_PAGE);
+    return c.html(fallbackPage);
   }
 
   const port = runtimeRef.getSnapshot().context.port;
   if (!port) {
-    return c.html(SHIM_PAGE);
+    return c.html(fallbackPage);
   }
 
   const url = `http://localhost:${port}${c.req.path}`;
@@ -69,6 +71,11 @@ app.all("/*", async (c, next) => {
   headers.set("X-Forwarded-Host", host);
   headers.delete("if-none-match");
   headers.delete("if-modified-since");
+
+  const isWebSocket = c.req.header("upgrade")?.toLowerCase() === "websocket";
+  if (isWebSocket) {
+    return c.notFound();
+  }
 
   let res: Response;
   try {
@@ -88,7 +95,7 @@ app.all("/*", async (c, next) => {
         },
       });
     }
-    return c.html(SHIM_PAGE);
+    return c.html(fallbackPage);
   }
 
   const responseContentType = res.headers.get("content-type") || "";
@@ -109,23 +116,13 @@ app.all("/*", async (c, next) => {
     });
   }
 
-  if (res.status >= 500 && isTextPlainContentType) {
-    // Server error, we should return the shim
+  if (res.status >= 400 && isTextPlainContentType) {
     const body = await res.text();
-    runtimeRef.send({
-      type: "saveError",
-      value: {
-        createdAt: Date.now(),
-        message: `Error proxying request: ${res.status} ${body}`,
-        type: "router",
-      },
-    });
-    return c.html(shimPage);
-  } else if (res.status >= 400 && isTextPlainContentType) {
-    // Client error, we should return the shim
-    const body = await res.text();
-    if (body.length > 0) {
-      // 400 error with a body is not expected from Vite
+    // 400 error with a body is not expected from Vite
+    const shouldSendError =
+      res.status >= 500 || (res.status >= 400 && body.length > 0);
+
+    if (shouldSendError) {
       runtimeRef.send({
         type: "saveError",
         value: {
@@ -135,7 +132,8 @@ app.all("/*", async (c, next) => {
         },
       });
     }
-    return c.html(shimPage);
+
+    return c.html(fallbackPage);
   }
 
   const clonedRes = res.clone();

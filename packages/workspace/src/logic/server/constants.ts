@@ -15,3 +15,4 @@ export const SHIM_SCRIPTS = {
   iframeJS: "index.js",
   shimJS: "shim.js",
 } as const;
+export const FALLBACK_PAGE_META_NAME = "workspace-fallback-page";

@@ -2,6 +2,7 @@ import { type HeartbeatResponse } from "@quests/workspace/for-shim";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 
+import { FALLBACK_PAGE_QUERY_PARAM } from "../constants";
 import { BottomView } from "./components/bottom-view";
 import { CornerView } from "./components/corner-view";
 import { FullView } from "./components/full-view";
@@ -28,6 +29,9 @@ export function App() {
   const currentStatus = response?.status ?? null;
   const currentStatusRef = useRef(currentStatus);
   const retryAttemptsRef = useRef(0);
+  const isFallbackPage = new URLSearchParams(window.location.search).has(
+    FALLBACK_PAGE_QUERY_PARAM,
+  );
 
   useEffect(() => {
     currentStatusRef.current = currentStatus;
@@ -57,7 +61,13 @@ export function App() {
             current !== "ready" &&
             newHeartbeat.status === "ready"
           ) {
+            // Refresh when we see a change from not ready to ready
             sendParentMessage({ type: "reload-window" });
+            return;
+          } else if (isFallbackPage && newHeartbeat.status === "ready") {
+            // Refresh if we're on the fallback page and we see ready
+            sendParentMessage({ type: "reload-window" });
+            return;
           } else {
             sendParentMessage({
               type: "app-status",
@@ -109,7 +119,7 @@ export function App() {
     return () => {
       eventSource?.close();
     };
-  }, []);
+  }, [isFallbackPage]);
 
   useEffect(() => {
     if (currentStatus === null) {

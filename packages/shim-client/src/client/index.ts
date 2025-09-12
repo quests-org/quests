@@ -1,7 +1,11 @@
 import { type ShimIFrameMessage } from "@quests/shared/shim";
-import { SHIM_IFRAME_BASE_PATH } from "@quests/workspace/for-shim";
+import {
+  FALLBACK_PAGE_META_NAME,
+  SHIM_IFRAME_BASE_PATH,
+} from "@quests/workspace/for-shim";
 import * as Sentry from "@sentry/browser";
 
+import { FALLBACK_PAGE_QUERY_PARAM } from "../constants";
 import { type IframeMessage, type IframeMessageHandler } from "../iframe/types";
 
 const style = document.createElement("style");
@@ -103,6 +107,13 @@ window.addEventListener("message", (event) => {
   }
 });
 
-iframe.src = `${SHIM_IFRAME_BASE_PATH}/`;
+const isFallbackPage =
+  document.querySelector(`meta[name="${FALLBACK_PAGE_META_NAME}"]`) !== null;
+const iframeUrl = new URL(`${SHIM_IFRAME_BASE_PATH}/`, window.location.origin);
+if (isFallbackPage) {
+  iframeUrl.searchParams.set(FALLBACK_PAGE_QUERY_PARAM, "true");
+}
+
+iframe.src = iframeUrl.toString();
 iframe.className = "quests-iframe quests-iframe--full";
 document.body.append(iframe);
