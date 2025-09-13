@@ -1,3 +1,4 @@
+# eslint-disable yml/sort-sequence-values
 body:
   - attributes:
       value: |
@@ -17,12 +18,25 @@ body:
       description: What operating system are you using?
       label: Operating System
       options:
+        - macOS
+        - Windows
         - Linux
         - Other
-        - Windows (ARM)
-        - Windows (Intel)
-        - macOS (Apple Silicon)
-        - macOS (Intel)
+      placeholder: Choose your operating system...
+    id: operating-system
+    type: dropdown
+    validations:
+      required: true
+
+  - attributes:
+      description: What CPU architecture are you using?
+      label: Operating System
+      options:
+        - Intel
+        - Apple Silicon
+        - ARM
+        - Other
+      placeholder: Choose your CPU architecture...
     id: operating-system
     type: dropdown
     validations:
@@ -32,9 +46,10 @@ body:
       description: How did you install Quests?
       label: Installation Method
       options:
-        - Built from source
         - Downloaded from website
+        - Running in development mode
         - Other
+      placeholder: Choose your installation method...
     id: installation-method
     type: dropdown
     validations:
@@ -76,10 +91,11 @@ body:
       label: How often does this occur?
       options:
         - Always
-        - First time
         - Often
-        - Rarely
         - Sometimes
+        - Rarely
+        - First time
+      placeholder: How often does this happen?
     id: frequency
     type: dropdown
     validations:
@@ -99,14 +115,16 @@ body:
       description: Are there any network-related factors?
       label: Network Status (optional)
       options:
-        - Not relevant
-        - Offline
         - Online
+        - Offline
         - VPN/Proxy
+        - Not relevant
+      placeholder: Choose network status if relevant...
     id: network-conditions
     type: dropdown
     validations:
       required: false
+
   - attributes:
       description: Any recent app updates or system changes?
       label: Recent Changes (optional)
@@ -147,4 +165,4 @@ body:
 description: Report a bug or issue with the Quests desktop application
 labels: ["bug"]
 name: Bug Report
-title: "[BUG] "
+# eslint-enable yml/sort-sequence-values
