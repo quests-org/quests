@@ -17,6 +17,7 @@ body:
       description: What operating system are you using?
       label: Operating System
       options:
+        - Choose...
         - macOS
         - Windows
         - Linux
@@ -30,6 +31,7 @@ body:
       description: What CPU architecture are you using?
       label: CPU Architecture
       options:
+        - Choose...
         - Intel
         - Apple Silicon
         - ARM
@@ -43,6 +45,7 @@ body:
       description: How did you install Quests?
       label: Installation Method
       options:
+        - Choose...
         - Downloaded from website
         - Running in development mode
         - Other
@@ -86,6 +89,7 @@ body:
       description: How frequently can you reproduce this issue?
       label: How often does this occur?
       options:
+        - Choose...
         - Always
         - Often
         - Sometimes
@@ -110,6 +114,7 @@ body:
       description: Are there any network-related factors?
       label: Network Status (optional)
       options:
+        - Choose...
         - Online
         - Offline
         - VPN/Proxy
