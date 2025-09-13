@@ -158,7 +158,7 @@ export function ToolPart({ isAgentRunning, part }: ToolPartProps) {
           <div className="p-2 bg-muted/30 rounded-md border max-h-64 overflow-y-auto">
             <div className="mb-1 font-semibold">Input:</div>
             <pre className="whitespace-pre-wrap break-words font-mono text-xs">
-              {JSON.stringify(part.rawInput, null, 2)}
+              {JSON.stringify(part.input || part.rawInput, null, 2)}
             </pre>
           </div>
         </div>
