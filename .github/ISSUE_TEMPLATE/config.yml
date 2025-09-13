@@ -1,8 +1,11 @@
 blank_issues_enabled: false
 contact_links:
+  - about: Share feature ideas, feature requests, and suggestions with the community
+    name: 💡 Feature Requests & Ideas
+    url: https://github.com/quests-org/quests/discussions/categories/ideas
   - about: Ask questions and get help from the community
-    name: Discussions
+    name: ❓ Questions & Support
     url: https://github.com/quests-org/quests/discussions
   - about: Check the documentation for usage instructions
-    name: Documentation
+    name: 📚 Documentation
     url: https://github.com/quests-org/quests#readme
