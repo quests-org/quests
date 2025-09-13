@@ -1,9 +1,9 @@
 body:
   - attributes:
       value: |
-        Thanks for taking the time to report a bug! Please fill out the information below to help us understand and resolve the issue.
-
+        Please fill out the information below to help us understand and resolve the issue.
     type: markdown
+
   - attributes:
       description: What version of Quests are you running? (Check Settings → General)
       label: Application Version
@@ -29,14 +29,14 @@ body:
 
   - attributes:
       description: What CPU architecture are you using?
-      label: Operating System
+      label: CPU Architecture
       options:
         - Intel
         - Apple Silicon
         - ARM
         - Other
       placeholder: Choose your CPU architecture...
-    id: operating-system
+    id: cpu-architecture
     type: dropdown
     validations:
       required: true
