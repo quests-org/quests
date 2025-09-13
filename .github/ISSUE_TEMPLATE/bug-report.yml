@@ -1,10 +1,5 @@
 body:
   - attributes:
-      value: |
-        Please fill out the information below to help us understand and resolve the issue.
-    type: markdown
-
-  - attributes:
       description: What version of Quests are you running? (Check Settings → General)
       label: Application Version
       placeholder: e.g., 1.1.1
@@ -55,25 +50,19 @@ body:
       required: true
 
   - attributes:
-      description: What did you expect to happen?
-      label: Expected Behavior
-      placeholder: Describe what you expected the application to do...
-    id: expected-behavior
+      description: Describe what you expected vs what actually happened
+      label: Bug Description
+      placeholder: |
+        **Expected:** I expected X to happen when I...
+
+        **Actual:** Instead, Y happened...
+    id: bug-description
     type: textarea
     validations:
       required: true
 
   - attributes:
-      description: What actually happened instead?
-      label: Actual Behavior
-      placeholder: Describe what actually happened...
-    id: actual-behavior
-    type: textarea
-    validations:
-      required: true
-
-  - attributes:
-      description: Please provide detailed steps to reproduce the issue
+      description: Steps to reproduce the issue
       label: Steps to Reproduce
       placeholder: |
         1. Open the application
@@ -101,52 +90,17 @@ body:
       required: true
 
   - attributes:
-      description: Copy and paste any error messages or dialog boxes that appeared
-      label: Error Messages
-      placeholder: Paste error messages here...
-      render: text
-    id: error-messages
-    type: textarea
-    validations:
-      required: false
-
-  - attributes:
-      description: Are there any network-related factors?
-      label: Network Status (optional)
-      options:
-        - Select network status
-        - Online
-        - Offline
-        - VPN/Proxy
-        - Not relevant
-    id: network-conditions
-    type: dropdown
-    validations:
-      required: false
-
-  - attributes:
-      description: Any recent app updates or system changes?
-      label: Recent Changes (optional)
-      placeholder: e.g., Updated to v1.2.0 yesterday
-    id: recent-changes
-    type: input
-    validations:
-      required: false
-
-  - attributes:
-      description: Have you found any temporary solutions or workarounds?
-      label: Workarounds
-      placeholder: Describe any workarounds you've discovered...
-    id: workarounds
-    type: textarea
-    validations:
-      required: false
-
-  - attributes:
-      description: Any other information that might be helpful
-      label: Additional Context
-      placeholder: Add any other context, screenshots, or relevant information...
-    id: additional-context
+      description: Any error messages, screenshots, or additional context
+      label: Additional Information (optional)
+      placeholder: |
+        Examples of helpful information:
+        - Error messages or dialog boxes that appeared
+        - Screenshots or screen recordings
+        - Recent app updates (e.g., "Updated to v1.2.0 yesterday")
+        - Network conditions (VPN, offline, etc.)
+        - Workarounds you've discovered
+        - Console logs or debug information
+    id: additional-info
     type: textarea
     validations:
       required: false
@@ -156,8 +110,6 @@ body:
       label: Acknowledgments
       options:
         - label: I have searched existing issues to ensure this is not a duplicate
-          required: true
-        - label: I have provided all the information requested above
           required: true
     id: terms
     type: checkboxes
