@@ -1,0 +1,150 @@
+body:
+  - attributes:
+      value: |
+        Thanks for taking the time to report a bug! Please fill out the information below to help us understand and resolve the issue.
+
+    type: markdown
+  - attributes:
+      description: What version of Quests are you running? (Check Settings → General)
+      label: Application Version
+      placeholder: e.g., 1.1.1
+    id: version
+    type: input
+    validations:
+      required: true
+
+  - attributes:
+      description: What operating system are you using?
+      label: Operating System
+      options:
+        - Linux
+        - Other
+        - Windows (ARM)
+        - Windows (Intel)
+        - macOS (Apple Silicon)
+        - macOS (Intel)
+    id: operating-system
+    type: dropdown
+    validations:
+      required: true
+
+  - attributes:
+      description: How did you install Quests?
+      label: Installation Method
+      options:
+        - Built from source
+        - Downloaded from website
+        - Other
+    id: installation-method
+    type: dropdown
+    validations:
+      required: false
+
+  - attributes:
+      description: What did you expect to happen?
+      label: Expected Behavior
+      placeholder: Describe what you expected the application to do...
+    id: expected-behavior
+    type: textarea
+    validations:
+      required: true
+
+  - attributes:
+      description: What actually happened instead?
+      label: Actual Behavior
+      placeholder: Describe what actually happened...
+    id: actual-behavior
+    type: textarea
+    validations:
+      required: true
+
+  - attributes:
+      description: Please provide detailed steps to reproduce the issue
+      label: Steps to Reproduce
+      placeholder: |
+        1. Open the application
+        2. Navigate to...
+        3. Click on...
+        4. See error
+    id: steps-to-reproduce
+    type: textarea
+    validations:
+      required: true
+
+  - attributes:
+      description: How frequently can you reproduce this issue?
+      label: How often does this occur?
+      options:
+        - Always
+        - First time
+        - Often
+        - Rarely
+        - Sometimes
+    id: frequency
+    type: dropdown
+    validations:
+      required: true
+
+  - attributes:
+      description: Copy and paste any error messages or dialog boxes that appeared
+      label: Error Messages
+      placeholder: Paste error messages here...
+      render: text
+    id: error-messages
+    type: textarea
+    validations:
+      required: false
+
+  - attributes:
+      description: Are there any network-related factors?
+      label: Network Status (optional)
+      options:
+        - Not relevant
+        - Offline
+        - Online
+        - VPN/Proxy
+    id: network-conditions
+    type: dropdown
+    validations:
+      required: false
+  - attributes:
+      description: Any recent app updates or system changes?
+      label: Recent Changes (optional)
+      placeholder: e.g., Updated to v1.2.0 yesterday
+    id: recent-changes
+    type: input
+    validations:
+      required: false
+
+  - attributes:
+      description: Have you found any temporary solutions or workarounds?
+      label: Workarounds
+      placeholder: Describe any workarounds you've discovered...
+    id: workarounds
+    type: textarea
+    validations:
+      required: false
+
+  - attributes:
+      description: Any other information that might be helpful
+      label: Additional Context
+      placeholder: Add any other context, screenshots, or relevant information...
+    id: additional-context
+    type: textarea
+    validations:
+      required: false
+
+  - attributes:
+      description: Please confirm the following
+      label: Acknowledgments
+      options:
+        - label: I have searched existing issues to ensure this is not a duplicate
+          required: true
+        - label: I have provided all the information requested above
+          required: true
+    id: terms
+    type: checkboxes
+description: Report a bug or issue with the Quests desktop application
+labels: ["bug"]
+name: Bug Report
+title: "[BUG] "
