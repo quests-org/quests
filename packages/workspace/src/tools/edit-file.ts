@@ -428,6 +428,8 @@ function replace(
     throw new Error("oldString and newString must be different");
   }
 
+  let notFound = true;
+
   for (const replacer of [
     SimpleReplacer,
     LineTrimmedReplacer,
@@ -441,6 +443,7 @@ function replace(
       if (index === -1) {
         continue;
       }
+      notFound = false;
       if (replaceAll) {
         return content.replaceAll(search, newString);
       }
@@ -455,7 +458,13 @@ function replace(
       );
     }
   }
-  throw new Error("oldString not found in content or was found multiple times");
+
+  if (notFound) {
+    throw new Error("oldString not found in content");
+  }
+  throw new Error(
+    "oldString found multiple times and requires more code context to uniquely identify the intended match",
+  );
 }
 
 export const EditFile = createTool({
