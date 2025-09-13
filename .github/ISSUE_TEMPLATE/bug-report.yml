@@ -21,7 +21,6 @@ body:
         - Windows
         - Linux
         - Other
-      placeholder: Choose your operating system...
     id: operating-system
     type: dropdown
     validations:
@@ -35,7 +34,6 @@ body:
         - Apple Silicon
         - ARM
         - Other
-      placeholder: Choose your CPU architecture...
     id: cpu-architecture
     type: dropdown
     validations:
@@ -48,7 +46,6 @@ body:
         - Downloaded from website
         - Running in development mode
         - Other
-      placeholder: Choose your installation method...
     id: installation-method
     type: dropdown
     validations:
@@ -94,7 +91,6 @@ body:
         - Sometimes
         - Rarely
         - First time
-      placeholder: How often does this happen?
     id: frequency
     type: dropdown
     validations:
@@ -118,7 +114,6 @@ body:
         - Offline
         - VPN/Proxy
         - Not relevant
-      placeholder: Choose network status if relevant...
     id: network-conditions
     type: dropdown
     validations:
