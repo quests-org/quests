@@ -163,4 +163,4 @@ body:
     type: checkboxes
 description: Report a bug or issue with the Quests desktop application
 labels: ["bug"]
-name: Bug Report
+name: 🐛 Bug Report
