@@ -18,4 +18,10 @@ export default [
       "registry",
     ],
   },
+  {
+    files: [".github/ISSUE_TEMPLATE/**/*.yml"],
+    rules: {
+      "yml/sort-sequence-values": "off",
+    },
+  },
 ] satisfies ConfigArray;

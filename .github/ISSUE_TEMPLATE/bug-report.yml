@@ -1,4 +1,3 @@
-# eslint-disable yml/sort-sequence-values
 body:
   - attributes:
       value: |
@@ -165,4 +164,3 @@ body:
 description: Report a bug or issue with the Quests desktop application
 labels: ["bug"]
 name: Bug Report
-# eslint-enable yml/sort-sequence-values
