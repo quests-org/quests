@@ -2,7 +2,6 @@ import { type HeartbeatResponse } from "@quests/workspace/for-shim";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 
-import { FALLBACK_PAGE_QUERY_PARAM } from "../constants";
 import { BottomView } from "./components/bottom-view";
 import { CornerView } from "./components/corner-view";
 import { FullView } from "./components/full-view";
@@ -30,7 +29,7 @@ export function App() {
   const currentStatusRef = useRef(currentStatus);
   const retryAttemptsRef = useRef(0);
   const isFallbackPage = new URLSearchParams(window.location.search).has(
-    FALLBACK_PAGE_QUERY_PARAM,
+    "fallback",
   );
 
   useEffect(() => {

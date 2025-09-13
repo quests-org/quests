@@ -164,7 +164,7 @@ const actor = createActor(workspaceMachine, {
       return Promise.resolve(err(new Error(`Not implemented: ${command}`)));
     },
     // Uncomment to test built shim
-    // shimClientDir: path.resolve("../shim/dist"),
+    // shimClientDir: path.resolve("../shim-client/dist"),
     shimClientDir: "dev-server",
     shimServerJSPath: path.resolve("../shim-server/dist/index.cjs"),
     trashItem: () => Promise.reject(new Error("Not implemented")),

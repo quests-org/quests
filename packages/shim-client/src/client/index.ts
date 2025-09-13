@@ -1,3 +1,5 @@
+// WARNING: Files cannot be shared between the client and the iframe or else
+// it will cause an infinite loop on import due to Vite's build. Not sure why.
 import { type ShimIFrameMessage } from "@quests/shared/shim";
 import { SHIM_IFRAME_BASE_PATH } from "@quests/workspace/for-shim";
 import * as Sentry from "@sentry/browser";
@@ -103,14 +105,13 @@ window.addEventListener("message", (event) => {
   }
 });
 
-// const isFallbackPage =
-//   document.querySelector(`meta[name="${FALLBACK_PAGE_META_NAME}"]`) !== null;
-// const iframeUrl = new URL(`${SHIM_IFRAME_BASE_PATH}/`, window.location.origin);
-// if (isFallbackPage) {
-//   iframeUrl.searchParams.set(FALLBACK_PAGE_QUERY_PARAM, "true");
-// }
+const isFallbackPage =
+  document.querySelector(`meta[name="workspace-fallback-page"]`) !== null;
+const iframeUrl = new URL(`${SHIM_IFRAME_BASE_PATH}/`, window.location.origin);
+if (isFallbackPage) {
+  iframeUrl.searchParams.set("fallback", "true");
+}
 
-// TODO: Temporary fix for the fallback page infinite loop. will resolve later
-iframe.src = `${SHIM_IFRAME_BASE_PATH}/`;
+iframe.src = iframeUrl.toString();
 iframe.className = "quests-iframe quests-iframe--full";
 document.body.append(iframe);
