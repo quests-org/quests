@@ -164,3 +164,4 @@ body:
 description: Report a bug or issue with the Quests desktop application
 labels: ["bug"]
 name: Bug Report
+title: "[BUG] "
