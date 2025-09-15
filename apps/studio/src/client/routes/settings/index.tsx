@@ -35,6 +35,8 @@ function About() {
 
   const handleCheckForUpdates = async () => {
     await checkForUpdatesMutation.mutateAsync({});
+    // Toasts for updates only show in the main window.
+    window.close();
   };
 
   const formatLastChecked = (date: Date) => {
