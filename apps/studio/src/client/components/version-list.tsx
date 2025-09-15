@@ -4,11 +4,13 @@ import { GIT_AUTHOR, type ProjectSubdomain } from "@quests/workspace/client";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import ColorHash from "color-hash";
-import { formatDistanceToNow } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 import { Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import { rpcClient } from "../rpc/client";
 import { Avatar, AvatarFallback } from "./ui/avatar";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { ViewIndicator } from "./view-indicator";
 
 export function VersionList({
@@ -18,6 +20,8 @@ export function VersionList({
   projectSubdomain: ProjectSubdomain;
   selectedVersion?: string;
 }) {
+  const [, forceUpdate] = useState({});
+
   const {
     data: commitsData,
     error,
@@ -27,6 +31,16 @@ export function VersionList({
       input: { projectSubdomain },
     }),
   );
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      forceUpdate({});
+    }, 60_000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
 
   if (isLoading) {
     return (
@@ -113,11 +127,24 @@ export function VersionList({
                   {commit.hash.slice(0, 8)}
                 </span>
                 <span>•</span>
-                <span>
-                  {formatDistanceToNow(commit.createdAt, {
-                    addSuffix: true,
-                  }).replace("about ", "")}
-                </span>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span>
+                      {formatDistanceToNow(commit.createdAt, {
+                        addSuffix: true,
+                      }).replace("about ", "")}
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{format(commit.createdAt, "PPpp")}</p>
+                  </TooltipContent>
+                </Tooltip>
+                {index === 0 && (
+                  <>
+                    <span>•</span>
+                    <span>Latest</span>
+                  </>
+                )}
               </div>
             </div>
           </Link>
