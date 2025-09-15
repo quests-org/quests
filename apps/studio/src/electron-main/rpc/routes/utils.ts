@@ -4,6 +4,7 @@ import type {
   SupportedEditorId,
 } from "@/shared/schemas/editors";
 
+import { captureServerEvent } from "@/electron-main/lib/capture-server-event";
 import { base } from "@/electron-main/rpc/base";
 import { publisher } from "@/electron-main/rpc/publisher";
 import {
@@ -246,6 +247,10 @@ const openAppIn = base
         const command = getOpenCommand(input.type, appConfig.appDir, platform);
         await execAsync(command);
       }
+
+      captureServerEvent("app.opened_in", {
+        app_id: input.type,
+      });
     } catch (error) {
       throw errors.ERROR_OPENING_APP({
         message: error instanceof Error ? error.message : undefined,

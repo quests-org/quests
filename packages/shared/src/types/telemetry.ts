@@ -4,6 +4,9 @@ export interface AnalyticsEvents {
   // Using snake_case for property names because they show with spaces in the UI
   // Using [noun].[past-tense-verb] for event names as is industry standard
   "app.manual_check_for_updates": never;
+  "app.opened_in": {
+    app_id: string;
+  };
   "app.quit": never;
   "app.ready": {
     graceful_exit: boolean;
