@@ -132,7 +132,7 @@ function RouteComponent() {
         ) : (
           releases.map((release) => (
             <Card className="overflow-hidden" key={release.id}>
-              <CardHeader className="border-b bg-muted/20">
+              <CardHeader className="border-b">
                 <div className="flex items-start justify-between">
                   <div className="space-y-1 flex-1">
                     <div className="flex items-center justify-between">
