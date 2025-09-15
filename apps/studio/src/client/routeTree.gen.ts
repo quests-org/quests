@@ -21,6 +21,7 @@ import { Route as SettingsAdvancedRouteImport } from './routes/settings/advanced
 import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AppSetupRouteImport } from './routes/_app/setup'
+import { Route as AppReleaseNotesRouteImport } from './routes/_app/release-notes'
 import { Route as AppNewTabRouteImport } from './routes/_app/new-tab'
 import { Route as AppDebugRouteRouteImport } from './routes/_app/debug/route'
 import { Route as AppProjectsIndexRouteImport } from './routes/_app/projects/index'
@@ -91,6 +92,11 @@ const AppSetupRoute = AppSetupRouteImport.update({
   path: '/setup',
   getParentRoute: () => AppRouteRoute,
 } as any)
+const AppReleaseNotesRoute = AppReleaseNotesRouteImport.update({
+  id: '/release-notes',
+  path: '/release-notes',
+  getParentRoute: () => AppRouteRoute,
+} as any)
 const AppNewTabRoute = AppNewTabRouteImport.update({
   id: '/new-tab',
   path: '/new-tab',
@@ -157,6 +163,7 @@ export interface FileRoutesByFullPath {
   '/toolbar': typeof ToolbarRoute
   '/debug': typeof AppDebugRouteRouteWithChildren
   '/new-tab': typeof AppNewTabRoute
+  '/release-notes': typeof AppReleaseNotesRoute
   '/setup': typeof AppSetupRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
@@ -178,6 +185,7 @@ export interface FileRoutesByTo {
   '/sidebar': typeof SidebarRoute
   '/toolbar': typeof ToolbarRoute
   '/new-tab': typeof AppNewTabRoute
+  '/release-notes': typeof AppReleaseNotesRoute
   '/setup': typeof AppSetupRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
@@ -204,6 +212,7 @@ export interface FileRoutesById {
   '/toolbar': typeof ToolbarRoute
   '/_app/debug': typeof AppDebugRouteRouteWithChildren
   '/_app/new-tab': typeof AppNewTabRoute
+  '/_app/release-notes': typeof AppReleaseNotesRoute
   '/_app/setup': typeof AppSetupRoute
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/register': typeof AuthRegisterRoute
@@ -229,6 +238,7 @@ export interface FileRouteTypes {
     | '/toolbar'
     | '/debug'
     | '/new-tab'
+    | '/release-notes'
     | '/setup'
     | '/login'
     | '/register'
@@ -250,6 +260,7 @@ export interface FileRouteTypes {
     | '/sidebar'
     | '/toolbar'
     | '/new-tab'
+    | '/release-notes'
     | '/setup'
     | '/login'
     | '/register'
@@ -275,6 +286,7 @@ export interface FileRouteTypes {
     | '/toolbar'
     | '/_app/debug'
     | '/_app/new-tab'
+    | '/_app/release-notes'
     | '/_app/setup'
     | '/_auth/login'
     | '/_auth/register'
@@ -387,6 +399,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSetupRouteImport
       parentRoute: typeof AppRouteRoute
     }
+    '/_app/release-notes': {
+      id: '/_app/release-notes'
+      path: '/release-notes'
+      fullPath: '/release-notes'
+      preLoaderRoute: typeof AppReleaseNotesRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
     '/_app/new-tab': {
       id: '/_app/new-tab'
       path: '/new-tab'
@@ -488,6 +507,7 @@ const AppDebugRouteRouteWithChildren = AppDebugRouteRoute._addFileChildren(
 interface AppRouteRouteChildren {
   AppDebugRouteRoute: typeof AppDebugRouteRouteWithChildren
   AppNewTabRoute: typeof AppNewTabRoute
+  AppReleaseNotesRoute: typeof AppReleaseNotesRoute
   AppSetupRoute: typeof AppSetupRoute
   AppDiscoverIndexRoute: typeof AppDiscoverIndexRoute
   AppProjectsIndexRoute: typeof AppProjectsIndexRoute
@@ -499,6 +519,7 @@ interface AppRouteRouteChildren {
 const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppDebugRouteRoute: AppDebugRouteRouteWithChildren,
   AppNewTabRoute: AppNewTabRoute,
+  AppReleaseNotesRoute: AppReleaseNotesRoute,
   AppSetupRoute: AppSetupRoute,
   AppDiscoverIndexRoute: AppDiscoverIndexRoute,
   AppProjectsIndexRoute: AppProjectsIndexRoute,

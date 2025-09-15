@@ -15,7 +15,6 @@ import { RELEASE_NOTES_URL } from "@quests/shared";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useAtom } from "jotai";
-import { toast } from "sonner";
 
 export const Route = createFileRoute("/settings/")({
   component: SettingsGeneralPage,
@@ -35,21 +34,7 @@ function About() {
   );
 
   const handleCheckForUpdates = async () => {
-    await checkForUpdatesMutation.mutateAsync(
-      {},
-      {
-        onError: () => {
-          toast.error("Failed to check for updates", {
-            position: "bottom-center",
-          });
-        },
-        onSuccess: () => {
-          toast.success("Checked for updates successfully", {
-            position: "bottom-center",
-          });
-        },
-      },
-    );
+    await checkForUpdatesMutation.mutateAsync({});
   };
 
   const formatLastChecked = (date: Date) => {

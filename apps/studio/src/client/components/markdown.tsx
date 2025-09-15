@@ -8,7 +8,12 @@ import { toast } from "sonner";
 
 import { cn } from "../lib/utils";
 
-export const Markdown = memo(({ markdown }: { markdown: string }) => {
+interface MarkdownProps {
+  markdown: string;
+  rehypePlugins?: React.ComponentProps<typeof ReactMarkdown>["rehypePlugins"];
+}
+
+export const Markdown = memo(({ markdown, rehypePlugins }: MarkdownProps) => {
   const openExternalLinkMutation = useMutation(
     rpcClient.utils.openExternalLink.mutationOptions({
       onError: (error) => {
@@ -48,6 +53,7 @@ export const Markdown = memo(({ markdown }: { markdown: string }) => {
           </a>
         ),
       }}
+      rehypePlugins={rehypePlugins}
       remarkPlugins={[remarkGfm]}
     >
       {markdown}

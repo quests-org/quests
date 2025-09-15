@@ -101,6 +101,7 @@
     "react-dom": "catalog:",
     "react-markdown": "^10.1.0",
     "read-pkg": "^9.0.1",
+    "rehype-raw": "^7.0.0",
     "remark-gfm": "^4.0.1",
     "sonner": "^1.7.4",
     "tailwind-merge": "^3.3.1",

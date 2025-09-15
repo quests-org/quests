@@ -96,6 +96,7 @@ export const APP_ICONS = [
   "x", // Removed, but for backwards compatibility
   "square-dashed", // The default, but not selectable
   "quests",
+  "file-text",
 ] as const satisfies (CustomIconName | LucideIconName)[];
 
 export const AppIconsSchema = z.enum(APP_ICONS);

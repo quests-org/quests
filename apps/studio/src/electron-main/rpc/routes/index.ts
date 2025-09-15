@@ -9,6 +9,7 @@ import { gateway } from "./gateway";
 import { icon } from "./icon";
 import { preferences } from "./preferences";
 import { provider } from "./provider";
+import { releases } from "./releases";
 import { sidebar } from "./sidebar";
 import { tabs } from "./tabs";
 import { telemetry } from "./telemetry";
@@ -26,6 +27,7 @@ export const router = {
   icon,
   preferences,
   provider,
+  releases,
   sidebar,
   tabs,
   telemetry,
