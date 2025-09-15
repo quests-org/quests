@@ -11,7 +11,6 @@ import { Label } from "@/client/components/ui/label";
 import { rpcClient } from "@/client/rpc/client";
 import { isFeatureEnabled } from "@/shared/features";
 import { QuestsLogoIcon } from "@quests/components/logo";
-import { RELEASE_NOTES_URL } from "@quests/shared";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useAtom } from "jotai";
@@ -32,6 +31,8 @@ function About() {
   const checkForUpdatesMutation = useMutation(
     rpcClient.preferences.checkForUpdates.mutationOptions(),
   );
+
+  const { mutate: tabsAdd } = useMutation(rpcClient.tabs.add.mutationOptions());
 
   const handleCheckForUpdates = async () => {
     await checkForUpdatesMutation.mutateAsync({});
@@ -93,7 +94,8 @@ function About() {
             <Button
               className="p-0 h-auto text-blue-600 dark:text-blue-400"
               onClick={() => {
-                window.open(RELEASE_NOTES_URL, "_blank");
+                tabsAdd({ urlPath: "/release-notes" });
+                window.close();
               }}
               variant="link"
             >
