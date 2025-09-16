@@ -3,6 +3,7 @@ import os from "node:os";
 import { dedent, pick } from "radashi";
 
 import { APP_NAME, WEBSITE_URL } from "../constants";
+import { TypedError } from "../lib/errors";
 import { fileTree } from "../lib/file-tree";
 import { getCurrentDate } from "../lib/get-current-date";
 import { git } from "../lib/git";
@@ -196,7 +197,7 @@ export const codeAgent = setupAgent({
     return [systemMessage, userMessage];
   },
   onFinish: async ({ appConfig, parentMessageId, sessionId, signal }) => {
-    await safeTry(async function* () {
+    const result = await safeTry(async function* () {
       // Repo should be initialized by now, but just in case
       yield* git(GitCommands.init(), appConfig.appDir, { signal });
       const status = yield* git(GitCommands.status(), appConfig.appDir, {
@@ -242,10 +243,7 @@ export const codeAgent = setupAgent({
       const lastAssistantMessage = assistantMessages.at(-1);
 
       if (!lastAssistantMessage) {
-        return err({
-          message: "No assistant message found",
-          type: "unknown",
-        });
+        return err(new TypedError.NotFound("No assistant message found"));
       }
 
       // Find the last user message
@@ -292,6 +290,9 @@ export const codeAgent = setupAgent({
       );
       return ok(undefined);
     });
+    if (result.isErr()) {
+      appConfig.workspaceConfig.captureException(result.error);
+    }
   },
   onStart: async () => {
     // no-op for now. may be used for snapshotting the app state

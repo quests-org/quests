@@ -6,6 +6,7 @@ import { absolutePathJoin } from "../lib/absolute-path-join";
 import { type AppConfigProject } from "../lib/app-config/types";
 import { templateExists } from "../lib/app-dir-utils";
 import { copyTemplate } from "../lib/copy-template";
+import { TypedError } from "../lib/errors";
 import { git } from "../lib/git";
 import { GitCommands } from "../lib/git/commands";
 import { type WorkspaceConfig } from "../types";
@@ -26,17 +27,19 @@ export async function createProject(
       .then(() => true)
       .catch(() => false);
     if (exists) {
-      return errAsync({
-        message: `Project directory already exists: ${projectConfig.appDir}`,
-        type: "unknown" as const,
-      });
+      return errAsync(
+        new TypedError.Conflict(
+          `Project directory already exists: ${projectConfig.appDir}`,
+        ),
+      );
     }
     yield* ResultAsync.fromPromise(
       fs.mkdir(projectConfig.appDir, { recursive: true }),
-      (error) => ({
-        message: error instanceof Error ? error.message : "Unknown error",
-        type: "unknown" as const,
-      }),
+      (error) =>
+        new TypedError.FileSystem(
+          error instanceof Error ? error.message : "Unknown error",
+          { cause: error },
+        ),
     );
 
     const templateDir = absolutePathJoin(
@@ -51,10 +54,11 @@ export async function createProject(
     });
 
     if (!doesTemplateExist) {
-      return errAsync({
-        message: `Template does not exist: ${DEFAULT_TEMPLATE_NAME}`,
-        type: "missing-template" as const,
-      });
+      return errAsync(
+        new TypedError.NotFound(
+          `Template does not exist: ${DEFAULT_TEMPLATE_NAME}`,
+        ),
+      );
     }
 
     yield* copyTemplate({ targetDir: projectConfig.appDir, templateDir });

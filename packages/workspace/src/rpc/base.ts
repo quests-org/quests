@@ -1,6 +1,10 @@
 import { type ErrorMap, type ORPCErrorConstructorMap, os } from "@orpc/server";
-import { type fetchAISDKModel, type TypedError } from "@quests/ai-gateway";
+import {
+  type AIGatewayTypedError,
+  type fetchAISDKModel,
+} from "@quests/ai-gateway";
 
+import { type TypedError } from "../lib/errors";
 import { type WorkspaceActorRef } from "../machines/workspace";
 import { type WorkspaceConfig } from "../types";
 
@@ -17,7 +21,6 @@ const ORPC_ERRORS = {
   GIT_ERROR: {},
   NOT_FOUND: {},
   PARSE_ERROR: {},
-  SCHEMA_ERROR: {},
   STORAGE_ERROR: {},
   UNKNOWN: {},
 } as const satisfies ErrorMap;
@@ -26,45 +29,26 @@ type WorkspaceErrorMap = ORPCErrorConstructorMap<typeof ORPC_ERRORS>;
 
 export const base = os.$context<WorkspaceRPCContext>().errors(ORPC_ERRORS);
 
-type KnownInternalError =
-  | "gateway-fetch-error"
-  | "git-error"
-  | "not-found"
-  | "parse-error"
-  | "schema-error"
-  | "storage-error";
-
 export function toORPCError(
-  error:
-    | TypedError.Type
-    | {
-        message: string;
-        // (string & {}) is a workaround to allow any string as a type without
-        // clobbering the type system
-        type: KnownInternalError | (string & {});
-      },
+  error: AIGatewayTypedError.Type | TypedError.Type,
   orpcErrors: WorkspaceErrorMap,
 ) {
-  // cast to ensure switch type-safe
-  switch (error.type as KnownInternalError | TypedError.Type["type"]) {
+  switch (error.type) {
     case "gateway-fetch-error": {
       return orpcErrors.GATEWAY_FETCH_ERROR({ message: error.message });
     }
     case "gateway-not-found-error":
-    case "not-found": {
+    case "workspace-not-found-error": {
       return orpcErrors.NOT_FOUND({ message: error.message });
     }
     case "gateway-parse-error":
-    case "parse-error": {
+    case "workspace-parse-error": {
       return orpcErrors.PARSE_ERROR({ message: error.message });
     }
-    case "git-error": {
+    case "workspace-git-error": {
       return orpcErrors.GIT_ERROR({ message: error.message });
     }
-    case "schema-error": {
-      return orpcErrors.SCHEMA_ERROR({ message: error.message });
-    }
-    case "storage-error": {
+    case "workspace-storage-error": {
       return orpcErrors.STORAGE_ERROR({ message: error.message });
     }
     default: {

@@ -4,6 +4,7 @@ import { z } from "zod";
 import { type ProjectSubdomain } from "../schemas/subdomains";
 import { type WorkspaceConfig } from "../types";
 import { createAppConfig } from "./app-config/create";
+import { TypedError } from "./errors";
 import { git } from "./git";
 import { GitCommands } from "./git/commands";
 
@@ -43,7 +44,9 @@ export async function getGitRefInfo(
   );
 
   if (refResult.isErr()) {
-    return err({ message: "Ref not found", type: "ref-not-found" as const });
+    return err(
+      new TypedError.NotFound("Ref not found", { cause: refResult.error }),
+    );
   }
 
   const commitMessageResult = await git(
@@ -53,10 +56,11 @@ export async function getGitRefInfo(
   );
 
   if (commitMessageResult.isErr()) {
-    return err({
-      message: "Error getting commit message",
-      type: "git-error" as const,
-    });
+    return err(
+      new TypedError.Git("Error getting commit message", {
+        cause: commitMessageResult.error,
+      }),
+    );
   }
 
   const commitMessage = commitMessageResult.value.stdout.toString().trim();
@@ -69,10 +73,11 @@ export async function getGitRefInfo(
   );
 
   if (commitCountResult.isErr()) {
-    return err({
-      message: "Error getting commit count",
-      type: "git-error" as const,
-    });
+    return err(
+      new TypedError.Git("Error getting commit count", {
+        cause: commitCountResult.error,
+      }),
+    );
   }
 
   const commitCount = Number.parseInt(
@@ -90,10 +95,11 @@ export async function getGitRefInfo(
   });
 
   if (numstatResult.isErr()) {
-    return err({
-      message: "Error getting numstat",
-      type: "git-error" as const,
-    });
+    return err(
+      new TypedError.Git("Error getting numstat", {
+        cause: numstatResult.error,
+      }),
+    );
   }
 
   const numstatOutput = numstatResult.value.stdout.toString().trim();

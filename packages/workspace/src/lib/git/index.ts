@@ -1,5 +1,4 @@
 import {
-  type GitError as DugiteGitError,
   exec,
   type IGitBufferExecutionOptions,
   type IGitBufferResult,
@@ -9,32 +8,14 @@ import { errAsync, okAsync, ResultAsync } from "neverthrow";
 
 import { GIT_AUTHOR } from "../../constants";
 import { type AbsolutePath } from "../../schemas/paths";
+import { TypedError } from "../errors";
 import { descriptionForGitError } from "./description-for-git-error";
-
-export type GitError =
-  | {
-      args: string[];
-      exitCode: number;
-      message: string;
-      stderr: string;
-      stdout: string;
-      type: "unknown-git-error";
-    }
-  | {
-      code: DugiteGitError;
-      message: string;
-      type: "git";
-    }
-  | {
-      message: string;
-      type: "unknown";
-    };
 
 export function git(
   args: string[],
   path: AbsolutePath,
   options: Omit<IGitBufferExecutionOptions, "encoding">,
-): ResultAsync<IGitBufferResult, GitError> {
+): ResultAsync<IGitBufferResult, TypedError.Git> {
   return ResultAsync.fromPromise(
     exec(args, path, {
       ...options,
@@ -49,12 +30,7 @@ export function git(
         GIT_COMMITTER_NAME: GIT_AUTHOR.name,
       },
     }),
-    (error) => {
-      return {
-        message: String(error),
-        type: "unknown" as const,
-      };
-    },
+    (error) => new TypedError.Git(String(error), { cause: error }),
   ).andThen((result) => {
     if (result.exitCode !== 0) {
       const outputStrings = [result.stderr, result.stdout].map((s) =>
@@ -67,20 +43,19 @@ export function git(
         const message =
           descriptionForGitError(code, stderrString) ??
           `Unknown error code: ${code}, stderr: ${stderrString}`;
-        return errAsync({
-          code,
-          message,
-          type: "git" as const,
-        });
+        return errAsync(
+          new TypedError.Git(message, { cause: result, dugiteCode: code }),
+        );
       }
-      return errAsync({
+
+      const message = `Unknown git error for: ${args.join(" ")}`;
+      const errorDetails = {
         args,
         exitCode: result.exitCode,
-        message: `Unknown git error for: ${args.join(" ")}`,
         stderr: result.stderr.toString("utf8"),
         stdout: result.stdout.toString("utf8"),
-        type: "unknown-git-error" as const,
-      });
+      };
+      return errAsync(new TypedError.Git(message, { cause: errorDetails }));
     }
     return okAsync(result);
   });

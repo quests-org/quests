@@ -9,8 +9,9 @@ import {
 
 import { createAppConfig } from "../lib/app-config/create";
 import { type AppConfigVersion } from "../lib/app-config/types";
+import { TypedError } from "../lib/errors";
 import { folderNameForSubdomain } from "../lib/folder-name-for-subdomain";
-import { git, type GitError } from "../lib/git";
+import { git } from "../lib/git";
 import { projectSubdomainForSubdomain } from "../lib/project-subdomain-for-subdomain";
 
 export type CheckoutVersionParentEvent =
@@ -46,7 +47,7 @@ export const checkoutVersionLogic = fromCallback<
         type: "checkoutVersion.done";
         value: { actorId: string; appConfig: AppConfigVersion };
       },
-      GitError | { message: string; type: "unknown" }
+      TypedError.Git | TypedError.Parse
     >(async function* () {
       const versionConfig = input.appConfig;
 
@@ -57,10 +58,12 @@ export const checkoutVersionLogic = fromCallback<
       const gitRefResult = folderNameForSubdomain(versionConfig.subdomain);
 
       if (gitRefResult.isErr()) {
-        return errAsync({
-          message: `Failed to extract git ref from version subdomain: ${versionConfig.subdomain}`,
-          type: "unknown" as const,
-        });
+        return errAsync(
+          new TypedError.Parse(
+            `Failed to extract git ref from version subdomain: ${versionConfig.subdomain}`,
+            { cause: gitRefResult.error },
+          ),
+        );
       }
 
       const gitRef = gitRefResult.value;

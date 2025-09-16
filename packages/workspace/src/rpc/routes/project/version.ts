@@ -41,10 +41,10 @@ const restore = localBase
 
       if (result.isErr()) {
         switch (result.error.type) {
-          case "no-changes": {
+          case "workspace-no-changes-error": {
             throw errors.NO_CHANGES({ message: result.error.message });
           }
-          case "version-not-found": {
+          case "workspace-not-found-error": {
             throw errors.VERSION_NOT_FOUND({ message: result.error.message });
           }
         }

@@ -7,6 +7,7 @@ import { SessionMessage } from "../schemas/session/message";
 import { SessionMessagePart } from "../schemas/session/message-part";
 import { type StoreId } from "../schemas/store-id";
 import { type AppConfig } from "./app-config/types";
+import { TypedError } from "./errors";
 import { getParsedStorageItem } from "./get-parsed-storage-item";
 import { getSessionsStoreStorage } from "./get-session-store-storage";
 import { setParsedStorageItem } from "./set-parsed-storage-item";
@@ -363,10 +364,11 @@ export namespace Store {
       );
 
       if (messagesWithSessionMismatch.length > 0) {
-        return err({
-          message: `Some messages do not belong to session ${firstSessionId}: ${messagesWithSessionMismatch.map((m) => m.id).join(", ")}`,
-          type: "session-mismatch" as const,
-        });
+        return err(
+          new TypedError.Conflict(
+            `Some messages do not belong to session ${firstSessionId}: ${messagesWithSessionMismatch.map((m) => m.id).join(", ")}`,
+          ),
+        );
       }
     }
 
@@ -393,10 +395,11 @@ export namespace Store {
       );
 
       if (partsWithSessionMismatch.length > 0) {
-        return err({
-          message: `Some parts do not belong to session ${message.metadata.sessionId}: ${partsWithSessionMismatch.map((p) => p.metadata.id).join(", ")}`,
-          type: "session-mismatch" as const,
-        });
+        return err(
+          new TypedError.Conflict(
+            `Some parts do not belong to session ${message.metadata.sessionId}: ${partsWithSessionMismatch.map((p) => p.metadata.id).join(", ")}`,
+          ),
+        );
       }
 
       // Check that all parts belong to the same message
@@ -405,10 +408,11 @@ export namespace Store {
       );
 
       if (partsWithMessageMismatch.length > 0) {
-        return err({
-          message: `Some parts do not belong to message ${message.id}: ${partsWithMessageMismatch.map((p) => p.metadata.id).join(", ")}`,
-          type: "message-mismatch" as const,
-        });
+        return err(
+          new TypedError.Conflict(
+            `Some parts do not belong to message ${message.id}: ${partsWithMessageMismatch.map((p) => p.metadata.id).join(", ")}`,
+          ),
+        );
       }
 
       const { parts, ...rest } = message;
@@ -458,10 +462,11 @@ export namespace Store {
       const firstSessionId = firstPart.metadata.sessionId;
       for (const part of parts) {
         if (part.metadata.sessionId !== firstSessionId) {
-          return err({
-            message: `Part ${part.metadata.id} does not belong to session ${firstSessionId}`,
-            type: "session-mismatch" as const,
-          });
+          return err(
+            new TypedError.Conflict(
+              `Part ${part.metadata.id} does not belong to session ${firstSessionId}`,
+            ),
+          );
         }
       }
 
@@ -469,10 +474,11 @@ export namespace Store {
       const firstMessageId = firstPart.metadata.messageId;
       for (const part of parts) {
         if (part.metadata.messageId !== firstMessageId) {
-          return err({
-            message: `Part ${part.metadata.id} does not belong to message ${firstMessageId}`,
-            type: "message-mismatch" as const,
-          });
+          return err(
+            new TypedError.Conflict(
+              `Part ${part.metadata.id} does not belong to message ${firstMessageId}`,
+            ),
+          );
         }
       }
     }

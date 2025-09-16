@@ -3,6 +3,7 @@ import fs from "node:fs/promises";
 
 import { newProjectConfig } from "../lib/app-config/new";
 import { copyTemplate } from "../lib/copy-template";
+import { TypedError } from "../lib/errors";
 import { git } from "../lib/git";
 import { GitCommands } from "../lib/git/commands";
 import { Store } from "../lib/store";
@@ -37,10 +38,11 @@ export async function createProjectFromPreview(
       .then(() => true)
       .catch(() => false);
     if (projectExists) {
-      return errAsync({
-        message: `Project directory already exists: ${projectConfig.appDir}`,
-        type: "unknown" as const,
-      });
+      return errAsync(
+        new TypedError.Conflict(
+          `Project directory already exists: ${projectConfig.appDir}`,
+        ),
+      );
     }
 
     // Ensure preview folder exists
@@ -49,10 +51,11 @@ export async function createProjectFromPreview(
       .then(() => true)
       .catch(() => false);
     if (!previewExists) {
-      return errAsync({
-        message: `Preview directory does not exist: ${previewConfig.appDir}`,
-        type: "unknown" as const,
-      });
+      return errAsync(
+        new TypedError.NotFound(
+          `Preview directory does not exist: ${previewConfig.appDir}`,
+        ),
+      );
     }
 
     // Copy the preview directory to the project directory
@@ -60,10 +63,9 @@ export async function createProjectFromPreview(
       targetDir: projectConfig.appDir,
       templateDir: previewConfig.appDir,
     }).orElse((error) => {
-      return errAsync({
-        message: error.message,
-        type: "unknown" as const,
-      });
+      return errAsync(
+        new TypedError.FileSystem(error.message, { cause: error }),
+      );
     });
 
     // Initialize git repository in the new project
@@ -136,10 +138,13 @@ export async function createProjectFromPreview(
       )
     )
       // eslint-disable-next-line unicorn/no-await-expression-member
-      .mapErr((error) => ({
-        message: `Failed to save assistant message: ${error.message}`,
-        type: "unknown" as const,
-      }));
+      .mapErr(
+        (error) =>
+          new TypedError.Storage(
+            `Failed to save assistant message: ${error.message}`,
+            { cause: error },
+          ),
+      );
 
     return ok({ projectConfig });
   });

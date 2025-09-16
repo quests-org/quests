@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { SessionMessage } from "../../client";
 import { createAppConfig } from "../../lib/app-config/create";
+import { TypedError } from "../../lib/errors";
 import { setProjectState } from "../../lib/project-state-store";
 import { Store } from "../../lib/store";
 import { textForMessage } from "../../lib/text-for-message";
@@ -73,7 +74,7 @@ const create = base
 
       if (error) {
         throw toORPCError(
-          { message: error.message, type: "not-found" },
+          new TypedError.NotFound(error.message, { cause: error }),
           errors,
         );
       }

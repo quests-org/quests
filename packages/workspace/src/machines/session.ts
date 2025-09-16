@@ -112,7 +112,7 @@ export const sessionMachine = setup({
         { signal },
       );
       if (existingSession.isErr()) {
-        if (existingSession.error.type === "not-found") {
+        if (existingSession.error.type === "workspace-not-found-error") {
           // Create a new session with a date-based title
           const title = await generateSessionTitle(input.appConfig, { signal });
           const result = await Store.saveSession(

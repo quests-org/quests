@@ -6,6 +6,7 @@ import { StoreId } from "../schemas/store-id";
 import { type ProjectSubdomain } from "../schemas/subdomains";
 import { type WorkspaceConfig } from "../types";
 import { createAppConfig } from "./app-config/create";
+import { TypedError } from "./errors";
 import { git } from "./git";
 import { GitCommands } from "./git/commands";
 import { Store } from "./store";
@@ -46,10 +47,12 @@ export async function restoreVersion({
       GitCommands.verifyCommitRef(gitRef),
       projectConfig.appDir,
       { signal: AbortSignal.timeout(5000) },
-    ).mapErr(() => ({
-      message: "The selected version could not be found",
-      type: "version-not-found" as const,
-    }));
+    ).mapErr(
+      (error) =>
+        new TypedError.NotFound("The selected version could not be found", {
+          cause: error,
+        }),
+    );
 
     const restoredToRef = refResult.stdout.toString().trim();
 
@@ -124,10 +127,7 @@ export async function restoreVersion({
     );
 
     if (statusAfterCheckoutResult.stdout.toString().trim() === "") {
-      return err({
-        message: "No changes to commit",
-        type: "no-changes" as const,
-      });
+      return err(new TypedError.NoChanges("No changes to commit"));
     }
 
     yield* git(GitCommands.addAll(), projectConfig.appDir, {

@@ -3,6 +3,8 @@ import superjson from "superjson";
 import { type Storage } from "unstorage";
 import { z } from "zod";
 
+import { TypedError } from "./errors";
+
 export function setParsedStorageItem<T>(
   key: string,
   value: T,
@@ -12,16 +14,17 @@ export function setParsedStorageItem<T>(
 ) {
   const result = schema.safeParse(value);
   if (!result.success) {
-    return err({
-      message: z.prettifyError(result.error),
-      type: "schema-error" as const,
-    });
+    return err(
+      new TypedError.Parse(z.prettifyError(result.error), {
+        cause: result.error,
+      }),
+    );
   }
 
   const serialized = superjson.stringify(result.data);
 
   return ResultAsync.fromPromise(
     storage.setItemRaw(key, serialized, { signal }),
-    () => ({ message: "Storage error", type: "storage-error" as const }),
+    (error) => new TypedError.Storage("Storage error", { cause: error }),
   ).map(() => result.data);
 }

@@ -7,6 +7,7 @@ import { type WorkspaceConfig } from "../types";
 import { absolutePathJoin } from "./absolute-path-join";
 import { createAppConfig } from "./app-config/create";
 import { getSandboxesDir } from "./app-dir-utils";
+import { TypedError } from "./errors";
 import { pathExists } from "./path-exists";
 
 interface RemoveProjectOptions {
@@ -44,10 +45,11 @@ export async function trashProject({
 
       return ok({ subdomain });
     })(),
-    (error: unknown) => ({
-      message: error instanceof Error ? error.message : "Unknown error",
-      type: "unknown" as const,
-    }),
+    (error: unknown) =>
+      new TypedError.FileSystem(
+        error instanceof Error ? error.message : "Unknown error",
+        { cause: error },
+      ),
   );
 }
 

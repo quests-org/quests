@@ -62,7 +62,7 @@ const bySubdomains = base
     for (const subdomain of input.subdomains) {
       const result = await getApp(subdomain, context.workspaceConfig);
       if (result.isErr()) {
-        if (result.error.type === "not-found") {
+        if (result.error.type === "workspace-not-found-error") {
           results.push({
             error: { type: "not-found" as const },
             ok: false as const,

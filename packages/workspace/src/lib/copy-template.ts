@@ -3,6 +3,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 
 import { type AbsolutePath } from "../schemas/paths";
+import { TypedError } from "./errors";
 import { getIgnore } from "./get-ignore";
 
 export function copyTemplate({
@@ -12,10 +13,14 @@ export function copyTemplate({
   targetDir: AbsolutePath;
   templateDir: AbsolutePath;
 }) {
-  return ResultAsync.fromPromise(getIgnore(templateDir), (error) => ({
-    message: `Failed to get ignore patterns: ${error instanceof Error ? error.message : String(error)}`,
-    type: "copy-template-error" as const,
-  })).andThen((ignore) =>
+  return ResultAsync.fromPromise(
+    getIgnore(templateDir),
+    (error) =>
+      new TypedError.FileSystem(
+        `Failed to get ignore patterns: ${error instanceof Error ? error.message : String(error)}`,
+        { cause: error },
+      ),
+  ).andThen((ignore) =>
     ResultAsync.fromPromise(
       fs.cp(templateDir, targetDir, {
         filter: (src) => {
@@ -25,10 +30,11 @@ export function copyTemplate({
         },
         recursive: true,
       }),
-      (error) => ({
-        message: `Failed to copy template: ${error instanceof Error ? error.message : String(error)}`,
-        type: "copy-template-error" as const,
-      }),
+      (error) =>
+        new TypedError.FileSystem(
+          `Failed to copy template: ${error instanceof Error ? error.message : String(error)}`,
+          { cause: error },
+        ),
     ).map(() => true),
   );
 }

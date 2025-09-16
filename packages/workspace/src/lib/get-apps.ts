@@ -28,6 +28,7 @@ import {
 import { type WorkspaceConfig } from "../types";
 import { createAppConfig } from "./app-config/create";
 import { getSandboxesDir } from "./app-dir-utils";
+import { TypedError } from "./errors";
 import { folderNameForSubdomain } from "./folder-name-for-subdomain";
 import { getAppDirTimestamps } from "./get-app-dir-timestamps";
 import {
@@ -54,18 +55,14 @@ type GetAppResult<T extends AppSubdomain> = T extends PreviewSubdomain
 export async function getApp<T extends AppSubdomain>(
   subdomain: T,
   workspaceConfig: WorkspaceConfig,
-): Promise<
-  Result<
-    GetAppResult<T>,
-    { message: string; type: "not-found" | "schema-error" }
-  >
-> {
+): Promise<Result<GetAppResult<T>, TypedError.NotFound | TypedError.Parse>> {
   const rawFolderName = folderNameForSubdomain(subdomain);
   if (rawFolderName.isErr()) {
-    return err({
-      message: "Invalid folder name",
-      type: "schema-error" as const,
-    });
+    return err(
+      new TypedError.Parse("Invalid folder name", {
+        cause: rawFolderName.error,
+      }),
+    );
   }
 
   // Handle sandbox subdomains which have format: sandbox-{name}.{project-subdomain}
@@ -74,10 +71,7 @@ export async function getApp<T extends AppSubdomain>(
       subdomain.split(".");
     const projectSubdomain = AppSubdomainSchema.parse(rawProjectSubdomain);
     if (!isProjectSubdomain(projectSubdomain)) {
-      return err({
-        message: "Invalid folder name",
-        type: "schema-error" as const,
-      });
+      return err(new TypedError.Parse("Invalid folder name"));
     }
 
     // First get the project app
@@ -87,10 +81,7 @@ export async function getApp<T extends AppSubdomain>(
     });
 
     if (projectConfig.type !== "project") {
-      return err({
-        message: "Invalid folder name",
-        type: "schema-error" as const,
-      });
+      return err(new TypedError.Parse("Invalid folder name"));
     }
 
     const sandboxDir = AppDirSchema.parse(
@@ -100,11 +91,8 @@ export async function getApp<T extends AppSubdomain>(
     // Check if the sandbox directory exists
     try {
       await fs.access(sandboxDir);
-    } catch {
-      return err({
-        message: "App not found",
-        type: "not-found",
-      });
+    } catch (error) {
+      return err(new TypedError.NotFound("App not found", { cause: error }));
     }
 
     const parent = await getApp(projectConfig.subdomain, workspaceConfig);
@@ -165,20 +153,14 @@ export async function getApp<T extends AppSubdomain>(
     );
     parent = "projects";
   } else {
-    return err({
-      message: "Invalid folder name",
-      type: "schema-error" as const,
-    });
+    return err(new TypedError.Parse("Invalid folder name"));
   }
 
   // Check if the directory exists
   try {
     await fs.access(appDir);
-  } catch {
-    return err({
-      message: "App not found",
-      type: "not-found",
-    });
+  } catch (error) {
+    return err(new TypedError.NotFound("App not found", { cause: error }));
   }
 
   // Create the workspace app
@@ -311,10 +293,7 @@ async function workspaceApp({
   const folderNameResult = SubdomainPartSchema.safeParse(rawFolderName);
 
   if (!folderNameResult.success) {
-    return err({
-      message: "Invalid folder name",
-      type: "schema-error" as const,
-    });
+    return err(new TypedError.Parse("Invalid folder name"));
   }
 
   if (parent === "projects") {
@@ -322,10 +301,7 @@ async function workspaceApp({
     const rawSubdomain = ProjectSubdomainSchema.safeParse(possibleSubdomain);
 
     if (!rawSubdomain.success) {
-      return err({
-        message: "Invalid folder name",
-        type: "schema-error" as const,
-      });
+      return err(new TypedError.Parse("Invalid folder name"));
     }
 
     const title = await computeAppTitle(appDir, rawFolderName);
@@ -352,10 +328,7 @@ async function workspaceApp({
     const rawSubdomain = PreviewSubdomainSchema.safeParse(possibleSubdomain);
 
     if (!rawSubdomain.success) {
-      return err({
-        message: "Invalid folder name",
-        type: "schema-error" as const,
-      });
+      return err(new TypedError.Parse("Invalid folder name"));
     }
 
     const title = await computeAppTitle(appDir, rawFolderName);
@@ -420,10 +393,7 @@ async function workspaceApp({
     return ok(versionApp);
   }
 
-  return err({
-    message: "Invalid folder name",
-    type: "schema-error" as const,
-  });
+  return err(new TypedError.Parse("Invalid folder name"));
 }
 
 async function workspaceAppForVersion({
@@ -437,18 +407,16 @@ async function workspaceAppForVersion({
 }) {
   const rawFolderName = folderNameForSubdomain(subdomain);
   if (rawFolderName.isErr()) {
-    return err({
-      message: "Invalid folder name",
-      type: "schema-error" as const,
-    });
+    return err(
+      new TypedError.Parse("Invalid folder name", {
+        cause: rawFolderName.error,
+      }),
+    );
   }
 
   const versionSubdomainResult = VersionSubdomainSchema.safeParse(subdomain);
   if (!versionSubdomainResult.success) {
-    return err({
-      message: "Invalid folder name",
-      type: "schema-error" as const,
-    });
+    return err(new TypedError.Parse("Invalid folder name"));
   }
 
   const versionConfig = createAppConfig({

@@ -5,6 +5,7 @@ import { z } from "zod";
 import { type ProjectSubdomain } from "../schemas/subdomains";
 import { type WorkspaceConfig } from "../types";
 import { createAppConfig } from "./app-config/create";
+import { TypedError } from "./errors";
 import { git } from "./git";
 import { GitCommands } from "./git/commands";
 
@@ -37,10 +38,11 @@ export async function getGitCommits(
   );
 
   if (logResult.isErr()) {
-    return err({
-      message: "Error getting git commits",
-      type: "git-error" as const,
-    });
+    return err(
+      new TypedError.Git("Error getting git commits", {
+        cause: logResult.error,
+      }),
+    );
   }
 
   const logOutput = logResult.value.stdout.toString().trim();
