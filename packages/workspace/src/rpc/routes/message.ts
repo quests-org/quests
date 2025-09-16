@@ -36,8 +36,7 @@ const listWithParts = base
     });
 
     if (messages.isErr()) {
-      const error = toORPCError(messages.error, errors);
-      throw error;
+      throw toORPCError(messages.error, errors);
     }
 
     return messages.value;
@@ -73,6 +72,7 @@ const create = base
         .toTuple();
 
       if (error) {
+        context.workspaceConfig.captureException(error);
         throw toORPCError(
           new TypedError.NotFound(error.message, { cause: error }),
           errors,

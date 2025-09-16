@@ -48,6 +48,7 @@ const restore = localBase
             throw errors.VERSION_NOT_FOUND({ message: result.error.message });
           }
         }
+        context.workspaceConfig.captureException(result.error);
         throw toORPCError(result.error, errors);
       }
 

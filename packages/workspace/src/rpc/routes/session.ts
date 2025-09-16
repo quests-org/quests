@@ -99,6 +99,7 @@ const remove = base
     });
     const result = await Store.removeSession(sessionId, appConfig);
     if (result.isErr()) {
+      context.workspaceConfig.captureException(result.error);
       throw toORPCError(result.error, errors);
     }
 
@@ -125,7 +126,9 @@ const create = base
       },
       appConfig,
     );
+
     if (sessionResult.isErr()) {
+      context.workspaceConfig.captureException(sessionResult.error);
       throw toORPCError(sessionResult.error, errors);
     }
 
@@ -158,6 +161,7 @@ const createWithMessage = base
       .toTuple();
 
     if (error) {
+      context.workspaceConfig.captureException(error);
       throw toORPCError(error, errors);
     }
 

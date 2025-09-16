@@ -133,6 +133,7 @@ const create = base
         .toTuple();
 
       if (error) {
+        context.workspaceConfig.captureException(error);
         throw toORPCError(error, errors);
       }
 
@@ -149,6 +150,7 @@ const create = base
       );
 
       if (result.isErr()) {
+        context.workspaceConfig.captureException(result.error);
         throw toORPCError(result.error, errors);
       }
 
@@ -227,6 +229,7 @@ const createFromPreview = base
       );
 
       if (result.isErr()) {
+        context.workspaceConfig.captureException(result.error);
         throw toORPCError(result.error, errors);
       }
 
@@ -257,6 +260,7 @@ const trash = base
     });
 
     if (result.isErr()) {
+      context.workspaceConfig.captureException(result.error);
       throw toORPCError(result.error, errors);
     }
 
