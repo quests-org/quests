@@ -182,14 +182,14 @@ export function ProjectHeaderToolbar({
         <div className="flex items-center justify-between">
           <div
             className={cn(
-              "flex items-center gap-2",
+              "flex items-center gap-2 min-w-0",
               !sidebarCollapsed && "w-96 shrink-0 justify-between pr-5",
             )}
           >
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
-                  className="font-semibold text-foreground h-auto hover:bg-accent hover:text-accent-foreground gap-2 py-1 has-[>svg]:px-1"
+                  className="font-semibold text-foreground h-auto hover:bg-accent hover:text-accent-foreground gap-2 py-1 has-[>svg]:px-1 min-w-0 flex-1 justify-start"
                   variant="ghost"
                 >
                   <SmallAppIcon
@@ -197,8 +197,8 @@ export function ProjectHeaderToolbar({
                     icon={project.icon?.lucide}
                     size="md"
                   />
-                  {project.title}
-                  <ChevronDown className="h-3 w-3" />
+                  <span className="truncate">{project.title}</span>
+                  <ChevronDown className="h-3 w-3 shrink-0" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" side="bottom">
@@ -224,7 +224,7 @@ export function ProjectHeaderToolbar({
             </DropdownMenu>
 
             <Button
-              className="ml-1 transition-all duration-300 ease-in-out h-7 inline-flex items-center"
+              className="ml-1 transition-all duration-300 ease-in-out h-7 inline-flex items-center shrink-0"
               onClick={onSidebarToggle}
               size="sm"
               title={sidebarCollapsed ? "Show sidebar" : "Hide sidebar"}
