@@ -1,102 +1,108 @@
 import { cn } from "@/client/lib/utils";
-import { ChevronDownIcon, ChevronUpIcon, RotateCcwIcon } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { ChevronDown, ChevronUpIcon, Trash, X } from "lucide-react";
+import { useStickToBottom } from "use-stick-to-bottom";
 
-import { TerminalWindowIcon } from "./icons";
-import { ServerStatusBadge } from "./server-status-badge";
+import { type RPCOutput } from "../rpc/client";
 import { Button } from "./ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 interface ConsoleProps {
   isCollapsed?: boolean;
+  logs: RPCOutput["workspace"]["runtime"]["log"]["list"];
+  onClearLogs: () => void;
   onCollapse: () => void;
   onRestore: () => void;
 }
 
-export function Console({ isCollapsed, onCollapse, onRestore }: ConsoleProps) {
-  const consoleEndRef = useRef<HTMLDivElement>(null);
-  const runState = "running";
-  const output = ["Not implemented"];
-
-  useEffect(() => {
-    if (!isCollapsed) {
-      consoleEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [isCollapsed]);
+export function Console({
+  isCollapsed,
+  logs,
+  onClearLogs,
+  onCollapse,
+  onRestore,
+}: ConsoleProps) {
+  const { contentRef, isNearBottom, scrollRef, scrollToBottom } =
+    useStickToBottom({ mass: 0.8 });
 
   return (
-    <div
-      className={cn(
-        `
-          bottom-0 flex h-full w-full flex-col overflow-hidden border-t
-          border-border bg-background
-        `,
-      )}
-    >
-      <div
-        className={`
-          z-5 sticky top-0 flex h-fit w-full flex-row
-          items-center justify-between border-b border-border bg-muted px-2
-          py-1
-        `}
-        onClick={isCollapsed ? onRestore : onCollapse}
-      >
-        <div
-          className={`
-            flex flex-row items-center gap-2 pl-2 text-sm text-foreground
-          `}
-        >
-          <div className="text-muted-foreground">
-            <TerminalWindowIcon />
-          </div>
+    <div className="flex h-full w-full flex-col overflow-hidden border-l border-r border-b border-border bg-background relative rounded-b-lg">
+      <div className="flex h-fit w-full flex-row items-center justify-between border-b border-border bg-background px-2 py-1.5">
+        <div className="flex flex-row items-center gap-2 pl-2 text-sm text-foreground">
           <div className="text-xs">Console</div>
         </div>
         <div className="flex flex-row items-center gap-1 text-xs">
-          <ServerStatusBadge state={runState} />
-          <Button
-            className="size-fit p-1"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              alert("Not implemented");
-            }}
-            size="icon"
-            title="Restart server"
-            variant="ghost"
-          >
-            <RotateCcwIcon />
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                className="size-fit p-1"
+                onClick={onClearLogs}
+                size="icon"
+                variant="ghost"
+              >
+                <Trash className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Clear console</p>
+            </TooltipContent>
+          </Tooltip>
           <Button
             className="size-fit p-1"
             onClick={isCollapsed ? onRestore : onCollapse}
             size="icon"
             variant="ghost"
           >
-            {isCollapsed ? <ChevronUpIcon /> : <ChevronDownIcon />}
+            {isCollapsed ? <ChevronUpIcon /> : <X />}
           </Button>
         </div>
       </div>
 
-      <div className="flex-auto overflow-y-scroll pt-2">
+      <div
+        className="flex-1 overflow-y-auto pt-2 min-h-0 bg-muted/50"
+        ref={scrollRef}
+      >
         <div
-          className={`
-            flex flex-col border-border bg-background px-2 font-mono text-xs
-          `}
+          className="flex flex-col border-border px-2 font-mono text-xs"
+          ref={contentRef}
         >
-          {output.map((line, index) => (
-            <div className="flex flex-row" key={index}>
+          {logs.map((line, index) => {
+            const isTruncationMessage = line.id.startsWith("truncation-");
+            return (
               <div
-                className={`
-                  shrink-1 overflow-x-auto whitespace-pre-wrap break-all
-                  text-foreground
-                `}
+                className={cn(
+                  "py-1 px-2",
+                  index > 0 && "border-t border-border/40",
+                )}
+                key={line.id}
               >
-                {line}
+                <div
+                  className={cn(
+                    "shrink-1 overflow-x-auto whitespace-pre-wrap break-all",
+                    isTruncationMessage
+                      ? "text-muted-foreground italic"
+                      : line.type === "error"
+                        ? "text-destructive"
+                        : "text-foreground",
+                  )}
+                >
+                  {line.message}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
-        <div className="h-2" ref={consoleEndRef} />
       </div>
+
+      {!isNearBottom && (
+        <Button
+          className="absolute right-4 bottom-4 shadow-lg border border-border"
+          onClick={() => scrollToBottom()}
+          size="icon"
+          variant="secondary"
+        >
+          <ChevronDown className="h-3 w-3" />
+        </Button>
+      )}
     </div>
   );
 }

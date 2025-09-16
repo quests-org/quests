@@ -1,6 +1,6 @@
 import { envForProviders } from "@quests/ai-gateway";
 import { detect } from "detect-port";
-import { ExecaError, parseCommandString } from "execa";
+import { ExecaError, parseCommandString, type ResultPromise } from "execa";
 import fs from "node:fs/promises";
 import { type NormalizedPackageJson, readPackage } from "read-pkg";
 import {
@@ -40,6 +40,10 @@ export type SpawnRuntimeEvent =
       value: { exitCode?: number };
     }
   | {
+      type: "spawnRuntime.log";
+      value: { message: string; type: "error" | "normal" };
+    }
+  | {
       type: "spawnRuntime.started";
       value: { port: number };
     };
@@ -72,6 +76,44 @@ function releasePort(port: number): void {
 
 function reservePort(port: number): void {
   usedPorts.add(port);
+}
+
+function sendProcessLogs(
+  execaProcess: ResultPromise<{ cancelSignal: AbortSignal; cwd: string }>,
+  parentRef: ActorRef<AnyMachineSnapshot, SpawnRuntimeEvent>,
+  options: { errorOnly?: boolean } = {},
+) {
+  const { stderr, stdout } = execaProcess;
+
+  stderr.on("data", (data: Buffer) => {
+    const message = data.toString().trim();
+    if (message) {
+      if (
+        process.env.NODE_ENV === "development" &&
+        (message === "Debugger attached." ||
+          message === "Waiting for the debugger to disconnect...")
+      ) {
+        // Filter debugger messages in development
+        return;
+      }
+      parentRef.send({
+        type: "spawnRuntime.log",
+        value: { message, type: "error" },
+      });
+    }
+  });
+
+  if (!options.errorOnly) {
+    stdout.on("data", (data: Buffer) => {
+      const message = data.toString().trim();
+      if (message) {
+        parentRef.send({
+          type: "spawnRuntime.log",
+          value: { message, type: "normal" },
+        });
+      }
+    });
+  }
 }
 export const spawnRuntimeLogic = fromCallback<
   AnyEventObject,
@@ -112,6 +154,15 @@ export const spawnRuntimeLogic = fromCallback<
             // dependencies correctly
             "pnpm install --ignore-workspace"
           : "pnpm install";
+
+      parentRef.send({
+        type: "spawnRuntime.log",
+        value: {
+          message: `Installing dependencies (${installCommand})...`,
+          type: "normal",
+        },
+      });
+
       const installResult = await appConfig.workspaceConfig.runShellCommand(
         installCommand,
         {
@@ -129,7 +180,18 @@ export const spawnRuntimeLogic = fromCallback<
         });
         return;
       }
-      await installResult.value;
+
+      const installProcessPromise = installResult.value;
+      sendProcessLogs(installProcessPromise, parentRef, { errorOnly: true });
+      await installProcessPromise;
+
+      parentRef.send({
+        type: "spawnRuntime.log",
+        value: {
+          message: "Dependencies installed successfully",
+          type: "normal",
+        },
+      });
 
       // Use detect to check if port is actually available and get alternative if needed
       const detectedPort = await detect(port);
@@ -224,31 +286,7 @@ export const spawnRuntimeLogic = fromCallback<
         return;
       }
       const processPromise = result.value;
-      const { stderr, stdout } = processPromise;
-
-      stderr.on("data", (data: Buffer) => {
-        if (process.env.NODE_ENV !== "development") {
-          return;
-        }
-        // eslint-disable-next-line no-console
-        console.error(
-          "\u001B[31m[Port %d stderr]\u001B[0m %s",
-          port,
-          data.toString().trim(),
-        );
-      });
-
-      stdout.on("data", (data: Buffer) => {
-        if (process.env.NODE_ENV !== "development") {
-          return;
-        }
-        // eslint-disable-next-line no-console
-        console.log(
-          "\u001B[36m[Port %d stdout]\u001B[0m %s",
-          port,
-          data.toString().trim(),
-        );
-      });
+      sendProcessLogs(processPromise, parentRef);
 
       let shouldCheckServer = true;
       const checkServer = async () => {

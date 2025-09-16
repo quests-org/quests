@@ -29,6 +29,9 @@ export const publisher = new EventPublisher<{
   "project.updated": {
     subdomain: ProjectSubdomain;
   };
+  "runtime.log.updated": {
+    subdomain: AppSubdomain;
+  };
   "session.updated": {
     sessionId: StoreId.Session;
     subdomain: AppSubdomain;

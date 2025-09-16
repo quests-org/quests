@@ -7,11 +7,10 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import ColorHash from "color-hash";
 import { ExternalLinkIcon } from "lucide-react";
-import { useMemo, useRef } from "react";
+import { useMemo } from "react";
 
 import { rpcClient } from "../rpc/client";
-import { AppIFrame } from "./app-iframe";
-import { AppToolbar } from "./app-toolbar";
+import { AppView } from "./app-view";
 import { GitCommitCard } from "./git-commit-card";
 import { Button } from "./ui/button";
 import {
@@ -30,7 +29,6 @@ export function VersionOverlay({
   projectSubdomain,
   versionRef,
 }: VersionOverlayProps) {
-  const iframeRef = useRef<HTMLIFrameElement>(null);
   const versionSubdomain = VersionSubdomainSchema.parse(
     `version-${versionRef}.${projectSubdomain}`,
   );
@@ -169,19 +167,11 @@ export function VersionOverlay({
   );
 
   return (
-    <div className="absolute inset-0 flex flex-col">
-      <AppToolbar
-        app={app}
-        centerActions={centerActions}
-        centerContent={centerContent}
-        iframeRef={iframeRef}
-      />
-      <AppIFrame
-        app={app}
-        className="rounded-b-lg overflow-hidden flex-1"
-        iframeRef={iframeRef}
-        key={app.subdomain}
-      />
-    </div>
+    <AppView
+      app={app}
+      centerActions={centerActions}
+      centerContent={centerContent}
+      className="absolute inset-0"
+    />
   );
 }

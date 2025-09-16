@@ -1,7 +1,6 @@
-import { AppIFrame } from "@/client/components/app-iframe";
+import { AppView } from "@/client/components/app-view";
 import { ProjectDeleteDialog } from "@/client/components/project-delete-dialog";
 import { ProjectHeaderToolbar } from "@/client/components/project-header-toolbar";
-import { ProjectIFrameToolbar } from "@/client/components/project-iframe-toolbar";
 import { ProjectSidebar } from "@/client/components/project-sidebar";
 import { VersionOverlay } from "@/client/components/version-overlay";
 import { useProjectRouteSync } from "@/client/hooks/use-project-route-sync";
@@ -22,7 +21,7 @@ import {
   redirect,
   useNavigate,
 } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 
 const projectSearchSchema = z.object({
@@ -117,7 +116,6 @@ export const Route = createFileRoute("/_app/projects/$subdomain/")({
 function RouteComponent() {
   const { subdomain } = Route.useParams();
   const { selectedVersion, showDelete } = Route.useSearch();
-  const iframeRef = useRef<HTMLIFrameElement>(null);
   const navigate = useNavigate();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -181,7 +179,6 @@ function RouteComponent() {
   return (
     <div className="flex flex-col h-dvh w-full overflow-hidden">
       <ProjectHeaderToolbar
-        iframeRef={iframeRef}
         onDeleteClick={() => {
           setShowDeleteDialog(true);
         }}
@@ -208,15 +205,7 @@ function RouteComponent() {
           )}
         >
           <div className="flex-1 flex flex-col relative">
-            <ProjectIFrameToolbar iframeRef={iframeRef} project={project} />
-            <div className="flex-1 relative">
-              <AppIFrame
-                app={project}
-                className="rounded-b-lg overflow-hidden"
-                iframeRef={iframeRef}
-                key={project.subdomain}
-              />
-            </div>
+            <AppView app={project} className="rounded-lg overflow-hidden" />
 
             {selectedVersion && (
               <VersionOverlay

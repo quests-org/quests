@@ -24,6 +24,9 @@ const Frameworks = {
       "--strictPort",
       "--clearScreen",
       "false",
+      // Avoids logging confusing localhost and port info
+      "--logLevel",
+      "warn",
     ],
     bin: "vite",
   },

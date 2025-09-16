@@ -4,7 +4,7 @@ import { hasAIProviderAtom } from "@/client/atoms/has-ai-provider";
 import { AIProviderGuard } from "@/client/components/ai-provider-guard";
 import { AIProviderGuardDialog } from "@/client/components/ai-provider-guard-dialog";
 import { SmallAppIcon } from "@/client/components/app-icon";
-import { AppPreview } from "@/client/components/app-preview";
+import { AppView } from "@/client/components/app-view";
 import { Markdown } from "@/client/components/markdown";
 import { NotFoundComponent } from "@/client/components/not-found";
 import { GithubLogo } from "@/client/components/service-icons";
@@ -165,9 +165,9 @@ function RouteComponent() {
 
         <div className="w-full h-[600px]">
           {hasAIProvider ? (
-            <AppPreview
+            <AppView
+              app={appDetails.preview}
               className="w-full h-full rounded-lg border border-border overflow-hidden flex flex-col"
-              preview={appDetails.preview}
             />
           ) : (
             <div className="w-full h-full rounded-lg border border-border flex items-center justify-center bg-background">

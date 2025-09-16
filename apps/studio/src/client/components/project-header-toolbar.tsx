@@ -13,6 +13,7 @@ import { OpenAppInTypeSchema } from "@/shared/schemas/editors";
 import { type WorkspaceAppProject } from "@quests/workspace/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
+import { useAtomValue } from "jotai";
 import {
   ChevronDown,
   Clipboard,
@@ -27,6 +28,7 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { projectIframeRefAtom } from "../atoms/project-iframe";
 import { RestoreVersionModal } from "./restore-version-modal";
 import { CMD, Cursor, ITerm, MacOSTerminal, VSCode } from "./service-icons";
 import {
@@ -50,7 +52,6 @@ const EDITOR_ICON_MAP: Record<
 };
 
 interface ProjectHeaderToolbarProps {
-  iframeRef: React.RefObject<HTMLIFrameElement | null>;
   onDeleteClick: () => void;
   onSidebarToggle: () => void;
   project: WorkspaceAppProject;
@@ -59,13 +60,13 @@ interface ProjectHeaderToolbarProps {
 }
 
 export function ProjectHeaderToolbar({
-  iframeRef,
   onDeleteClick,
   onSidebarToggle,
   project,
   selectedVersion,
   sidebarCollapsed,
 }: ProjectHeaderToolbarProps) {
+  const iframeRef = useAtomValue(projectIframeRefAtom);
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
   const [restoreModalOpen, setRestoreModalOpen] = useState(false);
   const navigate = useNavigate();
@@ -126,7 +127,7 @@ export function ProjectHeaderToolbar({
   );
 
   const handleTakeScreenshot = async () => {
-    if (!iframeRef.current) {
+    if (!iframeRef?.current) {
       toast.error("Unable to capture screenshot", {
         description: "Iframe not found",
       });
@@ -145,7 +146,7 @@ export function ProjectHeaderToolbar({
   };
 
   const handleCopyScreenshot = async () => {
-    if (!iframeRef.current) {
+    if (!iframeRef?.current) {
       toast.error("Unable to capture screenshot", {
         description: "Iframe not found",
       });

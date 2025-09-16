@@ -271,8 +271,11 @@ importers:
         specifier: 'catalog:'
         version: 4.8.5
       jotai:
-        specifier: ^2.12.5
-        version: 2.12.5(@types/react@19.1.8)(react@19.1.0)
+        specifier: ^2.14.0
+        version: 2.14.0(@babel/core@7.28.4)(@babel/template@7.27.2)(@types/react@19.1.8)(react@19.1.0)
+      jotai-scope:
+        specifier: ^0.9.4
+        version: 0.9.4(jotai@2.14.0(@babel/core@7.28.4)(@babel/template@7.27.2)(@types/react@19.1.8)(react@19.1.0))(react@19.1.0)
       lucide-react:
         specifier: 'catalog:'
         version: 0.525.0(react@19.1.0)
@@ -5713,13 +5716,26 @@ packages:
   jose@5.10.0:
     resolution: {integrity: sha512-s+3Al/p9g32Iq+oqXxkW//7jk2Vig6FF1CFqzVXoTUXt2qz89YWbL+OwS17NFYEvxC35n0FKeGO2LGYSxeM2Gg==}
 
-  jotai@2.12.5:
-    resolution: {integrity: sha512-G8m32HW3lSmcz/4mbqx0hgJIQ0ekndKWiYP7kWVKi0p6saLXdSoye+FZiOFyonnd7Q482LCzm8sMDl7Ar1NWDw==}
+  jotai-scope@0.9.4:
+    resolution: {integrity: sha512-E4HKxIZI1W/fkpqiFvgeThwCH6Z/iPkUXGPw3FmRgczJ/oAwhEFvpv/Bj1ySrZs1RdLm57KJHt5KcPC77IHziw==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      jotai: '>=2.14.0'
+      react: '>=16.0.0'
+
+  jotai@2.14.0:
+    resolution: {integrity: sha512-JQkNkTnqjk1BlSUjHfXi+pGG/573bVN104gp6CymhrWDseZGDReTNniWrLhJ+zXbM6pH+82+UNJ2vwYQUkQMWQ==}
     engines: {node: '>=12.20.0'}
     peerDependencies:
+      '@babel/core': '>=7.0.0'
+      '@babel/template': '>=7.0.0'
       '@types/react': '>=17.0.0'
       react: '>=17.0.0'
     peerDependenciesMeta:
+      '@babel/core':
+        optional: true
+      '@babel/template':
+        optional: true
       '@types/react':
         optional: true
       react:
@@ -13760,8 +13776,15 @@ snapshots:
 
   jose@5.10.0: {}
 
-  jotai@2.12.5(@types/react@19.1.8)(react@19.1.0):
+  jotai-scope@0.9.4(jotai@2.14.0(@babel/core@7.28.4)(@babel/template@7.27.2)(@types/react@19.1.8)(react@19.1.0))(react@19.1.0):
+    dependencies:
+      jotai: 2.14.0(@babel/core@7.28.4)(@babel/template@7.27.2)(@types/react@19.1.8)(react@19.1.0)
+      react: 19.1.0
+
+  jotai@2.14.0(@babel/core@7.28.4)(@babel/template@7.27.2)(@types/react@19.1.8)(react@19.1.0):
     optionalDependencies:
+      '@babel/core': 7.28.4
+      '@babel/template': 7.27.2
       '@types/react': 19.1.8
       react: 19.1.0
 

@@ -1,3 +1,4 @@
+import { ulid } from "ulid";
 import {
   type ActorRefFrom,
   assign,
@@ -6,6 +7,7 @@ import {
   type SnapshotFrom,
   stopChild,
 } from "xstate";
+import { z } from "zod";
 
 import { type AppConfig } from "../lib/app-config/types";
 import { logUnhandledEvent } from "../lib/log-unhandled-event";
@@ -14,6 +16,7 @@ import {
   spawnRuntimeLogic,
   type SpawnRuntimeRef,
 } from "../logic/spawn-runtime";
+import { publisher } from "../rpc/publisher";
 import { type AbsolutePath } from "../schemas/paths";
 import {
   type AppError,
@@ -23,6 +26,15 @@ import {
 
 const MAX_RETRIES = 3;
 
+export const LogEntrySchema = z.object({
+  createdAt: z.date(),
+  id: z.ulid(),
+  message: z.string(),
+  type: z.enum(["error", "normal", "truncation"]),
+});
+
+type LogEntry = z.output<typeof LogEntrySchema>;
+
 interface RunErrorValue {
   command?: string;
   message: string;
@@ -30,6 +42,7 @@ interface RunErrorValue {
 
 type RuntimeEvent =
   | SpawnRuntimeEvent
+  | { type: "clearLogs" }
   | { type: "restart" }
   | { type: "saveError"; value: AppError }
   | { type: "updateHeartbeat"; value: { createdAt: number } };
@@ -66,6 +79,7 @@ export const runtimeMachine = setup({
       appConfig: AppConfig;
       errors: AppError[];
       lastHeartbeat: Date;
+      logs: LogEntry[];
       port?: number;
       retryCount: number;
       runPackageJsonScript: RunPackageJsonScript;
@@ -87,6 +101,7 @@ export const runtimeMachine = setup({
       appConfig: input.appConfig,
       errors: [],
       lastHeartbeat: new Date(),
+      logs: [],
       retryCount: 0,
       runPackageJsonScript: input.runPackageJsonScript,
       shimServerJSPath: input.shimServerJSPath,
@@ -104,11 +119,28 @@ export const runtimeMachine = setup({
         });
       },
     },
+    clearLogs: {
+      actions: [
+        assign({ logs: () => [] }),
+        ({ context }) => {
+          publisher.publish("runtime.log.updated", {
+            subdomain: context.appConfig.subdomain,
+          });
+        },
+      ],
+    },
     restart: ".Restarting",
     saveError: {
       actions: assign({
         errors: ({ context, event }) => [...context.errors, event.value],
       }),
+    },
+    "spawnRuntime.error.install-failed": {
+      actions: {
+        params: ({ event }) => event,
+        type: "pushRuntimeErrorEvent",
+      },
+      target: ".Error",
     },
     "spawnRuntime.error.package-json": {
       actions: {
@@ -146,6 +178,26 @@ export const runtimeMachine = setup({
       target: ".Error",
     },
     "spawnRuntime.exited": ".Stopped",
+    "spawnRuntime.log": {
+      actions: [
+        assign({
+          logs: ({ context, event }) => [
+            ...context.logs,
+            {
+              createdAt: new Date(),
+              id: ulid(),
+              message: event.value.message,
+              type: event.value.type,
+            },
+          ],
+        }),
+        ({ context }) => {
+          publisher.publish("runtime.log.updated", {
+            subdomain: context.appConfig.subdomain,
+          });
+        },
+      ],
+    },
     updateHeartbeat: {
       actions: {
         params: ({ event }) => event,
@@ -198,10 +250,23 @@ export const runtimeMachine = setup({
           "stopRuntime",
           assign(() => ({
             errors: [],
+            logs: [
+              {
+                createdAt: new Date(),
+                id: ulid(),
+                message: "Restarting...",
+                type: "normal",
+              },
+            ],
             port: undefined,
             retryCount: 0,
             spawnRuntimeRef: undefined,
           })),
+          ({ context }) => {
+            publisher.publish("runtime.log.updated", {
+              subdomain: context.appConfig.subdomain,
+            });
+          },
         ],
         target: "SpawningRuntime",
       },
@@ -239,11 +304,13 @@ export const runtimeMachine = setup({
     },
 
     Stopped: {
-      entry: assign(() => ({
-        port: undefined,
-        retryCount: 0,
-        spawnRuntimeRef: undefined,
-      })),
+      entry: [
+        assign(() => ({
+          port: undefined,
+          retryCount: 0,
+          spawnRuntimeRef: undefined,
+        })),
+      ],
       on: {
         updateHeartbeat: {
           actions: {

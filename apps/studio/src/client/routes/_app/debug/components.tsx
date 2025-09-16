@@ -1,4 +1,3 @@
-import { Console } from "@/client/components/console";
 import {
   Card,
   CardContent,
@@ -43,10 +42,6 @@ function RouteComponent() {
           </CardContent>
         </Card>
       </div>
-      <h1 className="mb-6 mt-12 text-2xl font-bold">Unused Code</h1>
-      <p>Using it here so Knip does not complain and we can find it later.</p>
-      {/* eslint-disable-next-line @typescript-eslint/no-empty-function */}
-      <Console isCollapsed={false} onCollapse={() => {}} onRestore={() => {}} />
     </div>
   );
 }
