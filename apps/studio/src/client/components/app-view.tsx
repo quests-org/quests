@@ -97,7 +97,7 @@ export function AppView({
   );
 
   return (
-    <ScopeProvider atoms={[lastSeenLogIdAtom]} key={app.subdomain}>
+    <ScopeProvider atoms={[lastSeenLogIdAtom]}>
       <div className={cn("flex flex-col size-full", className)}>
         <AppToolbar
           app={app}
