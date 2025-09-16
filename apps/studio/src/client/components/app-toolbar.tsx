@@ -132,14 +132,13 @@ export function AppToolbar({
                 shimIFrame.reloadWindow();
               }}
               size="icon"
-              title="Refresh app"
               variant="ghost"
             >
               <RotateCw className="h-4 w-4" />
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Refresh and restart app</p>
+            <p>Refresh and restart</p>
           </TooltipContent>
         </Tooltip>
       </div>
