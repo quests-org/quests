@@ -105,8 +105,15 @@ export const spawnRuntimeLogic = fromCallback<
         abortController.signal,
         installTimeout.controller.signal,
       ]);
+      const installCommand =
+        appConfig.type === "version" || appConfig.type === "sandbox"
+          ? // These app types are nested in the project directory, so we need
+            // to ignore the workspace config otherwise PNPM may not install the
+            // dependencies correctly
+            "pnpm install --ignore-workspace"
+          : "pnpm install";
       const installResult = await appConfig.workspaceConfig.runShellCommand(
-        "pnpm install",
+        installCommand,
         {
           cwd: appConfig.appDir,
           signal: installSignal,
