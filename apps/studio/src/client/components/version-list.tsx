@@ -1,3 +1,4 @@
+import { useAppState } from "@/client/hooks/use-app-state";
 import { cn } from "@/client/lib/utils";
 import { QuestsLogoIcon } from "@quests/components/logo";
 import { GIT_AUTHOR, type ProjectSubdomain } from "@quests/workspace/client";
@@ -30,6 +31,14 @@ export function VersionList({
     rpcClient.workspace.project.git.commits.live.list.experimental_liveOptions({
       input: { projectSubdomain },
     }),
+  );
+
+  const { data: appState } = useAppState({
+    subdomain: projectSubdomain,
+  });
+
+  const isAgentRunning = (appState?.sessionActors ?? []).some((session) =>
+    session.tags.includes("agent.running"),
   );
 
   useEffect(() => {
@@ -72,6 +81,7 @@ export function VersionList({
 
   return (
     <div className="flex flex-col gap-1">
+      {isAgentRunning && <InProgressVersionCard />}
       {commitsData.commits.map((commit, index) => {
         const isLast = index === 0;
         const isSelected =
@@ -161,4 +171,25 @@ function getInitials(name: string): string {
     .join("")
     .toUpperCase()
     .slice(0, 2);
+}
+
+function InProgressVersionCard() {
+  return (
+    <div className="flex flex-col gap-3 rounded-lg border border-dashed border-muted-foreground/50 p-3 bg-muted/20">
+      <div className="flex items-start gap-2">
+        <div className="text-sm font-medium text-foreground shiny-text">
+          Working on your changes...
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-baseline gap-1 text-xs text-muted-foreground">
+        <Avatar className="size-4">
+          <AvatarFallback>
+            <QuestsLogoIcon className="size-2.5" />
+          </AvatarFallback>
+        </Avatar>
+        <span>{GIT_AUTHOR.name}</span>
+      </div>
+    </div>
+  );
 }
