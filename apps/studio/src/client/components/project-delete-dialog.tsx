@@ -74,16 +74,24 @@ export function ProjectDeleteDialog({
             <div className="flex flex-col gap-1">
               <div className="font-medium text-foreground">{project.title}</div>
               <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                {commitsData?.commits && commitsData.commits.length > 1 && (
+                {commitsData?.commits && (
                   <div className="flex items-center gap-1">
                     <GitCommitVertical className="size-3" />
-                    <span>{commitsData.commits.length} versions</span>
+                    <span>
+                      {commitsData.commits.length}{" "}
+                      {commitsData.commits.length === 1
+                        ? "version"
+                        : "versions"}
+                    </span>
                   </div>
                 )}
                 {messageCount !== undefined && messageCount > 0 && (
                   <div className="flex items-center gap-1">
                     <MessageSquare className="size-3" />
-                    <span>{messageCount} messages</span>
+                    <span>
+                      {messageCount}{" "}
+                      {messageCount === 1 ? "message" : "messages"}
+                    </span>
                   </div>
                 )}
               </div>
