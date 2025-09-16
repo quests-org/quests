@@ -6,7 +6,9 @@ function Tooltip({
   ...props
 }: React.ComponentProps<typeof TooltipPrimitive.Root>) {
   return (
-    <TooltipProvider>
+    // Disable hoverable content to prevent tooltip from lingering when user
+    // mouses over an iframe after a tooltip
+    <TooltipProvider disableHoverableContent>
       <TooltipPrimitive.Root data-slot="tooltip" {...props} />
     </TooltipProvider>
   );

@@ -1,5 +1,4 @@
 {
-  "useGitignore": true,
   "dictionaries": [
     "typescript"
   ],
@@ -7,6 +6,7 @@
     "pnpm-lock.yaml",
     "registry/"
   ],
+  "useGitignore": true,
   "words": [
     "aisdk",
     "anson",
@@ -33,8 +33,11 @@
     "groq",
     "gstatic",
     "hono",
+    "Hoverable",
+    "iterm",
     "julr",
     "kimi",
+    "konsole",
     "logprobs",
     "lucide",
     "meteo",
@@ -73,8 +76,6 @@
     "winstaller",
     "workerd",
     "worktree",
-    "XAPI",
-    "iterm",
-    "konsole"
+    "XAPI"
   ]
 }
