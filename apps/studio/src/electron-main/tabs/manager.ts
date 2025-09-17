@@ -1,7 +1,10 @@
 import { logger } from "@/electron-main/lib/electron-logger";
 import { getSidebarWidth } from "@/electron-main/lib/sidebar";
 import { getBackgroundColor } from "@/electron-main/lib/theme-utils";
-import { getToolbarHeight, resizeToolbar } from "@/electron-main/lib/toolbar";
+import {
+  getToolbarHeight,
+  resizeToolbar,
+} from "@/electron-main/windows/toolbar";
 import {
   META_TAG_ICON_BACKGROUND,
   META_TAG_LUCIDE_ICON,

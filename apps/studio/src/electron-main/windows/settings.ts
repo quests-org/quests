@@ -20,6 +20,7 @@ export function openSettingsWindow(
   // Create new settings window with minimal configuration
   settingsWindow = new BrowserWindow({
     autoHideMenuBar: true,
+    backgroundColor: getBackgroundColor(),
     height: 700,
     minHeight: 500,
     minWidth: 600,

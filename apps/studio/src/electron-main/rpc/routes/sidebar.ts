@@ -3,9 +3,9 @@ import {
   hideSidebar,
   showSidebar,
 } from "@/electron-main/lib/sidebar";
-import { updateToolbarForSidebarChange } from "@/electron-main/lib/toolbar";
 import { base } from "@/electron-main/rpc/base";
 import { publisher } from "@/electron-main/rpc/publisher";
+import { updateToolbarForSidebarChange } from "@/electron-main/windows/toolbar";
 
 const close = base.handler(({ context }) => {
   hideSidebar();

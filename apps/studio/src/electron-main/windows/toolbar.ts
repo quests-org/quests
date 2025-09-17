@@ -1,10 +1,10 @@
-import { getMainWindow } from "@/electron-main/lib/main-window";
+import { getMainWindow } from "@/electron-main/windows/main";
 import { type BaseWindow, Menu, shell, WebContentsView } from "electron";
 import path from "node:path";
 
-import { getSidebarWidth } from "./sidebar";
-import { getBackgroundColor } from "./theme-utils";
-import { mainAppUrl } from "./urls";
+import { getSidebarWidth } from "../lib/sidebar";
+import { getBackgroundColor } from "../lib/theme-utils";
+import { mainAppUrl } from "../lib/urls";
 
 const toolbarHeight = 40;
 let toolbarView: null | WebContentsView = null;
