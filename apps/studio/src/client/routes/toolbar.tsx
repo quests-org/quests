@@ -2,7 +2,7 @@ import { NavControls } from "@/client/components/nav-controls";
 import TabBar from "@/client/components/tab-bar";
 import { Button } from "@/client/components/ui/button";
 import { handlers } from "@/client/lib/api";
-import { cn, isMacOS } from "@/client/lib/utils";
+import { cn, isLinux, isMacOS, isWindows } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
@@ -51,7 +51,8 @@ function ToolbarPage() {
             mr-2
             w-full flex-1 h-svh
           `,
-          !isMacOS() && "pr-[9rem]",
+          isWindows() && "pr-[9rem]",
+          isLinux() && "pr-[6rem]",
         )}
       >
         <div className="flex items-center min-w-0 flex-1 [-webkit-app-region:no-drag] h-full pt-1">
