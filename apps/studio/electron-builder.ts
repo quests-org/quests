@@ -68,6 +68,7 @@ const config: Configuration = {
     artifactName: "${productName}-${os}-${version}-${arch}.${ext}",
     category: "Utility",
     executableName: "quests",
+    icon: "build/icons",
     maintainer: "quests.dev",
     target: ["AppImage", "deb", "snap"],
   },
