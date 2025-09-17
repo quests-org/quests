@@ -70,7 +70,7 @@ const config: Configuration = {
     executableName: "quests",
     icon: "build/icons",
     maintainer: "quests.dev",
-    target: ["AppImage", "deb", "snap"],
+    target: ["AppImage", "deb", "snap", "tar.gz"],
   },
   mac: {
     category: "public.app-category.developer-tools",
