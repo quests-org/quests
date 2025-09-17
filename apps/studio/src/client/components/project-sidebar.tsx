@@ -233,6 +233,7 @@ export function ProjectSidebar({
       {filterMode === "chat" && (
         <div className="p-4 border-t" ref={bottomSectionRef}>
           <PromptInput
+            atomKey={project.subdomain}
             autoFocus
             isLoading={
               createSessionWithMessage.isPending || createMessage.isPending

@@ -8,7 +8,7 @@ import {
 import { cn } from "@/client/lib/utils";
 import { type AIGatewayModel } from "@quests/ai-gateway";
 import { useQuery } from "@tanstack/react-query";
-import { useAtomValue } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 import { ArrowUp, Circle, Loader2, Square } from "lucide-react";
 import {
   forwardRef,
@@ -20,9 +20,14 @@ import {
 import { toast } from "sonner";
 
 import { hasAIProviderAtom } from "../atoms/has-ai-provider";
+import {
+  promptValueAtomFamily,
+  type PromptValueAtomKey,
+} from "../atoms/prompt-value";
 import { rpcClient } from "../rpc/client";
 
 interface PromptInputProps {
+  atomKey: PromptValueAtomKey;
   autoFocus?: boolean;
   autoResizeMaxHeight?: number;
   className?: string;
@@ -44,6 +49,7 @@ interface PromptInputRef {
 export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
   (
     {
+      atomKey,
       autoFocus = false,
       autoResizeMaxHeight = 400,
       className,
@@ -59,11 +65,11 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
     },
     ref,
   ) => {
-    const [value, setValue] = useState("");
     const [showAIProviderGuard, setShowAIProviderGuard] = useState(false);
     const textareaRef = useRef<HTMLDivElement>(null);
     const textareaInnerRef = useRef<HTMLTextAreaElement>(null);
     const hasAIProvider = useAtomValue(hasAIProviderAtom);
+    const [value, setValue] = useAtom(promptValueAtomFamily(atomKey));
 
     useImperativeHandle(ref, () => ({
       focus: () => {

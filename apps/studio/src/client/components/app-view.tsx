@@ -21,11 +21,13 @@ interface AppViewProps {
   centerContent?: React.ReactNode;
   className?: string;
   rightActions?: React.ReactNode;
+  showSendToChat?: boolean;
 }
 
 interface ConsoleWithLogsProps {
   app: WorkspaceApp;
   onCollapse: () => void;
+  showSendToChat?: boolean;
 }
 
 export function AppView({
@@ -34,6 +36,7 @@ export function AppView({
   centerContent,
   className,
   rightActions,
+  showSendToChat = false,
 }: AppViewProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const setProjectIframeRef = useSetAtom(projectIframeRefAtom);
@@ -125,6 +128,7 @@ export function AppView({
                 onCollapse={() => {
                   setIsConsoleOpen(true);
                 }}
+                showSendToChat={showSendToChat}
               />
             </div>
           )}
@@ -134,7 +138,11 @@ export function AppView({
   );
 }
 
-function ConsoleWithLogs({ app, onCollapse }: ConsoleWithLogsProps) {
+function ConsoleWithLogs({
+  app,
+  onCollapse,
+  showSendToChat,
+}: ConsoleWithLogsProps) {
   const { data: runtimeLogs = [] } = useQuery(
     rpcClient.workspace.runtime.log.live.list.experimental_liveOptions({
       input: { subdomain: app.subdomain },
@@ -154,6 +162,8 @@ function ConsoleWithLogs({ app, onCollapse }: ConsoleWithLogsProps) {
       logs={runtimeLogs}
       onClearLogs={handleClearLogs}
       onCollapse={onCollapse}
+      showSendToChat={showSendToChat}
+      subdomain={app.subdomain}
     />
   );
 }

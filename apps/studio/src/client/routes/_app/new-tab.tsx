@@ -46,6 +46,7 @@ function RouteComponent() {
             </h1>
           </div>
           <PromptInput
+            atomKey="$$new-tab$$"
             autoFocus
             autoResizeMaxHeight={300}
             isLoading={createProjectMutation.isPending}

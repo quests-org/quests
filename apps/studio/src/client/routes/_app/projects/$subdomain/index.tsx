@@ -205,7 +205,11 @@ function RouteComponent() {
           )}
         >
           <div className="flex-1 flex flex-col relative">
-            <AppView app={project} className="rounded-lg overflow-hidden" />
+            <AppView
+              app={project}
+              className="rounded-lg overflow-hidden"
+              showSendToChat
+            />
 
             {selectedVersion && (
               <VersionOverlay

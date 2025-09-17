@@ -1,9 +1,13 @@
 import { cn } from "@/client/lib/utils";
-import { ChevronDown, Trash, X } from "lucide-react";
+import { type AppSubdomain } from "@quests/workspace/client";
+import { useSetAtom } from "jotai";
+import { ChevronDown, Copy, MessageSquare, Trash, X } from "lucide-react";
 import { useState } from "react";
 import { useStickToBottom } from "use-stick-to-bottom";
 
+import { promptValueAtomFamily } from "../atoms/prompt-value";
 import { type RPCOutput } from "../rpc/client";
+import { ConfirmedIconButton } from "./confirmed-icon-button";
 import { Button } from "./ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
@@ -23,11 +27,26 @@ interface ConsoleProps {
   logs: RPCOutput["workspace"]["runtime"]["log"]["list"];
   onClearLogs: () => void;
   onCollapse: () => void;
+  showSendToChat?: boolean;
+  subdomain: AppSubdomain;
+}
+
+interface ConsoleRowProps {
+  index: number;
+  line: LogLine;
+  showSendToChat?: boolean;
+  subdomain: AppSubdomain;
 }
 
 type LogLine = RPCOutput["workspace"]["runtime"]["log"]["list"][number];
 
-export function Console({ logs, onClearLogs, onCollapse }: ConsoleProps) {
+export function Console({
+  logs,
+  onClearLogs,
+  onCollapse,
+  showSendToChat = false,
+  subdomain,
+}: ConsoleProps) {
   const { contentRef, isNearBottom, scrollRef, scrollToBottom } =
     useStickToBottom({ initial: "instant", mass: 0.8 });
 
@@ -74,21 +93,13 @@ export function Console({ logs, onClearLogs, onCollapse }: ConsoleProps) {
         >
           {logs.map((line, index) => {
             return (
-              <div
-                className={cn(
-                  "py-0.5 px-2",
-                  index > 0 && "border-t border-border/40",
-                )}
+              <ConsoleRow
+                index={index}
                 key={line.id}
-              >
-                {line.type === "truncation" ? (
-                  <div className="text-muted-foreground italic bg-muted/30 px-2 py-0.5 rounded-sm shrink-1 overflow-x-auto whitespace-pre-wrap break-all">
-                    {line.message}
-                  </div>
-                ) : (
-                  <TruncatedLogLine line={line} />
-                )}
-              </div>
+                line={line}
+                showSendToChat={showSendToChat}
+                subdomain={subdomain}
+              />
             );
           })}
         </div>
@@ -104,6 +115,60 @@ export function Console({ logs, onClearLogs, onCollapse }: ConsoleProps) {
           <ChevronDown className="h-3 w-3" />
         </Button>
       )}
+    </div>
+  );
+}
+
+function ConsoleRow({
+  index,
+  line,
+  showSendToChat,
+  subdomain,
+}: ConsoleRowProps) {
+  const setPromptValue = useSetAtom(promptValueAtomFamily(subdomain));
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(line.message);
+  };
+
+  const handleSendToChat = () => {
+    setPromptValue((prev) =>
+      prev ? `${prev}\n\n${line.message}` : line.message,
+    );
+  };
+
+  return (
+    <div
+      className={cn(
+        "group py-0.5 px-2 relative",
+        index > 0 && "border-t border-border/40",
+      )}
+    >
+      {line.type === "truncation" ? (
+        <div className="text-muted-foreground italic bg-muted/30 px-2 py-0.5 rounded-sm shrink-1 overflow-x-auto whitespace-pre-wrap break-all">
+          {line.message}
+        </div>
+      ) : (
+        <TruncatedLogLine line={line} />
+      )}
+
+      <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+        {showSendToChat && (
+          <ConfirmedIconButton
+            icon={MessageSquare}
+            onClick={handleSendToChat}
+            successTooltip="Sent to chat!"
+            tooltip="Send to chat"
+          />
+        )}
+
+        <ConfirmedIconButton
+          icon={Copy}
+          onClick={handleCopy}
+          successTooltip="Copied!"
+          tooltip="Copy"
+        />
+      </div>
     </div>
   );
 }
