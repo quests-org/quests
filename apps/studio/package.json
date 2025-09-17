@@ -41,7 +41,6 @@
     "turbo:test": "turbo run test test:ci"
   },
   "dependencies": {
-    "@egoist/tipc": "^0.3.2",
     "@electron-toolkit/preload": "^3.0.2",
     "@electron-toolkit/utils": "^4.0.0",
     "@hono/node-server": "^1.18.1",

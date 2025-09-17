@@ -1,6 +1,7 @@
 import { logger } from "@/electron-main/lib/electron-logger";
 import { getSidebarWidth } from "@/electron-main/lib/sidebar";
 import { getBackgroundColor } from "@/electron-main/lib/theme-utils";
+import { publisher } from "@/electron-main/rpc/publisher";
 import {
   getToolbarHeight,
   resizeToolbar,
@@ -12,10 +13,6 @@ import {
   type Tab,
   type TabState,
 } from "@/shared/tabs";
-import {
-  getRendererHandlers,
-  type RendererHandlersCaller,
-} from "@egoist/tipc/main";
 import { is } from "@electron-toolkit/utils";
 import { type IconName } from "@quests/shared/icons";
 import { type BaseWindow, Menu, shell, WebContentsView } from "electron";
@@ -23,7 +20,6 @@ import { type LogFunctions } from "electron-log";
 import Store from "electron-store";
 import path from "node:path";
 
-import { type RendererHandlers } from "../handlers/renderer-handlers";
 import { unsafe_mainAppUrl } from "../lib/urls";
 
 interface TabStore {
@@ -31,7 +27,6 @@ interface TabStore {
 }
 
 interface TabWithView extends Tab {
-  renderHandlers: RendererHandlersCaller<RendererHandlers>;
   webView: WebContentsView;
 }
 
@@ -42,18 +37,10 @@ export class TabsManager {
   private store: Store<TabStore>;
   private tabs: TabWithView[];
 
-  private toolbarRenderHandlers: RendererHandlersCaller<RendererHandlers>;
-  public constructor({
-    baseWindow,
-    toolbarRenderHandlers,
-  }: {
-    baseWindow: BaseWindow;
-    toolbarRenderHandlers: RendererHandlersCaller<RendererHandlers>;
-  }) {
+  public constructor({ baseWindow }: { baseWindow: BaseWindow }) {
     this.tabs = [];
     this.logger = logger.scope("tabs");
     this.baseWindow = baseWindow;
-    this.toolbarRenderHandlers = toolbarRenderHandlers;
     this.store = new Store<TabStore>({
       name: is.dev ? "tabs-dev" : "tabs",
     });
@@ -81,7 +68,6 @@ export class TabsManager {
       id,
       pathname: urlPath,
       pinned: false,
-      renderHandlers: getRendererHandlers<RendererHandlers>(view.webContents),
       webView: view,
     };
 
@@ -137,7 +123,7 @@ export class TabsManager {
     return this.tabs.find((tab) => tab.id === this.selectedTabId) ?? null;
   }
 
-  public getState() {
+  public getState(): TabState {
     return {
       selectedTabId: this.selectedTabId,
       tabs: this.tabs.map((tab) => ({
@@ -148,10 +134,6 @@ export class TabsManager {
         title: tab.title,
       })),
     };
-  }
-
-  public getTabRenderHandlers() {
-    return this.tabs.map((tab) => tab.renderHandlers);
   }
 
   public goBack() {
@@ -189,9 +171,6 @@ export class TabsManager {
               ...tab,
               icon: tab.icon || undefined,
               pinned: tab.pinned || false,
-              renderHandlers: getRendererHandlers<RendererHandlers>(
-                view.webContents,
-              ),
               webView: view,
             };
           }
@@ -389,7 +368,7 @@ export class TabsManager {
   }
 
   private emitStateChange(value: TabState) {
-    this.toolbarRenderHandlers.tabsStoreChanged.send(value);
+    publisher.publish("tabs.updated", value);
   }
 
   private selectNextTab(tab: Tab, index: number) {

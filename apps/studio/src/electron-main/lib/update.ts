@@ -1,6 +1,5 @@
-import { type RendererHandlers } from "@/electron-main/handlers/renderer-handlers";
 import { logger } from "@/electron-main/lib/electron-logger";
-import { type RendererHandlersCaller } from "@egoist/tipc/main";
+import { publisher } from "@/electron-main/rpc/publisher";
 import pkg from "electron-updater";
 
 import { setLastUpdateCheck } from "../stores/preferences";
@@ -9,14 +8,7 @@ const { autoUpdater } = pkg;
 const scopedLogger = logger.scope("appUpdater");
 
 export class StudioAppUpdater {
-  private renderHandlers: RendererHandlersCaller<RendererHandlers>;
-
-  public constructor({
-    renderHandlers,
-  }: {
-    renderHandlers: RendererHandlersCaller<RendererHandlers>;
-  }) {
-    this.renderHandlers = renderHandlers;
+  public constructor() {
     autoUpdater.logger = logger.scope("appUpdater:autoUpdater");
     autoUpdater.autoDownload = true;
     autoUpdater.forceDevUpdateConfig =
@@ -30,9 +22,7 @@ export class StudioAppUpdater {
 
     autoUpdater.on("update-available", (updateInfo) => {
       scopedLogger.info("Update available");
-      this.renderHandlers.updateAvailable.send({
-        updateInfo,
-      });
+      publisher.publish("updates.available", { updateInfo });
     });
 
     autoUpdater.on("update-not-available", () => {
@@ -47,26 +37,22 @@ export class StudioAppUpdater {
 
     autoUpdater.on("update-downloaded", (updateInfo) => {
       scopedLogger.info("Update downloaded");
-      this.renderHandlers.updateDownloaded.send({
-        updateInfo,
-      });
+      publisher.publish("updates.downloaded", { updateInfo });
     });
 
     autoUpdater.on("error", (err) => {
       scopedLogger.error("AutoUpdater error:", err);
-      this.renderHandlers.updateError.send({
-        error: err,
+      publisher.publish("updates.error", {
+        error: { message: err.message },
       });
     });
   }
 
   public checkForUpdates({ notify }: { notify?: boolean } = {}) {
     if (notify) {
-      this.renderHandlers.updateCheckStarted.send();
+      publisher.publish("updates.check-started", null);
       autoUpdater.once("update-not-available", (updateInfo) => {
-        this.renderHandlers.updateNotAvailable.send({
-          updateInfo,
-        });
+        publisher.publish("updates.not-available", { updateInfo });
       });
     }
 

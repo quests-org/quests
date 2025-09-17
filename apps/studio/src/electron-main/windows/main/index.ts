@@ -1,4 +1,3 @@
-import { type RendererHandlers } from "@/electron-main/handlers/renderer-handlers";
 import { logger } from "@/electron-main/lib/electron-logger";
 import {
   getMainWindowBackgroundColor,
@@ -13,32 +12,13 @@ import {
   setMainWindow,
 } from "@/electron-main/windows/main/instance";
 import { createToolbar } from "@/electron-main/windows/toolbar";
-import {
-  getRendererHandlers,
-  type RendererHandlersCaller,
-} from "@egoist/tipc/main";
 import { is } from "@electron-toolkit/utils";
 import { type BaseWindow, BrowserWindow, shell } from "electron";
 import path from "node:path";
 
-import icon from "../../../resources/icon.png?asset";
+import icon from "../../../../resources/icon.png?asset";
 
 let toolbar: Electron.CrossProcessExports.WebContentsView | null = null;
-
-export let toolbarRenderHandlers:
-  | RendererHandlersCaller<RendererHandlers>
-  | undefined;
-
-const toolbarRenderHandlersProxy = new Proxy<
-  RendererHandlersCaller<RendererHandlers>
->(Object.create(null) as RendererHandlersCaller<RendererHandlers>, {
-  get: (_target, prop) => {
-    if (!toolbarRenderHandlers) {
-      return;
-    }
-    return toolbarRenderHandlers[prop as keyof typeof toolbarRenderHandlers];
-  },
-});
 
 export async function createMainWindow() {
   const boundsState = windowStateStore.get("bounds");
@@ -92,15 +72,8 @@ export async function createMainWindow() {
 
   toolbar = await createToolbar({ baseWindow: mainWindow });
 
-  if (toolbar) {
-    toolbarRenderHandlers = getRendererHandlers<RendererHandlers>(
-      toolbar.webContents,
-    );
-  }
-
   const tabsManager = createTabsManager({
     baseWindow: mainWindow,
-    toolbarRenderHandlers: toolbarRenderHandlersProxy,
   });
 
   if (toolbar === null) {

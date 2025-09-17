@@ -2,21 +2,17 @@
 
 import "dotenv/config";
 import { startAuthCallbackServer } from "@/electron-main/auth/server";
-import { type RendererHandlers } from "@/electron-main/handlers/renderer-handlers";
 import {
   initializeElectronLogging,
   logger,
 } from "@/electron-main/lib/electron-logger";
 import { StudioAppUpdater } from "@/electron-main/lib/update";
 import { createApplicationMenu } from "@/electron-main/menus/application";
-import { getTabsManager } from "@/electron-main/tabs";
 import {
   createMainWindow,
-  toolbarRenderHandlers,
   updateTitleBarOverlay,
 } from "@/electron-main/windows/main";
 import { isFeatureEnabled } from "@/shared/features";
-import { type RendererHandlersCaller } from "@egoist/tipc/main";
 import { is, optimizer } from "@electron-toolkit/utils";
 import { APP_PROTOCOL } from "@quests/shared";
 import { app, BrowserWindow, nativeTheme, protocol } from "electron";
@@ -48,33 +44,6 @@ if (is.dev) {
 
 let appUpdater: StudioAppUpdater | undefined;
 
-const renderHandlersProxy = new Proxy<RendererHandlersCaller<RendererHandlers>>(
-  Object.create(null) as RendererHandlersCaller<RendererHandlers>,
-  {
-    get: <K extends keyof RendererHandlers>(_target: unknown, prop: K) => {
-      const tabsManager = getTabsManager();
-      return {
-        send: (...args: Parameters<RendererHandlers[K]>) => {
-          const handlers = [
-            ...(tabsManager?.getTabRenderHandlers() ?? []),
-            toolbarRenderHandlers,
-          ].filter((h) => h !== undefined);
-          for (const handler of handlers) {
-            const method = handler[prop];
-            if (typeof method === "object" && "send" in method) {
-              (
-                method.send as (
-                  ...args: Parameters<RendererHandlers[K]>
-                ) => void
-              )(...args);
-            }
-          }
-        },
-      };
-    },
-  },
-);
-
 initializeElectronLogging();
 
 protocol.registerSchemesAsPrivileged([
@@ -103,7 +72,6 @@ void app.whenReady().then(async () => {
 
   createApplicationMenu({
     appUpdater,
-    renderHandlersProxy,
   });
 
   watchThemePreferenceAndApply(updateTitleBarOverlay);
@@ -111,9 +79,7 @@ void app.whenReady().then(async () => {
     updateTitleBarOverlay();
   });
 
-  appUpdater = new StudioAppUpdater({
-    renderHandlers: renderHandlersProxy,
-  });
+  appUpdater = new StudioAppUpdater();
   appUpdater.pollForUpdates();
 
   const { actor: workspaceRef, workspaceConfig } = createWorkspaceActor();

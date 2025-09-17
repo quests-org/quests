@@ -1,20 +1,11 @@
-import { type RendererHandlers } from "@/electron-main/handlers/renderer-handlers";
 import { TabsManager } from "@/electron-main/tabs/manager";
-import { type RendererHandlersCaller } from "@egoist/tipc/main";
 import { type BaseWindow } from "electron";
 
 let tabsManager: TabsManager | undefined;
 
-export function createTabsManager({
-  baseWindow,
-  toolbarRenderHandlers,
-}: {
-  baseWindow: BaseWindow;
-  toolbarRenderHandlers: RendererHandlersCaller<RendererHandlers>;
-}) {
+export function createTabsManager({ baseWindow }: { baseWindow: BaseWindow }) {
   tabsManager = new TabsManager({
     baseWindow,
-    toolbarRenderHandlers,
   });
 
   return tabsManager;

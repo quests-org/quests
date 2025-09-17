@@ -1,4 +1,5 @@
 import { base } from "@/electron-main/rpc/base";
+import { publisher } from "@/electron-main/rpc/publisher";
 import { z } from "zod";
 
 const add = base
@@ -73,15 +74,6 @@ const close = base
     return tabsManager.closeTab({ id: input.id });
   });
 
-const getState = base.handler(({ context }) => {
-  const { tabsManager } = context;
-  if (!tabsManager) {
-    return null;
-  }
-
-  return tabsManager.getState();
-});
-
 const reorder = base
   .input(z.object({ tabIds: z.array(z.string()) }))
   .handler(({ context, input }) => {
@@ -106,11 +98,24 @@ const select = base
     return true;
   });
 
+const live = {
+  state: base.handler(async function* ({ context, signal }) {
+    const currentState = context.tabsManager?.getState();
+    yield currentState;
+
+    for await (const payload of publisher.subscribe("tabs.updated", {
+      signal,
+    })) {
+      yield payload ?? undefined;
+    }
+  }),
+};
+
 export const tabs = {
   add,
   close,
   doesExist,
-  getState,
+  live,
   navigateCurrent,
   navigateCurrentBack,
   navigateCurrentForward,

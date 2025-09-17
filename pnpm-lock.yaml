@@ -126,9 +126,6 @@ importers:
 
   apps/studio:
     dependencies:
-      '@egoist/tipc':
-        specifier: ^0.3.2
-        version: 0.3.2(electron@37.2.3)(react@19.1.0)
       '@electron-toolkit/preload':
         specifier: ^3.0.2
         version: 3.0.2(electron@37.2.3)
@@ -1263,11 +1260,6 @@ packages:
   '@edge-runtime/vm@3.2.0':
     resolution: {integrity: sha512-0dEVyRLM/lG4gp1R/Ik5bfPl/1wX00xFwd5KcNH602tzBa09oF7pbTKETEhR1GjZ75K6OJnYFu8II2dyMhONMw==}
     engines: {node: '>=16'}
-
-  '@egoist/tipc@0.3.2':
-    resolution: {integrity: sha512-p8g35BhErVkYIgDqkw/HQJSli1TOsZRIUU9U7PYnYfwru6J/Ep1lwFGH2N6+sQMFi1HkqGTTUlJEISJ1DClfQw==}
-    peerDependencies:
-      electron: '>=26.0.0'
 
   '@electron-toolkit/preload@3.0.2':
     resolution: {integrity: sha512-TWWPToXd8qPRfSXwzf5KVhpXMfONaUuRAZJHsKthKgZR/+LqX1dZVSSClQ8OTAEduvLGdecljCsoT2jSshfoUg==}
@@ -8776,14 +8768,6 @@ snapshots:
     dependencies:
       '@edge-runtime/primitives': 4.1.0
     optional: true
-
-  '@egoist/tipc@0.3.2(electron@37.2.3)(react@19.1.0)':
-    dependencies:
-      electron: 37.2.3
-    optionalDependencies:
-      '@tanstack/react-query': 5.85.5(react@19.1.0)
-    transitivePeerDependencies:
-      - react
 
   '@electron-toolkit/preload@3.0.2(electron@37.2.3)':
     dependencies:

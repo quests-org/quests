@@ -1,17 +1,14 @@
-import { type RendererHandlers } from "@/electron-main/handlers/renderer-handlers";
 import { type StudioAppUpdater } from "@/electron-main/lib/update";
+import { publisher } from "@/electron-main/rpc/publisher";
 import { getTabsManager } from "@/electron-main/tabs";
 import { openSettingsWindow } from "@/electron-main/windows/settings";
-import { type RendererHandlersCaller } from "@egoist/tipc/main";
 import { is } from "@electron-toolkit/utils";
 import { app, Menu, type MenuItemConstructorOptions, shell } from "electron";
 
 export function createApplicationMenu({
   appUpdater,
-  renderHandlersProxy,
 }: {
   appUpdater?: StudioAppUpdater;
-  renderHandlersProxy: RendererHandlersCaller<RendererHandlers>;
 }): void {
   const template: MenuItemConstructorOptions[] = [
     {
@@ -205,7 +202,7 @@ export function createApplicationMenu({
             submenu: [
               {
                 click: () => {
-                  renderHandlersProxy.testNotification.send();
+                  publisher.publish("test-notification", null);
                 },
                 label: "Send test notification",
               },
