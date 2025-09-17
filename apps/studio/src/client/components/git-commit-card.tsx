@@ -1,7 +1,7 @@
 import { cn } from "@/client/lib/utils";
 import { type ProjectSubdomain } from "@quests/workspace/client";
-import { Link } from "@tanstack/react-router";
 
+import { InternalLink } from "./internal-link";
 import {
   VersionCommitMessage,
   VersionFileChanges,
@@ -89,7 +89,8 @@ export function GitCommitCard({
   }
 
   return (
-    <Link
+    <InternalLink
+      allowOpenNewTab={false}
       from="/projects/$subdomain"
       params={{ subdomain: projectSubdomain }}
       search={(prev) => ({
@@ -98,6 +99,6 @@ export function GitCommitCard({
       })}
     >
       {cardContent}
-    </Link>
+    </InternalLink>
   );
 }

@@ -2,11 +2,12 @@ import type { ErrorComponentProps } from "@tanstack/react-router";
 
 import {
   ErrorComponent,
-  Link,
   rootRouteId,
   useMatch,
   useRouter,
 } from "@tanstack/react-router";
+
+import { InternalLink } from "./internal-link";
 
 export function DefaultErrorComponent({ error }: ErrorComponentProps) {
   const router = useRouter();
@@ -34,16 +35,16 @@ export function DefaultErrorComponent({ error }: ErrorComponentProps) {
           Try Again
         </button>
         {isRoot ? (
-          <Link
+          <InternalLink
             className={`
               rounded bg-muted px-2 py-1 font-extrabold uppercase text-white
             `}
             to="/"
           >
             Home
-          </Link>
+          </InternalLink>
         ) : (
-          <Link
+          <InternalLink
             className={`
               rounded bg-muted px-2 py-1 font-extrabold uppercase text-white
             `}
@@ -54,7 +55,7 @@ export function DefaultErrorComponent({ error }: ErrorComponentProps) {
             to="/"
           >
             Go Back
-          </Link>
+          </InternalLink>
         )}
       </div>
     </div>

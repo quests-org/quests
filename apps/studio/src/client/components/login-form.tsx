@@ -4,7 +4,6 @@ import { cn } from "@/client/lib/utils";
 import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
 import { QuestsAnimatedLogo } from "@quests/components/animated-logo";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
 import { ArrowLeft, ArrowRight, CircleCheck, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -12,6 +11,7 @@ import { toast } from "sonner";
 import { SORTED_PROVIDERS } from "../lib/provider-metadata";
 import { telemetry } from "../lib/telemetry";
 import { AIProviderIcon } from "./ai-provider-icon";
+import { InternalLink } from "./internal-link";
 
 export function LoginForm({
   modal = false,
@@ -389,8 +389,8 @@ function AuthLink({
   }
 
   return (
-    <Link className={className} to={to}>
+    <InternalLink allowOpenNewTab={false} className={className} to={to}>
       {children}
-    </Link>
+    </InternalLink>
   );
 }

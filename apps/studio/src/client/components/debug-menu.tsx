@@ -17,7 +17,6 @@ import { Label } from "@/client/components/ui/label";
 import { Sheet, SheetContent, SheetTitle } from "@/client/components/ui/sheet";
 import { Textarea } from "@/client/components/ui/textarea";
 import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
-import { Link } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import {
   BarChart,
@@ -30,6 +29,8 @@ import { posthog } from "posthog-js";
 import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
+
+import { InternalLink } from "./internal-link";
 
 function nullishToUndefined<T>(val: null | T): T | undefined {
   return val ?? undefined;
@@ -175,10 +176,10 @@ export function DebugMenu() {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" side="top">
             <DropdownMenuItem asChild>
-              <Link className="cursor-pointer" to="/debug">
+              <InternalLink className="cursor-pointer" to="/debug">
                 <Bug className="size-4" />
                 Debug Page
-              </Link>
+              </InternalLink>
             </DropdownMenuItem>
             <DropdownMenuItem
               className="cursor-pointer"

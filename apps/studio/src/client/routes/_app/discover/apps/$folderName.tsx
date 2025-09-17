@@ -5,6 +5,7 @@ import { AIProviderGuard } from "@/client/components/ai-provider-guard";
 import { AIProviderGuardDialog } from "@/client/components/ai-provider-guard-dialog";
 import { SmallAppIcon } from "@/client/components/app-icon";
 import { AppView } from "@/client/components/app-view";
+import { InternalLink } from "@/client/components/internal-link";
 import { Markdown } from "@/client/components/markdown";
 import { NotFoundComponent } from "@/client/components/not-found";
 import { GithubLogo } from "@/client/components/service-icons";
@@ -18,12 +19,7 @@ import {
 } from "@quests/shared";
 import { StoreId } from "@quests/workspace/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import {
-  createFileRoute,
-  Link,
-  notFound,
-  useNavigate,
-} from "@tanstack/react-router";
+import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
 import { ChevronRight, Plus } from "lucide-react";
 import { useState } from "react";
@@ -110,12 +106,12 @@ function RouteComponent() {
     <div className="h-full w-full overflow-y-auto">
       <div className="max-w-6xl mx-auto p-6 space-y-6">
         <nav className="flex items-center space-x-1 text-sm text-muted-foreground">
-          <Link
+          <InternalLink
             className="hover:text-foreground transition-colors"
             to="/discover"
           >
             Discover
-          </Link>
+          </InternalLink>
           <ChevronRight className="h-4 w-4" />
           <span className="text-foreground font-medium">{title}</span>
         </nav>

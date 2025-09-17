@@ -1,3 +1,4 @@
+import { InternalLink } from "@/client/components/internal-link";
 import {
   Sidebar,
   SidebarContent,
@@ -9,12 +10,7 @@ import {
 } from "@/client/components/ui/sidebar";
 import { Toaster } from "@/client/components/ui/sonner";
 import { type MainAppPath } from "@/electron-main/lib/urls";
-import {
-  createFileRoute,
-  Link,
-  Outlet,
-  useMatchRoute,
-} from "@tanstack/react-router";
+import { createFileRoute, Outlet, useMatchRoute } from "@tanstack/react-router";
 import { BotIcon, SettingsIcon, SlidersHorizontalIcon } from "lucide-react";
 
 import { isLinux } from "../lib/utils";
@@ -63,10 +59,10 @@ function SettingsLayout() {
                       asChild
                       isActive={Boolean(matchRoute({ to: item.path }))}
                     >
-                      <Link to={item.path}>
+                      <InternalLink allowOpenNewTab={false} to={item.path}>
                         <item.icon />
                         <span>{item.title}</span>
-                      </Link>
+                      </InternalLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}

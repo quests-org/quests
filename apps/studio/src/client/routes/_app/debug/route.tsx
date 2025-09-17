@@ -1,5 +1,6 @@
+import { InternalLink } from "@/client/components/internal-link";
 import { ThemeToggle } from "@/client/components/theme-toggle";
-import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 
 // Global variables for link styles
 const linkBaseClasses =
@@ -16,7 +17,7 @@ function RouteComponent() {
       <header className="sticky top-0 z-10 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 p-4 shrink-0">
         <nav className="flex items-center justify-between">
           <div className="flex gap-6">
-            <Link
+            <InternalLink
               activeProps={{
                 className: linkActiveClasses,
               }}
@@ -24,8 +25,8 @@ function RouteComponent() {
               to="/debug/components"
             >
               Components
-            </Link>
-            <Link
+            </InternalLink>
+            <InternalLink
               activeProps={{
                 className: linkActiveClasses,
               }}
@@ -33,8 +34,8 @@ function RouteComponent() {
               to="/debug/colors"
             >
               Colors
-            </Link>
-            <Link
+            </InternalLink>
+            <InternalLink
               activeProps={{
                 className: linkActiveClasses,
               }}
@@ -42,7 +43,7 @@ function RouteComponent() {
               to="/debug/bulk-delete"
             >
               Bulk Delete
-            </Link>
+            </InternalLink>
           </div>
           <ThemeToggle />
         </nav>

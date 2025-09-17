@@ -3,13 +3,13 @@ import { cn } from "@/client/lib/utils";
 import { QuestsLogoIcon } from "@quests/components/logo";
 import { GIT_AUTHOR, type ProjectSubdomain } from "@quests/workspace/client";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
 import ColorHash from "color-hash";
 import { format, formatDistanceToNow } from "date-fns";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { rpcClient } from "../rpc/client";
+import { InternalLink } from "./internal-link";
 import { Avatar, AvatarFallback } from "./ui/avatar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { ViewIndicator } from "./view-indicator";
@@ -92,7 +92,8 @@ export function VersionList({
         const hashColor = colorHash.hex(commit.hash);
 
         return (
-          <Link
+          <InternalLink
+            allowOpenNewTab={false}
             from="/projects/$subdomain"
             key={commit.hash}
             params={{ subdomain: projectSubdomain }}
@@ -157,7 +158,7 @@ export function VersionList({
                 )}
               </div>
             </div>
-          </Link>
+          </InternalLink>
         );
       })}
     </div>

@@ -3,12 +3,18 @@ import { useMutation } from "@tanstack/react-query";
 import { Link, type LinkProps, useRouter } from "@tanstack/react-router";
 import * as React from "react";
 
-export function InternalLink(props: LinkProps & React.ComponentProps<"a">) {
+export function InternalLink(
+  props: LinkProps &
+    React.ComponentProps<"a"> & {
+      allowOpenNewTab?: boolean;
+    },
+) {
   const { mutate: navigateCurrent } = useMutation(
     rpcClient.tabs.navigateCurrent.mutationOptions(),
   );
   const { mutate: addTab } = useMutation(rpcClient.tabs.add.mutationOptions());
   const {
+    allowOpenNewTab = true,
     onAuxClick,
     onClick,
     onMouseDown,
@@ -39,13 +45,26 @@ export function InternalLink(props: LinkProps & React.ComponentProps<"a">) {
       if (e.button === 1) {
         e.preventDefault();
         const location = router.buildLocation({ params, search, to });
-        addTab({ urlPath: location.href });
+        if (allowOpenNewTab) {
+          addTab({ urlPath: location.href });
+        } else {
+          navigateCurrent({ urlPath: location.href });
+        }
       }
       if (onAuxClick) {
         onAuxClick(e);
       }
     },
-    [addTab, onAuxClick, params, router, search, to],
+    [
+      addTab,
+      allowOpenNewTab,
+      navigateCurrent,
+      onAuxClick,
+      params,
+      router,
+      search,
+      to,
+    ],
   );
 
   const handleClick = React.useCallback(
@@ -56,7 +75,11 @@ export function InternalLink(props: LinkProps & React.ComponentProps<"a">) {
       // Handle left clicks and ctrl/cmd + left click
       if (e.button === 0) {
         if (e.ctrlKey || e.metaKey) {
-          addTab({ urlPath: location.href });
+          if (allowOpenNewTab) {
+            addTab({ urlPath: location.href });
+          } else {
+            navigateCurrent({ urlPath: location.href });
+          }
         } else {
           navigateCurrent({ urlPath: location.href });
         }
@@ -66,7 +89,16 @@ export function InternalLink(props: LinkProps & React.ComponentProps<"a">) {
         onClick(e);
       }
     },
-    [addTab, navigateCurrent, onClick, params, router, search, to],
+    [
+      addTab,
+      allowOpenNewTab,
+      navigateCurrent,
+      onClick,
+      params,
+      router,
+      search,
+      to,
+    ],
   );
 
   return (

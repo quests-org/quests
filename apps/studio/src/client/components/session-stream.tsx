@@ -5,7 +5,7 @@ import {
   type WorkspaceAppProject,
 } from "@quests/workspace/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Link, useNavigate, useSearch } from "@tanstack/react-router";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import { AlertTriangle, Loader2 } from "lucide-react";
 import { sort } from "radashi";
 import { useCallback, useMemo } from "react";
@@ -18,6 +18,7 @@ import { ChatErrorAlert } from "./chat-error-alert";
 import { ContextMessages } from "./context-messages";
 import { DebugWrapper } from "./debug-wrapper";
 import { GitCommitCard } from "./git-commit-card";
+import { InternalLink } from "./internal-link";
 import { MessageError } from "./message-error";
 import { ReasoningMessage } from "./reasoning-message";
 import { ContextMessage } from "./session-context-message";
@@ -376,7 +377,8 @@ export function SessionStream({
                   <div>Looking for an old chat?</div>
                   <div className="space-y-2">
                     {recentOtherSessions.map((session) => (
-                      <Link
+                      <InternalLink
+                        allowOpenNewTab={false}
                         className="block underline text-xs hover:text-foreground"
                         key={session.id}
                         params={{ subdomain: app.subdomain }}
@@ -388,7 +390,7 @@ export function SessionStream({
                         to="/projects/$subdomain"
                       >
                         {session.title || "Untitled Chat"}
-                      </Link>
+                      </InternalLink>
                     ))}
                   </div>
                 </div>

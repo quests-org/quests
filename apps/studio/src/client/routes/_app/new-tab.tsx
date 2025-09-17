@@ -1,11 +1,12 @@
 import { selectedModelURIAtom } from "@/client/atoms/selected-models";
 import { DiscoverAppsGrid } from "@/client/components/discover-apps-grid";
+import { InternalLink } from "@/client/components/internal-link";
 import { PromptInput } from "@/client/components/prompt-input";
 import { Button } from "@/client/components/ui/button";
 import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
 import { StoreId } from "@quests/workspace/client";
 import { useMutation } from "@tanstack/react-query";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useAtom } from "jotai";
 import { ArrowRight } from "lucide-react";
 import { toast } from "sonner";
@@ -111,9 +112,9 @@ function RouteComponent() {
             </p>
           </div>
           <Button asChild variant="ghost">
-            <Link to="/discover">
+            <InternalLink to="/discover">
               Browse All <ArrowRight className="h-4 w-4" />
-            </Link>
+            </InternalLink>
           </Button>
         </div>
         <DiscoverAppsGrid registryApps={registryApps} />

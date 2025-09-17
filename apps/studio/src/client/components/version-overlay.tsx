@@ -4,7 +4,6 @@ import {
   VersionSubdomainSchema,
 } from "@quests/workspace/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
 import ColorHash from "color-hash";
 import { ExternalLinkIcon } from "lucide-react";
 import { useMemo } from "react";
@@ -12,6 +11,7 @@ import { useMemo } from "react";
 import { rpcClient } from "../rpc/client";
 import { AppView } from "./app-view";
 import { GitCommitCard } from "./git-commit-card";
+import { InternalLink } from "./internal-link";
 import { Button } from "./ui/button";
 import {
   Tooltip,
@@ -82,7 +82,8 @@ export function VersionOverlay({
       <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm">
         <div className="text-center space-y-6 px-6 py-8 bg-background/90 rounded-lg border shadow-lg">
           <p className="text-sm text-muted-foreground">Version not found</p>
-          <Link
+          <InternalLink
+            allowOpenNewTab={false}
             className="text-sm text-primary hover:underline"
             from="/projects/$subdomain"
             params={{
@@ -91,7 +92,7 @@ export function VersionOverlay({
             search={(prev) => ({ ...prev, selectedVersion: undefined })}
           >
             Close
-          </Link>
+          </InternalLink>
         </div>
       </div>
     );
