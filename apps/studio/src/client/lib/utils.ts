@@ -5,6 +5,10 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+export function isLinux(): boolean {
+  return window.electron.process.platform === "linux";
+}
+
 export function isMacOS(): boolean {
   return window.electron.process.platform === "darwin";
 }

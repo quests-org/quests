@@ -17,6 +17,8 @@ import {
 } from "@tanstack/react-router";
 import { BotIcon, SettingsIcon, SlidersHorizontalIcon } from "lucide-react";
 
+import { isLinux } from "../lib/utils";
+
 export const Route = createFileRoute("/settings")({
   component: SettingsLayout,
 });
@@ -43,9 +45,13 @@ function SettingsLayout() {
 
   return (
     <div className="bg-background fixed h-full w-full flex flex-col overflow-hidden">
-      <div className="px-6 pt-2 pb-4 [-webkit-app-region:drag] text-center font-semibold">
-        Settings
-      </div>
+      {isLinux() ? (
+        <div className="pt-4"></div>
+      ) : (
+        <div className="px-6 pt-2 pb-4 [-webkit-app-region:drag] text-center font-semibold">
+          Settings
+        </div>
+      )}
       <div className="flex-1 px-3 overflow-y-auto">
         <SidebarProvider className="min-h-0" defaultOpen>
           <Sidebar className="bg-transparent" collapsible="none">
