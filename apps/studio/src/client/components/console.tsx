@@ -1,5 +1,5 @@
 import { cn } from "@/client/lib/utils";
-import { ChevronDown, ChevronUpIcon, Trash, X } from "lucide-react";
+import { ChevronDown, Trash, X } from "lucide-react";
 import { useState } from "react";
 import { useStickToBottom } from "use-stick-to-bottom";
 
@@ -20,24 +20,16 @@ const getLogLineStyles = (type: LogLine["type"]) => {
 };
 
 interface ConsoleProps {
-  isCollapsed?: boolean;
   logs: RPCOutput["workspace"]["runtime"]["log"]["list"];
   onClearLogs: () => void;
   onCollapse: () => void;
-  onRestore: () => void;
 }
 
 type LogLine = RPCOutput["workspace"]["runtime"]["log"]["list"][number];
 
-export function Console({
-  isCollapsed,
-  logs,
-  onClearLogs,
-  onCollapse,
-  onRestore,
-}: ConsoleProps) {
+export function Console({ logs, onClearLogs, onCollapse }: ConsoleProps) {
   const { contentRef, isNearBottom, scrollRef, scrollToBottom } =
-    useStickToBottom({ mass: 0.8 });
+    useStickToBottom({ initial: "instant", mass: 0.8 });
 
   return (
     <div className="flex h-full w-full flex-col overflow-hidden border-l border-r border-b border-border bg-background relative rounded-b-lg">
@@ -63,11 +55,11 @@ export function Console({
           </Tooltip>
           <Button
             className="size-fit p-1"
-            onClick={isCollapsed ? onRestore : onCollapse}
+            onClick={onCollapse}
             size="icon"
             variant="ghost"
           >
-            {isCollapsed ? <ChevronUpIcon /> : <X />}
+            <X />
           </Button>
         </div>
       </div>

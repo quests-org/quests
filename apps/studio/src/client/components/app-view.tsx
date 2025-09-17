@@ -26,7 +26,6 @@ interface AppViewProps {
 interface ConsoleWithLogsProps {
   app: WorkspaceApp;
   onCollapse: () => void;
-  onRestore: () => void;
 }
 
 export function AppView({
@@ -113,7 +112,7 @@ export function AppView({
           <AppIFrame
             app={app}
             className={cn(
-              "transition-all duration-200 flex-1 min-h-0",
+              "flex-1 min-h-0",
               isConsoleCollapsed ? "rounded-b-lg" : "",
             )}
             iframeRef={iframeRef}
@@ -126,9 +125,6 @@ export function AppView({
                 onCollapse={() => {
                   setIsConsoleCollapsed(true);
                 }}
-                onRestore={() => {
-                  setIsConsoleCollapsed(false);
-                }}
               />
             </div>
           )}
@@ -138,7 +134,7 @@ export function AppView({
   );
 }
 
-function ConsoleWithLogs({ app, onCollapse, onRestore }: ConsoleWithLogsProps) {
+function ConsoleWithLogs({ app, onCollapse }: ConsoleWithLogsProps) {
   const { data: runtimeLogs = [] } = useQuery(
     rpcClient.workspace.runtime.log.live.list.experimental_liveOptions({
       input: { subdomain: app.subdomain },
@@ -155,11 +151,9 @@ function ConsoleWithLogs({ app, onCollapse, onRestore }: ConsoleWithLogsProps) {
 
   return (
     <Console
-      isCollapsed={false}
       logs={runtimeLogs}
       onClearLogs={handleClearLogs}
       onCollapse={onCollapse}
-      onRestore={onRestore}
     />
   );
 }
