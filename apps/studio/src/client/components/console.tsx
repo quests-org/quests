@@ -1,10 +1,23 @@
 import { cn } from "@/client/lib/utils";
 import { ChevronDown, ChevronUpIcon, Trash, X } from "lucide-react";
+import { useState } from "react";
 import { useStickToBottom } from "use-stick-to-bottom";
 
 import { type RPCOutput } from "../rpc/client";
 import { Button } from "./ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
+
+const MAX_LINE_LENGTH = 200;
+const MAX_LINES = 2;
+
+const getLogLineStyles = (type: LogLine["type"]) => {
+  return cn(
+    "shrink-1 overflow-x-auto whitespace-pre-wrap break-all px-2 py-1 rounded-sm",
+    type === "error"
+      ? "bg-destructive/5 text-destructive"
+      : "bg-muted/30 text-foreground",
+  );
+};
 
 interface ConsoleProps {
   isCollapsed?: boolean;
@@ -13,6 +26,8 @@ interface ConsoleProps {
   onCollapse: () => void;
   onRestore: () => void;
 }
+
+type LogLine = RPCOutput["workspace"]["runtime"]["log"]["list"][number];
 
 export function Console({
   isCollapsed,
@@ -58,11 +73,11 @@ export function Console({
       </div>
 
       <div
-        className="flex-1 overflow-y-auto pt-2 min-h-0 bg-muted/50"
+        className="flex-1 overflow-y-auto min-h-0 bg-muted/50"
         ref={scrollRef}
       >
         <div
-          className="flex flex-col border-border px-2 font-mono text-xs"
+          className="flex flex-col border-border font-mono text-xs"
           ref={contentRef}
         >
           {logs.map((line, index) => {
@@ -75,18 +90,13 @@ export function Console({
                 )}
                 key={line.id}
               >
-                <div
-                  className={cn(
-                    "shrink-1 overflow-x-auto whitespace-pre-wrap break-all",
-                    isTruncationMessage
-                      ? "text-muted-foreground italic"
-                      : line.type === "error"
-                        ? "text-destructive"
-                        : "text-foreground",
-                  )}
-                >
-                  {line.message}
-                </div>
+                {isTruncationMessage ? (
+                  <div className="text-muted-foreground italic bg-muted/30 px-2 py-1 rounded-sm shrink-1 overflow-x-auto whitespace-pre-wrap break-all">
+                    {line.message}
+                  </div>
+                ) : (
+                  <TruncatedLogLine line={line} />
+                )}
               </div>
             );
           })}
@@ -103,6 +113,43 @@ export function Console({
           <ChevronDown className="h-3 w-3" />
         </Button>
       )}
+    </div>
+  );
+}
+
+function TruncatedLogLine({ line: { message, type } }: { line: LogLine }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const lines = message.split("\n");
+  const exceedsLineCount = lines.length > MAX_LINES;
+  const exceedsCharLength = message.length > MAX_LINE_LENGTH;
+  const needsTruncation = exceedsLineCount || exceedsCharLength;
+
+  let displayMessage = message;
+  if (needsTruncation && !isExpanded) {
+    if (exceedsLineCount) {
+      displayMessage = lines.slice(0, MAX_LINES).join("\n");
+    } else if (exceedsCharLength) {
+      displayMessage = message.slice(0, MAX_LINE_LENGTH);
+    }
+  }
+
+  if (!needsTruncation) {
+    return <div className={getLogLineStyles(type)}>{message}</div>;
+  }
+
+  return (
+    <div className={getLogLineStyles(type)}>
+      <button
+        className="text-muted-foreground hover:text-foreground transition-colors mr-1 font-mono"
+        onClick={() => {
+          setIsExpanded(!isExpanded);
+        }}
+        type="button"
+      >
+        {isExpanded ? "▼" : "▶"}
+      </button>
+      {displayMessage}
     </div>
   );
 }
