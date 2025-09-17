@@ -346,7 +346,7 @@ async function createWindow() {
   const mainWindow = new BrowserWindow({
     ...boundsState,
     show: false,
-    titleBarStyle: process.platform === "win32" ? "hidden" : "hiddenInset",
+    titleBarStyle: process.platform === "darwin" ? "hiddenInset" : "hidden",
     trafficLightPosition: { x: 12, y: 12 },
     ...(process.platform === "linux" ? { icon } : {}),
     frame: false,
