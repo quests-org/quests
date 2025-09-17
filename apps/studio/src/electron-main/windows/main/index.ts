@@ -8,6 +8,10 @@ import { mainAppUrl } from "@/electron-main/lib/urls";
 import { onMainWindowContextMenu } from "@/electron-main/menus/context-menus";
 import { windowStateStore } from "@/electron-main/stores/main-window";
 import { createTabsManager, getTabsManager } from "@/electron-main/tabs";
+import {
+  getMainWindow,
+  setMainWindow,
+} from "@/electron-main/windows/main/instance";
 import { createToolbar } from "@/electron-main/windows/toolbar";
 import {
   getRendererHandlers,
@@ -19,12 +23,7 @@ import path from "node:path";
 
 import icon from "../../../resources/icon.png?asset";
 
-let mainWindow: BrowserWindow | null = null;
 let toolbar: Electron.CrossProcessExports.WebContentsView | null = null;
-
-export function getMainWindow() {
-  return mainWindow;
-}
 
 export let toolbarRenderHandlers:
   | RendererHandlersCaller<RendererHandlers>
@@ -44,7 +43,7 @@ const toolbarRenderHandlersProxy = new Proxy<
 export async function createMainWindow() {
   const boundsState = windowStateStore.get("bounds");
 
-  mainWindow = new BrowserWindow({
+  const mainWindow = new BrowserWindow({
     ...boundsState,
     show: false,
     titleBarStyle: process.platform === "darwin" ? "hiddenInset" : "hidden",
@@ -62,9 +61,11 @@ export async function createMainWindow() {
     },
   });
 
+  setMainWindow(mainWindow);
+
   const saveState = () => {
-    const isMaximized = mainWindow?.isMaximized();
-    const bounds = mainWindow?.getBounds();
+    const isMaximized = mainWindow.isMaximized();
+    const bounds = mainWindow.getBounds();
 
     windowStateStore.set({
       bounds: isMaximized ? windowStateStore.get("bounds") : bounds,
@@ -81,11 +82,12 @@ export async function createMainWindow() {
   mainWindow.on("resize", saveState);
   mainWindow.on("move", saveState);
   mainWindow.on("ready-to-show", () => {
-    if (!mainWindow) {
+    const window = getMainWindow();
+    if (!window) {
       return;
     }
 
-    showWindow(mainWindow);
+    showWindow(window);
   });
 
   toolbar = await createToolbar({ baseWindow: mainWindow });
@@ -117,11 +119,12 @@ export async function createMainWindow() {
 
   if (is.dev) {
     mainWindow.webContents.on("context-menu", (_, props) => {
-      if (!mainWindow) {
+      const window = getMainWindow();
+      if (!window) {
         return;
       }
 
-      onMainWindowContextMenu(mainWindow, props);
+      onMainWindowContextMenu(window, props);
     });
   }
 

@@ -1,4 +1,4 @@
-import { getMainWindow } from "@/electron-main/windows/main";
+import { getMainWindow } from "@/electron-main/windows/main/instance";
 import { type BaseWindow, Menu, shell, WebContentsView } from "electron";
 import path from "node:path";
 
