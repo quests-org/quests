@@ -51,8 +51,40 @@ jobs:
         name: upload-linux-artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: linux-build-artifacts
-          path: apps/studio/dist/
+          name: linux-appimage
+          path: apps/studio/dist/*.AppImage
+          retention-days: 30
+
+      - if: matrix.os == 'ubuntu-latest'
+        name: upload-linux-deb
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-deb
+          path: apps/studio/dist/*.deb
+          retention-days: 30
+
+      - if: matrix.os == 'ubuntu-latest'
+        name: upload-linux-snap
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-snap
+          path: apps/studio/dist/*.snap
+          retention-days: 30
+
+      - if: matrix.os == 'ubuntu-latest'
+        name: upload-linux-yml
+        uses: actions/upload-artifact@v4
+        with:
+          name: latest-linux.yml
+          path: apps/studio/dist/latest-linux.yml
+          retention-days: 30
+
+      - if: matrix.os == 'ubuntu-latest'
+        name: upload-linux-blockmap
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-blockmap
+          path: apps/studio/dist/*.blockmap
           retention-days: 30
 
       - if: matrix.os == 'macos-latest'
@@ -87,11 +119,35 @@ jobs:
           rm ~/.private_keys/AuthKey_${{ secrets.APPLE_API_KEY_ID }}.p8
 
       - if: matrix.os == 'macos-latest'
-        name: upload-macos-artifacts
+        name: upload-macos-dmg
         uses: actions/upload-artifact@v4
         with:
-          name: macos-build-artifacts
-          path: apps/studio/dist/
+          name: macos-dmg
+          path: apps/studio/dist/*.dmg
+          retention-days: 30
+
+      - if: matrix.os == 'macos-latest'
+        name: upload-macos-zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-zip
+          path: apps/studio/dist/*.zip
+          retention-days: 30
+
+      - if: matrix.os == 'macos-latest'
+        name: upload-macos-yml
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-yml
+          path: apps/studio/dist/*.yml
+          retention-days: 30
+
+      - if: matrix.os == 'macos-latest'
+        name: upload-macos-blockmap
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-blockmap
+          path: apps/studio/dist/*.blockmap
           retention-days: 30
 
       - if: matrix.os == 'windows-latest'
@@ -109,11 +165,35 @@ jobs:
           VITE_QUESTS_API_BASE_URL: ${{ vars.VITE_QUESTS_API_BASE_URL }}
 
       - if: matrix.os == 'windows-latest'
-        name: upload-windows-artifacts
+        name: upload-windows-exe
         uses: actions/upload-artifact@v4
         with:
-          name: windows-build-artifacts
-          path: apps/studio/dist/
+          name: windows-exe
+          path: apps/studio/dist/*.exe
+          retention-days: 30
+
+      - if: matrix.os == 'windows-latest'
+        name: upload-windows-zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-zip
+          path: apps/studio/dist/*.zip
+          retention-days: 30
+
+      - if: matrix.os == 'windows-latest'
+        name: upload-windows-yml
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-yml
+          path: apps/studio/dist/*.yml
+          retention-days: 30
+
+      - if: matrix.os == 'windows-latest'
+        name: upload-windows-blockmap
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-blockmap
+          path: apps/studio/dist/*.blockmap
           retention-days: 30
 
       - name: release
