@@ -70,7 +70,12 @@ const config: Configuration = {
     executableName: "quests",
     icon: "build/icons",
     maintainer: "quests.dev",
-    target: ["AppImage", "deb", "snap", "tar.gz"],
+    target: [
+      { arch: ["x64", "arm64"], target: "AppImage" },
+      { arch: ["x64", "arm64"], target: "deb" },
+      { arch: ["x64", "arm64"], target: "rpm" },
+      { arch: ["x64", "arm64"], target: "tar.gz" },
+    ],
   },
   mac: {
     category: "public.app-category.developer-tools",
@@ -79,6 +84,10 @@ const config: Configuration = {
     hardenedRuntime: true,
     // eslint-disable-next-line turbo/no-undeclared-env-vars
     notarize: process.env.APPLE_NOTARIZATION_ENABLED === "true",
+    target: [
+      { arch: ["x64", "arm64"], target: "dmg" },
+      { arch: ["x64", "arm64"], target: "zip" },
+    ],
   },
   npmRebuild: false,
   nsis: {
@@ -98,6 +107,7 @@ const config: Configuration = {
   },
   win: {
     executableName: "quests",
+    target: [{ arch: ["x64", "arm64"], target: "nsis" }],
   },
 };
 

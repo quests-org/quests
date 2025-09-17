@@ -72,6 +72,14 @@ jobs:
           retention-days: 30
 
       - if: matrix.os == 'ubuntu-latest'
+        name: upload-linux-tar-gz
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-tar-gz
+          path: apps/studio/dist/*.tar.gz
+          retention-days: 30
+
+      - if: matrix.os == 'ubuntu-latest'
         name: upload-linux-yml
         uses: actions/upload-artifact@v4
         with:
