@@ -38,7 +38,7 @@ export function AppView({
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const setProjectIframeRef = useSetAtom(projectIframeRefAtom);
 
-  const [isConsoleCollapsed, setIsConsoleCollapsed] = useState(true);
+  const [isConsoleOpen, setIsConsoleOpen] = useState(true);
 
   const openExternalLinkMutation = useMutation(
     rpcClient.utils.openExternalLink.mutationOptions(),
@@ -62,10 +62,10 @@ export function AppView({
   }, [app.type, setProjectIframeRef, iframeRef]);
 
   const handleConsoleToggle = () => {
-    if (isConsoleCollapsed) {
-      setIsConsoleCollapsed(false);
+    if (isConsoleOpen) {
+      setIsConsoleOpen(false);
     } else {
-      setIsConsoleCollapsed(true);
+      setIsConsoleOpen(true);
     }
   };
 
@@ -103,7 +103,7 @@ export function AppView({
           centerActions={centerActions}
           centerContent={centerContent}
           iframeRef={iframeRef}
-          isConsoleCollapsed={isConsoleCollapsed}
+          isConsoleOpen={isConsoleOpen}
           onConsoleToggle={handleConsoleToggle}
           rightActions={rightActions}
         />
@@ -113,17 +113,17 @@ export function AppView({
             app={app}
             className={cn(
               "flex-1 min-h-0",
-              isConsoleCollapsed ? "rounded-b-lg" : "",
+              isConsoleOpen ? "rounded-b-lg" : "",
             )}
             iframeRef={iframeRef}
           />
 
-          {!isConsoleCollapsed && (
-            <div className="h-80 max-h-80 min-h-[200px] border-t shrink-0">
+          {!isConsoleOpen && (
+            <div className="h-64 border-t shrink-0">
               <ConsoleWithLogs
                 app={app}
                 onCollapse={() => {
-                  setIsConsoleCollapsed(true);
+                  setIsConsoleOpen(true);
                 }}
               />
             </div>

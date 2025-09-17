@@ -19,7 +19,7 @@ interface AppToolbarProps {
   className?: string;
   disabled?: boolean;
   iframeRef: React.RefObject<HTMLIFrameElement | null>;
-  isConsoleCollapsed?: boolean;
+  isConsoleOpen?: boolean;
   onConsoleToggle: () => void;
   rightActions?: ReactNode;
 }
@@ -35,7 +35,7 @@ export function AppToolbar({
   className,
   disabled = false,
   iframeRef,
-  isConsoleCollapsed = true,
+  isConsoleOpen = true,
   onConsoleToggle,
   rightActions,
 }: AppToolbarProps) {
@@ -53,16 +53,16 @@ export function AppToolbar({
   );
 
   useEffect(() => {
-    if (!isConsoleCollapsed && runtimeLogs.length > 0) {
+    if (!isConsoleOpen && runtimeLogs.length > 0) {
       const latestLogId = runtimeLogs.at(-1)?.id;
       if (latestLogId && latestLogId !== lastSeenLogId) {
         setLastSeenLogId(latestLogId);
       }
     }
-  }, [runtimeLogs, isConsoleCollapsed, lastSeenLogId, setLastSeenLogId]);
+  }, [runtimeLogs, isConsoleOpen, lastSeenLogId, setLastSeenLogId]);
 
   const badgeStatus = useMemo((): "error" | "new" | "none" => {
-    if (runtimeLogs.length === 0 || !isConsoleCollapsed) {
+    if (runtimeLogs.length === 0 || !isConsoleOpen) {
       return "none";
     }
 
@@ -84,10 +84,10 @@ export function AppToolbar({
 
     const hasErrors = newLogs.some((log) => log.type === "error");
     return hasErrors ? "error" : "new";
-  }, [runtimeLogs, lastSeenLogId, isConsoleCollapsed]);
+  }, [runtimeLogs, lastSeenLogId, isConsoleOpen]);
 
   const handleConsoleToggleWithTracking = () => {
-    if (isConsoleCollapsed && runtimeLogs.length > 0) {
+    if (isConsoleOpen && runtimeLogs.length > 0) {
       // Mark all current logs as seen when opening console
       setLastSeenLogId(runtimeLogs.at(-1)?.id ?? null);
     }
@@ -163,7 +163,7 @@ export function AppToolbar({
                 disabled={disabled}
                 onClick={handleConsoleToggleWithTracking}
                 size="icon"
-                variant={isConsoleCollapsed ? "ghost" : "secondary"}
+                variant={isConsoleOpen ? "ghost" : "secondary"}
               >
                 <PanelBottom className="size-4" />
               </Button>
@@ -171,7 +171,7 @@ export function AppToolbar({
             </div>
           </TooltipTrigger>
           <TooltipContent>
-            <p>{isConsoleCollapsed ? "Show Console" : "Hide Console"}</p>
+            <p>{isConsoleOpen ? "Show Console" : "Hide Console"}</p>
           </TooltipContent>
         </Tooltip>
 
