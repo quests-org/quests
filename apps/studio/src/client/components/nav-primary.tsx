@@ -1,4 +1,4 @@
-import { SidebarLink } from "@/client/components/sidebar-link";
+import { InternalLink } from "@/client/components/internal-link";
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -34,10 +34,10 @@ export function NavPrimary({
                 className="group-hover:bg-black/10 dark:group-hover:bg-white/10"
                 isActive={item.isActive}
               >
-                <SidebarLink className="[&>svg]:size-5" to={item.url}>
+                <InternalLink className="[&>svg]:size-5" to={item.url}>
                   <item.icon />
                   <span>{item.title}</span>
-                </SidebarLink>
+                </InternalLink>
               </SidebarMenuButton>
               {item.badge && <SidebarMenuBadge>{item.badge}</SidebarMenuBadge>}
             </SidebarMenuItem>

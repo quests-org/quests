@@ -1,7 +1,7 @@
 import { SmallAppIcon } from "@/client/components/app-icon";
+import { InternalLink } from "@/client/components/internal-link";
 import { cn } from "@/client/lib/utils";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
 import { Package } from "lucide-react";
 
 import { rpcClient } from "../rpc/client";
@@ -31,7 +31,7 @@ export function RegistryAppCard({
   return (
     <div className={cn("group relative block", className)} {...props}>
       <div className="flex flex-col gap-2">
-        <Link params={{ folderName }} to="/discover/apps/$folderName">
+        <InternalLink params={{ folderName }} to="/discover/apps/$folderName">
           <div className="overflow-hidden rounded-md border border-border relative">
             <div className="aspect-video w-full bg-muted flex items-center justify-center relative">
               {appDetails?.screenshotPath && screenshotDataUrl ? (
@@ -51,7 +51,7 @@ export function RegistryAppCard({
               )}
             </div>
           </div>
-        </Link>
+        </InternalLink>
         <div className="flex items-start gap-2 text-sm">
           <SmallAppIcon
             background={icon?.background}
@@ -59,11 +59,14 @@ export function RegistryAppCard({
             size="lg"
           />
           <div className="space-y-1 flex-1 min-w-0">
-            <Link params={{ folderName }} to="/discover/apps/$folderName">
+            <InternalLink
+              params={{ folderName }}
+              to="/discover/apps/$folderName"
+            >
               <h3 className="font-medium leading-none text-foreground">
                 {title}
               </h3>
-            </Link>
+            </InternalLink>
             {description && (
               <p className="text-xs text-muted-foreground line-clamp-2">
                 {description}

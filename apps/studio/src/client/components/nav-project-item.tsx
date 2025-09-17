@@ -1,5 +1,5 @@
 import { SmallAppIcon } from "@/client/components/app-icon";
-import { SidebarLink } from "@/client/components/sidebar-link";
+import { InternalLink } from "@/client/components/internal-link";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -136,7 +136,7 @@ export function NavProjectItem({
           asChild
           className="h-9 group-hover:bg-black/10 dark:group-hover:bg-white/10"
         >
-          <SidebarLink
+          <InternalLink
             params={{ subdomain: project.subdomain }}
             title={project.title}
             to="/projects/$subdomain"
@@ -149,7 +149,7 @@ export function NavProjectItem({
               />
             )}
             <span onDoubleClick={handleStartEdit}>{project.title}</span>
-          </SidebarLink>
+          </InternalLink>
         </SidebarMenuButton>
       )}
 
@@ -202,7 +202,7 @@ export function NavProjectItem({
                 <span>Remove favorite</span>
               </DropdownMenuItem>
             )}
-            <SidebarLink
+            <InternalLink
               params={{ subdomain: project.subdomain }}
               search={{ showDelete: true }}
               to="/projects/$subdomain"
@@ -211,7 +211,7 @@ export function NavProjectItem({
                 <TrashIcon className="size-4" />
                 <span>Delete</span>
               </DropdownMenuItem>
-            </SidebarLink>
+            </InternalLink>
           </DropdownMenuContent>
         </DropdownMenu>
       )}

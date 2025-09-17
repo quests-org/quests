@@ -3,7 +3,7 @@ import { useMutation } from "@tanstack/react-query";
 import { Link, type LinkProps, useRouter } from "@tanstack/react-router";
 import * as React from "react";
 
-export function SidebarLink(props: LinkProps & React.ComponentProps<"a">) {
+export function InternalLink(props: LinkProps & React.ComponentProps<"a">) {
   const { mutate: navigateCurrent } = useMutation(
     rpcClient.tabs.navigateCurrent.mutationOptions(),
   );
