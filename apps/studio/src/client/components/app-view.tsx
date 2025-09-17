@@ -119,7 +119,7 @@ export function AppView({
           />
 
           {!isConsoleOpen && (
-            <div className="h-64 border-t shrink-0">
+            <div className="h-66 border-t shrink-0">
               <ConsoleWithLogs
                 app={app}
                 onCollapse={() => {

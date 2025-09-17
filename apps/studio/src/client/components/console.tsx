@@ -12,7 +12,7 @@ const MAX_LINES = 2;
 
 const getLogLineStyles = (type: LogLine["type"]) => {
   return cn(
-    "shrink-1 overflow-x-auto whitespace-pre-wrap break-all px-2 py-1 rounded-sm",
+    "shrink-1 overflow-x-auto whitespace-pre-wrap break-all px-2 py-0.5 rounded-sm",
     type === "error"
       ? "bg-destructive/5 text-destructive"
       : "bg-muted/30 text-foreground",
@@ -76,13 +76,13 @@ export function Console({ logs, onClearLogs, onCollapse }: ConsoleProps) {
             return (
               <div
                 className={cn(
-                  "py-1 px-2",
+                  "py-0.5 px-2",
                   index > 0 && "border-t border-border/40",
                 )}
                 key={line.id}
               >
                 {line.type === "truncation" ? (
-                  <div className="text-muted-foreground italic bg-muted/30 px-2 py-1 rounded-sm shrink-1 overflow-x-auto whitespace-pre-wrap break-all">
+                  <div className="text-muted-foreground italic bg-muted/30 px-2 py-0.5 rounded-sm shrink-1 overflow-x-auto whitespace-pre-wrap break-all">
                     {line.message}
                   </div>
                 ) : (
