@@ -24,7 +24,6 @@ import { Route as AppSetupRouteImport } from './routes/_app/setup'
 import { Route as AppReleaseNotesRouteImport } from './routes/_app/release-notes'
 import { Route as AppNewTabRouteImport } from './routes/_app/new-tab'
 import { Route as AppDebugRouteRouteImport } from './routes/_app/debug/route'
-import { Route as AppProjectsIndexRouteImport } from './routes/_app/projects/index'
 import { Route as AppDiscoverIndexRouteImport } from './routes/_app/discover/index'
 import { Route as AppDebugIndexRouteImport } from './routes/_app/debug/index'
 import { Route as AppDebugComponentsRouteImport } from './routes/_app/debug/components'
@@ -107,11 +106,6 @@ const AppDebugRouteRoute = AppDebugRouteRouteImport.update({
   path: '/debug',
   getParentRoute: () => AppRouteRoute,
 } as any)
-const AppProjectsIndexRoute = AppProjectsIndexRouteImport.update({
-  id: '/projects/',
-  path: '/projects/',
-  getParentRoute: () => AppRouteRoute,
-} as any)
 const AppDiscoverIndexRoute = AppDiscoverIndexRouteImport.update({
   id: '/discover/',
   path: '/discover/',
@@ -175,7 +169,6 @@ export interface FileRoutesByFullPath {
   '/debug/components': typeof AppDebugComponentsRoute
   '/debug/': typeof AppDebugIndexRoute
   '/discover': typeof AppDiscoverIndexRoute
-  '/projects': typeof AppProjectsIndexRoute
   '/discover/apps/$folderName': typeof AppDiscoverAppsFolderNameRoute
   '/projects/$subdomain/view': typeof AppProjectsSubdomainViewRoute
   '/projects/$subdomain': typeof AppProjectsSubdomainIndexRoute
@@ -197,7 +190,6 @@ export interface FileRoutesByTo {
   '/debug/components': typeof AppDebugComponentsRoute
   '/debug': typeof AppDebugIndexRoute
   '/discover': typeof AppDiscoverIndexRoute
-  '/projects': typeof AppProjectsIndexRoute
   '/discover/apps/$folderName': typeof AppDiscoverAppsFolderNameRoute
   '/projects/$subdomain/view': typeof AppProjectsSubdomainViewRoute
   '/projects/$subdomain': typeof AppProjectsSubdomainIndexRoute
@@ -224,7 +216,6 @@ export interface FileRoutesById {
   '/_app/debug/components': typeof AppDebugComponentsRoute
   '/_app/debug/': typeof AppDebugIndexRoute
   '/_app/discover/': typeof AppDiscoverIndexRoute
-  '/_app/projects/': typeof AppProjectsIndexRoute
   '/_app/discover/apps/$folderName': typeof AppDiscoverAppsFolderNameRoute
   '/_app/projects/$subdomain/view': typeof AppProjectsSubdomainViewRoute
   '/_app/projects/$subdomain/': typeof AppProjectsSubdomainIndexRoute
@@ -250,7 +241,6 @@ export interface FileRouteTypes {
     | '/debug/components'
     | '/debug/'
     | '/discover'
-    | '/projects'
     | '/discover/apps/$folderName'
     | '/projects/$subdomain/view'
     | '/projects/$subdomain'
@@ -272,7 +262,6 @@ export interface FileRouteTypes {
     | '/debug/components'
     | '/debug'
     | '/discover'
-    | '/projects'
     | '/discover/apps/$folderName'
     | '/projects/$subdomain/view'
     | '/projects/$subdomain'
@@ -298,7 +287,6 @@ export interface FileRouteTypes {
     | '/_app/debug/components'
     | '/_app/debug/'
     | '/_app/discover/'
-    | '/_app/projects/'
     | '/_app/discover/apps/$folderName'
     | '/_app/projects/$subdomain/view'
     | '/_app/projects/$subdomain/'
@@ -420,13 +408,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDebugRouteRouteImport
       parentRoute: typeof AppRouteRoute
     }
-    '/_app/projects/': {
-      id: '/_app/projects/'
-      path: '/projects'
-      fullPath: '/projects'
-      preLoaderRoute: typeof AppProjectsIndexRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
     '/_app/discover/': {
       id: '/_app/discover/'
       path: '/discover'
@@ -510,7 +491,6 @@ interface AppRouteRouteChildren {
   AppReleaseNotesRoute: typeof AppReleaseNotesRoute
   AppSetupRoute: typeof AppSetupRoute
   AppDiscoverIndexRoute: typeof AppDiscoverIndexRoute
-  AppProjectsIndexRoute: typeof AppProjectsIndexRoute
   AppDiscoverAppsFolderNameRoute: typeof AppDiscoverAppsFolderNameRoute
   AppProjectsSubdomainViewRoute: typeof AppProjectsSubdomainViewRoute
   AppProjectsSubdomainIndexRoute: typeof AppProjectsSubdomainIndexRoute
@@ -522,7 +502,6 @@ const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppReleaseNotesRoute: AppReleaseNotesRoute,
   AppSetupRoute: AppSetupRoute,
   AppDiscoverIndexRoute: AppDiscoverIndexRoute,
-  AppProjectsIndexRoute: AppProjectsIndexRoute,
   AppDiscoverAppsFolderNameRoute: AppDiscoverAppsFolderNameRoute,
   AppProjectsSubdomainViewRoute: AppProjectsSubdomainViewRoute,
   AppProjectsSubdomainIndexRoute: AppProjectsSubdomainIndexRoute,
