@@ -39,7 +39,12 @@ const clearLogs = base
   });
 
 const logList = base
-  .input(z.object({ subdomain: AppSubdomainSchema }))
+  .input(
+    z.object({
+      limit: z.number().optional().default(1000),
+      subdomain: AppSubdomainSchema,
+    }),
+  )
   .output(LogEntrySchema.array())
   .handler(({ context, input }) => {
     const snapshot = context.workspaceRef.getSnapshot();
@@ -51,14 +56,13 @@ const logList = base
 
     const runtimeSnapshot = runtimeRef.getSnapshot();
     const allLogs = runtimeSnapshot.context.logs;
-    const MAX_LOG_ENTRIES = 1000;
 
-    if (allLogs.length <= MAX_LOG_ENTRIES) {
+    if (allLogs.length <= input.limit) {
       return allLogs;
     }
 
-    const truncatedCount = allLogs.length - MAX_LOG_ENTRIES;
-    const recentLogs = allLogs.slice(-MAX_LOG_ENTRIES);
+    const truncatedCount = allLogs.length - input.limit;
+    const recentLogs = allLogs.slice(-input.limit);
 
     const truncationMessage = {
       createdAt: new Date(),
@@ -71,7 +75,12 @@ const logList = base
   });
 
 const logLiveList = base
-  .input(z.object({ subdomain: AppSubdomainSchema }))
+  .input(
+    z.object({
+      limit: z.number().optional().default(1000),
+      subdomain: AppSubdomainSchema,
+    }),
+  )
   .output(eventIterator(LogEntrySchema.array()))
   .handler(async function* ({ context, input, signal }) {
     let previousLogs = yield call(logList, input, { context, signal });

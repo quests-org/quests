@@ -81,7 +81,6 @@ export function Console({
           ref={contentRef}
         >
           {logs.map((line, index) => {
-            const isTruncationMessage = line.id.startsWith("truncation-");
             return (
               <div
                 className={cn(
@@ -90,7 +89,7 @@ export function Console({
                 )}
                 key={line.id}
               >
-                {isTruncationMessage ? (
+                {line.type === "truncation" ? (
                   <div className="text-muted-foreground italic bg-muted/30 px-2 py-1 rounded-sm shrink-1 overflow-x-auto whitespace-pre-wrap break-all">
                     {line.message}
                   </div>
