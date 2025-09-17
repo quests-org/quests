@@ -155,14 +155,6 @@ export const spawnRuntimeLogic = fromCallback<
             "pnpm install --ignore-workspace"
           : "pnpm install";
 
-      parentRef.send({
-        type: "spawnRuntime.log",
-        value: {
-          message: `Installing dependencies (${installCommand})...`,
-          type: "normal",
-        },
-      });
-
       const installResult = await appConfig.workspaceConfig.runShellCommand(
         installCommand,
         {
@@ -182,16 +174,8 @@ export const spawnRuntimeLogic = fromCallback<
       }
 
       const installProcessPromise = installResult.value;
-      sendProcessLogs(installProcessPromise, parentRef, { errorOnly: true });
+      sendProcessLogs(installProcessPromise, parentRef);
       await installProcessPromise;
-
-      parentRef.send({
-        type: "spawnRuntime.log",
-        value: {
-          message: "Dependencies installed successfully",
-          type: "normal",
-        },
-      });
 
       // Use detect to check if port is actually available and get alternative if needed
       const detectedPort = await detect(port);

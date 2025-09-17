@@ -49,6 +49,22 @@ type RuntimeEvent =
 
 export const runtimeMachine = setup({
   actions: {
+    appendLog: assign({
+      logs: (
+        { context },
+        { message, type }: { message: string; type: LogEntry["type"] },
+      ) => [
+        ...context.logs,
+        { createdAt: new Date(), id: ulid(), message, type },
+      ],
+    }),
+
+    publishLogs: ({ context }) => {
+      publisher.publish("runtime.log.updated", {
+        subdomain: context.appConfig.subdomain,
+      });
+    },
+
     pushRuntimeErrorEvent: assign({
       errors: ({ context }, { value }: { value: RunErrorValue }) => [
         ...context.errors,
@@ -120,14 +136,7 @@ export const runtimeMachine = setup({
       },
     },
     clearLogs: {
-      actions: [
-        assign({ logs: () => [] }),
-        ({ context }) => {
-          publisher.publish("runtime.log.updated", {
-            subdomain: context.appConfig.subdomain,
-          });
-        },
-      ],
+      actions: [assign({ logs: () => [] }), "publishLogs"],
     },
     restart: ".Restarting",
     saveError: {
@@ -191,11 +200,7 @@ export const runtimeMachine = setup({
             },
           ],
         }),
-        ({ context }) => {
-          publisher.publish("runtime.log.updated", {
-            subdomain: context.appConfig.subdomain,
-          });
-        },
+        "publishLogs",
       ],
     },
     updateHeartbeat: {
@@ -250,23 +255,19 @@ export const runtimeMachine = setup({
           "stopRuntime",
           assign(() => ({
             errors: [],
-            logs: [
-              {
-                createdAt: new Date(),
-                id: ulid(),
-                message: "Restarting...",
-                type: "normal",
-              },
-            ],
+            logs: [],
             port: undefined,
             retryCount: 0,
             spawnRuntimeRef: undefined,
           })),
-          ({ context }) => {
-            publisher.publish("runtime.log.updated", {
-              subdomain: context.appConfig.subdomain,
-            });
+          {
+            params: () => ({
+              message: "Restarting server...",
+              type: "normal",
+            }),
+            type: "appendLog",
           },
+          "publishLogs",
         ],
         target: "SpawningRuntime",
       },
@@ -294,9 +295,19 @@ export const runtimeMachine = setup({
       })),
       on: {
         "spawnRuntime.started": {
-          actions: assign({
-            port: ({ event }) => event.value.port,
-          }),
+          actions: [
+            assign({
+              port: ({ event }) => event.value.port,
+            }),
+            {
+              params: () => ({
+                message: "Server started",
+                type: "normal",
+              }),
+              type: "appendLog",
+            },
+            "publishLogs",
+          ],
           target: "Running",
         },
       },
