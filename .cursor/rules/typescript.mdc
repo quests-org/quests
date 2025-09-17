@@ -8,13 +8,8 @@ alwaysApply: false
 - We use kebab case for filenames.
 - We use non-default exports whenever possible.
 - NEVER add comments for sections of JSX like `{/* Header */}<Header />`
-- DO NOT fix ESLint `perfectionist/*` plugin issues, the editor will automatically fix them when the code is saved.
-
-## Perfectionist Rules
-
 - Objects, interfaces, types, and other sortable structures are automatically sorted by the perfectionist ESLint plugin
-- The editor will automatically fix sorting when code is saved
-- Do not manually sort these structures as the plugin will handle it
+- DO NOT fix ESLint `perfectionist/*` issues, the editor will automatically fix them when the code is saved.
 
 ## Tailwind Rules
 
