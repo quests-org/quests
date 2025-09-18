@@ -32,7 +32,11 @@ export function AppView({
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const setProjectIframeRef = useSetAtom(projectIframeRefAtom);
   const [isConsoleOpen, setIsConsoleOpen] = useState(true);
-  const clientLogsAtom = useMemo(() => atom<ClientLogLine[]>([]), []);
+  const clientLogsAtom = useMemo(() => {
+    // To ensure atom changes when app.subdomain changes
+    void app.subdomain;
+    return atom<ClientLogLine[]>([]);
+  }, [app.subdomain]);
 
   const openExternalLinkMutation = useMutation(
     rpcClient.utils.openExternalLink.mutationOptions(),
