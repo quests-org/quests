@@ -18,12 +18,13 @@ import {
   type ProjectSubdomain,
   type WorkspaceAppProject,
 } from "@quests/workspace/client";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   ArrowUpRight,
   Edit2,
   ExternalLinkIcon,
   MoreHorizontal,
+  Star,
   StarOff,
   TrashIcon,
 } from "lucide-react";
@@ -53,6 +54,17 @@ export function NavProjectItem({
 
   const openExternalLinkMutation = useMutation(
     rpcClient.utils.openExternalLink.mutationOptions(),
+  );
+
+  const { data: favoriteProjects } = useQuery(
+    rpcClient.favorites.live.listProjects.experimental_liveOptions(),
+  );
+  const isFavorited = favoriteProjects?.some(
+    (favorite) => favorite.subdomain === project.subdomain,
+  );
+
+  const { mutateAsync: addFavorite } = useMutation(
+    rpcClient.favorites.add.mutationOptions(),
   );
 
   useEffect(() => {
@@ -104,6 +116,10 @@ export function NavProjectItem({
 
   const handleOpenExternalClick = () => {
     openExternalLinkMutation.mutate({ url: project.urls.localhost });
+  };
+
+  const handleAddFavorite = async () => {
+    await addFavorite({ subdomain: project.subdomain });
   };
 
   return (
@@ -200,6 +216,16 @@ export function NavProjectItem({
               >
                 <StarOff className="text-muted-foreground" />
                 <span>Remove favorite</span>
+              </DropdownMenuItem>
+            )}
+            {!isFavorites && !isFavorited && (
+              <DropdownMenuItem
+                onClick={() => {
+                  void handleAddFavorite();
+                }}
+              >
+                <Star className="text-muted-foreground" />
+                <span>Favorite</span>
               </DropdownMenuItem>
             )}
             <InternalLink
