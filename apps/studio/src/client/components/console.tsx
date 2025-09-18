@@ -17,8 +17,8 @@ const MAX_LINE_LENGTH = 200;
 const MAX_LINES = 2;
 export interface ClientLogLine {
   args: unknown[];
+  createdAt: Date;
   id: string;
-  timestamp: Date;
   type: ConsoleLogType;
 }
 
@@ -103,8 +103,8 @@ export function Console({
     const allLogs = [...serverLogs, ...clientLogsUnified];
 
     allLogs.sort((a, b) => {
-      const aTime = a.source === "server" ? a.log.createdAt : a.log.timestamp;
-      const bTime = b.source === "server" ? b.log.createdAt : b.log.timestamp;
+      const aTime = a.source === "server" ? a.log.createdAt : a.log.createdAt;
+      const bTime = b.source === "server" ? b.log.createdAt : b.log.createdAt;
       const aTimeMs =
         aTime instanceof Date ? aTime.getTime() : new Date(aTime).getTime();
       const bTimeMs =

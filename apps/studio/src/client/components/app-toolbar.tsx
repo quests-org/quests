@@ -66,8 +66,8 @@ export function AppToolbar({
       const latestServerLogTimestamp = latestServerLog?.createdAt
         ? new Date(latestServerLog.createdAt).getTime()
         : null;
-      const latestClientLogTimestamp = latestClientLog?.timestamp
-        ? latestClientLog.timestamp.getTime()
+      const latestClientLogTimestamp = latestClientLog?.createdAt
+        ? latestClientLog.createdAt.getTime()
         : null;
 
       const latestTimestamp = Math.max(
@@ -105,7 +105,7 @@ export function AppToolbar({
       (log) => new Date(log.createdAt).getTime() > lastSeenLogTimestamp,
     );
     const newClientLogs = clientLogs.filter(
-      (log) => log.timestamp.getTime() > lastSeenLogTimestamp,
+      (log) => log.createdAt.getTime() > lastSeenLogTimestamp,
     );
 
     if (newServerLogs.length === 0 && newClientLogs.length === 0) {
@@ -126,8 +126,8 @@ export function AppToolbar({
       const latestServerLogTimestamp = latestServerLog?.createdAt
         ? new Date(latestServerLog.createdAt).getTime()
         : null;
-      const latestClientLogTimestamp = latestClientLog?.timestamp
-        ? latestClientLog.timestamp.getTime()
+      const latestClientLogTimestamp = latestClientLog?.createdAt
+        ? latestClientLog.createdAt.getTime()
         : null;
 
       const latestTimestamp = Math.max(

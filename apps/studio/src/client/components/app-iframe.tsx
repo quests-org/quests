@@ -54,8 +54,8 @@ export function AppIFrame({
           ...prev,
           {
             args: logData.value.args,
+            createdAt: new Date(),
             id: ulid(),
-            timestamp: new Date(),
             type: logData.value.type,
           },
         ]);
