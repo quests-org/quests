@@ -12,6 +12,7 @@ import { useAtom, useAtomValue } from "jotai";
 import { ArrowUp, Circle, Loader2, Square } from "lucide-react";
 import {
   forwardRef,
+  useCallback,
   useEffect,
   useImperativeHandle,
   useRef,
@@ -86,30 +87,41 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
 
     const selectedModel = models?.find((model) => model.uri === modelURI);
 
+    const resetTextareaHeight = useCallback(() => {
+      if (textareaInnerRef.current) {
+        textareaInnerRef.current.style.height = "auto";
+      }
+    }, []);
+
+    const adjustHeight = useCallback(() => {
+      if (textareaInnerRef.current) {
+        resetTextareaHeight();
+        const newHeight = Math.min(
+          textareaInnerRef.current.scrollHeight,
+          autoResizeMaxHeight,
+        );
+        textareaInnerRef.current.style.height = `${newHeight}px`;
+      }
+    }, [autoResizeMaxHeight, resetTextareaHeight]);
+
     useEffect(() => {
       if (hasAIProvider) {
         setShowAIProviderGuard(false);
       }
     }, [hasAIProvider]);
 
-    const resetTextareaHeight = () => {
-      if (textareaRef.current) {
-        textareaRef.current.style.height = "auto";
-      }
-    };
+    useEffect(() => {
+      adjustHeight();
+    }, [value, adjustHeight]);
 
-    const adjustHeight = () => {
-      if (textareaRef.current) {
-        resetTextareaHeight();
-        const newHeight = Math.min(
-          textareaRef.current.scrollHeight + 2,
-          autoResizeMaxHeight,
-        );
-        textareaRef.current.style.height = `${newHeight}px`;
+    useEffect(() => {
+      if (autoFocus && textareaInnerRef.current) {
+        textareaInnerRef.current.focus();
+        adjustHeight();
       }
-    };
+    }, [autoFocus, adjustHeight]);
 
-    const validateSubmission = () => {
+    const validateSubmission = useCallback(() => {
       if (!hasAIProvider) {
         setShowAIProviderGuard(true);
         return false;
@@ -132,9 +144,16 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
       }
 
       return true;
-    };
+    }, [
+      hasAIProvider,
+      value,
+      modelURI,
+      selectedModel,
+      isSubmittable,
+      setShowAIProviderGuard,
+    ]);
 
-    const handleSubmit = () => {
+    const handleSubmit = useCallback(() => {
       if (!validateSubmission() || !modelURI) {
         return;
       }
@@ -142,7 +161,14 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
       onSubmit({ modelURI, prompt: value.trim() });
       setValue("");
       resetTextareaHeight();
-    };
+    }, [
+      validateSubmission,
+      modelURI,
+      onSubmit,
+      value,
+      setValue,
+      resetTextareaHeight,
+    ]);
 
     const handleStop = () => {
       onStop?.();
@@ -166,12 +192,13 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
     return (
       <>
         <TextareaContainer
-          className={cn("overflow-auto", className)}
+          className={cn("overflow-hidden", className)}
           ref={textareaRef}
+          style={{ maxHeight: `${autoResizeMaxHeight}px` }}
         >
           <TextareaInner
             autoFocus={autoFocus}
-            className="min-h-12"
+            className="min-h-12 overflow-y-auto"
             disabled={disabled}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
