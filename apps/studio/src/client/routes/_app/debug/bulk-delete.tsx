@@ -1,11 +1,12 @@
 import { Button } from "@/client/components/ui/button";
 import { Checkbox } from "@/client/components/ui/checkbox";
+import { useTrashApp } from "@/client/hooks/use-trash-app";
 import { rpcClient } from "@/client/rpc/client";
 import {
   type ProjectSubdomain,
   type WorkspaceAppProject,
 } from "@quests/workspace/client";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -25,9 +26,9 @@ function RouteComponent() {
     refetch,
   } = useQuery(rpcClient.workspace.project.list.queryOptions({}));
 
-  const trashProjectMutation = useMutation(
-    rpcClient.workspace.project.trash.mutationOptions(),
-  );
+  const { isPending: isTrashPending, trashApp } = useTrashApp({
+    navigateOnDelete: false,
+  });
 
   const projects = projectsData?.projects ?? [];
 
@@ -72,7 +73,7 @@ function RouteComponent() {
 
     for (const subdomain of projectsToDelete) {
       try {
-        await trashProjectMutation.mutateAsync({ subdomain });
+        await trashApp(subdomain);
         successCount++;
         toast.success(`Deleted project: ${subdomain}`);
       } catch (error) {
@@ -123,13 +124,11 @@ function RouteComponent() {
         </div>
 
         <Button
-          disabled={
-            selectedProjects.size === 0 || trashProjectMutation.isPending
-          }
+          disabled={selectedProjects.size === 0 || isTrashPending}
           onClick={handleBulkDelete}
           variant="destructive"
         >
-          {trashProjectMutation.isPending
+          {isTrashPending
             ? "Deleting..."
             : `Delete Selected (${selectedProjects.size})`}
         </Button>

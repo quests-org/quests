@@ -2,6 +2,7 @@ import { type ProjectSubdomain } from "@quests/workspace/client";
 import { useMutation } from "@tanstack/react-query";
 import { useCallback } from "react";
 
+import { getPromptValueStorageKey } from "../atoms/prompt-value";
 import { rpcClient } from "../rpc/client";
 import { useTabs } from "./use-tabs";
 
@@ -41,6 +42,9 @@ export function useTrashApp({
       for (const tab of projectTabs) {
         await closeTab({ id: tab.id });
       }
+
+      // Clean up prompt value storage for the deleted project
+      localStorage.removeItem(getPromptValueStorageKey(projectSubdomain));
     },
     [
       trashProjectMutation,

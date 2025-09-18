@@ -4,6 +4,12 @@ import { atomFamily, atomWithStorage } from "jotai/utils";
 
 export type PromptValueAtomKey = "$$new-tab$$" | AppSubdomain;
 
+export function getPromptValueStorageKey(key: PromptValueAtomKey): string {
+  return `prompt-value-${key}`;
+}
+
 export const promptValueAtomFamily = atomFamily((key: PromptValueAtomKey) =>
-  key === "$$new-tab$$" ? atom("") : atomWithStorage(`prompt-value-${key}`, ""),
+  key === "$$new-tab$$"
+    ? atom("")
+    : atomWithStorage(getPromptValueStorageKey(key), ""),
 );
