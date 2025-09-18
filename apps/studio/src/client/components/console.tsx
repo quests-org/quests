@@ -182,12 +182,11 @@ export function Console({
 
       {!isNearBottom && (
         <Button
-          className="absolute right-4 bottom-4 shadow-lg border border-border"
+          className="absolute left-1/2 -translate-x-1/2 bottom-4 shadow-lg border border-border h-6 w-6 p-0"
           onClick={() => scrollToBottom()}
-          size="icon"
           variant="secondary"
         >
-          <ChevronDown className="h-3 w-3" />
+          <ChevronDown className="h-2 w-2" />
         </Button>
       )}
     </div>
@@ -247,7 +246,7 @@ function ConsoleRow({
   return (
     <div
       className={cn(
-        "group py-0.5 px-2 relative",
+        "group py-px px-2 relative",
         index > 0 && "border-t border-border/40",
       )}
     >
@@ -272,21 +271,25 @@ function ConsoleRow({
         </div>
       </div>
 
-      <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+      <div className="absolute right-2 top-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
         {showSendToChat && (
           <ConfirmedIconButton
+            className="size-5 bg-background hover:!bg-accent dark:hover:!bg-accent border border-border/50"
             icon={MessageSquare}
             onClick={handleSendToChat}
             successTooltip="Sent to chat!"
             tooltip="Send to chat"
+            variant="ghost"
           />
         )}
 
         <ConfirmedIconButton
+          className="size-5 bg-background hover:!bg-accent dark:hover:!bg-accent border border-border/50"
           icon={Copy}
           onClick={handleCopy}
           successTooltip="Copied!"
           tooltip="Copy"
+          variant="ghost"
         />
       </div>
     </div>
