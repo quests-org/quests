@@ -2,12 +2,13 @@ import { cn } from "@/client/lib/utils";
 import { type AppSubdomain } from "@quests/workspace/client";
 import { useSetAtom } from "jotai";
 import { ChevronDown, Copy, MessageSquare, Trash, X } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useStickToBottom } from "use-stick-to-bottom";
 
 import { promptValueAtomFamily } from "../atoms/prompt-value";
 import { type RPCOutput } from "../rpc/client";
 import { ConfirmedIconButton } from "./confirmed-icon-button";
+import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
@@ -23,19 +24,10 @@ const getLogLineStyles = (type: LogLine["type"]) => {
   );
 };
 
-interface ConsoleProps {
-  logs: RPCOutput["workspace"]["runtime"]["log"]["list"];
-  onClearLogs: () => void;
-  onCollapse: () => void;
-  showSendToChat?: boolean;
-  subdomain: AppSubdomain;
-}
-
-interface ConsoleRowProps {
-  index: number;
+interface GroupedLogLine {
+  count: number;
   line: LogLine;
-  showSendToChat?: boolean;
-  subdomain: AppSubdomain;
+  originalIndex: number;
 }
 
 type LogLine = RPCOutput["workspace"]["runtime"]["log"]["list"][number];
@@ -46,9 +38,17 @@ export function Console({
   onCollapse,
   showSendToChat = false,
   subdomain,
-}: ConsoleProps) {
+}: {
+  logs: LogLine[];
+  onClearLogs: () => void;
+  onCollapse: () => void;
+  showSendToChat?: boolean;
+  subdomain: AppSubdomain;
+}) {
   const { contentRef, isNearBottom, scrollRef, scrollToBottom } =
     useStickToBottom({ initial: "instant", mass: 0.8 });
+
+  const groupedLogs = useMemo(() => groupConsecutiveDuplicates(logs), [logs]);
 
   return (
     <div className="flex h-full w-full flex-col overflow-hidden border-l border-r border-b border-border bg-background relative rounded-b-lg">
@@ -91,12 +91,13 @@ export function Console({
           className="flex flex-col border-border font-mono text-xs"
           ref={contentRef}
         >
-          {logs.map((line, index) => {
+          {groupedLogs.map((group, index) => {
             return (
               <ConsoleRow
+                count={group.count}
                 index={index}
-                key={line.id}
-                line={line}
+                key={group.line.id}
+                line={group.line}
                 showSendToChat={showSendToChat}
                 subdomain={subdomain}
               />
@@ -120,11 +121,18 @@ export function Console({
 }
 
 function ConsoleRow({
+  count,
   index,
   line,
   showSendToChat,
   subdomain,
-}: ConsoleRowProps) {
+}: {
+  count: number;
+  index: number;
+  line: LogLine;
+  showSendToChat?: boolean;
+  subdomain: AppSubdomain;
+}) {
   const setPromptValue = useSetAtom(promptValueAtomFamily(subdomain));
 
   const handleCopy = async () => {
@@ -144,13 +152,26 @@ function ConsoleRow({
         index > 0 && "border-t border-border/40",
       )}
     >
-      {line.type === "truncation" ? (
-        <div className="text-muted-foreground italic bg-muted/30 px-2 py-0.5 rounded-sm shrink-1 overflow-x-auto whitespace-pre-wrap break-all">
-          {line.message}
+      <div className="flex items-start gap-1">
+        {count > 1 && (
+          <Badge
+            className="text-[10px] px-1 py-0 h-4 min-w-[16px] flex items-center justify-center shrink-0 tabular-nums mt-0.5"
+            variant="secondary"
+          >
+            {count}
+          </Badge>
+        )}
+
+        <div className="flex-1 min-w-0">
+          {line.type === "truncation" ? (
+            <div className="text-muted-foreground italic bg-muted/30 px-2 py-0.5 rounded-sm shrink-1 overflow-x-auto whitespace-pre-wrap break-all">
+              {line.message}
+            </div>
+          ) : (
+            <TruncatedLogLine line={line} />
+          )}
         </div>
-      ) : (
-        <TruncatedLogLine line={line} />
-      )}
+      </div>
 
       <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
         {showSendToChat && (
@@ -171,6 +192,50 @@ function ConsoleRow({
       </div>
     </div>
   );
+}
+
+function groupConsecutiveDuplicates(logs: LogLine[]): GroupedLogLine[] {
+  if (logs.length === 0) {
+    return [];
+  }
+
+  const grouped: GroupedLogLine[] = [];
+  const firstLog = logs[0];
+  if (!firstLog) {
+    return [];
+  }
+
+  let currentGroup: GroupedLogLine = {
+    count: 1,
+    line: firstLog,
+    originalIndex: 0,
+  };
+
+  for (let i = 1; i < logs.length; i++) {
+    const current = logs[i];
+    if (!current) {
+      continue;
+    }
+
+    const previous = currentGroup.line;
+
+    if (
+      current.message === previous.message &&
+      current.type === previous.type
+    ) {
+      currentGroup.count++;
+    } else {
+      grouped.push(currentGroup);
+      currentGroup = {
+        count: 1,
+        line: current,
+        originalIndex: i,
+      };
+    }
+  }
+
+  grouped.push(currentGroup);
+  return grouped;
 }
 
 function TruncatedLogLine({ line: { message, type } }: { line: LogLine }) {
