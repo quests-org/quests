@@ -10,6 +10,7 @@ import { useStickToBottom } from "use-stick-to-bottom";
 
 import { useAppState } from "../hooks/use-app-state";
 import { rpcClient } from "../rpc/client";
+import { ChatZeroState } from "./chat-zero-state";
 import { PromptInput } from "./prompt-input";
 import { SessionMenu } from "./session-menu";
 import { type FilterMode, SessionStream } from "./session-stream";
@@ -181,7 +182,7 @@ export function ProjectSidebar({
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  disabled={createEmptySession.isPending}
+                  disabled={createEmptySession.isPending || isAgentAlive}
                   onClick={handleNewSession}
                   size="sm"
                   variant="ghost"
@@ -209,9 +210,10 @@ export function ProjectSidebar({
               sessionId={selectedSessionId}
             />
           ) : (
-            <div className="flex items-center justify-center h-32">
-              <div>No chat selected</div>
-            </div>
+            <ChatZeroState
+              project={project}
+              selectedSessionId={selectedSessionId}
+            />
           )}
         </div>
       </div>

@@ -7,7 +7,6 @@ import {
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { AlertTriangle, Loader2 } from "lucide-react";
-import { sort } from "radashi";
 import { useCallback, useMemo } from "react";
 import { toast } from "sonner";
 
@@ -15,10 +14,10 @@ import { useAppState } from "../hooks/use-app-state";
 import { rpcClient } from "../rpc/client";
 import { AssistantMessage } from "./assistant-message";
 import { ChatErrorAlert } from "./chat-error-alert";
+import { ChatZeroState } from "./chat-zero-state";
 import { ContextMessages } from "./context-messages";
 import { DebugWrapper } from "./debug-wrapper";
 import { GitCommitCard } from "./git-commit-card";
-import { InternalLink } from "./internal-link";
 import { MessageError } from "./message-error";
 import { ReasoningMessage } from "./reasoning-message";
 import { ContextMessage } from "./session-context-message";
@@ -64,20 +63,6 @@ export function SessionStream({
   });
   const { data: appState } = useAppState({ subdomain: app.subdomain });
   const navigate = useNavigate();
-
-  const { data: allSessions = [] } = useQuery(
-    rpcClient.workspace.session.live.list.experimental_liveOptions({
-      input: { subdomain: app.subdomain },
-    }),
-  );
-
-  const recentOtherSessions = useMemo(() => {
-    return sort(
-      allSessions.filter((session) => session.id !== selectedSessionId),
-      (s) => s.createdAt.getTime(),
-      true,
-    ).slice(0, 10);
-  }, [allSessions, selectedSessionId]);
 
   const createEmptySessionMutation = useMutation(
     rpcClient.workspace.session.create.mutationOptions(),
@@ -369,34 +354,7 @@ export function SessionStream({
         !isLoading &&
         filterMode === "chat" &&
         messages.length === 0 && (
-          <div className="flex justify-center mt-8">
-            <div className="text-center space-y-8">
-              <div className="text-muted-foreground/50">No messages yet</div>
-              {recentOtherSessions.length > 0 && (
-                <div className="space-y-3 opacity-50 text-xs">
-                  <div>Looking for an old chat?</div>
-                  <div className="space-y-2">
-                    {recentOtherSessions.map((session) => (
-                      <InternalLink
-                        allowOpenNewTab={false}
-                        className="block underline text-xs hover:text-foreground"
-                        key={session.id}
-                        params={{ subdomain: app.subdomain }}
-                        replace
-                        search={(prev) => ({
-                          ...prev,
-                          selectedSessionId: session.id,
-                        })}
-                        to="/projects/$subdomain"
-                      >
-                        {session.title || "Untitled Chat"}
-                      </InternalLink>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
+          <ChatZeroState project={app} selectedSessionId={sessionId} />
         )}
 
       <div className="w-full flex flex-col gap-2">
