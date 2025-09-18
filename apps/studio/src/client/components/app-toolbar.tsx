@@ -42,7 +42,9 @@ export function AppToolbar({
   rightActions,
 }: AppToolbarProps) {
   const shimIFrame = useShimIFrame(iframeRef);
-  const [lastSeenLogId, setLastSeenLogId] = useState<null | string>(null);
+  const [lastSeenLogTimestamp, setLastSeenLogTimestamp] = useState<
+    null | number
+  >(null);
 
   const restartRuntimeMutation = useMutation(
     rpcClient.workspace.runtime.restart.mutationOptions(),
@@ -58,16 +60,32 @@ export function AppToolbar({
 
   useEffect(() => {
     if (!isConsoleOpen && (runtimeLogs.length > 0 || clientLogs.length > 0)) {
-      const latestServerLogId = runtimeLogs.at(-1)?.id;
-      const latestClientLogId = clientLogs.at(-1)?.id;
+      const latestServerLog = runtimeLogs.at(-1);
+      const latestClientLog = clientLogs.at(-1);
 
-      // Use the most recent log ID (prefer server logs if both exist at the same time)
-      const latestLogId = latestServerLogId || latestClientLogId;
-      if (latestLogId && latestLogId !== lastSeenLogId) {
-        setLastSeenLogId(latestLogId);
+      const latestServerLogTimestamp = latestServerLog?.createdAt
+        ? new Date(latestServerLog.createdAt).getTime()
+        : null;
+      const latestClientLogTimestamp = latestClientLog?.timestamp
+        ? latestClientLog.timestamp.getTime()
+        : null;
+
+      const latestTimestamp = Math.max(
+        latestServerLogTimestamp ?? 0,
+        latestClientLogTimestamp ?? 0,
+      );
+
+      if (latestTimestamp > 0 && latestTimestamp !== lastSeenLogTimestamp) {
+        setLastSeenLogTimestamp(latestTimestamp);
       }
     }
-  }, [runtimeLogs, clientLogs, isConsoleOpen, lastSeenLogId, setLastSeenLogId]);
+  }, [
+    runtimeLogs,
+    clientLogs,
+    isConsoleOpen,
+    lastSeenLogTimestamp,
+    setLastSeenLogTimestamp,
+  ]);
 
   const badgeStatus = useMemo((): "error" | "new" | "none" => {
     if (
@@ -77,30 +95,18 @@ export function AppToolbar({
       return "none";
     }
 
-    if (!lastSeenLogId) {
-      // If we've never seen any logs, check if there are any errors
+    if (!lastSeenLogTimestamp) {
       const hasServerErrors = runtimeLogs.some((log) => log.type === "error");
       const hasClientErrors = clientLogs.some((log) => log.type === "error");
       return hasServerErrors || hasClientErrors ? "error" : "new";
     }
 
-    // Find new server logs
-    const lastSeenServerIndex = runtimeLogs.findIndex(
-      (log) => log.id === lastSeenLogId,
+    const newServerLogs = runtimeLogs.filter(
+      (log) => new Date(log.createdAt).getTime() > lastSeenLogTimestamp,
     );
-    const newServerLogs =
-      lastSeenServerIndex === -1
-        ? runtimeLogs
-        : runtimeLogs.slice(lastSeenServerIndex + 1);
-
-    // Find new client logs
-    const lastSeenClientIndex = clientLogs.findIndex(
-      (log) => log.id === lastSeenLogId,
+    const newClientLogs = clientLogs.filter(
+      (log) => log.timestamp.getTime() > lastSeenLogTimestamp,
     );
-    const newClientLogs =
-      lastSeenClientIndex === -1
-        ? clientLogs
-        : clientLogs.slice(lastSeenClientIndex + 1);
 
     if (newServerLogs.length === 0 && newClientLogs.length === 0) {
       return "none";
@@ -110,15 +116,28 @@ export function AppToolbar({
     const hasClientErrors = newClientLogs.some((log) => log.type === "error");
 
     return hasServerErrors || hasClientErrors ? "error" : "new";
-  }, [runtimeLogs, clientLogs, lastSeenLogId, isConsoleOpen]);
+  }, [runtimeLogs, clientLogs, lastSeenLogTimestamp, isConsoleOpen]);
 
   const handleConsoleToggleWithTracking = () => {
     if (isConsoleOpen && (runtimeLogs.length > 0 || clientLogs.length > 0)) {
-      // Mark all current logs as seen when opening console
-      const latestServerLogId = runtimeLogs.at(-1)?.id;
-      const latestClientLogId = clientLogs.at(-1)?.id;
-      const latestLogId = latestServerLogId || latestClientLogId;
-      setLastSeenLogId(latestLogId ?? null);
+      const latestServerLog = runtimeLogs.at(-1);
+      const latestClientLog = clientLogs.at(-1);
+
+      const latestServerLogTimestamp = latestServerLog?.createdAt
+        ? new Date(latestServerLog.createdAt).getTime()
+        : null;
+      const latestClientLogTimestamp = latestClientLog?.timestamp
+        ? latestClientLog.timestamp.getTime()
+        : null;
+
+      const latestTimestamp = Math.max(
+        latestServerLogTimestamp ?? 0,
+        latestClientLogTimestamp ?? 0,
+      );
+
+      if (latestTimestamp > 0) {
+        setLastSeenLogTimestamp(latestTimestamp);
+      }
     }
     onConsoleToggle();
   };

@@ -166,11 +166,7 @@ export function Console({
               <ConsoleRow
                 count={group.count}
                 index={index}
-                key={
-                  group.line.source === "server"
-                    ? group.line.log.id
-                    : group.line.log.id
-                }
+                key={group.line.log.id}
                 line={group.line}
                 showSendToChat={showSendToChat}
                 subdomain={subdomain}
