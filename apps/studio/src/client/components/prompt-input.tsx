@@ -33,11 +33,11 @@ interface PromptInputProps {
   autoResizeMaxHeight?: number;
   className?: string;
   disabled?: boolean;
-  isLoading?: boolean;
+  isLoading: boolean;
   isStoppable?: boolean;
   isSubmittable?: boolean;
   modelURI?: AIGatewayModel.URI;
-  onModelChange?: (modelURI: AIGatewayModel.URI) => void;
+  onModelChange: (modelURI: AIGatewayModel.URI) => void;
   onStop?: () => void;
   onSubmit: (value: { modelURI: AIGatewayModel.URI; prompt: string }) => void;
   placeholder?: string;
@@ -55,7 +55,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
       autoResizeMaxHeight = 400,
       className,
       disabled = false,
-      isLoading = false,
+      isLoading,
       isStoppable = false,
       isSubmittable = true,
       modelURI,
@@ -208,19 +208,17 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
           />
 
           <div className="flex items-center gap-2 justify-end pt-2">
-            {onModelChange && (
-              <div className="flex-1 min-w-0">
-                <ModelPicker
-                  disabled={disabled}
-                  errors={modelsErrors}
-                  isError={modelsIsError}
-                  isLoading={modelsIsLoading}
-                  models={models}
-                  onValueChange={onModelChange}
-                  value={modelURI}
-                />
-              </div>
-            )}
+            <div className="flex-1 min-w-0">
+              <ModelPicker
+                disabled={disabled}
+                errors={modelsErrors}
+                isError={modelsIsError}
+                isLoading={modelsIsLoading}
+                models={models}
+                onValueChange={onModelChange}
+                value={modelURI}
+              />
+            </div>
 
             <Button
               className="h-7 w-7 p-0"
