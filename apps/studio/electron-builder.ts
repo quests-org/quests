@@ -89,7 +89,7 @@ const config: Configuration = {
       { arch: ["x64", "arm64"], target: "zip" },
     ],
   },
-  npmRebuild: false,
+  npmRebuild: true,
   nsis: {
     artifactName: "${productName}-${os}-${version}-${arch}.${ext}",
     createDesktopShortcut: "always",
