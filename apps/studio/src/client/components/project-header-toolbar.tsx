@@ -28,7 +28,7 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { projectIframeRefAtom } from "../atoms/project-iframe";
+import { projectIframeRefAtom } from "../atoms/project";
 import { RestoreVersionModal } from "./restore-version-modal";
 import { CMD, Cursor, ITerm, MacOSTerminal, VSCode } from "./service-icons";
 import {

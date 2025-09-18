@@ -1,3 +1,4 @@
+import { promptValueAtomFamily } from "@/client/atoms/prompt-value";
 import { AppView } from "@/client/components/app-view";
 import { ProjectDeleteDialog } from "@/client/components/project-delete-dialog";
 import { ProjectHeaderToolbar } from "@/client/components/project-header-toolbar";
@@ -43,6 +44,10 @@ export const Route = createFileRoute("/_app/projects/$subdomain/")({
         subdomain: ProjectSubdomainSchema.parse(rawParams.subdomain),
       };
     },
+  },
+  onLeave: ({ params }) => {
+    // Garbage collect project atoms
+    promptValueAtomFamily.remove(params.subdomain);
   },
   beforeLoad: async ({ params, search }) => {
     const [error, sessions, isDefined] = await safe(

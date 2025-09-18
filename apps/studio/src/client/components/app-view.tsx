@@ -6,7 +6,7 @@ import { ExternalLinkIcon } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 
 import { lastSeenLogIdAtom } from "../atoms/console";
-import { projectIframeRefAtom } from "../atoms/project-iframe";
+import { projectIframeRefAtom } from "../atoms/project";
 import { cn } from "../lib/utils";
 import { rpcClient } from "../rpc/client";
 import { AppIFrame } from "./app-iframe";
