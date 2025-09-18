@@ -13,6 +13,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/client/components/ui/sidebar";
+import { useTabs } from "@/client/hooks/use-tabs";
+import { useMatchesForPathname } from "@/client/lib/get-route-matches";
 import { rpcClient } from "@/client/rpc/client";
 import {
   type ProjectSubdomain,
@@ -48,6 +50,21 @@ export function NavProjectItem({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(project.title);
+
+  const { data: tabsData } = useTabs();
+
+  const selectedTab = tabsData.selectedTabId
+    ? tabsData.tabs.find((tab) => tab.id === tabsData.selectedTabId)
+    : undefined;
+
+  const matches = useMatchesForPathname(selectedTab?.pathname ?? "");
+
+  const isActive = matches.some(
+    (match) =>
+      match.routeId === "/_app/projects/$subdomain/" &&
+      // match subdomain mistakenly includes search params, so startsWith is used
+      match.params.subdomain.startsWith(project.subdomain),
+  );
 
   const { isPending: isRenameLoading, mutateAsync: renameProject } =
     useMutation(rpcClient.workspace.project.updateName.mutationOptions());
@@ -150,7 +167,8 @@ export function NavProjectItem({
       ) : (
         <SidebarMenuButton
           asChild
-          className="h-9 group-hover:bg-black/10 dark:group-hover:bg-white/10"
+          className="h-9 group-hover:bg-black/10 dark:group-hover:bg-white/10 data-[active=true]:bg-black/15 dark:data-[active=true]:bg-white/15 data-[active=true]:text-foreground data-[active=true]:font-normal"
+          isActive={isActive || undefined}
         >
           <InternalLink
             params={{ subdomain: project.subdomain }}
