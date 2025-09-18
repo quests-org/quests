@@ -321,6 +321,12 @@ export namespace Store {
           signal,
         });
       }
+
+      publisher.publish("session.removed", {
+        sessionId,
+        subdomain: appConfig.subdomain,
+      });
+
       return ok(undefined);
     });
   }

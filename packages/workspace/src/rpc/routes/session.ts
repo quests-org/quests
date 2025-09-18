@@ -1,5 +1,6 @@
 import { call } from "@orpc/server";
 import { AIGatewayModel } from "@quests/ai-gateway";
+import { mergeGenerators } from "@quests/shared/merge-generators";
 import { z } from "zod";
 
 import { createAppConfig } from "../../lib/app-config/create";
@@ -196,11 +197,23 @@ const live = {
       yield call(list, input, { context, signal });
 
       const sessionUpdates = publisher.subscribe("session.updated", { signal });
+      const sessionRemoved = publisher.subscribe("session.removed", { signal });
 
-      for await (const payload of sessionUpdates) {
-        if (payload.subdomain === input.subdomain) {
-          yield call(list, input, { context, signal });
+      async function* filterBySubdomain(
+        generator: typeof sessionRemoved | typeof sessionUpdates,
+      ) {
+        for await (const payload of generator) {
+          if (payload.subdomain === input.subdomain) {
+            yield null;
+          }
         }
+      }
+
+      for await (const _ of mergeGenerators([
+        filterBySubdomain(sessionUpdates),
+        filterBySubdomain(sessionRemoved),
+      ])) {
+        yield call(list, input, { context, signal });
       }
     }),
 };
