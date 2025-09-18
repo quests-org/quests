@@ -240,7 +240,11 @@ function ConsoleRow({
   };
 
   const handleSendToChat = () => {
-    setPromptValue((prev) => (prev ? `${prev}\n\n${message}` : message));
+    const sourceLabel = line.source === "server" ? "Server" : "Browser";
+    const contextualMessage = `[${sourceLabel}] ${message}`;
+    setPromptValue((prev) =>
+      prev ? `${prev}\n\n${contextualMessage}` : contextualMessage,
+    );
   };
 
   return (
@@ -251,6 +255,13 @@ function ConsoleRow({
       )}
     >
       <div className="flex items-start gap-1">
+        <Badge
+          className="text-[10px] px-1 py-0 h-4 min-w-[20px] flex items-center justify-center shrink-0 mt-0.5 text-muted-foreground bg-muted/30 border-muted-foreground/20"
+          variant="secondary"
+        >
+          {line.source === "server" ? "Server" : "Browser"}
+        </Badge>
+
         {count > 1 && (
           <Badge
             className="text-[10px] px-1 py-0 h-4 min-w-[16px] flex items-center justify-center shrink-0 tabular-nums mt-0.5"
