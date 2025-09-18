@@ -1,0 +1,6 @@
+---
+globs: *.tsx
+alwaysApply: false
+---
+
+- Declare component props inline instead of using a separate interface.
