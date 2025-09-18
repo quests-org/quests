@@ -108,6 +108,17 @@ for (const method of consoleMethods) {
 
 const iframe = document.createElement("iframe");
 
+window.addEventListener("beforeunload", () => {
+  try {
+    const message: ShimIFrameOutMessage = {
+      type: "will-reload",
+    };
+    window.parent.postMessage(message, "*");
+  } catch {
+    // Ignore errors during unload
+  }
+});
+
 window.addEventListener("message", (event) => {
   if (event.source === iframe.contentWindow) {
     const message = event.data as IframeMessage;

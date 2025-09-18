@@ -4,7 +4,7 @@ import { useShimIFrame } from "@/client/hooks/use-shim-iframe";
 import { cn } from "@/client/lib/utils";
 import { type WorkspaceApp } from "@quests/workspace/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { type atom, useAtom } from "jotai";
+import { type atom, useAtomValue } from "jotai";
 import { ChevronLeft, ChevronRight, PanelBottom, RotateCw } from "lucide-react";
 import { type ReactNode, useEffect, useMemo, useState } from "react";
 
@@ -56,7 +56,7 @@ export function AppToolbar({
     }),
   );
 
-  const [clientLogs, setClientLogs] = useAtom(clientLogsAtom);
+  const clientLogs = useAtomValue(clientLogsAtom);
 
   useEffect(() => {
     if (!isConsoleOpen && (runtimeLogs.length > 0 || clientLogs.length > 0)) {
@@ -178,7 +178,6 @@ export function AppToolbar({
                   appSubdomain: app.subdomain,
                 });
                 shimIFrame.reloadWindow();
-                setClientLogs([]);
               }}
               size="icon"
               variant="ghost"

@@ -48,17 +48,26 @@ export function AppIFrame({
 
       const parseResult = ShimIFrameOutMessageSchema.safeParse(event.data);
       if (parseResult.success) {
-        const logData = parseResult.data;
+        const messageData = parseResult.data;
 
-        setClientLogs((prev) => [
-          ...prev,
-          {
-            args: logData.value.args,
-            createdAt: new Date(),
-            id: ulid(),
-            type: logData.value.type,
-          },
-        ]);
+        switch (messageData.type) {
+          case "console-log": {
+            setClientLogs((prev) => [
+              ...prev,
+              {
+                args: messageData.value.args,
+                createdAt: new Date(),
+                id: ulid(),
+                type: messageData.value.type,
+              },
+            ]);
+            break;
+          }
+          case "will-reload": {
+            setClientLogs([]);
+            break;
+          }
+        }
       }
     };
 
