@@ -1,15 +1,15 @@
 import { Button } from "@/client/components/ui/button";
 import { Input } from "@/client/components/ui/input";
-import { useShimIFrame } from "@/client/lib/iframe-messenger";
+import { useShimIFrame } from "@/client/hooks/use-shim-iframe";
 import { cn } from "@/client/lib/utils";
 import { type WorkspaceApp } from "@quests/workspace/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useAtom } from "jotai";
+import { type atom, useAtom } from "jotai";
 import { ChevronLeft, ChevronRight, PanelBottom, RotateCw } from "lucide-react";
-import { type ReactNode, useEffect, useMemo } from "react";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
 
-import { lastSeenLogIdAtom } from "../atoms/console";
 import { rpcClient } from "../rpc/client";
+import { type ClientLogLine } from "./console";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 interface AppToolbarProps {
@@ -17,6 +17,7 @@ interface AppToolbarProps {
   centerActions?: ReactNode;
   centerContent?: ReactNode;
   className?: string;
+  clientLogsAtom: ReturnType<typeof atom<ClientLogLine[]>>;
   disabled?: boolean;
   iframeRef: React.RefObject<HTMLIFrameElement | null>;
   isConsoleOpen?: boolean;
@@ -33,6 +34,7 @@ export function AppToolbar({
   centerActions,
   centerContent,
   className,
+  clientLogsAtom,
   disabled = false,
   iframeRef,
   isConsoleOpen = true,
@@ -40,7 +42,7 @@ export function AppToolbar({
   rightActions,
 }: AppToolbarProps) {
   const shimIFrame = useShimIFrame(iframeRef);
-  const [lastSeenLogId, setLastSeenLogId] = useAtom(lastSeenLogIdAtom);
+  const [lastSeenLogId, setLastSeenLogId] = useState<null | string>(null);
 
   const restartRuntimeMutation = useMutation(
     rpcClient.workspace.runtime.restart.mutationOptions(),
@@ -52,44 +54,77 @@ export function AppToolbar({
     }),
   );
 
+  const [clientLogs, setClientLogs] = useAtom(clientLogsAtom);
+
   useEffect(() => {
-    if (!isConsoleOpen && runtimeLogs.length > 0) {
-      const latestLogId = runtimeLogs.at(-1)?.id;
+    if (!isConsoleOpen && (runtimeLogs.length > 0 || clientLogs.length > 0)) {
+      const latestServerLogId = runtimeLogs.at(-1)?.id;
+      const latestClientLogId = clientLogs.at(-1)?.id;
+
+      // Use the most recent log ID (prefer server logs if both exist at the same time)
+      const latestLogId = latestServerLogId || latestClientLogId;
       if (latestLogId && latestLogId !== lastSeenLogId) {
         setLastSeenLogId(latestLogId);
       }
     }
-  }, [runtimeLogs, isConsoleOpen, lastSeenLogId, setLastSeenLogId]);
+  }, [runtimeLogs, clientLogs, isConsoleOpen, lastSeenLogId, setLastSeenLogId]);
 
   const badgeStatus = useMemo((): "error" | "new" | "none" => {
-    if (runtimeLogs.length === 0 || !isConsoleOpen) {
+    if (
+      (runtimeLogs.length === 0 && clientLogs.length === 0) ||
+      !isConsoleOpen
+    ) {
       return "none";
     }
 
     if (!lastSeenLogId) {
-      // If we've never seen any logs, check if there are any
-      const hasErrors = runtimeLogs.some((log) => log.type === "error");
-      return hasErrors ? "error" : "new";
+      // If we've never seen any logs, check if there are any errors
+      const hasServerErrors = runtimeLogs.some((log) => log.type === "error");
+      const hasClientErrors = clientLogs.some(
+        (log) =>
+          log.type === "error" || log.type === "assert" || log.type === "trace",
+      );
+      return hasServerErrors || hasClientErrors ? "error" : "new";
     }
 
-    const lastSeenIndex = runtimeLogs.findIndex(
+    // Find new server logs
+    const lastSeenServerIndex = runtimeLogs.findIndex(
       (log) => log.id === lastSeenLogId,
     );
-    const newLogs =
-      lastSeenIndex === -1 ? runtimeLogs : runtimeLogs.slice(lastSeenIndex + 1);
+    const newServerLogs =
+      lastSeenServerIndex === -1
+        ? runtimeLogs
+        : runtimeLogs.slice(lastSeenServerIndex + 1);
 
-    if (newLogs.length === 0) {
+    // Find new client logs
+    const lastSeenClientIndex = clientLogs.findIndex(
+      (log) => log.id === lastSeenLogId,
+    );
+    const newClientLogs =
+      lastSeenClientIndex === -1
+        ? clientLogs
+        : clientLogs.slice(lastSeenClientIndex + 1);
+
+    if (newServerLogs.length === 0 && newClientLogs.length === 0) {
       return "none";
     }
 
-    const hasErrors = newLogs.some((log) => log.type === "error");
-    return hasErrors ? "error" : "new";
-  }, [runtimeLogs, lastSeenLogId, isConsoleOpen]);
+    const hasServerErrors = newServerLogs.some((log) => log.type === "error");
+    const hasClientErrors = newClientLogs.some(
+      (log) =>
+        log.type === "error" || log.type === "assert" || log.type === "trace",
+    );
+
+    return hasServerErrors || hasClientErrors ? "error" : "new";
+  }, [runtimeLogs, clientLogs, lastSeenLogId, isConsoleOpen]);
 
   const handleConsoleToggleWithTracking = () => {
-    if (isConsoleOpen && runtimeLogs.length > 0) {
+    if (isConsoleOpen && (runtimeLogs.length > 0 || clientLogs.length > 0)) {
       // Mark all current logs as seen when opening console
-      setLastSeenLogId(runtimeLogs.at(-1)?.id ?? null);
+      const latestServerLogId = runtimeLogs.at(-1)?.id;
+      const latestClientLogId = clientLogs.at(-1)?.id;
+      const latestLogId = latestServerLogId || latestClientLogId;
+      setLastSeenLogId(latestLogId ?? null);
     }
     onConsoleToggle();
   };
@@ -130,6 +165,7 @@ export function AppToolbar({
                   appSubdomain: app.subdomain,
                 });
                 shimIFrame.reloadWindow();
+                setClientLogs([]);
               }}
               size="icon"
               variant="ghost"

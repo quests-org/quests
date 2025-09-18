@@ -1,34 +1,18 @@
 import { type WorkspaceApp } from "@quests/workspace/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useSetAtom } from "jotai";
-import { ScopeProvider } from "jotai-scope";
+import { atom, useAtom, useSetAtom } from "jotai";
 import { ExternalLinkIcon } from "lucide-react";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 
-import { lastSeenLogIdAtom } from "../atoms/console";
 import { projectIframeRefAtom } from "../atoms/project";
 import { cn } from "../lib/utils";
 import { rpcClient } from "../rpc/client";
 import { AppIFrame } from "./app-iframe";
 import { AppToolbar } from "./app-toolbar";
+import { type ClientLogLine } from "./console";
 import { Console } from "./console";
 import { Button } from "./ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
-
-interface AppViewProps {
-  app: WorkspaceApp;
-  centerActions?: React.ReactNode;
-  centerContent?: React.ReactNode;
-  className?: string;
-  rightActions?: React.ReactNode;
-  showSendToChat?: boolean;
-}
-
-interface ConsoleWithLogsProps {
-  app: WorkspaceApp;
-  onCollapse: () => void;
-  showSendToChat?: boolean;
-}
 
 export function AppView({
   app,
@@ -37,11 +21,18 @@ export function AppView({
   className,
   rightActions,
   showSendToChat = false,
-}: AppViewProps) {
+}: {
+  app: WorkspaceApp;
+  centerActions?: React.ReactNode;
+  centerContent?: React.ReactNode;
+  className?: string;
+  rightActions?: React.ReactNode;
+  showSendToChat?: boolean;
+}) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const setProjectIframeRef = useSetAtom(projectIframeRefAtom);
-
   const [isConsoleOpen, setIsConsoleOpen] = useState(true);
+  const clientLogsAtom = useMemo(() => atom<ClientLogLine[]>([]), []);
 
   const openExternalLinkMutation = useMutation(
     rpcClient.utils.openExternalLink.mutationOptions(),
@@ -99,66 +90,72 @@ export function AppView({
   );
 
   return (
-    <ScopeProvider atoms={[lastSeenLogIdAtom]}>
-      <div className={cn("flex flex-col size-full", className)}>
-        <AppToolbar
+    <div className={cn("flex flex-col size-full", className)}>
+      <AppToolbar
+        app={app}
+        centerActions={centerActions}
+        centerContent={centerContent}
+        clientLogsAtom={clientLogsAtom}
+        iframeRef={iframeRef}
+        isConsoleOpen={isConsoleOpen}
+        onConsoleToggle={handleConsoleToggle}
+        rightActions={rightActions}
+      />
+
+      <div className="flex-1 flex flex-col relative overflow-hidden">
+        <AppIFrame
           app={app}
-          centerActions={centerActions}
-          centerContent={centerContent}
+          className={cn("flex-1 min-h-0", isConsoleOpen ? "rounded-b-lg" : "")}
+          clientLogsAtom={clientLogsAtom}
           iframeRef={iframeRef}
-          isConsoleOpen={isConsoleOpen}
-          onConsoleToggle={handleConsoleToggle}
-          rightActions={rightActions}
         />
 
-        <div className="flex-1 flex flex-col relative overflow-hidden">
-          <AppIFrame
-            app={app}
-            className={cn(
-              "flex-1 min-h-0",
-              isConsoleOpen ? "rounded-b-lg" : "",
-            )}
-            iframeRef={iframeRef}
-          />
-
-          {!isConsoleOpen && (
-            <div className="h-66 border-t shrink-0">
-              <ConsoleWithLogs
-                app={app}
-                onCollapse={() => {
-                  setIsConsoleOpen(true);
-                }}
-                showSendToChat={showSendToChat}
-              />
-            </div>
-          )}
-        </div>
+        {!isConsoleOpen && (
+          <div className="h-66 border-t shrink-0">
+            <ConsoleWithLogs
+              app={app}
+              clientLogsAtom={clientLogsAtom}
+              onCollapse={() => {
+                setIsConsoleOpen(true);
+              }}
+              showSendToChat={showSendToChat}
+            />
+          </div>
+        )}
       </div>
-    </ScopeProvider>
+    </div>
   );
 }
 
 function ConsoleWithLogs({
   app,
+  clientLogsAtom,
   onCollapse,
   showSendToChat,
-}: ConsoleWithLogsProps) {
+}: {
+  app: WorkspaceApp;
+  clientLogsAtom: ReturnType<typeof atom<ClientLogLine[]>>;
+  onCollapse: () => void;
+  showSendToChat: boolean;
+}) {
   const { data: runtimeLogs = [] } = useQuery(
     rpcClient.workspace.runtime.log.live.list.experimental_liveOptions({
       input: { subdomain: app.subdomain },
     }),
   );
-
+  const [clientLogs, setClientLogs] = useAtom(clientLogsAtom);
   const clearLogsMutation = useMutation(
     rpcClient.workspace.runtime.clearLogs.mutationOptions(),
   );
 
   const handleClearLogs = () => {
     clearLogsMutation.mutate({ appSubdomain: app.subdomain });
+    setClientLogs([]);
   };
 
   return (
     <Console
+      clientLogs={clientLogs}
       logs={runtimeLogs}
       onClearLogs={handleClearLogs}
       onCollapse={onCollapse}

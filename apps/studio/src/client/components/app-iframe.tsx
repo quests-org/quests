@@ -1,21 +1,30 @@
+import { ShimIFrameOutMessageSchema } from "@quests/shared/shim";
 import { type WorkspaceApp } from "@quests/workspace/client";
+import { type atom, useSetAtom } from "jotai";
 import { XIcon } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
+import { ulid } from "ulid";
 
 import { useAppState } from "../hooks/use-app-state";
 import { cn } from "../lib/utils";
+import { type ClientLogLine } from "./console";
 
-interface AppIFrameProps {
+export function AppIFrame({
+  app,
+  className,
+  clientLogsAtom,
+  iframeRef,
+}: {
   app: WorkspaceApp;
   className?: string;
+  clientLogsAtom: ReturnType<typeof atom<ClientLogLine[]>>;
   iframeRef?: React.RefObject<HTMLIFrameElement | null>;
-}
-
-export function AppIFrame({ app, className, iframeRef }: AppIFrameProps) {
+}) {
   const [coverState, setCoverState] = useState<
     "dismissed" | "hidden" | "hiding" | "visible"
   >("hidden");
   const wasActiveRef = useRef(false);
+  const setClientLogs = useSetAtom(clientLogsAtom);
 
   const { data: appState } = useAppState({
     subdomain: app.subdomain,
@@ -24,6 +33,40 @@ export function AppIFrame({ app, className, iframeRef }: AppIFrameProps) {
   const hasRunningSession = (appState?.sessionActors ?? []).some((session) =>
     session.tags.includes("agent.running"),
   );
+
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      // Only handle messages from this specific iframe
+      const expectedOrigin = new URL(app.urls.localhost).origin;
+      if (
+        !iframeRef?.current?.contentWindow ||
+        event.source !== iframeRef.current.contentWindow ||
+        event.origin !== expectedOrigin
+      ) {
+        return;
+      }
+
+      const parseResult = ShimIFrameOutMessageSchema.safeParse(event.data);
+      if (parseResult.success) {
+        const logData = parseResult.data;
+
+        setClientLogs((prev) => [
+          ...prev,
+          {
+            args: logData.value.args,
+            id: ulid(),
+            timestamp: new Date(),
+            type: logData.value.type,
+          },
+        ]);
+      }
+    };
+
+    window.addEventListener("message", handleMessage);
+    return () => {
+      window.removeEventListener("message", handleMessage);
+    };
+  }, [setClientLogs, iframeRef, app.urls.localhost]);
 
   // Keep cover visible briefly after session ends to prevent modal being
   // dismissed right before the app reboots

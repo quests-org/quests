@@ -89,7 +89,6 @@
     "framer-motion": "11.13.5",
     "hono": "catalog:",
     "jotai": "^2.14.0",
-    "jotai-scope": "^0.9.4",
     "lucide-react": "catalog:",
     "neverthrow": "^8.1.1",
     "normalize-path": "^3.0.0",

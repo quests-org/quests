@@ -19,7 +19,6 @@
   "dependencies": {
     "@quests/shared": "workspace:*",
     "@quests/workspace": "workspace:*",
-    "@sentry/browser": "^9.40.0",
     "@tailwindcss/postcss": "^4.1.11",
     "date-fns": "^4.1.0",
     "lucide-react": "^0.456.0",

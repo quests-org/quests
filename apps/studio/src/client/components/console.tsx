@@ -1,4 +1,5 @@
 import { cn } from "@/client/lib/utils";
+import { type ConsoleLogType } from "@quests/shared/shim";
 import { type AppSubdomain } from "@quests/workspace/client";
 import { useSetAtom } from "jotai";
 import { ChevronDown, Copy, MessageSquare, Trash, X } from "lucide-react";
@@ -14,32 +15,72 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 const MAX_LINE_LENGTH = 200;
 const MAX_LINES = 2;
+export interface ClientLogLine {
+  args: unknown[];
+  id: string;
+  timestamp: Date;
+  type: ConsoleLogType;
+}
 
-const getLogLineStyles = (type: LogLine["type"]) => {
-  return cn(
-    "shrink-1 overflow-x-auto whitespace-pre-wrap break-all px-2 py-0.5 rounded-sm",
-    type === "error"
-      ? "bg-destructive/5 text-destructive"
-      : "bg-muted/30 text-foreground",
-  );
+type ServerLogLine = RPCOutput["workspace"]["runtime"]["log"]["list"][number];
+
+type UnifiedLogLine =
+  | { log: ClientLogLine; source: "client" }
+  | { log: ServerLogLine; source: "server" };
+
+function getCurrentMessage(log: UnifiedLogLine) {
+  return log.source === "server"
+    ? log.log.message
+    : log.log.args
+        .map((arg) => (typeof arg === "string" ? arg : JSON.stringify(arg)))
+        .join(" ");
+}
+
+function getCurrentType(log: UnifiedLogLine) {
+  return log.source === "server" ? log.log.type : log.log.type;
+}
+
+const getLogLineStyles = (log: UnifiedLogLine) => {
+  const baseStyles =
+    "shrink-1 overflow-x-auto whitespace-pre-wrap break-all px-2 py-0.5 rounded-sm";
+
+  if (log.source === "server") {
+    const type = log.log.type;
+    return cn(
+      baseStyles,
+      type === "error"
+        ? "bg-destructive/5 text-destructive"
+        : "bg-muted/30 text-foreground",
+    );
+  } else {
+    const type = log.log.type;
+    return cn(
+      baseStyles,
+      type === "error" || type === "assert" || type === "trace"
+        ? "bg-destructive/5 text-destructive"
+        : type === "warn"
+          ? "bg-yellow-50 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300"
+          : "bg-muted/30 text-foreground",
+    );
+  }
 };
 
 interface GroupedLogLine {
   count: number;
-  line: LogLine;
+  line: UnifiedLogLine;
   originalIndex: number;
 }
 
-type LogLine = RPCOutput["workspace"]["runtime"]["log"]["list"][number];
-
 export function Console({
+  clientLogs,
   logs,
   onClearLogs,
   onCollapse,
   showSendToChat = false,
   subdomain,
 }: {
-  logs: LogLine[];
+  clientLogs: ClientLogLine[];
+  logs: ServerLogLine[];
   onClearLogs: () => void;
   onCollapse: () => void;
   showSendToChat?: boolean;
@@ -48,7 +89,36 @@ export function Console({
   const { contentRef, isNearBottom, scrollRef, scrollToBottom } =
     useStickToBottom({ initial: "instant", mass: 0.8 });
 
-  const groupedLogs = useMemo(() => groupConsecutiveDuplicates(logs), [logs]);
+  const unifiedLogs = useMemo(() => {
+    const serverLogs: UnifiedLogLine[] = logs.map((log) => ({
+      log,
+      source: "server" as const,
+    }));
+
+    const clientLogsUnified: UnifiedLogLine[] = clientLogs.map((log) => ({
+      log,
+      source: "client" as const,
+    }));
+
+    const allLogs = [...serverLogs, ...clientLogsUnified];
+
+    allLogs.sort((a, b) => {
+      const aTime = a.source === "server" ? a.log.createdAt : a.log.timestamp;
+      const bTime = b.source === "server" ? b.log.createdAt : b.log.timestamp;
+      const aTimeMs =
+        aTime instanceof Date ? aTime.getTime() : new Date(aTime).getTime();
+      const bTimeMs =
+        bTime instanceof Date ? bTime.getTime() : new Date(bTime).getTime();
+      return aTimeMs - bTimeMs;
+    });
+
+    return allLogs;
+  }, [logs, clientLogs]);
+
+  const groupedLogs = useMemo(
+    () => groupConsecutiveDuplicates(unifiedLogs),
+    [unifiedLogs],
+  );
 
   return (
     <div className="flex h-full w-full flex-col overflow-hidden border-l border-r border-b border-border bg-background relative rounded-b-lg">
@@ -96,7 +166,11 @@ export function Console({
               <ConsoleRow
                 count={group.count}
                 index={index}
-                key={group.line.id}
+                key={
+                  group.line.source === "server"
+                    ? group.line.log.id
+                    : group.line.log.id
+                }
                 line={group.line}
                 showSendToChat={showSendToChat}
                 subdomain={subdomain}
@@ -129,20 +203,45 @@ function ConsoleRow({
 }: {
   count: number;
   index: number;
-  line: LogLine;
+  line: UnifiedLogLine;
   showSendToChat?: boolean;
   subdomain: AppSubdomain;
 }) {
   const setPromptValue = useSetAtom(promptValueAtomFamily(subdomain));
 
+  const getMessage = () => {
+    return line.source === "server"
+      ? line.log.message
+      : line.log.args
+          .map((arg) => {
+            if (typeof arg === "string") {
+              return arg;
+            }
+            if (typeof arg === "object" && arg !== null && "__isError" in arg) {
+              const error = arg as unknown as {
+                message: string;
+                name: string;
+                stack?: string;
+              };
+              return `${error.name}: ${error.message}${error.stack ? `\n${error.stack}` : ""}`;
+            }
+            try {
+              return JSON.stringify(arg, null, 2);
+            } catch {
+              return String(arg);
+            }
+          })
+          .join(" ");
+  };
+
+  const message = getMessage();
+
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(line.message);
+    await navigator.clipboard.writeText(message);
   };
 
   const handleSendToChat = () => {
-    setPromptValue((prev) =>
-      prev ? `${prev}\n\n${line.message}` : line.message,
-    );
+    setPromptValue((prev) => (prev ? `${prev}\n\n${message}` : message));
   };
 
   return (
@@ -163,12 +262,12 @@ function ConsoleRow({
         )}
 
         <div className="flex-1 min-w-0">
-          {line.type === "truncation" ? (
+          {line.source === "server" && line.log.type === "truncation" ? (
             <div className="text-muted-foreground italic bg-muted/30 px-2 py-0.5 rounded-sm shrink-1 overflow-x-auto whitespace-pre-wrap break-all">
-              {line.message}
+              {message}
             </div>
           ) : (
-            <TruncatedLogLine line={line} />
+            <TruncatedLogLine line={line} message={message} />
           )}
         </div>
       </div>
@@ -194,7 +293,7 @@ function ConsoleRow({
   );
 }
 
-function groupConsecutiveDuplicates(logs: LogLine[]): GroupedLogLine[] {
+function groupConsecutiveDuplicates(logs: UnifiedLogLine[]): GroupedLogLine[] {
   if (logs.length === 0) {
     return [];
   }
@@ -220,8 +319,9 @@ function groupConsecutiveDuplicates(logs: LogLine[]): GroupedLogLine[] {
     const previous = currentGroup.line;
 
     if (
-      current.message === previous.message &&
-      current.type === previous.type
+      getCurrentMessage(current) === getCurrentMessage(previous) &&
+      getCurrentType(current) === getCurrentType(previous) &&
+      current.source === previous.source
     ) {
       currentGroup.count++;
     } else {
@@ -238,7 +338,13 @@ function groupConsecutiveDuplicates(logs: LogLine[]): GroupedLogLine[] {
   return grouped;
 }
 
-function TruncatedLogLine({ line: { message, type } }: { line: LogLine }) {
+function TruncatedLogLine({
+  line,
+  message,
+}: {
+  line: UnifiedLogLine;
+  message: string;
+}) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const lines = message.split("\n");
@@ -256,11 +362,11 @@ function TruncatedLogLine({ line: { message, type } }: { line: LogLine }) {
   }
 
   if (!needsTruncation) {
-    return <div className={getLogLineStyles(type)}>{message}</div>;
+    return <div className={getLogLineStyles(line)}>{message}</div>;
   }
 
   return (
-    <div className={getLogLineStyles(type)}>
+    <div className={getLogLineStyles(line)}>
       <button
         className="text-muted-foreground hover:text-foreground transition-colors mr-1 font-mono"
         onClick={() => {

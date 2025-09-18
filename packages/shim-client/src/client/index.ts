@@ -1,8 +1,11 @@
 // WARNING: Files cannot be shared between the client and the iframe or else
 // it will cause an infinite loop on import due to Vite's build. Not sure why.
-import { type ShimIFrameMessage } from "@quests/shared/shim";
+import {
+  type ConsoleLogType,
+  type ShimIFrameMessage,
+  type ShimIFrameOutMessage,
+} from "@quests/shared/shim";
 import { SHIM_IFRAME_BASE_PATH } from "@quests/workspace/for-shim";
-import * as Sentry from "@sentry/browser";
 
 import { type IframeMessage, type IframeMessageHandler } from "../iframe/types";
 
@@ -38,18 +41,6 @@ style.textContent = `
   }
 `;
 document.head.append(style);
-Sentry.init({
-  dsn: "https://1@2.ingest.sentry.io/3",
-  integrations: [
-    Sentry.browserTracingIntegration(),
-    Sentry.consoleLoggingIntegration(),
-  ],
-  profilesSampleRate: 0,
-  replaysSessionSampleRate: 0,
-  sampleRate: 1,
-  tracesSampleRate: 0,
-  tunnel: "/_quests/envelope",
-});
 
 const messageHandlers = new Set<IframeMessageHandler>();
 
@@ -59,6 +50,92 @@ export function addMessageHandler(handler: IframeMessageHandler) {
 
 export function removeMessageHandler(handler: IframeMessageHandler) {
   messageHandlers.delete(handler);
+}
+
+/* eslint-disable no-console */
+const originalConsole = {
+  assert: console.assert.bind(console),
+  clear: console.clear.bind(console),
+  count: console.count.bind(console),
+  countReset: console.countReset.bind(console),
+  debug: console.debug.bind(console),
+  dir: console.dir.bind(console),
+  dirxml: console.dirxml.bind(console),
+  error: console.error.bind(console),
+  group: console.group.bind(console),
+  groupCollapsed: console.groupCollapsed.bind(console),
+  groupEnd: console.groupEnd.bind(console),
+  info: console.info.bind(console),
+  log: console.log.bind(console),
+  table: console.table.bind(console),
+  time: console.time.bind(console),
+  timeEnd: console.timeEnd.bind(console),
+  trace: console.trace.bind(console),
+  warn: console.warn.bind(console),
+};
+
+function interceptConsoleMethod(methodName: keyof typeof originalConsole) {
+  console[methodName] = (...args: unknown[]) => {
+    (originalConsole[methodName] as (...args: unknown[]) => void)(...args);
+    sendConsoleLog(methodName, args);
+  };
+}
+/* eslint-enable no-console */
+
+function sendConsoleLog(type: ConsoleLogType, args: unknown[]) {
+  try {
+    const serializedArgs = args.map((arg) => {
+      if (arg instanceof Error) {
+        return {
+          __isError: true,
+          message: arg.message,
+          name: arg.name,
+          stack: arg.stack,
+        };
+      }
+      if (typeof arg === "object" && arg !== null) {
+        return structuredClone(arg);
+      }
+      return arg;
+    });
+
+    const message: ShimIFrameOutMessage = {
+      type: "console-log",
+      value: {
+        args: serializedArgs,
+        type,
+      },
+    };
+
+    window.parent.postMessage(message, "*");
+  } catch (error) {
+    originalConsole.error("Failed to send console log:", error);
+  }
+}
+
+const consoleMethods = [
+  "log",
+  "error",
+  "warn",
+  "info",
+  "debug",
+  "trace",
+  "group",
+  "groupCollapsed",
+  "groupEnd",
+  "table",
+  "time",
+  "timeEnd",
+  "count",
+  "countReset",
+  "assert",
+  "clear",
+  "dir",
+  "dirxml",
+] as const;
+
+for (const method of consoleMethods) {
+  interceptConsoleMethod(method);
 }
 
 const iframe = document.createElement("iframe");
