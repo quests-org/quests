@@ -80,10 +80,7 @@ export function AppToolbar({
     if (!lastSeenLogId) {
       // If we've never seen any logs, check if there are any errors
       const hasServerErrors = runtimeLogs.some((log) => log.type === "error");
-      const hasClientErrors = clientLogs.some(
-        (log) =>
-          log.type === "error" || log.type === "assert" || log.type === "trace",
-      );
+      const hasClientErrors = clientLogs.some((log) => log.type === "error");
       return hasServerErrors || hasClientErrors ? "error" : "new";
     }
 
@@ -110,10 +107,7 @@ export function AppToolbar({
     }
 
     const hasServerErrors = newServerLogs.some((log) => log.type === "error");
-    const hasClientErrors = newClientLogs.some(
-      (log) =>
-        log.type === "error" || log.type === "assert" || log.type === "trace",
-    );
+    const hasClientErrors = newClientLogs.some((log) => log.type === "error");
 
     return hasServerErrors || hasClientErrors ? "error" : "new";
   }, [runtimeLogs, clientLogs, lastSeenLogId, isConsoleOpen]);

@@ -54,23 +54,10 @@ export function removeMessageHandler(handler: IframeMessageHandler) {
 
 /* eslint-disable no-console */
 const originalConsole = {
-  assert: console.assert.bind(console),
-  clear: console.clear.bind(console),
-  count: console.count.bind(console),
-  countReset: console.countReset.bind(console),
   debug: console.debug.bind(console),
-  dir: console.dir.bind(console),
-  dirxml: console.dirxml.bind(console),
   error: console.error.bind(console),
-  group: console.group.bind(console),
-  groupCollapsed: console.groupCollapsed.bind(console),
-  groupEnd: console.groupEnd.bind(console),
   info: console.info.bind(console),
   log: console.log.bind(console),
-  table: console.table.bind(console),
-  time: console.time.bind(console),
-  timeEnd: console.timeEnd.bind(console),
-  trace: console.trace.bind(console),
   warn: console.warn.bind(console),
 };
 
@@ -113,26 +100,7 @@ function sendConsoleLog(type: ConsoleLogType, args: unknown[]) {
   }
 }
 
-const consoleMethods = [
-  "log",
-  "error",
-  "warn",
-  "info",
-  "debug",
-  "trace",
-  "group",
-  "groupCollapsed",
-  "groupEnd",
-  "table",
-  "time",
-  "timeEnd",
-  "count",
-  "countReset",
-  "assert",
-  "clear",
-  "dir",
-  "dirxml",
-] as const;
+const consoleMethods = ["debug", "error", "info", "log", "warn"] as const;
 
 for (const method of consoleMethods) {
   interceptConsoleMethod(method);

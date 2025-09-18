@@ -56,7 +56,7 @@ const getLogLineStyles = (log: UnifiedLogLine) => {
     const type = log.log.type;
     return cn(
       baseStyles,
-      type === "error" || type === "assert" || type === "trace"
+      type === "error"
         ? "bg-destructive/5 text-destructive"
         : type === "warn"
           ? "bg-yellow-50 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300"
