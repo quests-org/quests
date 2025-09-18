@@ -6,7 +6,7 @@ const config: KnipConfig = {
     ".": {
       // Required because tailwindcss is loaded in root by Knip because of
       // eslint-plugin-better-tailwindcss
-      entry: ["scripts/*.ts"],
+      entry: ["scripts/*.{ts}"],
       ignoreDependencies: ["tailwindcss"],
     },
     "apps/api": {
@@ -14,7 +14,7 @@ const config: KnipConfig = {
     },
     "apps/studio": {
       entry: [
-        "scripts/*.{ts,tsx}",
+        "scripts/*.{ts,tsx,js}",
         "src/client/components/ui/*",
         "src/client/routeTree.gen.ts",
         "src/client/router.tsx",

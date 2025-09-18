@@ -107,6 +107,10 @@ const config: Configuration = {
   },
   win: {
     executableName: "quests",
+    signtoolOptions: {
+      publisherName: "Finalpoint, LLC",
+      sign: "scripts/win-cloud-hsm-sign.js",
+    },
     target: [{ arch: ["x64", "arm64"], target: "nsis" }],
   },
 };

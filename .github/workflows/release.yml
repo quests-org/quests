@@ -12,6 +12,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     permissions:
       contents: write
+      id-token: "write"
 
     strategy:
       matrix:
@@ -34,7 +35,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - if: matrix.os == 'ubuntu-latest'
-        name: build-linux
+        name: Build Linux
         run: pnpm turbo build:linux --env-mode=loose
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -48,7 +49,7 @@ jobs:
           VITE_QUESTS_API_BASE_URL: ${{ vars.VITE_QUESTS_API_BASE_URL }}
 
       - if: matrix.os == 'ubuntu-latest'
-        name: upload-linux-artifacts
+        name: Upload Linux .AppImage
         uses: actions/upload-artifact@v4
         with:
           name: linux-appimage
@@ -56,7 +57,7 @@ jobs:
           retention-days: 30
 
       - if: matrix.os == 'ubuntu-latest'
-        name: upload-linux-deb
+        name: Upload Linux .deb
         uses: actions/upload-artifact@v4
         with:
           name: linux-deb
@@ -64,15 +65,7 @@ jobs:
           retention-days: 30
 
       - if: matrix.os == 'ubuntu-latest'
-        name: upload-linux-snap
-        uses: actions/upload-artifact@v4
-        with:
-          name: linux-snap
-          path: apps/studio/dist/*.snap
-          retention-days: 30
-
-      - if: matrix.os == 'ubuntu-latest'
-        name: upload-linux-tar-gz
+        name: Upload Linux .tar.gz
         uses: actions/upload-artifact@v4
         with:
           name: linux-tar-gz
@@ -80,7 +73,7 @@ jobs:
           retention-days: 30
 
       - if: matrix.os == 'ubuntu-latest'
-        name: upload-linux-yml
+        name: Upload Linux .yml
         uses: actions/upload-artifact@v4
         with:
           name: latest-linux.yml
@@ -88,7 +81,7 @@ jobs:
           retention-days: 30
 
       - if: matrix.os == 'ubuntu-latest'
-        name: upload-linux-blockmap
+        name: Upload Linux blockmap
         uses: actions/upload-artifact@v4
         with:
           name: linux-blockmap
@@ -102,7 +95,7 @@ jobs:
           echo '${{ secrets.APPLE_API_KEY_DATA }}' > ~/.private_keys/AuthKey_${{ secrets.APPLE_API_KEY_ID }}.p8
 
       - if: matrix.os == 'macos-latest'
-        name: build-mac
+        name: Build Mac
         run: pnpm turbo build:mac --env-mode=loose
         env:
           APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
@@ -122,12 +115,12 @@ jobs:
           VITE_QUESTS_API_BASE_URL: ${{ vars.VITE_QUESTS_API_BASE_URL }}
 
       - if: matrix.os == 'macos-latest'
-        name: cleanup-signing
+        name: Cleanup Signing
         run: |
           rm ~/.private_keys/AuthKey_${{ secrets.APPLE_API_KEY_ID }}.p8
 
       - if: matrix.os == 'macos-latest'
-        name: upload-macos-dmg
+        name: Upload Macos .dmg
         uses: actions/upload-artifact@v4
         with:
           name: macos-dmg
@@ -135,7 +128,7 @@ jobs:
           retention-days: 30
 
       - if: matrix.os == 'macos-latest'
-        name: upload-macos-zip
+        name: Upload Macos .zip
         uses: actions/upload-artifact@v4
         with:
           name: macos-zip
@@ -143,7 +136,7 @@ jobs:
           retention-days: 30
 
       - if: matrix.os == 'macos-latest'
-        name: upload-macos-yml
+        name: Upload Macos .yml
         uses: actions/upload-artifact@v4
         with:
           name: macos-yml
@@ -151,7 +144,7 @@ jobs:
           retention-days: 30
 
       - if: matrix.os == 'macos-latest'
-        name: upload-macos-blockmap
+        name: Upload Macos Blockmap
         uses: actions/upload-artifact@v4
         with:
           name: macos-blockmap
@@ -159,12 +152,57 @@ jobs:
           retention-days: 30
 
       - if: matrix.os == 'windows-latest'
-        name: build-win
+        uses: KamaranL/add-signtool-action@v1
+        id: signtool
+
+      - if: matrix.os == 'windows-latest'
+        id: auth-google-cloud
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }}
+          create_credentials_file: true
+
+      - if: matrix.os == 'windows-latest'
+        name: Install GCP KMS CNG Provider
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $version = 'cng-v1.2'
+          $zipUrl  = "https://github.com/GoogleCloudPlatform/kms-integrations/releases/download/$version/kmscng-1.2-windows-amd64.zip"
+          $zipPath = Join-Path $env:RUNNER_TEMP "kmscng-$version.zip"
+          $outDir  = Join-Path $env:RUNNER_TEMP "kmscng-$version"
+
+          Invoke-WebRequest $zipUrl -OutFile $zipPath
+          New-Item -ItemType Directory -Force -Path $outDir | Out-Null
+          Expand-Archive -Path $zipPath -DestinationPath $outDir -Force
+
+          $msi = Get-ChildItem -Path $outDir -Recurse -Filter "kmscng.msi" | Select-Object -First 1
+          if (-not $msi) { throw "kmscng.msi not found in archive." }
+
+          Start-Process msiexec.exe -Wait -ArgumentList "/i `"$($msi.FullName)`" /qn"
+
+          # quick sanity check: CNG provider is registered
+          certutil -csp "Google Cloud KMS Provider" -csptest
+
+      - if: matrix.os == 'windows-latest'
+        name: Write EV Cert Chain File
+        shell: pwsh
+        run: |
+          Set-Content -Path "${{ env.WIN_CERT_PATH }}" -Value '${{ env.WIN_EV_CERT_PEM }}' -Encoding ascii
+        env:
+          WIN_CERT_PATH: ${{ runner.temp }}\ev-chain.pem
+          WIN_EV_CERT_PEM: ${{ secrets.WIN_EV_CERT_PEM }}
+
+      - if: matrix.os == 'windows-latest'
+        name: Build Windows
         run: pnpm turbo build:windows --env-mode=loose
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           BUILDER_PUBLISH_S3_ENDPOINT: ${{ vars.BUILDER_PUBLISH_S3_ENDPOINT }}
+          WIN_GCP_KMS_KEY_VERSION: ${{ secrets.WIN_GCP_KMS_KEY_VERSION }}
+          WIN_CERT_PATH: ${{ runner.temp }}\ev-chain.pem
           MAIN_VITE_GOOGLE_CLIENT_ID: ${{ vars.MAIN_VITE_GOOGLE_CLIENT_ID }}
           MAIN_VITE_GOOGLE_CLIENT_SECRET: ${{ secrets.MAIN_VITE_GOOGLE_CLIENT_SECRET }}
           VITE_APP_PROTOCOL: ${{ vars.VITE_APP_PROTOCOL }}
@@ -173,7 +211,15 @@ jobs:
           VITE_QUESTS_API_BASE_URL: ${{ vars.VITE_QUESTS_API_BASE_URL }}
 
       - if: matrix.os == 'windows-latest'
-        name: upload-windows-exe
+        name: Verify Signatures
+        shell: pwsh
+        run: |
+          & "${{ env.SIGNTOOL_PATH }}" verify /pa /all "apps\studio\dist\*.exe"
+        env:
+          SIGNTOOL_PATH: signtool.exe
+
+      - if: matrix.os == 'windows-latest'
+        name: Upload Windows .exe
         uses: actions/upload-artifact@v4
         with:
           name: windows-exe
@@ -181,7 +227,7 @@ jobs:
           retention-days: 30
 
       - if: matrix.os == 'windows-latest'
-        name: upload-windows-zip
+        name: Upload Windows .zip
         uses: actions/upload-artifact@v4
         with:
           name: windows-zip
@@ -189,7 +235,7 @@ jobs:
           retention-days: 30
 
       - if: matrix.os == 'windows-latest'
-        name: upload-windows-yml
+        name: Upload Windows .yml
         uses: actions/upload-artifact@v4
         with:
           name: windows-yml
@@ -197,14 +243,14 @@ jobs:
           retention-days: 30
 
       - if: matrix.os == 'windows-latest'
-        name: upload-windows-blockmap
+        name: Upload Windows Blockmap
         uses: actions/upload-artifact@v4
         with:
           name: windows-blockmap
           path: apps/studio/dist/*.blockmap
           retention-days: 30
 
-      - name: release
+      - name: Release
         uses: softprops/action-gh-release@v2
         if: github.ref_type == 'tag'
         with:
