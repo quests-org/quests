@@ -64,6 +64,7 @@ const config: Configuration = {
     "!{.eslintignore,eslint.config.ts,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md,.eslintcache,drizzle.config.ts,vitest.config.ts,tsconfig.tsbuildinfo,postcss.config.cjs,components.json}",
     "!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}",
   ],
+  generateUpdatesFilesForAllChannels: true,
   linux: {
     artifactName: "${productName}-${os}-${version}-${arch}.${ext}",
     category: "Utility",

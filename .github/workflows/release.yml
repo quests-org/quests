@@ -27,9 +27,6 @@ jobs:
           - os: windows-latest
             arch: x64
             runner: windows-latest
-          # - os: windows-latest
-          #   arch: arm64
-          #   runner: windows-11-arm
           - os: macos-latest
             arch: x64
             runner: macos-13
