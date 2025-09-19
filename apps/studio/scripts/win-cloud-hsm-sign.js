@@ -23,8 +23,6 @@ export default async function (cfg) {
 
   const args = [
     "sign",
-    "/v",
-    "/debug",
     "/fd",
     "sha256",
     "/tr",
