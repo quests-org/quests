@@ -71,12 +71,7 @@ const config: Configuration = {
     executableName: "quests",
     icon: "build/icons",
     maintainer: "quests.dev",
-    target: [
-      { arch: ["x64", "arm64"], target: "AppImage" },
-      { arch: ["x64", "arm64"], target: "deb" },
-      { arch: ["x64", "arm64"], target: "rpm" },
-      { arch: ["x64", "arm64"], target: "tar.gz" },
-    ],
+    target: ["AppImage", "deb", "rpm", "tar.gz"],
   },
   mac: {
     category: "public.app-category.developer-tools",
@@ -85,10 +80,7 @@ const config: Configuration = {
     hardenedRuntime: true,
     // eslint-disable-next-line turbo/no-undeclared-env-vars
     notarize: process.env.APPLE_NOTARIZATION_ENABLED === "true",
-    target: [
-      { arch: ["x64", "arm64"], target: "dmg" },
-      { arch: ["x64", "arm64"], target: "zip" },
-    ],
+    target: ["dmg", "zip"],
   },
   npmRebuild: true,
   nsis: {
@@ -112,7 +104,7 @@ const config: Configuration = {
       publisherName: "Finalpoint, LLC",
       sign: "scripts/win-cloud-hsm-sign.js",
     },
-    target: [{ arch: ["x64", "arm64"], target: "nsis" }],
+    target: ["nsis"],
   },
 };
 
