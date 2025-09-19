@@ -155,6 +155,11 @@ export const spawnRuntimeLogic = fromCallback<
             "pnpm install --ignore-workspace"
           : "pnpm install";
 
+      parentRef.send({
+        type: "spawnRuntime.log",
+        value: { message: `❯ ${installCommand}`, type: "normal" },
+      });
+
       const installResult = await appConfig.workspaceConfig.runShellCommand(
         installCommand,
         {
@@ -242,6 +247,11 @@ export const spawnRuntimeLogic = fromCallback<
         abortController.signal,
         timeout.controller.signal,
       ]);
+
+      parentRef.send({
+        type: "spawnRuntime.log",
+        value: { message: `❯ pnpm run ${script}`, type: "normal" },
+      });
 
       timeout.start();
       const result = await runPackageJsonScript({
