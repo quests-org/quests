@@ -106,11 +106,9 @@ export function Console({
   );
 
   return (
-    <div className="flex h-full w-full flex-col overflow-hidden border-l border-r border-b border-border bg-background relative rounded-b-lg">
+    <div className="flex h-full w-full flex-col overflow-hidden bg-background relative rounded-b-lg">
       <div className="flex h-fit w-full flex-row items-center justify-between border-b border-border bg-background px-2 py-1.5">
-        <div className="flex flex-row items-center gap-2 pl-2 text-sm text-foreground">
-          <div className="text-xs">Console</div>
-        </div>
+        <div className="text-xs">Console</div>
         <div className="flex flex-row items-center gap-1 text-xs">
           <Tooltip>
             <TooltipTrigger asChild>
