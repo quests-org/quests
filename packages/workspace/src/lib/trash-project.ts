@@ -55,6 +55,13 @@ export async function trashProject({
 
       await workspaceConfig.trashItem(appConfig.appDir);
 
+      // In the off chance that a future project with the same subdomain is
+      // created, we remove the app being trashed.
+      workspaceRef.send({
+        type: "removeAppBeingTrashed",
+        value: { subdomain },
+      });
+
       return ok({ subdomain });
     })(),
     (error: unknown) =>

@@ -89,6 +89,7 @@ export type WorkspaceEvent =
         sessionId: StoreId.Session;
       };
     }
+  | { type: "removeAppBeingTrashed"; value: { subdomain: AppSubdomain } }
   | {
       type: "restartAllRuntimes";
     }
@@ -435,6 +436,15 @@ export const workspaceMachine = setup({
             subdomain.endsWith(trashingSubdomain),
         );
       },
+    },
+    removeAppBeingTrashed: {
+      actions: assign(({ context, event }) => {
+        return {
+          appsBeingTrashed: context.appsBeingTrashed.filter(
+            (subdomain) => subdomain !== event.value.subdomain,
+          ),
+        };
+      }),
     },
     restartAllRuntimes: {
       actions: ({ context }) => {
