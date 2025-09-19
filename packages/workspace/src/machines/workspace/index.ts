@@ -381,68 +381,61 @@ export const workspaceMachine = setup({
         };
       }),
     },
-    "internal.spawnSession": [
-      {
-        actions: [
-          // Boot the runtime if it's not already running to ensure packages are
-          // installed.
-          raise(({ event }) => {
-            const { appConfig } = event.value;
-            return {
-              type: "updateHeartbeat",
-              value: {
-                createdAt: Date.now(),
-                subdomain: appConfig.subdomain,
-              },
-            };
-          }),
-          assign(({ context, event, self, spawn }) => {
-            const { appConfig, message, model, sessionId } = event.value;
-            const sessionMachineRef = spawn("sessionMachine", {
-              input: {
-                agent: AGENTS.code,
-                appConfig,
-                model,
-                parentRef: self,
-                queuedMessages: [message],
-                sessionId,
-              },
-            });
-            const existingSessionActorRefs =
-              context.sessionRefsBySubdomain.get(appConfig.subdomain) ?? [];
-
-            // Garbage collect done sessions
-            const activeSessionActorRefs = existingSessionActorRefs.filter(
-              (ref) => ref.getSnapshot().status !== "done",
-            );
-            const newsessionRefsBySubdomain = new Map(
-              context.sessionRefsBySubdomain,
-            );
-            newsessionRefsBySubdomain.set(appConfig.subdomain, [
-              ...activeSessionActorRefs,
-              sessionMachineRef,
-            ]);
-            return {
-              sessionRefsBySubdomain: newsessionRefsBySubdomain,
-            };
-          }),
-        ],
-        guard: ({ context, event }) => {
-          const { subdomain } = event.value.appConfig;
-          return !context.appsBeingTrashed.some(
-            (trashingSubdomain) =>
-              subdomain === trashingSubdomain ||
-              // Includes sandboxes for projects being trashed
-              subdomain.endsWith(trashingSubdomain),
-          );
-        },
-      },
-      {
-        actions: log(({ event }) => {
-          return `Not spawning session for project being trashed: ${event.value.appConfig.subdomain}`;
+    "internal.spawnSession": {
+      actions: [
+        // Boot the runtime if it's not already running to ensure packages are
+        // installed.
+        raise(({ event }) => {
+          const { appConfig } = event.value;
+          return {
+            type: "updateHeartbeat",
+            value: {
+              createdAt: Date.now(),
+              subdomain: appConfig.subdomain,
+            },
+          };
         }),
+        assign(({ context, event, self, spawn }) => {
+          const { appConfig, message, model, sessionId } = event.value;
+          const sessionMachineRef = spawn("sessionMachine", {
+            input: {
+              agent: AGENTS.code,
+              appConfig,
+              model,
+              parentRef: self,
+              queuedMessages: [message],
+              sessionId,
+            },
+          });
+          const existingSessionActorRefs =
+            context.sessionRefsBySubdomain.get(appConfig.subdomain) ?? [];
+
+          // Garbage collect done sessions
+          const activeSessionActorRefs = existingSessionActorRefs.filter(
+            (ref) => ref.getSnapshot().status !== "done",
+          );
+          const newsessionRefsBySubdomain = new Map(
+            context.sessionRefsBySubdomain,
+          );
+          newsessionRefsBySubdomain.set(appConfig.subdomain, [
+            ...activeSessionActorRefs,
+            sessionMachineRef,
+          ]);
+          return {
+            sessionRefsBySubdomain: newsessionRefsBySubdomain,
+          };
+        }),
+      ],
+      guard: ({ context, event }) => {
+        const { subdomain } = event.value.appConfig;
+        return !context.appsBeingTrashed.some(
+          (trashingSubdomain) =>
+            subdomain === trashingSubdomain ||
+            // Includes sandboxes for projects being trashed
+            subdomain.endsWith(trashingSubdomain),
+        );
       },
-    ],
+    },
     restartAllRuntimes: {
       actions: ({ context }) => {
         for (const runtimeRef of context.runtimeRefs.values()) {
@@ -510,38 +503,31 @@ export const workspaceMachine = setup({
       //   };
       // }),
     ],
-    spawnRuntime: [
-      {
-        actions: assign(({ context, event, spawn }) => {
-          return {
-            runtimeRefs: new Map(context.runtimeRefs).set(
-              event.value.appConfig.subdomain,
-              spawn("runtimeMachine", {
-                input: {
-                  appConfig: event.value.appConfig,
-                  runPackageJsonScript: context.runPackageJsonScript,
-                  shimServerJSPath: context.shimServerJSPath,
-                },
-              }),
-            ),
-          };
-        }),
-        guard: ({ context, event }) => {
-          const subdomain = event.value.appConfig.subdomain;
-          return !context.appsBeingTrashed.some(
-            (trashingSubdomain) =>
-              subdomain === trashingSubdomain ||
-              // Includes sandboxes for projects being trashed
-              subdomain.endsWith(trashingSubdomain),
-          );
-        },
+    spawnRuntime: {
+      actions: assign(({ context, event, spawn }) => {
+        return {
+          runtimeRefs: new Map(context.runtimeRefs).set(
+            event.value.appConfig.subdomain,
+            spawn("runtimeMachine", {
+              input: {
+                appConfig: event.value.appConfig,
+                runPackageJsonScript: context.runPackageJsonScript,
+                shimServerJSPath: context.shimServerJSPath,
+              },
+            }),
+          ),
+        };
+      }),
+      guard: ({ context, event }) => {
+        const subdomain = event.value.appConfig.subdomain;
+        return !context.appsBeingTrashed.some(
+          (trashingSubdomain) =>
+            subdomain === trashingSubdomain ||
+            // Includes sandboxes for projects being trashed
+            subdomain.endsWith(trashingSubdomain),
+        );
       },
-      {
-        actions: log(({ event }) => {
-          return `Not spawning runtime for project being trashed: ${event.value.appConfig.subdomain}`;
-        }),
-      },
-    ],
+    },
 
     stopRuntime: {
       actions: enqueueActions(
