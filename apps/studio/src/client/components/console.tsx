@@ -30,7 +30,7 @@ type UnifiedLogLine =
 
 const getLogLineStyles = (log: UnifiedLogLine) => {
   const baseStyles =
-    "shrink-1 overflow-x-auto whitespace-pre-wrap break-all px-2 py-0.5 rounded-sm";
+    "shrink-1 overflow-x-auto whitespace-pre-wrap break-all py-0.5 rounded-sm";
 
   const type = log.type;
 
@@ -204,7 +204,7 @@ function ConsoleRow({
   return (
     <div
       className={cn(
-        "group py-px px-2 relative border-l-2",
+        "group py-px px-1 relative border-l-2",
         index > 0 && "border-t border-border/40",
         line.source === "server"
           ? "border-l-blue-200 dark:border-l-blue-800"
@@ -214,7 +214,7 @@ function ConsoleRow({
       <div className="flex items-start gap-1">
         <Badge
           className={cn(
-            "text-[10px] px-1 py-0 h-4 min-w-[20px] flex items-center justify-center shrink-0 mt-0.5",
+            "text-[10px] min-w-[52px] px-1 py-0 h-4 flex items-center justify-center shrink-0 mt-0.5",
             line.source === "server"
               ? "text-blue-700 bg-blue-50 border-blue-200 dark:text-blue-300 dark:bg-blue-950/50 dark:border-blue-800"
               : "text-green-700 bg-green-50 border-green-200 dark:text-green-300 dark:bg-green-950/50 dark:border-green-800",
