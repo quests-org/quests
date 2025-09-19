@@ -14,6 +14,24 @@ import { TypedError } from "./errors";
 // multiple times.
 const STORAGE_CACHE = new Map<string, ReturnType<typeof createStorage>>();
 
+export function disposeSessionsStoreStorage(subdomain: string) {
+  return ResultAsync.fromPromise(
+    (async () => {
+      const storage = STORAGE_CACHE.get(subdomain);
+      if (storage) {
+        await storage.dispose();
+        STORAGE_CACHE.delete(subdomain);
+      }
+      return ok(undefined);
+    })(),
+    (error: unknown) =>
+      new TypedError.Storage(
+        error instanceof Error ? error.message : "Unknown error",
+        { cause: error },
+      ),
+  );
+}
+
 export function getSessionsStoreStorage(appConfig: AppConfig) {
   return ResultAsync.fromPromise(
     fs.access(appConfig.appDir),

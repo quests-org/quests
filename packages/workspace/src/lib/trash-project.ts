@@ -1,4 +1,4 @@
-import { ok, ResultAsync } from "neverthrow";
+import { err, ok, ResultAsync } from "neverthrow";
 import fs from "node:fs/promises";
 
 import { type AppDir } from "../schemas/paths";
@@ -8,6 +8,7 @@ import { absolutePathJoin } from "./absolute-path-join";
 import { createAppConfig } from "./app-config/create";
 import { getSandboxesDir } from "./app-dir-utils";
 import { TypedError } from "./errors";
+import { disposeSessionsStoreStorage } from "./get-session-store-storage";
 import { pathExists } from "./path-exists";
 
 interface RemoveProjectOptions {
@@ -40,6 +41,11 @@ export async function trashProject({
       }
 
       await removeSandboxNodeModules(appConfig.appDir);
+
+      const disposeResult = await disposeSessionsStoreStorage(subdomain);
+      if (disposeResult.isErr()) {
+        return err(disposeResult.error);
+      }
 
       await workspaceConfig.trashItem(appConfig.appDir);
 
