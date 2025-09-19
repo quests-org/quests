@@ -23,7 +23,7 @@ jobs:
             runner: ubuntu-latest
           - os: ubuntu-latest
             arch: arm64
-            runner: ubuntu-24.04-arm64
+            runner: ubuntu-24.04-arm
           - os: windows-latest
             arch: x64
             runner: windows-latest
@@ -32,7 +32,7 @@ jobs:
           #   runner: windows-11-arm
           - os: macos-latest
             arch: x64
-            runner: macos-latest
+            runner: macos-13
           - os: macos-latest
             arch: arm64
             runner: macos-latest
