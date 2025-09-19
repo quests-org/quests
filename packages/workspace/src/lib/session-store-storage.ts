@@ -6,15 +6,16 @@ import { createStorage } from "unstorage";
 import dbDriver from "unstorage/drivers/db0";
 
 import { SESSIONS_TABLE_NAME } from "../constants";
+import { type AppSubdomain } from "../schemas/subdomains";
 import { type AppConfig } from "./app-config/types";
 import { sessionStorePath } from "./app-dir-utils";
 import { TypedError } from "./errors";
 
 // Avoids possible SQLite database lock errors if we create the same storage
 // multiple times.
-const STORAGE_CACHE = new Map<string, ReturnType<typeof createStorage>>();
+const STORAGE_CACHE = new Map<AppSubdomain, ReturnType<typeof createStorage>>();
 
-export function disposeSessionsStoreStorage(subdomain: string) {
+export function disposeSessionsStoreStorage(subdomain: AppSubdomain) {
   return ResultAsync.fromPromise(
     (async () => {
       const storage = STORAGE_CACHE.get(subdomain);
