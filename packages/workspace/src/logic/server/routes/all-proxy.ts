@@ -142,7 +142,7 @@ app.all("/*", async (c, next) => {
 
   if (isHtmlContentType || (!responseContentType.trim() && hasHtmlTag)) {
     // For HTML responses, inject the shim script
-    const newBody = body.replace("</head>", `${shimScript}</head>`);
+    const newBody = body.replace("<head>", `<head>${shimScript}`);
 
     // Must modify headers to prevent caching issues due to injected shim
     const newHeaders = new Headers(res.headers);
