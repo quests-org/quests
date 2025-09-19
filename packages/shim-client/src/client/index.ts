@@ -106,12 +106,12 @@ function sendConsoleLog(type: ConsoleLogType, args: unknown[]) {
 
 function sendUncaughtError(error: Error) {
   try {
-    const formattedMessage = `Uncaught ${error.name}: ${error.message}${error.stack ? `\n${error.stack}` : ""}`;
+    const formattedMessage = error.stack || `${error.name}: ${error.message}`;
 
     const message: ShimIFrameOutMessage = {
       type: "console-log",
       value: {
-        message: formattedMessage,
+        message: `Uncaught ${formattedMessage}`,
         type: "error",
       },
     };
