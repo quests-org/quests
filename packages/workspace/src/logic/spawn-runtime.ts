@@ -157,7 +157,7 @@ export const spawnRuntimeLogic = fromCallback<
 
       parentRef.send({
         type: "spawnRuntime.log",
-        value: { message: `❯ ${installCommand}`, type: "normal" },
+        value: { message: `$ ${installCommand}`, type: "normal" },
       });
 
       const installResult = await appConfig.workspaceConfig.runShellCommand(
@@ -270,7 +270,7 @@ export const spawnRuntimeLogic = fromCallback<
 
       parentRef.send({
         type: "spawnRuntime.log",
-        value: { message: `❯ pnpm run ${script}`, type: "normal" },
+        value: { message: `$ pnpm run ${script}`, type: "normal" },
       });
 
       timeout.start();
