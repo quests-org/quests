@@ -16,53 +16,36 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 const MAX_LINE_LENGTH = 200;
 const MAX_LINES = 2;
 export interface ClientLogLine {
-  args: unknown[];
   createdAt: Date;
   id: string;
+  message: string;
   type: ConsoleLogType;
 }
 
 type ServerLogLine = RPCOutput["workspace"]["runtime"]["log"]["list"][number];
 
 type UnifiedLogLine =
-  | { log: ClientLogLine; source: "client" }
-  | { log: ServerLogLine; source: "server" };
-
-function getCurrentMessage(log: UnifiedLogLine) {
-  return log.source === "server"
-    ? log.log.message
-    : log.log.args
-        .map((arg) => (typeof arg === "string" ? arg : JSON.stringify(arg)))
-        .join(" ");
-}
-
-function getCurrentType(log: UnifiedLogLine) {
-  return log.source === "server" ? log.log.type : log.log.type;
-}
+  | (ClientLogLine & { source: "client" })
+  | (ServerLogLine & { source: "server" });
 
 const getLogLineStyles = (log: UnifiedLogLine) => {
   const baseStyles =
     "shrink-1 overflow-x-auto whitespace-pre-wrap break-all px-2 py-0.5 rounded-sm";
 
-  if (log.source === "server") {
-    const type = log.log.type;
+  const type = log.type;
+
+  if (type === "error") {
+    return cn(baseStyles, "bg-destructive/5 text-destructive");
+  }
+
+  if (type === "warn") {
     return cn(
       baseStyles,
-      type === "error"
-        ? "bg-destructive/5 text-destructive"
-        : "bg-muted/30 text-foreground",
-    );
-  } else {
-    const type = log.log.type;
-    return cn(
-      baseStyles,
-      type === "error"
-        ? "bg-destructive/5 text-destructive"
-        : type === "warn"
-          ? "bg-yellow-50 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300"
-          : "bg-muted/30 text-foreground",
+      "bg-yellow-50 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300",
     );
   }
+
+  return cn(baseStyles, "bg-muted/30 text-foreground");
 };
 
 interface GroupedLogLine {
@@ -91,24 +74,26 @@ export function Console({
 
   const unifiedLogs = useMemo(() => {
     const serverLogs: UnifiedLogLine[] = logs.map((log) => ({
-      log,
+      ...log,
       source: "server" as const,
     }));
 
     const clientLogsUnified: UnifiedLogLine[] = clientLogs.map((log) => ({
-      log,
+      ...log,
       source: "client" as const,
     }));
 
     const allLogs = [...serverLogs, ...clientLogsUnified];
 
     allLogs.sort((a, b) => {
-      const aTime = a.source === "server" ? a.log.createdAt : a.log.createdAt;
-      const bTime = b.source === "server" ? b.log.createdAt : b.log.createdAt;
       const aTimeMs =
-        aTime instanceof Date ? aTime.getTime() : new Date(aTime).getTime();
+        a.createdAt instanceof Date
+          ? a.createdAt.getTime()
+          : new Date(a.createdAt).getTime();
       const bTimeMs =
-        bTime instanceof Date ? bTime.getTime() : new Date(bTime).getTime();
+        b.createdAt instanceof Date
+          ? b.createdAt.getTime()
+          : new Date(b.createdAt).getTime();
       return aTimeMs - bTimeMs;
     });
 
@@ -166,7 +151,7 @@ export function Console({
               <ConsoleRow
                 count={group.count}
                 index={index}
-                key={group.line.log.id}
+                key={group.line.id}
                 line={group.line}
                 showSendToChat={showSendToChat}
                 subdomain={subdomain}
@@ -204,32 +189,7 @@ function ConsoleRow({
 }) {
   const setPromptValue = useSetAtom(promptValueAtomFamily(subdomain));
 
-  const getMessage = () => {
-    return line.source === "server"
-      ? line.log.message
-      : line.log.args
-          .map((arg) => {
-            if (typeof arg === "string") {
-              return arg;
-            }
-            if (typeof arg === "object" && arg !== null && "__isError" in arg) {
-              const error = arg as unknown as {
-                message: string;
-                name: string;
-                stack?: string;
-              };
-              return `${error.name}: ${error.message}${error.stack ? `\n${error.stack}` : ""}`;
-            }
-            try {
-              return JSON.stringify(arg, null, 2);
-            } catch {
-              return String(arg);
-            }
-          })
-          .join(" ");
-  };
-
-  const message = getMessage();
+  const message = line.message;
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(message);
@@ -276,7 +236,7 @@ function ConsoleRow({
         )}
 
         <div className="flex-1 min-w-0">
-          {line.source === "server" && line.log.type === "truncation" ? (
+          {line.source === "server" && line.type === "truncation" ? (
             <div className="text-muted-foreground italic bg-muted/30 px-2 py-0.5 rounded-sm shrink-1 overflow-x-auto whitespace-pre-wrap break-all">
               {message}
             </div>
@@ -337,8 +297,8 @@ function groupConsecutiveDuplicates(logs: UnifiedLogLine[]): GroupedLogLine[] {
     const previous = currentGroup.line;
 
     if (
-      getCurrentMessage(current) === getCurrentMessage(previous) &&
-      getCurrentType(current) === getCurrentType(previous) &&
+      current.message === previous.message &&
+      current.type === previous.type &&
       current.source === previous.source
     ) {
       currentGroup.count++;

@@ -12,7 +12,7 @@ export const ShimIFrameOutMessageSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("console-log"),
     value: z.object({
-      args: z.array(z.unknown()),
+      message: z.string(),
       type: ConsoleLogTypeSchema,
     }),
   }),

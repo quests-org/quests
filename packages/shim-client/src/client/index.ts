@@ -71,25 +71,29 @@ function interceptConsoleMethod(methodName: keyof typeof originalConsole) {
 
 function sendConsoleLog(type: ConsoleLogType, args: unknown[]) {
   try {
-    const serializedArgs = args.map((arg) => {
-      if (arg instanceof Error) {
-        return {
-          __isError: true,
-          message: arg.message,
-          name: arg.name,
-          stack: arg.stack,
-        };
-      }
-      if (typeof arg === "object" && arg !== null) {
-        return structuredClone(arg);
-      }
-      return arg;
-    });
+    const formattedMessage = args
+      .map((arg) => {
+        if (arg instanceof Error) {
+          return `${arg.name}: ${arg.message}${arg.stack ? `\n${arg.stack}` : ""}`;
+        }
+        if (typeof arg === "string") {
+          return arg;
+        }
+        if (typeof arg === "object" && arg !== null) {
+          try {
+            return JSON.stringify(arg, null, 2);
+          } catch {
+            return "Unserializable object";
+          }
+        }
+        return String(arg);
+      })
+      .join(" ");
 
     const message: ShimIFrameOutMessage = {
       type: "console-log",
       value: {
-        args: serializedArgs,
+        message: formattedMessage,
         type,
       },
     };
@@ -100,11 +104,43 @@ function sendConsoleLog(type: ConsoleLogType, args: unknown[]) {
   }
 }
 
+function sendUncaughtError(error: Error) {
+  try {
+    const formattedMessage = `Uncaught ${error.name}: ${error.message}${error.stack ? `\n${error.stack}` : ""}`;
+
+    const message: ShimIFrameOutMessage = {
+      type: "console-log",
+      value: {
+        message: formattedMessage,
+        type: "error",
+      },
+    };
+
+    window.parent.postMessage(message, "*");
+  } catch (postError) {
+    originalConsole.error("Failed to send uncaught error:", postError);
+  }
+}
+
 const consoleMethods = ["debug", "error", "info", "log", "warn"] as const;
 
 for (const method of consoleMethods) {
   interceptConsoleMethod(method);
 }
+
+window.addEventListener("error", (event) => {
+  sendUncaughtError(
+    event.error instanceof Error ? event.error : new Error(event.message),
+  );
+});
+
+window.addEventListener("unhandledrejection", (event) => {
+  const error =
+    event.reason instanceof Error
+      ? event.reason
+      : new Error(String(event.reason));
+  sendUncaughtError(error);
+});
 
 const iframe = document.createElement("iframe");
 

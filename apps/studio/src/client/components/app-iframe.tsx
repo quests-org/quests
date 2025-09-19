@@ -55,9 +55,9 @@ export function AppIFrame({
             setClientLogs((prev) => [
               ...prev,
               {
-                args: messageData.value.args,
                 createdAt: new Date(),
                 id: ulid(),
+                message: messageData.value.message,
                 type: messageData.value.type,
               },
             ]);
