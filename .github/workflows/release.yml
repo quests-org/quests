@@ -9,14 +9,33 @@ on:
 
 jobs:
   release:
-    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.os }} ${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
     permissions:
       contents: write
       id-token: "write"
 
     strategy:
       matrix:
-        os: ${{ startsWith(github.ref, 'refs/heads/release/') && fromJSON('["ubuntu-latest", "windows-latest", "macos-latest"]') || fromJSON('["macos-latest"]') }}
+        include:
+          - os: ubuntu-latest
+            arch: x64
+            runner: ubuntu-latest
+          - os: ubuntu-latest
+            arch: arm64
+            runner: ubuntu-24.04-arm64
+          - os: windows-latest
+            arch: x64
+            runner: windows-latest
+          # - os: windows-latest
+          #   arch: arm64
+          #   runner: windows-11-arm
+          - os: macos-latest
+            arch: x64
+            runner: macos-latest
+          - os: macos-latest
+            arch: arm64
+            runner: macos-latest
 
     steps:
       - uses: actions/checkout@v4
@@ -36,7 +55,7 @@ jobs:
 
       - if: matrix.os == 'ubuntu-latest'
         name: Build Linux
-        run: pnpm turbo build:linux --env-mode=loose
+        run: pnpm turbo build:linux:${{ matrix.arch }} --env-mode=loose
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -52,7 +71,7 @@ jobs:
         name: Upload Linux .AppImage
         uses: actions/upload-artifact@v4
         with:
-          name: linux-appimage
+          name: linux-appimage-${{ matrix.arch }}
           path: apps/studio/dist/*.AppImage
           retention-days: 30
 
@@ -60,7 +79,7 @@ jobs:
         name: Upload Linux .deb
         uses: actions/upload-artifact@v4
         with:
-          name: linux-deb
+          name: linux-deb-${{ matrix.arch }}
           path: apps/studio/dist/*.deb
           retention-days: 30
 
@@ -68,7 +87,7 @@ jobs:
         name: Upload Linux .tar.gz
         uses: actions/upload-artifact@v4
         with:
-          name: linux-tar-gz
+          name: linux-tar-gz-${{ matrix.arch }}
           path: apps/studio/dist/*.tar.gz
           retention-days: 30
 
@@ -76,7 +95,7 @@ jobs:
         name: Upload Linux .yml
         uses: actions/upload-artifact@v4
         with:
-          name: latest-linux.yml
+          name: latest-linux-${{ matrix.arch }}.yml
           path: apps/studio/dist/latest-linux.yml
           retention-days: 30
 
@@ -84,7 +103,7 @@ jobs:
         name: Upload Linux blockmap
         uses: actions/upload-artifact@v4
         with:
-          name: linux-blockmap
+          name: linux-blockmap-${{ matrix.arch }}
           path: apps/studio/dist/*.blockmap
           retention-days: 30
 
@@ -96,7 +115,7 @@ jobs:
 
       - if: matrix.os == 'macos-latest'
         name: Build Mac
-        run: pnpm turbo build:mac --env-mode=loose
+        run: pnpm turbo build:mac:${{ matrix.arch }} --env-mode=loose
         env:
           APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
           APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
@@ -123,7 +142,7 @@ jobs:
         name: Upload Macos .dmg
         uses: actions/upload-artifact@v4
         with:
-          name: macos-dmg
+          name: macos-dmg-${{ matrix.arch }}
           path: apps/studio/dist/*.dmg
           retention-days: 30
 
@@ -131,7 +150,7 @@ jobs:
         name: Upload Macos .zip
         uses: actions/upload-artifact@v4
         with:
-          name: macos-zip
+          name: macos-zip-${{ matrix.arch }}
           path: apps/studio/dist/*.zip
           retention-days: 30
 
@@ -139,7 +158,7 @@ jobs:
         name: Upload Macos .yml
         uses: actions/upload-artifact@v4
         with:
-          name: macos-yml
+          name: macos-yml-${{ matrix.arch }}
           path: apps/studio/dist/*.yml
           retention-days: 30
 
@@ -147,7 +166,7 @@ jobs:
         name: Upload Macos Blockmap
         uses: actions/upload-artifact@v4
         with:
-          name: macos-blockmap
+          name: macos-blockmap-${{ matrix.arch }}
           path: apps/studio/dist/*.blockmap
           retention-days: 30
 
@@ -196,7 +215,7 @@ jobs:
 
       - if: matrix.os == 'windows-latest'
         name: Build Windows
-        run: pnpm turbo build:windows --env-mode=loose
+        run: pnpm turbo build:windows:${{ matrix.arch }} --env-mode=loose
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -222,7 +241,7 @@ jobs:
         name: Upload Windows .exe
         uses: actions/upload-artifact@v4
         with:
-          name: windows-exe
+          name: windows-exe-${{ matrix.arch }}
           path: apps/studio/dist/*.exe
           retention-days: 30
 
@@ -230,7 +249,7 @@ jobs:
         name: Upload Windows .zip
         uses: actions/upload-artifact@v4
         with:
-          name: windows-zip
+          name: windows-zip-${{ matrix.arch }}
           path: apps/studio/dist/*.zip
           retention-days: 30
 
@@ -238,7 +257,7 @@ jobs:
         name: Upload Windows .yml
         uses: actions/upload-artifact@v4
         with:
-          name: windows-yml
+          name: windows-yml-${{ matrix.arch }}
           path: apps/studio/dist/*.yml
           retention-days: 30
 
@@ -246,7 +265,7 @@ jobs:
         name: Upload Windows Blockmap
         uses: actions/upload-artifact@v4
         with:
-          name: windows-blockmap
+          name: windows-blockmap-${{ matrix.arch }}
           path: apps/studio/dist/*.blockmap
           retention-days: 30
 

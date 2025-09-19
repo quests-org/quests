@@ -26,7 +26,22 @@
       "dependsOn": ["@quests/shim-client#build", "@quests/shim-server#build"],
       "outputs": ["dist/**", "out/**"]
     },
+    "build:linux:arm64": {
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "dependsOn": ["@quests/shim-client#build", "@quests/shim-server#build"],
+      "outputs": ["dist/**", "out/**"]
+    },
+    "build:linux:x64": {
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "dependsOn": ["@quests/shim-client#build", "@quests/shim-server#build"],
+      "outputs": ["dist/**", "out/**"]
+    },
     "build:mac": {
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "dependsOn": ["@quests/shim-client#build", "@quests/shim-server#build"],
+      "outputs": ["dist/**", "out/**"]
+    },
+    "build:mac:arm64": {
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "dependsOn": ["@quests/shim-client#build", "@quests/shim-server#build"],
       "outputs": ["dist/**", "out/**"]
@@ -36,7 +51,22 @@
       "dependsOn": ["@quests/shim-client#build", "@quests/shim-server#build"],
       "outputs": ["dist/**", "out/**"]
     },
+    "build:mac:local": {
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "dependsOn": ["@quests/shim-client#build", "@quests/shim-server#build"],
+      "outputs": ["dist/**", "out/**"]
+    },
+    "build:mac:x64": {
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "dependsOn": ["@quests/shim-client#build", "@quests/shim-server#build"],
+      "outputs": ["dist/**", "out/**"]
+    },
     "build:windows": {
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "dependsOn": ["@quests/shim-client#build", "@quests/shim-server#build"],
+      "outputs": ["dist/**", "out/**"]
+    },
+    "build:windows:arm64": {
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "dependsOn": ["@quests/shim-client#build", "@quests/shim-server#build"],
       "outputs": ["dist/**", "out/**"]
@@ -46,7 +76,7 @@
       "dependsOn": ["@quests/shim-client#build", "@quests/shim-server#build"],
       "outputs": ["dist/**", "out/**"]
     },
-    "build:mac:local": {
+    "build:windows:x64": {
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "dependsOn": ["@quests/shim-client#build", "@quests/shim-server#build"],
       "outputs": ["dist/**", "out/**"]
