@@ -144,7 +144,8 @@ export function createWorkspaceActor() {
         case "@xstate.action": {
           if (
             !event.action.type.startsWith("xstate.") &&
-            event.action.type !== "actions"
+            event.action.type !== "actions" &&
+            event.action.type !== "publishLogs"
           ) {
             scopedLogger.info("action", event.action.type);
           }
@@ -160,6 +161,7 @@ export function createWorkspaceActor() {
             }
             if (
               event.event.type === "workspaceServer.heartbeat" ||
+              event.event.type === "spawnRuntime.log" ||
               event.event.type === "updateHeartbeat"
             ) {
               // Too verbose to log
