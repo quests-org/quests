@@ -23,7 +23,9 @@ jobs:
             runner: ubuntu-latest
           - os: ubuntu-latest
             arch: arm64
-            runner: ubuntu-24.04-arm64
+            runner: ubuntu-22.04-arm64
+            # Disabled due to unavailable runners
+            # runner: ubuntu-24.04-arm64
           - os: windows-latest
             arch: x64
             runner: windows-latest
