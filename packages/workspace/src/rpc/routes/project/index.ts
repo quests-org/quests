@@ -257,20 +257,13 @@ const trash = base
     const result = await trashProject({
       subdomain,
       workspaceConfig: context.workspaceConfig,
+      workspaceRef: context.workspaceRef,
     });
 
     if (result.isErr()) {
       context.workspaceConfig.captureException(result.error);
       throw toORPCError(result.error, errors);
     }
-
-    // Stop the agent
-    context.workspaceRef.send({ type: "stopSessions", value: { subdomain } });
-
-    context.workspaceRef.send({
-      type: "stopRuntime",
-      value: { includeChildren: true, subdomain },
-    });
     publisher.publish("project.removed", {
       subdomain,
     });

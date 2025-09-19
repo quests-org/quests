@@ -1,6 +1,7 @@
 import { err, ok, ResultAsync } from "neverthrow";
 import fs from "node:fs/promises";
 
+import { type WorkspaceActorRef } from "../machines/workspace";
 import { type AppDir } from "../schemas/paths";
 import { type ProjectSubdomain } from "../schemas/subdomains";
 import { type WorkspaceConfig } from "../types";
@@ -14,14 +15,19 @@ import { disposeSessionsStoreStorage } from "./session-store-storage";
 interface RemoveProjectOptions {
   subdomain: ProjectSubdomain;
   workspaceConfig: WorkspaceConfig;
+  workspaceRef: WorkspaceActorRef;
 }
 
 export async function trashProject({
   subdomain,
   workspaceConfig,
+  workspaceRef,
 }: RemoveProjectOptions) {
   return ResultAsync.fromPromise(
     (async () => {
+      // Shuts down runtimes and prevents new ones from being spawned.
+      workspaceRef.send({ type: "addAppBeingTrashed", value: { subdomain } });
+
       const appConfig = createAppConfig({
         subdomain,
         workspaceConfig,

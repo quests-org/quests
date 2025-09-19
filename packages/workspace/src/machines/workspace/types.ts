@@ -15,6 +15,7 @@ import { type SessionActorRef } from "../session";
 // Declared here to avoid circular dependency
 export interface WorkspaceContext {
   appEventRef: AppEventActorRef;
+  appsBeingTrashed: AppSubdomain[];
   checkoutVersionRefs: Map<VersionSubdomain, CheckoutVersionActorRef>;
   config: WorkspaceConfig;
   createPreviewRefs: Map<PreviewSubdomain, CreatePreviewActorRef>;
