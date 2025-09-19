@@ -64,46 +64,6 @@ jobs:
           VITE_POSTHOG_API_KEY: ${{ vars.VITE_POSTHOG_API_KEY }}
           VITE_QUESTS_API_BASE_URL: ${{ vars.VITE_QUESTS_API_BASE_URL }}
 
-      - if: matrix.os == 'ubuntu-latest'
-        name: Upload Linux .AppImage
-        uses: actions/upload-artifact@v4
-        with:
-          name: linux-appimage-${{ matrix.arch }}
-          path: apps/studio/dist/*.AppImage
-          retention-days: 30
-
-      - if: matrix.os == 'ubuntu-latest'
-        name: Upload Linux .deb
-        uses: actions/upload-artifact@v4
-        with:
-          name: linux-deb-${{ matrix.arch }}
-          path: apps/studio/dist/*.deb
-          retention-days: 30
-
-      - if: matrix.os == 'ubuntu-latest'
-        name: Upload Linux .tar.gz
-        uses: actions/upload-artifact@v4
-        with:
-          name: linux-tar-gz-${{ matrix.arch }}
-          path: apps/studio/dist/*.tar.gz
-          retention-days: 30
-
-      - if: matrix.os == 'ubuntu-latest'
-        name: Upload Linux .yml
-        uses: actions/upload-artifact@v4
-        with:
-          name: latest-linux-${{ matrix.arch }}.yml
-          path: apps/studio/dist/latest-linux.yml
-          retention-days: 30
-
-      - if: matrix.os == 'ubuntu-latest'
-        name: Upload Linux blockmap
-        uses: actions/upload-artifact@v4
-        with:
-          name: linux-blockmap-${{ matrix.arch }}
-          path: apps/studio/dist/*.blockmap
-          retention-days: 30
-
       - if: matrix.os == 'macos-latest'
         name: setup-signing
         run: |
@@ -134,38 +94,6 @@ jobs:
         name: Cleanup Signing
         run: |
           rm ~/.private_keys/AuthKey_${{ secrets.APPLE_API_KEY_ID }}.p8
-
-      - if: matrix.os == 'macos-latest'
-        name: Upload Macos .dmg
-        uses: actions/upload-artifact@v4
-        with:
-          name: macos-dmg-${{ matrix.arch }}
-          path: apps/studio/dist/*.dmg
-          retention-days: 30
-
-      - if: matrix.os == 'macos-latest'
-        name: Upload Macos .zip
-        uses: actions/upload-artifact@v4
-        with:
-          name: macos-zip-${{ matrix.arch }}
-          path: apps/studio/dist/*.zip
-          retention-days: 30
-
-      - if: matrix.os == 'macos-latest'
-        name: Upload Macos .yml
-        uses: actions/upload-artifact@v4
-        with:
-          name: macos-yml-${{ matrix.arch }}
-          path: apps/studio/dist/*.yml
-          retention-days: 30
-
-      - if: matrix.os == 'macos-latest'
-        name: Upload Macos Blockmap
-        uses: actions/upload-artifact@v4
-        with:
-          name: macos-blockmap-${{ matrix.arch }}
-          path: apps/studio/dist/*.blockmap
-          retention-days: 30
 
       - if: matrix.os == 'windows-latest'
         uses: KamaranL/add-signtool-action@v1
@@ -234,37 +162,23 @@ jobs:
         env:
           SIGNTOOL_PATH: signtool.exe
 
-      - if: matrix.os == 'windows-latest'
-        name: Upload Windows .exe
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
+        if: github.ref_type != 'tag'
         with:
-          name: windows-exe-${{ matrix.arch }}
-          path: apps/studio/dist/*.exe
+          name: ${{matrix.os}}-${{matrix.arch}}
+          path: |
+            apps/studio/dist/*.exe
+            apps/studio/dist/*.zip
+            apps/studio/dist/*.dmg
+            apps/studio/dist/*.AppImage
+            apps/studio/dist/*.deb
+            apps/studio/dist/*.rpm
+            apps/studio/dist/*.tar.gz
+            apps/studio/dist/*.yml
+            apps/studio/dist/*.blockmap
           retention-days: 30
-
-      - if: matrix.os == 'windows-latest'
-        name: Upload Windows .zip
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-zip-${{ matrix.arch }}
-          path: apps/studio/dist/*.zip
-          retention-days: 30
-
-      - if: matrix.os == 'windows-latest'
-        name: Upload Windows .yml
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-yml-${{ matrix.arch }}
-          path: apps/studio/dist/*.yml
-          retention-days: 30
-
-      - if: matrix.os == 'windows-latest'
-        name: Upload Windows Blockmap
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-blockmap-${{ matrix.arch }}
-          path: apps/studio/dist/*.blockmap
-          retention-days: 30
+          if-no-files-found: error
 
       - name: Release
         uses: softprops/action-gh-release@v2
