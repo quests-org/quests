@@ -175,6 +175,9 @@ export const spawnRuntimeLogic = fromCallback<
             message: installResult.error.message,
           },
         });
+        appConfig.workspaceConfig.captureException(installResult.error, {
+          scopes: ["workspace"],
+        });
         return;
       }
 
@@ -197,6 +200,9 @@ export const spawnRuntimeLogic = fromCallback<
       try {
         pkg = await readPackage({ cwd: appConfig.appDir });
       } catch (error) {
+        appConfig.workspaceConfig.captureException(error, {
+          scopes: ["workspace"],
+        });
         parentRef.send({
           type: "spawnRuntime.error.package-json",
           value: {
@@ -211,7 +217,15 @@ export const spawnRuntimeLogic = fromCallback<
 
       const script = pkg.scripts?.[scriptName];
       if (!script) {
-        throw new Error(`No script found: ${scriptName}`);
+        const error = new Error(`No script found: ${scriptName}`);
+        appConfig.workspaceConfig.captureException(error, {
+          scopes: ["workspace"],
+        });
+        parentRef.send({
+          type: "spawnRuntime.error.package-json",
+          value: { message: error.message },
+        });
+        return;
       }
       const [commandName] = parseCommandString(script);
       if (commandName !== "vite") {
@@ -229,10 +243,16 @@ export const spawnRuntimeLogic = fromCallback<
         .then(() => true)
         .catch(() => false);
       if (!exists) {
+        const error = new Error(
+          `App directory does not exist: ${appConfig.appDir}`,
+        );
+        appConfig.workspaceConfig.captureException(error, {
+          scopes: ["workspace"],
+        });
         parentRef.send({
           type: "spawnRuntime.error.app-dir-does-not-exist",
           value: {
-            message: `App directory does not exist: ${appConfig.appDir}`,
+            message: error.message,
           },
         });
         return;
