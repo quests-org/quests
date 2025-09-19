@@ -9,7 +9,7 @@ import { type StoreId } from "../schemas/store-id";
 import { type AppConfig } from "./app-config/types";
 import { TypedError } from "./errors";
 import { getParsedStorageItem } from "./get-parsed-storage-item";
-import { getSessionsStoreStorage } from "./get-session-store-storage";
+import { getSessionsStoreStorage } from "./session-store-storage";
 import { setParsedStorageItem } from "./set-parsed-storage-item";
 import { StorageKey } from "./storage-key";
 

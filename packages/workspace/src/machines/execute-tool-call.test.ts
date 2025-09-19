@@ -13,7 +13,7 @@ import {
 import { executeToolCallMachine } from "./execute-tool-call";
 
 vi.mock(import("ulid"));
-vi.mock(import("../lib/get-session-store-storage"));
+vi.mock(import("../lib/session-store-storage"));
 vi.mock(import("../lib/get-current-date"));
 
 describe("executeToolCallMachine", () => {

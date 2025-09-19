@@ -9,7 +9,7 @@ import {
 import { TOOLS } from "./all";
 
 vi.mock(import("ulid"));
-vi.mock(import("../lib/get-session-store-storage"));
+vi.mock(import("../lib/session-store-storage"));
 vi.mock(import("../lib/get-current-date"));
 
 describe("Glob", () => {

@@ -8,8 +8,8 @@ import { absolutePathJoin } from "./absolute-path-join";
 import { createAppConfig } from "./app-config/create";
 import { getSandboxesDir } from "./app-dir-utils";
 import { TypedError } from "./errors";
-import { disposeSessionsStoreStorage } from "./get-session-store-storage";
 import { pathExists } from "./path-exists";
+import { disposeSessionsStoreStorage } from "./session-store-storage";
 
 interface RemoveProjectOptions {
   subdomain: ProjectSubdomain;

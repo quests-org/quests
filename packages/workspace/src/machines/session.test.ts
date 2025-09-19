@@ -39,7 +39,7 @@ import { TOOLS } from "../tools/all";
 import { sessionMachine } from "./session";
 
 vi.mock(import("ulid"));
-vi.mock(import("../lib/get-session-store-storage"));
+vi.mock(import("../lib/session-store-storage"));
 vi.mock(import("../lib/get-current-date"));
 vi.mock(import("dugite"));
 vi.mock(import("execa"), () => ({

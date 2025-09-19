@@ -20,7 +20,7 @@ import { llmRequestLogic } from "./llm-request";
 
 vi.mock(import("ulid"));
 
-vi.mock(import("../lib/get-session-store-storage"));
+vi.mock(import("../lib/session-store-storage"));
 
 vi.mock(import("../lib/get-current-date"));
 
