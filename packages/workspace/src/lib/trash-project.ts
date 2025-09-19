@@ -37,7 +37,7 @@ export async function trashProject({
       );
 
       if (await pathExists(nodeModulesPath)) {
-        await fs.rm(nodeModulesPath, { force: true, recursive: true });
+        await rmrf(nodeModulesPath);
       }
 
       await removeSandboxNodeModules(appConfig.appDir);
@@ -76,8 +76,17 @@ async function removeSandboxNodeModules(appDir: AppDir): Promise<void> {
       const nodeModulesPath = absolutePathJoin(sandboxPath, "node_modules");
 
       if (await pathExists(nodeModulesPath)) {
-        await fs.rm(nodeModulesPath, { force: true, recursive: true });
+        await rmrf(nodeModulesPath);
       }
     }
   }
+}
+
+async function rmrf(path: string): Promise<void> {
+  await fs.rm(path, {
+    force: true,
+    maxRetries: 3,
+    recursive: true,
+    retryDelay: 2000,
+  });
 }
