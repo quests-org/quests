@@ -4,6 +4,8 @@ import {
   type PlatformSpecificBuildOptions,
 } from "electron-builder";
 
+import { AUTO_UPDATE_CHANNEL_MAC_INTEL } from "./src/electron-main/constants";
+
 if (process.env.CI !== "true") {
   dotenv.config({
     path: [".env.build"],
@@ -94,8 +96,9 @@ const config: Configuration = {
     notarize: process.env.APPLE_NOTARIZATION_ENABLED === "true",
     publish: {
       ...publishConfig,
-      // eslint-disable-next-line turbo/no-undeclared-env-vars
-      channel: process.env.ARCH === "x64" ? "latest-mac-x64" : undefined,
+      channel:
+        // eslint-disable-next-line turbo/no-undeclared-env-vars
+        process.env.ARCH === "x64" ? AUTO_UPDATE_CHANNEL_MAC_INTEL : undefined,
     },
     target: ["dmg", "zip"],
   },
