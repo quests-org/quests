@@ -26,6 +26,7 @@ declare namespace NodeJS {
     env: {
       ANALYZE_BUILD: string | undefined;
       APPLE_NOTARIZATION_ENABLED: string | undefined;
+      ARCH: string | undefined;
       BUILDER_PUBLISH_S3_ENDPOINT: string | undefined;
       CI: string | undefined;
       ELECTRON_RENDERER_URL: string | undefined;

@@ -1,11 +1,23 @@
 import dotenv from "dotenv";
-import { type Configuration } from "electron-builder";
+import {
+  type Configuration,
+  type PlatformSpecificBuildOptions,
+} from "electron-builder";
 
 if (process.env.CI !== "true") {
   dotenv.config({
     path: [".env.build"],
   });
 }
+
+const publishConfig: PlatformSpecificBuildOptions["publish"] = {
+  bucket: "quests-releases",
+  // eslint-disable-next-line turbo/no-undeclared-env-vars
+  endpoint: process.env.BUILDER_PUBLISH_S3_ENDPOINT,
+  provider: "s3",
+  region: "auto",
+  updaterCacheDirName: "quests-desktop-updater",
+};
 
 /**
  * @see https://www.electron.build/#documentation
@@ -80,6 +92,11 @@ const config: Configuration = {
     hardenedRuntime: true,
     // eslint-disable-next-line turbo/no-undeclared-env-vars
     notarize: process.env.APPLE_NOTARIZATION_ENABLED === "true",
+    publish: {
+      ...publishConfig,
+      // eslint-disable-next-line turbo/no-undeclared-env-vars
+      channel: process.env.ARCH === "x64" ? "latest-mac-x64" : undefined,
+    },
     target: ["dmg", "zip"],
   },
   npmRebuild: true,
@@ -90,14 +107,7 @@ const config: Configuration = {
     uninstallDisplayName: "${productName}",
   },
   productName: "Quests",
-  publish: {
-    bucket: "quests-releases",
-    // eslint-disable-next-line turbo/no-undeclared-env-vars
-    endpoint: process.env.BUILDER_PUBLISH_S3_ENDPOINT,
-    provider: "s3",
-    region: "auto",
-    updaterCacheDirName: "quests-desktop-updater",
-  },
+  publish: publishConfig,
   win: {
     executableName: "quests",
     signtoolOptions: {
