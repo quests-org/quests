@@ -4,8 +4,6 @@ import {
   type PlatformSpecificBuildOptions,
 } from "electron-builder";
 
-import { AUTO_UPDATE_CHANNEL_MAC_INTEL } from "./src/electron-main/constants";
-
 if (process.env.CI !== "true") {
   dotenv.config({
     path: [".env.build"],
@@ -98,7 +96,7 @@ const config: Configuration = {
       ...publishConfig,
       channel:
         // eslint-disable-next-line turbo/no-undeclared-env-vars
-        process.env.ARCH === "x64" ? AUTO_UPDATE_CHANNEL_MAC_INTEL : undefined,
+        process.env.ARCH === "x64" ? "${channel}-${arch}" : undefined,
     },
     target: ["dmg", "zip"],
   },
