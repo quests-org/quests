@@ -8,6 +8,11 @@ const PreferencesStoreSchema = z.object({
   enableUsageMetrics: z.boolean().catch(true),
   lastUpdateCheck: z.number().optional(),
   preferApiKeyOverAccount: z.boolean().catch(false),
+  // Release channels are not exposed to the user and are used internally for testing
+  releaseChannel: z
+    .enum(["latest", "beta", "alpha"])
+    .optional()
+    .catch(undefined),
   theme: z.enum(["light", "dark", "system"]).catch("system"),
 });
 /* eslint-enable unicorn/prefer-top-level-await */

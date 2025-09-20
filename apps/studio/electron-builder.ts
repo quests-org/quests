@@ -94,8 +94,9 @@ const config: Configuration = {
     notarize: process.env.APPLE_NOTARIZATION_ENABLED === "true",
     publish: {
       ...publishConfig,
-      // eslint-disable-next-line turbo/no-undeclared-env-vars
-      channel: process.env.ARCH === "x64" ? "latest-mac-x64" : undefined,
+      channel:
+        // eslint-disable-next-line turbo/no-undeclared-env-vars
+        process.env.ARCH === "x64" ? "${channel}-${arch}" : undefined,
     },
     target: ["dmg", "zip"],
   },
