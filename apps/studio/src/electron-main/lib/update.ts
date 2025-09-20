@@ -1,6 +1,8 @@
+import { AUTO_UPDATE_CHANNEL_MAC_INTEL } from "@/electron-main/constants";
 import { logger } from "@/electron-main/lib/electron-logger";
 import { publisher } from "@/electron-main/rpc/publisher";
 import pkg from "electron-updater";
+import os from "node:os";
 
 import { setLastUpdateCheck } from "../stores/preferences";
 
@@ -13,8 +15,12 @@ export class StudioAppUpdater {
     autoUpdater.autoDownload = true;
     autoUpdater.forceDevUpdateConfig =
       process.env.FORCE_DEV_AUTO_UPDATE === "true";
-    // We publish using S3-compatible R2, but download from the public endpoint
+
+    // macOS on Intel is the only custom channel, otherwise use the defaults.
+    const isMacOSIntel = os.platform() === "darwin" && os.arch() === "x64";
+
     autoUpdater.setFeedURL({
+      channel: isMacOSIntel ? AUTO_UPDATE_CHANNEL_MAC_INTEL : undefined,
       provider: "generic",
       updaterCacheDirName: "quests-desktop-updater",
       url: "https://releases.quests.dev",
