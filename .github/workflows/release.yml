@@ -89,6 +89,7 @@ jobs:
           VITE_POSTHOG_API_HOST: ${{ vars.VITE_POSTHOG_API_HOST }}
           VITE_POSTHOG_API_KEY: ${{ vars.VITE_POSTHOG_API_KEY }}
           VITE_QUESTS_API_BASE_URL: ${{ vars.VITE_QUESTS_API_BASE_URL }}
+          ARCH: ${{ matrix.arch }}
 
       - if: matrix.os == 'macos-latest'
         name: Cleanup Signing
@@ -180,7 +181,16 @@ jobs:
           retention-days: 30
           if-no-files-found: error
 
-      - name: Release
+      - name: Upload YML auto-update artifacts
+        uses: actions/upload-artifact@v4
+        if: github.ref_type != 'tag'
+        with:
+          name: ${{matrix.os}}-${{matrix.arch}}-auto-update-yml
+          path: |
+            apps/studio/dist/*.yml
+          retention-days: 30
+
+      - name: GitHub Release
         uses: softprops/action-gh-release@v2
         if: github.ref_type == 'tag'
         with:
