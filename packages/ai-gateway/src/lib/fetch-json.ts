@@ -1,12 +1,7 @@
-import { LRUCache } from "lru-cache";
 import { Result } from "typescript-result";
 
+import { getCachedResult, setCachedResult } from "./cache";
 import { TypedError } from "./errors";
-
-const globalCache = new LRUCache<string, object>({
-  max: 1000,
-  ttl: 60 * 60 * 1000, // 1 hour TTL
-});
 
 export function fetchJson({
   cache = true,
@@ -21,7 +16,7 @@ export function fetchJson({
     const cacheKey = cache ? createCacheKey(url, headers) : "";
 
     if (cache) {
-      const cachedData = globalCache.get(cacheKey);
+      const cachedData = getCachedResult<object>(cacheKey);
       if (cachedData !== undefined) {
         return cachedData;
       }
@@ -52,7 +47,7 @@ export function fetchJson({
     );
 
     if (cache) {
-      globalCache.set(cacheKey, data as object);
+      setCachedResult(cacheKey, data as object);
     }
 
     return data;

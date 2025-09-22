@@ -2,6 +2,7 @@ import { createGateway } from "@ai-sdk/gateway";
 import { ATTRIBUTION_NAME, ATTRIBUTION_URL } from "@quests/shared";
 import { Result } from "typescript-result";
 
+import { getCachedResult, setCachedResult } from "../lib/cache";
 import { TypedError } from "../lib/errors";
 import { internalAPIKey } from "../lib/key-for-provider";
 import { modelToURI } from "../lib/model-to-uri";
@@ -64,8 +65,15 @@ export const vercelAdapter = setupProviderAdapter({
     })(model.providerId);
   },
   features: ["openai/chat-completions"],
-  fetchModels: (provider) =>
-    Result.gen(function* () {
+  fetchModels: (provider) => {
+    return Result.gen(function* () {
+      const cacheKey = `vercel-models-${provider.apiKey}`;
+      const cachedModels = getCachedResult<AIGatewayModel.Type[]>(cacheKey);
+
+      if (cachedModels !== undefined) {
+        return cachedModels;
+      }
+
       const gatewayProvider = createGateway({ apiKey: provider.apiKey });
       const { models } = yield* Result.try(
         async () => await gatewayProvider.getAvailableModels(),
@@ -123,8 +131,11 @@ export const vercelAdapter = setupProviderAdapter({
           }),
         } satisfies AIGatewayModel.Type);
       }
+
+      setCachedResult(cacheKey, validModels);
       return validModels;
-    }),
+    });
+  },
   getEnv: (baseURL) => ({
     AI_GATEWAY_API_KEY: internalAPIKey(),
     AI_GATEWAY_BASE_URL: `${baseURL}${PROVIDER_API_PATH.vercel}`,
