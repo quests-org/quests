@@ -1,15 +1,21 @@
 import { rpcClient } from "@/client/rpc/client";
 import { useMutation } from "@tanstack/react-query";
-import { Link, type LinkProps, useRouter } from "@tanstack/react-router";
+import {
+  Link,
+  type LinkProps,
+  useNavigate,
+  useRouter,
+} from "@tanstack/react-router";
 import * as React from "react";
 
 export function InternalLink(
   props: LinkProps &
     React.ComponentProps<"a"> & {
       allowOpenNewTab?: boolean;
+      openInCurrentTab?: boolean;
     },
 ) {
-  const { mutate: navigateCurrent } = useMutation(
+  const { mutate: navigateInCurrentTab } = useMutation(
     rpcClient.tabs.navigateCurrent.mutationOptions(),
   );
   const { mutate: addTab } = useMutation(rpcClient.tabs.add.mutationOptions());
@@ -18,6 +24,7 @@ export function InternalLink(
     onAuxClick,
     onClick,
     onMouseDown,
+    openInCurrentTab = false,
     params,
     search,
     target,
@@ -25,6 +32,7 @@ export function InternalLink(
     ...rest
   } = props;
   const router = useRouter();
+  const navigate = useNavigate();
 
   const handleMouseDown = React.useCallback(
     (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -39,27 +47,24 @@ export function InternalLink(
     [onMouseDown],
   );
 
-  const handleAuxClick = React.useCallback(
-    (e: React.MouseEvent<HTMLAnchorElement>) => {
-      // Handle middle click via auxclick event (more reliable for some browsers)
-      if (e.button === 1) {
-        e.preventDefault();
-        const location = router.buildLocation({ params, search, to });
-        if (allowOpenNewTab) {
-          addTab({ urlPath: location.href });
-        } else {
-          navigateCurrent({ urlPath: location.href });
-        }
-      }
-      if (onAuxClick) {
-        onAuxClick(e);
+  const performNavigation = React.useCallback(
+    (shouldOpenNewTab: boolean) => {
+      const location = router.buildLocation({ params, search, to });
+
+      if (shouldOpenNewTab && allowOpenNewTab) {
+        addTab({ urlPath: location.href });
+      } else if (openInCurrentTab) {
+        navigateInCurrentTab({ urlPath: location.href });
+      } else {
+        void navigate({ params, search, to });
       }
     },
     [
       addTab,
       allowOpenNewTab,
-      navigateCurrent,
-      onAuxClick,
+      navigate,
+      navigateInCurrentTab,
+      openInCurrentTab,
       params,
       router,
       search,
@@ -67,38 +72,35 @@ export function InternalLink(
     ],
   );
 
+  const handleAuxClick = React.useCallback(
+    (e: React.MouseEvent<HTMLAnchorElement>) => {
+      // Handle middle click via auxclick event (more reliable for some browsers)
+      if (e.button === 1) {
+        e.preventDefault();
+        performNavigation(true);
+      }
+      if (onAuxClick) {
+        onAuxClick(e);
+      }
+    },
+    [onAuxClick, performNavigation],
+  );
+
   const handleClick = React.useCallback(
     (e: React.MouseEvent<HTMLAnchorElement>) => {
       e.preventDefault();
-      const location = router.buildLocation({ params, search, to });
 
       // Handle left clicks and ctrl/cmd + left click
       if (e.button === 0) {
-        if (e.ctrlKey || e.metaKey) {
-          if (allowOpenNewTab) {
-            addTab({ urlPath: location.href });
-          } else {
-            navigateCurrent({ urlPath: location.href });
-          }
-        } else {
-          navigateCurrent({ urlPath: location.href });
-        }
+        const shouldOpenNewTab = e.ctrlKey || e.metaKey;
+        performNavigation(shouldOpenNewTab);
       }
 
       if (onClick) {
         onClick(e);
       }
     },
-    [
-      addTab,
-      allowOpenNewTab,
-      navigateCurrent,
-      onClick,
-      params,
-      router,
-      search,
-      to,
-    ],
+    [onClick, performNavigation],
   );
 
   return (

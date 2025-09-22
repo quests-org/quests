@@ -171,6 +171,7 @@ export function NavProjectItem({
           isActive={isActive || undefined}
         >
           <InternalLink
+            openInCurrentTab
             params={{ subdomain: project.subdomain }}
             title={project.title}
             to="/projects/$subdomain"
@@ -247,6 +248,7 @@ export function NavProjectItem({
               </DropdownMenuItem>
             )}
             <InternalLink
+              openInCurrentTab
               params={{ subdomain: project.subdomain }}
               search={{ showDelete: true }}
               to="/projects/$subdomain"

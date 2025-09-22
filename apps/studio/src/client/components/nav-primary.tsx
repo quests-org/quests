@@ -34,7 +34,11 @@ export function NavPrimary({
                 className="group-hover:bg-black/10 dark:group-hover:bg-white/10"
                 isActive={item.isActive}
               >
-                <InternalLink className="[&>svg]:size-5" to={item.url}>
+                <InternalLink
+                  className="[&>svg]:size-5"
+                  openInCurrentTab
+                  to={item.url}
+                >
                   <item.icon />
                   <span>{item.title}</span>
                 </InternalLink>
