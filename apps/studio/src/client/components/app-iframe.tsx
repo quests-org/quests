@@ -106,7 +106,6 @@ export function AppIFrame({
     <div className={cn("relative size-full", className)}>
       <iframe
         allow="accelerometer; autoplay; camera; clipboard-read; clipboard-write; display-capture; encrypted-media; fullscreen; geolocation; gyroscope; microphone; midi; payment; usb; xr-spatial-tracking"
-        allowFullScreen
         className="size-full bg-white"
         key={app.urls.localhost} // Must be set or iframe will be shared and allow navigation between apps
         ref={iframeRef}
