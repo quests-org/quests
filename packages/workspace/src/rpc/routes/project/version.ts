@@ -23,7 +23,6 @@ const restore = localBase
       restoreCommitRef: z.string(),
       restoredToRef: z.string(),
       sessionId: StoreId.SessionSchema,
-      success: z.boolean(),
     }),
   )
   .handler(

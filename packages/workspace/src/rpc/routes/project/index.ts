@@ -252,7 +252,6 @@ const createFromPreview = base
 
 const trash = base
   .input(z.object({ subdomain: ProjectSubdomainSchema }))
-  .output(z.object({ success: z.boolean() }))
   .handler(async ({ context, errors, input: { subdomain } }) => {
     const result = await trashProject({
       subdomain,
@@ -269,8 +268,6 @@ const trash = base
     });
 
     context.workspaceConfig.captureEvent("project.trashed");
-
-    return { success: true };
   });
 
 const updateName = base

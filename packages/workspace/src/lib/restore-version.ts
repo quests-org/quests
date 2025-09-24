@@ -182,7 +182,6 @@ export async function restoreVersion({
       restoreCommitRef,
       restoredToRef,
       sessionId,
-      success: true as const,
     });
   });
 }

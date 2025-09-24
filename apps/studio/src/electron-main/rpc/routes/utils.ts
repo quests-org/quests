@@ -335,7 +335,6 @@ const copyScreenshotToClipboard = base
       subdomain: ProjectSubdomainSchema,
     }),
   )
-  .output(z.object({ success: z.boolean() }))
   .handler(async ({ context, errors, input }) => {
     try {
       const webContent = webContents.fromId(context.webContentsId);
@@ -353,8 +352,6 @@ const copyScreenshotToClipboard = base
         : await webContent.capturePage();
 
       clipboard.writeImage(image);
-
-      return { success: true };
     } catch (error) {
       throw errors.SCREENSHOT_FAILED({
         message: error instanceof Error ? error.message : "Unknown error",
