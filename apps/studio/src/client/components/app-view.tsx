@@ -1,7 +1,6 @@
 import { type WorkspaceApp } from "@quests/workspace/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { atom, useAtom, useSetAtom } from "jotai";
-import { ExternalLinkIcon } from "lucide-react";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
 import { projectIframeRefAtom } from "../atoms/project";
@@ -11,19 +10,15 @@ import { AppIFrame } from "./app-iframe";
 import { AppToolbar } from "./app-toolbar";
 import { type ClientLogLine } from "./console";
 import { Console } from "./console";
-import { Button } from "./ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 export function AppView({
   app,
-  centerActions: externalCenterActions,
   centerContent,
   className,
   rightActions,
   showSendToChat = false,
 }: {
   app: WorkspaceApp;
-  centerActions?: React.ReactNode;
   centerContent?: React.ReactNode;
   className?: string;
   rightActions?: React.ReactNode;
@@ -37,16 +32,6 @@ export function AppView({
     void app.subdomain;
     return atom<ClientLogLine[]>([]);
   }, [app.subdomain]);
-
-  const openExternalLinkMutation = useMutation(
-    rpcClient.utils.openExternalLink.mutationOptions(),
-  );
-
-  const handleOpenExternalClick = () => {
-    if (app.type === "project") {
-      openExternalLinkMutation.mutate({ url: app.urls.localhost });
-    }
-  };
 
   useEffect(() => {
     if (app.type === "project") {
@@ -67,37 +52,10 @@ export function AppView({
     }
   };
 
-  const projectCenterActions =
-    app.type === "project" ? (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            className="ml-1 size-6"
-            onClick={handleOpenExternalClick}
-            size="icon"
-            variant="ghost"
-          >
-            <ExternalLinkIcon className="h-4 w-4" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>Open in external browser</p>
-        </TooltipContent>
-      </Tooltip>
-    ) : null;
-
-  const centerActions = (
-    <>
-      {externalCenterActions}
-      {projectCenterActions}
-    </>
-  );
-
   return (
     <div className={cn("flex flex-col size-full", className)}>
       <AppToolbar
         app={app}
-        centerActions={centerActions}
         centerContent={centerContent}
         clientLogsAtom={clientLogsAtom}
         iframeRef={iframeRef}

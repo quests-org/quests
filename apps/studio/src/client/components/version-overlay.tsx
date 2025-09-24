@@ -3,16 +3,14 @@ import {
   ProjectSubdomainSchema,
   VersionSubdomainSchema,
 } from "@quests/workspace/client";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import ColorHash from "color-hash";
-import { ExternalLinkIcon } from "lucide-react";
 import { useMemo } from "react";
 
 import { rpcClient } from "../rpc/client";
 import { AppView } from "./app-view";
 import { GitCommitCard } from "./git-commit-card";
 import { InternalLink } from "./internal-link";
-import { Button } from "./ui/button";
 import {
   Tooltip,
   TooltipContent,
@@ -54,16 +52,6 @@ export function VersionOverlay({
     enabled: !!versionRef,
   });
 
-  const openExternalLinkMutation = useMutation(
-    rpcClient.utils.openExternalLink.mutationOptions(),
-  );
-
-  const handleOpenExternalClick = () => {
-    if (app) {
-      openExternalLinkMutation.mutate({ url: app.urls.localhost });
-    }
-  };
-
   if (isLoading) {
     return (
       <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm">
@@ -97,26 +85,6 @@ export function VersionOverlay({
       </div>
     );
   }
-
-  const centerActions = (
-    <>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            className="ml-1 size-6"
-            onClick={handleOpenExternalClick}
-            size="icon"
-            variant="ghost"
-          >
-            <ExternalLinkIcon className="h-4 w-4" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>Open in external browser</p>
-        </TooltipContent>
-      </Tooltip>
-    </>
-  );
 
   const centerContent = (
     <div className="flex-1 flex items-center justify-center min-w-0">
@@ -170,7 +138,6 @@ export function VersionOverlay({
   return (
     <AppView
       app={app}
-      centerActions={centerActions}
       centerContent={centerContent}
       className="absolute inset-0"
     />

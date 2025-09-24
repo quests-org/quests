@@ -5,7 +5,13 @@ import { cn } from "@/client/lib/utils";
 import { type WorkspaceApp } from "@quests/workspace/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { type atom, useAtomValue } from "jotai";
-import { ChevronLeft, ChevronRight, PanelBottom, RotateCw } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ExternalLinkIcon,
+  PanelBottom,
+  RotateCw,
+} from "lucide-react";
 import { type ReactNode, useEffect, useMemo, useState } from "react";
 
 import { rpcClient } from "../rpc/client";
@@ -14,7 +20,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 interface AppToolbarProps {
   app: WorkspaceApp;
-  centerActions?: ReactNode;
   centerContent?: ReactNode;
   className?: string;
   clientLogsAtom: ReturnType<typeof atom<ClientLogLine[]>>;
@@ -31,7 +36,6 @@ interface ConsoleBadgeProps {
 
 export function AppToolbar({
   app,
-  centerActions,
   centerContent,
   className,
   clientLogsAtom,
@@ -49,6 +53,14 @@ export function AppToolbar({
   const restartRuntimeMutation = useMutation(
     rpcClient.workspace.runtime.restart.mutationOptions(),
   );
+
+  const openExternalLinkMutation = useMutation(
+    rpcClient.utils.openExternalLink.mutationOptions(),
+  );
+
+  const handleOpenExternalClick = () => {
+    openExternalLinkMutation.mutate({ url: app.urls.localhost });
+  };
 
   const { data: runtimeLogs = [] } = useQuery(
     rpcClient.workspace.runtime.log.live.list.experimental_liveOptions({
@@ -193,13 +205,29 @@ export function AppToolbar({
 
       <div className="flex-1 flex items-center gap-1 min-w-0">
         {centerContent ?? (
-          <Input
-            className="flex-1 text-center min-w-0 text-xs md:text-xs h-8 font-medium"
-            readOnly
-            value={app.urls.localhost}
-          />
+          <div className="flex-1 relative">
+            <Input
+              className="flex-1 text-center min-w-0 text-xs md:text-xs h-8 font-medium text-muted-foreground pr-7"
+              readOnly
+              value={app.urls.localhost}
+            />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  className="absolute right-2 top-1/2 -translate-y-1/2 size-4 p-0"
+                  onClick={handleOpenExternalClick}
+                  size="icon"
+                  variant="ghost"
+                >
+                  <ExternalLinkIcon className="size-3 text-muted-foreground/70" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Open in external browser</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
         )}
-        <>{centerActions}</>
       </div>
 
       <div className="flex items-center gap-1">
