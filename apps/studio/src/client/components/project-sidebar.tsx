@@ -17,6 +17,7 @@ import { type FilterMode, SessionStream } from "./session-stream";
 import { Button } from "./ui/button";
 import { Tabs, TabsList, TabsTrigger } from "./ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
+import { VersionList } from "./version-list";
 
 interface ProjectSidebarProps {
   collapsed?: boolean;
@@ -201,10 +202,14 @@ export function ProjectSidebar({
 
       <div className="flex-1 overflow-y-auto p-4" ref={scrollRef}>
         <div className="flex flex-col gap-4" ref={contentRef}>
-          {selectedSessionId ? (
+          {filterMode === "versions" ? (
+            <VersionList
+              projectSubdomain={project.subdomain}
+              selectedVersion={selectedVersion}
+            />
+          ) : selectedSessionId ? (
             <SessionStream
               app={project}
-              filterMode={filterMode}
               onContinue={handleContinue}
               selectedVersion={selectedVersion}
               sessionId={selectedSessionId}

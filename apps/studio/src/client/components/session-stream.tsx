@@ -27,13 +27,10 @@ import { Button } from "./ui/button";
 import { UnknownPart } from "./unknown-part";
 import { UsageSummary } from "./usage-summary";
 import { UserMessage } from "./user-message";
-import { VersionList } from "./version-list";
-
 export type FilterMode = "chat" | "versions";
 
 interface SessionEventListProps {
   app: WorkspaceAppProject;
-  filterMode: FilterMode;
   onContinue?: () => void;
   selectedVersion?: string;
   sessionId: StoreId.Session;
@@ -41,7 +38,6 @@ interface SessionEventListProps {
 
 export function SessionStream({
   app,
-  filterMode,
   onContinue,
   selectedVersion,
   sessionId,
@@ -313,7 +309,7 @@ export function SessionStream({
   }, [regularMessages, renderChatPart, isAnyAgentRunning]);
 
   const shouldShowErrorRecoveryPrompt = useMemo(() => {
-    if (filterMode !== "chat" || messages.length === 0 || isAnyAgentRunning) {
+    if (messages.length === 0 || isAnyAgentRunning) {
       return false;
     }
 
@@ -337,15 +333,10 @@ export function SessionStream({
         message.metadata.error.kind !== "invalid-tool-input" &&
         message.metadata.error.kind !== "no-such-tool",
     );
-  }, [filterMode, messages, isAnyAgentRunning]);
+  }, [messages, isAnyAgentRunning]);
 
   const shouldShowContinueButton = useMemo(() => {
-    if (
-      filterMode !== "chat" ||
-      messages.length === 0 ||
-      isAnyAgentRunning ||
-      !onContinue
-    ) {
+    if (messages.length === 0 || isAnyAgentRunning || !onContinue) {
       return false;
     }
 
@@ -355,7 +346,7 @@ export function SessionStream({
       lastMessage.role === "assistant" &&
       lastMessage.metadata.finishReason === "max-steps"
     );
-  }, [filterMode, messages, isAnyAgentRunning, onContinue]);
+  }, [messages, isAnyAgentRunning, onContinue]);
 
   return (
     <>
@@ -371,30 +362,17 @@ export function SessionStream({
         />
       )}
 
-      {!isActive &&
-        !error &&
-        !isLoading &&
-        filterMode === "chat" &&
-        messages.length === 0 && (
-          <ChatZeroState project={app} selectedSessionId={sessionId} />
-        )}
+      {!isActive && !error && !isLoading && messages.length === 0 && (
+        <ChatZeroState project={app} selectedSessionId={sessionId} />
+      )}
 
       <div className="w-full flex flex-col gap-2">
-        {filterMode === "chat" && contextMessages.length > 0 && (
+        {contextMessages.length > 0 && (
           <ContextMessages messages={contextMessages} />
         )}
-        <div className="flex flex-col gap-2">
-          {filterMode === "chat" ? (
-            chatElements
-          ) : (
-            <VersionList
-              projectSubdomain={app.subdomain}
-              selectedVersion={selectedVersion}
-            />
-          )}
-        </div>
+        <div className="flex flex-col gap-2">{chatElements}</div>
 
-        {filterMode === "chat" && isActive && (
+        {isActive && (
           <div className="flex justify-center py-4">
             <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
           </div>
@@ -418,7 +396,7 @@ export function SessionStream({
           </Alert>
         )}
 
-        {filterMode === "chat" && !isAnyAgentAlive && messages.length > 0 && (
+        {!isAnyAgentAlive && messages.length > 0 && (
           <div className="mt-4 pt-4 border-t">
             <div className="text-[10px] flex items-center justify-between text-xs text-muted-foreground/60">
               <span>Total chat usage</span>
