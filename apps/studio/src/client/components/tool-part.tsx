@@ -16,18 +16,15 @@ import { ToolDetailedOutput } from "./tool-part-detail";
 import { Button } from "./ui/button";
 
 interface ToolPartProps {
-  isAgentRunning: boolean;
+  isLoading: boolean;
   part: SessionMessagePart.ToolPart;
 }
 
-export function ToolPart({ isAgentRunning, part }: ToolPartProps) {
+export function ToolPart({ isLoading, part }: ToolPartProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const toolName = getToolNameByType(part.type);
   const ToolIcon = getToolIcon(toolName);
 
-  const isLoading =
-    (part.state === "input-streaming" || part.state === "input-available") &&
-    isAgentRunning;
   const isError = part.state === "output-error";
   const isSuccess = part.state === "output-available";
   const isExpandable = isSuccess || isError; // Allow expansion for both success and error outputs
@@ -48,11 +45,9 @@ export function ToolPart({ isAgentRunning, part }: ToolPartProps) {
     }
     case "output-available": {
       if (part.type === "tool-think") {
-        // Should be handled by the <ReasoningMessage />, but just in case
+        // Will be handled below
         label = getToolDisplayName(toolName);
-        value = part.output.thought
-          ? truncateText(part.output.thought, 80)
-          : undefined;
+        value = truncateText(part.output.thought, 80);
       } else {
         label = getToolDisplayName(toolName);
         value = getToolOutputDescription(part);
@@ -75,8 +70,6 @@ export function ToolPart({ isAgentRunning, part }: ToolPartProps) {
       part.state === "output-available" && part.type === "tool-think"
         ? part.output.thought || ""
         : "";
-    const isStreaming =
-      part.state === "input-streaming" || part.state === "input-available";
 
     return (
       <ReasoningMessage
@@ -86,8 +79,7 @@ export function ToolPart({ isAgentRunning, part }: ToolPartProps) {
             ? part.metadata.endedAt
             : undefined
         }
-        isAgentRunning={isAgentRunning}
-        isStreaming={isStreaming}
+        isLoading={isLoading}
         text={text}
       />
     );

@@ -10,16 +10,14 @@ import { Button } from "./ui/button";
 interface ReasoningMessageProps {
   createdAt?: Date;
   endedAt?: Date;
-  isAgentRunning: boolean;
-  isStreaming?: boolean;
+  isLoading?: boolean;
   text: string;
 }
 
 export const ReasoningMessage = memo(function ReasoningMessage({
   createdAt,
   endedAt,
-  isAgentRunning,
-  isStreaming = false,
+  isLoading = false,
   text,
 }: ReasoningMessageProps) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -28,8 +26,6 @@ export const ReasoningMessage = memo(function ReasoningMessage({
     canScrollUp: false,
   });
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-  const isCurrentlyStreaming = isStreaming && isAgentRunning;
 
   const duration = formatDurationFromDates(createdAt, endedAt);
 
@@ -69,7 +65,7 @@ export const ReasoningMessage = memo(function ReasoningMessage({
       container.removeEventListener("scroll", updateScrollState);
       resizeObserver.disconnect();
     };
-  }, [isExpanded, isCurrentlyStreaming, text]);
+  }, [isExpanded, isLoading, text]);
 
   const headerContent = (
     <div className="flex items-center gap-2 min-w-0 w-full text-xs leading-tight">
@@ -79,16 +75,16 @@ export const ReasoningMessage = memo(function ReasoningMessage({
       <span
         className={cn(
           "text-foreground/60 font-medium shrink-0",
-          isCurrentlyStreaming && "shiny-text",
+          isLoading && "shiny-text",
         )}
       >
-        {isCurrentlyStreaming
+        {isLoading
           ? "Planning..."
           : duration
             ? `Thought for ${duration}`
             : "Planning interrupted"}
       </span>
-      {!isCurrentlyStreaming && isExpanded && (
+      {!isLoading && isExpanded && (
         <span className="shrink-0 text-accent-foreground/60 ml-auto">
           <ChevronDown className="size-3" />
         </span>
@@ -108,46 +104,45 @@ export const ReasoningMessage = memo(function ReasoningMessage({
         {headerContent}
       </Button>
 
-      {(isCurrentlyStreaming || isExpanded) &&
-        !(isCurrentlyStreaming && !text.trim()) && (
-          <div className="mt-2 text-xs relative">
+      {(isLoading || isExpanded) && !(isLoading && !text.trim()) && (
+        <div className="mt-2 text-xs relative">
+          <div
+            className="max-h-44 overflow-y-auto border-l-4 border-muted-foreground/30 pl-4 bg-muted/30 py-2 rounded-r-md"
+            ref={(el) => {
+              scrollContainerRef.current = el;
+              if (isLoading) {
+                scrollRef.current = el;
+              }
+            }}
+          >
             <div
-              className="max-h-44 overflow-y-auto border-l-4 border-muted-foreground/30 pl-4 bg-muted/30 py-2 rounded-r-md"
-              ref={(el) => {
-                scrollContainerRef.current = el;
-                if (isCurrentlyStreaming) {
-                  scrollRef.current = el;
-                }
-              }}
+              className={cn(
+                "text-sm leading-relaxed prose prose-sm max-w-none dark:prose-invert break-words overflow-wrap-anywhere italic",
+                !isLoading && "opacity-60",
+              )}
+              ref={contentRef}
             >
-              <div
-                className={cn(
-                  "text-sm leading-relaxed prose prose-sm max-w-none dark:prose-invert break-words overflow-wrap-anywhere italic",
-                  !isCurrentlyStreaming && "opacity-60",
-                )}
-                ref={contentRef}
-              >
-                <Markdown
-                  markdown={
-                    isCurrentlyStreaming
+              <Markdown
+                markdown={
+                  isLoading
+                    ? text
+                    : text.trim()
                       ? text
-                      : text.trim()
-                        ? text
-                        : "Reasoning not available"
-                  }
-                />
-              </div>
+                      : "Reasoning not available"
+                }
+              />
             </div>
-
-            {scrollState.canScrollUp && (
-              <div className="absolute top-0 left-0 right-0 h-4 bg-gradient-to-b from-background to-transparent pointer-events-none z-10" />
-            )}
-
-            {scrollState.canScrollDown && (
-              <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-background to-transparent pointer-events-none z-10" />
-            )}
           </div>
-        )}
+
+          {scrollState.canScrollUp && (
+            <div className="absolute top-0 left-0 right-0 h-4 bg-gradient-to-b from-background to-transparent pointer-events-none z-10" />
+          )}
+
+          {scrollState.canScrollDown && (
+            <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-background to-transparent pointer-events-none z-10" />
+          )}
+        </div>
+      )}
     </div>
   );
 });

@@ -110,6 +110,31 @@ export function SessionStream({
     );
   }, [messages]);
 
+  const { contextMessages, regularMessages } = useMemo(() => {
+    const result = {
+      contextMessages: [] as SessionMessage.ContextWithParts[],
+      regularMessages: [] as SessionMessage.WithParts[],
+    };
+
+    for (const message of messages) {
+      if (message.role === "session-context") {
+        result.contextMessages.push(message);
+      } else {
+        result.regularMessages.push(message);
+      }
+    }
+
+    return result;
+  }, [messages]);
+
+  const lastMessageId = useMemo((): StoreId.Message | undefined => {
+    if (regularMessages.length === 0) {
+      return;
+    }
+    const lastMessage = regularMessages.at(-1);
+    return lastMessage?.id;
+  }, [regularMessages]);
+
   const renderChatPart = useCallback(
     (
       part: SessionMessagePart.Type,
@@ -168,7 +193,12 @@ export function SessionStream({
       if (SessionMessagePart.isToolPart(part)) {
         return (
           <ToolPart
-            isAgentRunning={isAnyAgentRunning}
+            isLoading={
+              isAnyAgentRunning &&
+              lastMessageId === part.metadata.messageId &&
+              (part.state === "input-streaming" ||
+                part.state === "input-available")
+            }
             key={part.metadata.id}
             part={part}
           />
@@ -180,8 +210,11 @@ export function SessionStream({
           <ReasoningMessage
             createdAt={part.metadata.createdAt}
             endedAt={part.metadata.endedAt}
-            isAgentRunning={isAnyAgentRunning}
-            isStreaming={part.state === "streaming"}
+            isLoading={
+              isAnyAgentRunning &&
+              lastMessageId === part.metadata.messageId &&
+              part.state === "streaming"
+            }
             key={part.metadata.id}
             text={part.text}
           />
@@ -202,25 +235,14 @@ export function SessionStream({
       const _exhaustiveCheck: never = part;
       return <UnknownPart key={partIndex} part={_exhaustiveCheck} />;
     },
-    [gitCommitParts, selectedVersion, app.subdomain, isAnyAgentRunning],
+    [
+      gitCommitParts,
+      selectedVersion,
+      app.subdomain,
+      isAnyAgentRunning,
+      lastMessageId,
+    ],
   );
-
-  const { contextMessages, regularMessages } = useMemo(() => {
-    const result = {
-      contextMessages: [] as SessionMessage.ContextWithParts[],
-      regularMessages: [] as SessionMessage.WithParts[],
-    };
-
-    for (const message of messages) {
-      if (message.role === "session-context") {
-        result.contextMessages.push(message);
-      } else {
-        result.regularMessages.push(message);
-      }
-    }
-
-    return result;
-  }, [messages]);
 
   const { chatElements } = useMemo(() => {
     const newChatElements: React.ReactNode[] = [];
