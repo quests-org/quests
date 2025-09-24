@@ -101,7 +101,7 @@ export function UsageSummary({ messages }: UsageSummaryProps) {
       }
     }
 
-    const avgMsToFinish = requestCount > 0 ? totalMsToFinish / requestCount : 0;
+    const totalMsToFinishDuration = totalMsToFinish;
     const avgMsToFirstChunk =
       requestCount > 0 ? totalMsToFirstChunk / requestCount : 0;
     const avgTokensPerSecond =
@@ -110,10 +110,10 @@ export function UsageSummary({ messages }: UsageSummaryProps) {
         : 0;
 
     return {
-      avgMsToFinish,
       avgMsToFirstChunk,
       avgTokensPerSecond,
       requestCount,
+      totalMsToFinishDuration,
     };
   }, [messages]);
 
@@ -208,20 +208,22 @@ export function UsageSummary({ messages }: UsageSummaryProps) {
               <div className="pl-2 space-y-1 tabular-nums text-muted-foreground/60">
                 {timing.avgTokensPerSecond > 0 && (
                   <div className="flex justify-between">
-                    <span>Speed:</span>
+                    <span>Avg speed:</span>
                     <span>{Math.round(timing.avgTokensPerSecond)} tok/s</span>
                   </div>
                 )}
                 {timing.avgMsToFirstChunk > 0 && (
                   <div className="flex justify-between">
-                    <span>Time to start:</span>
+                    <span>Avg time to first token:</span>
                     <span>{formatDuration(timing.avgMsToFirstChunk)}</span>
                   </div>
                 )}
-                {timing.avgMsToFinish > 0 && (
+                {timing.totalMsToFinishDuration > 0 && (
                   <div className="flex justify-between">
-                    <span>Duration:</span>
-                    <span>{formatDuration(timing.avgMsToFinish)}</span>
+                    <span>Total duration:</span>
+                    <span>
+                      {formatDuration(timing.totalMsToFinishDuration)}
+                    </span>
                   </div>
                 )}
               </div>
