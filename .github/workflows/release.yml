@@ -198,6 +198,8 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: github.ref_type == 'tag'
         with:
+          draft: true
+          prerelease: ${{ contains(github.ref_name, '-beta') || contains(github.ref_name, '-alpha') }}
           files: |
             apps/studio/dist/*.exe
             apps/studio/dist/*.zip
