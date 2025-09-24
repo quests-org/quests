@@ -20,9 +20,9 @@ import { LOCAL_LOOPBACK_APPS_SERVER_DOMAIN } from "./server/constants";
 import { getWorkspaceServerPort, getWorkspaceServerURL } from "./server/url";
 
 const BASE_PORT = 9200;
-const BASE_RUN_TIMEOUT_MS = 60 * 1000;
-const RUN_TIMEOUT_MULTIPLIER_MS = 10 * 1000;
-const INSTALL_TIMEOUT_MS = 300_000;
+const BASE_RUN_TIMEOUT_MS = 60 * 1000; // 1 minute
+const RUN_TIMEOUT_MULTIPLIER_MS = 30 * 1000; // 30 seconds
+const INSTALL_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
 
 // Port management system
 const usedPorts = new Set<number>();
