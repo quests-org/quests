@@ -7,6 +7,7 @@ import { createAppConfig } from "../../../lib/app-config/create";
 import { newProjectConfig } from "../../../lib/app-config/new";
 import { createProject } from "../../../lib/create-project";
 import { createProjectFromPreview } from "../../../lib/create-project-from-preview";
+import { forkProject } from "../../../lib/fork-project";
 import { generateProjectTitleAndIcon } from "../../../lib/generate-project-title-and-icon";
 import { getApp, getProjects } from "../../../lib/get-apps";
 import { getWorkspaceAppForSubdomain } from "../../../lib/get-workspace-app-for-subdomain";
@@ -250,6 +251,41 @@ const createFromPreview = base
     },
   );
 
+const fork = base
+  .input(
+    z.object({
+      sourceSubdomain: ProjectSubdomainSchema,
+    }),
+  )
+  .output(WorkspaceAppProjectSchema)
+  .handler(async ({ context, errors, input: { sourceSubdomain }, signal }) => {
+    const result = await forkProject(
+      {
+        sourceSubdomain,
+        workspaceConfig: context.workspaceConfig,
+      },
+      { signal },
+    );
+
+    if (result.isErr()) {
+      context.workspaceConfig.captureException(result.error);
+      throw toORPCError(result.error, errors);
+    }
+
+    publisher.publish("project.updated", {
+      subdomain: result.value.projectConfig.subdomain,
+    });
+
+    const workspaceApp = await getWorkspaceAppForSubdomain(
+      result.value.projectConfig.subdomain,
+      context.workspaceConfig,
+    );
+
+    context.workspaceConfig.captureEvent("project.forked");
+
+    return workspaceApp;
+  });
+
 const trash = base
   .input(z.object({ subdomain: ProjectSubdomainSchema }))
   .handler(async ({ context, errors, input: { subdomain } }) => {
@@ -319,6 +355,7 @@ export const project = {
   bySubdomains,
   create,
   createFromPreview,
+  fork,
   git: projectGit,
   list,
   live,

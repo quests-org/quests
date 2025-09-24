@@ -35,6 +35,7 @@ export interface AnalyticsEvents {
   "project.created_from_preview": {
     preview_folder_name: string;
   };
+  "project.forked": never;
   "project.restored_version": never;
   "project.trashed": never;
   "project.updated": never;

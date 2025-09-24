@@ -18,6 +18,7 @@ import {
   ChevronDown,
   Clipboard,
   FolderOpenIcon,
+  GitBranch,
   MessageCircle,
   PanelLeftClose,
   Save,
@@ -29,6 +30,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { projectIframeRefAtom } from "../atoms/project";
+import { ForkProjectModal } from "./fork-project-modal";
 import { RestoreVersionModal } from "./restore-version-modal";
 import { CMD, Cursor, ITerm, MacOSTerminal, VSCode } from "./service-icons";
 import {
@@ -69,6 +71,7 @@ export function ProjectHeaderToolbar({
   const iframeRef = useAtomValue(projectIframeRefAtom);
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
   const [restoreModalOpen, setRestoreModalOpen] = useState(false);
+  const [forkModalOpen, setForkModalOpen] = useState(false);
   const navigate = useNavigate();
 
   const showFileInFolderMutation = useMutation(
@@ -259,6 +262,18 @@ export function ProjectHeaderToolbar({
             ) : (
               <div className="flex items-center gap-2">
                 <ToolbarFavoriteAction project={project} />
+                <Button
+                  className="gap-1 h-7"
+                  onClick={() => {
+                    setForkModalOpen(true);
+                  }}
+                  size="sm"
+                  title="Fork this project"
+                  variant="secondary"
+                >
+                  <GitBranch className="h-4 w-4" />
+                  Fork
+                </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button className="gap-1 h-7" size="sm" variant="secondary">
@@ -408,6 +423,15 @@ export function ProjectHeaderToolbar({
           versionRef={selectedVersion}
         />
       )}
+
+      <ForkProjectModal
+        isOpen={forkModalOpen}
+        onClose={() => {
+          setForkModalOpen(false);
+        }}
+        projectName={project.title}
+        projectSubdomain={project.subdomain}
+      />
     </>
   );
 }

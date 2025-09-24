@@ -9,6 +9,10 @@ export namespace GitCommands {
     return ["checkout", ref, "--", "."];
   }
 
+  export function cloneWithoutRemote(repoPath: string, targetPath: string) {
+    return ["clone", "--no-remote", repoPath, targetPath];
+  }
+
   export function commitEmptyWithAuthor(message: string) {
     return [
       "commit",
