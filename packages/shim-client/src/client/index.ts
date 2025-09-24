@@ -6,6 +6,7 @@ import {
   type ShimIFrameOutMessage,
 } from "@quests/shared/shim";
 import { SHIM_IFRAME_BASE_PATH } from "@quests/workspace/for-shim";
+import { sprintf } from "sprintf-js";
 
 import { type IframeMessage, type IframeMessageHandler } from "../iframe/types";
 
@@ -61,6 +62,27 @@ const originalConsole = {
   warn: console.warn.bind(console),
 };
 
+function formatArgs(args: unknown[]): string {
+  return args
+    .map((arg) => {
+      if (arg instanceof Error) {
+        return `${arg.name}: ${arg.message}${arg.stack ? `\n${arg.stack}` : ""}`;
+      }
+      if (typeof arg === "string") {
+        return arg;
+      }
+      if (typeof arg === "object" && arg !== null) {
+        try {
+          return JSON.stringify(arg, null, 2);
+        } catch {
+          return "Unserializable object";
+        }
+      }
+      return String(arg);
+    })
+    .join(" ");
+}
+
 function interceptConsoleMethod(methodName: keyof typeof originalConsole) {
   console[methodName] = (...args: unknown[]) => {
     (originalConsole[methodName] as (...args: unknown[]) => void)(...args);
@@ -71,24 +93,21 @@ function interceptConsoleMethod(methodName: keyof typeof originalConsole) {
 
 function sendConsoleLog(type: ConsoleLogType, args: unknown[]) {
   try {
-    const formattedMessage = args
-      .map((arg) => {
-        if (arg instanceof Error) {
-          return `${arg.name}: ${arg.message}${arg.stack ? `\n${arg.stack}` : ""}`;
-        }
-        if (typeof arg === "string") {
-          return arg;
-        }
-        if (typeof arg === "object" && arg !== null) {
-          try {
-            return JSON.stringify(arg, null, 2);
-          } catch {
-            return "Unserializable object";
-          }
-        }
-        return String(arg);
-      })
-      .join(" ");
+    let formattedMessage: string;
+
+    if (
+      args.length > 0 &&
+      typeof args[0] === "string" &&
+      args[0].includes("%")
+    ) {
+      try {
+        formattedMessage = sprintf(args[0], ...args.slice(1));
+      } catch {
+        formattedMessage = formatArgs(args);
+      }
+    } else {
+      formattedMessage = formatArgs(args);
+    }
 
     const message: ShimIFrameOutMessage = {
       type: "console-log",
