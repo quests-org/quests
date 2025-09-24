@@ -185,7 +185,7 @@ export const sessionMachine = setup({
     return {
       agent: input.agent,
       appConfig: input.appConfig,
-      llmRequestTimeoutMs: input.llmRequestTimeoutMs ?? 120_000,
+      llmRequestTimeoutMs: input.llmRequestTimeoutMs ?? 5 * 60 * 1000,
       maxStepCount: input.maxStepCount ?? 50,
       model: input.model,
       parentRef: input.parentRef,
