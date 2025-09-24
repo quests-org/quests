@@ -1,7 +1,6 @@
 import { safe } from "@orpc/client";
 import { type ProjectSubdomain } from "@quests/workspace/client";
 import { useNavigate, useSearch } from "@tanstack/react-router";
-import { RotateCcw } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -166,17 +165,7 @@ export function RestoreVersionModal({
             onClick={handleRestore}
             variant="destructive"
           >
-            {isRestoring ? (
-              <>
-                <RotateCcw className="h-4 w-4 mr-2 animate-spin" />
-                Restoring...
-              </>
-            ) : (
-              <>
-                <RotateCcw className="h-4 w-4 mr-1" />
-                Restore Version
-              </>
-            )}
+            {isRestoring ? "Restoring..." : "Restore Version"}
           </Button>
         </DialogFooter>
       </DialogContent>

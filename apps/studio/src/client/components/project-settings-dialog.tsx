@@ -10,7 +10,7 @@ import {
 } from "@quests/shared/icons";
 import { type ProjectSubdomain } from "@quests/workspace/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { ChevronDown, SaveIcon } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { IconMap } from "./app-icons";
@@ -288,7 +288,6 @@ export function ProjectSettingsDialog({
               Cancel
             </Button>
             <Button disabled={isLoading || !title.trim()} type="submit">
-              <SaveIcon className="h-4 w-4" />
               Save
             </Button>
           </DialogFooter>

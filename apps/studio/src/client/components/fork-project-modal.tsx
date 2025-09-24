@@ -11,7 +11,6 @@ import { rpcClient } from "@/client/rpc/client";
 import { type ProjectSubdomain } from "@quests/workspace/client";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { GitBranch } from "lucide-react";
 import { toast } from "sonner";
 
 interface ForkProjectModalProps {
@@ -59,10 +58,7 @@ export function ForkProjectModal({
     <Dialog onOpenChange={onClose} open={isOpen}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <GitBranch className="h-5 w-5" />
-            Fork Project
-          </DialogTitle>
+          <DialogTitle>Fork Project</DialogTitle>
           <DialogDescription className="text-left">
             This will create a copy of &ldquo;{projectName}&rdquo; as a new
             project.
