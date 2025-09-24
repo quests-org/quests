@@ -1,13 +1,16 @@
-import { AUTO_UPDATE_CHANNEL_MAC_INTEL } from "@/electron-main/constants";
 import { logger } from "@/electron-main/lib/electron-logger";
 import { publisher } from "@/electron-main/rpc/publisher";
 import pkg from "electron-updater";
 import os from "node:os";
 
-import { setLastUpdateCheck } from "../stores/preferences";
+import { getPreferencesStore, setLastUpdateCheck } from "../stores/preferences";
 
 const { autoUpdater } = pkg;
 const scopedLogger = logger.scope("appUpdater");
+
+const IS_MACOS_INTEL = os.platform() === "darwin" && os.arch() === "x64";
+// macOS on Intel is the only custom channel, otherwise use the defaults.
+const MACOS_INTEL_CHANNEL = "latest-x64";
 
 export class StudioAppUpdater {
   public constructor() {
@@ -16,11 +19,8 @@ export class StudioAppUpdater {
     autoUpdater.forceDevUpdateConfig =
       process.env.FORCE_DEV_AUTO_UPDATE === "true";
 
-    // macOS on Intel is the only custom channel, otherwise use the defaults.
-    const isMacOSIntel = os.platform() === "darwin" && os.arch() === "x64";
-
     autoUpdater.setFeedURL({
-      channel: isMacOSIntel ? AUTO_UPDATE_CHANNEL_MAC_INTEL : undefined,
+      channel: getChannel(),
       provider: "generic",
       updaterCacheDirName: "quests-desktop-updater",
       url: "https://releases.quests.dev",
@@ -81,4 +81,24 @@ export class StudioAppUpdater {
   public quitAndInstall() {
     autoUpdater.quitAndInstall();
   }
+}
+
+function getChannel() {
+  // beta and alpha channels are not supported on macOS x64/intel due to lack of support
+  // from electron-builder.
+  // https://github.com/electron-userland/electron-builder/issues/5592
+  if (IS_MACOS_INTEL) {
+    return MACOS_INTEL_CHANNEL;
+  }
+
+  const preferencesStore = getPreferencesStore();
+  // Release channels are used internally for testing and must be set on the preferences
+  // store manually.
+  const channel = preferencesStore.get("releaseChannel");
+  if (!channel || channel === "latest") {
+    // Use defaults
+    return;
+  }
+
+  return channel;
 }

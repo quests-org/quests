@@ -15,6 +15,9 @@ jobs:
       contents: write
       id-token: "write"
 
+    env:
+      SKIP_INTEL_MACOS: ${{ matrix.skip_for_prerelease && github.ref_type == 'tag' && (contains(github.ref_name, '-beta') || contains(github.ref_name, '-alpha')) }}
+
     strategy:
       matrix:
         include:
@@ -30,6 +33,7 @@ jobs:
           - os: macos-latest
             arch: x64
             runner: macos-15-intel
+            skip_for_prerelease: true
           - os: macos-latest
             arch: arm64
             runner: macos-latest
@@ -64,13 +68,13 @@ jobs:
           VITE_POSTHOG_API_KEY: ${{ vars.VITE_POSTHOG_API_KEY }}
           VITE_QUESTS_API_BASE_URL: ${{ vars.VITE_QUESTS_API_BASE_URL }}
 
-      - if: matrix.os == 'macos-latest'
+      - if: matrix.os == 'macos-latest' && env.SKIP_INTEL_MACOS != 'true'
         name: setup-signing
         run: |
           mkdir -p ~/.private_keys
           echo '${{ secrets.APPLE_API_KEY_DATA }}' > ~/.private_keys/AuthKey_${{ secrets.APPLE_API_KEY_ID }}.p8
 
-      - if: matrix.os == 'macos-latest'
+      - if: matrix.os == 'macos-latest' && env.SKIP_INTEL_MACOS != 'true'
         name: Build Mac
         run: pnpm turbo build:mac:${{ matrix.arch }} --env-mode=loose
         env:
@@ -91,7 +95,7 @@ jobs:
           VITE_QUESTS_API_BASE_URL: ${{ vars.VITE_QUESTS_API_BASE_URL }}
           ARCH: ${{ matrix.arch }}
 
-      - if: matrix.os == 'macos-latest'
+      - if: matrix.os == 'macos-latest' && env.SKIP_INTEL_MACOS != 'true'
         name: Cleanup Signing
         run: |
           rm ~/.private_keys/AuthKey_${{ secrets.APPLE_API_KEY_ID }}.p8
