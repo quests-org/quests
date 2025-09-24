@@ -22,6 +22,7 @@ const OpenRouterCreditsResponseSchema = z.object({
 
 const KNOWN_MODEL_IDS = [
   "openai/gpt-5",
+  "openai/gpt-5-codex",
   "openai/gpt-5-mini",
   "openai/gpt-5-nano",
   "openai/gpt-4.1",
@@ -64,6 +65,7 @@ export const openrouterAdapter = setupProviderAdapter({
     "openai/gpt-4.1-mini": ["coding", "cheap"],
     "openai/gpt-4.1-nano": ["cheap"],
     "openai/gpt-5": ["coding", "recommended"],
+    "openai/gpt-5-codex": ["coding", "recommended"],
     "openai/gpt-5-mini": ["coding", "recommended", "cheap"],
     "openai/gpt-5-nano": ["cheap"],
     "qwen/qwen3-coder": ["coding", "recommended", "cheap"],

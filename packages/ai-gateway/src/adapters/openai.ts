@@ -17,6 +17,7 @@ import { setupProviderAdapter } from "./setup";
 
 const KNOWN_MODEL_IDS = [
   "gpt-5",
+  "gpt-5-codex",
   "gpt-5-mini",
   "gpt-5-nano",
   "gpt-4.1",
@@ -41,6 +42,7 @@ export const openaiAdapter = setupProviderAdapter({
     "gpt-4.1-mini": ["coding", "cheap"],
     "gpt-4.1-nano": ["cheap"],
     "gpt-5": ["coding", "recommended", "default"],
+    "gpt-5-codex": ["coding", "recommended"],
     "gpt-5-mini": ["coding", "recommended", "cheap"],
     "gpt-5-nano": ["cheap"],
   },
