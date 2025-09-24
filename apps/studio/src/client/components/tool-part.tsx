@@ -35,17 +35,39 @@ export function ToolPart({ isAgentRunning, part }: ToolPartProps) {
   let label: string;
   let value: string | undefined;
 
-  if (isLoading) {
-    label = getToolStreamingDisplayName(toolName);
-    value = "";
-  } else if (isError) {
-    label = "Error";
-    value = part.errorText;
-  } else if (isSuccess && part.type !== "tool-think") {
-    label = getToolDisplayName(toolName);
-    value = getToolOutputDescription(part);
-  } else {
-    label = getToolDisplayName(toolName);
+  switch (part.state) {
+    case "input-available": {
+      label = getToolStreamingDisplayName(toolName);
+      value = getToolInputDescription(part) || "";
+      break;
+    }
+    case "input-streaming": {
+      label = getToolStreamingDisplayName(toolName);
+      value = "";
+      break;
+    }
+    case "output-available": {
+      if (part.type === "tool-think") {
+        // Should be handled by the <ReasoningMessage />, but just in case
+        label = getToolDisplayName(toolName);
+        value = part.output.thought
+          ? truncateText(part.output.thought, 80)
+          : undefined;
+      } else {
+        label = getToolDisplayName(toolName);
+        value = getToolOutputDescription(part);
+      }
+      break;
+    }
+    case "output-error": {
+      label = "Error";
+      value = part.errorText;
+      break;
+    }
+    default: {
+      label = getToolDisplayName(toolName);
+      value = getToolInputDescription(part);
+    }
   }
 
   if (toolName === "think") {
@@ -169,6 +191,62 @@ export function ToolPart({ isAgentRunning, part }: ToolPartProps) {
 
 function cleanFilePath(filePath: string): string {
   return filePath.replace(/^(?:\.\/)?src\//, "");
+}
+
+function getToolInputDescription(
+  part: Extract<SessionMessagePart.ToolPart, { state: "input-available" }>,
+): string | undefined {
+  if (!part.input) {
+    return undefined;
+  }
+
+  switch (part.type) {
+    case "tool-choose": {
+      return part.input.question;
+    }
+    case "tool-edit_file": {
+      return part.input.filePath
+        ? cleanFilePath(part.input.filePath)
+        : undefined;
+    }
+    case "tool-file_tree": {
+      return undefined;
+    }
+    case "tool-glob": {
+      return part.input.pattern;
+    }
+    case "tool-grep": {
+      return part.input.pattern;
+    }
+    case "tool-read_file": {
+      return cleanFilePath(part.input.filePath);
+    }
+    case "tool-run_diagnostics": {
+      return undefined;
+    }
+    case "tool-run_git_commands": {
+      const commands = part.input.commands;
+      return commands.join(", ");
+    }
+    case "tool-run_shell_command": {
+      return part.input.command;
+    }
+    case "tool-think": {
+      return part.input.thought;
+    }
+    case "tool-unavailable": {
+      return undefined;
+    }
+    case "tool-write_file": {
+      return cleanFilePath(part.input.filePath);
+    }
+    default: {
+      const _exhaustiveCheck: never = part;
+      // eslint-disable-next-line no-console
+      console.warn("Unknown tool", _exhaustiveCheck);
+      return undefined;
+    }
+  }
 }
 
 function getToolOutputDescription(
