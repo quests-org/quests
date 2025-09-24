@@ -124,13 +124,15 @@ function ProjectDeleteDialogBody({
       </AlertDialogHeader>
       <AlertDialogFooter>
         <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
-        <AlertDialogAction
-          asChild
-          className="text-white"
-          disabled={isPending}
-          onClick={handleDelete}
-        >
-          <Button variant="destructive">
+        <AlertDialogAction asChild className="text-white" disabled={isPending}>
+          <Button
+            onClick={async (e) => {
+              // Stops the dialog from closing immediately
+              e.preventDefault();
+              await handleDelete();
+            }}
+            variant="destructive"
+          >
             {isPending
               ? `Moving to ${trashTerminology}...`
               : `Move to ${trashTerminology}`}
