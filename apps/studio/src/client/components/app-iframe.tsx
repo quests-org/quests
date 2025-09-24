@@ -9,6 +9,10 @@ import { useAppState } from "../hooks/use-app-state";
 import { cn } from "../lib/utils";
 import { type ClientLogLine } from "./console";
 
+// Filter out Vite websocket connection messages, which are created
+// due to our current lack of websocket support.
+const MESSAGES_TO_FILTER = ["[vite] Direct websocket connection fallback"];
+
 export function AppIFrame({
   app,
   className,
@@ -52,12 +56,17 @@ export function AppIFrame({
 
         switch (messageData.type) {
           case "console-log": {
+            const message = messageData.value.message;
+            if (MESSAGES_TO_FILTER.some((m) => message.includes(m))) {
+              break;
+            }
+
             setClientLogs((prev) => [
               ...prev,
               {
                 createdAt: new Date(),
                 id: ulid(),
-                message: messageData.value.message,
+                message,
                 type: messageData.value.type,
               },
             ]);
