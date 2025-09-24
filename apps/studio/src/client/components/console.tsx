@@ -35,17 +35,23 @@ const getLogLineStyles = (log: UnifiedLogLine) => {
   const type = log.type;
 
   if (type === "error") {
-    return cn(baseStyles, "bg-destructive/5 text-destructive");
+    return {
+      message: cn(baseStyles, "text-destructive"),
+      row: "bg-destructive/5",
+    };
   }
 
   if (type === "warn") {
-    return cn(
-      baseStyles,
-      "bg-yellow-50 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300",
-    );
+    return {
+      message: cn(baseStyles, "text-yellow-800 dark:text-yellow-300"),
+      row: "bg-yellow-50 dark:bg-yellow-900/20",
+    };
   }
 
-  return cn(baseStyles, "bg-muted/30 text-foreground");
+  return {
+    message: cn(baseStyles, "text-foreground"),
+    row: "",
+  };
 };
 
 interface GroupedLogLine {
@@ -201,6 +207,8 @@ function ConsoleRow({
     );
   };
 
+  const styles = getLogLineStyles(line);
+
   return (
     <div
       className={cn(
@@ -209,6 +217,7 @@ function ConsoleRow({
         line.source === "server"
           ? "border-l-blue-200 dark:border-l-blue-800"
           : "border-l-green-200 dark:border-l-green-800",
+        styles.row,
       )}
     >
       <div className="flex items-start gap-1">
@@ -235,11 +244,11 @@ function ConsoleRow({
 
         <div className="flex-1 min-w-0">
           {line.source === "server" && line.type === "truncation" ? (
-            <div className="text-muted-foreground italic bg-muted/30 px-2 py-0.5 rounded-sm shrink-1 overflow-x-auto whitespace-pre-wrap break-all">
+            <div className="text-muted-foreground italic px-2 py-0.5 rounded-sm shrink-1 overflow-x-auto whitespace-pre-wrap break-all">
               {message}
             </div>
           ) : (
-            <TruncatedLogLine line={line} message={message} />
+            <TruncatedLogLine message={message} styles={styles} />
           )}
         </div>
       </div>
@@ -315,11 +324,11 @@ function groupConsecutiveDuplicates(logs: UnifiedLogLine[]): GroupedLogLine[] {
 }
 
 function TruncatedLogLine({
-  line,
   message,
+  styles,
 }: {
-  line: UnifiedLogLine;
   message: string;
+  styles: { message: string; row: string };
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -338,11 +347,11 @@ function TruncatedLogLine({
   }
 
   if (!needsTruncation) {
-    return <div className={getLogLineStyles(line)}>{message}</div>;
+    return <div className={styles.message}>{message}</div>;
   }
 
   return (
-    <div className={getLogLineStyles(line)}>
+    <div className={styles.message}>
       <button
         className="text-muted-foreground hover:text-foreground transition-colors mr-1 font-mono"
         onClick={() => {
