@@ -209,5 +209,3 @@ jobs:
             apps/studio/dist/*.deb
             apps/studio/dist/*.rpm
             apps/studio/dist/*.tar.gz
-            apps/studio/dist/*.yml
-            apps/studio/dist/*.blockmap
