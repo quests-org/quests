@@ -1,5 +1,5 @@
 import { getBackgroundColor } from "@/electron-main/lib/theme-utils";
-import { updateApplicationMenu } from "@/electron-main/menus/application";
+import { publisher } from "@/electron-main/rpc/publisher";
 import { is } from "@electron-toolkit/utils";
 import { BrowserWindow, Menu, shell } from "electron";
 import path from "node:path";
@@ -48,11 +48,11 @@ export function openSettingsWindow(
 
   settingsWindow.on("closed", () => {
     settingsWindow = null;
-    updateApplicationMenu();
+    publisher.publish("window.focus-changed", null);
   });
 
   settingsWindow.on("focus", () => {
-    updateApplicationMenu();
+    publisher.publish("window.focus-changed", null);
   });
 
   settingsWindow.setBackgroundColor(getBackgroundColor());
