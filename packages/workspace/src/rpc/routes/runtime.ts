@@ -3,6 +3,8 @@ import { isEqual } from "radashi";
 import { ulid } from "ulid";
 import { z } from "zod";
 
+import { createAppConfig } from "../../lib/app-config/create";
+import { redactWorkspacePaths } from "../../lib/redact-workspace-paths";
 import { RuntimeLogEntrySchema } from "../../machines/runtime";
 import { AppSubdomainSchema } from "../../schemas/subdomains";
 import { base } from "../base";
@@ -61,21 +63,32 @@ const logList = base
     const runtimeSnapshot = runtimeRef.getSnapshot();
     const allLogs = runtimeSnapshot.context.logs;
 
+    let logsToReturn;
     if (allLogs.length <= input.limit) {
-      return allLogs;
+      logsToReturn = allLogs;
+    } else {
+      const truncatedCount = allLogs.length - input.limit;
+      const recentLogs = allLogs.slice(-input.limit);
+
+      const truncationMessage = {
+        createdAt: new Date(),
+        id: ulid(),
+        message: `... ${truncatedCount} earlier log entries truncated`,
+        type: "truncation" as const,
+      };
+
+      logsToReturn = [truncationMessage, ...recentLogs];
     }
 
-    const truncatedCount = allLogs.length - input.limit;
-    const recentLogs = allLogs.slice(-input.limit);
+    const appConfig = createAppConfig({
+      subdomain: input.subdomain,
+      workspaceConfig: snapshot.context.config,
+    });
 
-    const truncationMessage = {
-      createdAt: new Date(),
-      id: ulid(),
-      message: `... ${truncatedCount} earlier log entries truncated`,
-      type: "truncation" as const,
-    };
-
-    return [truncationMessage, ...recentLogs];
+    return logsToReturn.map((log) => ({
+      ...log,
+      message: redactWorkspacePaths(log.message, appConfig),
+    }));
   });
 
 const logLiveList = base
