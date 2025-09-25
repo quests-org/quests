@@ -20,6 +20,10 @@
       ],
       "outputs": ["dist/**", "out/**"]
     },
+    "@quests/shim-client#build": {
+      "inputs": ["$TURBO_DEFAULT$"],
+      "outputs": ["dist/**"]
+    },
     "build:linux": {
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "dependsOn": ["@quests/shim-client#build"],
@@ -107,6 +111,9 @@
       "dependsOn": ["^check:types"]
     },
     "//#check:types": {},
+    "check:build": {
+      "dependsOn": ["^check:build"]
+    },
     "test:ci": {},
     "dev": {
       "cache": false,

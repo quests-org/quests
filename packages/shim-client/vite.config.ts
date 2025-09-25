@@ -32,5 +32,36 @@ export default defineConfig({
         return outputChunk.fileName === SHIM_SCRIPTS.iframeJS;
       },
     }),
+    {
+      generateBundle(_options, bundle) {
+        const expectedFiles = [SHIM_SCRIPTS.iframeJS, SHIM_SCRIPTS.shimJS];
+
+        const jsFiles = Object.keys(bundle).filter(
+          (fileName) =>
+            fileName.endsWith(".js") && bundle[fileName]?.type === "chunk",
+        );
+
+        const unexpectedFiles = jsFiles.filter(
+          (file) =>
+            !expectedFiles.includes(file as (typeof expectedFiles)[number]),
+        );
+        const missingFiles = expectedFiles.filter(
+          (file) => !jsFiles.includes(file),
+        );
+
+        if (unexpectedFiles.length > 0) {
+          throw new Error(
+            `Build failed: Unexpected JS files found: ${unexpectedFiles.join(", ")}. Only ${expectedFiles.join(" and ")} are allowed.`,
+          );
+        }
+
+        if (missingFiles.length > 0) {
+          throw new Error(
+            `Build failed: Missing expected JS files: ${missingFiles.join(", ")}`,
+          );
+        }
+      },
+      name: "validate-javascript-files",
+    },
   ],
 });

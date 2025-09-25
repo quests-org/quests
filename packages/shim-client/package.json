@@ -11,6 +11,7 @@
   "type": "module",
   "scripts": {
     "build": "vite build --configLoader runner",
+    "check:build": "pnpm run build",
     "check:lint": "eslint . --max-warnings 0 --cache",
     "check:types": "tsc --noEmit",
     "dev": "vite --configLoader runner --port 9150",

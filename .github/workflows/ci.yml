@@ -92,6 +92,17 @@ jobs:
       - uses: rharkor/caching-for-turbo@v1.8
       - run: pnpm turbo:test:ci
       - uses: codecov/codecov-action@v3
+  check_build:
+    name: Check Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-ripgrep-cache
+      - uses: ./.github/actions/prepare
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: rharkor/caching-for-turbo@v1.8
+      - run: pnpm turbo:check:build
   type_check:
     name: Type Check
     runs-on: ubuntu-latest
