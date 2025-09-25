@@ -7,7 +7,7 @@ import { createAppConfig } from "../../../lib/app-config/create";
 import { newProjectConfig } from "../../../lib/app-config/new";
 import { createProject } from "../../../lib/create-project";
 import { createProjectFromPreview } from "../../../lib/create-project-from-preview";
-import { forkProject } from "../../../lib/fork-project";
+import { duplicateProject } from "../../../lib/duplicate-project";
 import { generateProjectTitleAndIcon } from "../../../lib/generate-project-title-and-icon";
 import { getApp, getProjects } from "../../../lib/get-apps";
 import { getWorkspaceAppForSubdomain } from "../../../lib/get-workspace-app-for-subdomain";
@@ -251,40 +251,49 @@ const createFromPreview = base
     },
   );
 
-const fork = base
+const duplicate = base
   .input(
     z.object({
+      keepHistory: z.boolean().optional().default(false),
       sourceSubdomain: ProjectSubdomainSchema,
     }),
   )
   .output(WorkspaceAppProjectSchema)
-  .handler(async ({ context, errors, input: { sourceSubdomain }, signal }) => {
-    const result = await forkProject(
-      {
-        sourceSubdomain,
-        workspaceConfig: context.workspaceConfig,
-      },
-      { signal },
-    );
+  .handler(
+    async ({
+      context,
+      errors,
+      input: { keepHistory, sourceSubdomain },
+      signal,
+    }) => {
+      const result = await duplicateProject(
+        {
+          keepHistory,
+          sourceSubdomain,
+          workspaceConfig: context.workspaceConfig,
+        },
+        { signal },
+      );
 
-    if (result.isErr()) {
-      context.workspaceConfig.captureException(result.error);
-      throw toORPCError(result.error, errors);
-    }
+      if (result.isErr()) {
+        context.workspaceConfig.captureException(result.error);
+        throw toORPCError(result.error, errors);
+      }
 
-    publisher.publish("project.updated", {
-      subdomain: result.value.projectConfig.subdomain,
-    });
+      publisher.publish("project.updated", {
+        subdomain: result.value.projectConfig.subdomain,
+      });
 
-    const workspaceApp = await getWorkspaceAppForSubdomain(
-      result.value.projectConfig.subdomain,
-      context.workspaceConfig,
-    );
+      const workspaceApp = await getWorkspaceAppForSubdomain(
+        result.value.projectConfig.subdomain,
+        context.workspaceConfig,
+      );
 
-    context.workspaceConfig.captureEvent("project.forked");
+      context.workspaceConfig.captureEvent("project.forked");
 
-    return workspaceApp;
-  });
+      return workspaceApp;
+    },
+  );
 
 const trash = base
   .input(z.object({ subdomain: ProjectSubdomainSchema }))
@@ -355,7 +364,7 @@ export const project = {
   bySubdomains,
   create,
   createFromPreview,
-  fork,
+  duplicate,
   git: projectGit,
   list,
   live,

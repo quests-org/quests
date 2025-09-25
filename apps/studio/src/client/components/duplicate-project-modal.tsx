@@ -1,4 +1,5 @@
 import { Button } from "@/client/components/ui/button";
+import { Checkbox } from "@/client/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -11,6 +12,7 @@ import { rpcClient } from "@/client/rpc/client";
 import { type ProjectSubdomain } from "@quests/workspace/client";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
 import { toast } from "sonner";
 
 interface DuplicateProjectModalProps {
@@ -27,9 +29,10 @@ export function DuplicateProjectModal({
   projectSubdomain,
 }: DuplicateProjectModalProps) {
   const navigate = useNavigate();
+  const [keepHistory, setKeepHistory] = useState(true);
 
   const duplicateMutation = useMutation(
-    rpcClient.workspace.project.fork.mutationOptions({
+    rpcClient.workspace.project.duplicate.mutationOptions({
       onError: (error: Error) => {
         toast.error("Failed to duplicate project", {
           description: error.message,
@@ -50,6 +53,7 @@ export function DuplicateProjectModal({
 
   const handleDuplicate = () => {
     duplicateMutation.mutate({
+      keepHistory,
       sourceSubdomain: projectSubdomain,
     });
   };
@@ -65,12 +69,20 @@ export function DuplicateProjectModal({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="bg-muted/50 p-3 rounded-lg my-4">
-          <h4 className="font-medium text-sm mb-2">What happens:</h4>
-          <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-            <li>Copies all files and version history</li>
-            <li>Creates independent project</li>
-          </ul>
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            checked={keepHistory}
+            id="keep-history"
+            onCheckedChange={(checked) => {
+              setKeepHistory(checked === true);
+            }}
+          />
+          <label
+            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            htmlFor="keep-history"
+          >
+            Keep chat and version history
+          </label>
         </div>
 
         <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
