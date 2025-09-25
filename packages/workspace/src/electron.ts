@@ -1,6 +1,5 @@
 export { WORKSPACE_FOLDER } from "./constants";
 export { createAppConfig } from "./lib/app-config/create";
-export { esmImport } from "./lib/esm-import";
 export { getWorkspaceServerURL } from "./logic/server/url";
 export {
   type WorkspaceActorRef,
