@@ -26,7 +26,7 @@ export function AppView({
 }) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const setProjectIframeRef = useSetAtom(projectIframeRefAtom);
-  const [isConsoleOpen, setIsConsoleOpen] = useState(true);
+  const [isConsoleOpen, setIsConsoleOpen] = useState(false);
   const clientLogsAtom = useMemo(() => {
     // To ensure atom changes when app.subdomain changes
     void app.subdomain;
@@ -44,14 +44,6 @@ export function AppView({
     };
   }, [app.type, setProjectIframeRef, iframeRef]);
 
-  const handleConsoleToggle = () => {
-    if (isConsoleOpen) {
-      setIsConsoleOpen(false);
-    } else {
-      setIsConsoleOpen(true);
-    }
-  };
-
   return (
     <div className={cn("flex flex-col size-full", className)}>
       <AppToolbar
@@ -60,7 +52,9 @@ export function AppView({
         clientLogsAtom={clientLogsAtom}
         iframeRef={iframeRef}
         isConsoleOpen={isConsoleOpen}
-        onConsoleToggle={handleConsoleToggle}
+        onConsoleToggle={() => {
+          setIsConsoleOpen((prev) => !prev);
+        }}
         rightActions={rightActions}
       />
 
@@ -70,15 +64,18 @@ export function AppView({
           className={cn("flex-1 min-h-0", isConsoleOpen ? "rounded-b-lg" : "")}
           clientLogsAtom={clientLogsAtom}
           iframeRef={iframeRef}
+          onOpenConsole={() => {
+            setIsConsoleOpen(true);
+          }}
         />
 
-        {!isConsoleOpen && (
+        {isConsoleOpen && (
           <div className="h-66 border-t shrink-0">
             <ConsoleWithLogs
               app={app}
               clientLogsAtom={clientLogsAtom}
               onCollapse={() => {
-                setIsConsoleOpen(true);
+                setIsConsoleOpen(false);
               }}
               showSendToChat={showSendToChat}
             />

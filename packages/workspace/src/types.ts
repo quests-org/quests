@@ -8,12 +8,6 @@ import { type APP_STATUSES } from "./constants";
 import { type AbsolutePath, type WorkspaceDir } from "./schemas/paths";
 import { type RunShellCommand, type ShellResult } from "./tools/types";
 
-export interface AppError {
-  createdAt: number;
-  message: string;
-  type: "client" | "router" | "runtime";
-}
-
 export type AppStatus = (typeof APP_STATUSES)[number];
 
 export type RunPackageJsonScript = (options: {

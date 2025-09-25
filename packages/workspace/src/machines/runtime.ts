@@ -3,6 +3,7 @@ import {
   type ActorRefFrom,
   assign,
   log,
+  raise,
   setup,
   type SnapshotFrom,
   stopChild,
@@ -17,42 +18,74 @@ import {
   type SpawnRuntimeRef,
 } from "../logic/spawn-runtime";
 import { publisher } from "../rpc/publisher";
-import { type AbsolutePath } from "../schemas/paths";
-import {
-  type AppError,
-  type AppStatus,
-  type RunPackageJsonScript,
-} from "../types";
+import { type AppStatus, type RunPackageJsonScript } from "../types";
 
 const MAX_RETRIES = 3;
 
-export const LogEntrySchema = z.object({
+export const RuntimeLogEntrySchema = z.object({
   createdAt: z.date(),
   id: z.ulid(),
   message: z.string(),
-  type: z.enum(["error", "normal", "truncation"]),
+  type: z.enum(["error", "normal"]),
 });
-
-type LogEntry = z.output<typeof LogEntrySchema>;
-
-interface RunErrorValue {
-  command?: string;
-  message: string;
-}
 
 type RuntimeEvent =
   | SpawnRuntimeEvent
+  | { type: "appendError"; value: { error: Error } }
   | { type: "clearLogs" }
+  | { type: "fail" }
+  | { type: "maybeRetry" }
   | { type: "restart" }
-  | { type: "saveError"; value: AppError }
   | { type: "updateHeartbeat"; value: { createdAt: number } };
+
+type RuntimeLogEntry = z.output<typeof RuntimeLogEntrySchema>;
+
+function errorToString(error: Error): string {
+  const parts: string[] = [];
+
+  if (error.name && error.name !== "Error") {
+    parts.push(`${error.name}:`);
+  }
+
+  if (error.message) {
+    parts.push(error.message);
+  }
+
+  if (error.cause) {
+    const causeStr =
+      error.cause instanceof Error
+        ? errorToString(error.cause)
+        : // eslint-disable-next-line @typescript-eslint/no-base-to-string
+          String(error.cause);
+
+    parts.push(`(caused by: ${causeStr})`);
+  }
+
+  if (error.stack && error.stack !== error.message) {
+    parts.push(`\nStack: ${error.stack}`);
+  }
+
+  return parts.join(" ");
+}
 
 export const runtimeMachine = setup({
   actions: {
+    appendErrorToLogs: assign({
+      logs: ({ context }, { value }: { value: { error: Error } }) => [
+        ...context.logs,
+        {
+          createdAt: new Date(),
+          id: ulid(),
+          message: errorToString(value.error),
+          type: "error" as const,
+        },
+      ],
+    }),
+
     appendLog: assign({
       logs: (
         { context },
-        { message, type }: { message: string; type: LogEntry["type"] },
+        { message, type }: { message: string; type: RuntimeLogEntry["type"] },
       ) => [
         ...context.logs,
         { createdAt: new Date(), id: ulid(), message, type },
@@ -64,19 +97,6 @@ export const runtimeMachine = setup({
         subdomain: context.appConfig.subdomain,
       });
     },
-
-    pushRuntimeErrorEvent: assign({
-      errors: ({ context }, { value }: { value: RunErrorValue }) => [
-        ...context.errors,
-        {
-          createdAt: Date.now(),
-          message: value.command
-            ? `${value.command}: ${value.message}`
-            : value.message,
-          type: "runtime" as const,
-        },
-      ],
-    }),
 
     setLastHeartbeat: assign({
       lastHeartbeat: (_, { value }: { value: { createdAt: number } }) =>
@@ -93,20 +113,17 @@ export const runtimeMachine = setup({
   types: {
     context: {} as {
       appConfig: AppConfig;
-      errors: AppError[];
       lastHeartbeat: Date;
-      logs: LogEntry[];
+      logs: RuntimeLogEntry[];
       port?: number;
       retryCount: number;
       runPackageJsonScript: RunPackageJsonScript;
-      shimServerJSPath: AbsolutePath;
       spawnRuntimeRef?: SpawnRuntimeRef;
     },
     events: {} as RuntimeEvent,
     input: {} as {
       appConfig: AppConfig;
       runPackageJsonScript: RunPackageJsonScript;
-      shimServerJSPath: AbsolutePath;
     },
     output: {} as { error?: unknown },
     tags: {} as Exclude<AppStatus, "not-found" | "unavailable">,
@@ -115,12 +132,10 @@ export const runtimeMachine = setup({
   context: ({ input }) => {
     return {
       appConfig: input.appConfig,
-      errors: [],
       lastHeartbeat: new Date(),
       logs: [],
       retryCount: 0,
       runPackageJsonScript: input.runPackageJsonScript,
-      shimServerJSPath: input.shimServerJSPath,
     };
   },
   id: "runtime",
@@ -135,56 +150,32 @@ export const runtimeMachine = setup({
         });
       },
     },
+    appendError: {
+      actions: [
+        {
+          params: ({ event }) => event,
+          type: "appendErrorToLogs",
+        },
+        "publishLogs",
+      ],
+    },
     clearLogs: {
       actions: [assign({ logs: () => [] }), "publishLogs"],
     },
+    fail: ".Error",
+    maybeRetry: ".MaybeRetrying",
     restart: ".Restarting",
-    saveError: {
-      actions: assign({
-        errors: ({ context, event }) => [...context.errors, event.value],
-      }),
-    },
-    "spawnRuntime.error.install-failed": {
-      actions: {
-        params: ({ event }) => event,
-        type: "pushRuntimeErrorEvent",
-      },
-      target: ".Error",
-    },
-    "spawnRuntime.error.package-json": {
-      actions: {
-        params: ({ event }) => event,
-        type: "pushRuntimeErrorEvent",
-      },
-      target: ".Error",
-    },
-    "spawnRuntime.error.port-taken": {
-      actions: {
-        params: ({ event }) => event,
-        type: "pushRuntimeErrorEvent",
-      },
-      target: ".MaybeRetrying",
-    },
-    "spawnRuntime.error.timeout": {
-      actions: {
-        params: ({ event }) => event,
-        type: "pushRuntimeErrorEvent",
-      },
-      target: ".MaybeRetrying",
-    },
-    "spawnRuntime.error.unknown": {
-      actions: {
-        params: ({ event }) => event,
-        type: "pushRuntimeErrorEvent",
-      },
-      target: ".Error",
-    },
-    "spawnRuntime.error.unsupported-script": {
-      actions: {
-        params: ({ event }) => event,
-        type: "pushRuntimeErrorEvent",
-      },
-      target: ".Error",
+    "spawnRuntime.error.*": {
+      actions: [
+        {
+          params: ({ event }) => event,
+          type: "appendErrorToLogs",
+        },
+        "publishLogs",
+        raise(({ event }) => {
+          return event.isRetryable ? { type: "maybeRetry" } : { type: "fail" };
+        }),
+      ],
     },
     "spawnRuntime.exited": ".Stopped",
     "spawnRuntime.log": {
@@ -254,7 +245,6 @@ export const runtimeMachine = setup({
         actions: [
           "stopRuntime",
           assign(() => ({
-            errors: [],
             logs: [],
             port: undefined,
             retryCount: 0,
@@ -289,7 +279,6 @@ export const runtimeMachine = setup({
             attempt: context.retryCount,
             parentRef: self,
             runPackageJsonScript: context.runPackageJsonScript,
-            shimServerJSPath: context.shimServerJSPath,
           },
         }),
       })),

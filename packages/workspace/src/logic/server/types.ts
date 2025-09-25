@@ -1,4 +1,3 @@
-import { type Event as SentryEvent } from "@sentry/core";
 import { type ActorRef, type MachineSnapshot } from "xstate";
 
 import { type AppConfig } from "../../lib/app-config/types";
@@ -18,10 +17,6 @@ export interface WorkspaceServerEnv {
 }
 
 export type WorkspaceServerParentEvent =
-  | {
-      type: "workspaceServer.appEvent";
-      value: { sentryEvent: SentryEvent; subdomain: AppSubdomain };
-    }
   | { type: "workspaceServer.error"; value: { error: Error } }
   | {
       type: "workspaceServer.heartbeat";

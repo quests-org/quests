@@ -87,11 +87,9 @@ app.all("/*", async (c, next) => {
   } catch (error) {
     if (!(error instanceof Error && error.message === "fetch failed")) {
       runtimeRef.send({
-        type: "saveError",
+        type: "appendError",
         value: {
-          createdAt: Date.now(),
-          message: error instanceof Error ? error.message : "Unknown error",
-          type: "router",
+          error: error instanceof Error ? error : new Error("Unknown error"),
         },
       });
     }
@@ -124,11 +122,9 @@ app.all("/*", async (c, next) => {
 
     if (shouldSendError) {
       runtimeRef.send({
-        type: "saveError",
+        type: "appendError",
         value: {
-          createdAt: Date.now(),
-          message: `Error proxying request: ${res.status} ${body}`,
-          type: "router",
+          error: new Error(`Error proxying request: ${res.status} ${body}`),
         },
       });
     }

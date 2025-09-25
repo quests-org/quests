@@ -1,40 +1,19 @@
 import { type HeartbeatResponse } from "@quests/workspace/for-shim";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 
-import { BottomView } from "./components/bottom-view";
-import { CornerView } from "./components/corner-view";
-import { FullView } from "./components/full-view";
-import { type IframeMessage } from "./types";
+import { Overlay } from "./components/overlay";
 import "./styles.css";
-
-type AppStatus = HeartbeatResponse["status"] | null;
-
-const isFullScreenStatus = (status: AppStatus): boolean =>
-  status === "error" ||
-  status === "not-found" ||
-  status === "not-runnable" ||
-  status === "loading";
+import { type IframeMessage } from "./types";
 
 export function App() {
+  useTheme();
   const [response, setResponse] = useState<HeartbeatResponse | null>(null);
-  const [previousStatus, setPreviousStatus] = useState<AppStatus>(null);
-  const [displayMode, setDisplayMode] = useState<"bottom" | "corner" | "full">(
-    "corner",
-  );
-  const [isTransitioningFromError, setIsTransitioningFromError] =
-    useState(false);
-
-  const currentStatus = response?.status ?? null;
-  const currentStatusRef = useRef(currentStatus);
+  const previousStatusRef = useRef(response?.status ?? null);
   const retryAttemptsRef = useRef(0);
   const isFallbackPage = new URLSearchParams(window.location.search).has(
     "fallback",
   );
-
-  useEffect(() => {
-    currentStatusRef.current = currentStatus;
-  }, [currentStatus]);
 
   useEffect(() => {
     let eventSource: EventSource | null = null;
@@ -54,7 +33,8 @@ export function App() {
 
           retryAttemptsRef.current = 0;
 
-          const current = currentStatusRef.current;
+          const current = previousStatusRef.current;
+          previousStatusRef.current = newHeartbeat.status;
           if (
             current !== null &&
             current !== "ready" &&
@@ -74,14 +54,6 @@ export function App() {
             });
           }
 
-          if (
-            isFullScreenStatus(current) &&
-            !isFullScreenStatus(newHeartbeat.status)
-          ) {
-            setIsTransitioningFromError(true);
-          }
-
-          setPreviousStatus(current);
           setResponse(newHeartbeat);
         } catch {
           // Failed to parse heartbeat data
@@ -90,18 +62,9 @@ export function App() {
 
       eventSource.addEventListener("error", () => {
         const fakeResponse: HeartbeatResponse = {
-          errors: [
-            {
-              createdAt: Date.now(),
-              message: "Failed to connect to workspace server",
-              type: "router",
-            },
-          ],
           status: "error",
         };
 
-        const current = currentStatusRef.current;
-        setPreviousStatus(current);
         setResponse(fakeResponse);
 
         eventSource?.close();
@@ -120,63 +83,37 @@ export function App() {
     };
   }, [isFallbackPage]);
 
-  useEffect(() => {
-    if (currentStatus === null) {
-      return;
-    }
+  return <Overlay onOpenConsole={handleOpenConsole} response={response} />;
+}
 
-    if (isFullScreenStatus(currentStatus)) {
-      setDisplayMode("full");
-      setIsTransitioningFromError(false);
-    } else if (isTransitioningFromError) {
-      setDisplayMode("corner");
-      setIsTransitioningFromError(false);
-    } else if (previousStatus === null && !isFullScreenStatus(currentStatus)) {
-      setDisplayMode("corner");
-    }
-  }, [currentStatus, previousStatus, isTransitioningFromError]);
-
-  useEffect(() => {
-    sendParentMessage({ type: "display-mode", value: displayMode });
-  }, [displayMode]);
-
-  // Handle corner click
-  const handleCornerClick = useCallback(() => {
-    if (displayMode === "corner") {
-      setDisplayMode("bottom");
-    }
-  }, [displayMode]);
-
-  return (
-    <>
-      {displayMode === "corner" && currentStatus && (
-        <button
-          className="fixed bottom-4 right-4 h-10 w-10 cursor-pointer appearance-none border-0 bg-transparent p-0"
-          onClick={handleCornerClick}
-        >
-          <CornerView response={response} status={currentStatus} />
-        </button>
-      )}
-
-      {displayMode === "bottom" && (
-        <div className="fixed bottom-0 left-0 right-0 h-full bg-white shadow-lg">
-          <BottomView
-            onDisplayModeChange={setDisplayMode}
-            response={response}
-            status={currentStatus}
-          />
-        </div>
-      )}
-
-      {displayMode === "full" && response && (
-        <FullView onDisplayModeChange={setDisplayMode} response={response} />
-      )}
-    </>
-  );
+function handleOpenConsole() {
+  sendParentMessage({ type: "open-console" });
 }
 
 function sendParentMessage(message: IframeMessage) {
   window.parent.postMessage(message, "*");
+}
+
+function useTheme() {
+  useEffect(() => {
+    const root = window.document.documentElement;
+
+    root.classList.remove("light", "dark");
+
+    const queryMedia = window.matchMedia("(prefers-color-scheme: dark)");
+    const systemTheme = queryMedia.matches ? "dark" : "light";
+    root.classList.add(systemTheme);
+
+    const listener = (e: MediaQueryListEvent) => {
+      root.classList.remove("light", "dark");
+      root.classList.add(e.matches ? "dark" : "light");
+    };
+
+    queryMedia.addEventListener("change", listener);
+    return () => {
+      queryMedia.removeEventListener("change", listener);
+    };
+  }, []);
 }
 
 const root = document.querySelector(`#root`);

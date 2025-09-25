@@ -166,7 +166,6 @@ const actor = createActor(workspaceMachine, {
     // Uncomment to test built shim
     // shimClientDir: path.resolve("../shim-client/dist"),
     shimClientDir: "dev-server",
-    shimServerJSPath: path.resolve("../shim-server/dist/index.cjs"),
     trashItem: () => Promise.reject(new Error("Not implemented")),
   },
   inspect(event) {

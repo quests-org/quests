@@ -15,12 +15,11 @@ import {
 } from "../../../lib/preview-cache";
 import { projectSubdomainForSubdomain } from "../../../lib/project-subdomain-for-subdomain";
 import { type RuntimeSnapshot } from "../../../machines/runtime";
-import { type AppError, type AppStatus } from "../../../types";
+import { type AppStatus } from "../../../types";
 import { type WorkspaceServerEnv } from "../types";
 import { uriDetailsForHost } from "../uri-details-for-host";
 
 export interface HeartbeatResponse {
-  errors: AppError[];
   status: AppStatus;
 }
 
@@ -33,13 +32,6 @@ app.get("/heartbeat-stream", (c) => {
     return streamSSE(c, async (stream) => {
       await stream.writeSSE({
         data: JSON.stringify({
-          errors: [
-            {
-              createdAt: Date.now(),
-              message: "URI details error",
-              type: "runtime",
-            },
-          ],
           status: "not-found",
         } satisfies HeartbeatResponse),
         event: "heartbeat",
@@ -60,10 +52,9 @@ app.get("/heartbeat-stream", (c) => {
   return streamSSE(c, async (stream) => {
     let lastResponse: HeartbeatResponse | null = null;
     const pushResponse = async (
-      response: HeartbeatResponse | { errors?: AppError[]; status: AppStatus },
+      response: HeartbeatResponse | { status: AppStatus },
     ) => {
       const normalizedResponse: HeartbeatResponse = {
-        errors: response.errors ?? [],
         status: response.status,
       };
 
@@ -83,7 +74,6 @@ app.get("/heartbeat-stream", (c) => {
       const firstTag = tags.values().next().value ?? "unknown";
 
       return pushResponse({
-        errors: snapshot.context.errors,
         status: firstTag,
       });
     }
@@ -251,16 +241,7 @@ app.get("/heartbeat-stream", (c) => {
               scopes: ["workspace"],
             },
           );
-          await pushResponse({
-            errors: [
-              {
-                createdAt: Date.now(),
-                message: "Internal server error",
-                type: "runtime",
-              },
-            ],
-            status: "error",
-          });
+          await pushResponse({ status: "error" });
           break;
         }
       }

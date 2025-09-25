@@ -13,28 +13,19 @@ import {
 
 import { type AppConfig } from "../lib/app-config/types";
 import { cancelableTimeout, TimeoutError } from "../lib/cancelable-timeout";
-import { esmImport } from "../lib/esm-import";
-import { type AbsolutePath } from "../schemas/paths";
 import { type RunPackageJsonScript } from "../types";
-import { LOCAL_LOOPBACK_APPS_SERVER_DOMAIN } from "./server/constants";
-import { getWorkspaceServerPort, getWorkspaceServerURL } from "./server/url";
+import { getWorkspaceServerURL } from "./server/url";
 
 const BASE_PORT = 9200;
-const BASE_RUN_TIMEOUT_MS = 60 * 1000; // 1 minute
-const RUN_TIMEOUT_MULTIPLIER_MS = 30 * 1000; // 30 seconds
+const BASE_RUNTIME_TIMEOUT_MS = 60 * 1000; // 1 minute
+const RUNTIME_TIMEOUT_MULTIPLIER_MS = 30 * 1000; // 30 seconds
 const INSTALL_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
 
 // Port management system
 const usedPorts = new Set<number>();
 
 export type SpawnRuntimeEvent =
-  | { type: "spawnRuntime.error.app-dir-does-not-exist"; value: RunErrorValue }
-  | { type: "spawnRuntime.error.install-failed"; value: RunErrorValue }
-  | { type: "spawnRuntime.error.package-json"; value: RunErrorValue }
-  | { type: "spawnRuntime.error.port-taken"; value: RunErrorValue }
-  | { type: "spawnRuntime.error.timeout"; value: RunErrorValue }
-  | { type: "spawnRuntime.error.unknown"; value: RunErrorValue }
-  | { type: "spawnRuntime.error.unsupported-script"; value: RunErrorValue }
+  | SpawnRuntimeEventError
   | {
       type: "spawnRuntime.exited";
       value: { exitCode?: number };
@@ -48,9 +39,17 @@ export type SpawnRuntimeEvent =
       value: { port: number };
     };
 
-interface RunErrorValue {
-  command?: string;
-  message: string;
+interface SpawnRuntimeEventError {
+  isRetryable: boolean;
+  type:
+    | "spawnRuntime.error.app-dir-does-not-exist"
+    | "spawnRuntime.error.install-failed"
+    | "spawnRuntime.error.package-json"
+    | "spawnRuntime.error.port-taken"
+    | "spawnRuntime.error.timeout"
+    | "spawnRuntime.error.unknown"
+    | "spawnRuntime.error.unsupported-script";
+  value: { error: Error };
 }
 
 function findAvailablePort(): number {
@@ -122,275 +121,309 @@ export const spawnRuntimeLogic = fromCallback<
     attempt: number;
     parentRef: ActorRef<AnyMachineSnapshot, SpawnRuntimeEvent>;
     runPackageJsonScript: RunPackageJsonScript;
-    shimServerJSPath: AbsolutePath;
   }
->(
-  ({
-    input: {
-      appConfig,
-      attempt,
-      parentRef,
-      runPackageJsonScript,
-      shimServerJSPath,
-    },
-  }) => {
-    const abortController = new AbortController();
-    const timeout = cancelableTimeout(
-      BASE_RUN_TIMEOUT_MS + attempt * RUN_TIMEOUT_MULTIPLIER_MS,
-    );
-    let port = findAvailablePort();
-    reservePort(port);
+>(({ input: { appConfig, attempt, parentRef, runPackageJsonScript } }) => {
+  const abortController = new AbortController();
+  const timeout = cancelableTimeout(
+    BASE_RUNTIME_TIMEOUT_MS + attempt * RUNTIME_TIMEOUT_MULTIPLIER_MS,
+  );
+  let port = findAvailablePort();
+  reservePort(port);
 
-    async function main() {
-      const installTimeout = cancelableTimeout(INSTALL_TIMEOUT_MS);
-      const installSignal = AbortSignal.any([
-        abortController.signal,
-        installTimeout.controller.signal,
-      ]);
-      const installCommand =
-        appConfig.type === "version" || appConfig.type === "sandbox"
-          ? // These app types are nested in the project directory, so we need
-            // to ignore the workspace config otherwise PNPM may not install the
-            // dependencies correctly
-            "pnpm install --ignore-workspace"
-          : "pnpm install";
+  async function main() {
+    const installTimeout = cancelableTimeout(INSTALL_TIMEOUT_MS);
+    const installSignal = AbortSignal.any([
+      abortController.signal,
+      installTimeout.controller.signal,
+    ]);
+    const installCommand =
+      appConfig.type === "version" || appConfig.type === "sandbox"
+        ? // These app types are nested in the project directory, so we need
+          // to ignore the workspace config otherwise PNPM may not install the
+          // dependencies correctly
+          "pnpm install --ignore-workspace"
+        : "pnpm install";
 
-      parentRef.send({
-        type: "spawnRuntime.log",
-        value: { message: `$ ${installCommand}`, type: "normal" },
-      });
+    parentRef.send({
+      type: "spawnRuntime.log",
+      value: { message: `$ ${installCommand}`, type: "normal" },
+    });
 
-      const installResult = await appConfig.workspaceConfig.runShellCommand(
-        installCommand,
-        {
-          cwd: appConfig.appDir,
-          signal: installSignal,
-        },
-      );
-      installTimeout.cancel();
-      if (installResult.isErr()) {
-        parentRef.send({
-          type: "spawnRuntime.error.install-failed",
-          value: {
-            message: installResult.error.message,
-          },
-        });
-        appConfig.workspaceConfig.captureException(installResult.error, {
-          scopes: ["workspace"],
-        });
-        return;
-      }
-
-      const installProcessPromise = installResult.value;
-      sendProcessLogs(installProcessPromise, parentRef);
-      await installProcessPromise;
-
-      // Use detect to check if port is actually available and get alternative if needed
-      const detectedPort = await detect(port);
-      if (detectedPort !== port) {
-        // Release the reserved port and reserve the detected one
-        releasePort(port);
-        port = detectedPort;
-        reservePort(port);
-      }
-
-      const scriptName = "dev";
-
-      let pkg: NormalizedPackageJson;
-      try {
-        pkg = await readPackage({ cwd: appConfig.appDir });
-      } catch (error) {
-        appConfig.workspaceConfig.captureException(error, {
-          scopes: ["workspace"],
-        });
-        parentRef.send({
-          type: "spawnRuntime.error.package-json",
-          value: {
-            message:
-              error instanceof Error
-                ? error.message
-                : "Unknown error reading package.json",
-          },
-        });
-        return;
-      }
-
-      const script = pkg.scripts?.[scriptName];
-      if (!script) {
-        const error = new Error(`No script found: ${scriptName}`);
-        appConfig.workspaceConfig.captureException(error, {
-          scopes: ["workspace"],
-        });
-        parentRef.send({
-          type: "spawnRuntime.error.package-json",
-          value: { message: error.message },
-        });
-        return;
-      }
-      const [commandName] = parseCommandString(script);
-      if (commandName !== "vite") {
-        parentRef.send({
-          type: "spawnRuntime.error.unsupported-script",
-          value: {
-            message: `Unsupported script: ${scriptName}`,
-          },
-        });
-        return;
-      }
-
-      const exists = await fs
-        .access(appConfig.appDir)
-        .then(() => true)
-        .catch(() => false);
-      if (!exists) {
-        const error = new Error(
-          `App directory does not exist: ${appConfig.appDir}`,
-        );
-        appConfig.workspaceConfig.captureException(error, {
-          scopes: ["workspace"],
-        });
-        parentRef.send({
-          type: "spawnRuntime.error.app-dir-does-not-exist",
-          value: {
-            message: error.message,
-          },
-        });
-        return;
-      }
-
-      const providerEnv = envForProviders({
-        providers: appConfig.workspaceConfig.getAIProviders(),
-        workspaceServerURL: getWorkspaceServerURL(),
-      });
-
-      const signal = AbortSignal.any([
-        abortController.signal,
-        timeout.controller.signal,
-      ]);
-
-      parentRef.send({
-        type: "spawnRuntime.log",
-        value: { message: `$ pnpm run ${script}`, type: "normal" },
-      });
-
-      timeout.start();
-      const result = await runPackageJsonScript({
+    const installResult = await appConfig.workspaceConfig.runShellCommand(
+      installCommand,
+      {
         cwd: appConfig.appDir,
-        script,
-        scriptOptions: {
-          env: {
-            ...providerEnv,
-            QUESTS_INSIDE_STUDIO: "true", // Used by apps to detect if they are running inside Studio
-            // TODO: remove when Sentry is removed
-            APP_BASE_URL: `http://${appConfig.subdomain}.${LOCAL_LOOPBACK_APPS_SERVER_DOMAIN}:${getWorkspaceServerPort()}`,
-            NODE_OPTIONS: `--import ${esmImport(shimServerJSPath)}`,
-          },
-          port,
+        signal: installSignal,
+      },
+    );
+    installTimeout.cancel();
+    if (installResult.isErr()) {
+      parentRef.send({
+        isRetryable: true,
+        type: "spawnRuntime.error.install-failed",
+        value: {
+          error: new Error(installResult.error.message, {
+            cause: installResult.error,
+          }),
         },
-        signal,
       });
-      if (result.isErr()) {
-        // Happens for immediate errors
-        parentRef.send({
-          type: "spawnRuntime.error.unknown",
-          value: {
-            message: result.error.message,
-          },
-        });
-        return;
-      }
-      const processPromise = result.value;
-      sendProcessLogs(processPromise, parentRef);
-
-      let shouldCheckServer = true;
-      const checkServer = async () => {
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        if (await isLocalServerRunning(port)) {
-          if (shouldCheckServer) {
-            shouldCheckServer = false;
-            timeout.cancel();
-            parentRef.send({ type: "spawnRuntime.started", value: { port } });
-          }
-          return;
-        }
-        await checkServer();
-      };
-
-      // Must abort check server if the process promise rejects because it
-      // means the server is not running and we could accidentally check
-      // another server and say it's running
-      processPromise.catch(() => (shouldCheckServer = false));
-
-      // Ensures we catch errors from the process promise
-      await Promise.all([checkServer(), processPromise]);
+      appConfig.workspaceConfig.captureException(installResult.error, {
+        scopes: ["workspace"],
+      });
+      return;
     }
 
-    main()
-      .catch((error: unknown) => {
-        if (error instanceof ExecaError) {
-          if (error.failed) {
-            if (error.cause instanceof TimeoutError) {
-              parentRef.send({
-                type: "spawnRuntime.error.timeout",
-                value: {
-                  command: error.command,
-                  message: error.cause.message,
-                },
-              });
-            }
-            if (error.isCanceled) {
-              // Canceled by us, so we don't need to send anything
-              return;
-            }
+    const installProcessPromise = installResult.value;
+    sendProcessLogs(installProcessPromise, parentRef);
+    await installProcessPromise;
 
-            if (error.message.includes(`Port ${port} is already in use`)) {
-              parentRef.send({
-                type: "spawnRuntime.error.port-taken",
-                value: {
-                  command: error.command,
-                  message: error.message,
-                },
-              });
-            } else if (error.exitCode === 143) {
-              // Terminated by signal
-              parentRef.send({
-                type: "spawnRuntime.exited",
-                value: { exitCode: error.exitCode },
-              });
-            } else {
-              parentRef.send({
-                type: "spawnRuntime.error.unknown",
-                value: {
-                  command: error.command,
-                  message: error.message,
-                },
-              });
-            }
-          } else {
+    // Use detect to check if port is actually available and get alternative if needed
+    const detectedPort = await detect(port);
+    if (detectedPort !== port) {
+      // Release the reserved port and reserve the detected one
+      releasePort(port);
+      port = detectedPort;
+      reservePort(port);
+    }
+
+    const scriptName = "dev";
+
+    let pkg: NormalizedPackageJson;
+    try {
+      pkg = await readPackage({ cwd: appConfig.appDir });
+    } catch (error) {
+      const packageJsonError = new Error("Unknown error reading package.json", {
+        cause: error instanceof Error ? error : new Error(String(error)),
+      });
+      appConfig.workspaceConfig.captureException(packageJsonError, {
+        scopes: ["workspace"],
+      });
+      parentRef.send({
+        isRetryable: false,
+        type: "spawnRuntime.error.package-json",
+        value: { error: packageJsonError },
+      });
+      return;
+    }
+
+    const script = pkg.scripts?.[scriptName];
+    if (!script) {
+      const error = new Error(`No script found: ${scriptName}`);
+      appConfig.workspaceConfig.captureException(error, {
+        scopes: ["workspace"],
+      });
+      parentRef.send({
+        isRetryable: false,
+        type: "spawnRuntime.error.package-json",
+        value: { error },
+      });
+      return;
+    }
+    const [commandName] = parseCommandString(script);
+    if (commandName !== "vite") {
+      const error = new Error(`Unsupported script: ${scriptName}`);
+      appConfig.workspaceConfig.captureException(error, {
+        scopes: ["workspace"],
+      });
+      parentRef.send({
+        isRetryable: false,
+        type: "spawnRuntime.error.unsupported-script",
+        value: { error },
+      });
+      return;
+    }
+
+    const exists = await fs
+      .access(appConfig.appDir)
+      .then(() => true)
+      .catch(() => false);
+    if (!exists) {
+      const error = new Error(
+        `App directory does not exist: ${appConfig.appDir}`,
+      );
+      appConfig.workspaceConfig.captureException(error, {
+        scopes: ["workspace"],
+      });
+      parentRef.send({
+        isRetryable: false,
+        type: "spawnRuntime.error.app-dir-does-not-exist",
+        value: { error },
+      });
+      return;
+    }
+
+    const providerEnv = envForProviders({
+      providers: appConfig.workspaceConfig.getAIProviders(),
+      workspaceServerURL: getWorkspaceServerURL(),
+    });
+
+    const signal = AbortSignal.any([
+      abortController.signal,
+      timeout.controller.signal,
+    ]);
+
+    parentRef.send({
+      type: "spawnRuntime.log",
+      value: { message: `$ pnpm run ${script}`, type: "normal" },
+    });
+
+    timeout.start();
+    const result = await runPackageJsonScript({
+      cwd: appConfig.appDir,
+      script,
+      scriptOptions: {
+        env: {
+          ...providerEnv,
+          QUESTS_INSIDE_STUDIO: "true", // Used by apps to detect if they are running inside Studio
+        },
+        port,
+      },
+      signal,
+    });
+    if (result.isErr()) {
+      // Happens for immediate errors
+      appConfig.workspaceConfig.captureException(result.error, {
+        scopes: ["workspace"],
+      });
+      parentRef.send({
+        isRetryable: true,
+        type: "spawnRuntime.error.unknown",
+        value: {
+          error: result.error,
+        },
+      });
+      return;
+    }
+    const processPromise = result.value;
+    sendProcessLogs(processPromise, parentRef);
+
+    let shouldCheckServer = true;
+    const checkServer = async () => {
+      if (signal.aborted) {
+        const timeoutError = new Error(
+          "Timed out while waiting for server to start",
+        );
+        appConfig.workspaceConfig.captureException(timeoutError, {
+          scopes: ["workspace"],
+        });
+        parentRef.send({
+          isRetryable: true,
+          type: "spawnRuntime.error.timeout",
+          value: { error: timeoutError },
+        });
+        return;
+      }
+
+      if (!shouldCheckServer) {
+        return;
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      if (await isLocalServerRunning(port)) {
+        shouldCheckServer = false;
+        timeout.cancel();
+        parentRef.send({ type: "spawnRuntime.started", value: { port } });
+        return;
+      }
+      await checkServer();
+    };
+
+    // Must abort check server if the process promise rejects because it
+    // means the server is not running and we could accidentally check
+    // another server and say it's running
+    processPromise.catch(() => (shouldCheckServer = false));
+
+    // Ensures we catch errors from the process promise
+    await Promise.all([checkServer(), processPromise]);
+  }
+
+  main()
+    .catch((error: unknown) => {
+      if (error instanceof ExecaError) {
+        if (error.failed) {
+          if (error.cause instanceof TimeoutError) {
+            const timeoutError = new Error(
+              `Command ${error.command} timed out: ${error.cause.message}`,
+            );
+            appConfig.workspaceConfig.captureException(timeoutError, {
+              scopes: ["workspace"],
+            });
+            parentRef.send({
+              isRetryable: true,
+              type: "spawnRuntime.error.timeout",
+              value: {
+                error: timeoutError,
+              },
+            });
+          }
+          if (error.isCanceled) {
+            // Canceled by us, so we don't need to send anything
+            return;
+          }
+
+          if (error.message.includes(`Port ${port} is already in use`)) {
+            const portTakenError = new Error(
+              `Port ${port} is already in use: ${error.message}`,
+            );
+            appConfig.workspaceConfig.captureException(error, {
+              scopes: ["workspace"],
+            });
+            parentRef.send({
+              isRetryable: true,
+              type: "spawnRuntime.error.port-taken",
+              value: {
+                error: portTakenError,
+              },
+            });
+          } else if (error.exitCode === 143) {
+            // Terminated by signal
             parentRef.send({
               type: "spawnRuntime.exited",
               value: { exitCode: error.exitCode },
             });
+          } else {
+            const unknownError = new Error(
+              `Unknown error for command ${error.command}: ${error.message}`,
+            );
+            parentRef.send({
+              isRetryable: true,
+              type: "spawnRuntime.error.unknown",
+              value: {
+                error: unknownError,
+              },
+            });
           }
         } else {
           parentRef.send({
-            type: "spawnRuntime.error.unknown",
-            value: {
-              message: error instanceof Error ? error.message : "Unknown error",
-            },
+            type: "spawnRuntime.exited",
+            value: { exitCode: error.exitCode },
           });
         }
-      })
-      .finally(() => {
-        releasePort(port);
-        timeout.cancel();
-      });
-    return () => {
+      } else {
+        const unknownError = new Error(
+          error instanceof Error ? error.message : "Unknown error",
+        );
+        appConfig.workspaceConfig.captureException(unknownError, {
+          scopes: ["workspace"],
+        });
+        parentRef.send({
+          isRetryable: true,
+          type: "spawnRuntime.error.unknown",
+          value: {
+            error: unknownError,
+          },
+        });
+      }
+    })
+    .finally(() => {
       releasePort(port);
       timeout.cancel();
-      abortController.abort();
-    };
-  },
-);
+    });
+  return () => {
+    releasePort(port);
+    timeout.cancel();
+    abortController.abort();
+  };
+});
 
 export type SpawnRuntimeRef = ActorRefFrom<typeof spawnRuntimeLogic>;

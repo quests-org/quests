@@ -131,9 +131,6 @@ export function createWorkspaceActor() {
         : // Uncomment to test built shim
           // path.resolve(import.meta.dirname, "../../../../packages/shim-client/dist"),
           "dev-server",
-      shimServerJSPath: app.isPackaged
-        ? path.join(process.resourcesPath, "shim-server/index.cjs")
-        : path.resolve("../../packages/shim-server/dist/index.cjs"),
       trashItem: (pathToTrash) => shell.trashItem(pathToTrash),
     },
     inspect(event) {

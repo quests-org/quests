@@ -18,11 +18,13 @@ export function AppIFrame({
   className,
   clientLogsAtom,
   iframeRef,
+  onOpenConsole,
 }: {
   app: WorkspaceApp;
   className?: string;
   clientLogsAtom: ReturnType<typeof atom<ClientLogLine[]>>;
   iframeRef?: React.RefObject<HTMLIFrameElement | null>;
+  onOpenConsole?: () => void;
 }) {
   const [coverState, setCoverState] = useState<
     "dismissed" | "hidden" | "hiding" | "visible"
@@ -72,6 +74,10 @@ export function AppIFrame({
             ]);
             break;
           }
+          case "open-console": {
+            onOpenConsole?.();
+            break;
+          }
           case "will-reload": {
             setClientLogs([]);
             break;
@@ -84,7 +90,7 @@ export function AppIFrame({
     return () => {
       window.removeEventListener("message", handleMessage);
     };
-  }, [setClientLogs, iframeRef, app.urls.localhost]);
+  }, [setClientLogs, iframeRef, app.urls.localhost, onOpenConsole]);
 
   // Keep cover visible briefly after session ends to prevent modal being
   // dismissed right before the app reboots

@@ -19,6 +19,9 @@ export const ShimIFrameOutMessageSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("will-reload"),
   }),
+  z.object({
+    type: z.literal("open-console"),
+  }),
 ]);
 
 export type ConsoleLogType = z.output<typeof ConsoleLogTypeSchema>;

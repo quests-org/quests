@@ -4,8 +4,7 @@
       "configurations": [
         "Debug Studio Main Process",
         "Debug Studio Renderer Process",
-        "Dev Shim Client",
-        "Build Shim Server"
+        "Dev Shim Client"
       ],
       "name": "🐛 Studio",
       "presentation": {
@@ -14,11 +13,7 @@
       "stopAll": true
     },
     {
-      "configurations": [
-        "Dev Studio Main Process",
-        "Dev Shim Client",
-        "Build Shim Server"
-      ],
+      "configurations": ["Dev Studio Main Process", "Dev Shim Client"],
       "name": "🛠️ Studio",
       "presentation": {
         "order": 2
@@ -26,11 +21,7 @@
       "stopAll": true
     },
     {
-      "configurations": [
-        "Debug Workspace CLI",
-        "Dev Shim Client",
-        "Build Shim Server"
-      ],
+      "configurations": ["Debug Workspace CLI", "Dev Shim Client"],
       "name": "🐛 Workspace CLI",
       "presentation": {
         "order": 3
@@ -38,11 +29,7 @@
       "stopAll": true
     },
     {
-      "configurations": [
-        "Debug Workspace CLI Watch Mode",
-        "Dev Shim Client",
-        "Build Shim Server"
-      ],
+      "configurations": ["Debug Workspace CLI Watch Mode", "Dev Shim Client"],
       "name": "🐛 Workspace CLI Watch Mode",
       "presentation": {
         "order": 4
@@ -53,8 +40,7 @@
       "configurations": [
         "Debug Studio Main Process Fresh",
         "Debug Studio Renderer Process",
-        "Dev Shim Client",
-        "Build Shim Server"
+        "Dev Shim Client"
       ],
       "name": "🐛 Studio Fresh",
       "presentation": {
@@ -163,15 +149,6 @@
         "<node_internals>/**",
         "${workspaceFolder}/node_modules/**"
       ],
-      "type": "node"
-    },
-    {
-      "cwd": "${workspaceFolder}/packages/shim-server",
-      "internalConsoleOptions": "neverOpen",
-      "name": "Build Shim Server",
-      "request": "launch",
-      "runtimeArgs": ["run", "build"],
-      "runtimeExecutable": "npm",
       "type": "node"
     },
     {

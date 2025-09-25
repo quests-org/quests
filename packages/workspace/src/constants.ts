@@ -1,5 +1,4 @@
 export const APP_PRIVATE_FOLDER = ".quests";
-export const APP_EVENTS_LOG_NAME = "app-events.ndjson";
 export const QUEST_MANIFEST_FILE_NAME = "quests.json";
 export const WORKSPACE_FOLDER = "workspace";
 export const PREVIEWS_FOLDER = "previews";

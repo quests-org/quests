@@ -3,7 +3,7 @@ import { isEqual } from "radashi";
 import { ulid } from "ulid";
 import { z } from "zod";
 
-import { LogEntrySchema } from "../../machines/runtime";
+import { RuntimeLogEntrySchema } from "../../machines/runtime";
 import { AppSubdomainSchema } from "../../schemas/subdomains";
 import { base } from "../base";
 import { publisher } from "../publisher";
@@ -38,6 +38,10 @@ const clearLogs = base
     }
   });
 
+const RuntimeLogEntrySchemaWithTruncation = RuntimeLogEntrySchema.extend({
+  type: z.enum(["error", "normal", "truncation"]),
+});
+
 const logList = base
   .input(
     z.object({
@@ -45,7 +49,7 @@ const logList = base
       subdomain: AppSubdomainSchema,
     }),
   )
-  .output(LogEntrySchema.array())
+  .output(RuntimeLogEntrySchemaWithTruncation.array())
   .handler(({ context, input }) => {
     const snapshot = context.workspaceRef.getSnapshot();
     const runtimeRef = snapshot.context.runtimeRefs.get(input.subdomain);
@@ -81,7 +85,7 @@ const logLiveList = base
       subdomain: AppSubdomainSchema,
     }),
   )
-  .output(eventIterator(LogEntrySchema.array()))
+  .output(eventIterator(RuntimeLogEntrySchemaWithTruncation.array()))
   .handler(async function* ({ context, input, signal }) {
     let previousLogs = yield call(logList, input, { context, signal });
 

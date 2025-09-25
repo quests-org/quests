@@ -18,27 +18,14 @@ style.textContent = `
     bottom: 0;
     position: fixed;
     left: 0;
-  }
-  
-  .quests-iframe--bottom {
-    display: block;
-    height: 20dvh;
-    width: 100%;
-    border-radius: 0;
-  }
-  
-  .quests-iframe--corner {
-    display: block;
-    height: 4rem;
-    width: 4rem;
-    border-radius: 2rem;
-  }
-  
-  .quests-iframe--full {
-    display: block;
     height: 100%;
     width: 100%;
     border-radius: 0;
+    display: none;
+  }
+  
+  .quests-iframe--visible {
+    display: block;
   }
 `;
 document.head.append(style);
@@ -178,17 +165,23 @@ window.addEventListener("message", (event) => {
   if (event.source === iframe.contentWindow) {
     const message = event.data as IframeMessage;
 
-    if (message.type === "display-mode") {
-      iframe.classList.remove(
-        "quests-iframe--bottom",
-        "quests-iframe--corner",
-        "quests-iframe--full",
-      );
-      iframe.classList.add(`quests-iframe--${message.value}`);
+    if (message.type === "app-status") {
+      if (message.value === "ready") {
+        iframe.classList.remove("quests-iframe--visible");
+      } else {
+        iframe.classList.add("quests-iframe--visible");
+      }
     }
 
     if (message.type === "reload-window") {
       window.location.reload();
+    }
+
+    if (message.type === "open-console") {
+      const outMessage: ShimIFrameOutMessage = {
+        type: "open-console",
+      };
+      window.parent.postMessage(outMessage, "*");
     }
 
     for (const handler of messageHandlers) {
@@ -224,5 +217,5 @@ if (isFallbackPage) {
 }
 
 iframe.src = iframeUrl.toString();
-iframe.className = "quests-iframe quests-iframe--full";
+iframe.className = "quests-iframe";
 document.body.append(iframe);

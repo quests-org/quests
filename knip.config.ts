@@ -50,7 +50,6 @@ const config: KnipConfig = {
     "packages/shim-client": {
       entry: ["src/client/index.ts", "src/iframe/index.tsx"],
     },
-    "packages/shim-server": {},
     "packages/typescript-config": {},
     "packages/workspace": {
       entry: ["__mocks__/*"],

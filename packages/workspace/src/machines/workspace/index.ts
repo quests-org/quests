@@ -45,18 +45,11 @@ import { type AppSubdomain } from "../../schemas/subdomains";
 import { type RunShellCommand } from "../../tools/types";
 import { type WorkspaceConfig } from "../../types";
 import { type ToolCallUpdate } from "../agent";
-import { appEventMachine, type AppEventParentEvent } from "../app-event";
 import { runtimeMachine } from "../runtime";
 import { sessionMachine, type SessionMachineParentEvent } from "../session";
 import { type WorkspaceContext } from "./types";
 
-const KNOWN_SENTRY_SDK_NAMES = [
-  "sentry.javascript.node",
-  "sentry.javascript.browser",
-] as const;
-
 export type WorkspaceEvent =
-  | AppEventParentEvent
   | CheckoutVersionParentEvent
   | CreatePreviewParentEvent
   | SessionMachineParentEvent
@@ -124,27 +117,8 @@ export type WorkspaceEvent =
       };
     };
 
-type KnownSentrySdkName = (typeof KNOWN_SENTRY_SDK_NAMES)[number];
-
-function isKnownSentrySdkName(sdkName: string): sdkName is KnownSentrySdkName {
-  return KNOWN_SENTRY_SDK_NAMES.includes(sdkName as KnownSentrySdkName);
-}
-
 export const workspaceMachine = setup({
   actions: {
-    appendLog: (
-      { context },
-      { message, subdomain }: { message: string; subdomain: AppSubdomain },
-    ) => {
-      context.appEventRef.send({
-        type: "appendLog",
-        value: {
-          message,
-          subdomain,
-        },
-      });
-    },
-
     assignEventError: createAssignEventError(),
 
     clearSessionRefsBySubdomain: assign(
@@ -190,8 +164,6 @@ export const workspaceMachine = setup({
   },
 
   actors: {
-    appEventMachine,
-
     checkoutVersionLogic,
 
     createPreviewLogic,
@@ -217,7 +189,6 @@ export const workspaceMachine = setup({
       runPackageJsonScript: WorkspaceContext["runPackageJsonScript"];
       runShellCommand: RunShellCommand;
       shimClientDir: string;
-      shimServerJSPath: string;
       trashItem: (path: AbsolutePath) => Promise<void>;
     },
     output: {} as { error?: unknown },
@@ -241,12 +212,6 @@ export const workspaceMachine = setup({
       trashItem: input.trashItem,
     };
     return {
-      appEventRef: spawn("appEventMachine", {
-        input: {
-          config: workspaceConfig,
-          parentRef: self,
-        },
-      }),
       appsBeingTrashed: [],
       checkoutVersionRefs: new Map(),
       config: workspaceConfig,
@@ -254,7 +219,6 @@ export const workspaceMachine = setup({
       runPackageJsonScript: input.runPackageJsonScript,
       runtimeRefs: new Map(),
       sessionRefsBySubdomain: new Map(),
-      shimServerJSPath: AbsolutePathSchema.parse(input.shimServerJSPath),
       workspaceServerRef: spawn("workspaceServerLogic", {
         input: {
           aiGatewayApp: input.aiGatewayApp,
@@ -522,7 +486,6 @@ export const workspaceMachine = setup({
               input: {
                 appConfig: event.value.appConfig,
                 runPackageJsonScript: context.runPackageJsonScript,
-                shimServerJSPath: context.shimServerJSPath,
               },
             }),
           ),
@@ -619,45 +582,6 @@ export const workspaceMachine = setup({
         }),
       },
     ],
-
-    "workspaceServer.appEvent": {
-      actions: [
-        {
-          params: ({ event }) => {
-            return {
-              message: JSON.stringify(event.value.sentryEvent),
-              subdomain: event.value.subdomain,
-            };
-          },
-          type: "appendLog",
-        },
-        ({ context, event }) => {
-          const runtimeRef = context.runtimeRefs.get(event.value.subdomain);
-          const sentryEvent = event.value.sentryEvent;
-          const sdkName = sentryEvent.sdk?.name;
-          if (
-            runtimeRef &&
-            (sentryEvent.level === "error" || sentryEvent.level === "fatal")
-          ) {
-            invariant(sdkName, "No SDK name found in event");
-            invariant(
-              isKnownSentrySdkName(sdkName),
-              `Unknown Sentry SDK name: ${sdkName}`,
-            );
-            runtimeRef.send({
-              type: "saveError",
-              value: {
-                createdAt: Date.now(),
-                message:
-                  event.value.sentryEvent.exception?.values?.[0]?.value || "",
-                type:
-                  sdkName === "sentry.javascript.node" ? "runtime" : "client",
-              },
-            });
-          }
-        },
-      ],
-    },
 
     "workspaceServer.error": {
       actions: log(({ event }) => {

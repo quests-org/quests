@@ -5,10 +5,7 @@ export type IframeMessage =
       type: "app-status";
       value: HeartbeatResponse["status"];
     }
-  | {
-      type: "display-mode";
-      value: "bottom" | "corner" | "full";
-    }
+  | { type: "open-console" }
   | { type: "reload-window" };
 
 export type IframeMessageHandler = (message: IframeMessage) => void;

@@ -71,7 +71,7 @@ export function AppToolbar({
   const clientLogs = useAtomValue(clientLogsAtom);
 
   useEffect(() => {
-    if (!isConsoleOpen && (runtimeLogs.length > 0 || clientLogs.length > 0)) {
+    if (isConsoleOpen && (runtimeLogs.length > 0 || clientLogs.length > 0)) {
       const latestServerLog = runtimeLogs.at(-1);
       const latestClientLog = clientLogs.at(-1);
 
@@ -102,7 +102,7 @@ export function AppToolbar({
   const badgeStatus = useMemo((): "error" | "new" | "none" => {
     if (
       (runtimeLogs.length === 0 && clientLogs.length === 0) ||
-      !isConsoleOpen
+      isConsoleOpen
     ) {
       return "none";
     }
@@ -239,7 +239,7 @@ export function AppToolbar({
                 disabled={disabled}
                 onClick={handleConsoleToggleWithTracking}
                 size="icon"
-                variant={isConsoleOpen ? "ghost" : "secondary"}
+                variant="ghost"
               >
                 <PanelBottom className="size-4" />
               </Button>

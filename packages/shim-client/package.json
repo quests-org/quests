@@ -20,7 +20,6 @@
     "@quests/shared": "workspace:*",
     "@quests/workspace": "workspace:*",
     "@tailwindcss/postcss": "^4.1.11",
-    "date-fns": "^4.1.0",
     "lucide-react": "^0.456.0",
     "react": "catalog:",
     "react-dom": "catalog:",

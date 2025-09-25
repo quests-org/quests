@@ -56,10 +56,6 @@ const config: Configuration = {
       to: "registry/apps",
     },
     {
-      from: "../../packages/shim-server/dist",
-      to: "shim-server",
-    },
-    {
       from: "../../packages/shim-client/dist",
       to: "shim-client",
     },
