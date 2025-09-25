@@ -10,6 +10,7 @@ import { type WorkspaceConfig } from "../../types";
 import { DEFAULT_APPS_SERVER_PORT } from "./constants";
 import { allProxyRoute } from "./routes/all-proxy";
 import { heartbeatRoute } from "./routes/heartbeat";
+import { redirectRoute } from "./routes/redirect";
 import { shimIFrameRoute } from "./routes/shim-iframe";
 import { shimScriptRoute } from "./routes/shim-script";
 import {
@@ -59,6 +60,7 @@ export const workspaceServerLogic = fromCallback<
   app.route("/", shimScriptRoute);
   app.route("/", shimIFrameRoute);
   app.route("/", heartbeatRoute);
+  app.route("/", redirectRoute);
   // Note: Must be after all app-specific routes
   app.route("/", allProxyRoute);
   if (input.aiGatewayApp) {

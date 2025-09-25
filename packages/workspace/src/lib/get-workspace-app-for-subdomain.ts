@@ -16,7 +16,7 @@ import { type WorkspaceConfig } from "../types";
 import { createAppConfig } from "./app-config/create";
 import { getAppDirTimestamps } from "./get-app-dir-timestamps";
 import { projectSubdomainForSubdomain } from "./project-subdomain-for-subdomain";
-import { localhostUrl, loopbackUrl } from "./url-for-subdomain";
+import { urlsForSubdomain } from "./url-for-subdomain";
 
 type GetWorkspaceAppResult<T extends AppSubdomain> = T extends PreviewSubdomain
   ? WorkspaceAppPreview
@@ -42,10 +42,7 @@ export async function getWorkspaceAppForSubdomain<T extends AppSubdomain>(
     title: appConfig.folderName,
     type: appConfig.type,
     updatedAt: timestamps.updatedAt,
-    urls: {
-      localhost: localhostUrl(appConfig.subdomain),
-      loopback: loopbackUrl(appConfig.subdomain),
-    },
+    urls: urlsForSubdomain(appConfig.subdomain),
   };
 
   if (appConfig.type === "version" || appConfig.type === "sandbox") {
@@ -84,9 +81,6 @@ export async function getWorkspaceAppForSubdomain<T extends AppSubdomain>(
     subdomain: appConfig.subdomain,
     title: appConfig.folderName,
     type: appConfig.type,
-    urls: {
-      localhost: localhostUrl(appConfig.subdomain),
-      loopback: loopbackUrl(appConfig.subdomain),
-    },
+    urls: urlsForSubdomain(appConfig.subdomain),
   } satisfies WorkspaceAppProject as unknown as GetWorkspaceAppResult<T>;
 }

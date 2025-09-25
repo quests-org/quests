@@ -59,7 +59,7 @@ export function AppToolbar({
   );
 
   const handleOpenExternalClick = () => {
-    openExternalLinkMutation.mutate({ url: app.urls.localhost });
+    openExternalLinkMutation.mutate({ url: app.urls.localRedirect });
   };
 
   const { data: runtimeLogs = [] } = useQuery(

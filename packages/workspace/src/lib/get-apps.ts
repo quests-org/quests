@@ -39,7 +39,7 @@ import {
 } from "./is-app";
 import { projectSubdomainForSubdomain } from "./project-subdomain-for-subdomain";
 import { getQuestManifest } from "./quest-manifest";
-import { localhostUrl, loopbackUrl } from "./url-for-subdomain";
+import { urlsForSubdomain } from "./url-for-subdomain";
 
 // Type mapping for generic subdomain to workspace app type conversion
 type GetAppResult<T extends AppSubdomain> = T extends PreviewSubdomain
@@ -315,10 +315,7 @@ async function workspaceApp({
       subdomain: rawSubdomain.data,
       title,
       type: "project",
-      urls: {
-        localhost: localhostUrl(rawSubdomain.data),
-        loopback: loopbackUrl(rawSubdomain.data),
-      },
+      urls: urlsForSubdomain(rawSubdomain.data),
     };
     return ok(projectApp);
   }
@@ -339,10 +336,7 @@ async function workspaceApp({
       subdomain: rawSubdomain.data,
       title,
       type: "preview",
-      urls: {
-        localhost: localhostUrl(rawSubdomain.data),
-        loopback: loopbackUrl(rawSubdomain.data),
-      },
+      urls: urlsForSubdomain(rawSubdomain.data),
     };
     return ok(previewApp);
   }
@@ -362,10 +356,7 @@ async function workspaceApp({
       subdomain: sandboxSubdomainResult.data,
       title,
       type: "sandbox",
-      urls: {
-        localhost: localhostUrl(sandboxSubdomainResult.data),
-        loopback: loopbackUrl(sandboxSubdomainResult.data),
-      },
+      urls: urlsForSubdomain(sandboxSubdomainResult.data),
     };
     return ok(sandboxApp);
   }
@@ -385,10 +376,7 @@ async function workspaceApp({
       subdomain: versionSubdomainResult.data,
       title,
       type: "version",
-      urls: {
-        localhost: localhostUrl(versionSubdomainResult.data),
-        loopback: loopbackUrl(versionSubdomainResult.data),
-      },
+      urls: urlsForSubdomain(versionSubdomainResult.data),
     };
     return ok(versionApp);
   }
@@ -431,10 +419,7 @@ async function workspaceAppForVersion({
     subdomain: versionSubdomainResult.data,
     title: rawFolderName.value, // Version apps use folder name as title since they don't have physical directories
     type: "version",
-    urls: {
-      localhost: localhostUrl(versionSubdomainResult.data),
-      loopback: loopbackUrl(versionSubdomainResult.data),
-    },
+    urls: urlsForSubdomain(versionSubdomainResult.data),
   };
 
   return ok(versionApp);
