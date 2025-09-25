@@ -220,7 +220,7 @@ function ConsoleRow({
         styles.row,
       )}
     >
-      <div className="flex items-start gap-1">
+      <div className="flex items-start gap-1.5">
         <Badge
           className={cn(
             "text-[10px] min-w-[52px] px-1 py-0 h-4 flex items-center justify-center shrink-0 mt-0.5",
