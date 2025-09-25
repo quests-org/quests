@@ -28,7 +28,6 @@ export type SpawnRuntimeEvent =
   | SpawnRuntimeEventError
   | {
       type: "spawnRuntime.exited";
-      value: { exitCode?: number };
     }
   | {
       type: "spawnRuntime.log";
@@ -167,9 +166,6 @@ export const spawnRuntimeLogic = fromCallback<
           }),
         },
       });
-      appConfig.workspaceConfig.captureException(installResult.error, {
-        scopes: ["workspace"],
-      });
       return;
     }
 
@@ -195,9 +191,6 @@ export const spawnRuntimeLogic = fromCallback<
       const packageJsonError = new Error("Unknown error reading package.json", {
         cause: error instanceof Error ? error : new Error(String(error)),
       });
-      appConfig.workspaceConfig.captureException(packageJsonError, {
-        scopes: ["workspace"],
-      });
       parentRef.send({
         isRetryable: false,
         type: "spawnRuntime.error.package-json",
@@ -209,9 +202,6 @@ export const spawnRuntimeLogic = fromCallback<
     const script = pkg.scripts?.[scriptName];
     if (!script) {
       const error = new Error(`No script found: ${scriptName}`);
-      appConfig.workspaceConfig.captureException(error, {
-        scopes: ["workspace"],
-      });
       parentRef.send({
         isRetryable: false,
         type: "spawnRuntime.error.package-json",
@@ -222,9 +212,6 @@ export const spawnRuntimeLogic = fromCallback<
     const [commandName] = parseCommandString(script);
     if (commandName !== "vite") {
       const error = new Error(`Unsupported script: ${scriptName}`);
-      appConfig.workspaceConfig.captureException(error, {
-        scopes: ["workspace"],
-      });
       parentRef.send({
         isRetryable: false,
         type: "spawnRuntime.error.unsupported-script",
@@ -241,9 +228,6 @@ export const spawnRuntimeLogic = fromCallback<
       const error = new Error(
         `App directory does not exist: ${appConfig.appDir}`,
       );
-      appConfig.workspaceConfig.captureException(error, {
-        scopes: ["workspace"],
-      });
       parentRef.send({
         isRetryable: false,
         type: "spawnRuntime.error.app-dir-does-not-exist",
@@ -282,9 +266,6 @@ export const spawnRuntimeLogic = fromCallback<
     });
     if (result.isErr()) {
       // Happens for immediate errors
-      appConfig.workspaceConfig.captureException(result.error, {
-        scopes: ["workspace"],
-      });
       parentRef.send({
         isRetryable: true,
         type: "spawnRuntime.error.unknown",
@@ -303,9 +284,6 @@ export const spawnRuntimeLogic = fromCallback<
         const timeoutError = new Error(
           "Timed out while waiting for server to start",
         );
-        appConfig.workspaceConfig.captureException(timeoutError, {
-          scopes: ["workspace"],
-        });
         parentRef.send({
           isRetryable: true,
           type: "spawnRuntime.error.timeout",
@@ -345,9 +323,6 @@ export const spawnRuntimeLogic = fromCallback<
             const timeoutError = new Error(
               `Command ${error.command} timed out: ${error.cause.message}`,
             );
-            appConfig.workspaceConfig.captureException(timeoutError, {
-              scopes: ["workspace"],
-            });
             parentRef.send({
               isRetryable: true,
               type: "spawnRuntime.error.timeout",
@@ -365,9 +340,6 @@ export const spawnRuntimeLogic = fromCallback<
             const portTakenError = new Error(
               `Port ${port} is already in use: ${error.message}`,
             );
-            appConfig.workspaceConfig.captureException(error, {
-              scopes: ["workspace"],
-            });
             parentRef.send({
               isRetryable: true,
               type: "spawnRuntime.error.port-taken",
@@ -377,10 +349,7 @@ export const spawnRuntimeLogic = fromCallback<
             });
           } else if (error.exitCode === 143) {
             // Terminated by signal
-            parentRef.send({
-              type: "spawnRuntime.exited",
-              value: { exitCode: error.exitCode },
-            });
+            parentRef.send({ type: "spawnRuntime.exited" });
           } else {
             const unknownError = new Error(
               `Unknown error for command ${error.command}: ${error.message}`,
@@ -395,17 +364,15 @@ export const spawnRuntimeLogic = fromCallback<
           }
         } else {
           parentRef.send({
-            type: "spawnRuntime.exited",
-            value: { exitCode: error.exitCode },
+            isRetryable: true,
+            type: "spawnRuntime.error.unknown",
+            value: { error },
           });
         }
       } else {
         const unknownError = new Error(
           error instanceof Error ? error.message : "Unknown error",
         );
-        appConfig.workspaceConfig.captureException(unknownError, {
-          scopes: ["workspace"],
-        });
         parentRef.send({
           isRetryable: true,
           type: "spawnRuntime.error.unknown",

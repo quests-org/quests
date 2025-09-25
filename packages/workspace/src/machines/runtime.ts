@@ -172,6 +172,14 @@ export const runtimeMachine = setup({
           type: "appendErrorToLogs",
         },
         "publishLogs",
+        ({ context, event }) => {
+          context.appConfig.workspaceConfig.captureException(
+            event.value.error,
+            {
+              scopes: ["workspace"],
+            },
+          );
+        },
         raise(({ event }) => {
           return event.isRetryable ? { type: "maybeRetry" } : { type: "fail" };
         }),
