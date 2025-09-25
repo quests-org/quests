@@ -11,9 +11,9 @@ export function App() {
   const [response, setResponse] = useState<HeartbeatResponse | null>(null);
   const previousStatusRef = useRef(response?.status ?? null);
   const retryAttemptsRef = useRef(0);
-  const isFallbackPage = new URLSearchParams(window.location.search).has(
-    "fallback",
-  );
+  const urlParams = new URLSearchParams(window.location.search);
+  const isFallbackPage = urlParams.has("fallback");
+  const isInsideStudio = navigator.userAgent.includes("Electron");
 
   useEffect(() => {
     let eventSource: EventSource | null = null;
@@ -83,7 +83,13 @@ export function App() {
     };
   }, [isFallbackPage]);
 
-  return <Overlay onOpenConsole={handleOpenConsole} response={response} />;
+  return (
+    <Overlay
+      isInsideStudio={isInsideStudio}
+      onOpenConsole={handleOpenConsole}
+      response={response}
+    />
+  );
 }
 
 function handleOpenConsole() {

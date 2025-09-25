@@ -4,11 +4,16 @@ import { FileX, Loader2 } from "lucide-react";
 import { ErrorOverlay } from "./error-overlay";
 
 interface OverlayProps {
+  isInsideStudio: boolean;
   onOpenConsole: () => void;
   response: HeartbeatResponse | null;
 }
 
-export function Overlay({ onOpenConsole, response }: OverlayProps) {
+export function Overlay({
+  isInsideStudio,
+  onOpenConsole,
+  response,
+}: OverlayProps) {
   if (!response || response.status === "ready") {
     return null;
   }
@@ -22,7 +27,12 @@ export function Overlay({ onOpenConsole, response }: OverlayProps) {
   }
 
   if (response.status === "error") {
-    return <ErrorOverlay onOpenConsole={onOpenConsole} />;
+    return (
+      <ErrorOverlay
+        isInsideStudio={isInsideStudio}
+        onOpenConsole={onOpenConsole}
+      />
+    );
   }
 
   if (response.status === "not-found" || response.status === "not-runnable") {
