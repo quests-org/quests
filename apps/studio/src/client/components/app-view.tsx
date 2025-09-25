@@ -61,7 +61,10 @@ export function AppView({
       <div className="flex-1 flex flex-col relative overflow-hidden">
         <AppIFrame
           app={app}
-          className={cn("flex-1 min-h-0", isConsoleOpen ? "rounded-b-lg" : "")}
+          className={cn(
+            "flex-1 min-h-0",
+            isConsoleOpen ? "rounded-b-none" : "rounded-b-lg",
+          )}
           clientLogsAtom={clientLogsAtom}
           iframeRef={iframeRef}
           onOpenConsole={() => {

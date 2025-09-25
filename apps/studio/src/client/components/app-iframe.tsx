@@ -1,13 +1,16 @@
 import { ShimIFrameOutMessageSchema } from "@quests/shared/shim";
 import { type WorkspaceApp } from "@quests/workspace/client";
+import { useMutation } from "@tanstack/react-query";
 import { type atom, useSetAtom } from "jotai";
-import { XIcon } from "lucide-react";
+import { Circle, Loader2, Square, XIcon } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { ulid } from "ulid";
 
 import { useAppState } from "../hooks/use-app-state";
 import { cn } from "../lib/utils";
+import { rpcClient } from "../rpc/client";
 import { type ClientLogLine } from "./console";
+import { Button } from "./ui/button";
 
 // Filter out Vite websocket connection messages, which are created
 // due to our current lack of websocket support.
@@ -35,6 +38,10 @@ export function AppIFrame({
   const { data: appState } = useAppState({
     subdomain: app.subdomain,
   });
+
+  const stopSessions = useMutation(
+    rpcClient.workspace.session.stop.mutationOptions(),
+  );
 
   const hasRunningSession = (appState?.sessionActors ?? []).some((session) =>
     session.tags.includes("agent.running"),
@@ -118,7 +125,7 @@ export function AppIFrame({
   const shouldShowCover = coverState === "visible" || coverState === "hiding";
 
   return (
-    <div className={cn("relative size-full", className)}>
+    <div className={cn("relative size-full overflow-hidden", className)}>
       <iframe
         allow="accelerometer; autoplay; camera; clipboard-read; clipboard-write; display-capture; encrypted-media; fullscreen; geolocation; gyroscope; microphone; midi; payment; usb; xr-spatial-tracking"
         className="size-full bg-white"
@@ -130,8 +137,8 @@ export function AppIFrame({
       />
 
       {shouldShowCover && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-40 rounded-[inherit]">
-          <div className="bg-background fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border p-6 shadow-lg sm:max-w-lg">
+        <div className="absolute inset-0 flex justify-center pt-8 bg-black/60 backdrop-blur-xs z-40 rounded-[inherit]">
+          <div className="bg-background relative z-50 grid w-full max-w-[calc(100%-2rem)] gap-4 rounded-lg border p-6 shadow-lg sm:max-w-sm h-fit mx-4">
             <button
               className="ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
               onClick={() => {
@@ -143,15 +150,29 @@ export function AppIFrame({
               <span className="sr-only">Close</span>
             </button>
 
-            <div className="flex flex-col space-y-1.5 text-center sm:text-left">
-              <h3 className="shiny-text text-lg font-semibold leading-none tracking-tight">
-                Working on your app...
-              </h3>
-              <p className="text-muted-foreground text-sm">
-                Changes are being made to your app right now. It may refresh or
-                show errors during this process. Dismiss this if you want to
-                watch.
-              </p>
+            <div className="flex flex-col space-y-4 text-center sm:text-left">
+              <div className="flex items-center gap-2">
+                <Loader2 className="size-4 animate-spin" />
+                <h3 className="shiny-text text-lg font-semibold leading-6 tracking-tight">
+                  Agent is working...
+                </h3>
+              </div>
+
+              <Button
+                className="gap-1.5"
+                disabled={stopSessions.isPending}
+                onClick={() => {
+                  setCoverState("dismissed");
+                  stopSessions.mutate({ subdomain: app.subdomain });
+                }}
+                variant="secondary"
+              >
+                <div className="relative flex items-center justify-center">
+                  <Circle className="size-4 stroke-2 animate-spin" />
+                  <Square className="size-1.5 fill-current absolute inset-0 m-auto" />
+                </div>
+                {stopSessions.isPending ? "Stopping..." : "Stop agent"}
+              </Button>
             </div>
           </div>
         </div>
