@@ -1,4 +1,5 @@
 import { getBackgroundColor } from "@/electron-main/lib/theme-utils";
+import { updateApplicationMenu } from "@/electron-main/menus/application";
 import { is } from "@electron-toolkit/utils";
 import { BrowserWindow, Menu, shell } from "electron";
 import path from "node:path";
@@ -6,6 +7,10 @@ import path from "node:path";
 import { type MainAppPath, mainAppUrl } from "../lib/urls";
 
 let settingsWindow: BrowserWindow | null = null;
+
+export function getSettingsWindow(): BrowserWindow | null {
+  return settingsWindow;
+}
 
 export function openSettingsWindow(
   tab?: "Advanced" | "General" | "Providers",
@@ -43,6 +48,11 @@ export function openSettingsWindow(
 
   settingsWindow.on("closed", () => {
     settingsWindow = null;
+    updateApplicationMenu();
+  });
+
+  settingsWindow.on("focus", () => {
+    updateApplicationMenu();
   });
 
   settingsWindow.setBackgroundColor(getBackgroundColor());

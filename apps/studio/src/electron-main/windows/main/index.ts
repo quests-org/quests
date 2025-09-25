@@ -4,6 +4,7 @@ import {
   getTitleBarOverlay,
 } from "@/electron-main/lib/theme-utils";
 import { mainAppUrl } from "@/electron-main/lib/urls";
+import { updateApplicationMenu } from "@/electron-main/menus/application";
 import { onMainWindowContextMenu } from "@/electron-main/menus/context-menus";
 import { windowStateStore } from "@/electron-main/stores/main-window";
 import { createTabsManager, getTabsManager } from "@/electron-main/tabs";
@@ -61,6 +62,9 @@ export async function createMainWindow() {
 
   mainWindow.on("resize", saveState);
   mainWindow.on("move", saveState);
+  mainWindow.on("focus", () => {
+    updateApplicationMenu();
+  });
   mainWindow.on("ready-to-show", () => {
     const window = getMainWindow();
     if (!window) {
