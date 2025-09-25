@@ -1,6 +1,4 @@
-export const APPS_SERVER_API_PATH = "/_quests";
 export const AI_GATEWAY_API_PATH = "/ai-gateway";
-export const AI_GATEWAY_PATH = `${APPS_SERVER_API_PATH}/ai-gateway`;
 
 export const APP_PROTOCOL = "quests";
 

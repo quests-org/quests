@@ -1,4 +1,3 @@
-import { APPS_SERVER_API_PATH } from "@quests/shared";
 import { Hono } from "hono";
 import { streamSSE } from "hono/streaming";
 import { isEqual } from "radashi";
@@ -16,6 +15,7 @@ import {
 import { projectSubdomainForSubdomain } from "../../../lib/project-subdomain-for-subdomain";
 import { type RuntimeSnapshot } from "../../../machines/runtime";
 import { type AppStatus } from "../../../types";
+import { APPS_SERVER_API_PATH } from "../constants";
 import { type WorkspaceServerEnv } from "../types";
 import { uriDetailsForHost } from "../uri-details-for-host";
 

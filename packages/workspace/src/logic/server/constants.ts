@@ -1,5 +1,4 @@
-import { APPS_SERVER_API_PATH } from "@quests/shared";
-
+export const APPS_SERVER_API_PATH = "/_quests";
 export const SHIM_IFRAME_BASE_PATH = `${APPS_SERVER_API_PATH}/shim-iframe`;
 export const SHIM_SCRIPT_PATH = `${SHIM_IFRAME_BASE_PATH}/src/client/index.js`;
 export const SHIM_DEV_HOST = "http://localhost:9150";
