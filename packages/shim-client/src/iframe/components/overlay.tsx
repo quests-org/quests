@@ -15,7 +15,7 @@ export function Overlay({ onOpenConsole, response }: OverlayProps) {
 
   if (response.status === "loading") {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/60 backdrop-blur-sm">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/60">
         <Loader2 className="size-8 animate-spin text-foreground" />
       </div>
     );
@@ -27,7 +27,7 @@ export function Overlay({ onOpenConsole, response }: OverlayProps) {
 
   if (response.status === "not-found" || response.status === "not-runnable") {
     return (
-      <div className="fixed inset-0 flex items-center justify-center bg-background/60 backdrop-blur-sm">
+      <div className="fixed inset-0 flex items-center justify-center bg-background/60">
         <div className="relative max-w-2xl rounded-lg bg-card border p-8 shadow-lg">
           <div className="mb-4 flex items-center">
             <FileX className="mr-3 size-6 text-muted-foreground" />
@@ -69,7 +69,7 @@ export function Overlay({ onOpenConsole, response }: OverlayProps) {
 
   if (response.status === "stopped") {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/60 backdrop-blur-sm">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/60">
         <div className="rounded-lg bg-card border p-6 text-card-foreground shadow-lg">
           <div className="text-center">
             <div className="mb-2 text-lg font-semibold">Server Stopped</div>
