@@ -2,6 +2,7 @@ import { ulid } from "ulid";
 import {
   type ActorRefFrom,
   assign,
+  enqueueActions,
   log,
   raise,
   setup,
@@ -47,7 +48,9 @@ function errorToString(error: Error): string {
     parts.push(`${error.name}:`);
   }
 
-  if (error.message) {
+  if (error.stack && error.stack !== error.message) {
+    parts.push(error.stack);
+  } else if (error.message) {
     parts.push(error.message);
   }
 
@@ -59,10 +62,6 @@ function errorToString(error: Error): string {
           String(error.cause);
 
     parts.push(`(caused by: ${causeStr})`);
-  }
-
-  if (error.stack && error.stack !== error.message) {
-    parts.push(`\nStack: ${error.stack}`);
   }
 
   return parts.join(" ");
@@ -167,11 +166,17 @@ export const runtimeMachine = setup({
     restart: ".Restarting",
     "spawnRuntime.error.*": {
       actions: [
-        {
-          params: ({ event }) => event,
-          type: "appendErrorToLogs",
-        },
-        "publishLogs",
+        enqueueActions(({ enqueue, event }) => {
+          if (event.shouldLog) {
+            enqueue({
+              params: event,
+              type: "appendErrorToLogs",
+            });
+            enqueue({
+              type: "publishLogs",
+            });
+          }
+        }),
         ({ context, event }) => {
           context.appConfig.workspaceConfig.captureException(
             event.value.error,

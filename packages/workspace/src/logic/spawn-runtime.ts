@@ -40,6 +40,7 @@ export type SpawnRuntimeEvent =
 
 interface SpawnRuntimeEventError {
   isRetryable: boolean;
+  shouldLog: boolean;
   type:
     | "spawnRuntime.error.app-dir-does-not-exist"
     | "spawnRuntime.error.install-failed"
@@ -159,6 +160,7 @@ export const spawnRuntimeLogic = fromCallback<
     if (installResult.isErr()) {
       parentRef.send({
         isRetryable: true,
+        shouldLog: true,
         type: "spawnRuntime.error.install-failed",
         value: {
           error: new Error(installResult.error.message, {
@@ -193,6 +195,7 @@ export const spawnRuntimeLogic = fromCallback<
       });
       parentRef.send({
         isRetryable: false,
+        shouldLog: true,
         type: "spawnRuntime.error.package-json",
         value: { error: packageJsonError },
       });
@@ -201,9 +204,12 @@ export const spawnRuntimeLogic = fromCallback<
 
     const script = pkg.scripts?.[scriptName];
     if (!script) {
-      const error = new Error(`No script found: ${scriptName}`);
+      const error = new Error(
+        `No script \`${scriptName}\` found in package.json`,
+      );
       parentRef.send({
         isRetryable: false,
+        shouldLog: true,
         type: "spawnRuntime.error.package-json",
         value: { error },
       });
@@ -211,9 +217,12 @@ export const spawnRuntimeLogic = fromCallback<
     }
     const [commandName] = parseCommandString(script);
     if (commandName !== "vite") {
-      const error = new Error(`Unsupported script: ${scriptName}`);
+      const error = new Error(
+        `Unsupported command \`${commandName ?? "missing"}\` for script \`${scriptName}\` in package.json`,
+      );
       parentRef.send({
         isRetryable: false,
+        shouldLog: true,
         type: "spawnRuntime.error.unsupported-script",
         value: { error },
       });
@@ -230,6 +239,7 @@ export const spawnRuntimeLogic = fromCallback<
       );
       parentRef.send({
         isRetryable: false,
+        shouldLog: true,
         type: "spawnRuntime.error.app-dir-does-not-exist",
         value: { error },
       });
@@ -268,6 +278,7 @@ export const spawnRuntimeLogic = fromCallback<
       // Happens for immediate errors
       parentRef.send({
         isRetryable: true,
+        shouldLog: false,
         type: "spawnRuntime.error.unknown",
         value: {
           error: result.error,
@@ -286,6 +297,7 @@ export const spawnRuntimeLogic = fromCallback<
         );
         parentRef.send({
           isRetryable: true,
+          shouldLog: true,
           type: "spawnRuntime.error.timeout",
           value: { error: timeoutError },
         });
@@ -325,6 +337,7 @@ export const spawnRuntimeLogic = fromCallback<
             );
             parentRef.send({
               isRetryable: true,
+              shouldLog: false,
               type: "spawnRuntime.error.timeout",
               value: {
                 error: timeoutError,
@@ -342,6 +355,7 @@ export const spawnRuntimeLogic = fromCallback<
             );
             parentRef.send({
               isRetryable: true,
+              shouldLog: false,
               type: "spawnRuntime.error.port-taken",
               value: {
                 error: portTakenError,
@@ -356,6 +370,7 @@ export const spawnRuntimeLogic = fromCallback<
             );
             parentRef.send({
               isRetryable: true,
+              shouldLog: false,
               type: "spawnRuntime.error.unknown",
               value: {
                 error: unknownError,
@@ -365,6 +380,7 @@ export const spawnRuntimeLogic = fromCallback<
         } else {
           parentRef.send({
             isRetryable: true,
+            shouldLog: false,
             type: "spawnRuntime.error.unknown",
             value: { error },
           });
@@ -375,6 +391,7 @@ export const spawnRuntimeLogic = fromCallback<
         );
         parentRef.send({
           isRetryable: true,
+          shouldLog: false,
           type: "spawnRuntime.error.unknown",
           value: {
             error: unknownError,
