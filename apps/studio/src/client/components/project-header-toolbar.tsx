@@ -17,8 +17,8 @@ import { useAtomValue } from "jotai";
 import {
   ChevronDown,
   Clipboard,
+  Copy,
   FolderOpenIcon,
-  GitBranch,
   MessageCircle,
   PanelLeftClose,
   Save,
@@ -30,7 +30,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { projectIframeRefAtom } from "../atoms/project";
-import { ForkProjectModal } from "./fork-project-modal";
+import { DuplicateProjectModal } from "./duplicate-project-modal";
 import { RestoreVersionModal } from "./restore-version-modal";
 import { CMD, Cursor, ITerm, MacOSTerminal, VSCode } from "./service-icons";
 import {
@@ -71,7 +71,7 @@ export function ProjectHeaderToolbar({
   const iframeRef = useAtomValue(projectIframeRefAtom);
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
   const [restoreModalOpen, setRestoreModalOpen] = useState(false);
-  const [forkModalOpen, setForkModalOpen] = useState(false);
+  const [duplicateModalOpen, setDuplicateModalOpen] = useState(false);
   const navigate = useNavigate();
 
   const showFileInFolderMutation = useMutation(
@@ -208,6 +208,14 @@ export function ProjectHeaderToolbar({
               <DropdownMenuContent align="end" side="bottom">
                 <DropdownMenuItem
                   onClick={() => {
+                    setDuplicateModalOpen(true);
+                  }}
+                >
+                  <Copy className="h-4 w-4" />
+                  <span>Duplicate</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
                     setSettingsDialogOpen(true);
                   }}
                 >
@@ -264,18 +272,6 @@ export function ProjectHeaderToolbar({
             ) : (
               <div className="flex items-center gap-2">
                 <ToolbarFavoriteAction project={project} />
-                <Button
-                  className="gap-1 h-7"
-                  onClick={() => {
-                    setForkModalOpen(true);
-                  }}
-                  size="sm"
-                  title="Fork this project"
-                  variant="secondary"
-                >
-                  <GitBranch className="h-4 w-4" />
-                  Fork
-                </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button className="gap-1 h-7" size="sm" variant="secondary">
@@ -426,10 +422,10 @@ export function ProjectHeaderToolbar({
         />
       )}
 
-      <ForkProjectModal
-        isOpen={forkModalOpen}
+      <DuplicateProjectModal
+        isOpen={duplicateModalOpen}
         onClose={() => {
-          setForkModalOpen(false);
+          setDuplicateModalOpen(false);
         }}
         projectName={project.title}
         projectSubdomain={project.subdomain}
