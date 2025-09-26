@@ -36,7 +36,7 @@ import { AppStatusIcon } from "./app-status-icon";
 
 interface NavProjectItemProps {
   isFavorites: boolean;
-  onOpenInNewTab: (subdomain: string) => void;
+  onOpenInNewTab: (subdomain: ProjectSubdomain) => void;
   onRemoveFavorite?: (subdomain: ProjectSubdomain) => void;
   project: WorkspaceAppProject;
 }

@@ -2,6 +2,7 @@ import { hasAIProviderAtom } from "@/client/atoms/has-ai-provider";
 import { userAtom } from "@/client/atoms/user";
 import { isFeatureEnabled } from "@/shared/features";
 import { useMutation } from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
 import { useAtom, useAtomValue } from "jotai";
 import { useEffect } from "react";
 import { toast } from "sonner";
@@ -14,7 +15,8 @@ let shownEnabledForAIMessages = false;
 export function useUserSessionNotifications() {
   const [userResult] = useAtom(userAtom);
   const hasAIProvider = useAtomValue(hasAIProviderAtom);
-  const { mutate: tabsAdd } = useMutation(rpcClient.tabs.add.mutationOptions());
+  const { mutate: addTab } = useMutation(rpcClient.tabs.add.mutationOptions());
+  const router = useRouter();
 
   useEffect(() => {
     if (!isFeatureEnabled("questsAccounts")) {
@@ -39,7 +41,10 @@ export function useUserSessionNotifications() {
           action: {
             label: "Setup",
             onClick: () => {
-              tabsAdd({ urlPath: "/login" });
+              const location = router.buildLocation({
+                to: "/login",
+              });
+              addTab({ urlPath: location.href });
             },
           },
           closeButton: true,
@@ -71,7 +76,8 @@ export function useUserSessionNotifications() {
     userResult.data?.id,
     userResult.error?.code,
     userResult.error?.message,
-    tabsAdd,
+    addTab,
     hasAIProvider,
+    router,
   ]);
 }

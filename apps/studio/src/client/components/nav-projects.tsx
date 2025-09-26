@@ -9,6 +9,7 @@ import {
   type WorkspaceAppProject,
 } from "@quests/workspace/client";
 import { useMutation } from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
 
 import { NavProjectItem } from "./nav-project-item";
 
@@ -22,9 +23,14 @@ export function NavProjects({
   title: string;
 }) {
   const { mutate: addTab } = useMutation(rpcClient.tabs.add.mutationOptions());
+  const router = useRouter();
 
-  const handleOpenInNewTab = (subdomain: string) => {
-    addTab({ urlPath: `/projects/${subdomain}` });
+  const handleOpenInNewTab = (subdomain: ProjectSubdomain) => {
+    const location = router.buildLocation({
+      params: { subdomain },
+      to: "/projects/$subdomain",
+    });
+    addTab({ urlPath: location.href });
   };
   const { mutate: removeFavorite } = useMutation(
     rpcClient.favorites.remove.mutationOptions(),

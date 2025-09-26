@@ -1,5 +1,6 @@
 import { type ProjectSubdomain } from "@quests/workspace/client";
 import { useMutation } from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
 import { useCallback } from "react";
 
 import { getPromptValueStorageKey } from "../atoms/prompt-value";
@@ -15,6 +16,7 @@ export function useTrashApp({
     rpcClient.workspace.project.trash.mutationOptions(),
   );
   const { addTab, closeTab, data: tabState, selectTab } = useTabs();
+  const router = useRouter();
 
   const trashApp = useCallback(
     async (projectSubdomain: ProjectSubdomain) => {
@@ -33,9 +35,14 @@ export function useTrashApp({
         );
 
         // Navigate to existing new tab or create a new one
-        await (newTab
-          ? selectTab({ id: newTab.id })
-          : addTab({ urlPath: "/new-tab" }));
+        if (newTab) {
+          await selectTab({ id: newTab.id });
+        } else {
+          const location = router.buildLocation({
+            to: "/new-tab",
+          });
+          await addTab({ urlPath: location.href });
+        }
       }
 
       // Close all project-related tabs
@@ -53,6 +60,7 @@ export function useTrashApp({
       addTab,
       selectTab,
       navigateOnDelete,
+      router,
     ],
   );
 

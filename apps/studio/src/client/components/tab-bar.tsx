@@ -1,5 +1,6 @@
 import { Tab } from "@/client/components/tab";
 import { useTabs } from "@/client/hooks/use-tabs";
+import { useRouter } from "@tanstack/react-router";
 import { motion, Reorder } from "framer-motion";
 import { Plus } from "lucide-react";
 
@@ -11,6 +12,7 @@ export default function TabBar() {
     reorderTabs,
     selectTab,
   } = useTabs();
+  const router = useRouter();
 
   return (
     <div className="flex flex-row min-w-0 flex-1 overflow-hidden items-center">
@@ -51,7 +53,10 @@ export default function TabBar() {
           className="titlebar-button flex items-center justify-center hover:bg-muted/60
             rounded-full h-6 w-6 ml-2 mr-2 shrink-0 [-webkit-app-region:no-drag]"
           onClick={() => {
-            void addTab({ urlPath: "/new-tab" });
+            const location = router.buildLocation({
+              to: "/new-tab",
+            });
+            void addTab({ urlPath: location.href });
           }}
           whileTap={{ scale: 0.9 }}
         >

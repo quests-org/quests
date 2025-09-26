@@ -12,7 +12,7 @@ import { rpcClient } from "@/client/rpc/client";
 import { isFeatureEnabled } from "@/shared/features";
 import { QuestsLogoIcon } from "@quests/components/logo";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useAtom } from "jotai";
 
 export const Route = createFileRoute("/settings/")({
@@ -32,7 +32,8 @@ function About() {
     rpcClient.preferences.checkForUpdates.mutationOptions(),
   );
 
-  const { mutate: tabsAdd } = useMutation(rpcClient.tabs.add.mutationOptions());
+  const { mutate: addTab } = useMutation(rpcClient.tabs.add.mutationOptions());
+  const router = useRouter();
 
   const handleCheckForUpdates = async () => {
     await checkForUpdatesMutation.mutateAsync({});
@@ -94,7 +95,10 @@ function About() {
             <Button
               className="p-0 h-auto text-blue-600 dark:text-blue-400"
               onClick={() => {
-                tabsAdd({ urlPath: "/release-notes" });
+                const location = router.buildLocation({
+                  to: "/release-notes",
+                });
+                addTab({ urlPath: location.href });
                 window.close();
               }}
               variant="link"
@@ -177,7 +181,8 @@ function UserInfoList() {
   const { mutateAsync: signOut } = useMutation(
     rpcClient.auth.signOut.mutationOptions(),
   );
-  const { mutate: tabsAdd } = useMutation(rpcClient.tabs.add.mutationOptions());
+  const { mutate: addTab } = useMutation(rpcClient.tabs.add.mutationOptions());
+  const router = useRouter();
   const user = userResult.data;
 
   if (!user?.id) {
@@ -186,7 +191,10 @@ function UserInfoList() {
         <Button
           className="h-10 [&_svg]:size-6 px-24"
           onClick={() => {
-            tabsAdd({ urlPath: "/login" });
+            const location = router.buildLocation({
+              to: "/login",
+            });
+            addTab({ urlPath: location.href });
             window.close();
           }}
           variant="secondary"
