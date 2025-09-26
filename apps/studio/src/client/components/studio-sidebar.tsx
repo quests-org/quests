@@ -38,6 +38,17 @@ const data = {
 export function StudioSidebar({
   ...props
 }: React.ComponentProps<typeof Sidebar>) {
+  React.useEffect(() => {
+    // Installs the basic template to ensure it's available for new projects
+    void vanillaRpcClient.workspace.registry.template
+      .installDependencies({
+        templateName: "basic",
+      })
+      .catch((error: unknown) => {
+        logger.error("Error installing template", { error });
+      });
+  }, []);
+
   const [userResult] = useAtom(userAtom);
 
   const { data: favorites } = useQuery(

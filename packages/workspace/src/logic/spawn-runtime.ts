@@ -9,6 +9,7 @@ import {
   fromCallback,
 } from "xstate";
 
+import { INSTALL_TIMEOUT_MS } from "../constants";
 import { type AppConfig } from "../lib/app-config/types";
 import { cancelableTimeout, TimeoutError } from "../lib/cancelable-timeout";
 import { pathExists } from "../lib/path-exists";
@@ -18,7 +19,6 @@ import { getWorkspaceServerURL } from "./server/url";
 
 const BASE_RUNTIME_TIMEOUT_MS = 60 * 1000; // 1 minute
 const RUNTIME_TIMEOUT_MULTIPLIER_MS = 30 * 1000; // 30 seconds
-const INSTALL_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
 
 const portManager = new PortManager({
   basePort: 9200,
