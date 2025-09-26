@@ -5,11 +5,9 @@ import { z } from "zod";
 
 import { SessionMessage } from "../../client";
 import { createAppConfig } from "../../lib/app-config/create";
-import { TypedError } from "../../lib/errors";
-import { setProjectState } from "../../lib/project-state-store";
+import { createMessage } from "../../lib/create-message";
+import { resolveModel } from "../../lib/resolve-model";
 import { Store } from "../../lib/store";
-import { textForMessage } from "../../lib/text-for-message";
-import { getWorkspaceServerURL } from "../../logic/server/url";
 import { StoreId } from "../../schemas/store-id";
 import { AppSubdomainSchema } from "../../schemas/subdomains";
 import { base, toORPCError } from "../base";
@@ -58,34 +56,14 @@ const create = base
       errors,
       input: { message, modelURI, sessionId, subdomain },
     }) => {
-      const [model, error] = (
-        await context.modelRegistry.languageModel(
-          modelURI,
-          context.workspaceConfig.getAIProviders(),
-          {
-            captureException: context.workspaceConfig.captureException,
-            workspaceServerURL: getWorkspaceServerURL(),
-          },
-        )
-      )
-        // eslint-disable-next-line unicorn/no-await-expression-member
-        .toTuple();
+      const model = await resolveModel(modelURI, context, errors);
 
-      if (error) {
-        context.workspaceConfig.captureException(error);
-        throw toORPCError(
-          new TypedError.NotFound(error.message, { cause: error }),
-          errors,
-        );
-      }
-
-      const appConfig = createAppConfig({
+      const { appConfig } = await createMessage({
+        message,
+        model,
+        modelURI,
         subdomain,
         workspaceConfig: context.workspaceConfig,
-      });
-
-      await setProjectState(appConfig.appDir, {
-        selectedModelURI: modelURI,
       });
 
       context.workspaceRef.send({
@@ -93,19 +71,11 @@ const create = base
         value: { message, model, sessionId, subdomain },
       });
 
-      const messageText = textForMessage(message);
-
       if (appConfig.type === "project") {
         publisher.publish("project.updated", {
           subdomain: appConfig.subdomain,
         });
       }
-
-      context.workspaceConfig.captureEvent("message.created", {
-        length: messageText.length,
-        modelId: model.modelId,
-        providerId: model.provider,
-      });
     },
   );
 

@@ -4,9 +4,10 @@ import { mergeGenerators } from "@quests/shared/merge-generators";
 import { z } from "zod";
 
 import { createAppConfig } from "../../lib/app-config/create";
+import { createMessage } from "../../lib/create-message";
 import { generateSessionTitle } from "../../lib/generate-session-title";
+import { resolveModel } from "../../lib/resolve-model";
 import { Store } from "../../lib/store";
-import { getWorkspaceServerURL } from "../../logic/server/url";
 import { Session } from "../../schemas/session";
 import { SessionMessage } from "../../schemas/session/message";
 import { StoreId } from "../../schemas/store-id";
@@ -148,23 +149,15 @@ const createWithMessage = base
     }),
   )
   .handler(async ({ context, errors, input }) => {
-    const [model, error] = (
-      await context.modelRegistry.languageModel(
-        input.modelURI,
-        context.workspaceConfig.getAIProviders(),
-        {
-          captureException: context.workspaceConfig.captureException,
-          workspaceServerURL: getWorkspaceServerURL(),
-        },
-      )
-    )
-      // eslint-disable-next-line unicorn/no-await-expression-member
-      .toTuple();
+    const model = await resolveModel(input.modelURI, context, errors);
 
-    if (error) {
-      context.workspaceConfig.captureException(error);
-      throw toORPCError(error, errors);
-    }
+    await createMessage({
+      message: input.message,
+      model,
+      modelURI: input.modelURI,
+      subdomain: input.subdomain,
+      workspaceConfig: context.workspaceConfig,
+    });
 
     context.workspaceRef.send({
       type: "createSession",
@@ -175,6 +168,8 @@ const createWithMessage = base
         subdomain: input.subdomain,
       },
     });
+
+    context.workspaceConfig.captureEvent("session.created");
   });
 
 const stop = base

@@ -25,7 +25,7 @@ const ORPC_ERRORS = {
   UNKNOWN: {},
 } as const satisfies ErrorMap;
 
-type WorkspaceErrorMap = ORPCErrorConstructorMap<typeof ORPC_ERRORS>;
+export type WorkspaceErrorMap = ORPCErrorConstructorMap<typeof ORPC_ERRORS>;
 
 export const base = os.$context<WorkspaceRPCContext>().errors(ORPC_ERRORS);
 
