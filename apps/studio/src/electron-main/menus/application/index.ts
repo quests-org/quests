@@ -1,23 +1,18 @@
-import { type StudioAppUpdater } from "@/electron-main/lib/update";
 import { publisher } from "@/electron-main/rpc/publisher";
 import { app, BrowserWindow, Menu } from "electron";
 
 import { createMainWindowMenu } from "./main-window";
 import { createSettingsWindowMenu } from "./settings-window";
 
-export function createApplicationMenu({
-  appUpdater,
-}: {
-  appUpdater?: StudioAppUpdater;
-}): void {
-  updateApplicationMenu(appUpdater);
+export function createApplicationMenu(): void {
+  updateApplicationMenu();
 
   app.on("browser-window-focus", () => {
-    updateApplicationMenu(appUpdater);
+    updateApplicationMenu();
   });
 
   void publisher.subscribe("window.focus-changed", () => {
-    updateApplicationMenu(appUpdater);
+    updateApplicationMenu();
   });
 }
 
@@ -30,12 +25,12 @@ function getFocusedWindowType(): "main" | "settings" | null {
   return focusedWindow.title === "Settings" ? "settings" : "main";
 }
 
-function updateApplicationMenu(appUpdater?: StudioAppUpdater): void {
+function updateApplicationMenu(): void {
   const focusedWindowType = getFocusedWindowType();
   const template =
     focusedWindowType === "settings"
-      ? createSettingsWindowMenu(appUpdater)
-      : createMainWindowMenu(appUpdater);
+      ? createSettingsWindowMenu()
+      : createMainWindowMenu();
 
   const menu = Menu.buildFromTemplate(template);
   Menu.setApplicationMenu(menu);

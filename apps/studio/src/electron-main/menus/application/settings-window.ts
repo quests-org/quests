@@ -1,4 +1,3 @@
-import { type StudioAppUpdater } from "@/electron-main/lib/update";
 import { getSettingsWindow } from "@/electron-main/windows/settings";
 import { type MenuItemConstructorOptions } from "electron";
 
@@ -9,9 +8,7 @@ import {
   createWindowMenu,
 } from "./utils";
 
-export function createSettingsWindowMenu(
-  appUpdater?: StudioAppUpdater,
-): MenuItemConstructorOptions[] {
+export function createSettingsWindowMenu(): MenuItemConstructorOptions[] {
   const fileMenu: MenuItemConstructorOptions = {
     label: "File",
     submenu: [
@@ -45,7 +42,7 @@ export function createSettingsWindowMenu(
   };
 
   return [
-    createAppMenu(appUpdater),
+    createAppMenu(),
     fileMenu,
     createEditMenu(),
     viewMenu,

@@ -1,4 +1,3 @@
-import { type StudioAppUpdater } from "@/electron-main/lib/update";
 import { getTabsManager } from "@/electron-main/tabs";
 import { type MenuItemConstructorOptions } from "electron";
 
@@ -10,9 +9,7 @@ import {
   createWindowMenu,
 } from "./utils";
 
-export function createMainWindowMenu(
-  appUpdater?: StudioAppUpdater,
-): MenuItemConstructorOptions[] {
+export function createMainWindowMenu(): MenuItemConstructorOptions[] {
   const fileMenu: MenuItemConstructorOptions = {
     label: "File",
     submenu: [
@@ -150,7 +147,7 @@ export function createMainWindowMenu(
   };
 
   return [
-    createAppMenu(appUpdater),
+    createAppMenu(),
     fileMenu,
     createEditMenu(),
     viewMenu,

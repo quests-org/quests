@@ -52,6 +52,10 @@ export class StudioAppUpdater {
         error: { message: err.message },
       });
     });
+
+    publisher.subscribe("updates.start-check", () => {
+      void this.checkForUpdates({ notify: true });
+    });
   }
 
   public checkForUpdates({ notify }: { notify?: boolean } = {}) {

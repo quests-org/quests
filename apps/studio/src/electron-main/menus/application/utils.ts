@@ -1,13 +1,10 @@
-import { type StudioAppUpdater } from "@/electron-main/lib/update";
 import { publisher } from "@/electron-main/rpc/publisher";
 import { getTabsManager } from "@/electron-main/tabs";
 import { openSettingsWindow } from "@/electron-main/windows/settings";
 import { is } from "@electron-toolkit/utils";
 import { app, type MenuItemConstructorOptions, shell } from "electron";
 
-export function createAppMenu(
-  appUpdater?: StudioAppUpdater,
-): MenuItemConstructorOptions {
+export function createAppMenu(): MenuItemConstructorOptions {
   return {
     label: app.getName(),
     role: "appMenu" as const,
@@ -15,7 +12,7 @@ export function createAppMenu(
       { role: "about" as const },
       {
         click: () => {
-          void appUpdater?.checkForUpdates({ notify: true });
+          publisher.publish("updates.start-check", null);
         },
         label: "Check for Updates...",
       },

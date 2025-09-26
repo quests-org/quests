@@ -28,6 +28,7 @@ export const publisher = new EventPublisher<{
   "updates.downloaded": { updateInfo: UpdateInfo };
   "updates.error": { error: { message: string } };
   "updates.not-available": { updateInfo: UpdateInfo };
+  "updates.start-check": null;
   "window.focus-changed": null;
 }>({
   maxBufferedEvents: 1, // Keep no history as we only need to know the latest state
