@@ -11,7 +11,7 @@ import {
 import { rpcClient } from "@/client/rpc/client";
 import { type ProjectSubdomain } from "@quests/workspace/client";
 import { useMutation } from "@tanstack/react-query";
-import { useNavigate } from "@tanstack/react-router";
+import { useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -28,8 +28,10 @@ export function DuplicateProjectModal({
   projectName,
   projectSubdomain,
 }: DuplicateProjectModalProps) {
-  const navigate = useNavigate();
   const [keepHistory, setKeepHistory] = useState(true);
+  const router = useRouter();
+
+  const addTabMutation = useMutation(rpcClient.tabs.add.mutationOptions());
 
   const duplicateMutation = useMutation(
     rpcClient.workspace.project.duplicate.mutationOptions({
@@ -43,9 +45,14 @@ export function DuplicateProjectModal({
           description: `From "${projectName}"`,
         });
         onClose();
-        void navigate({
+
+        const location = router.buildLocation({
           params: { subdomain: duplicatedProject.subdomain },
           to: "/projects/$subdomain",
+        });
+
+        addTabMutation.mutate({
+          urlPath: location.href,
         });
       },
     }),
