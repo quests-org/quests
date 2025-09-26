@@ -1,5 +1,7 @@
+import { DEFAULT_THEME_GRADIENT, THEMES } from "@quests/shared/icons";
 import { errAsync, ok, safeTry } from "neverthrow";
 import fs from "node:fs/promises";
+import { draw } from "radashi";
 
 import { type ProjectSubdomain } from "../schemas/subdomains";
 import { type WorkspaceConfig } from "../types";
@@ -87,7 +89,14 @@ export async function duplicateProject(
 
       const sourceProjectState = await getProjectState(sourceConfig.appDir);
       await setProjectState(projectConfig.appDir, sourceProjectState);
+
+      const randomTheme = draw(THEMES) ?? DEFAULT_THEME_GRADIENT;
+      const existingManifest = await getQuestManifest(projectConfig.appDir);
       await updateQuestManifest(projectConfig.subdomain, workspaceConfig, {
+        icon: {
+          background: randomTheme,
+          lucide: existingManifest?.icon?.lucide || "box",
+        },
         name: duplicateName,
       });
       yield* git(GitCommands.addAll(), projectConfig.appDir, { signal });
@@ -109,7 +118,13 @@ export async function duplicateProject(
         });
       }
 
+      const randomTheme = draw(THEMES) ?? DEFAULT_THEME_GRADIENT;
+      const existingManifest = await getQuestManifest(projectConfig.appDir);
       await updateQuestManifest(projectConfig.subdomain, workspaceConfig, {
+        icon: {
+          background: randomTheme,
+          lucide: existingManifest?.icon?.lucide || "box",
+        },
         name: duplicateName,
       });
       yield* git(GitCommands.init(), projectConfig.appDir, { signal });
