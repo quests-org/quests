@@ -3,7 +3,6 @@ import {
   type ActorRefFrom,
   assign,
   enqueueActions,
-  log,
   raise,
   setup,
   type SnapshotFrom,
@@ -107,6 +106,14 @@ export const runtimeMachine = setup({
 
   actors: {
     spawnRuntimeLogic,
+  },
+
+  delays: {
+    retryBackoff: ({ context }) => {
+      // Exponential backoff: 1s, 2s, 4s for retries 1, 2, 3
+      const baseDelay = 1000;
+      return baseDelay * Math.pow(2, context.retryCount - 1);
+    },
   },
 
   types: {
@@ -220,17 +227,27 @@ export const runtimeMachine = setup({
     MaybeRetrying: {
       always: [
         {
+          actions: assign({
+            retryCount: ({ context }) => context.retryCount + 1,
+          }),
           guard: ({ context }) => context.retryCount < MAX_RETRIES,
-          target: "SpawningRuntime",
+          target: "RetryingWithDelay",
         },
         {
-          actions: log("Hit max retries"),
+          actions: [
+            {
+              params: () => ({
+                message:
+                  "Maximum retry attempts reached. Server failed to start.",
+                type: "error",
+              }),
+              type: "appendLog",
+            },
+            "publishLogs",
+          ],
           target: "Error",
         },
       ],
-      entry: assign({
-        retryCount: ({ context }) => context.retryCount + 1,
-      }),
       tags: "loading",
     },
 
@@ -273,6 +290,22 @@ export const runtimeMachine = setup({
           "publishLogs",
         ],
         target: "SpawningRuntime",
+      },
+      tags: "loading",
+    },
+
+    RetryingWithDelay: {
+      after: {
+        retryBackoff: {
+          target: "SpawningRuntime",
+        },
+      },
+      entry: {
+        params: ({ context }) => ({
+          message: `Retrying server start (attempt ${context.retryCount}/${MAX_RETRIES})...`,
+          type: "normal",
+        }),
+        type: "appendLog",
       },
       tags: "loading",
     },
