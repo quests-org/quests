@@ -29,7 +29,7 @@ export const Route = createFileRoute("/_app/discover/apps/$folderName")({
   loader: async ({ context, params }) => {
     try {
       return await context.queryClient.ensureQueryData(
-        rpcClient.workspace.registryApp.byFolderName.queryOptions({
+        rpcClient.workspace.registry.app.byFolderName.queryOptions({
           input: { folderName: params.folderName },
         }),
       );
@@ -61,7 +61,7 @@ export const Route = createFileRoute("/_app/discover/apps/$folderName")({
 function RouteComponent() {
   const { folderName } = Route.useParams();
   const { data: appDetails } = useQuery(
-    rpcClient.workspace.registryApp.byFolderName.queryOptions({
+    rpcClient.workspace.registry.app.byFolderName.queryOptions({
       input: { folderName },
     }),
   );

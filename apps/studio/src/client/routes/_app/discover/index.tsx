@@ -18,7 +18,7 @@ export const Route = createFileRoute("/_app/discover/")({
     ],
   }),
   loader: async () => {
-    const registryApps = await vanillaRpcClient.workspace.registryApp.list();
+    const registryApps = await vanillaRpcClient.workspace.registry.app.list();
     return {
       registryApps,
     };

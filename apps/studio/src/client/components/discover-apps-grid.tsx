@@ -5,7 +5,7 @@ import { type RPCOutput } from "../rpc/client";
 export function DiscoverAppsGrid({
   registryApps,
 }: {
-  registryApps: RPCOutput["workspace"]["registryApp"]["list"];
+  registryApps: RPCOutput["workspace"]["registry"]["app"]["list"];
 }) {
   if (registryApps.length === 0) {
     return (

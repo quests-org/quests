@@ -4,9 +4,12 @@ import { z } from "zod";
 import {
   getRegistryAppDetails,
   RegistryAppDetailsSchema,
-} from "../lib/get-registry-app-details";
-import { getRegistryApps, RegistryAppSchema } from "../lib/get-registry-apps";
-import { base } from "./base";
+} from "../../lib/get-registry-app-details";
+import {
+  getRegistryApps,
+  RegistryAppSchema,
+} from "../../lib/get-registry-apps";
+import { base } from "../base";
 
 const byFolderName = base
   .input(z.object({ folderName: z.string() }))
@@ -53,8 +56,10 @@ const screenshot = base
     }
   });
 
-export const registryApp = {
-  byFolderName,
-  list,
-  screenshot,
+export const registry = {
+  app: {
+    byFolderName,
+    list,
+    screenshot,
+  },
 };
