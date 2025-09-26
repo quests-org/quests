@@ -56,7 +56,6 @@ export const anthropicAdapter = setupProviderAdapter({
   defaultBaseURL: DEFAULT_BASE_URL,
   knownModelIds: KNOWN_MODEL_IDS,
   modelTags: {
-    "claude-3-5-haiku-20241022": ["cheap"],
     "claude-3-7-sonnet-20250219": ["coding"],
     "claude-opus-4-1-20250805": ["coding", "recommended"],
     "claude-sonnet-4-20250514": ["coding", "recommended", "default"],

@@ -58,8 +58,7 @@ export const ollamaAdapter = setupProviderAdapter({
         const canonicalModelId =
           AIGatewayModel.CanonicalIdSchema.parse(providerId);
 
-        // Inherently cheap if it's running locally
-        const tags: AIGatewayModel.ModelTag[] = ["cheap"];
+        const tags: AIGatewayModel.ModelTag[] = [];
 
         if (isModelNew(model.created)) {
           tags.push("new");
