@@ -1,7 +1,5 @@
 import { envForProviders } from "@quests/ai-gateway";
-import { detect } from "detect-port";
 import { ExecaError, parseCommandString, type ResultPromise } from "execa";
-import fs from "node:fs/promises";
 import { type NormalizedPackageJson, readPackage } from "read-pkg";
 import {
   type ActorRef,
@@ -13,16 +11,20 @@ import {
 
 import { type AppConfig } from "../lib/app-config/types";
 import { cancelableTimeout, TimeoutError } from "../lib/cancelable-timeout";
+import { pathExists } from "../lib/path-exists";
+import { PortManager } from "../lib/port-manager";
 import { type RunPackageJsonScript } from "../types";
 import { getWorkspaceServerURL } from "./server/url";
 
-const BASE_PORT = 9200;
 const BASE_RUNTIME_TIMEOUT_MS = 60 * 1000; // 1 minute
 const RUNTIME_TIMEOUT_MULTIPLIER_MS = 30 * 1000; // 30 seconds
 const INSTALL_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
 
-// Port management system
-const usedPorts = new Set<number>();
+const portManager = new PortManager({
+  basePort: 9200,
+  maxAttempts: 1000,
+  retryDelayMs: 100,
+});
 
 export type SpawnRuntimeEvent =
   | SpawnRuntimeEventError
@@ -52,14 +54,6 @@ interface SpawnRuntimeEventError {
   value: { error: Error };
 }
 
-function findAvailablePort(): number {
-  let port = BASE_PORT;
-  while (usedPorts.has(port)) {
-    port++;
-  }
-  return port;
-}
-
 async function isLocalServerRunning(port: number) {
   try {
     await fetch(`http://localhost:${port}`);
@@ -67,14 +61,6 @@ async function isLocalServerRunning(port: number) {
   } catch {
     return false;
   }
-}
-
-function releasePort(port: number): void {
-  usedPorts.delete(port);
-}
-
-function reservePort(port: number): void {
-  usedPorts.add(port);
 }
 
 function sendProcessLogs(
@@ -127,10 +113,22 @@ export const spawnRuntimeLogic = fromCallback<
   const timeout = cancelableTimeout(
     BASE_RUNTIME_TIMEOUT_MS + attempt * RUNTIME_TIMEOUT_MULTIPLIER_MS,
   );
-  let port = findAvailablePort();
-  reservePort(port);
+
+  let port: number | undefined;
 
   async function main() {
+    port = await portManager.reservePort();
+
+    if (!port) {
+      parentRef.send({
+        isRetryable: false,
+        shouldLog: true,
+        type: "spawnRuntime.error.unknown",
+        value: { error: new Error("Failed to initialize port") },
+      });
+      return;
+    }
+
     const installTimeout = cancelableTimeout(INSTALL_TIMEOUT_MS);
     const installSignal = AbortSignal.any([
       abortController.signal,
@@ -175,73 +173,60 @@ export const spawnRuntimeLogic = fromCallback<
     sendProcessLogs(installProcessPromise, parentRef);
     await installProcessPromise;
 
-    // Use detect to check if port is actually available and get alternative if needed
-    const detectedPort = await detect(port);
-    if (detectedPort !== port) {
-      // Release the reserved port and reserve the detected one
-      releasePort(port);
-      port = detectedPort;
-      reservePort(port);
-    }
-
     const scriptName = "dev";
 
     let pkg: NormalizedPackageJson;
     try {
       pkg = await readPackage({ cwd: appConfig.appDir });
     } catch (error) {
-      const packageJsonError = new Error("Unknown error reading package.json", {
-        cause: error instanceof Error ? error : new Error(String(error)),
-      });
       parentRef.send({
         isRetryable: false,
         shouldLog: true,
         type: "spawnRuntime.error.package-json",
-        value: { error: packageJsonError },
+        value: {
+          error: new Error("Unknown error reading package.json", {
+            cause: error instanceof Error ? error : new Error(String(error)),
+          }),
+        },
       });
       return;
     }
 
     const script = pkg.scripts?.[scriptName];
     if (!script) {
-      const error = new Error(
-        `No script \`${scriptName}\` found in package.json`,
-      );
       parentRef.send({
         isRetryable: false,
         shouldLog: true,
         type: "spawnRuntime.error.package-json",
-        value: { error },
+        value: {
+          error: new Error(`No script \`${scriptName}\` found in package.json`),
+        },
       });
       return;
     }
     const [commandName] = parseCommandString(script);
     if (commandName !== "vite") {
-      const error = new Error(
-        `Unsupported command \`${commandName ?? "missing"}\` for script \`${scriptName}\` in package.json`,
-      );
       parentRef.send({
         isRetryable: false,
         shouldLog: true,
         type: "spawnRuntime.error.unsupported-script",
-        value: { error },
+        value: {
+          error: new Error(
+            `Unsupported command \`${commandName ?? "missing"}\` for script \`${scriptName}\` in package.json`,
+          ),
+        },
       });
       return;
     }
 
-    const exists = await fs
-      .access(appConfig.appDir)
-      .then(() => true)
-      .catch(() => false);
-    if (!exists) {
-      const error = new Error(
-        `App directory does not exist: ${appConfig.appDir}`,
-      );
+    if (!(await pathExists(appConfig.appDir))) {
       parentRef.send({
         isRetryable: false,
         shouldLog: true,
         type: "spawnRuntime.error.app-dir-does-not-exist",
-        value: { error },
+        value: {
+          error: new Error(`App directory does not exist: ${appConfig.appDir}`),
+        },
       });
       return;
     }
@@ -305,7 +290,7 @@ export const spawnRuntimeLogic = fromCallback<
       }
 
       await new Promise((resolve) => setTimeout(resolve, 500));
-      if ((await isLocalServerRunning(port)) && shouldCheckServer) {
+      if (port && (await isLocalServerRunning(port)) && shouldCheckServer) {
         shouldCheckServer = false;
         timeout.cancel();
         parentRef.send({ type: "spawnRuntime.started", value: { port } });
@@ -346,31 +331,40 @@ export const spawnRuntimeLogic = fromCallback<
             return;
           }
 
-          if (error.message.includes(`Port ${port} is already in use`)) {
-            const portTakenError = new Error(
-              `Port ${port} is already in use: ${error.message}`,
-            );
+          if (!port) {
+            parentRef.send({
+              isRetryable: true,
+              shouldLog: false,
+              type: "spawnRuntime.error.unknown",
+              value: {
+                error: new Error(`Port not initialized`, { cause: error }),
+              },
+            });
+          } else if (error.message.includes(`Port ${port} is already in use`)) {
             parentRef.send({
               isRetryable: true,
               shouldLog: false,
               type: "spawnRuntime.error.port-taken",
               value: {
-                error: portTakenError,
+                error: new Error(
+                  `Port ${port} is already in use: ${error.message}`,
+                  { cause: error },
+                ),
               },
             });
           } else if (error.exitCode === 143) {
             // Terminated by signal
             parentRef.send({ type: "spawnRuntime.exited" });
           } else {
-            const unknownError = new Error(
-              `Unknown error for command ${error.command}: ${error.message}`,
-            );
             parentRef.send({
               isRetryable: true,
               shouldLog: false,
               type: "spawnRuntime.error.unknown",
               value: {
-                error: unknownError,
+                error: new Error(
+                  `Unknown error for command ${error.command}: ${error.message}`,
+                  { cause: error },
+                ),
               },
             });
           }
@@ -383,25 +377,29 @@ export const spawnRuntimeLogic = fromCallback<
           });
         }
       } else {
-        const unknownError = new Error(
-          error instanceof Error ? error.message : "Unknown error",
-        );
         parentRef.send({
           isRetryable: true,
           shouldLog: false,
           type: "spawnRuntime.error.unknown",
           value: {
-            error: unknownError,
+            error: new Error(
+              error instanceof Error ? error.message : "Unknown error",
+              { cause: error },
+            ),
           },
         });
       }
     })
     .finally(() => {
-      releasePort(port);
+      if (port) {
+        portManager.releasePort(port);
+      }
       timeout.cancel();
     });
   return () => {
-    releasePort(port);
+    if (port) {
+      portManager.releasePort(port);
+    }
     timeout.cancel();
     abortController.abort();
   };
