@@ -53,10 +53,56 @@ export function createDevToolsMenu(): MenuItemConstructorOptions[] {
         },
         {
           click: () => {
+            publisher.publish("updates.check-started", null);
+
+            let progress = 0;
+            const interval = setInterval(() => {
+              progress += 10;
+
+              if (progress <= 100) {
+                publisher.publish("updates.download-progress", {
+                  progress: {
+                    bytesPerSecond: 1024 * 1024,
+                    delta: 1024 * 1024,
+                    percent: progress,
+                    total: 100 * 1024 * 1024,
+                    transferred: progress * 1024 * 1024,
+                  },
+                });
+              } else {
+                clearInterval(interval);
+                publisher.publish("updates.downloaded", {
+                  updateInfo: {
+                    files: [],
+                    path: "",
+                    releaseDate: new Date().toISOString(),
+                    releaseName: "Test Update",
+                    releaseNotes: "This is a test update",
+                    sha512: "",
+                    version: "1.0.0-test",
+                  },
+                });
+              }
+            }, 500);
+          },
+          label: "Test download notification",
+        },
+        {
+          click: () => {
             const tabsManager = getTabsManager();
             void tabsManager?.addTab({ urlPath: "/setup" });
           },
           label: "Open Setup Tab",
+        },
+        {
+          click: () => {
+            publisher.publish("updates.error", {
+              error: {
+                message: "There was an error checking for updates",
+              },
+            });
+          },
+          label: "Test update error notification",
         },
       ],
     },

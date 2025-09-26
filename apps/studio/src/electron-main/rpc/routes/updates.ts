@@ -9,6 +9,13 @@ const live = {
       yield payload;
     }
   }),
+  cancelled: base.handler(async function* ({ signal }) {
+    for await (const payload of publisher.subscribe("updates.cancelled", {
+      signal,
+    })) {
+      yield payload;
+    }
+  }),
   checkStarted: base.handler(async function* ({ signal }) {
     for await (const _payload of publisher.subscribe("updates.check-started", {
       signal,
@@ -36,6 +43,16 @@ const live = {
     for await (const payload of publisher.subscribe("updates.not-available", {
       signal,
     })) {
+      yield payload;
+    }
+  }),
+  progress: base.handler(async function* ({ signal }) {
+    for await (const payload of publisher.subscribe(
+      "updates.download-progress",
+      {
+        signal,
+      },
+    )) {
       yield payload;
     }
   }),

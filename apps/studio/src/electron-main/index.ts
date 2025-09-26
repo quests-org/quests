@@ -70,10 +70,7 @@ void app.whenReady().then(async () => {
     optimizer.watchWindowShortcuts(window);
   });
 
-  createApplicationMenu({
-    appUpdater,
-  });
-
+  createApplicationMenu();
   watchThemePreferenceAndApply(updateTitleBarOverlay);
   nativeTheme.on("updated", () => {
     updateTitleBarOverlay();

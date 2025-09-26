@@ -39,6 +39,7 @@ export class StudioAppUpdater {
       scopedLogger.info(
         `Download progress: ${progress.percent}%, ${progress.transferred}/${progress.total}`,
       );
+      publisher.publish("updates.download-progress", { progress });
     });
 
     autoUpdater.on("update-downloaded", (updateInfo) => {
@@ -51,6 +52,11 @@ export class StudioAppUpdater {
       publisher.publish("updates.error", {
         error: { message: err.message },
       });
+    });
+
+    autoUpdater.on("update-cancelled", (updateInfo) => {
+      scopedLogger.info("Update cancelled");
+      publisher.publish("updates.cancelled", { updateInfo });
     });
 
     publisher.subscribe("updates.start-check", () => {
