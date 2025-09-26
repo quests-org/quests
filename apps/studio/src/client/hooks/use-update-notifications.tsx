@@ -142,7 +142,9 @@ export function useUpdateNotifications() {
           },
         },
         closeButton: true,
-        description: updateError.at(-1)?.error.message,
+        description:
+          (updateError.at(-1)?.error.message.slice(0, 100) ?? "") +
+          ((updateError.at(-1)?.error.message.length ?? 0) > 100 ? "..." : ""),
         duration: Infinity,
       });
     }
