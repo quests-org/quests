@@ -16,7 +16,7 @@ export async function runDiagnostics(
     timeout.controller.signal,
   ]);
 
-  // NOTE: Currently running `npx tsc --noEmit` checks the entire project,
+  // NOTE: Currently running `tsc --noEmit` checks the entire project,
   // not just the specific file. This is a limitation of TypeScript CLI.
   // In the future, this will be replaced with LSP-based diagnostics that
   // can target specific files efficiently.
