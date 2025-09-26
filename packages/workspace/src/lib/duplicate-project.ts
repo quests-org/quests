@@ -77,6 +77,8 @@ export async function duplicateProject(
     const sourceName = sourceManifest?.name || sourceConfig.subdomain;
     const duplicateName = `Copy of ${sourceName}`;
 
+    const sourceProjectState = await getProjectState(sourceConfig.appDir);
+
     if (keepHistory) {
       const sourceSessionDbPath = sessionStorePath(sourceConfig.appDir);
       const targetSessionDbPath = sessionStorePath(projectConfig.appDir);
@@ -87,54 +89,48 @@ export async function duplicateProject(
         await fs.copyFile(sourceSessionDbPath, targetSessionDbPath);
       }
 
-      const sourceProjectState = await getProjectState(sourceConfig.appDir);
       await setProjectState(projectConfig.appDir, sourceProjectState);
-
-      const randomTheme = draw(THEMES) ?? DEFAULT_THEME_GRADIENT;
-      const existingManifest = await getQuestManifest(projectConfig.appDir);
-      await updateQuestManifest(projectConfig.subdomain, workspaceConfig, {
-        icon: {
-          background: randomTheme,
-          lucide: existingManifest?.icon?.lucide || "box",
-        },
-        name: duplicateName,
-      });
-      yield* git(GitCommands.addAll(), projectConfig.appDir, { signal });
-      yield* git(
-        GitCommands.commitWithAuthor(`Rename to "${duplicateName}"`),
-        projectConfig.appDir,
-        { signal },
-      );
     } else {
       // Remove .git directory to clear history
       const gitDir = absolutePathJoin(projectConfig.appDir, ".git");
       await fs.rm(gitDir, { force: true, recursive: true });
 
-      // Preserve the selected model from the source project
-      const sourceProjectState = await getProjectState(sourceConfig.appDir);
+      // Preserve only the selected model from the source project
       if (sourceProjectState.selectedModelURI) {
         await setProjectState(projectConfig.appDir, {
           selectedModelURI: sourceProjectState.selectedModelURI,
         });
       }
 
-      const randomTheme = draw(THEMES) ?? DEFAULT_THEME_GRADIENT;
-      const existingManifest = await getQuestManifest(projectConfig.appDir);
-      await updateQuestManifest(projectConfig.subdomain, workspaceConfig, {
-        icon: {
-          background: randomTheme,
-          lucide: existingManifest?.icon?.lucide || "box",
-        },
-        name: duplicateName,
-      });
       yield* git(GitCommands.init(), projectConfig.appDir, { signal });
-      yield* git(GitCommands.addAll(), projectConfig.appDir, { signal });
-      yield* git(
-        GitCommands.commitWithAuthor(`Initial commit of ${duplicateName}`),
-        projectConfig.appDir,
-        { signal },
-      );
     }
+
+    const existingManifest = await getQuestManifest(projectConfig.appDir);
+    const currentTheme = existingManifest?.icon?.background;
+
+    // Pick a random theme that's different from the current one
+    const availableThemes = currentTheme
+      ? THEMES.filter((theme) => theme !== currentTheme)
+      : THEMES;
+    const randomTheme = draw(availableThemes) ?? DEFAULT_THEME_GRADIENT;
+
+    await updateQuestManifest(projectConfig.subdomain, workspaceConfig, {
+      icon: {
+        background: randomTheme,
+        lucide: existingManifest?.icon?.lucide || "box",
+      },
+      name: duplicateName,
+    });
+
+    yield* git(GitCommands.addAll(), projectConfig.appDir, { signal });
+    const commitMessage = keepHistory
+      ? `Duplicated from "${sourceName}"`
+      : `Initial commit of duplicated project "${duplicateName}"`;
+    yield* git(
+      GitCommands.commitWithAuthor(commitMessage),
+      projectConfig.appDir,
+      { signal },
+    );
 
     return ok({ projectConfig });
   });
