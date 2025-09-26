@@ -101,6 +101,14 @@ export async function duplicateProject(
       const gitDir = absolutePathJoin(projectConfig.appDir, ".git");
       await fs.rm(gitDir, { force: true, recursive: true });
 
+      // Preserve the selected model from the source project
+      const sourceProjectState = await getProjectState(sourceConfig.appDir);
+      if (sourceProjectState.selectedModelURI) {
+        await setProjectState(projectConfig.appDir, {
+          selectedModelURI: sourceProjectState.selectedModelURI,
+        });
+      }
+
       await updateQuestManifest(projectConfig.subdomain, workspaceConfig, {
         name: duplicateName,
       });
