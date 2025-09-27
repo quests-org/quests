@@ -93,7 +93,7 @@
     "dugite": "3.0.0-rc11",
     "electron-log": "^5.4.1",
     "electron-store": "^10.1.0",
-    "electron-updater": "^6.6.2",
+    "electron-updater": "^6.6.8",
     "execa": "^9.6.0",
     "framer-motion": "11.13.5",
     "hono": "catalog:",
