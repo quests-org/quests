@@ -48,10 +48,6 @@ export function StudioSidebar({
     rpcClient.workspace.project.live.list.experimental_liveOptions(),
   );
 
-  const { data: sidebarVisibility } = useQuery(
-    rpcClient.sidebar.live.visibility.experimental_liveOptions({}),
-  );
-
   const { mutateAsync: closeSidebar } = useMutation(
     rpcClient.sidebar.close.mutationOptions(),
   );
@@ -71,7 +67,6 @@ export function StudioSidebar({
 
   const user = userResult.data;
   const isAccountsEnabled = isFeatureEnabled("questsAccounts");
-  const isSidebarVisible = sidebarVisibility?.visible ?? true;
 
   const settingsItems = [
     {
@@ -91,11 +86,7 @@ export function StudioSidebar({
         <div
           className={cn(
             "flex items-center py-1 mt-px",
-            isWindows()
-              ? isSidebarVisible
-                ? "[-webkit-app-region:drag]"
-                : ""
-              : "[-webkit-app-region:drag]",
+            !isWindows() && "[-webkit-app-region:drag]",
             isMacOS() ? "pl-20" : "pl-4 justify-end",
           )}
         >
