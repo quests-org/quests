@@ -85,23 +85,25 @@ export function StudioSidebar({
       <SidebarHeader>
         <div
           className={cn(
-            "flex items-center py-1 mt-px",
-            isMacOS() ? "ml-20" : "ml-4 justify-end",
+            "flex items-center py-1 mt-px [-webkit-app-region:drag]",
+            isMacOS() ? "pl-20" : "pl-4 justify-end",
           )}
         >
-          <Button
-            className="size-6 text-muted-foreground pr-1"
-            onClick={() => {
-              void closeSidebar({}).catch((error: unknown) => {
-                logger.error("Error closing sidebar", { error });
-              });
-            }}
-            size="icon"
-            variant="ghost"
-          >
-            <SidebarIcon />
-          </Button>
-          <NavControls />
+          <div className="flex items-center [-webkit-app-region:no-drag]">
+            <Button
+              className="size-6 text-muted-foreground pr-1"
+              onClick={() => {
+                void closeSidebar({}).catch((error: unknown) => {
+                  logger.error("Error closing sidebar", { error });
+                });
+              }}
+              size="icon"
+              variant="ghost"
+            >
+              <SidebarIcon />
+            </Button>
+            <NavControls />
+          </div>
         </div>
       </SidebarHeader>
       <SidebarContent>
