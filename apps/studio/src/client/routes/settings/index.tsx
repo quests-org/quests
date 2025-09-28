@@ -49,7 +49,9 @@ function About() {
   );
 
   const handleCheckForUpdates = async () => {
-    await checkForUpdatesMutation.mutateAsync({});
+    await checkForUpdatesMutation.mutateAsync({
+      notify: false,
+    });
   };
 
   const formatLastChecked = (date: Date) => {
