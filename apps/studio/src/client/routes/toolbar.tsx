@@ -35,7 +35,7 @@ function ToolbarPage() {
           isLinux() && "pr-[6rem]",
         )}
       >
-        <div className="flex items-center min-w-0 flex-1 [-webkit-app-region:no-drag] h-full pt-1">
+        <div className="flex items-center min-w-0 flex-1 [-webkit-app-region:no-drag] h-full">
           {!isSidebarVisible && (
             <>
               <div className={cn(isMacOS() ? "ml-20" : "ml-4")} />
