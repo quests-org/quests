@@ -9,6 +9,7 @@ import { Badge } from "@/client/components/ui/badge";
 import { Button } from "@/client/components/ui/button";
 import { Label } from "@/client/components/ui/label";
 import { Progress } from "@/client/components/ui/progress";
+import { isLinux } from "@/client/lib/utils";
 import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
 import { isFeatureEnabled } from "@/shared/features";
 import { QuestsLogoIcon } from "@quests/components/logo";
@@ -95,8 +96,11 @@ function About() {
       case "downloaded": {
         return (
           <div className="text-sm text-muted-foreground">
-            Update downloaded. Version {updateState.updateInfo?.version} is
-            ready to install
+            {isLinux()
+              ? `Version ${updateState.updateInfo?.version ?? ""} is
+            ready to install. Please allow a few minutes for the update to install. The app will relaunch when complete.`
+              : `Version ${updateState.updateInfo?.version ?? ""} is
+            ready to install.`}
           </div>
         );
       }

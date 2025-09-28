@@ -1,5 +1,6 @@
 import { logger } from "@/electron-main/lib/electron-logger";
 import { publisher } from "@/electron-main/rpc/publisher";
+import { app } from "electron";
 import pkg, { type ProgressInfo, type UpdateInfo } from "electron-updater";
 import fs from "node:fs";
 import os from "node:os";
@@ -189,19 +190,26 @@ export class StudioAppUpdater {
 
   public quitAndInstall() {
     try {
-      let notice: string | undefined;
+      if (os.platform() === "linux") {
+        // On Linux, use app.relaunch() and app.quit() to avoid hanging issues
+        // with autoUpdater.quitAndInstall()
+        const notice = isUbuntu()
+          ? 'Update is installing and may take a few minutes to complete. Please ignore any "Force quit" dialogs. The app will restart when complete.'
+          : "Update is installing. Please allow a few minutes for the update to complete. The app will restart when complete.";
 
-      if (isUbuntu()) {
-        // See https://github.com/electron-userland/electron-builder/issues/9291
-        notice =
-          'Update is installing and may take a few minutes to complete. Please ignore any "Force quit" dialogs. The app will restart when complete.';
-      } else if (os.platform() === "linux") {
-        notice =
-          "Update is installing. Please allow a few minutes for the update to complete. The app will restart when complete.";
+        this.status = {
+          notice,
+          notifyUser: true,
+          type: "installing",
+        };
+
+        // Use app.relaunch() and app.quit() for Linux to avoid hanging
+        app.relaunch();
+        app.quit();
+        return;
       }
 
       this.status = {
-        notice,
         notifyUser: true,
         type: "installing",
       };

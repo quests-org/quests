@@ -5,6 +5,8 @@ import { Download } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 
+import { isLinux } from "../lib/utils";
+
 const CHECKING_FOR_UPDATES_TOAST_ID = "checking-for-updates";
 const DOWNLOAD_TOAST_ID = "download";
 const INSTALL_TOAST_ID = "install";
@@ -65,7 +67,9 @@ export function useUpdateNotifications() {
             },
           },
           closeButton: true,
-          description: "The app will restart to complete the update.",
+          description: isLinux()
+            ? "Please allow a few minutes for the update to install. The app will relaunch when complete."
+            : "The app will restart to complete the update.",
           duration: Infinity,
           icon: <Download className="h-5 w-5" />,
           id: INSTALL_TOAST_ID,
