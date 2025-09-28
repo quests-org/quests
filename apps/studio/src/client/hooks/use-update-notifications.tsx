@@ -121,6 +121,16 @@ export function useUpdateNotifications() {
         }
         break;
       }
+      case "installing": {
+        toast.dismiss(CHECKING_FOR_UPDATES_TOAST_ID);
+        toast.dismiss(DOWNLOAD_TOAST_ID);
+        toast.info("Installing update...", {
+          closeButton: true,
+          description: updateState.notice,
+          duration: Infinity,
+        });
+        break;
+      }
       case "not-available": {
         toast.dismiss(CHECKING_FOR_UPDATES_TOAST_ID);
         toast.dismiss(DOWNLOAD_TOAST_ID);

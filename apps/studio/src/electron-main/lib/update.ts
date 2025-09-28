@@ -16,6 +16,7 @@ export type AppUpdaterStatus =
   | AppUpdaterStatusChecking
   | AppUpdaterStatusDownloading
   | AppUpdaterStatusError
+  | AppUpdaterStatusInstalling
   | AppUpdaterStatusNotAvailable
   | AppUpdaterStatusWithUpdateInfo;
 
@@ -31,6 +32,11 @@ interface AppUpdaterStatusDownloading {
 interface AppUpdaterStatusError {
   message: string;
   type: "error";
+}
+
+interface AppUpdaterStatusInstalling {
+  notice?: string;
+  type: "installing";
 }
 
 interface AppUpdaterStatusNotAvailable {
@@ -174,6 +180,13 @@ export class StudioAppUpdater {
 
   public quitAndInstall() {
     try {
+      this.status = {
+        notice:
+          os.platform() === "linux"
+            ? "Update is installing. Please allow a few minutes for the update to complete. The app will restart when complete."
+            : undefined,
+        type: "installing",
+      };
       autoUpdater.quitAndInstall();
     } catch (error) {
       scopedLogger.error("Error quitting and installing:", error);
