@@ -54,7 +54,7 @@ export function createDevToolsMenu(): MenuItemConstructorOptions[] {
         {
           click: () => {
             publisher.publish("updates.status", {
-              status: { type: "checking" },
+              status: { notifyUser: true, type: "checking" },
             });
 
             let progress = 0;
@@ -64,6 +64,7 @@ export function createDevToolsMenu(): MenuItemConstructorOptions[] {
               if (progress <= 100) {
                 publisher.publish("updates.status", {
                   status: {
+                    notifyUser: true,
                     progress: {
                       bytesPerSecond: 1024 * 1024,
                       delta: 1024 * 1024,
@@ -78,6 +79,7 @@ export function createDevToolsMenu(): MenuItemConstructorOptions[] {
                 clearInterval(interval);
                 publisher.publish("updates.status", {
                   status: {
+                    notifyUser: true,
                     type: "downloaded",
                     updateInfo: {
                       files: [],
@@ -105,7 +107,7 @@ export function createDevToolsMenu(): MenuItemConstructorOptions[] {
         {
           click: () => {
             publisher.publish("updates.status", {
-              status: { type: "checking" },
+              status: { notifyUser: true, type: "checking" },
             });
 
             void new Promise((resolve) => setTimeout(resolve, 1000)).then(
@@ -113,6 +115,7 @@ export function createDevToolsMenu(): MenuItemConstructorOptions[] {
                 publisher.publish("updates.status", {
                   status: {
                     message: "There was an error checking for updates",
+                    notifyUser: true,
                     type: "error",
                   },
                 });

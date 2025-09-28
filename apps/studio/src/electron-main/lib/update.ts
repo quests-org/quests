@@ -21,46 +21,53 @@ export type AppUpdaterStatus =
   | AppUpdaterStatusNotAvailable
   | AppUpdaterStatusWithUpdateInfo;
 
-interface AppUpdaterStatusChecking {
+interface AppUpdaterStatusChecking extends BaseAppUpdaterStatus {
   type: "checking";
 }
 
-interface AppUpdaterStatusDownloading {
+interface AppUpdaterStatusDownloading extends BaseAppUpdaterStatus {
   progress: ProgressInfo;
   type: "downloading";
 }
 
-interface AppUpdaterStatusError {
+interface AppUpdaterStatusError extends BaseAppUpdaterStatus {
   message: string;
   type: "error";
 }
 
-interface AppUpdaterStatusInstalling {
+interface AppUpdaterStatusInstalling extends BaseAppUpdaterStatus {
   notice?: string;
   type: "installing";
 }
 
-interface AppUpdaterStatusNotAvailable {
+interface AppUpdaterStatusNotAvailable extends BaseAppUpdaterStatus {
   type: "not-available";
 }
 
-type AppUpdaterStatusWithUpdateInfo = null | {
+interface AppUpdaterStatusWithUpdateInfo extends BaseAppUpdaterStatus {
   type: "available" | "cancelled" | "downloaded" | "inactive" | "not-available";
   updateInfo: null | UpdateInfo;
-};
+}
+
+interface BaseAppUpdaterStatus {
+  notifyUser: boolean;
+}
 
 export class StudioAppUpdater {
   public get status() {
     return this.#status;
   }
 
-  private set status(status: AppUpdaterStatus) {
-    this.#status = status;
-    publisher.publish("updates.status", { status });
-  }
+  #notify = false;
+  #status: AppUpdaterStatus | null = null;
 
-  // eslint-disable-next-line perfectionist/sort-classes
-  #status: AppUpdaterStatus = null;
+  // eslint-disable-next-line @typescript-eslint/adjacent-overload-signatures
+  private set status(status: AppUpdaterStatus | null) {
+    this.#status = status;
+    if (status) {
+      publisher.publish("updates.status", { status });
+    }
+  }
 
   public constructor() {
     autoUpdater.logger = logger.scope("appUpdater:autoUpdater");
@@ -78,6 +85,7 @@ export class StudioAppUpdater {
     autoUpdater.on("update-available", (updateInfo) => {
       scopedLogger.info("Update available");
       this.status = {
+        notifyUser: this.#notify,
         type: "available",
         updateInfo,
       };
@@ -86,6 +94,7 @@ export class StudioAppUpdater {
     autoUpdater.on("update-not-available", (updateInfo) => {
       scopedLogger.info("Update not available");
       this.status = {
+        notifyUser: this.#notify,
         type: "not-available",
         updateInfo,
       };
@@ -96,6 +105,7 @@ export class StudioAppUpdater {
         `Download progress: ${progress.percent}%, ${progress.transferred}/${progress.total}`,
       );
       this.status = {
+        notifyUser: this.#notify,
         progress,
         type: "downloading",
       };
@@ -104,6 +114,8 @@ export class StudioAppUpdater {
     autoUpdater.on("update-downloaded", (updateInfo) => {
       scopedLogger.info("Update downloaded");
       this.status = {
+        // Always notify when an updates is ready to install
+        notifyUser: true,
         type: "downloaded",
         updateInfo,
       };
@@ -113,6 +125,7 @@ export class StudioAppUpdater {
       scopedLogger.error("AutoUpdater error:", err);
       this.status = {
         message: err.message,
+        notifyUser: this.#notify,
         type: "error",
       };
     });
@@ -120,6 +133,7 @@ export class StudioAppUpdater {
     autoUpdater.on("update-cancelled", (updateInfo) => {
       scopedLogger.info("Update cancelled");
       this.status = {
+        notifyUser: this.#notify,
         type: "cancelled",
         updateInfo,
       };
@@ -131,32 +145,26 @@ export class StudioAppUpdater {
   }
 
   public async checkForUpdates({ notify }: { notify?: boolean } = {}) {
-    if (notify) {
+    this.#notify = notify ?? false;
+
+    this.status = {
+      notifyUser: this.#notify,
+      type: "checking",
+    };
+
+    autoUpdater.once("update-not-available", (updateInfo) => {
       this.status = {
-        type: "checking",
+        notifyUser: this.#notify,
+        type: "not-available",
+        updateInfo,
       };
-      autoUpdater.once("update-not-available", (updateInfo) => {
-        this.status = {
-          type: "not-available",
-          updateInfo,
-        };
-      });
-    } else {
-      this.#status = {
-        type: "checking",
-      };
-      autoUpdater.once("update-not-available", (updateInfo) => {
-        this.#status = {
-          type: "not-available",
-          updateInfo,
-        };
-      });
-    }
+    });
 
     const isUpdaterActive = autoUpdater.isUpdaterActive();
 
     if (!isUpdaterActive) {
       this.status = {
+        notifyUser: this.#notify,
         type: "inactive",
         updateInfo: null,
       };
@@ -194,6 +202,7 @@ export class StudioAppUpdater {
 
       this.status = {
         notice,
+        notifyUser: true,
         type: "installing",
       };
       autoUpdater.quitAndInstall();
@@ -201,6 +210,7 @@ export class StudioAppUpdater {
       scopedLogger.error("Error quitting and installing:", error);
       this.status = {
         message: error instanceof Error ? error.message : String(error),
+        notifyUser: true,
         type: "error",
       };
     }

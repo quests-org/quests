@@ -20,7 +20,7 @@ export function useUpdateNotifications() {
   );
 
   useEffect(() => {
-    if (!updateState) {
+    if (!updateState?.notifyUser) {
       return;
     }
 
