@@ -88,7 +88,7 @@ export function useUpdateNotifications() {
                   value={updateState.progress.percent}
                 />
                 <div className="text-xs text-muted-foreground text-right">
-                  {updateState.progress.percent}%
+                  {updateState.progress.percent.toFixed(0)}%
                 </div>
               </div>
             ),
