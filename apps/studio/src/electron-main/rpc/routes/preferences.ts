@@ -53,11 +53,17 @@ const openSettingsWindow = base
     });
   });
 
-const checkForUpdates = base.handler(async ({ context }) => {
-  setLastUpdateCheck();
-  context.workspaceConfig.captureEvent("app.manual_check_for_updates");
-  return context.appUpdater.checkForUpdates({ notify: true });
-});
+const checkForUpdates = base
+  .input(
+    z.object({
+      notify: z.boolean().optional().default(true),
+    }),
+  )
+  .handler(async ({ context, input }) => {
+    setLastUpdateCheck();
+    context.workspaceConfig.captureEvent("app.manual_check_for_updates");
+    return context.appUpdater.checkForUpdates({ notify: input.notify });
+  });
 
 const quitAndInstall = base.handler(({ context }) => {
   context.appUpdater.quitAndInstall();

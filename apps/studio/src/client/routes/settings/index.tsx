@@ -8,16 +8,26 @@ import {
 import { Badge } from "@/client/components/ui/badge";
 import { Button } from "@/client/components/ui/button";
 import { Label } from "@/client/components/ui/label";
-import { rpcClient } from "@/client/rpc/client";
+import { Progress } from "@/client/components/ui/progress";
+import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
 import { isFeatureEnabled } from "@/shared/features";
 import { QuestsLogoIcon } from "@quests/components/logo";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useAtom } from "jotai";
+import { Download } from "lucide-react";
 
 export const Route = createFileRoute("/settings/")({
   component: SettingsGeneralPage,
 });
+
+const handleInstallUpdate = () => {
+  try {
+    void vanillaRpcClient.preferences.quitAndInstall();
+  } catch {
+    // Handle error silently as per original implementation
+  }
+};
 
 function About() {
   const { data: appVersion, isLoading: isLoadingVersion } = useQuery(
@@ -34,11 +44,12 @@ function About() {
 
   const { mutate: addTab } = useMutation(rpcClient.tabs.add.mutationOptions());
   const router = useRouter();
+  const { data: updateState } = useQuery(
+    rpcClient.updates.live.status.experimental_liveOptions(),
+  );
 
   const handleCheckForUpdates = async () => {
     await checkForUpdatesMutation.mutateAsync({});
-    // Toasts for updates only show in the main window.
-    window.close();
   };
 
   const formatLastChecked = (date: Date) => {
@@ -61,6 +72,125 @@ function About() {
     ? new Date(preferences.lastUpdateCheck)
     : null;
 
+  const getUpdateStatusContent = () => {
+    switch (updateState?.type) {
+      case "cancelled": {
+        return (
+          <div className="text-sm text-muted-foreground">
+            Update to version {updateState.updateInfo?.version} was cancelled
+          </div>
+        );
+      }
+      case "checking": {
+        return (
+          <div className="space-y-2">
+            <div className="text-sm text-muted-foreground">
+              Checking for updates...
+            </div>
+          </div>
+        );
+      }
+      case "downloaded": {
+        return (
+          <div className="text-sm text-muted-foreground">
+            Update downloaded. Version {updateState.updateInfo?.version} is
+            ready to install
+          </div>
+        );
+      }
+      case "downloading": {
+        return (
+          <div className="space-y-2">
+            <div className="text-sm text-muted-foreground">
+              Downloading update...
+            </div>
+            <Progress
+              className="h-1 w-full"
+              value={updateState.progress.percent}
+            />
+            <div className="text-xs text-muted-foreground text-right">
+              {updateState.progress.percent}%
+            </div>
+          </div>
+        );
+      }
+      case "error": {
+        return (
+          <div className="text-sm text-destructive">
+            Update failed: {updateState.message.slice(0, 100)}
+            {updateState.message.length > 100 ? "..." : ""}
+          </div>
+        );
+      }
+      case "inactive": {
+        return (
+          <div className="text-sm text-muted-foreground">
+            The app is running in development mode. Updates are not available.
+          </div>
+        );
+      }
+      case "not-available": {
+        return (
+          <div className="text-sm text-muted-foreground">
+            No updates available
+          </div>
+        );
+      }
+      default: {
+        return lastChecked ? (
+          <div className="text-sm text-muted-foreground">
+            Last checked for updates on {formatLastChecked(lastChecked)}.
+          </div>
+        ) : null;
+      }
+    }
+  };
+
+  const getActionButton = () => {
+    switch (updateState?.type) {
+      case "checking":
+      case "downloading": {
+        return (
+          <Button disabled>
+            {updateState.type === "checking" ? "Checking..." : "Downloading..."}
+          </Button>
+        );
+      }
+      case "downloaded": {
+        return (
+          <Button onClick={handleInstallUpdate}>
+            <Download className="h-4 w-4" />
+            Install Now
+          </Button>
+        );
+      }
+      case "error": {
+        return (
+          <Button
+            onClick={() => {
+              window.open("https://quests.dev/download", "_blank");
+            }}
+            variant="outline"
+          >
+            Download Manually
+          </Button>
+        );
+      }
+      default: {
+        return (
+          <Button
+            disabled={checkForUpdatesMutation.isPending}
+            onClick={handleCheckForUpdates}
+          >
+            {checkForUpdatesMutation.isPending
+              ? "Checking..."
+              : "Check for Updates"}
+          </Button>
+        );
+      }
+    }
+  };
+
   return (
     <div className="space-y-3">
       <div>
@@ -68,28 +198,17 @@ function About() {
       </div>
       <div className="rounded-lg border bg-accent/30 p-4 shadow-sm">
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
+          <div className="flex items-start justify-between gap-4">
+            <div className="space-y-1 min-w-0 flex-1">
               <div className="text-sm text-muted-foreground">
                 Version{" "}
                 {isLoadingVersion
                   ? "Loading..."
                   : appVersion?.version || "Unknown"}
               </div>
-              {lastChecked && (
-                <div className="text-sm text-muted-foreground">
-                  Last checked for updates on {formatLastChecked(lastChecked)}.
-                </div>
-              )}
+              {getUpdateStatusContent()}
             </div>
-            <Button
-              disabled={checkForUpdatesMutation.isPending}
-              onClick={handleCheckForUpdates}
-            >
-              {checkForUpdatesMutation.isPending
-                ? "Checking..."
-                : "Check for Updates"}
-            </Button>
+            <div className="flex-shrink-0">{getActionButton()}</div>
           </div>
           <div>
             <Button

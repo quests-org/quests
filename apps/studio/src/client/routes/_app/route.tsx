@@ -1,5 +1,6 @@
 import { Toaster } from "@/client/components/ui/sonner";
 import { useServerExceptionNotifications } from "@/client/hooks/use-server-exception-notifications";
+import { useUpdateNotifications } from "@/client/hooks/use-update-notifications";
 import { useUserSessionNotifications } from "@/client/hooks/use-user-session-notifications";
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { lazy, Suspense } from "react";
@@ -15,6 +16,7 @@ const DebugMenu = lazy(() =>
 );
 
 function RouteComponent() {
+  useUpdateNotifications();
   useUserSessionNotifications();
   useServerExceptionNotifications();
 

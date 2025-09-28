@@ -1,6 +1,6 @@
 import { logger } from "@/electron-main/lib/electron-logger";
 import { publisher } from "@/electron-main/rpc/publisher";
-import pkg from "electron-updater";
+import pkg, { type ProgressInfo, type UpdateInfo } from "electron-updater";
 import os from "node:os";
 
 import { getPreferencesStore, setLastUpdateCheck } from "../stores/preferences";
@@ -12,7 +12,49 @@ const IS_MACOS_INTEL = os.platform() === "darwin" && os.arch() === "x64";
 // macOS on Intel is the only custom channel, otherwise use the defaults.
 const MACOS_INTEL_CHANNEL = "latest-x64";
 
+export type AppUpdaterStatus =
+  | AppUpdaterStatusChecking
+  | AppUpdaterStatusDownloading
+  | AppUpdaterStatusError
+  | AppUpdaterStatusNotAvailable
+  | AppUpdaterStatusWithUpdateInfo;
+
+interface AppUpdaterStatusChecking {
+  type: "checking";
+}
+
+interface AppUpdaterStatusDownloading {
+  progress: ProgressInfo;
+  type: "downloading";
+}
+
+interface AppUpdaterStatusError {
+  message: string;
+  type: "error";
+}
+
+interface AppUpdaterStatusNotAvailable {
+  type: "not-available";
+}
+
+type AppUpdaterStatusWithUpdateInfo = null | {
+  type: "available" | "cancelled" | "downloaded" | "inactive" | "not-available";
+  updateInfo: null | UpdateInfo;
+};
+
 export class StudioAppUpdater {
+  public get status() {
+    return this.#status;
+  }
+
+  private set status(status: AppUpdaterStatus) {
+    this.#status = status;
+    publisher.publish("updates.status", { status });
+  }
+
+  // eslint-disable-next-line perfectionist/sort-classes
+  #status: AppUpdaterStatus = null;
+
   public constructor() {
     autoUpdater.logger = logger.scope("appUpdater:autoUpdater");
     autoUpdater.autoDownload = true;
@@ -28,51 +70,93 @@ export class StudioAppUpdater {
 
     autoUpdater.on("update-available", (updateInfo) => {
       scopedLogger.info("Update available");
-      publisher.publish("updates.available", { updateInfo });
+      this.status = {
+        type: "available",
+        updateInfo,
+      };
     });
 
-    autoUpdater.on("update-not-available", () => {
+    autoUpdater.on("update-not-available", (updateInfo) => {
       scopedLogger.info("Update not available");
+      this.status = {
+        type: "not-available",
+        updateInfo,
+      };
     });
 
     autoUpdater.on("download-progress", (progress) => {
       scopedLogger.info(
         `Download progress: ${progress.percent}%, ${progress.transferred}/${progress.total}`,
       );
-      publisher.publish("updates.download-progress", { progress });
+      this.status = {
+        progress,
+        type: "downloading",
+      };
     });
 
     autoUpdater.on("update-downloaded", (updateInfo) => {
       scopedLogger.info("Update downloaded");
-      publisher.publish("updates.downloaded", { updateInfo });
+      this.status = {
+        type: "downloaded",
+        updateInfo,
+      };
     });
 
     autoUpdater.on("error", (err) => {
       scopedLogger.error("AutoUpdater error:", err);
-      publisher.publish("updates.error", {
-        error: { message: err.message },
-      });
+      this.status = {
+        message: err.message,
+        type: "error",
+      };
     });
 
     autoUpdater.on("update-cancelled", (updateInfo) => {
       scopedLogger.info("Update cancelled");
-      publisher.publish("updates.cancelled", { updateInfo });
+      this.status = {
+        type: "cancelled",
+        updateInfo,
+      };
     });
 
-    publisher.subscribe("updates.start-check", () => {
+    publisher.subscribe("updates.trigger-check", () => {
       void this.checkForUpdates({ notify: true });
     });
   }
 
-  public checkForUpdates({ notify }: { notify?: boolean } = {}) {
+  public async checkForUpdates({ notify }: { notify?: boolean } = {}) {
     if (notify) {
-      publisher.publish("updates.check-started", null);
+      this.status = {
+        type: "checking",
+      };
       autoUpdater.once("update-not-available", (updateInfo) => {
-        publisher.publish("updates.not-available", { updateInfo });
+        this.status = {
+          type: "not-available",
+          updateInfo,
+        };
+      });
+    } else {
+      this.#status = {
+        type: "checking",
+      };
+      autoUpdater.once("update-not-available", (updateInfo) => {
+        this.#status = {
+          type: "not-available",
+          updateInfo,
+        };
       });
     }
 
-    return autoUpdater.checkForUpdates().catch((error: unknown) => {
+    const isUpdaterActive = autoUpdater.isUpdaterActive();
+
+    if (!isUpdaterActive) {
+      this.status = {
+        type: "inactive",
+        updateInfo: null,
+      };
+      return;
+    }
+
+    return await autoUpdater.checkForUpdates().catch((error: unknown) => {
       scopedLogger.error("Error checking for updates:", error);
     });
   }
@@ -89,7 +173,15 @@ export class StudioAppUpdater {
   }
 
   public quitAndInstall() {
-    autoUpdater.quitAndInstall();
+    try {
+      autoUpdater.quitAndInstall();
+    } catch (error) {
+      scopedLogger.error("Error quitting and installing:", error);
+      this.status = {
+        message: error instanceof Error ? error.message : String(error),
+        type: "error",
+      };
+    }
   }
 }
 

@@ -12,7 +12,7 @@ export function createAppMenu(): MenuItemConstructorOptions {
       { role: "about" as const },
       {
         click: () => {
-          publisher.publish("updates.start-check", null);
+          publisher.publish("updates.trigger-check", null);
         },
         label: "Check for Updates...",
       },
@@ -53,33 +53,41 @@ export function createDevToolsMenu(): MenuItemConstructorOptions[] {
         },
         {
           click: () => {
-            publisher.publish("updates.check-started", null);
+            publisher.publish("updates.status", {
+              status: { type: "checking" },
+            });
 
             let progress = 0;
             const interval = setInterval(() => {
               progress += 10;
 
               if (progress <= 100) {
-                publisher.publish("updates.download-progress", {
-                  progress: {
-                    bytesPerSecond: 1024 * 1024,
-                    delta: 1024 * 1024,
-                    percent: progress,
-                    total: 100 * 1024 * 1024,
-                    transferred: progress * 1024 * 1024,
+                publisher.publish("updates.status", {
+                  status: {
+                    progress: {
+                      bytesPerSecond: 1024 * 1024,
+                      delta: 1024 * 1024,
+                      percent: progress,
+                      total: 100 * 1024 * 1024,
+                      transferred: progress * 1024 * 1024,
+                    },
+                    type: "downloading",
                   },
                 });
               } else {
                 clearInterval(interval);
-                publisher.publish("updates.downloaded", {
-                  updateInfo: {
-                    files: [],
-                    path: "",
-                    releaseDate: new Date().toISOString(),
-                    releaseName: "Test Update",
-                    releaseNotes: "This is a test update",
-                    sha512: "",
-                    version: "1.0.0-test",
+                publisher.publish("updates.status", {
+                  status: {
+                    type: "downloaded",
+                    updateInfo: {
+                      files: [],
+                      path: "",
+                      releaseDate: new Date().toISOString(),
+                      releaseName: "Test Update",
+                      releaseNotes: "This is a test update",
+                      sha512: "",
+                      version: "1.0.0-test",
+                    },
                   },
                 });
               }
@@ -96,11 +104,20 @@ export function createDevToolsMenu(): MenuItemConstructorOptions[] {
         },
         {
           click: () => {
-            publisher.publish("updates.error", {
-              error: {
-                message: "There was an error checking for updates",
-              },
+            publisher.publish("updates.status", {
+              status: { type: "checking" },
             });
+
+            void new Promise((resolve) => setTimeout(resolve, 1000)).then(
+              () => {
+                publisher.publish("updates.status", {
+                  status: {
+                    message: "There was an error checking for updates",
+                    type: "error",
+                  },
+                });
+              },
+            );
           },
           label: "Test update error notification",
         },

@@ -3,7 +3,6 @@ import type { ErrorComponentProps } from "@tanstack/react-router";
 import { DefaultErrorComponent } from "@/client/components/default-error-component";
 import { NotFoundRouteComponent } from "@/client/components/not-found";
 import { ThemeProvider } from "@/client/components/theme-provider";
-import { useUpdateNotifications } from "@/client/hooks/use-update-notifications";
 import { type QueryClient } from "@tanstack/react-query";
 import {
   createRootRouteWithContext,
@@ -47,7 +46,6 @@ function Root({ children }: Readonly<{ children: React.ReactNode }>) {
 }
 
 function RootComponent() {
-  useUpdateNotifications();
   const router = useRouter();
 
   useEffect(() => {
