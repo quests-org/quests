@@ -129,6 +129,13 @@ function About() {
           </div>
         );
       }
+      case "installing": {
+        return (
+          <div className="text-sm text-muted-foreground">
+            {updateState.notice ?? "Update is installing..."}
+          </div>
+        );
+      }
       case "not-available": {
         return (
           <div className="text-sm text-muted-foreground">
