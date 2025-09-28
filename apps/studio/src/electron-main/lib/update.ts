@@ -1,6 +1,7 @@
 import { logger } from "@/electron-main/lib/electron-logger";
 import { publisher } from "@/electron-main/rpc/publisher";
 import pkg, { type ProgressInfo, type UpdateInfo } from "electron-updater";
+import fs from "node:fs";
 import os from "node:os";
 
 import { getPreferencesStore, setLastUpdateCheck } from "../stores/preferences";
@@ -180,11 +181,19 @@ export class StudioAppUpdater {
 
   public quitAndInstall() {
     try {
+      let notice: string | undefined;
+
+      if (isUbuntu()) {
+        // See https://github.com/electron-userland/electron-builder/issues/9291
+        notice =
+          'Update is installing and may take a few minutes to complete. Please ignore any "Force quit" dialogs. The app will restart when complete.';
+      } else if (os.platform() === "linux") {
+        notice =
+          "Update is installing. Please allow a few minutes for the update to complete. The app will restart when complete.";
+      }
+
       this.status = {
-        notice:
-          os.platform() === "linux"
-            ? "Update is installing. Please allow a few minutes for the update to complete. The app will restart when complete."
-            : undefined,
+        notice,
         type: "installing",
       };
       autoUpdater.quitAndInstall();
@@ -216,4 +225,17 @@ function getChannel() {
   }
 
   return channel;
+}
+
+function isUbuntu(): boolean {
+  if (os.platform() !== "linux") {
+    return false;
+  }
+
+  try {
+    const osRelease = fs.readFileSync("/etc/os-release", "utf8");
+    return osRelease.includes("Ubuntu");
+  } catch {
+    return false;
+  }
 }
