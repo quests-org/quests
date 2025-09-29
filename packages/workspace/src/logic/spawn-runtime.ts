@@ -253,6 +253,7 @@ export const spawnRuntimeLogic = fromCallback<
       scriptOptions: {
         env: {
           ...providerEnv,
+          NO_COLOR: "1", // Disable color to avoid ANSI escape codes in logs
           QUESTS_INSIDE_STUDIO: "true", // Used by apps to detect if they are running inside Studio
         },
         port,
