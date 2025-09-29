@@ -55,8 +55,12 @@ export function generateProjectTitle({
         throw new Error("No title generated");
       }
 
-      const trimmedTitle = title.text.trim();
-      const words = trimmedTitle.split(/\s+/);
+      let cleanedTitle = title.text.trim();
+      // remove markdown headers
+      cleanedTitle = cleanedTitle.replace(/^#+\s*/, "");
+      cleanedTitle = cleanedTitle.trim();
+
+      const words = cleanedTitle.split(/\s+/);
       const limitedTitle = words.slice(0, MAX_TITLE_WORDS).join(" ");
 
       return limitedTitle;
