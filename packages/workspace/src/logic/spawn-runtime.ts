@@ -276,6 +276,17 @@ export const spawnRuntimeLogic = fromCallback<
 
     let shouldCheckServer = true;
     const checkServer = async () => {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      if (!port) {
+        parentRef.send({
+          isRetryable: true,
+          shouldLog: false,
+          type: "spawnRuntime.error.unknown",
+          value: { error: new Error("Port not initialized") },
+        });
+        return;
+      }
+
       if (signal.aborted) {
         const timeoutError = new Error(
           "Timed out while waiting for server to start",
@@ -288,9 +299,7 @@ export const spawnRuntimeLogic = fromCallback<
         });
         return;
       }
-
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      if (port && (await isLocalServerRunning(port)) && shouldCheckServer) {
+      if ((await isLocalServerRunning(port)) && shouldCheckServer) {
         shouldCheckServer = false;
         timeout.cancel();
         parentRef.send({ type: "spawnRuntime.started", value: { port } });
