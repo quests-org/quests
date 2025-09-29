@@ -23,6 +23,7 @@ const KNOWN_MODEL_IDS = [
   "claude-opus-4-1-20250805",
   "claude-opus-4-20250514",
   "claude-sonnet-4-20250514",
+  "claude-sonnet-4-5-20250929",
 ] as const;
 
 type KnownModelId = (typeof KNOWN_MODEL_IDS)[number];
@@ -35,6 +36,7 @@ const CANONICAL_MAP: Partial<Record<KnownModelId, string>> = {
   "claude-3-haiku-20240307": "claude-3-haiku",
   "claude-opus-4-1-20250805": "claude-opus-4.1",
   "claude-opus-4-20250514": "claude-opus-4",
+  "claude-sonnet-4-5-20250929": "claude-sonnet-4.5",
   "claude-sonnet-4-20250514": "claude-sonnet-4",
 };
 
@@ -58,7 +60,8 @@ export const anthropicAdapter = setupProviderAdapter({
   modelTags: {
     "claude-3-7-sonnet-20250219": ["coding"],
     "claude-opus-4-1-20250805": ["coding", "recommended"],
-    "claude-sonnet-4-20250514": ["coding", "recommended", "default"],
+    "claude-sonnet-4-5-20250929": ["coding", "recommended", "default"],
+    "claude-sonnet-4-20250514": ["coding", "recommended"],
   },
   providerType: "anthropic",
 }).create(({ buildURL, getModelTags, providerType }) => ({

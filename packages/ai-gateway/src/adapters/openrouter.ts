@@ -25,6 +25,7 @@ const KNOWN_MODEL_IDS = [
   "anthropic/claude-3.7-sonnet",
   "anthropic/claude-opus-4.1",
   "anthropic/claude-sonnet-4",
+  "anthropic/claude-sonnet-4.5",
   "google/gemini-2.5-flash",
   "google/gemini-2.5-pro",
   "moonshotai/kimi-k2",
@@ -58,7 +59,8 @@ export const openrouterAdapter = setupProviderAdapter({
   modelTags: {
     "anthropic/claude-3.7-sonnet": ["coding"],
     "anthropic/claude-opus-4.1": ["coding", "recommended"],
-    "anthropic/claude-sonnet-4": ["coding", "recommended", "default"],
+    "anthropic/claude-sonnet-4": ["coding", "recommended"],
+    "anthropic/claude-sonnet-4.5": ["coding", "recommended", "default"],
     "google/gemini-2.5-flash": ["recommended"],
     "google/gemini-2.5-pro": ["coding", "recommended"],
     "moonshotai/kimi-k2": ["coding", "recommended"],
