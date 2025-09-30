@@ -43,6 +43,7 @@ const KNOWN_MODEL_IDS = [
   "x-ai/grok-code-fast-1",
   "z-ai/glm-4.5",
   "z-ai/glm-4.5-air",
+  "z-ai/glm-4.6",
 ] as const;
 
 const OpenRouterModelsResponseSchema = z.object({
@@ -77,6 +78,7 @@ export const openrouterAdapter = setupProviderAdapter({
     "x-ai/grok-code-fast-1": ["coding", "recommended"],
     "z-ai/glm-4.5": ["coding", "recommended"],
     "z-ai/glm-4.5-air": ["coding", "recommended"],
+    "z-ai/glm-4.6": ["coding", "recommended"],
   },
   providerType: "openrouter",
 }).create(({ buildURL, getModelTags, providerType }) => {

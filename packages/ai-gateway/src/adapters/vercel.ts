@@ -29,6 +29,7 @@ const KNOWN_MODEL_IDS = [
   "xai/grok-code-fast-1",
   "zai/glm-4.5",
   "zai/glm-4.5-air",
+  "zai/glm-4.6",
 ] as const;
 
 function setAuthHeaders(headers: Headers, apiKey: string) {
@@ -55,6 +56,7 @@ export const vercelAdapter = setupProviderAdapter({
     "xai/grok-code-fast-1": ["coding", "recommended"],
     "zai/glm-4.5": ["coding", "recommended"],
     "zai/glm-4.5-air": ["coding", "recommended"],
+    "zai/glm-4.6": ["coding", "recommended"],
   },
   providerType: "vercel",
 }).create(({ buildURL, getModelTags, providerType }) => ({
