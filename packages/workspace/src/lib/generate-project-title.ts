@@ -19,15 +19,17 @@ const SYSTEM_PROMPT = dedent`<task>
     <rules>
     - Maximum ${MAX_TITLE_WORDS} words, single line
     - Do not use the word "app", "project", or anything other than a descriptive title for the functionality
-    - Return ONLY the title text, nothing else
+    - Return ONLY the title text in plain text format
+    - No markdown, no quotes, no formatting, no extra details
+    - Just the plain title words, nothing else
     - Keep it concise and descriptive
     </rules>
 
     <examples>
-    "Build a todo app" → "Todos"
-    "Create a chat application with file uploads" → "Chat with Files"
-    "Make a kanban board for project management" → "Kanban Board"
-    "Build a complex inventory management system" → "Inventory Management System"
+    Build a todo app → Todos
+    Create a chat application with file uploads → Chat with Files
+    Make a kanban board for project management → Kanban Board
+    Build a complex inventory management system → Inventory Management System
     </examples>
   `.trim();
 

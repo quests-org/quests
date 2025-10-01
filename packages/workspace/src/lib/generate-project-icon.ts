@@ -23,13 +23,15 @@ const SYSTEM_PROMPT = dedent`<task>
     </icon-list>
 
     <rules>
-    Return ONLY the icon name, nothing else.
+    Return ONLY the icon name in plain text format.
+    No markdown, no quotes, no formatting, no extra details.
+    Just the icon name, nothing else.
     </rules>
 
     <examples>
-    "Build a todo app" → "Todos"
-    "Create a chat application with file uploads" → "File"
-    "Make a kanban board for project management" → "Kanban"
+    Build a todo app → Todos
+    Create a chat application with file uploads → File
+    Make a kanban board for project management → Kanban
     </examples>
   `.trim();
 
