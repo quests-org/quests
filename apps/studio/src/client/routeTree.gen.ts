@@ -20,6 +20,7 @@ import { Route as SettingsProvidersRouteImport } from './routes/settings/provide
 import { Route as SettingsAdvancedRouteImport } from './routes/settings/advanced'
 import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
+import { Route as AppWelcomeRouteImport } from './routes/_app/welcome'
 import { Route as AppSetupRouteImport } from './routes/_app/setup'
 import { Route as AppReleaseNotesRouteImport } from './routes/_app/release-notes'
 import { Route as AppNewTabRouteImport } from './routes/_app/new-tab'
@@ -85,6 +86,11 @@ const AuthLoginRoute = AuthLoginRouteImport.update({
   id: '/login',
   path: '/login',
   getParentRoute: () => AuthRouteRoute,
+} as any)
+const AppWelcomeRoute = AppWelcomeRouteImport.update({
+  id: '/welcome',
+  path: '/welcome',
+  getParentRoute: () => AppRouteRoute,
 } as any)
 const AppSetupRoute = AppSetupRouteImport.update({
   id: '/setup',
@@ -159,6 +165,7 @@ export interface FileRoutesByFullPath {
   '/new-tab': typeof AppNewTabRoute
   '/release-notes': typeof AppReleaseNotesRoute
   '/setup': typeof AppSetupRoute
+  '/welcome': typeof AppWelcomeRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
   '/settings/advanced': typeof SettingsAdvancedRoute
@@ -180,6 +187,7 @@ export interface FileRoutesByTo {
   '/new-tab': typeof AppNewTabRoute
   '/release-notes': typeof AppReleaseNotesRoute
   '/setup': typeof AppSetupRoute
+  '/welcome': typeof AppWelcomeRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
   '/settings/advanced': typeof SettingsAdvancedRoute
@@ -206,6 +214,7 @@ export interface FileRoutesById {
   '/_app/new-tab': typeof AppNewTabRoute
   '/_app/release-notes': typeof AppReleaseNotesRoute
   '/_app/setup': typeof AppSetupRoute
+  '/_app/welcome': typeof AppWelcomeRoute
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/register': typeof AuthRegisterRoute
   '/settings/advanced': typeof SettingsAdvancedRoute
@@ -231,6 +240,7 @@ export interface FileRouteTypes {
     | '/new-tab'
     | '/release-notes'
     | '/setup'
+    | '/welcome'
     | '/login'
     | '/register'
     | '/settings/advanced'
@@ -252,6 +262,7 @@ export interface FileRouteTypes {
     | '/new-tab'
     | '/release-notes'
     | '/setup'
+    | '/welcome'
     | '/login'
     | '/register'
     | '/settings/advanced'
@@ -277,6 +288,7 @@ export interface FileRouteTypes {
     | '/_app/new-tab'
     | '/_app/release-notes'
     | '/_app/setup'
+    | '/_app/welcome'
     | '/_auth/login'
     | '/_auth/register'
     | '/settings/advanced'
@@ -379,6 +391,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/login'
       preLoaderRoute: typeof AuthLoginRouteImport
       parentRoute: typeof AuthRouteRoute
+    }
+    '/_app/welcome': {
+      id: '/_app/welcome'
+      path: '/welcome'
+      fullPath: '/welcome'
+      preLoaderRoute: typeof AppWelcomeRouteImport
+      parentRoute: typeof AppRouteRoute
     }
     '/_app/setup': {
       id: '/_app/setup'
@@ -490,6 +509,7 @@ interface AppRouteRouteChildren {
   AppNewTabRoute: typeof AppNewTabRoute
   AppReleaseNotesRoute: typeof AppReleaseNotesRoute
   AppSetupRoute: typeof AppSetupRoute
+  AppWelcomeRoute: typeof AppWelcomeRoute
   AppDiscoverIndexRoute: typeof AppDiscoverIndexRoute
   AppDiscoverAppsFolderNameRoute: typeof AppDiscoverAppsFolderNameRoute
   AppProjectsSubdomainViewRoute: typeof AppProjectsSubdomainViewRoute
@@ -501,6 +521,7 @@ const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppNewTabRoute: AppNewTabRoute,
   AppReleaseNotesRoute: AppReleaseNotesRoute,
   AppSetupRoute: AppSetupRoute,
+  AppWelcomeRoute: AppWelcomeRoute,
   AppDiscoverIndexRoute: AppDiscoverIndexRoute,
   AppDiscoverAppsFolderNameRoute: AppDiscoverAppsFolderNameRoute,
   AppProjectsSubdomainViewRoute: AppProjectsSubdomainViewRoute,

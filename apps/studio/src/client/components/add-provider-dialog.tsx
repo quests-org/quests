@@ -32,7 +32,7 @@ import { Badge } from "./ui/badge";
 
 interface AddProviderDialogProps {
   onOpenChange: (open: boolean) => void;
-  onSuccess?: () => void;
+  onSuccess: () => void;
   open: boolean;
   providers?: ClientAIProvider[];
 }
@@ -107,9 +107,7 @@ export function AddProviderDialog({
             setErrorMessage("Failed to validate provider");
           }
         },
-        onSuccess: () => {
-          onSuccess?.();
-        },
+        onSuccess,
       },
     );
     if (providers.length === 0 || !selectedModelURI) {

@@ -12,7 +12,7 @@ export const Route = createFileRoute("/_app/setup")({
     return {
       meta: [
         {
-          title: "Welcome to Quests",
+          title: "Setup",
         },
         {
           content: "quests",
