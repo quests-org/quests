@@ -94,30 +94,34 @@ export function AddProviderDialog({
       return;
     }
 
-    await createMutation.mutateAsync(
-      {
-        apiKey: providerMetadata?.requiresAPIKey ? apiKey : "NOT_NEEDED",
-        type: selectedProviderType,
-      },
-      {
-        onError: (error) => {
-          if (isDefinedError(error)) {
-            setErrorMessage(error.message);
-          } else {
-            setErrorMessage("Failed to validate provider");
-          }
+    try {
+      await createMutation.mutateAsync(
+        {
+          apiKey: providerMetadata?.requiresAPIKey ? apiKey : "NOT_NEEDED",
+          type: selectedProviderType,
         },
-        onSuccess,
-      },
-    );
-    if (providers.length === 0 || !selectedModelURI) {
-      const { models } = await vanillaRpcClient.gateway.models.list();
-      const defaultModel = models.find((model) =>
-        model.tags.includes("default"),
+        {
+          onError: (error) => {
+            if (isDefinedError(error)) {
+              setErrorMessage(error.message);
+            } else {
+              setErrorMessage("Failed to validate provider");
+            }
+          },
+        },
       );
-      if (defaultModel) {
-        setSelectedModelURI(defaultModel.uri);
+      if (providers.length === 0 || !selectedModelURI) {
+        const { models } = await vanillaRpcClient.gateway.models.list();
+        const defaultModel = models.find((model) =>
+          model.tags.includes("default"),
+        );
+        if (defaultModel) {
+          setSelectedModelURI(defaultModel.uri);
+        }
       }
+      onSuccess();
+    } catch {
+      // Handled in onError, but caught here to avoid uncaught promise error
     }
   };
 
