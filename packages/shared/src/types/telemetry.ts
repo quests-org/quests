@@ -51,6 +51,9 @@ export interface AnalyticsEvents {
   "session.created": never;
   "session.removed": never;
   "session.stopped": never;
+  "workspace.non_default_port": {
+    apps_server_port: number;
+  };
 }
 
 export type CaptureEventFunction<E = AnalyticsEvents> = <T extends keyof E>(

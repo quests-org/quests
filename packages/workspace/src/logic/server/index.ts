@@ -80,13 +80,9 @@ export const workspaceServerLogic = fromCallback<
   void generateWorkspaceServerPort()
     .then((port) => {
       if (port !== DEFAULT_APPS_SERVER_PORT) {
-        input.workspaceConfig.captureException(
-          new Error("Workspace server port is not the default port"),
-          {
-            apps_server_port: port,
-            scopes: ["workspace"],
-          },
-        );
+        input.workspaceConfig.captureEvent("workspace.non_default_port", {
+          apps_server_port: port,
+        });
       }
       server = input.serve({ fetch: app.fetch, port });
 
