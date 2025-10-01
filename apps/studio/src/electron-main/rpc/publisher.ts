@@ -8,6 +8,10 @@ export const publisher = new EventPublisher<{
       code: number;
     };
   };
+  "debug.open-analytics-toolbar": null;
+  "debug.open-debug-page": null;
+  "debug.open-query-devtools": null;
+  "debug.open-router-devtools": null;
   "favorites.updated": null;
   "menu.height-updated": Partial<{
     height: number;

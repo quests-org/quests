@@ -9,9 +9,9 @@ export const Route = createFileRoute("/_app")({
   component: RouteComponent,
 });
 
-const DebugMenu = lazy(() =>
-  import("@/client/components/debug-menu").then((module) => ({
-    default: module.DebugMenu,
+const DevTools = lazy(() =>
+  import("@/client/components/dev-tools").then((module) => ({
+    default: module.DevTools,
   })),
 );
 
@@ -26,7 +26,7 @@ function RouteComponent() {
 
       {import.meta.env.DEV && (
         <Suspense fallback={null}>
-          <DebugMenu />
+          <DevTools />
         </Suspense>
       )}
 

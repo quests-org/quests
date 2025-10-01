@@ -7,30 +7,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/client/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/client/components/ui/dropdown-menu";
 import { Label } from "@/client/components/ui/label";
 import { Sheet, SheetContent, SheetTitle } from "@/client/components/ui/sheet";
 import { Textarea } from "@/client/components/ui/textarea";
 import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
+import { useNavigate } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
-import {
-  BarChart,
-  Bug,
-  Database,
-  EyeOff,
-  Route as RouteIcon,
-} from "lucide-react";
 import { posthog } from "posthog-js";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
-import { InternalLink } from "./internal-link";
+import { vanillaRpcClient } from "../rpc/client";
 
 function nullishToUndefined<T>(val: null | T): T | undefined {
   return val ?? undefined;
@@ -59,15 +47,72 @@ interface ValidationResult {
   parsedData?: z.output<typeof ToolbarParamsSchema>;
 }
 
-export function DebugMenu() {
+export function DevTools() {
+  const navigate = useNavigate();
   const [routerPanelIsOpen, setRouterPanelIsOpen] = useState(false);
   const [queryPanelIsOpen, setQueryPanelIsOpen] = useState(false);
   const [analyticsDialogIsOpen, setAnalyticsDialogIsOpen] = useState(false);
-  const [menuVisible, setMenuVisible] = useState(true);
   const [toolbarCode, setToolbarCode] = useState("");
   const [validationResult, setValidationResult] = useState<ValidationResult>({
     isValid: false,
   });
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    async function subscribeToDebugEvents() {
+      const subscriptions = await Promise.all([
+        vanillaRpcClient.debug.live.openDebugPage(),
+        vanillaRpcClient.debug.live.openRouterDevtools(),
+        vanillaRpcClient.debug.live.openQueryDevtools(),
+        vanillaRpcClient.debug.live.openAnalyticsToolbar(),
+      ]);
+
+      const [debugPageSub, routerSub, querySub, analyticsSub] = subscriptions;
+
+      void (async () => {
+        for await (const _ of debugPageSub) {
+          if (isCancelled) {
+            break;
+          }
+          void navigate({ to: "/debug" });
+        }
+      })();
+
+      void (async () => {
+        for await (const _ of routerSub) {
+          if (isCancelled) {
+            break;
+          }
+          setRouterPanelIsOpen(true);
+        }
+      })();
+
+      void (async () => {
+        for await (const _ of querySub) {
+          if (isCancelled) {
+            break;
+          }
+          setQueryPanelIsOpen(true);
+        }
+      })();
+
+      void (async () => {
+        for await (const _ of analyticsSub) {
+          if (isCancelled) {
+            break;
+          }
+          setAnalyticsDialogIsOpen(true);
+        }
+      })();
+    }
+
+    void subscribeToDebugEvents();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [navigate]);
 
   const validateToolbarCode = (code: string): ValidationResult => {
     if (!code.trim()) {
@@ -156,72 +201,8 @@ export function DebugMenu() {
     setValidationResult({ isValid: false });
   };
 
-  if (!menuVisible) {
-    return null;
-  }
-
   return (
     <>
-      <div className="fixed bottom-4 left-4 z-50">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              className="rounded-full shadow-lg"
-              size="icon"
-              title="Debug Tools"
-              variant="warning"
-            >
-              <Bug className="size-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" side="top">
-            <DropdownMenuItem asChild>
-              <InternalLink className="cursor-pointer" to="/debug">
-                <Bug className="size-4" />
-                Debug Page
-              </InternalLink>
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="cursor-pointer"
-              onClick={() => {
-                setRouterPanelIsOpen(true);
-              }}
-            >
-              <RouteIcon className="size-4" />
-              Router DevTools
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="cursor-pointer"
-              onClick={() => {
-                setQueryPanelIsOpen(true);
-              }}
-            >
-              <Database className="size-4" />
-              Query DevTools
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="cursor-pointer"
-              onClick={() => {
-                setAnalyticsDialogIsOpen(true);
-              }}
-            >
-              <BarChart className="size-4" />
-              Analytics Toolbar
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="cursor-pointer"
-              onClick={() => {
-                setMenuVisible(false);
-                toast.success("Debug menu hidden!");
-              }}
-            >
-              <EyeOff className="size-4" />
-              Hide Debug Menu
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-
       <Sheet onOpenChange={setRouterPanelIsOpen} open={routerPanelIsOpen}>
         <SheetContent className="h-1/2 p-0" side="bottom">
           <SheetTitle className="sr-only">React Router Devtools</SheetTitle>

@@ -46,6 +46,51 @@ export function createDevToolsMenu(): MenuItemConstructorOptions[] {
       label: "Dev Tools",
       submenu: [
         {
+          label: "Pages",
+          submenu: [
+            {
+              click: () => {
+                const tabsManager = getTabsManager();
+                void tabsManager?.addTab({ urlPath: "/setup" });
+              },
+              label: "/setup",
+            },
+            {
+              click: () => {
+                const tabsManager = getTabsManager();
+                void tabsManager?.addTab({ urlPath: "/welcome" });
+              },
+              label: "/welcome",
+            },
+            {
+              click: () => {
+                publisher.publish("debug.open-debug-page", null);
+              },
+              label: "/debug",
+            },
+          ],
+        },
+        { type: "separator" },
+        {
+          click: () => {
+            publisher.publish("debug.open-router-devtools", null);
+          },
+          label: "Router DevTools",
+        },
+        {
+          click: () => {
+            publisher.publish("debug.open-query-devtools", null);
+          },
+          label: "Query DevTools",
+        },
+        {
+          click: () => {
+            publisher.publish("debug.open-analytics-toolbar", null);
+          },
+          label: "Analytics Toolbar",
+        },
+        { type: "separator" },
+        {
           click: () => {
             publisher.publish("test-notification", null);
           },
@@ -96,13 +141,6 @@ export function createDevToolsMenu(): MenuItemConstructorOptions[] {
             }, 500);
           },
           label: "Test download notification",
-        },
-        {
-          click: () => {
-            const tabsManager = getTabsManager();
-            void tabsManager?.addTab({ urlPath: "/setup" });
-          },
-          label: "Open Setup Tab",
         },
         {
           click: () => {

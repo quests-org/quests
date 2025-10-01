@@ -21,6 +21,43 @@ const systemInfo = base.handler(async ({ context }) => {
 });
 
 const live = {
+  openAnalyticsToolbar: base.handler(async function* ({ signal }) {
+    for await (const _payload of publisher.subscribe(
+      "debug.open-analytics-toolbar",
+      {
+        signal,
+      },
+    )) {
+      yield null;
+    }
+  }),
+  openDebugPage: base.handler(async function* ({ signal }) {
+    for await (const _payload of publisher.subscribe("debug.open-debug-page", {
+      signal,
+    })) {
+      yield null;
+    }
+  }),
+  openQueryDevtools: base.handler(async function* ({ signal }) {
+    for await (const _payload of publisher.subscribe(
+      "debug.open-query-devtools",
+      {
+        signal,
+      },
+    )) {
+      yield null;
+    }
+  }),
+  openRouterDevtools: base.handler(async function* ({ signal }) {
+    for await (const _payload of publisher.subscribe(
+      "debug.open-router-devtools",
+      {
+        signal,
+      },
+    )) {
+      yield null;
+    }
+  }),
   testNotification: base.handler(async function* ({ signal }) {
     for await (const _payload of publisher.subscribe("test-notification", {
       signal,

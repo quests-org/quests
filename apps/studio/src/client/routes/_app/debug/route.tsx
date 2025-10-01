@@ -1,5 +1,6 @@
 import { InternalLink } from "@/client/components/internal-link";
 import { ThemeToggle } from "@/client/components/theme-toggle";
+import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 
 // Global variables for link styles
@@ -9,6 +10,17 @@ const linkActiveClasses = "text-foreground! no-underline!";
 
 export const Route = createFileRoute("/_app/debug")({
   component: RouteComponent,
+  head: () => ({
+    meta: [
+      {
+        title: "Debug",
+      },
+      {
+        content: "terminal",
+        name: META_TAG_LUCIDE_ICON,
+      },
+    ],
+  }),
 });
 
 function RouteComponent() {
