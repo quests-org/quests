@@ -32,7 +32,7 @@ const projectSearchSchema = z.object({
 });
 
 function title(projectTitle?: string) {
-  return `${projectTitle ?? "Not Found"} - Project`;
+  return `${projectTitle ?? "Not Found"} · Project`;
 }
 
 /* eslint-disable perfectionist/sort-objects */
