@@ -1,6 +1,6 @@
 import Particles from "@/client/components/particles";
 import { Button } from "@/client/components/ui/button";
-import { rpcClient } from "@/client/rpc/client";
+import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
 import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
 import { isDefinedError } from "@orpc/client";
 import { QuestsAnimatedLogo } from "@quests/components/animated-logo";
@@ -10,6 +10,9 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/welcome")({
+  beforeLoad: async () => {
+    await vanillaRpcClient.sidebar.close();
+  },
   component: RouteComponent,
   head: () => {
     return {
@@ -38,7 +41,7 @@ function FeatureCard({
   return (
     <div className="flex gap-5 rounded-lg bg-muted/50 p-4">
       <div className="flex-shrink-0">
-        <div className="text-6xl font-bold text-foreground/10 leading-none">
+        <div className="text-6xl font-bold text-foreground/10 leading-none tabular-nums">
           {number}
         </div>
       </div>
@@ -76,8 +79,8 @@ function RouteComponent() {
   };
 
   return (
-    <div className="flex min-h-svh flex-col bg-background">
-      <div className="fixed z-10 h-full w-full flex flex-1 justify-center items-center">
+    <div className="flex min-h-svh flex-col bg-background overflow-y-auto">
+      <div className="relative z-10 min-h-full w-full flex flex-1 justify-center items-center py-8">
         <div className="max-w-xl w-full px-6">
           <div className="flex flex-col items-center gap-8">
             <div className="flex flex-col items-center gap-6">
@@ -108,11 +111,11 @@ function RouteComponent() {
             <div className="flex flex-col gap-5 w-full max-w-md mt-4">
               <Button
                 className="w-full"
-                onClick={() => void navigate({ to: "/new-tab" })}
+                onClick={() => void navigate({ to: "/setup" })}
                 size="lg"
                 variant="default"
               >
-                Get started
+                Next
               </Button>
               <div className="text-center text-sm text-muted-foreground/80">
                 Quests is{" "}

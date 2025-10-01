@@ -13,7 +13,7 @@ export const Route = createFileRoute("/")({
     } else {
       redirect({
         throw: true,
-        to: "/setup",
+        to: "/welcome",
       });
     }
   },
