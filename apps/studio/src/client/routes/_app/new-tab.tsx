@@ -4,6 +4,7 @@ import { InternalLink } from "@/client/components/internal-link";
 import { PromptInput } from "@/client/components/prompt-input";
 import { Button } from "@/client/components/ui/button";
 import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
+import { APP_REPO_URL, NEW_ISSUE_URL, PRODUCT_NAME } from "@quests/shared";
 import { StoreId } from "@quests/workspace/client";
 import { useMutation } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
@@ -34,6 +35,10 @@ function RouteComponent() {
   const navigate = useNavigate({ from: "/new-tab" });
   const createProjectMutation = useMutation(
     rpcClient.workspace.project.create.mutationOptions(),
+  );
+
+  const openExternalLinkMutation = useMutation(
+    rpcClient.utils.openExternalLink.mutationOptions(),
   );
 
   return (
@@ -120,6 +125,35 @@ function RouteComponent() {
         </div>
         <DiscoverAppsGrid registryApps={registryApps} />
       </div>
+
+      <footer className="w-full py-4 px-8">
+        <p className="text-center text-xs text-muted-foreground">
+          {PRODUCT_NAME} is{" "}
+          <button
+            className="hover:text-foreground hover:underline transition-colors cursor-pointer"
+            onClick={() => {
+              void openExternalLinkMutation.mutateAsync({
+                url: APP_REPO_URL,
+              });
+            }}
+            type="button"
+          >
+            open source
+          </button>
+          <span className="mx-2">·</span>
+          <button
+            className="hover:text-foreground hover:underline transition-colors cursor-pointer"
+            onClick={() => {
+              void openExternalLinkMutation.mutateAsync({
+                url: NEW_ISSUE_URL,
+              });
+            }}
+            type="button"
+          >
+            Report an issue
+          </button>
+        </p>
+      </footer>
     </div>
   );
 }

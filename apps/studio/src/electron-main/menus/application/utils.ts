@@ -2,6 +2,7 @@ import { publisher } from "@/electron-main/rpc/publisher";
 import { getTabsManager } from "@/electron-main/tabs";
 import { openSettingsWindow } from "@/electron-main/windows/settings";
 import { is } from "@electron-toolkit/utils";
+import { NEW_ISSUE_URL } from "@quests/shared";
 import { app, type MenuItemConstructorOptions, shell } from "electron";
 
 export function createAppMenu(): MenuItemConstructorOptions {
@@ -184,6 +185,12 @@ export function createHelpMenu(): MenuItemConstructorOptions {
           void shell.openExternal("https://quests.dev");
         },
         label: "Learn More",
+      },
+      {
+        click: () => {
+          void shell.openExternal(NEW_ISSUE_URL);
+        },
+        label: "Report an Issue",
       },
     ],
   };

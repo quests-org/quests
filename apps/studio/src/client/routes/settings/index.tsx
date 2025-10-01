@@ -13,10 +13,11 @@ import { isLinux } from "@/client/lib/utils";
 import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
 import { isFeatureEnabled } from "@/shared/features";
 import { QuestsLogoIcon } from "@quests/components/logo";
+import { APP_REPO_URL } from "@quests/shared";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useAtom } from "jotai";
-import { Download } from "lucide-react";
+import { Download, ExternalLink } from "lucide-react";
 
 export const Route = createFileRoute("/settings/")({
   component: SettingsGeneralPage,
@@ -47,6 +48,10 @@ function About() {
   const router = useRouter();
   const { data: updateState } = useQuery(
     rpcClient.updates.live.status.experimental_liveOptions(),
+  );
+
+  const openExternalLinkMutation = useMutation(
+    rpcClient.utils.openExternalLink.mutationOptions(),
   );
 
   const handleCheckForUpdates = async () => {
@@ -209,34 +214,54 @@ function About() {
       <div>
         <h3 className="text-base font-semibold">About</h3>
       </div>
-      <div className="rounded-lg border bg-accent/30 p-4 shadow-sm">
-        <div className="space-y-3">
+      <div className="space-y-3">
+        <div className="rounded-lg border bg-accent/30 p-4 shadow-sm">
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-1 min-w-0 flex-1">
-              <div className="text-sm text-muted-foreground">
+              <div className="text-sm font-medium">
                 Version{" "}
                 {isLoadingVersion
                   ? "Loading..."
                   : appVersion?.version || "Unknown"}
               </div>
-              {getUpdateStatusContent()}
+              <Button
+                className="p-0 h-auto text-blue-600 dark:text-blue-400"
+                onClick={() => {
+                  const location = router.buildLocation({
+                    to: "/release-notes",
+                  });
+                  addTab({ urlPath: location.href });
+                  window.close();
+                }}
+                variant="link"
+              >
+                Release Notes
+              </Button>
             </div>
             <div className="flex-shrink-0">{getActionButton()}</div>
           </div>
-          <div>
-            <Button
-              className="p-0 h-auto text-blue-600 dark:text-blue-400"
-              onClick={() => {
-                const location = router.buildLocation({
-                  to: "/release-notes",
-                });
-                addTab({ urlPath: location.href });
-                window.close();
-              }}
-              variant="link"
-            >
-              Release Notes
-            </Button>
+          <div className="mt-3">{getUpdateStatusContent()}</div>
+        </div>
+        <div className="rounded-lg border bg-accent/30 p-4 shadow-sm">
+          <div className="space-y-2">
+            <div className="text-sm font-medium">Open Source</div>
+            <p className="text-sm text-muted-foreground">
+              Quests is open source and available on GitHub.
+            </p>
+            <div>
+              <Button
+                className="!px-0 h-auto text-blue-600 dark:text-blue-400"
+                onClick={() => {
+                  void openExternalLinkMutation.mutateAsync({
+                    url: APP_REPO_URL,
+                  });
+                }}
+                variant="link"
+              >
+                View Source on GitHub
+                <ExternalLink className="size-3" />
+              </Button>
+            </div>
           </div>
         </div>
       </div>
