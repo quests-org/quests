@@ -132,7 +132,7 @@ export function NavProjectItem({
   };
 
   const handleOpenExternalClick = () => {
-    openExternalLinkMutation.mutate({ url: project.urls.localhost });
+    openExternalLinkMutation.mutate({ url: project.urls.localRedirect });
   };
 
   const handleAddFavorite = async () => {
