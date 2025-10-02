@@ -79,6 +79,10 @@ export function getToolbarHeight() {
   return toolbarHeight;
 }
 
+export function getToolbarView() {
+  return toolbarView;
+}
+
 export function resizeToolbar({ baseWindow }: { baseWindow: BaseWindow }) {
   const newBounds = baseWindow.getBounds();
   if (toolbarView === null) {

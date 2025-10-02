@@ -143,13 +143,6 @@ export function createMainWindowMenu(): MenuItemConstructorOptions[] {
         },
         label: "Reload App",
       },
-      ...(is.dev
-        ? [
-            { type: "separator" as const },
-            { accelerator: "CmdOrCtrl+Shift+R", role: "reload" as const },
-            { role: "toggleDevTools" as const },
-          ]
-        : []),
       { type: "separator" as const },
       { role: "resetZoom" as const },
       { role: "zoomIn" as const },
