@@ -220,14 +220,14 @@ export function AddProviderDialog({
             : "Configure your provider settings."}
         </DialogDescription>
       </DialogHeader>
-      <div className="space-y-4 py-4">
+      <div className="flex flex-col gap-y-4 py-4">
         {selectedProviderType && providerMetadata?.requiresAPIKey && (
-          <div className="space-y-3">
-            <div className="space-y-1">
+          <>
+            <div className="flex flex-col gap-y-1">
               <Label htmlFor="api-key">API Key</Label>
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <div className="flex items-center gap-x-1 text-xs text-muted-foreground">
                 <a
-                  className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 underline underline-offset-2"
+                  className="inline-flex items-center gap-x-1 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 underline underline-offset-2"
                   href={providerMetadata.apiKeyURL}
                   rel="noopener noreferrer"
                   target="_blank"
@@ -237,7 +237,7 @@ export function AddProviderDialog({
                 </a>
                 <span>or</span>
                 <a
-                  className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 underline underline-offset-2"
+                  className="inline-flex items-center gap-x-1 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 underline underline-offset-2"
                   href={providerMetadata.url}
                   rel="noopener noreferrer"
                   target="_blank"
@@ -267,15 +267,21 @@ export function AddProviderDialog({
                 Your API key is encrypted and stored locally on your computer.
               </AlertDescription>
             </Alert>
-          </div>
+          </>
         )}
-        {selectedProviderType && !providerMetadata?.requiresAPIKey && (
-          <Alert>
-            <AlertDescription className="text-center">
-              No additional configuration required for this provider.
-            </AlertDescription>
-          </Alert>
-        )}
+        {selectedProviderType &&
+          !providerMetadata?.requiresAPIKey &&
+          providerMetadata && (
+            <a
+              className="inline-flex items-center gap-x-1 text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 underline underline-offset-2"
+              href={providerMetadata.url}
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              Learn more about {providerMetadata.name}
+              <ExternalLink className="h-3 w-3" />
+            </a>
+          )}
         {errorMessage && (
           <Alert variant="destructive">
             <AlertCircle />
