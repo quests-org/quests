@@ -307,7 +307,12 @@ export function AddProviderDialog({
 
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent className="sm:max-w-xl">
+      <DialogContent
+        className={cn(
+          "transition-none",
+          stage === "provider-selection" ? "sm:max-w-xl" : "sm:max-w-lg",
+        )}
+      >
         {stage === "provider-selection"
           ? renderProviderSelection()
           : renderConfiguration()}
