@@ -390,6 +390,13 @@ const getSupportedEditors = base
   });
 
 const live = {
+  reload: base.handler(async function* ({ signal }) {
+    for await (const _payload of publisher.subscribe("app.reload", {
+      signal,
+    })) {
+      yield null;
+    }
+  }),
   serverExceptions: base.handler(async function* ({ signal }) {
     for await (const payload of publisher.subscribe("server-exception", {
       signal,

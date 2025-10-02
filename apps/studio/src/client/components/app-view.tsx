@@ -4,8 +4,9 @@ import { atom, useAtom, useSetAtom } from "jotai";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
 import { projectIframeRefAtom } from "../atoms/project";
+import { useShimIFrame } from "../hooks/use-shim-iframe";
 import { cn } from "../lib/utils";
-import { rpcClient } from "../rpc/client";
+import { rpcClient, vanillaRpcClient } from "../rpc/client";
 import { AppIFrame } from "./app-iframe";
 import { AppToolbar } from "./app-toolbar";
 import { type ClientLogLine } from "./console";
@@ -15,16 +16,19 @@ export function AppView({
   app,
   centerContent,
   className,
+  isPrimary = true,
   rightActions,
   showSendToChat = false,
 }: {
   app: WorkspaceApp;
   centerContent?: React.ReactNode;
   className?: string;
+  isPrimary?: boolean;
   rightActions?: React.ReactNode;
   showSendToChat?: boolean;
 }) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const shimIFrame = useShimIFrame(iframeRef);
   const setProjectIframeRef = useSetAtom(projectIframeRefAtom);
   const [isConsoleOpen, setIsConsoleOpen] = useState(false);
   const clientLogsAtom = useMemo(() => {
@@ -32,6 +36,10 @@ export function AppView({
     void app.subdomain;
     return atom<ClientLogLine[]>([]);
   }, [app.subdomain]);
+
+  const restartRuntimeMutation = useMutation(
+    rpcClient.workspace.runtime.restart.mutationOptions(),
+  );
 
   useEffect(() => {
     if (app.type === "project") {
@@ -43,6 +51,32 @@ export function AppView({
       }
     };
   }, [app.type, setProjectIframeRef, iframeRef]);
+
+  useEffect(() => {
+    if (!isPrimary) {
+      return;
+    }
+
+    let isCancelled = false;
+
+    async function subscribeToReload() {
+      const subscription = await vanillaRpcClient.utils.live.reload();
+
+      for await (const _ of subscription) {
+        if (isCancelled) {
+          break;
+        }
+        restartRuntimeMutation.mutate({ appSubdomain: app.subdomain });
+        shimIFrame.reloadWindow();
+      }
+    }
+
+    void subscribeToReload();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [app.subdomain, isPrimary, restartRuntimeMutation, shimIFrame]);
 
   return (
     <div className={cn("flex flex-col size-full", className)}>

@@ -1,4 +1,6 @@
+import { publisher } from "@/electron-main/rpc/publisher";
 import { getTabsManager } from "@/electron-main/tabs";
+import { is } from "@electron-toolkit/utils";
 import { type MenuItemConstructorOptions } from "electron";
 
 import {
@@ -134,9 +136,20 @@ export function createMainWindowMenu(): MenuItemConstructorOptions[] {
         label: "Forward",
       },
       { type: "separator" as const },
-      { role: "reload" as const },
-      { role: "forceReload" as const },
-      { role: "toggleDevTools" as const },
+      {
+        accelerator: "CmdOrCtrl+R",
+        click: () => {
+          publisher.publish("app.reload", null);
+        },
+        label: "Reload App",
+      },
+      ...(is.dev
+        ? [
+            { type: "separator" as const },
+            { accelerator: "CmdOrCtrl+Shift+R", role: "reload" as const },
+            { role: "toggleDevTools" as const },
+          ]
+        : []),
       { type: "separator" as const },
       { role: "resetZoom" as const },
       { role: "zoomIn" as const },
@@ -153,6 +166,6 @@ export function createMainWindowMenu(): MenuItemConstructorOptions[] {
     viewMenu,
     createWindowMenu(),
     createHelpMenu(),
-    ...createDevToolsMenu(),
+    ...(is.dev ? createDevToolsMenu() : []),
   ];
 }

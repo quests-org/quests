@@ -213,6 +213,7 @@ function RouteComponent() {
             <AppView
               app={project}
               className="rounded-lg overflow-hidden"
+              isPrimary={!selectedVersion}
               showSendToChat
             />
 
