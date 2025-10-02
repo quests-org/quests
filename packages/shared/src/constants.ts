@@ -16,3 +16,4 @@ export const REGISTRY_REPO_URL = `https://github.com/${GITHUB_ORG}/${REGISTRY_RE
 export const RELEASE_NOTES_URL = `${APP_REPO_URL}/releases`;
 export const X_HANDLE = "@quests_dev";
 export const X_URL = "https://x.com/quests_dev";
+export const DISCORD_URL = "https://quests.dev/discord";

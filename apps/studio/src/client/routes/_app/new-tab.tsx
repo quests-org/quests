@@ -5,7 +5,12 @@ import { InternalLink } from "@/client/components/internal-link";
 import { PromptInput } from "@/client/components/prompt-input";
 import { Button } from "@/client/components/ui/button";
 import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
-import { APP_REPO_URL, NEW_ISSUE_URL, PRODUCT_NAME } from "@quests/shared";
+import {
+  APP_REPO_URL,
+  DISCORD_URL,
+  NEW_ISSUE_URL,
+  PRODUCT_NAME,
+} from "@quests/shared";
 import { StoreId } from "@quests/workspace/client";
 import { useMutation } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
@@ -131,6 +136,13 @@ function RouteComponent() {
             href={APP_REPO_URL}
           >
             open source
+          </ExternalLink>
+          <span className="mx-2">·</span>
+          <ExternalLink
+            className="hover:text-foreground hover:underline transition-colors"
+            href={DISCORD_URL}
+          >
+            Join us on Discord
           </ExternalLink>
           <span className="mx-2">·</span>
           <ExternalLink

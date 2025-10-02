@@ -4,7 +4,7 @@ import { Button } from "@/client/components/ui/button";
 import { vanillaRpcClient } from "@/client/rpc/client";
 import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
 import { QuestsAnimatedLogo } from "@quests/components/animated-logo";
-import { APP_REPO_URL } from "@quests/shared";
+import { APP_REPO_URL, DISCORD_URL } from "@quests/shared";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_app/welcome")({
@@ -103,7 +103,13 @@ function RouteComponent() {
                 >
                   open source
                 </ExternalLink>
-                !
+                <span className="mx-2">·</span>
+                <ExternalLink
+                  className="hover:text-foreground underline underline-offset-2"
+                  href={DISCORD_URL}
+                >
+                  Join us on Discord
+                </ExternalLink>
               </div>
             </div>
           </div>

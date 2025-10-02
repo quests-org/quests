@@ -14,7 +14,7 @@ import { isLinux } from "@/client/lib/utils";
 import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
 import { isFeatureEnabled } from "@/shared/features";
 import { QuestsLogoIcon } from "@quests/components/logo";
-import { APP_REPO_URL } from "@quests/shared";
+import { APP_REPO_URL, DISCORD_URL } from "@quests/shared";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useAtom } from "jotai";
@@ -243,7 +243,9 @@ function About() {
           <div className="space-y-2">
             <div className="text-sm font-medium">Open Source</div>
             <p className="text-sm text-muted-foreground">
-              Quests is open source and available on GitHub.
+              You can look at the source code and see how this whole thingamajig
+              works. You could even contribute a feature or bug fix! No
+              pressure.
             </p>
             <div>
               <Button
@@ -253,6 +255,27 @@ function About() {
               >
                 <ExternalLink href={APP_REPO_URL}>
                   View Source on GitHub
+                  <ExternalLinkIcon className="size-3" />
+                </ExternalLink>
+              </Button>
+            </div>
+          </div>
+        </div>
+        <div className="rounded-lg border bg-accent/30 p-4 shadow-sm">
+          <div className="space-y-2">
+            <div className="text-sm font-medium">Community</div>
+            <p className="text-sm text-muted-foreground">
+              We&lsquo;ve got a Discord server so you can tell us how much you
+              like Quests. Definitely not to yell at us about bugs. Definitely.
+            </p>
+            <div>
+              <Button
+                asChild
+                className="!px-0 h-auto text-blue-600 dark:text-blue-400"
+                variant="link"
+              >
+                <ExternalLink href={DISCORD_URL}>
+                  Join us on Discord
                   <ExternalLinkIcon className="size-3" />
                 </ExternalLink>
               </Button>
