@@ -7,8 +7,7 @@
 <p align="center">
   <a href="https://quests.dev?ref=github-readme-quests">
     <img src="https://img.shields.io/badge/Download%20Quests-0e4bbd?logo=data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDV2MTRtNy03LTcgNy03LTciIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPg==&logoColor=white" alt="Download Quests">
-  </a>
-  <a href="https://quests.dev/discord">
+  </a><a href="https://quests.dev/discord">
     <img src="https://img.shields.io/badge/Join%20our%20Discord-5865f2?logo=discord&logoColor=white" alt="Join our Discord">
   </a>
 </p>
