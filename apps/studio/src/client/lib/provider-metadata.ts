@@ -48,7 +48,7 @@ const PROVIDER_MAP: {
     name: "Ollama",
     requiresAPIKey: false,
     tags: [],
-    url: `https://ollama.com?${REF_PARAM}`,
+    url: `https://docs.ollama.com?${REF_PARAM}`,
   }),
   openai: createProviderMetadata("openai", {
     apiKeyFormat: "sk-",
