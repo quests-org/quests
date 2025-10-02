@@ -1,5 +1,6 @@
 import { selectedModelURIAtom } from "@/client/atoms/selected-models";
 import { DiscoverAppsGrid } from "@/client/components/discover-apps-grid";
+import { ExternalLink } from "@/client/components/external-link";
 import { InternalLink } from "@/client/components/internal-link";
 import { PromptInput } from "@/client/components/prompt-input";
 import { Button } from "@/client/components/ui/button";
@@ -35,10 +36,6 @@ function RouteComponent() {
   const navigate = useNavigate({ from: "/new-tab" });
   const createProjectMutation = useMutation(
     rpcClient.workspace.project.create.mutationOptions(),
-  );
-
-  const openExternalLinkMutation = useMutation(
-    rpcClient.utils.openExternalLink.mutationOptions(),
   );
 
   return (
@@ -129,29 +126,19 @@ function RouteComponent() {
       <footer className="w-full py-4 px-8">
         <p className="text-center text-xs text-muted-foreground">
           {PRODUCT_NAME} is{" "}
-          <button
-            className="hover:text-foreground hover:underline transition-colors cursor-pointer"
-            onClick={() => {
-              void openExternalLinkMutation.mutateAsync({
-                url: APP_REPO_URL,
-              });
-            }}
-            type="button"
+          <ExternalLink
+            className="hover:text-foreground hover:underline transition-colors"
+            href={APP_REPO_URL}
           >
             open source
-          </button>
+          </ExternalLink>
           <span className="mx-2">·</span>
-          <button
-            className="hover:text-foreground hover:underline transition-colors cursor-pointer"
-            onClick={() => {
-              void openExternalLinkMutation.mutateAsync({
-                url: NEW_ISSUE_URL,
-              });
-            }}
-            type="button"
+          <ExternalLink
+            className="hover:text-foreground hover:underline transition-colors"
+            href={NEW_ISSUE_URL}
           >
             Report an issue
-          </button>
+          </ExternalLink>
         </p>
       </footer>
     </div>

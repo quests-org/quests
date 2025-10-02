@@ -1,13 +1,11 @@
+import { ExternalLink } from "@/client/components/external-link";
 import Particles from "@/client/components/particles";
 import { Button } from "@/client/components/ui/button";
-import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
+import { vanillaRpcClient } from "@/client/rpc/client";
 import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
-import { isDefinedError } from "@orpc/client";
 import { QuestsAnimatedLogo } from "@quests/components/animated-logo";
 import { APP_REPO_URL } from "@quests/shared";
-import { useMutation } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/welcome")({
   beforeLoad: async () => {
@@ -58,26 +56,6 @@ function FeatureCard({
 function RouteComponent() {
   const navigate = useNavigate();
 
-  const openExternalLinkMutation = useMutation(
-    rpcClient.utils.openExternalLink.mutationOptions({
-      onError: (error) => {
-        if (isDefinedError(error)) {
-          toast.error(error.message);
-        } else {
-          toast.error("An unknown error occurred");
-        }
-      },
-    }),
-  );
-
-  const handleLinkClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
-    event.preventDefault();
-    const href = event.currentTarget.href;
-    if (href) {
-      void openExternalLinkMutation.mutateAsync({ url: href });
-    }
-  };
-
   return (
     <div className="flex min-h-svh flex-col bg-background overflow-y-auto">
       <div className="relative z-10 min-h-full w-full flex flex-1 justify-center items-center py-8">
@@ -119,13 +97,12 @@ function RouteComponent() {
               </Button>
               <div className="text-center text-sm text-muted-foreground/80">
                 Quests is{" "}
-                <a
-                  className="cursor-pointer! hover:text-foreground underline underline-offset-2"
+                <ExternalLink
+                  className="hover:text-foreground underline underline-offset-2"
                   href={APP_REPO_URL}
-                  onClick={handleLinkClick}
                 >
                   open source
-                </a>
+                </ExternalLink>
                 !
               </div>
             </div>

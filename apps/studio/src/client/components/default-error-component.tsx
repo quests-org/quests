@@ -1,11 +1,10 @@
 import type { ErrorComponentProps } from "@tanstack/react-router";
 
-import { rpcClient } from "@/client/rpc/client";
 import { NEW_ISSUE_URL } from "@quests/shared";
-import { useMutation } from "@tanstack/react-query";
 import { rootRouteId, useMatch, useRouter } from "@tanstack/react-router";
 import { AlertCircle } from "lucide-react";
 
+import { ExternalLink } from "./external-link";
 import { InternalLink } from "./internal-link";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { Button } from "./ui/button";
@@ -23,10 +22,6 @@ export function DefaultErrorComponent({ error }: ErrorComponentProps) {
     select: (state) => state.id === rootRouteId,
     strict: false,
   });
-
-  const openExternalLinkMutation = useMutation(
-    rpcClient.utils.openExternalLink.mutationOptions(),
-  );
 
   const errorMessage =
     error instanceof Error
@@ -49,16 +44,8 @@ export function DefaultErrorComponent({ error }: ErrorComponentProps) {
                 We encountered an error while processing your request
               </p>
             </div>
-            <Button
-              onClick={() => {
-                void openExternalLinkMutation.mutateAsync({
-                  url: NEW_ISSUE_URL,
-                });
-              }}
-              size="sm"
-              variant="outline"
-            >
-              Report Issue
+            <Button asChild size="sm" variant="outline">
+              <ExternalLink href={NEW_ISSUE_URL}>Report Issue</ExternalLink>
             </Button>
           </div>
         </CardHeader>

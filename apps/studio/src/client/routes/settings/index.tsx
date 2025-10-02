@@ -1,4 +1,5 @@
 import { userAtom } from "@/client/atoms/user";
+import { ExternalLink } from "@/client/components/external-link";
 import { ThemeToggle } from "@/client/components/theme-toggle";
 import {
   Avatar,
@@ -17,7 +18,7 @@ import { APP_REPO_URL } from "@quests/shared";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useAtom } from "jotai";
-import { Download, ExternalLink } from "lucide-react";
+import { Download, ExternalLink as ExternalLinkIcon } from "lucide-react";
 
 export const Route = createFileRoute("/settings/")({
   component: SettingsGeneralPage,
@@ -48,10 +49,6 @@ function About() {
   const router = useRouter();
   const { data: updateState } = useQuery(
     rpcClient.updates.live.status.experimental_liveOptions(),
-  );
-
-  const openExternalLinkMutation = useMutation(
-    rpcClient.utils.openExternalLink.mutationOptions(),
   );
 
   const handleCheckForUpdates = async () => {
@@ -250,16 +247,14 @@ function About() {
             </p>
             <div>
               <Button
+                asChild
                 className="!px-0 h-auto text-blue-600 dark:text-blue-400"
-                onClick={() => {
-                  void openExternalLinkMutation.mutateAsync({
-                    url: APP_REPO_URL,
-                  });
-                }}
                 variant="link"
               >
-                View Source on GitHub
-                <ExternalLink className="size-3" />
+                <ExternalLink href={APP_REPO_URL}>
+                  View Source on GitHub
+                  <ExternalLinkIcon className="size-3" />
+                </ExternalLink>
               </Button>
             </div>
           </div>

@@ -1,7 +1,8 @@
 import { type AIGatewayProvider } from "@quests/ai-gateway";
 import { sort } from "radashi";
 
-const REF_PARAM = "ref=quests.dev";
+import { addRef, REF_PARAM_KEY, REF_PARAM_VALUE } from "./add-ref";
+
 export const RECOMMENDED_TAG = "Recommended";
 
 interface ProviderMetadata<T extends AIGatewayProvider.Type["type"]> {
@@ -29,50 +30,50 @@ const PROVIDER_MAP: {
 } = {
   anthropic: createProviderMetadata("anthropic", {
     apiKeyFormat: "sk-ant-",
-    apiKeyURL: `https://console.anthropic.com/account/keys?${REF_PARAM}`,
+    apiKeyURL: addRef("https://console.anthropic.com/account/keys"),
     description: "Sonnet, Opus, and other Anthropic models",
     name: "Anthropic",
     tags: [],
-    url: `https://anthropic.com?${REF_PARAM}`,
+    url: addRef("https://anthropic.com"),
   }),
   google: createProviderMetadata("google", {
     apiKeyFormat: "AI",
-    apiKeyURL: `https://aistudio.google.com/app/apikey?${REF_PARAM}`,
+    apiKeyURL: addRef("https://aistudio.google.com/app/apikey"),
     description: "Gemini and other Google models",
     name: "Google",
     tags: ["Free tier"],
-    url: `https://ai.google.dev/?${REF_PARAM}`,
+    url: addRef("https://ai.google.dev/"),
   }),
   ollama: createProviderMetadata("ollama", {
     description: "Run local models on your own machine",
     name: "Ollama",
     requiresAPIKey: false,
     tags: [],
-    url: `https://docs.ollama.com?${REF_PARAM}`,
+    url: addRef("https://docs.ollama.com"),
   }),
   openai: createProviderMetadata("openai", {
     apiKeyFormat: "sk-",
-    apiKeyURL: `https://platform.openai.com/account/api-keys?${REF_PARAM}`,
+    apiKeyURL: addRef("https://platform.openai.com/account/api-keys"),
     description: "GPT-5 and other OpenAI models",
     name: "OpenAI",
     tags: [],
-    url: `https://openai.com?${REF_PARAM}`,
+    url: addRef("https://openai.com"),
   }),
   openrouter: createProviderMetadata("openrouter", {
     apiKeyFormat: "sk-or-",
-    apiKeyURL: `https://openrouter.ai?${REF_PARAM}`,
+    apiKeyURL: addRef("https://openrouter.ai"),
     description: "Access an extensive catalog of models across providers",
     name: "OpenRouter",
     tags: [RECOMMENDED_TAG, "Free models"],
-    url: `https://openrouter.ai?${REF_PARAM}`,
+    url: addRef("https://openrouter.ai"),
   }),
   vercel: createProviderMetadata("vercel", {
     apiKeyFormat: "vck_",
-    apiKeyURL: `https://vercel.com/d?to=${encodeURIComponent(`/[team]/~/ai/api-keys?${REF_PARAM}`)}&title=${encodeURIComponent("Get an API Key")}`,
+    apiKeyURL: `https://vercel.com/d?to=${encodeURIComponent(`/[team]/~/ai/api-keys?${REF_PARAM_KEY}=${REF_PARAM_VALUE}`)}&title=${encodeURIComponent("Get an API Key")}`,
     description: "Access hundreds of models across many providers",
     name: "Vercel AI Gateway",
     tags: ["$5 free credit with card"],
-    url: `https://vercel.com/ai-gateway?${REF_PARAM}`,
+    url: addRef("https://vercel.com/ai-gateway"),
   }),
 };
 

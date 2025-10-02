@@ -1,3 +1,4 @@
+import { ExternalLink } from "@/client/components/external-link";
 import { Markdown } from "@/client/components/markdown";
 import { Badge } from "@/client/components/ui/badge";
 import { Button } from "@/client/components/ui/button";
@@ -14,7 +15,7 @@ import { RELEASE_NOTES_URL } from "@quests/shared";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { formatDistanceToNow } from "date-fns";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink as ExternalLinkIcon } from "lucide-react";
 import rehypeRaw from "rehype-raw";
 
 export const Route = createFileRoute("/_app/release-notes")({
@@ -33,23 +34,19 @@ export const Route = createFileRoute("/_app/release-notes")({
 });
 
 function ErrorFallback() {
-  const openExternalLinkMutation = useMutation(
-    rpcClient.utils.openExternalLink.mutationOptions(),
-  );
-
   return (
     <Card>
       <CardContent className="text-center py-12 space-y-4">
         <p className="text-muted-foreground">Failed to load release notes.</p>
         <Button
+          asChild
           className="text-primary hover:text-primary/80"
-          onClick={() => {
-            openExternalLinkMutation.mutate({ url: RELEASE_NOTES_URL });
-          }}
           variant="link"
         >
-          View release notes on GitHub
-          <ExternalLink className="size-3" />
+          <ExternalLink href={RELEASE_NOTES_URL}>
+            View release notes on GitHub
+            <ExternalLinkIcon className="size-3" />
+          </ExternalLink>
         </Button>
       </CardContent>
     </Card>
@@ -63,10 +60,6 @@ function RouteComponent() {
   );
   const preferencesQuery = useQuery(
     rpcClient.preferences.live.get.experimental_liveOptions(),
-  );
-
-  const openExternalLinkMutation = useMutation(
-    rpcClient.utils.openExternalLink.mutationOptions(),
   );
 
   const checkForUpdatesMutation = useMutation(
@@ -144,19 +137,13 @@ function RouteComponent() {
                             <Badge variant="outline">Your Version</Badge>
                           )}
                       </CardTitle>
-                      <a
+                      <ExternalLink
                         className="inline-flex items-center gap-1 text-sm text-primary hover:text-primary/80 transition-colors shrink-0"
                         href={release.html_url}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          openExternalLinkMutation.mutate({
-                            url: release.html_url,
-                          });
-                        }}
                       >
                         View on GitHub
-                        <ExternalLink className="size-3" />
-                      </a>
+                        <ExternalLinkIcon className="size-3" />
+                      </ExternalLink>
                     </div>
                     {release.name && release.name !== release.tag_name ? (
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -202,15 +189,13 @@ function RouteComponent() {
           releases.length > 0 &&
           hasMoreReleases && (
             <div className="text-center pt-8 pb-4">
-              <a
-                className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-                onClick={() => {
-                  openExternalLinkMutation.mutate({ url: RELEASE_NOTES_URL });
-                }}
+              <ExternalLink
+                className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                href={RELEASE_NOTES_URL}
               >
                 View older releases on GitHub
-                <ExternalLink className="size-3" />
-              </a>
+                <ExternalLinkIcon className="size-3" />
+              </ExternalLink>
             </div>
           )}
       </div>
