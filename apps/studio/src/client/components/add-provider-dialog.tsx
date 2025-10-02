@@ -22,7 +22,7 @@ import { isDefinedError } from "@orpc/client";
 import { type AIGatewayProvider } from "@quests/ai-gateway";
 import { useMutation } from "@tanstack/react-query";
 import { useAtom } from "jotai";
-import { AlertCircle, Award, ChefHat, ExternalLink } from "lucide-react";
+import { AlertCircle, Award, ChefHat, ExternalLink, Lock } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { selectedModelURIAtom } from "../atoms/selected-models";
@@ -260,6 +260,13 @@ export function AddProviderDialog({
               type="text"
               value={apiKey}
             />
+
+            <Alert>
+              <Lock className="size-4" />
+              <AlertDescription className="text-xs">
+                Your API key is encrypted and stored locally on your computer.
+              </AlertDescription>
+            </Alert>
           </div>
         )}
         {selectedProviderType && !providerMetadata?.requiresAPIKey && (
