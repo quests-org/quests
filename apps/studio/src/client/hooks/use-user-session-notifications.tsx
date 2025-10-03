@@ -10,7 +10,6 @@ import { toast } from "sonner";
 import { rpcClient } from "../rpc/client";
 
 const shownErrorMessages = new Set<string>();
-let shownEnabledForAIMessages = false;
 
 export function useUserSessionNotifications() {
   const [userResult] = useAtom(userAtom);
@@ -30,30 +29,6 @@ export function useUserSessionNotifications() {
     ) {
       shownErrorMessages.add(userResult.error.code);
       toast.error(userResult.error.message, {
-        closeButton: true,
-        dismissible: true,
-        duration: Infinity,
-      });
-    }
-
-    if (!hasAIProvider && !shownEnabledForAIMessages) {
-      toast.info("Sign in or add an API key to use AI features.", {
-        action: {
-          label: "Setup",
-          onClick: () => {
-            const location = router.buildLocation({
-              to: "/login",
-            });
-            addTab({ urlPath: location.href });
-          },
-        },
-        closeButton: true,
-        dismissible: true,
-        duration: Infinity,
-      });
-      shownEnabledForAIMessages = true;
-    } else {
-      toast.info("Add an API key to use AI features.", {
         closeButton: true,
         dismissible: true,
         duration: Infinity,
