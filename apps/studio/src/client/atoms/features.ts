@@ -8,6 +8,7 @@ import { atomWithRefresh, loadable } from "jotai/utils";
 type Features = Record<FeatureName, boolean>;
 
 const defaultFeatures: Features = {
+  createInNewTab: false,
   evals: false,
   questsAccounts: false,
 };

@@ -1,9 +1,12 @@
+import { featuresAtom } from "@/client/atoms/features";
 import { selectedModelURIAtom } from "@/client/atoms/selected-models";
 import { DiscoverAppsGrid } from "@/client/components/discover-apps-grid";
 import { ExternalLink } from "@/client/components/external-link";
 import { InternalLink } from "@/client/components/internal-link";
 import { PromptInput } from "@/client/components/prompt-input";
 import { Button } from "@/client/components/ui/button";
+import { Checkbox } from "@/client/components/ui/checkbox";
+import { useTabs } from "@/client/hooks/use-tabs";
 import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
 import {
   APP_REPO_URL,
@@ -13,9 +16,14 @@ import {
 } from "@quests/shared";
 import { StoreId } from "@quests/workspace/client";
 import { useMutation } from "@tanstack/react-query";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useAtom } from "jotai";
+import {
+  createFileRoute,
+  useNavigate,
+  useRouter,
+} from "@tanstack/react-router";
+import { useAtom, useAtomValue } from "jotai";
 import { ArrowRight } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/new-tab")({
@@ -37,8 +45,12 @@ export const Route = createFileRoute("/_app/new-tab")({
 
 function RouteComponent() {
   const { registryApps } = Route.useLoaderData();
+  const features = useAtomValue(featuresAtom);
   const [selectedModelURI, setSelectedModelURI] = useAtom(selectedModelURIAtom);
+  const [openInNewTab, setOpenInNewTab] = useState(false);
   const navigate = useNavigate({ from: "/new-tab" });
+  const router = useRouter();
+  const { addTab } = useTabs();
   const createProjectMutation = useMutation(
     rpcClient.workspace.project.create.mutationOptions(),
   );
@@ -52,62 +64,89 @@ function RouteComponent() {
               Start your next quest
             </h1>
           </div>
-          <PromptInput
-            atomKey="$$new-tab$$"
-            autoFocus
-            autoResizeMaxHeight={300}
-            isLoading={createProjectMutation.isPending}
-            modelURI={selectedModelURI}
-            onModelChange={setSelectedModelURI}
-            onSubmit={({ modelURI, prompt }) => {
-              const promptText = prompt.trim();
-              const messageId = StoreId.newMessageId();
-              const sessionId = StoreId.newSessionId();
-              const createdAt = new Date();
+          <div>
+            <PromptInput
+              atomKey="$$new-tab$$"
+              autoFocus
+              autoResizeMaxHeight={300}
+              clearOnSubmit={!openInNewTab}
+              isLoading={createProjectMutation.isPending}
+              modelURI={selectedModelURI}
+              onModelChange={setSelectedModelURI}
+              onSubmit={({ modelURI, prompt }) => {
+                const promptText = prompt.trim();
+                const messageId = StoreId.newMessageId();
+                const sessionId = StoreId.newSessionId();
+                const createdAt = new Date();
 
-              createProjectMutation.mutate(
-                {
-                  message: {
-                    id: messageId,
-                    metadata: {
-                      createdAt,
-                      sessionId,
-                    },
-                    parts: [
-                      {
-                        metadata: {
-                          createdAt,
-                          id: StoreId.newPartId(),
-                          messageId,
-                          sessionId,
-                        },
-                        text: promptText,
-                        type: "text",
+                createProjectMutation.mutate(
+                  {
+                    message: {
+                      id: messageId,
+                      metadata: {
+                        createdAt,
+                        sessionId,
                       },
-                    ],
-                    role: "user",
+                      parts: [
+                        {
+                          metadata: {
+                            createdAt,
+                            id: StoreId.newPartId(),
+                            messageId,
+                            sessionId,
+                          },
+                          text: promptText,
+                          type: "text",
+                        },
+                      ],
+                      role: "user",
+                    },
+                    modelURI,
+                    sessionId,
                   },
-                  modelURI,
-                  sessionId,
-                },
-                {
-                  onError: (error) => {
-                    toast.error(
-                      `There was an error starting your project: ${error.message}`,
-                    );
+                  {
+                    onError: (error) => {
+                      toast.error(
+                        `There was an error starting your project: ${error.message}`,
+                      );
+                    },
+                    onSuccess: ({ subdomain }) => {
+                      const location = router.buildLocation({
+                        params: { subdomain },
+                        search: { selectedSessionId: sessionId },
+                        to: "/projects/$subdomain",
+                      });
+
+                      if (openInNewTab) {
+                        void addTab({ select: false, urlPath: location.href });
+                      } else {
+                        void navigate({
+                          params: { subdomain },
+                          search: { selectedSessionId: sessionId },
+                          to: "/projects/$subdomain",
+                        });
+                      }
+                    },
                   },
-                  onSuccess: ({ subdomain }) => {
-                    void navigate({
-                      params: { subdomain },
-                      search: { selectedSessionId: sessionId },
-                      to: "/projects/$subdomain",
-                    });
-                  },
-                },
-              );
-            }}
-            placeholder="Describe the app you want to create…"
-          />
+                );
+              }}
+              placeholder="Describe the app you want to create…"
+            />
+            {features.createInNewTab && (
+              <div className="flex justify-end mt-2">
+                <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer">
+                  <Checkbox
+                    checked={openInNewTab}
+                    className="size-3.5 [&_svg]:size-2.5"
+                    onCheckedChange={(checked) => {
+                      setOpenInNewTab(checked === true);
+                    }}
+                  />
+                  <span>Create in new tab</span>
+                </label>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

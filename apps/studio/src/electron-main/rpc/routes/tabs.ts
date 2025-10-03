@@ -3,13 +3,13 @@ import { publisher } from "@/electron-main/rpc/publisher";
 import { z } from "zod";
 
 const add = base
-  .input(z.object({ urlPath: z.string() }))
+  .input(z.object({ select: z.boolean().optional(), urlPath: z.string() }))
   .handler(async ({ context: { tabsManager }, input }) => {
     if (!tabsManager) {
       return false;
     }
 
-    await tabsManager.addTab({ urlPath: input.urlPath });
+    await tabsManager.addTab({ select: input.select, urlPath: input.urlPath });
     return true;
   });
 

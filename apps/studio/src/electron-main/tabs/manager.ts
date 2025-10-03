@@ -51,7 +51,13 @@ export class TabsManager {
     });
   }
 
-  public async addTab({ urlPath = "/" }: { urlPath?: string }) {
+  public async addTab({
+    select = true,
+    urlPath = "/",
+  }: {
+    select?: boolean;
+    urlPath?: string;
+  }) {
     if (this.selectOnAddNewTab({ urlPath })) {
       return;
     }
@@ -72,7 +78,9 @@ export class TabsManager {
     };
 
     this.tabs.push(newTab);
-    this.showTabView(newTab);
+    if (select) {
+      this.showTabView(newTab);
+    }
     this.afterUpdate();
   }
 

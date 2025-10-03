@@ -32,6 +32,7 @@ interface PromptInputProps {
   autoFocus?: boolean;
   autoResizeMaxHeight?: number;
   className?: string;
+  clearOnSubmit?: boolean;
   disabled?: boolean;
   isLoading: boolean;
   isStoppable?: boolean;
@@ -54,6 +55,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
       autoFocus = false,
       autoResizeMaxHeight = 400,
       className,
+      clearOnSubmit = true,
       disabled = false,
       isLoading,
       isStoppable = false,
@@ -159,15 +161,18 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
       }
 
       onSubmit({ modelURI, prompt: value.trim() });
-      setValue("");
-      resetTextareaHeight();
+      if (clearOnSubmit) {
+        setValue("");
+        resetTextareaHeight();
+      }
     }, [
-      validateSubmission,
+      clearOnSubmit,
       modelURI,
       onSubmit,
-      value,
-      setValue,
       resetTextareaHeight,
+      setValue,
+      validateSubmission,
+      value,
     ]);
 
     const handleStop = () => {

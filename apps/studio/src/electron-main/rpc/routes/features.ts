@@ -2,15 +2,15 @@ import {
   type FeatureName,
   getFeaturesStore,
 } from "@/electron-main/stores/features";
+import { FeatureNameSchema } from "@/shared/features";
 import { call, eventIterator } from "@orpc/server";
 import { z } from "zod";
 
 import { base } from "../base";
 import { publisher } from "../publisher";
 
-const FeatureNameSchema = z.enum(["evals", "questsAccounts"]);
-
 const FeaturesSchema = z.object({
+  createInNewTab: z.boolean(),
   evals: z.boolean(),
   questsAccounts: z.boolean(),
 });

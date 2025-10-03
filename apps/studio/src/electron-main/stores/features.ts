@@ -3,12 +3,13 @@ import { publisher } from "@/electron-main/rpc/publisher";
 import Store from "electron-store";
 import { z } from "zod";
 
+/* eslint-disable unicorn/prefer-top-level-await */
 const FeaturesStoreSchema = z.object({
-  // eslint-disable-next-line unicorn/prefer-top-level-await
+  createInNewTab: z.boolean().catch(false),
   evals: z.boolean().catch(false),
-  // eslint-disable-next-line unicorn/prefer-top-level-await
   questsAccounts: z.boolean().catch(false),
 });
+/* eslint-enable unicorn/prefer-top-level-await */
 
 type FeaturesStore = z.output<typeof FeaturesStoreSchema>;
 
