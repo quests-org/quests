@@ -4,6 +4,8 @@ import { ExternalLink } from "@/client/components/external-link";
 import { InternalLink } from "@/client/components/internal-link";
 import { PromptInput } from "@/client/components/prompt-input";
 import { Button } from "@/client/components/ui/button";
+import { Kbd } from "@/client/components/ui/kbd";
+import { useReload } from "@/client/hooks/use-reload";
 import { useTabs } from "@/client/hooks/use-tabs";
 import { isMacOS } from "@/client/lib/utils";
 import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
@@ -50,6 +52,8 @@ function RouteComponent() {
   const createProjectMutation = useMutation(
     rpcClient.workspace.project.create.mutationOptions(),
   );
+
+  useReload();
 
   return (
     <div className="w-full min-h-screen flex-1 flex flex-col items-center relative">
@@ -129,7 +133,7 @@ function RouteComponent() {
               placeholder="Describe the app you want to create…"
             />
             <p className="text-xs text-muted-foreground/50 mt-2 text-right">
-              Hold {isMacOS() ? "⌘" : "Ctrl"} to create in a new tab
+              Hold <Kbd>{isMacOS() ? "⌘" : "Ctrl"}</Kbd> to create in a new tab
             </p>
           </div>
         </div>
