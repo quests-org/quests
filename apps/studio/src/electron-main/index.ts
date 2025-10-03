@@ -8,11 +8,11 @@ import {
 } from "@/electron-main/lib/electron-logger";
 import { StudioAppUpdater } from "@/electron-main/lib/update";
 import { createApplicationMenu } from "@/electron-main/menus/application";
+import { isFeatureEnabled } from "@/electron-main/stores/features";
 import {
   createMainWindow,
   updateTitleBarOverlay,
 } from "@/electron-main/windows/main";
-import { isFeatureEnabled } from "@/shared/features";
 import { is, optimizer } from "@electron-toolkit/utils";
 import { APP_PROTOCOL } from "@quests/shared";
 import { app, BrowserWindow, nativeTheme, protocol } from "electron";

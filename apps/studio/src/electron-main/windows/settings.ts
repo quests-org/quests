@@ -13,7 +13,7 @@ export function getSettingsWindow(): BrowserWindow | null {
 }
 
 export function openSettingsWindow(
-  tab?: "Advanced" | "General" | "Providers",
+  tab?: "Advanced" | "Features" | "General" | "Providers",
   options?: { showNewProviderDialog?: boolean },
 ) {
   // If settings window already exists, focus it
@@ -66,13 +66,23 @@ export function openSettingsWindow(
   let settingsPath: MainAppPath = "/settings";
   const searchParams = new URLSearchParams();
 
-  if (tab === "Providers") {
-    settingsPath = "/settings/providers";
-    if (options?.showNewProviderDialog) {
-      searchParams.set("showNewProviderDialog", "true");
+  switch (tab) {
+    case "Advanced": {
+      settingsPath = "/settings/advanced";
+      break;
     }
-  } else if (tab === "Advanced") {
-    settingsPath = "/settings/advanced";
+    case "Features": {
+      settingsPath = "/settings/features";
+      break;
+    }
+    case "Providers": {
+      settingsPath = "/settings/providers";
+      if (options?.showNewProviderDialog) {
+        searchParams.set("showNewProviderDialog", "true");
+      }
+      break;
+    }
+    // No default
   }
 
   const queryString = searchParams.toString();

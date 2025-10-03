@@ -14,6 +14,7 @@ export const publisher = new EventPublisher<{
   "debug.open-query-devtools": null;
   "debug.open-router-devtools": null;
   "favorites.updated": null;
+  "features.updated": null;
   "menu.height-updated": Partial<{
     height: number;
   }>;

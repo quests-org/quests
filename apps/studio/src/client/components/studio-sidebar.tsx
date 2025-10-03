@@ -1,3 +1,4 @@
+import { featuresAtom } from "@/client/atoms/features";
 import { userAtom } from "@/client/atoms/user";
 import { NavControls } from "@/client/components/nav-controls";
 import { NavPrimary } from "@/client/components/nav-primary";
@@ -14,9 +15,8 @@ import {
 import { logger } from "@/client/lib/logger";
 import { cn, isMacOS, isWindows } from "@/client/lib/utils";
 import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
-import { isFeatureEnabled } from "@/shared/features";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useAtom } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 import {
   ChartLine,
   LayoutGrid,
@@ -26,34 +26,38 @@ import {
 } from "lucide-react";
 import * as React from "react";
 
-const data = {
-  navMain: [
-    {
-      icon: PlusIcon,
-      title: "New",
-      url: "/new-tab" as const,
-    },
-    {
-      icon: LayoutGrid,
-      title: "Discover",
-      url: "/discover" as const,
-    },
-    ...(isFeatureEnabled("evals")
-      ? [
-          {
-            icon: ChartLine,
-            title: "Evals",
-            url: "/evals" as const,
-          },
-        ]
-      : []),
-  ],
-};
-
 export function StudioSidebar({
   ...props
 }: React.ComponentProps<typeof Sidebar>) {
   const [userResult] = useAtom(userAtom);
+  const features = useAtomValue(featuresAtom);
+
+  const data = React.useMemo(
+    () => ({
+      navMain: [
+        {
+          icon: PlusIcon,
+          title: "New",
+          url: "/new-tab" as const,
+        },
+        {
+          icon: LayoutGrid,
+          title: "Discover",
+          url: "/discover" as const,
+        },
+        ...(features.evals
+          ? [
+              {
+                icon: ChartLine,
+                title: "Evals",
+                url: "/evals" as const,
+              },
+            ]
+          : []),
+      ],
+    }),
+    [features.evals],
+  );
 
   const { data: favorites } = useQuery(
     rpcClient.favorites.live.listProjects.experimental_liveOptions(),
@@ -81,7 +85,7 @@ export function StudioSidebar({
   }, [projectsData?.projects, favorites]);
 
   const user = userResult.data;
-  const isAccountsEnabled = isFeatureEnabled("questsAccounts");
+  const isAccountsEnabled = features.questsAccounts;
 
   const settingsItems = [
     {

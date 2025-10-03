@@ -18,6 +18,7 @@ import { Route as AppRouteRouteImport } from './routes/_app/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SettingsIndexRouteImport } from './routes/settings/index'
 import { Route as SettingsProvidersRouteImport } from './routes/settings/providers'
+import { Route as SettingsFeaturesRouteImport } from './routes/settings/features'
 import { Route as SettingsAdvancedRouteImport } from './routes/settings/advanced'
 import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
@@ -76,6 +77,11 @@ const SettingsIndexRoute = SettingsIndexRouteImport.update({
 const SettingsProvidersRoute = SettingsProvidersRouteImport.update({
   id: '/providers',
   path: '/providers',
+  getParentRoute: () => SettingsRoute,
+} as any)
+const SettingsFeaturesRoute = SettingsFeaturesRouteImport.update({
+  id: '/features',
+  path: '/features',
   getParentRoute: () => SettingsRoute,
 } as any)
 const SettingsAdvancedRoute = SettingsAdvancedRouteImport.update({
@@ -176,6 +182,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
   '/settings/advanced': typeof SettingsAdvancedRoute
+  '/settings/features': typeof SettingsFeaturesRoute
   '/settings/providers': typeof SettingsProvidersRoute
   '/settings/': typeof SettingsIndexRoute
   '/debug/bulk-delete': typeof AppDebugBulkDeleteRoute
@@ -199,6 +206,7 @@ export interface FileRoutesByTo {
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
   '/settings/advanced': typeof SettingsAdvancedRoute
+  '/settings/features': typeof SettingsFeaturesRoute
   '/settings/providers': typeof SettingsProvidersRoute
   '/settings': typeof SettingsIndexRoute
   '/debug/bulk-delete': typeof AppDebugBulkDeleteRoute
@@ -227,6 +235,7 @@ export interface FileRoutesById {
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/register': typeof AuthRegisterRoute
   '/settings/advanced': typeof SettingsAdvancedRoute
+  '/settings/features': typeof SettingsFeaturesRoute
   '/settings/providers': typeof SettingsProvidersRoute
   '/settings/': typeof SettingsIndexRoute
   '/_app/debug/bulk-delete': typeof AppDebugBulkDeleteRoute
@@ -254,6 +263,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/settings/advanced'
+    | '/settings/features'
     | '/settings/providers'
     | '/settings/'
     | '/debug/bulk-delete'
@@ -277,6 +287,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/settings/advanced'
+    | '/settings/features'
     | '/settings/providers'
     | '/settings'
     | '/debug/bulk-delete'
@@ -304,6 +315,7 @@ export interface FileRouteTypes {
     | '/_auth/login'
     | '/_auth/register'
     | '/settings/advanced'
+    | '/settings/features'
     | '/settings/providers'
     | '/settings/'
     | '/_app/debug/bulk-delete'
@@ -389,6 +401,13 @@ declare module '@tanstack/react-router' {
       path: '/providers'
       fullPath: '/settings/providers'
       preLoaderRoute: typeof SettingsProvidersRouteImport
+      parentRoute: typeof SettingsRoute
+    }
+    '/settings/features': {
+      id: '/settings/features'
+      path: '/features'
+      fullPath: '/settings/features'
+      preLoaderRoute: typeof SettingsFeaturesRouteImport
       parentRoute: typeof SettingsRoute
     }
     '/settings/advanced': {
@@ -568,12 +587,14 @@ const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(
 
 interface SettingsRouteChildren {
   SettingsAdvancedRoute: typeof SettingsAdvancedRoute
+  SettingsFeaturesRoute: typeof SettingsFeaturesRoute
   SettingsProvidersRoute: typeof SettingsProvidersRoute
   SettingsIndexRoute: typeof SettingsIndexRoute
 }
 
 const SettingsRouteChildren: SettingsRouteChildren = {
   SettingsAdvancedRoute: SettingsAdvancedRoute,
+  SettingsFeaturesRoute: SettingsFeaturesRoute,
   SettingsProvidersRoute: SettingsProvidersRoute,
   SettingsIndexRoute: SettingsIndexRoute,
 }

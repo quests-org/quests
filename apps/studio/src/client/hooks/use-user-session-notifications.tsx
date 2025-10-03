@@ -1,6 +1,6 @@
+import { featuresAtom } from "@/client/atoms/features";
 import { hasAIProviderAtom } from "@/client/atoms/has-ai-provider";
 import { userAtom } from "@/client/atoms/user";
-import { isFeatureEnabled } from "@/shared/features";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import { useAtom, useAtomValue } from "jotai";
@@ -15,11 +15,12 @@ let shownEnabledForAIMessages = false;
 export function useUserSessionNotifications() {
   const [userResult] = useAtom(userAtom);
   const hasAIProvider = useAtomValue(hasAIProviderAtom);
+  const features = useAtomValue(featuresAtom);
   const { mutate: addTab } = useMutation(rpcClient.tabs.add.mutationOptions());
   const router = useRouter();
 
   useEffect(() => {
-    if (!isFeatureEnabled("questsAccounts")) {
+    if (!features.questsAccounts) {
       return;
     }
 
@@ -36,29 +37,27 @@ export function useUserSessionNotifications() {
     }
 
     if (!hasAIProvider && !shownEnabledForAIMessages) {
-      if (isFeatureEnabled("questsAccounts")) {
-        toast.info("Sign in or add an API key to use AI features.", {
-          action: {
-            label: "Setup",
-            onClick: () => {
-              const location = router.buildLocation({
-                to: "/login",
-              });
-              addTab({ urlPath: location.href });
-            },
+      toast.info("Sign in or add an API key to use AI features.", {
+        action: {
+          label: "Setup",
+          onClick: () => {
+            const location = router.buildLocation({
+              to: "/login",
+            });
+            addTab({ urlPath: location.href });
           },
-          closeButton: true,
-          dismissible: true,
-          duration: Infinity,
-        });
-        shownEnabledForAIMessages = true;
-      } else {
-        toast.info("Add an API key to use AI features.", {
-          closeButton: true,
-          dismissible: true,
-          duration: Infinity,
-        });
-      }
+        },
+        closeButton: true,
+        dismissible: true,
+        duration: Infinity,
+      });
+      shownEnabledForAIMessages = true;
+    } else {
+      toast.info("Add an API key to use AI features.", {
+        closeButton: true,
+        dismissible: true,
+        duration: Infinity,
+      });
     }
 
     if (
@@ -77,6 +76,7 @@ export function useUserSessionNotifications() {
     userResult.error?.code,
     userResult.error?.message,
     addTab,
+    features.questsAccounts,
     hasAIProvider,
     router,
   ]);

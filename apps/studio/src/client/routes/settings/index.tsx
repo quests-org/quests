@@ -1,3 +1,4 @@
+import { featuresAtom } from "@/client/atoms/features";
 import { userAtom } from "@/client/atoms/user";
 import { ExternalLink } from "@/client/components/external-link";
 import { ThemeToggle } from "@/client/components/theme-toggle";
@@ -12,12 +13,11 @@ import { Label } from "@/client/components/ui/label";
 import { Progress } from "@/client/components/ui/progress";
 import { isLinux } from "@/client/lib/utils";
 import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
-import { isFeatureEnabled } from "@/shared/features";
 import { QuestsLogoIcon } from "@quests/components/logo";
 import { APP_REPO_URL, DISCORD_URL } from "@quests/shared";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { useAtom } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 import { Download, ExternalLink as ExternalLinkIcon } from "lucide-react";
 
 export const Route = createFileRoute("/settings/")({
@@ -341,9 +341,10 @@ function InterfaceAndTheme() {
 }
 
 function SettingsGeneralPage() {
+  const features = useAtomValue(featuresAtom);
   return (
     <div className="space-y-4">
-      {isFeatureEnabled("questsAccounts") && <Account />}
+      {features.questsAccounts && <Account />}
       <InterfaceAndTheme />
       <About />
     </div>

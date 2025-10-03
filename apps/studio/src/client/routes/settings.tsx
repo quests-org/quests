@@ -11,7 +11,12 @@ import {
 import { Toaster } from "@/client/components/ui/sonner";
 import { type MainAppPath } from "@/electron-main/lib/urls";
 import { createFileRoute, Outlet, useMatchRoute } from "@tanstack/react-router";
-import { BotIcon, SettingsIcon, SlidersHorizontalIcon } from "lucide-react";
+import {
+  BotIcon,
+  FlagIcon,
+  SettingsIcon,
+  SlidersHorizontalIcon,
+} from "lucide-react";
 
 import { isLinux } from "../lib/utils";
 
@@ -19,11 +24,16 @@ export const Route = createFileRoute("/settings")({
   component: SettingsLayout,
 });
 
+const isDev = import.meta.env.DEV;
+
 const sidebarNavItems: {
   icon: React.ElementType;
   path: Extract<
     MainAppPath,
-    "/settings" | "/settings/advanced" | "/settings/providers"
+    | "/settings"
+    | "/settings/advanced"
+    | "/settings/features"
+    | "/settings/providers"
   >;
   title: string;
 }[] = [
@@ -34,6 +44,15 @@ const sidebarNavItems: {
     path: "/settings/advanced",
     title: "Advanced",
   },
+  ...(isDev
+    ? [
+        {
+          icon: FlagIcon,
+          path: "/settings/features" as const,
+          title: "Features",
+        },
+      ]
+    : []),
 ];
 
 function SettingsLayout() {

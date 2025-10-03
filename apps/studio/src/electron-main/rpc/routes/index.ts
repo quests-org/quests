@@ -6,6 +6,7 @@ import { auth } from "./auth";
 import { debug } from "./debug";
 import { evals } from "./evals";
 import { favorites } from "./favorites";
+import { features } from "./features";
 import { gateway } from "./gateway";
 import { icon } from "./icon";
 import { preferences } from "./preferences";
@@ -26,6 +27,7 @@ export const router = {
   debug,
   evals,
   favorites,
+  features,
   gateway,
   icon,
   preferences,
