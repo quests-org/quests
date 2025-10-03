@@ -253,7 +253,7 @@ export const runtimeMachine = setup({
 
     PendingShutdown: {
       after: {
-        5000: {
+        60_000: {
           actions: "stopRuntime",
           target: "Stopped",
         },
