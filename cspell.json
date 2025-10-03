@@ -88,6 +88,8 @@
     "winstaller",
     "workerd",
     "worktree",
-    "XAPI"
+    "XAPI",
+    "libsecret",
+    "kwallet"
   ]
 }
