@@ -1,6 +1,12 @@
 import { call, eventIterator } from "@orpc/server";
-import { AIGatewayModel } from "@quests/ai-gateway";
+import { AIGatewayModel, parseModelURI } from "@quests/ai-gateway";
+import {
+  DEFAULT_THEME_GRADIENT,
+  SelectableAppIconsSchema,
+  THEMES,
+} from "@quests/shared/icons";
 import { mergeGenerators } from "@quests/shared/merge-generators";
+import { draw } from "radashi";
 import { z } from "zod";
 
 import { createAppConfig } from "../../../lib/app-config/create";
@@ -200,6 +206,108 @@ const create = base
     },
   );
 
+const createFromEval = base
+  .input(
+    z.object({
+      evalName: z.string(),
+      iconName: SelectableAppIconsSchema,
+      message: SessionMessage.UserSchemaWithParts,
+      modelURI: AIGatewayModel.URISchema,
+      sessionId: StoreId.SessionSchema,
+    }),
+  )
+  .output(WorkspaceAppProjectSchema)
+  .handler(
+    async ({
+      context,
+      errors,
+      input: { evalName, iconName, message, modelURI, sessionId },
+      signal,
+    }) => {
+      const [model, error] = (
+        await context.modelRegistry.languageModel(
+          modelURI,
+          context.workspaceConfig.getAIProviders(),
+          {
+            captureException: context.workspaceConfig.captureException,
+            workspaceServerURL: getWorkspaceServerURL(),
+          },
+        )
+      )
+        // eslint-disable-next-line unicorn/no-await-expression-member
+        .toTuple();
+
+      if (error) {
+        context.workspaceConfig.captureException(error);
+        throw toORPCError(error, errors);
+      }
+
+      const projectConfig = await newProjectConfig({
+        workspaceConfig: context.workspaceConfig,
+      });
+
+      const result = await createProject(
+        {
+          projectConfig,
+          workspaceConfig: context.workspaceConfig,
+        },
+        { signal },
+      );
+
+      if (result.isErr()) {
+        context.workspaceConfig.captureException(result.error);
+        throw toORPCError(result.error, errors);
+      }
+
+      await setProjectState(projectConfig.appDir, {
+        selectedModelURI: modelURI,
+      });
+
+      const modelId = parseModelURI(modelURI)
+        .map((m) => m.canonicalId)
+        .getOrDefault(model.modelId);
+      const projectName = `${modelId} - ${evalName}`;
+      const randomTheme = draw(THEMES) ?? DEFAULT_THEME_GRADIENT;
+      await updateQuestManifest(
+        projectConfig.subdomain,
+        context.workspaceConfig,
+        {
+          icon: {
+            background: randomTheme,
+            lucide: iconName,
+          },
+          name: projectName,
+        },
+      );
+
+      publisher.publish("project.updated", {
+        subdomain: result.value.projectConfig.subdomain,
+      });
+
+      context.workspaceRef.send({
+        type: "createSession",
+        value: {
+          message,
+          model,
+          sessionId,
+          subdomain: result.value.projectConfig.subdomain,
+        },
+      });
+
+      const workspaceApp = await getWorkspaceAppForSubdomain(
+        result.value.projectConfig.subdomain,
+        context.workspaceConfig,
+      );
+
+      context.workspaceConfig.captureEvent("project.created_from_eval", {
+        modelId: model.modelId,
+        providerId: model.provider,
+      });
+
+      return workspaceApp;
+    },
+  );
+
 const createFromPreview = base
   .input(
     z.object({
@@ -363,6 +471,7 @@ export const project = {
   bySubdomain,
   bySubdomains,
   create,
+  createFromEval,
   createFromPreview,
   duplicate,
   git: projectGit,

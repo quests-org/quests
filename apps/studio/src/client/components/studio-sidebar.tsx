@@ -18,7 +18,7 @@ import { isFeatureEnabled } from "@/shared/features";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useAtom } from "jotai";
 import {
-  Bug,
+  ChartLine,
   LayoutGrid,
   PlusIcon,
   SettingsIcon,
@@ -41,9 +41,9 @@ const data = {
     ...(process.env.NODE_ENV === "development"
       ? [
           {
-            icon: Bug,
-            title: "Debug",
-            url: "/debug" as const,
+            icon: ChartLine,
+            title: "Evals",
+            url: "/debug/evals" as const,
           },
         ]
       : []),

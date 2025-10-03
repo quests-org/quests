@@ -32,6 +32,7 @@ export interface AnalyticsEvents {
   "llm.tool_executed": { success: boolean; tool_name: string };
   "message.created": WithModelProperties<{ length: number }>;
   "project.created": WithModelProperties;
+  "project.created_from_eval": WithModelProperties;
   "project.created_from_preview": {
     preview_folder_name: string;
   };

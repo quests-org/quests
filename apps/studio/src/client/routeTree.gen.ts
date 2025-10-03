@@ -27,6 +27,7 @@ import { Route as AppNewTabRouteImport } from './routes/_app/new-tab'
 import { Route as AppDebugRouteRouteImport } from './routes/_app/debug/route'
 import { Route as AppDiscoverIndexRouteImport } from './routes/_app/discover/index'
 import { Route as AppDebugIndexRouteImport } from './routes/_app/debug/index'
+import { Route as AppDebugEvalsRouteImport } from './routes/_app/debug/evals'
 import { Route as AppDebugComponentsRouteImport } from './routes/_app/debug/components'
 import { Route as AppDebugColorsRouteImport } from './routes/_app/debug/colors'
 import { Route as AppDebugBulkDeleteRouteImport } from './routes/_app/debug/bulk-delete'
@@ -122,6 +123,11 @@ const AppDebugIndexRoute = AppDebugIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppDebugRouteRoute,
 } as any)
+const AppDebugEvalsRoute = AppDebugEvalsRouteImport.update({
+  id: '/evals',
+  path: '/evals',
+  getParentRoute: () => AppDebugRouteRoute,
+} as any)
 const AppDebugComponentsRoute = AppDebugComponentsRouteImport.update({
   id: '/components',
   path: '/components',
@@ -174,6 +180,7 @@ export interface FileRoutesByFullPath {
   '/debug/bulk-delete': typeof AppDebugBulkDeleteRoute
   '/debug/colors': typeof AppDebugColorsRoute
   '/debug/components': typeof AppDebugComponentsRoute
+  '/debug/evals': typeof AppDebugEvalsRoute
   '/debug/': typeof AppDebugIndexRoute
   '/discover': typeof AppDiscoverIndexRoute
   '/discover/apps/$folderName': typeof AppDiscoverAppsFolderNameRoute
@@ -196,6 +203,7 @@ export interface FileRoutesByTo {
   '/debug/bulk-delete': typeof AppDebugBulkDeleteRoute
   '/debug/colors': typeof AppDebugColorsRoute
   '/debug/components': typeof AppDebugComponentsRoute
+  '/debug/evals': typeof AppDebugEvalsRoute
   '/debug': typeof AppDebugIndexRoute
   '/discover': typeof AppDiscoverIndexRoute
   '/discover/apps/$folderName': typeof AppDiscoverAppsFolderNameRoute
@@ -223,6 +231,7 @@ export interface FileRoutesById {
   '/_app/debug/bulk-delete': typeof AppDebugBulkDeleteRoute
   '/_app/debug/colors': typeof AppDebugColorsRoute
   '/_app/debug/components': typeof AppDebugComponentsRoute
+  '/_app/debug/evals': typeof AppDebugEvalsRoute
   '/_app/debug/': typeof AppDebugIndexRoute
   '/_app/discover/': typeof AppDiscoverIndexRoute
   '/_app/discover/apps/$folderName': typeof AppDiscoverAppsFolderNameRoute
@@ -249,6 +258,7 @@ export interface FileRouteTypes {
     | '/debug/bulk-delete'
     | '/debug/colors'
     | '/debug/components'
+    | '/debug/evals'
     | '/debug/'
     | '/discover'
     | '/discover/apps/$folderName'
@@ -271,6 +281,7 @@ export interface FileRouteTypes {
     | '/debug/bulk-delete'
     | '/debug/colors'
     | '/debug/components'
+    | '/debug/evals'
     | '/debug'
     | '/discover'
     | '/discover/apps/$folderName'
@@ -297,6 +308,7 @@ export interface FileRouteTypes {
     | '/_app/debug/bulk-delete'
     | '/_app/debug/colors'
     | '/_app/debug/components'
+    | '/_app/debug/evals'
     | '/_app/debug/'
     | '/_app/discover/'
     | '/_app/discover/apps/$folderName'
@@ -441,6 +453,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDebugIndexRouteImport
       parentRoute: typeof AppDebugRouteRoute
     }
+    '/_app/debug/evals': {
+      id: '/_app/debug/evals'
+      path: '/evals'
+      fullPath: '/debug/evals'
+      preLoaderRoute: typeof AppDebugEvalsRouteImport
+      parentRoute: typeof AppDebugRouteRoute
+    }
     '/_app/debug/components': {
       id: '/_app/debug/components'
       path: '/components'
@@ -490,6 +509,7 @@ interface AppDebugRouteRouteChildren {
   AppDebugBulkDeleteRoute: typeof AppDebugBulkDeleteRoute
   AppDebugColorsRoute: typeof AppDebugColorsRoute
   AppDebugComponentsRoute: typeof AppDebugComponentsRoute
+  AppDebugEvalsRoute: typeof AppDebugEvalsRoute
   AppDebugIndexRoute: typeof AppDebugIndexRoute
 }
 
@@ -497,6 +517,7 @@ const AppDebugRouteRouteChildren: AppDebugRouteRouteChildren = {
   AppDebugBulkDeleteRoute: AppDebugBulkDeleteRoute,
   AppDebugColorsRoute: AppDebugColorsRoute,
   AppDebugComponentsRoute: AppDebugComponentsRoute,
+  AppDebugEvalsRoute: AppDebugEvalsRoute,
   AppDebugIndexRoute: AppDebugIndexRoute,
 }
 

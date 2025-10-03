@@ -102,6 +102,7 @@ export const APP_ICONS = [
 export const AppIconsSchema = z.enum(APP_ICONS);
 
 export type IconName = (typeof APP_ICONS)[number];
+export type SelectableIconName = (typeof SELECTABLE_APP_ICONS)[number];
 
 const THEME_GRADIENTS = {
   blue: "conic-gradient(from 42deg at 50% 50%, #0d84ff, #5856d7)",

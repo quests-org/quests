@@ -13,11 +13,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/client/components/ui/popover";
+import {
+  getGroupedModelsEntries,
+  groupAndFilterModels,
+} from "@/client/lib/group-models";
 import { getProviderMetadata } from "@/client/lib/provider-metadata";
 import { cn } from "@/client/lib/utils";
 import { type AIGatewayModel } from "@quests/ai-gateway";
 import { AlertCircle, Check, ChevronDown, CircleOff, Plus } from "lucide-react";
-import { fork } from "radashi";
 import { useMemo, useState } from "react";
 
 import { vanillaRpcClient } from "../rpc/client";
@@ -36,41 +39,6 @@ interface ModelPickerProps {
   value?: AIGatewayModel.URI;
 }
 
-const groupAndFilterModels = (models: AIGatewayModel.Type[]) => {
-  const [recommended, notRecommended] = fork(
-    models,
-    (model) =>
-      model.tags.includes("recommended") && model.tags.includes("coding"),
-  );
-
-  const [defaultRecommended, nonDefaultRecommended] = fork(
-    recommended,
-    (model) => model.tags.includes("default"),
-  );
-
-  const [supportsTools, doesNotSupportTools] = fork(notRecommended, (model) =>
-    model.features.includes("tools"),
-  );
-
-  const [newModels, notNewModels] = fork(supportsTools, (model) =>
-    model.tags.includes("new"),
-  );
-
-  const [legacy, notLegacy] = fork(notNewModels, (model) =>
-    model.tags.includes("legacy"),
-  );
-
-  /* eslint-disable perfectionist/sort-objects */
-  return {
-    Recommended: [...defaultRecommended, ...nonDefaultRecommended],
-    New: newModels,
-    Other: notLegacy,
-    "May not support tools": doesNotSupportTools,
-    Legacy: legacy,
-  };
-  /* eslint-enable perfectionist/sort-objects */
-};
-
 export function ModelPicker({
   className = "",
   disabled = false,
@@ -87,10 +55,7 @@ export function ModelPicker({
   const selectedModel = models?.find((model) => model.uri === value);
 
   const groupedModels = useMemo(
-    () =>
-      models
-        ? groupAndFilterModels(models)
-        : ({} as ReturnType<typeof groupAndFilterModels>),
+    () => groupAndFilterModels(models ?? []),
     [models],
   );
 
@@ -265,7 +230,7 @@ export function ModelPicker({
             )}
             {models &&
               models.length > 0 &&
-              Object.entries(groupedModels).map(
+              getGroupedModelsEntries(groupedModels).map(
                 ([groupName, modelGroup]) =>
                   modelGroup.length > 0 && (
                     <CommandGroup heading={groupName} key={groupName}>
