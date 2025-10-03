@@ -1,12 +1,19 @@
 import { type WorkspaceApp } from "@quests/workspace/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { atom, useAtom, useSetAtom } from "jotai";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 import { projectIframeRefAtom } from "../atoms/project";
+import { useReload } from "../hooks/use-reload";
 import { useShimIFrame } from "../hooks/use-shim-iframe";
 import { cn } from "../lib/utils";
-import { rpcClient, vanillaRpcClient } from "../rpc/client";
+import { rpcClient } from "../rpc/client";
 import { AppIFrame } from "./app-iframe";
 import { AppToolbar } from "./app-toolbar";
 import { type ClientLogLine } from "./console";
@@ -16,15 +23,15 @@ export function AppView({
   app,
   centerContent,
   className,
-  isPrimary = true,
   rightActions,
+  shouldReload = true,
   showSendToChat = false,
 }: {
   app: WorkspaceApp;
   centerContent?: React.ReactNode;
   className?: string;
-  isPrimary?: boolean;
   rightActions?: React.ReactNode;
+  shouldReload?: boolean;
   showSendToChat?: boolean;
 }) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -41,6 +48,11 @@ export function AppView({
     rpcClient.workspace.runtime.restart.mutationOptions(),
   );
 
+  const handleReload = useCallback(() => {
+    restartRuntimeMutation.mutate({ appSubdomain: app.subdomain });
+    shimIFrame.reloadWindow();
+  }, [app.subdomain, restartRuntimeMutation, shimIFrame]);
+
   useEffect(() => {
     if (app.type === "project") {
       setProjectIframeRef(iframeRef);
@@ -52,31 +64,13 @@ export function AppView({
     };
   }, [app.type, setProjectIframeRef, iframeRef]);
 
-  useEffect(() => {
-    if (!isPrimary) {
-      return;
-    }
-
-    let isCancelled = false;
-
-    async function subscribeToReload() {
-      const subscription = await vanillaRpcClient.utils.live.reload();
-
-      for await (const _ of subscription) {
-        if (isCancelled) {
-          break;
-        }
-        restartRuntimeMutation.mutate({ appSubdomain: app.subdomain });
-        shimIFrame.reloadWindow();
+  useReload(
+    useCallback(() => {
+      if (shouldReload) {
+        handleReload();
       }
-    }
-
-    void subscribeToReload();
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [app.subdomain, isPrimary, restartRuntimeMutation, shimIFrame]);
+    }, [shouldReload, handleReload]),
+  );
 
   return (
     <div className={cn("flex flex-col size-full", className)}>
@@ -89,6 +83,7 @@ export function AppView({
         onConsoleToggle={() => {
           setIsConsoleOpen((prev) => !prev);
         }}
+        onReload={handleReload}
         rightActions={rightActions}
       />
 

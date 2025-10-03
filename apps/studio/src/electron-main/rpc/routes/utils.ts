@@ -11,6 +11,7 @@ import {
   OpenAppInTypeSchema,
   SupportedEditorSchema,
 } from "@/shared/schemas/editors";
+import { eventIterator } from "@orpc/server";
 import { ProjectSubdomainSchema } from "@quests/workspace/client";
 import { createAppConfig } from "@quests/workspace/electron";
 import { clipboard, shell, webContents } from "electron";
@@ -390,20 +391,28 @@ const getSupportedEditors = base
   });
 
 const live = {
-  reload: base.handler(async function* ({ signal }) {
-    for await (const _payload of publisher.subscribe("app.reload", {
+  reload: base.handler(async function* ({ context, signal }) {
+    for await (const payload of publisher.subscribe("app.reload", {
       signal,
     })) {
-      yield null;
+      if (context.webContentsId === payload.webContentsId) {
+        yield;
+      }
     }
   }),
-  serverExceptions: base.handler(async function* ({ signal }) {
-    for await (const payload of publisher.subscribe("server-exception", {
-      signal,
-    })) {
-      yield payload;
-    }
-  }),
+  serverExceptions: base
+    .output(
+      eventIterator(
+        z.object({ message: z.string(), stack: z.string().optional() }),
+      ),
+    )
+    .handler(async function* ({ signal }) {
+      for await (const payload of publisher.subscribe("server-exception", {
+        signal,
+      })) {
+        yield payload;
+      }
+    }),
 };
 
 export const utils = {

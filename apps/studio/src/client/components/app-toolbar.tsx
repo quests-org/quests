@@ -27,6 +27,7 @@ interface AppToolbarProps {
   iframeRef: React.RefObject<HTMLIFrameElement | null>;
   isConsoleOpen?: boolean;
   onConsoleToggle: () => void;
+  onReload: () => void;
   rightActions?: ReactNode;
 }
 
@@ -43,16 +44,13 @@ export function AppToolbar({
   iframeRef,
   isConsoleOpen = true,
   onConsoleToggle,
+  onReload,
   rightActions,
 }: AppToolbarProps) {
   const shimIFrame = useShimIFrame(iframeRef);
   const [lastSeenLogTimestamp, setLastSeenLogTimestamp] = useState<
     null | number
   >(null);
-
-  const restartRuntimeMutation = useMutation(
-    rpcClient.workspace.runtime.restart.mutationOptions(),
-  );
 
   const openExternalLinkMutation = useMutation(
     rpcClient.utils.openExternalLink.mutationOptions(),
@@ -185,12 +183,7 @@ export function AppToolbar({
             <Button
               className="size-6"
               disabled={disabled}
-              onClick={async () => {
-                await restartRuntimeMutation.mutateAsync({
-                  appSubdomain: app.subdomain,
-                });
-                shimIFrame.reloadWindow();
-              }}
+              onClick={onReload}
               size="icon"
               variant="ghost"
             >

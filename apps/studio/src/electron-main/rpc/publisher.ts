@@ -3,7 +3,7 @@ import { type TabState } from "@/shared/tabs";
 import { EventPublisher } from "@orpc/server";
 
 export const publisher = new EventPublisher<{
-  "app.reload": null;
+  "app.reload": { webContentsId: number };
   "auth.updated": {
     error?: {
       code: number;

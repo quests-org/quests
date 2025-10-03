@@ -1,4 +1,5 @@
 import { DiscoverAppsGrid } from "@/client/components/discover-apps-grid";
+import { useReload } from "@/client/hooks/use-reload";
 import { vanillaRpcClient } from "@/client/rpc/client";
 import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
 import { QuestsAnimatedLogo } from "@quests/components/animated-logo";
@@ -27,6 +28,8 @@ export const Route = createFileRoute("/_app/discover/")({
 
 function RouteComponent() {
   const { registryApps } = Route.useLoaderData();
+
+  useReload();
 
   return (
     <div className="w-full flex-1">

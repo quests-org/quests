@@ -139,7 +139,13 @@ export function createMainWindowMenu(): MenuItemConstructorOptions[] {
       {
         accelerator: "CmdOrCtrl+R",
         click: () => {
-          publisher.publish("app.reload", null);
+          const tabsManager = getTabsManager();
+          const currentTab = tabsManager?.getCurrentTab();
+          if (currentTab) {
+            publisher.publish("app.reload", {
+              webContentsId: currentTab.webView.webContents.id,
+            });
+          }
         },
         label: "Reload App",
       },
