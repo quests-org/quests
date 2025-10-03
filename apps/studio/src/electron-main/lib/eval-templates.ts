@@ -403,6 +403,92 @@ const EVAL_TEMPLATE_GROUPS: EvalTemplateGroup[] = [
       },
     ],
   },
+  {
+    name: "Influencer Evals",
+    templates: [
+      {
+        iconName: "activity",
+        name: "Image Generation Studio (Theo)",
+        prompt:
+          'This app is going to be a "image generation studio" using various AI models to turn a prompt into an image. Design a mocked version. It should be dark mode. Focus on making it beautiful.',
+      },
+      {
+        iconName: "sparkles",
+        name: "Pelican on Bicycle (Simon Willison)",
+        prompt: "Generate an SVG of a pelican riding a bicycle.",
+      },
+    ],
+  },
+  {
+    name: "Landing Pages & UI Clones",
+    templates: [
+      {
+        iconName: "globe",
+        name: "AI Career Timeline Landing Page",
+        prompt:
+          "Generate a landing page for a new AI startup that scans your face and tells you your most likely alternate career in another timeline.",
+      },
+      {
+        iconName: "check",
+        name: "Linear App Clone",
+        prompt:
+          "Recreate the Linear App UI, keeping the layout and animations as close as possible.",
+      },
+      {
+        iconName: "sparkles",
+        name: "Framer Style Animation",
+        prompt:
+          "Generate a landing page with smooth Framer-like transitions between sections.",
+      },
+      {
+        iconName: "chart-bar",
+        name: "Dark Mode Dashboard",
+        prompt:
+          "Design a sleek admin dashboard UI with light and dark mode toggle, featuring an AI analytics graph.",
+      },
+      {
+        iconName: "globe",
+        name: "Random Tailwind Webapp",
+        prompt:
+          "Write code for a Webapp on a random category/industry/niche of your choosing using Tailwind CSS.",
+      },
+    ],
+  },
+  {
+    name: "Interactive Games",
+    templates: [
+      {
+        iconName: "sparkles",
+        name: "Pokemon Battle UI",
+        prompt:
+          "Recreate a Pokémon battle UI - make it interactive, nostalgic, and fun. Stick to the spirit of a classic battle, but feel free to get creative if you want.",
+      },
+      {
+        iconName: "sparkles",
+        name: "Super Mario Level",
+        prompt:
+          "Recreate a Super Mario Bros. level - make it interactive and fun, feel free to get creative and showcase your skills. Stick to the spirit of nintendo games.",
+      },
+      {
+        iconName: "box",
+        name: "Three.js City Builder",
+        prompt:
+          "Create a three.js 3D game where I can place buildings of various designs and sizes, and drive through the town I've created. Add traffic to the road as well.",
+      },
+      {
+        iconName: "grid",
+        name: "Interactive Catan Board",
+        prompt:
+          "Create a web app with an interactive hex grid like Settlers of Catan, where the number of hexes can be adjusted using a slider.",
+      },
+      {
+        iconName: "zap",
+        name: "Catch the Falling Object",
+        prompt:
+          "Create a very simple, playable mini-game. Game concept: A 'Catch the Falling Object' game where the player controls a basket/paddle at the bottom (using mouse movement or arrow keys) to catch simple shapes falling from the top. Keep the design minimal and clean. Include a basic score counter.",
+      },
+    ],
+  },
 ];
 /* cspell:enable */
 
