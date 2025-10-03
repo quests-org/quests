@@ -10,7 +10,6 @@ import { base } from "../base";
 import { publisher } from "../publisher";
 
 const FeaturesSchema = z.object({
-  createInNewTab: z.boolean(),
   evals: z.boolean(),
   questsAccounts: z.boolean(),
 });

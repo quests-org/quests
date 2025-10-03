@@ -1,12 +1,11 @@
-import { featuresAtom } from "@/client/atoms/features";
 import { selectedModelURIAtom } from "@/client/atoms/selected-models";
 import { DiscoverAppsGrid } from "@/client/components/discover-apps-grid";
 import { ExternalLink } from "@/client/components/external-link";
 import { InternalLink } from "@/client/components/internal-link";
 import { PromptInput } from "@/client/components/prompt-input";
 import { Button } from "@/client/components/ui/button";
-import { Checkbox } from "@/client/components/ui/checkbox";
 import { useTabs } from "@/client/hooks/use-tabs";
+import { isMacOS } from "@/client/lib/utils";
 import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
 import {
   APP_REPO_URL,
@@ -21,9 +20,8 @@ import {
   useNavigate,
   useRouter,
 } from "@tanstack/react-router";
-import { useAtom, useAtomValue } from "jotai";
+import { useAtom } from "jotai";
 import { ArrowRight } from "lucide-react";
-import { useState } from "react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/new-tab")({
@@ -45,9 +43,7 @@ export const Route = createFileRoute("/_app/new-tab")({
 
 function RouteComponent() {
   const { registryApps } = Route.useLoaderData();
-  const features = useAtomValue(featuresAtom);
   const [selectedModelURI, setSelectedModelURI] = useAtom(selectedModelURIAtom);
-  const [openInNewTab, setOpenInNewTab] = useState(false);
   const navigate = useNavigate({ from: "/new-tab" });
   const router = useRouter();
   const { addTab } = useTabs();
@@ -66,14 +62,14 @@ function RouteComponent() {
           </div>
           <div>
             <PromptInput
+              allowOpenInNewTab
               atomKey="$$new-tab$$"
               autoFocus
               autoResizeMaxHeight={300}
-              clearOnSubmit={!openInNewTab}
               isLoading={createProjectMutation.isPending}
               modelURI={selectedModelURI}
               onModelChange={setSelectedModelURI}
-              onSubmit={({ modelURI, prompt }) => {
+              onSubmit={({ modelURI, openInNewTab, prompt }) => {
                 const promptText = prompt.trim();
                 const messageId = StoreId.newMessageId();
                 const sessionId = StoreId.newSessionId();
@@ -132,20 +128,9 @@ function RouteComponent() {
               }}
               placeholder="Describe the app you want to create…"
             />
-            {features.createInNewTab && (
-              <div className="flex justify-end mt-2">
-                <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer">
-                  <Checkbox
-                    checked={openInNewTab}
-                    className="size-3.5 [&_svg]:size-2.5"
-                    onCheckedChange={(checked) => {
-                      setOpenInNewTab(checked === true);
-                    }}
-                  />
-                  <span>Create in new tab</span>
-                </label>
-              </div>
-            )}
+            <p className="text-xs text-muted-foreground/50 mt-2 text-right">
+              Hold {isMacOS() ? "⌘" : "Ctrl"} to create in a new tab
+            </p>
           </div>
         </div>
       </div>

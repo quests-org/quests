@@ -5,11 +5,17 @@ import {
   TextareaContainer,
   TextareaInner,
 } from "@/client/components/ui/textarea-container";
-import { cn } from "@/client/lib/utils";
+import { cn, isMacOS } from "@/client/lib/utils";
 import { type AIGatewayModel } from "@quests/ai-gateway";
 import { useQuery } from "@tanstack/react-query";
 import { useAtom, useAtomValue } from "jotai";
-import { ArrowUp, Circle, Loader2, Square } from "lucide-react";
+import {
+  ArrowUp,
+  Circle,
+  Loader2,
+  Square,
+  SquareArrowOutUpRight,
+} from "lucide-react";
 import {
   forwardRef,
   useCallback,
@@ -28,11 +34,11 @@ import {
 import { rpcClient } from "../rpc/client";
 
 interface PromptInputProps {
+  allowOpenInNewTab?: boolean;
   atomKey: PromptValueAtomKey;
   autoFocus?: boolean;
   autoResizeMaxHeight?: number;
   className?: string;
-  clearOnSubmit?: boolean;
   disabled?: boolean;
   isLoading: boolean;
   isStoppable?: boolean;
@@ -40,7 +46,11 @@ interface PromptInputProps {
   modelURI?: AIGatewayModel.URI;
   onModelChange: (modelURI: AIGatewayModel.URI) => void;
   onStop?: () => void;
-  onSubmit: (value: { modelURI: AIGatewayModel.URI; prompt: string }) => void;
+  onSubmit: (value: {
+    modelURI: AIGatewayModel.URI;
+    openInNewTab?: boolean;
+    prompt: string;
+  }) => void;
   placeholder?: string;
 }
 
@@ -51,11 +61,11 @@ interface PromptInputRef {
 export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
   (
     {
+      allowOpenInNewTab = false,
       atomKey,
       autoFocus = false,
       autoResizeMaxHeight = 400,
       className,
-      clearOnSubmit = true,
       disabled = false,
       isLoading,
       isStoppable = false,
@@ -69,6 +79,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
     ref,
   ) => {
     const [showAIProviderGuard, setShowAIProviderGuard] = useState(false);
+    const [modifierKeyPressed, setModifierKeyPressed] = useState(false);
     const textareaRef = useRef<HTMLDivElement>(null);
     const textareaInnerRef = useRef<HTMLTextAreaElement>(null);
     const hasAIProvider = useAtomValue(hasAIProviderAtom);
@@ -79,6 +90,38 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
         textareaInnerRef.current?.focus();
       },
     }));
+
+    useEffect(() => {
+      if (!allowOpenInNewTab) {
+        return;
+      }
+
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (isMacOS() ? e.metaKey : e.ctrlKey) {
+          setModifierKeyPressed(true);
+        }
+      };
+
+      const handleKeyUp = (e: KeyboardEvent) => {
+        if (isMacOS() ? !e.metaKey : !e.ctrlKey) {
+          setModifierKeyPressed(false);
+        }
+      };
+
+      const handleBlur = () => {
+        setModifierKeyPressed(false);
+      };
+
+      window.addEventListener("keydown", handleKeyDown);
+      window.addEventListener("keyup", handleKeyUp);
+      window.addEventListener("blur", handleBlur);
+
+      return () => {
+        window.removeEventListener("keydown", handleKeyDown);
+        window.removeEventListener("keyup", handleKeyUp);
+        window.removeEventListener("blur", handleBlur);
+      };
+    }, [allowOpenInNewTab]);
 
     const {
       data: modelsData,
@@ -155,25 +198,28 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
       setShowAIProviderGuard,
     ]);
 
-    const handleSubmit = useCallback(() => {
-      if (!validateSubmission() || !modelURI) {
-        return;
-      }
+    const handleSubmit = useCallback(
+      (openInNewTab = false) => {
+        if (!validateSubmission() || !modelURI) {
+          return;
+        }
 
-      onSubmit({ modelURI, prompt: value.trim() });
-      if (clearOnSubmit) {
-        setValue("");
-        resetTextareaHeight();
-      }
-    }, [
-      clearOnSubmit,
-      modelURI,
-      onSubmit,
-      resetTextareaHeight,
-      setValue,
-      validateSubmission,
-      value,
-    ]);
+        onSubmit({ modelURI, openInNewTab, prompt: value.trim() });
+        if (!(allowOpenInNewTab && openInNewTab)) {
+          setValue("");
+          resetTextareaHeight();
+        }
+      },
+      [
+        allowOpenInNewTab,
+        modelURI,
+        onSubmit,
+        resetTextareaHeight,
+        setValue,
+        validateSubmission,
+        value,
+      ],
+    );
 
     const handleStop = () => {
       onStop?.();
@@ -182,7 +228,9 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
     const handleKeyDown = (e: React.KeyboardEvent) => {
       if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
         e.preventDefault();
-        handleSubmit();
+        const openInNewTab =
+          allowOpenInNewTab && (isMacOS() ? e.metaKey : e.ctrlKey);
+        handleSubmit(openInNewTab);
       }
     };
 
@@ -228,7 +276,15 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
             <Button
               className="h-7 w-7 p-0"
               disabled={isStoppable ? false : !canSubmit}
-              onClick={isStoppable ? handleStop : handleSubmit}
+              onClick={(e) => {
+                if (isStoppable) {
+                  handleStop();
+                } else {
+                  const openInNewTab =
+                    allowOpenInNewTab && (isMacOS() ? e.metaKey : e.ctrlKey);
+                  handleSubmit(openInNewTab);
+                }
+              }}
               size="sm"
               variant={isStoppable ? "ghost" : "brand"}
             >
@@ -239,6 +295,8 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
                 </div>
               ) : isLoading ? (
                 <Loader2 className="size-4 animate-spin" />
+              ) : modifierKeyPressed ? (
+                <SquareArrowOutUpRight className="size-4" />
               ) : (
                 <ArrowUp className="size-4" />
               )}

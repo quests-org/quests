@@ -1,8 +1,4 @@
 import { z } from "zod";
 
-export const FeatureNameSchema = z.enum([
-  "createInNewTab",
-  "evals",
-  "questsAccounts",
-]);
+export const FeatureNameSchema = z.enum(["evals", "questsAccounts"]);
 export type FeatureName = z.output<typeof FeatureNameSchema>;

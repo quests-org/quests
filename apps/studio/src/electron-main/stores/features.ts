@@ -5,7 +5,6 @@ import { z } from "zod";
 
 /* eslint-disable unicorn/prefer-top-level-await */
 const FeaturesStoreSchema = z.object({
-  createInNewTab: z.boolean().catch(false),
   evals: z.boolean().catch(false),
   questsAccounts: z.boolean().catch(false),
 });

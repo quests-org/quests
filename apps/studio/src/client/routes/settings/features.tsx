@@ -15,10 +15,6 @@ const featureDescriptions: Record<
   FeatureName,
   { description: string; title: string }
 > = {
-  createInNewTab: {
-    description: "Enable the 'Create in new tab' checkbox on the new tab page.",
-    title: "Create in New Tab",
-  },
   evals: {
     description: "Enable the evaluations page and sidebar item.",
     title: "Evaluations",
