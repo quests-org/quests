@@ -38,12 +38,12 @@ const data = {
       title: "Discover",
       url: "/discover" as const,
     },
-    ...(process.env.NODE_ENV === "development"
+    ...(isFeatureEnabled("evals")
       ? [
           {
             icon: ChartLine,
             title: "Evals",
-            url: "/debug/evals" as const,
+            url: "/evals" as const,
           },
         ]
       : []),

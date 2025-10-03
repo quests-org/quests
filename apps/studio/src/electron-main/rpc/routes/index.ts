@@ -4,6 +4,7 @@ import { api } from "./api";
 import { appState } from "./app-state";
 import { auth } from "./auth";
 import { debug } from "./debug";
+import { evals } from "./evals";
 import { favorites } from "./favorites";
 import { gateway } from "./gateway";
 import { icon } from "./icon";
@@ -23,6 +24,7 @@ export const router = {
   appState,
   auth,
   debug,
+  evals,
   favorites,
   gateway,
   icon,

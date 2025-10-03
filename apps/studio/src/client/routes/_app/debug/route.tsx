@@ -56,15 +56,6 @@ function RouteComponent() {
             >
               Bulk Delete
             </InternalLink>
-            <InternalLink
-              activeProps={{
-                className: linkActiveClasses,
-              }}
-              className={linkBaseClasses}
-              to="/debug/evals"
-            >
-              Evals
-            </InternalLink>
           </div>
           <ThemeToggle />
         </nav>

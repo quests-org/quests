@@ -34,23 +34,30 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useAtom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
-import { Check } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
-import { EVAL_TEMPLATE_GROUPS, EVAL_TEMPLATES } from "./_data/eval-templates";
-
 const selectedEvalProviderAtom = atomWithStorage<
   "all" | AIGatewayProvider.Type["type"]
->("debug-evals-selected-provider", "all");
+>("evals-selected-provider", "all");
 
-export const Route = createFileRoute("/_app/debug/evals")({
+const selectedEvalTemplatesAtom = atomWithStorage<string[]>(
+  "evals-selected-templates",
+  [],
+);
+
+const selectedModelsAtom = atomWithStorage<AIGatewayModel.URI[]>(
+  "evals-selected-models",
+  [],
+);
+
+export const Route = createFileRoute("/evals")({
   component: RouteComponent,
   head: () => {
     return {
       meta: [
         {
-          title: "Evals · Debug",
+          title: "Evals",
         },
         {
           content: "chart-line",
@@ -63,16 +70,24 @@ export const Route = createFileRoute("/_app/debug/evals")({
 
 function RouteComponent() {
   const navigate = useNavigate();
-  const [selectedEvalTemplates, setSelectedEvalTemplates] = useState<
-    Set<string>
-  >(new Set());
-  const [selectedModels, setSelectedModels] = useState<Set<AIGatewayModel.URI>>(
-    new Set(),
+  const [selectedEvalTemplatesArray, setSelectedEvalTemplatesArray] = useAtom(
+    selectedEvalTemplatesAtom,
   );
+  const [selectedModelsArray, setSelectedModelsArray] =
+    useAtom(selectedModelsAtom);
   const [selectedProvider, setSelectedProvider] = useAtom(
     selectedEvalProviderAtom,
   );
   const [isCreating, setIsCreating] = useState(false);
+
+  const selectedEvalTemplates = useMemo(
+    () => new Set(selectedEvalTemplatesArray),
+    [selectedEvalTemplatesArray],
+  );
+  const selectedModels = useMemo(
+    () => new Set(selectedModelsArray),
+    [selectedModelsArray],
+  );
   const createFromEvalMutation = useMutation(
     rpcClient.workspace.project.createFromEval.mutationOptions(),
   );
@@ -83,6 +98,12 @@ function RouteComponent() {
     isLoading: modelsIsLoading,
   } = useQuery(rpcClient.gateway.models.live.list.experimental_liveOptions());
   const { models } = modelsData ?? {};
+
+  const {
+    data: evalTemplateGroups,
+    isError: evalTemplateGroupsIsError,
+    isLoading: evalTemplateGroupsIsLoading,
+  } = useQuery(rpcClient.evals.template.listGroups.queryOptions());
 
   const availableProviders = useMemo(() => {
     if (!models) {
@@ -114,7 +135,7 @@ function RouteComponent() {
     } else {
       newSelected.add(templateName);
     }
-    setSelectedEvalTemplates(newSelected);
+    setSelectedEvalTemplatesArray([...newSelected]);
   };
 
   const handleToggleModel = (modelURI: AIGatewayModel.URI) => {
@@ -124,7 +145,7 @@ function RouteComponent() {
     } else {
       newSelected.add(modelURI);
     }
-    setSelectedModels(newSelected);
+    setSelectedModelsArray([...newSelected]);
   };
 
   const handleRunEvals = async () => {
@@ -146,7 +167,9 @@ function RouteComponent() {
       const createdProjects = [];
 
       for (const templateName of selectedEvalTemplates) {
-        const template = EVAL_TEMPLATES.find((t) => t.name === templateName);
+        const template = evalTemplateGroups
+          ?.flatMap((g) => g.templates)
+          .find((t) => t.name === templateName);
         if (!template) {
           continue;
         }
@@ -203,18 +226,18 @@ function RouteComponent() {
     }
   };
 
-  if (modelsIsLoading) {
+  if (modelsIsLoading || evalTemplateGroupsIsLoading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <p className="text-sm text-muted-foreground">Loading models...</p>
+        <p className="text-sm text-muted-foreground">Loading...</p>
       </div>
     );
   }
 
-  if (modelsIsError) {
+  if (modelsIsError || evalTemplateGroupsIsError) {
     return (
       <div className="flex items-center justify-center h-full">
-        <p className="text-sm text-destructive">Failed to load models</p>
+        <p className="text-sm text-destructive">Failed to load data</p>
       </div>
     );
   }
@@ -265,7 +288,7 @@ function RouteComponent() {
         <div className="space-y-4">
           <h2 className="text-lg font-semibold">Select Eval Templates</h2>
           <Accordion className="border rounded-lg" type="multiple">
-            {EVAL_TEMPLATE_GROUPS.map((group) => (
+            {evalTemplateGroups?.map((group) => (
               <AccordionItem key={group.name} value={group.name}>
                 <AccordionTrigger className="px-4">
                   <span className="text-sm font-medium">{group.name}</span>
@@ -331,38 +354,6 @@ function RouteComponent() {
             </TabsList>
           </Tabs>
 
-          {selectedModelsList && selectedModelsList.length > 0 && (
-            <div className="border rounded-lg p-4 space-y-2">
-              <p className="text-xs font-medium text-muted-foreground">
-                Selected Models:
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {selectedModelsList.map((model) => (
-                  <div
-                    className="flex items-center gap-1.5 bg-muted px-2 py-1 rounded text-xs"
-                    key={model.uri}
-                  >
-                    <AIProviderIcon
-                      className="size-3 opacity-90"
-                      type={model.params.provider}
-                    />
-                    <span className="truncate max-w-48">
-                      {model.canonicalId}
-                    </span>
-                    <button
-                      className="hover:text-foreground text-muted-foreground"
-                      onClick={() => {
-                        handleToggleModel(model.uri);
-                      }}
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
           <div className="border rounded-lg">
             <Command>
               <CommandInput placeholder="Search models..." />
@@ -391,7 +382,7 @@ function RouteComponent() {
                               <div className="flex items-center gap-2 flex-1 min-w-0">
                                 <Checkbox
                                   checked={selectedModels.has(model.uri)}
-                                  className="shrink-0"
+                                  className="shrink-0 [&_svg]:text-primary-foreground!"
                                 />
                                 <AIProviderIcon
                                   className="size-4 opacity-90 shrink-0"
@@ -401,9 +392,6 @@ function RouteComponent() {
                                   {model.canonicalId}
                                 </span>
                               </div>
-                              {selectedModels.has(model.uri) && (
-                                <Check className="ml-2 size-4 shrink-0" />
-                              )}
                             </CommandItem>
                           ))}
                         </CommandGroup>
@@ -414,6 +402,37 @@ function RouteComponent() {
               </CommandList>
             </Command>
           </div>
+          {selectedModelsList && selectedModelsList.length > 0 && (
+            <div className="border rounded-lg p-4 space-y-2">
+              <p className="text-xs font-medium text-muted-foreground">
+                Selected Models
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {selectedModelsList.map((model) => (
+                  <div
+                    className="flex items-center gap-1.5 bg-muted px-2 py-1 rounded text-xs"
+                    key={model.uri}
+                  >
+                    <AIProviderIcon
+                      className="size-3 opacity-90"
+                      type={model.params.provider}
+                    />
+                    <span className="truncate max-w-48">
+                      {model.canonicalId}
+                    </span>
+                    <button
+                      className="hover:text-foreground text-muted-foreground"
+                      onClick={() => {
+                        handleToggleModel(model.uri);
+                      }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

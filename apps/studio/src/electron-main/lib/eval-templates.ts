@@ -1,22 +1,25 @@
-import { type SelectableIconName } from "@quests/shared/icons";
+import { SelectableAppIconsSchema } from "@quests/shared/icons";
+import { z } from "zod";
 
-export interface EvalTemplate {
-  iconName: SelectableIconName;
-  name: string;
-  prompt: string;
-}
+const EvalTemplateSchema = z.object({
+  iconName: SelectableAppIconsSchema,
+  name: z.string(),
+  prompt: z.string(),
+});
 
-export interface EvalTemplateGroup {
-  name: string;
-  templates: EvalTemplate[];
-}
+export const EvalTemplateGroupSchema = z.object({
+  name: z.string(),
+  templates: z.array(EvalTemplateSchema),
+});
+
+type EvalTemplateGroup = z.output<typeof EvalTemplateGroupSchema>;
 
 function createSVGPrompt(description: string): string {
   return `Create an SVG and display it in the app. <svg-description>${description}</svg-description>`;
 }
 
 /* cspell:disable */
-export const EVAL_TEMPLATE_GROUPS: EvalTemplateGroup[] = [
+const EVAL_TEMPLATE_GROUPS: EvalTemplateGroup[] = [
   {
     name: "Simple Apps",
     templates: [
@@ -403,6 +406,6 @@ export const EVAL_TEMPLATE_GROUPS: EvalTemplateGroup[] = [
 ];
 /* cspell:enable */
 
-export const EVAL_TEMPLATES: EvalTemplate[] = EVAL_TEMPLATE_GROUPS.flatMap(
-  (group) => group.templates,
-);
+export function getEvalTemplateGroups(): EvalTemplateGroup[] {
+  return EVAL_TEMPLATE_GROUPS;
+}

@@ -9,7 +9,7 @@ export interface GroupedModels {
   Recommended: AIGatewayModel.Type[];
 }
 
-export type GroupedModelsEntry = {
+type GroupedModelsEntry = {
   [K in keyof GroupedModels]: [K, GroupedModels[K]];
 }[keyof GroupedModels];
 
