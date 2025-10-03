@@ -242,7 +242,7 @@ export function ModelPicker({
                             onValueChange(model.uri);
                             setOpen(false);
                           }}
-                          value={`${model.canonicalId} ${model.params.provider} ${model.tags.join(" ")}`}
+                          value={model.uri}
                         >
                           <div className="flex items-center">
                             <Check
