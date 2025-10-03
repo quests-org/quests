@@ -15,6 +15,7 @@ import { createFileRoute, Outlet, useMatchRoute } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
 import {
   BotIcon,
+  BugIcon,
   FlagIcon,
   SettingsIcon,
   SlidersHorizontalIcon,
@@ -35,14 +36,16 @@ function SettingsLayout() {
 
   const sidebarNavItems: {
     icon: React.ElementType;
-    path: Extract<
-      MainAppPath,
-      | "/settings"
-      | "/settings/account"
-      | "/settings/advanced"
-      | "/settings/features"
-      | "/settings/providers"
-    >;
+    path:
+      | "/settings/debug"
+      | Extract<
+          MainAppPath,
+          | "/settings"
+          | "/settings/account"
+          | "/settings/advanced"
+          | "/settings/features"
+          | "/settings/providers"
+        >;
     title: string;
   }[] = [
     { icon: SettingsIcon, path: "/settings", title: "General" },
@@ -67,6 +70,11 @@ function SettingsLayout() {
             icon: FlagIcon,
             path: "/settings/features" as const,
             title: "Features",
+          },
+          {
+            icon: BugIcon,
+            path: "/settings/debug" as const,
+            title: "Debug",
           },
         ]
       : []),

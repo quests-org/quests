@@ -19,6 +19,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as SettingsIndexRouteImport } from './routes/settings/index'
 import { Route as SettingsProvidersRouteImport } from './routes/settings/providers'
 import { Route as SettingsFeaturesRouteImport } from './routes/settings/features'
+import { Route as SettingsDebugRouteImport } from './routes/settings/debug'
 import { Route as SettingsAdvancedRouteImport } from './routes/settings/advanced'
 import { Route as SettingsAccountRouteImport } from './routes/settings/account'
 import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
@@ -83,6 +84,11 @@ const SettingsProvidersRoute = SettingsProvidersRouteImport.update({
 const SettingsFeaturesRoute = SettingsFeaturesRouteImport.update({
   id: '/features',
   path: '/features',
+  getParentRoute: () => SettingsRoute,
+} as any)
+const SettingsDebugRoute = SettingsDebugRouteImport.update({
+  id: '/debug',
+  path: '/debug',
   getParentRoute: () => SettingsRoute,
 } as any)
 const SettingsAdvancedRoute = SettingsAdvancedRouteImport.update({
@@ -189,6 +195,7 @@ export interface FileRoutesByFullPath {
   '/register': typeof AuthRegisterRoute
   '/settings/account': typeof SettingsAccountRoute
   '/settings/advanced': typeof SettingsAdvancedRoute
+  '/settings/debug': typeof SettingsDebugRoute
   '/settings/features': typeof SettingsFeaturesRoute
   '/settings/providers': typeof SettingsProvidersRoute
   '/settings/': typeof SettingsIndexRoute
@@ -214,6 +221,7 @@ export interface FileRoutesByTo {
   '/register': typeof AuthRegisterRoute
   '/settings/account': typeof SettingsAccountRoute
   '/settings/advanced': typeof SettingsAdvancedRoute
+  '/settings/debug': typeof SettingsDebugRoute
   '/settings/features': typeof SettingsFeaturesRoute
   '/settings/providers': typeof SettingsProvidersRoute
   '/settings': typeof SettingsIndexRoute
@@ -244,6 +252,7 @@ export interface FileRoutesById {
   '/_auth/register': typeof AuthRegisterRoute
   '/settings/account': typeof SettingsAccountRoute
   '/settings/advanced': typeof SettingsAdvancedRoute
+  '/settings/debug': typeof SettingsDebugRoute
   '/settings/features': typeof SettingsFeaturesRoute
   '/settings/providers': typeof SettingsProvidersRoute
   '/settings/': typeof SettingsIndexRoute
@@ -273,6 +282,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/settings/account'
     | '/settings/advanced'
+    | '/settings/debug'
     | '/settings/features'
     | '/settings/providers'
     | '/settings/'
@@ -298,6 +308,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/settings/account'
     | '/settings/advanced'
+    | '/settings/debug'
     | '/settings/features'
     | '/settings/providers'
     | '/settings'
@@ -327,6 +338,7 @@ export interface FileRouteTypes {
     | '/_auth/register'
     | '/settings/account'
     | '/settings/advanced'
+    | '/settings/debug'
     | '/settings/features'
     | '/settings/providers'
     | '/settings/'
@@ -420,6 +432,13 @@ declare module '@tanstack/react-router' {
       path: '/features'
       fullPath: '/settings/features'
       preLoaderRoute: typeof SettingsFeaturesRouteImport
+      parentRoute: typeof SettingsRoute
+    }
+    '/settings/debug': {
+      id: '/settings/debug'
+      path: '/debug'
+      fullPath: '/settings/debug'
+      preLoaderRoute: typeof SettingsDebugRouteImport
       parentRoute: typeof SettingsRoute
     }
     '/settings/advanced': {
@@ -607,6 +626,7 @@ const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(
 interface SettingsRouteChildren {
   SettingsAccountRoute: typeof SettingsAccountRoute
   SettingsAdvancedRoute: typeof SettingsAdvancedRoute
+  SettingsDebugRoute: typeof SettingsDebugRoute
   SettingsFeaturesRoute: typeof SettingsFeaturesRoute
   SettingsProvidersRoute: typeof SettingsProvidersRoute
   SettingsIndexRoute: typeof SettingsIndexRoute
@@ -615,6 +635,7 @@ interface SettingsRouteChildren {
 const SettingsRouteChildren: SettingsRouteChildren = {
   SettingsAccountRoute: SettingsAccountRoute,
   SettingsAdvancedRoute: SettingsAdvancedRoute,
+  SettingsDebugRoute: SettingsDebugRoute,
   SettingsFeaturesRoute: SettingsFeaturesRoute,
   SettingsProvidersRoute: SettingsProvidersRoute,
   SettingsIndexRoute: SettingsIndexRoute,
