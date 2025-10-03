@@ -20,6 +20,7 @@ import { Route as SettingsIndexRouteImport } from './routes/settings/index'
 import { Route as SettingsProvidersRouteImport } from './routes/settings/providers'
 import { Route as SettingsFeaturesRouteImport } from './routes/settings/features'
 import { Route as SettingsAdvancedRouteImport } from './routes/settings/advanced'
+import { Route as SettingsAccountRouteImport } from './routes/settings/account'
 import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AppWelcomeRouteImport } from './routes/_app/welcome'
@@ -87,6 +88,11 @@ const SettingsFeaturesRoute = SettingsFeaturesRouteImport.update({
 const SettingsAdvancedRoute = SettingsAdvancedRouteImport.update({
   id: '/advanced',
   path: '/advanced',
+  getParentRoute: () => SettingsRoute,
+} as any)
+const SettingsAccountRoute = SettingsAccountRouteImport.update({
+  id: '/account',
+  path: '/account',
   getParentRoute: () => SettingsRoute,
 } as any)
 const AuthRegisterRoute = AuthRegisterRouteImport.update({
@@ -181,6 +187,7 @@ export interface FileRoutesByFullPath {
   '/welcome': typeof AppWelcomeRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
+  '/settings/account': typeof SettingsAccountRoute
   '/settings/advanced': typeof SettingsAdvancedRoute
   '/settings/features': typeof SettingsFeaturesRoute
   '/settings/providers': typeof SettingsProvidersRoute
@@ -205,6 +212,7 @@ export interface FileRoutesByTo {
   '/welcome': typeof AppWelcomeRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
+  '/settings/account': typeof SettingsAccountRoute
   '/settings/advanced': typeof SettingsAdvancedRoute
   '/settings/features': typeof SettingsFeaturesRoute
   '/settings/providers': typeof SettingsProvidersRoute
@@ -234,6 +242,7 @@ export interface FileRoutesById {
   '/_app/welcome': typeof AppWelcomeRoute
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/register': typeof AuthRegisterRoute
+  '/settings/account': typeof SettingsAccountRoute
   '/settings/advanced': typeof SettingsAdvancedRoute
   '/settings/features': typeof SettingsFeaturesRoute
   '/settings/providers': typeof SettingsProvidersRoute
@@ -262,6 +271,7 @@ export interface FileRouteTypes {
     | '/welcome'
     | '/login'
     | '/register'
+    | '/settings/account'
     | '/settings/advanced'
     | '/settings/features'
     | '/settings/providers'
@@ -286,6 +296,7 @@ export interface FileRouteTypes {
     | '/welcome'
     | '/login'
     | '/register'
+    | '/settings/account'
     | '/settings/advanced'
     | '/settings/features'
     | '/settings/providers'
@@ -314,6 +325,7 @@ export interface FileRouteTypes {
     | '/_app/welcome'
     | '/_auth/login'
     | '/_auth/register'
+    | '/settings/account'
     | '/settings/advanced'
     | '/settings/features'
     | '/settings/providers'
@@ -415,6 +427,13 @@ declare module '@tanstack/react-router' {
       path: '/advanced'
       fullPath: '/settings/advanced'
       preLoaderRoute: typeof SettingsAdvancedRouteImport
+      parentRoute: typeof SettingsRoute
+    }
+    '/settings/account': {
+      id: '/settings/account'
+      path: '/account'
+      fullPath: '/settings/account'
+      preLoaderRoute: typeof SettingsAccountRouteImport
       parentRoute: typeof SettingsRoute
     }
     '/_auth/register': {
@@ -586,6 +605,7 @@ const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(
 )
 
 interface SettingsRouteChildren {
+  SettingsAccountRoute: typeof SettingsAccountRoute
   SettingsAdvancedRoute: typeof SettingsAdvancedRoute
   SettingsFeaturesRoute: typeof SettingsFeaturesRoute
   SettingsProvidersRoute: typeof SettingsProvidersRoute
@@ -593,6 +613,7 @@ interface SettingsRouteChildren {
 }
 
 const SettingsRouteChildren: SettingsRouteChildren = {
+  SettingsAccountRoute: SettingsAccountRoute,
   SettingsAdvancedRoute: SettingsAdvancedRoute,
   SettingsFeaturesRoute: SettingsFeaturesRoute,
   SettingsProvidersRoute: SettingsProvidersRoute,

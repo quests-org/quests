@@ -1,3 +1,4 @@
+import { featuresAtom } from "@/client/atoms/features";
 import { InternalLink } from "@/client/components/internal-link";
 import {
   Sidebar,
@@ -11,11 +12,13 @@ import {
 import { Toaster } from "@/client/components/ui/sonner";
 import { type MainAppPath } from "@/electron-main/lib/urls";
 import { createFileRoute, Outlet, useMatchRoute } from "@tanstack/react-router";
+import { useAtomValue } from "jotai";
 import {
   BotIcon,
   FlagIcon,
   SettingsIcon,
   SlidersHorizontalIcon,
+  UserIcon,
 } from "lucide-react";
 
 import { isLinux } from "../lib/utils";
@@ -26,37 +29,48 @@ export const Route = createFileRoute("/settings")({
 
 const isDev = import.meta.env.DEV;
 
-const sidebarNavItems: {
-  icon: React.ElementType;
-  path: Extract<
-    MainAppPath,
-    | "/settings"
-    | "/settings/advanced"
-    | "/settings/features"
-    | "/settings/providers"
-  >;
-  title: string;
-}[] = [
-  { icon: SettingsIcon, path: "/settings", title: "General" },
-  { icon: BotIcon, path: "/settings/providers", title: "Providers" },
-  {
-    icon: SlidersHorizontalIcon,
-    path: "/settings/advanced",
-    title: "Advanced",
-  },
-  ...(isDev
-    ? [
-        {
-          icon: FlagIcon,
-          path: "/settings/features" as const,
-          title: "Features",
-        },
-      ]
-    : []),
-];
-
 function SettingsLayout() {
   const matchRoute = useMatchRoute();
+  const features = useAtomValue(featuresAtom);
+
+  const sidebarNavItems: {
+    icon: React.ElementType;
+    path: Extract<
+      MainAppPath,
+      | "/settings"
+      | "/settings/account"
+      | "/settings/advanced"
+      | "/settings/features"
+      | "/settings/providers"
+    >;
+    title: string;
+  }[] = [
+    { icon: SettingsIcon, path: "/settings", title: "General" },
+    ...(features.questsAccounts
+      ? [
+          {
+            icon: UserIcon,
+            path: "/settings/account" as const,
+            title: "Account",
+          },
+        ]
+      : []),
+    { icon: BotIcon, path: "/settings/providers", title: "Providers" },
+    {
+      icon: SlidersHorizontalIcon,
+      path: "/settings/advanced",
+      title: "Advanced",
+    },
+    ...(isDev
+      ? [
+          {
+            icon: FlagIcon,
+            path: "/settings/features" as const,
+            title: "Features",
+          },
+        ]
+      : []),
+  ];
 
   return (
     <div className="bg-background h-full w-full flex flex-col overflow-hidden">
