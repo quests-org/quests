@@ -17,7 +17,13 @@ import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
 import { isFeatureEnabled } from "@/shared/features";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useAtom } from "jotai";
-import { LayoutGrid, PlusIcon, SettingsIcon, SidebarIcon } from "lucide-react";
+import {
+  Bug,
+  LayoutGrid,
+  PlusIcon,
+  SettingsIcon,
+  SidebarIcon,
+} from "lucide-react";
 import * as React from "react";
 
 const data = {
@@ -32,6 +38,15 @@ const data = {
       title: "Discover",
       url: "/discover" as const,
     },
+    ...(process.env.NODE_ENV === "development"
+      ? [
+          {
+            icon: Bug,
+            title: "Debug",
+            url: "/debug" as const,
+          },
+        ]
+      : []),
   ],
 };
 
