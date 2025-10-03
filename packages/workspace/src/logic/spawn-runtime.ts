@@ -288,7 +288,7 @@ export const spawnRuntimeLogic = fromCallback<
         return;
       }
 
-      if (signal.aborted) {
+      if (timeout.controller.signal.aborted) {
         const timeoutError = new Error(
           "Timed out while waiting for server to start",
         );
@@ -298,6 +298,10 @@ export const spawnRuntimeLogic = fromCallback<
           type: "spawnRuntime.error.timeout",
           value: { error: timeoutError },
         });
+        return;
+      }
+      if (signal.aborted) {
+        parentRef.send({ type: "spawnRuntime.exited" });
         return;
       }
       if ((await isLocalServerRunning(port)) && shouldCheckServer) {
