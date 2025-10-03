@@ -5,6 +5,7 @@ import {
 } from "@/shared/schemas/provider";
 import { call, eventIterator } from "@orpc/server";
 import { getProviderAdapter } from "@quests/ai-gateway";
+import { safeStorage } from "electron";
 import { ulid } from "ulid";
 import { z } from "zod";
 
@@ -160,10 +161,31 @@ const live = {
     }),
 };
 
+const safeStorageInfo = base
+  .output(
+    z.object({
+      backend: z.string().nullable(),
+      isAvailable: z.boolean(),
+    }),
+  )
+  .handler(() => {
+    const isAvailable = safeStorage.isEncryptionAvailable();
+    const backend =
+      process.platform === "linux"
+        ? safeStorage.getSelectedStorageBackend()
+        : null;
+
+    return {
+      backend,
+      isAvailable,
+    };
+  });
+
 export const provider = {
   create,
   credits,
   list,
   live,
   remove,
+  safeStorageInfo,
 };
