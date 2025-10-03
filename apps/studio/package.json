@@ -133,7 +133,7 @@
     "@types/react-dom": "catalog:",
     "@types/semver": "^7.7.0",
     "@vitejs/plugin-react": "catalog:",
-    "electron": "^37.2.3",
+    "electron": "^38.2.1",
     "electron-builder": "^26.0.20",
     "electron-vite": "^4.0.0",
     "semver": "^7.7.2",
