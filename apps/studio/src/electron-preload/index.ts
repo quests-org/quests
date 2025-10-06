@@ -2,14 +2,6 @@ import { electronAPI } from "@electron-toolkit/preload";
 import { contextBridge, ipcRenderer } from "electron";
 
 const api: Window["api"] = {
-  onHistoryBack: (callback: () => void) =>
-    ipcRenderer.on("history-back", () => {
-      callback();
-    }),
-  onHistoryForward: (callback: () => void) =>
-    ipcRenderer.on("history-forward", () => {
-      callback();
-    }),
   onNavigate: (callback: (url: string) => void) =>
     ipcRenderer.on("navigate", (_event, value: string) => {
       callback(value);
