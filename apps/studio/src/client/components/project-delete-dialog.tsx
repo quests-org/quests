@@ -4,10 +4,12 @@ import { useTrashApp } from "@/client/hooks/use-trash-app";
 import { isWindows } from "@/client/lib/utils";
 import { type WorkspaceAppProject } from "@quests/workspace/client";
 import { useQuery } from "@tanstack/react-query";
-import { GitCommitVertical, MessageSquare } from "lucide-react";
+import { GitCommitVertical, MessageSquare, Timer } from "lucide-react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { rpcClient } from "../rpc/client";
+import { Alert, AlertDescription } from "./ui/alert";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -51,12 +53,22 @@ export function ProjectDeleteDialog({
   );
 }
 
+const PROGRESS_MESSAGES = [
+  "Still trashing...",
+  "Who knew deleting node_modules was so slow...",
+  "Maybe time to upgrade your from your tape drive...",
+  "Have you considered defragmenting your hard drive?",
+  "At this point it might be faster to use a microwave...",
+];
+
 function ProjectDeleteDialogBody({
   onDelete,
   project,
 }: ProjectDeleteDialogBodyProps) {
   const { isPending, trashApp } = useTrashApp({ navigateOnDelete: true });
   const trashTerminology = isWindows() ? "Recycle Bin" : "Trash";
+  const [showWarning, setShowWarning] = useState(false);
+  const [messageIndex, setMessageIndex] = useState(0);
 
   const { data: commitsData } = useQuery(
     rpcClient.workspace.project.git.commits.list.queryOptions({
@@ -69,6 +81,26 @@ function ProjectDeleteDialogBody({
       input: { subdomain: project.subdomain },
     }),
   );
+
+  useEffect(() => {
+    if (isPending) {
+      const initialTimer = setTimeout(() => {
+        setShowWarning(true);
+      }, 3000);
+
+      const cycleTimer = setInterval(() => {
+        setMessageIndex((prev) => (prev + 1) % PROGRESS_MESSAGES.length);
+      }, 7000);
+
+      return () => {
+        clearTimeout(initialTimer);
+        clearInterval(cycleTimer);
+      };
+    }
+    setShowWarning(false);
+    setMessageIndex(0);
+    return;
+  }, [isPending]);
 
   const handleDelete = async () => {
     try {
@@ -123,21 +155,36 @@ function ProjectDeleteDialogBody({
         </div>
       </AlertDialogHeader>
       <AlertDialogFooter>
-        <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
-        <AlertDialogAction asChild className="text-white" disabled={isPending}>
-          <Button
-            onClick={async (e) => {
-              // Stops the dialog from closing immediately
-              e.preventDefault();
-              await handleDelete();
-            }}
-            variant="destructive"
-          >
-            {isPending
-              ? `Moving to ${trashTerminology}...`
-              : `Move to ${trashTerminology}`}
-          </Button>
-        </AlertDialogAction>
+        <div className="flex flex-col gap-3 w-full">
+          {showWarning && (
+            <Alert variant="default">
+              <Timer />
+              <AlertDescription>
+                {PROGRESS_MESSAGES[messageIndex]}
+              </AlertDescription>
+            </Alert>
+          )}
+          <div className="flex justify-end gap-2">
+            <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              asChild
+              className="text-white"
+              disabled={isPending}
+            >
+              <Button
+                onClick={async (e) => {
+                  e.preventDefault();
+                  await handleDelete();
+                }}
+                variant="destructive"
+              >
+                {isPending
+                  ? `Moving to ${trashTerminology}...`
+                  : `Move to ${trashTerminology}`}
+              </Button>
+            </AlertDialogAction>
+          </div>
+        </div>
       </AlertDialogFooter>
     </>
   );
