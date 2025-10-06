@@ -52,14 +52,6 @@ function RootComponent() {
     window.api.onNavigate((url) => {
       void router.navigate({ to: url });
     });
-
-    window.api.onHistoryBack(() => {
-      router.history.back();
-    });
-
-    window.api.onHistoryForward(() => {
-      router.history.forward();
-    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

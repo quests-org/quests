@@ -20,7 +20,6 @@ const navigateCurrent = base
       return false;
     }
 
-    // Find the currently selected tab
     const currentTab = tabsManager.getCurrentTab();
     if (!currentTab) {
       return false;
@@ -33,23 +32,11 @@ const navigateCurrent = base
   });
 
 const navigateCurrentBack = base.handler(({ context }) => {
-  const currentTab = context.tabsManager?.getCurrentTab();
-  if (!currentTab) {
-    return false;
-  }
-
-  currentTab.webView.webContents.send("history-back");
-  return true;
+  context.tabsManager?.goBack();
 });
 
 const navigateCurrentForward = base.handler(({ context }) => {
-  const currentTab = context.tabsManager?.getCurrentTab();
-  if (!currentTab) {
-    return false;
-  }
-
-  currentTab.webView.webContents.send("history-forward");
-  return true;
+  context.tabsManager?.goForward();
 });
 
 const doesExist = base
