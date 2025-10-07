@@ -1,5 +1,4 @@
 // via https://github.com/yamadashy/repomix/blob/b42fc6e26fe19400071be18d6dfa2d19171374e0/src/core/file/fileTreeGenerate.ts
-import nodePath from "node:path";
 
 interface TreeNode {
   children: TreeNode[];
@@ -26,7 +25,7 @@ function addPathToTree(
   path: string,
   isDirectory: boolean,
 ): void {
-  const parts = path.split(nodePath.sep);
+  const parts = path.split("/");
   let currentNode = root;
 
   for (let i = 0; i < parts.length; i++) {
