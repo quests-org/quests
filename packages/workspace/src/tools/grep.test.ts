@@ -253,6 +253,11 @@ describe("Grep", () => {
             "lineText": "- Properly handles special characters",
             "path": "./grep-test.txt",
           },
+          {
+            "lineNum": 7,
+            "lineText": "This ensures grep handles multiple nested directories correctly.",
+            "path": "./nested/another/file.txt",
+          },
         ]
       `);
     });
@@ -313,6 +318,39 @@ describe("Grep", () => {
             "lineNum": 4,
             "lineText": "      "exclude": ["zzz-test-2.txt"]",
             "path": "./json-file.json",
+          },
+        ]
+      `);
+    });
+
+    it("should handle nested folders with vertical bars", async () => {
+      const result = await TOOLS.Grep.execute({
+        appConfig: createFixturesAppConfig(),
+        input: {
+          pattern: "vertical\\|bar",
+        },
+        signal: AbortSignal.timeout(10_000),
+      });
+
+      expect(result.isOk()).toBe(true);
+      expect(
+        sortMatchesForTesting(
+          result
+            ._unsafeUnwrap()
+            // Omit modifiedAt as it's not deterministic
+            .matches.map(({ modifiedAt: _modifiedAt, ...rest }) => rest),
+        ),
+      ).toMatchInlineSnapshot(`
+        [
+          {
+            "lineNum": 4,
+            "lineText": "- vertical|bars|everywhere",
+            "path": "./nested/another/file.txt",
+          },
+          {
+            "lineNum": 6,
+            "lineText": "- vertical|bar|separator",
+            "path": "./nested/level1/test-deep.txt",
           },
         ]
       `);

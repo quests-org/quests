@@ -1,0 +1,8 @@
+Another nested file for testing.
+
+Contains vertical bar patterns too:
+- vertical|bars|everywhere
+- nested|test|cases
+
+This ensures grep handles multiple nested directories correctly.
+

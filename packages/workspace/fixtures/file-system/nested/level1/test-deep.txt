@@ -1,0 +1,12 @@
+This file is nested deep in the folder structure.
+
+It contains some test patterns for vertical bar paths:
+- nested|path|test
+- deep|folder|structure
+- vertical|bar|separator
+
+This helps verify that grep works correctly with:
+1. Nested folder structures
+2. Vertical bar path separators
+3. Deep directory hierarchies
+
