@@ -50,7 +50,12 @@ export async function grep(
   const limit = options.limit ?? 100;
 
   return new Promise<GrepResult>((resolve, reject) => {
-    const args = ["-n", "--smart-case"];
+    const args = [
+      "--line-number",
+      "--with-filename", // Include the filename in the output, even if there's only one match
+      "--field-match-separator=|", // Use a custom field match separator to avoid parsing issues on Windows due to : in the path
+      "--smart-case", // Searches case insensitively if the pattern is all lowercase, otherwise searches case sensitively
+    ];
 
     // Don't use ripgrep's --sort option as it makes it single-threaded
     // We'll sort manually after getting results
@@ -60,7 +65,6 @@ export async function grep(
       args.push("--glob", options.include);
     }
 
-    // Add the search pattern
     args.push(pattern, options.searchPath || "./");
 
     const ripgrep = spawn(RG_DISK_PATH, args, {
@@ -110,19 +114,8 @@ export async function grep(
           continue;
         }
 
-        // Find the first two colons to properly parse file:line-number:content
-        const firstColon = line.indexOf(":");
-        const secondColon = line.indexOf(":", firstColon + 1);
-
-        if (firstColon === -1 || secondColon === -1) {
-          continue;
-        }
-
-        const filePath = line.slice(0, Math.max(0, firstColon));
-        const lineNumStr = line.slice(firstColon + 1, secondColon);
-        const lineText = line.slice(Math.max(0, secondColon + 1));
-
-        if (!filePath || !lineNumStr || !lineText) {
+        const [filePath, lineNumStr, ...lineTextParts] = line.split("|");
+        if (!filePath || !lineNumStr || lineTextParts.length === 0) {
           continue;
         }
 
@@ -131,8 +124,9 @@ export async function grep(
           continue;
         }
 
+        const lineText = lineTextParts.join("|");
+        const absolutePath = absolutePathJoin(rootDir, filePath);
         try {
-          const absolutePath = absolutePathJoin(rootDir, filePath);
           const stats = await fs.stat(absolutePath);
           matches.push({
             lineNum,
