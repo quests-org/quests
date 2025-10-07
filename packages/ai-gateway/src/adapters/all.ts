@@ -21,6 +21,10 @@ const PROVIDER_ADAPTERS: Record<
 
 export const ALL_PROVIDER_ADAPTERS = Object.values(PROVIDER_ADAPTERS);
 
+export function getAllProviderAdapters() {
+  return ALL_PROVIDER_ADAPTERS;
+}
+
 export function getProviderAdapter(
   providerType: AIGatewayProvider.Type["type"],
 ): ProviderAdapter {

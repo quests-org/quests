@@ -1,9 +1,9 @@
 import type { FeatureName } from "@/shared/features";
 
+import { atomWithoutSuspense } from "@/client/lib/atom-without-suspense";
 import { logger } from "@/client/lib/logger";
 import { vanillaRpcClient } from "@/client/rpc/client";
-import { atom } from "jotai";
-import { atomWithRefresh, loadable } from "jotai/utils";
+import { atomWithRefresh } from "jotai/utils";
 
 type Features = Record<FeatureName, boolean>;
 
@@ -34,13 +34,7 @@ baseFeaturesAtom.onMount = (setAtom) => {
   });
 };
 
-const loadableFeaturesAtom = loadable(baseFeaturesAtom);
-
-// Avoids suspense when accessing features
-export const featuresAtom = atom<Features>((get) => {
-  const loadableData = get(loadableFeaturesAtom);
-  if (loadableData.state === "hasData") {
-    return loadableData.data;
-  }
-  return defaultFeatures;
-});
+export const featuresAtom = atomWithoutSuspense(
+  baseFeaturesAtom,
+  defaultFeatures,
+);

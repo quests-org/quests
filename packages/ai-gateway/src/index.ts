@@ -1,4 +1,4 @@
-export { getProviderAdapter } from "./adapters/all";
+export { getAllProviderAdapters, getProviderAdapter } from "./adapters/all";
 export type { AIGatewayApp } from "./app";
 export { aiGatewayApp } from "./app";
 export { providerOptionsForModel } from "./lib/ai-sdk-provider-options";
@@ -10,4 +10,5 @@ export { parseModelURI } from "./lib/parse-model-uri";
 export { providerForModelURI } from "./lib/provider-for-model-uri";
 export * from "./schemas/model";
 export * from "./schemas/provider";
+export * from "./schemas/provider-metadata";
 export type * from "./types";

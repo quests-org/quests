@@ -4,7 +4,11 @@ import {
   StoreAIProviderSchema,
 } from "@/shared/schemas/provider";
 import { call, eventIterator } from "@orpc/server";
-import { getProviderAdapter } from "@quests/ai-gateway";
+import {
+  getAllProviderAdapters,
+  getProviderAdapter,
+  ProviderMetadataWithTypeSchema,
+} from "@quests/ai-gateway";
 import { safeStorage } from "electron";
 import { ulid } from "ulid";
 import { z } from "zod";
@@ -181,11 +185,30 @@ const safeStorageInfo = base
     };
   });
 
+const listMetadata = base
+  .output(z.array(ProviderMetadataWithTypeSchema))
+  .handler(() => {
+    return getAllProviderAdapters().map((adapter) => ({
+      ...adapter.metadata,
+      type: adapter.providerType,
+    }));
+  });
+
+const byTypeMetadata = base
+  .input(z.object({ type: ProviderMetadataWithTypeSchema.shape.type }))
+  .handler(({ input }) => {
+    return getProviderAdapter(input.type).metadata;
+  });
+
 export const provider = {
   create,
   credits,
   list,
   live,
+  metadata: {
+    byType: byTypeMetadata,
+    list: listMetadata,
+  },
   remove,
   safeStorageInfo,
 };

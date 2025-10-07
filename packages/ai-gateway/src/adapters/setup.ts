@@ -11,6 +11,7 @@ import { internalAPIKey } from "../lib/key-for-provider";
 import { PROVIDER_API_PATH } from "../lib/provider-paths";
 import { type AIGatewayModel } from "../schemas/model";
 import { type AIGatewayProvider } from "../schemas/provider";
+import { type ProviderMetadata } from "../schemas/provider-metadata";
 
 export type ProviderAdapter = ReturnType<
   ReturnType<typeof setupProviderAdapter>["create"]
@@ -18,7 +19,7 @@ export type ProviderAdapter = ReturnType<
 
 type AdapterFeatures = "openai/chat-completions";
 
-type OmittedKeys = "knownModelIds" | "modelTags" | "providerType";
+type OmittedKeys = "knownModelIds" | "metadata" | "modelTags" | "providerType";
 
 type OptionalKeys = "buildURL";
 
@@ -51,6 +52,7 @@ interface SetupProviderAdapter<
   ) => AsyncResult<AIGatewayModel.Type[], TypedError.Fetch | TypedError.Parse>;
   getEnv: (workspaceServerURL: WorkspaceServerURL) => Record<string, string>;
   knownModelIds: KnownModelIds;
+  metadata: ProviderMetadata;
   modelTags: Record<KnownModelIds[number], AIGatewayModel.ModelTag[]>;
   providerType: AIGatewayProvider.Type["type"];
   setAuthHeaders: (headers: Headers, apiKey: string) => void;
@@ -67,8 +69,8 @@ export function setupProviderAdapter<
   TProviderType extends AIGatewayProvider.Type["type"],
   const KnownModelIds extends readonly string[],
 >(options: {
-  defaultBaseURL: string;
   knownModelIds: KnownModelIds;
+  metadata: ProviderMetadata;
   modelTags: Partial<Record<KnownModelIds[number], AIGatewayModel.ModelTag[]>>;
   providerType: TProviderType;
 }): {
@@ -78,6 +80,7 @@ export function setupProviderAdapter<
       getModelTags: (
         modelId: AIGatewayModel.ProviderId,
       ) => AIGatewayModel.ModelTag[];
+      metadata: ProviderMetadata;
       providerType: TProviderType;
     }) => Omit<
       SetupProviderAdapter<KnownModelIds>,
@@ -95,12 +98,13 @@ export function setupProviderAdapter<
         baseURL?: string;
         path: string;
       }) => {
-        return `${baseURL ?? options.defaultBaseURL}${path}`;
+        return `${baseURL ?? options.metadata.api.defaultBaseURL}${path}`;
       };
       const { features, getEnv, ...rest } = createAdapter({
         buildURL,
         getModelTags: (modelId: string) =>
           options.modelTags[modelId as KnownModelIds[number]] ?? [],
+        metadata: options.metadata,
         providerType: options.providerType,
       });
       return {
@@ -113,6 +117,7 @@ export function setupProviderAdapter<
           ...getEnv(workspaceServerURL),
         }),
         knownModelIds: options.knownModelIds,
+        metadata: options.metadata,
         modelTags: options.modelTags,
         providerType: options.providerType,
       };

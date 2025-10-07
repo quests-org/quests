@@ -3,6 +3,7 @@ import { ATTRIBUTION_NAME, ATTRIBUTION_URL } from "@quests/shared";
 import { Result } from "typescript-result";
 import { z } from "zod";
 
+import { RECOMMENDED_TAG } from "../constants";
 import { TypedError } from "../lib/errors";
 import { fetchJson } from "../lib/fetch-json";
 import { isModelNew } from "../lib/is-model-new";
@@ -56,8 +57,19 @@ function setAuthHeaders(headers: Headers, apiKey: string) {
 }
 
 export const openrouterAdapter = setupProviderAdapter({
-  defaultBaseURL: "https://openrouter.ai/api",
   knownModelIds: KNOWN_MODEL_IDS,
+  metadata: {
+    api: {
+      defaultBaseURL: "https://openrouter.ai/api",
+      keyFormat: "sk-or-",
+      keyURL: "https://openrouter.ai",
+    },
+    description: "Access an extensive catalog of models across providers",
+    name: "OpenRouter",
+    requiresAPIKey: true,
+    tags: [RECOMMENDED_TAG, "Free models"],
+    url: "https://openrouter.ai",
+  },
   modelTags: {
     "anthropic/claude-3.7-sonnet": ["coding"],
     "anthropic/claude-opus-4.1": ["coding", "recommended"],

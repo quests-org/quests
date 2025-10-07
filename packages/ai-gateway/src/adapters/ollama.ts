@@ -2,6 +2,7 @@ import { createOllama } from "ollama-ai-provider-v2";
 import { Result } from "typescript-result";
 import { z } from "zod";
 
+import { addRef } from "../lib/add-ref";
 import { providerTypeToAuthor } from "../lib/author";
 import { TypedError } from "../lib/errors";
 import { fetchJson } from "../lib/fetch-json";
@@ -17,8 +18,17 @@ function setAuthHeaders(headers: Headers, apiKey: string) {
 }
 
 export const ollamaAdapter = setupProviderAdapter({
-  defaultBaseURL: "http://localhost:11434",
   knownModelIds: [],
+  metadata: {
+    api: {
+      defaultBaseURL: "http://localhost:11434",
+    },
+    description: "Run local models on your own machine",
+    name: "Ollama",
+    requiresAPIKey: false,
+    tags: [],
+    url: addRef("https://docs.ollama.com"),
+  },
   modelTags: {},
   providerType: "ollama",
 }).create(({ buildURL, providerType }) => ({

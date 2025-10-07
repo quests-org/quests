@@ -5,7 +5,7 @@ import { useMutation } from "@tanstack/react-query";
 import * as React from "react";
 import { toast } from "sonner";
 
-import { addRef } from "../lib/add-ref";
+import { addRef } from "../../../../../packages/ai-gateway/src/lib/add-ref";
 
 export function ExternalLink(
   props: React.ComponentProps<"a"> & {

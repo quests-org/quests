@@ -9,22 +9,20 @@ import {
 } from "@/client/components/ui/dialog";
 import { Input } from "@/client/components/ui/input";
 import { Label } from "@/client/components/ui/label";
-import {
-  ALL_PROVIDERS,
-  getProviderMetadata,
-  RECOMMENDED_TAG,
-  SORTED_PROVIDERS,
-} from "@/client/lib/provider-metadata";
 import { cn } from "@/client/lib/utils";
 import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
 import { type ClientAIProvider } from "@/shared/schemas/provider";
 import { isDefinedError } from "@orpc/client";
-import { type AIGatewayProvider } from "@quests/ai-gateway";
+import {
+  type AIGatewayProvider,
+  RECOMMENDED_TAG,
+} from "@quests/ai-gateway/client";
 import { useMutation } from "@tanstack/react-query";
-import { useAtom } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 import { AlertCircle, Award, ChefHat, ExternalLink, Lock } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
+import { providerMetadataAtom } from "../atoms/provider-metadata";
 import { selectedModelURIAtom } from "../atoms/selected-models";
 import { AIProviderIcon } from "./ai-provider-icon";
 import { Alert, AlertDescription } from "./ui/alert";
@@ -50,11 +48,18 @@ export function AddProviderDialog({
   const [selectedProviderType, setSelectedProviderType] = useState<
     AIGatewayProvider.Type["type"] | undefined
   >(undefined);
-  const providerMetadata = selectedProviderType
-    ? getProviderMetadata(selectedProviderType)
-    : undefined;
   const [apiKey, setAPIKey] = useState("");
   const [errorMessage, setErrorMessage] = useState<null | string>(null);
+
+  const { providerMetadataMap, sortedProviderMetadata } =
+    useAtomValue(providerMetadataAtom);
+
+  const providerMetadata = useMemo(() => {
+    if (!selectedProviderType) {
+      return null;
+    }
+    return providerMetadataMap.get(selectedProviderType);
+  }, [selectedProviderType, providerMetadataMap]);
 
   const createMutation = useMutation(
     rpcClient.provider.create.mutationOptions(),
@@ -134,7 +139,7 @@ export function AddProviderDialog({
         </DialogDescription>
       </DialogHeader>
       <div className="py-4">
-        {providers.length === ALL_PROVIDERS.length && (
+        {providers.length === sortedProviderMetadata.length && (
           <Alert className="mb-4">
             <ChefHat className="size-4 animate-bounce" />
             <AlertDescription>
@@ -144,7 +149,7 @@ export function AddProviderDialog({
           </Alert>
         )}
         <div className="grid grid-cols-2 gap-3">
-          {SORTED_PROVIDERS.map((providerInfo) => {
+          {sortedProviderMetadata.map((providerInfo) => {
             const isAlreadyAdded = providers.some(
               (p) => p.type === providerInfo.type,
             );
@@ -215,9 +220,7 @@ export function AddProviderDialog({
           {providerMetadata?.name ?? "Provider"}
         </DialogTitle>
         <DialogDescription>
-          {selectedProviderType
-            ? getProviderMetadata(selectedProviderType).description
-            : "Configure your provider settings."}
+          {providerMetadata?.description ?? "Configure your provider settings."}
         </DialogDescription>
       </DialogHeader>
       <div className="flex flex-col gap-y-4 py-4">
@@ -228,7 +231,7 @@ export function AddProviderDialog({
               <div className="flex items-center gap-x-1 text-xs text-muted-foreground">
                 <a
                   className="inline-flex items-center gap-x-1 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 underline underline-offset-2"
-                  href={providerMetadata.apiKeyURL}
+                  href={providerMetadata.api.keyURL}
                   rel="noopener noreferrer"
                   target="_blank"
                 >
@@ -255,7 +258,7 @@ export function AddProviderDialog({
               onChange={(e) => {
                 handleApiKeyChange(e.target.value);
               }}
-              placeholder={`${providerMetadata.apiKeyFormat ?? ""}...xyz123`}
+              placeholder={`${providerMetadata.api.keyFormat ?? ""}...xyz123`}
               spellCheck={false}
               type="text"
               value={apiKey}

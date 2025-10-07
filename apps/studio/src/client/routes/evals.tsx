@@ -1,3 +1,4 @@
+import { providerMetadataAtom } from "@/client/atoms/provider-metadata";
 import { AIProviderIcon } from "@/client/components/ai-provider-icon";
 import { IconMap } from "@/client/components/app-icons";
 import {
@@ -22,7 +23,6 @@ import {
   groupAndFilterModels,
   type GroupedModels,
 } from "@/client/lib/group-models";
-import { getProviderMetadata } from "@/client/lib/provider-metadata";
 import { rpcClient } from "@/client/rpc/client";
 import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
 import {
@@ -32,7 +32,7 @@ import {
 import { StoreId } from "@quests/workspace/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useAtom } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -70,6 +70,7 @@ export const Route = createFileRoute("/evals")({
 
 function RouteComponent() {
   const navigate = useNavigate();
+  const { providerMetadataMap } = useAtomValue(providerMetadataAtom);
   const [selectedEvalTemplatesArray, setSelectedEvalTemplatesArray] = useAtom(
     selectedEvalTemplatesAtom,
   );
@@ -343,7 +344,10 @@ function RouteComponent() {
             <TabsList>
               <TabsTrigger value="all">All</TabsTrigger>
               {availableProviders.map((provider) => {
-                const metadata = getProviderMetadata(provider);
+                const metadata = providerMetadataMap.get(provider);
+                if (!metadata) {
+                  return null;
+                }
                 return (
                   <TabsTrigger key={provider} value={provider}>
                     <AIProviderIcon className="size-4" type={provider} />

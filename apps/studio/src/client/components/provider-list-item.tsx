@@ -1,9 +1,10 @@
+import { providerMetadataAtom } from "@/client/atoms/provider-metadata";
 import { Button } from "@/client/components/ui/button";
-import { getProviderMetadata } from "@/client/lib/provider-metadata";
 import { cn } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
 import { type ClientAIProvider } from "@/shared/schemas/provider";
 import { useQuery } from "@tanstack/react-query";
+import { useAtomValue } from "jotai";
 
 import { AIProviderIcon } from "./ai-provider-icon";
 
@@ -22,7 +23,8 @@ export function ProviderListItem({
   onConfigure,
   provider,
 }: ProviderListItemProps) {
-  const metadata = getProviderMetadata(provider.type);
+  const { providerMetadataMap } = useAtomValue(providerMetadataAtom);
+  const metadata = providerMetadataMap.get(provider.type);
 
   const { data: openRouterCredits, isLoading: isLoadingCredits } = useQuery({
     ...rpcClient.provider.credits.queryOptions({
@@ -46,7 +48,7 @@ export function ProviderListItem({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="font-medium">{metadata.name}</h3>
+              <h3 className="font-medium">{metadata?.name ?? provider.type}</h3>
               {provider.type === "openrouter" && (
                 <span className="text-sm text-muted-foreground">
                   {isLoadingCredits
@@ -58,7 +60,7 @@ export function ProviderListItem({
               )}
             </div>
             <p className="text-sm text-muted-foreground">
-              {metadata.description}
+              {metadata?.description ?? "Metadata not found"}
             </p>
           </div>
         </div>

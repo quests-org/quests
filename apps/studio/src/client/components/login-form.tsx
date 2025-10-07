@@ -8,7 +8,6 @@ import { ArrowLeft, ArrowRight, CircleCheck, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import { SORTED_PROVIDERS } from "../lib/provider-metadata";
 import { telemetry } from "../lib/telemetry";
 import { AIProviderIcon } from "./ai-provider-icon";
 import { InternalLink } from "./internal-link";
@@ -38,6 +37,10 @@ export function LoginForm({
   );
   const { mutate: removeTab } = useMutation(
     rpcClient.tabs.close.mutationOptions(),
+  );
+
+  const { data: providerMetadataList = [] } = useQuery(
+    rpcClient.provider.metadata.list.queryOptions(),
   );
 
   const isSignUp = mode === "signup";
@@ -291,7 +294,7 @@ export function LoginForm({
                 variant="outline"
               >
                 <div className="flex items-center gap-1 mr-2">
-                  {SORTED_PROVIDERS.map(({ type }) => (
+                  {providerMetadataList.map(({ type }) => (
                     <AIProviderIcon className="size-4" key={type} type={type} />
                   ))}
                 </div>

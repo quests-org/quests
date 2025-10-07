@@ -5,6 +5,7 @@ import {
 import { Result } from "typescript-result";
 import { z } from "zod";
 
+import { addRef } from "../lib/add-ref";
 import { providerTypeToAuthor } from "../lib/author";
 import { TypedError } from "../lib/errors";
 import { fetchJson } from "../lib/fetch-json";
@@ -35,8 +36,19 @@ function setAuthHeaders(headers: Headers, apiKey: string) {
 }
 
 export const openaiAdapter = setupProviderAdapter({
-  defaultBaseURL: "https://api.openai.com",
   knownModelIds: KNOWN_MODEL_IDS,
+  metadata: {
+    api: {
+      defaultBaseURL: "https://api.openai.com",
+      keyFormat: "sk-",
+      keyURL: addRef("https://platform.openai.com/account/api-keys"),
+    },
+    description: "GPT-5 and other OpenAI models",
+    name: "OpenAI",
+    requiresAPIKey: true,
+    tags: [],
+    url: addRef("https://openai.com"),
+  },
   modelTags: {
     "gpt-4.1": ["coding"],
     "gpt-4.1-mini": ["coding"],

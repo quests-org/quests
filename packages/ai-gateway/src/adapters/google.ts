@@ -2,6 +2,7 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { Result } from "typescript-result";
 import { z } from "zod";
 
+import { addRef } from "../lib/add-ref";
 import { providerTypeToAuthor } from "../lib/author";
 import { TypedError } from "../lib/errors";
 import { fetchJson } from "../lib/fetch-json";
@@ -24,12 +25,23 @@ function setAuthHeaders(headers: Headers, apiKey: string) {
 }
 
 export const googleAdapter = setupProviderAdapter({
-  defaultBaseURL: "https://generativelanguage.googleapis.com/v1beta",
   knownModelIds: [
     "models/gemini-2.5-pro",
     "models/gemini-2.5-flash-lite",
     "models/gemini-2.5-flash",
   ],
+  metadata: {
+    api: {
+      defaultBaseURL: "https://generativelanguage.googleapis.com/v1beta",
+      keyFormat: "AI",
+      keyURL: addRef("https://aistudio.google.com/app/apikey"),
+    },
+    description: "Gemini and other Google models",
+    name: "Google",
+    requiresAPIKey: true,
+    tags: ["Free tier"],
+    url: addRef("https://ai.google.dev/"),
+  },
   modelTags: {
     "models/gemini-2.5-pro": ["coding", "recommended", "default"],
   },

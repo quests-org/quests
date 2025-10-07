@@ -1,3 +1,4 @@
+import { providerMetadataAtom } from "@/client/atoms/provider-metadata";
 import { Badge } from "@/client/components/ui/badge";
 import { Button } from "@/client/components/ui/button";
 import {
@@ -17,9 +18,9 @@ import {
   getGroupedModelsEntries,
   groupAndFilterModels,
 } from "@/client/lib/group-models";
-import { getProviderMetadata } from "@/client/lib/provider-metadata";
 import { cn } from "@/client/lib/utils";
 import { type AIGatewayModel } from "@quests/ai-gateway";
+import { useAtomValue } from "jotai";
 import { AlertCircle, Check, ChevronDown, CircleOff, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 
@@ -51,6 +52,7 @@ export function ModelPicker({
   value,
 }: ModelPickerProps) {
   const [open, setOpen] = useState(false);
+  const { providerMetadataMap } = useAtomValue(providerMetadataAtom);
 
   const selectedModel = models?.find((model) => model.uri === value);
 
@@ -91,7 +93,10 @@ export function ModelPicker({
             </div>
           </TooltipTrigger>
           <TooltipContent>
-            <p>{getProviderMetadata(selectedModel.params.provider).name}</p>
+            <p>
+              {providerMetadataMap.get(selectedModel.params.provider)?.name ??
+                selectedModel.params.provider}
+            </p>
           </TooltipContent>
         </Tooltip>
         <span className="truncate text-xs min-w-0 flex-1">
@@ -263,10 +268,9 @@ export function ModelPicker({
                                   type={model.params.provider}
                                 />
                                 <span>
-                                  {
-                                    getProviderMetadata(model.params.provider)
-                                      .name
-                                  }
+                                  {providerMetadataMap.get(
+                                    model.params.provider,
+                                  )?.name ?? model.params.provider}
                                 </span>
                               </div>
                             </div>

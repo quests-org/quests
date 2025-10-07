@@ -2,6 +2,7 @@ import { createAnthropic } from "@ai-sdk/anthropic";
 import { Result } from "typescript-result";
 import { z } from "zod";
 
+import { addRef } from "../lib/add-ref";
 import { providerTypeToAuthor } from "../lib/author";
 import { TypedError } from "../lib/errors";
 import { fetchJson } from "../lib/fetch-json";
@@ -55,8 +56,19 @@ function setAuthHeaders(headers: Headers, apiKey: string) {
 const DEFAULT_BASE_URL = "https://api.anthropic.com";
 
 export const anthropicAdapter = setupProviderAdapter({
-  defaultBaseURL: DEFAULT_BASE_URL,
   knownModelIds: KNOWN_MODEL_IDS,
+  metadata: {
+    api: {
+      defaultBaseURL: DEFAULT_BASE_URL,
+      keyFormat: "sk-ant-",
+      keyURL: addRef("https://console.anthropic.com/account/keys"),
+    },
+    description: "Claude Sonnet, Opus, and other Anthropic models",
+    name: "Anthropic",
+    requiresAPIKey: true,
+    tags: [],
+    url: addRef("https://anthropic.com"),
+  },
   modelTags: {
     "claude-3-7-sonnet-20250219": ["coding"],
     "claude-opus-4-1-20250805": ["coding", "recommended"],

@@ -2,6 +2,7 @@ import { createGateway } from "@ai-sdk/gateway";
 import { ATTRIBUTION_NAME, ATTRIBUTION_URL } from "@quests/shared";
 import { Result } from "typescript-result";
 
+import { addRef, REF_PARAM_KEY, REF_PARAM_VALUE } from "../lib/add-ref";
 import { getCachedResult, setCachedResult } from "../lib/cache";
 import { TypedError } from "../lib/errors";
 import { internalAPIKey } from "../lib/key-for-provider";
@@ -39,8 +40,19 @@ function setAuthHeaders(headers: Headers, apiKey: string) {
 }
 
 export const vercelAdapter = setupProviderAdapter({
-  defaultBaseURL: "https://ai-gateway.vercel.sh",
   knownModelIds: KNOWN_MODEL_IDS,
+  metadata: {
+    api: {
+      defaultBaseURL: "https://ai-gateway.vercel.sh",
+      keyFormat: "vck_",
+      keyURL: `https://vercel.com/d?to=${encodeURIComponent(`/[team]/~/ai/api-keys?${REF_PARAM_KEY}=${REF_PARAM_VALUE}`)}&title=${encodeURIComponent("Get an API Key")}`,
+    },
+    description: "Access hundreds of models across many providers",
+    name: "Vercel AI Gateway",
+    requiresAPIKey: true,
+    tags: ["$5 free credit with card"],
+    url: addRef("https://vercel.com/ai-gateway"),
+  },
   modelTags: {
     "alibaba/qwen3-coder": ["coding", "recommended"],
     "alibaba/qwen3-coder-plus": ["coding", "recommended"],

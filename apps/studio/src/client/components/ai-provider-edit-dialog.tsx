@@ -9,13 +9,14 @@ import {
 } from "@/client/components/ui/dialog";
 import { Input } from "@/client/components/ui/input";
 import { Label } from "@/client/components/ui/label";
-import { getProviderMetadata } from "@/client/lib/provider-metadata";
 import { rpcClient } from "@/client/rpc/client";
 import { type ClientAIProvider } from "@/shared/schemas/provider";
 import { useMutation } from "@tanstack/react-query";
+import { useAtomValue } from "jotai";
 import { AlertCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { providerMetadataAtom } from "../atoms/provider-metadata";
 import { AIProviderIcon } from "./ai-provider-icon";
 import { Alert, AlertDescription } from "./ui/alert";
 
@@ -32,7 +33,8 @@ export function AIProviderEditDialog({
   open,
   provider,
 }: AIProviderEditDialogProps) {
-  const providerMetadata = getProviderMetadata(provider.type);
+  const { providerMetadataMap } = useAtomValue(providerMetadataAtom);
+  const providerMetadata = providerMetadataMap.get(provider.type);
   const [apiKey, setAPIKey] = useState("");
   const [errorMessage, setErrorMessage] = useState<null | string>(null);
 
@@ -70,6 +72,10 @@ export function AIProviderEditDialog({
     onOpenChange(false);
   };
 
+  if (!providerMetadata) {
+    return null;
+  }
+
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
       <DialogContent className="sm:max-w-[425px]">
@@ -106,7 +112,7 @@ export function AIProviderEditDialog({
                   onChange={(e) => {
                     handleApiKeyChange(e.target.value);
                   }}
-                  placeholder={`${providerMetadata.apiKeyFormat ?? ""}...xyz123`}
+                  placeholder={`${providerMetadata.api.keyFormat ?? ""}...xyz123`}
                   spellCheck={false}
                   type="text"
                   value={apiKey}
