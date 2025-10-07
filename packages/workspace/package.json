@@ -34,6 +34,7 @@
     "@orpc/server": "catalog:",
     "@quests/ai-gateway": "workspace:*",
     "@quests/shared": "workspace:*",
+    "@types/ws": "^8.18.1",
     "@vscode/ripgrep": "^1.15.13",
     "ai": "catalog:",
     "date-fns": "^4.1.0",
@@ -53,6 +54,7 @@
     "typescript": "catalog:",
     "ulid": "^3.0.1",
     "unstorage": "^1.16.1",
+    "ws": "^8.18.3",
     "xstate": "^5.20.1",
     "zod": "catalog:"
   },

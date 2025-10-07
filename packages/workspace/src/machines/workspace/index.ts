@@ -1,4 +1,3 @@
-import { serve } from "@hono/node-server";
 import { type AIGatewayApp, type GetAIProviders } from "@quests/ai-gateway";
 import {
   type CaptureEventFunction,
@@ -224,7 +223,6 @@ export const workspaceMachine = setup({
         input: {
           aiGatewayApp: input.aiGatewayApp,
           parentRef: self,
-          serve,
           shimClientDir:
             input.shimClientDir === "dev-server"
               ? "dev-server"

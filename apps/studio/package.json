@@ -81,6 +81,7 @@
     "@tanstack/react-query-devtools": "^5.85.5",
     "@tanstack/react-router": "^1.131.28",
     "@tanstack/react-router-devtools": "^1.131.28",
+    "@types/ws": "^8.18.1",
     "@vscode/ripgrep": "^1.15.13",
     "arctic": "^3.6.0",
     "better-auth": "catalog:",
@@ -117,6 +118,7 @@
     "tailwind-merge": "^3.3.1",
     "ulid": "^3.0.1",
     "use-stick-to-bottom": "^1.1.1",
+    "ws": "^8.18.3",
     "xstate": "^5.20.1",
     "zod": "catalog:"
   },

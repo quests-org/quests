@@ -12,10 +12,6 @@ import { rpcClient } from "../rpc/client";
 import { type ClientLogLine } from "./console";
 import { Button } from "./ui/button";
 
-// Filter out Vite websocket connection messages, which are created
-// due to our current lack of websocket support.
-const MESSAGES_TO_FILTER = ["[vite] Direct websocket connection fallback"];
-
 export function AppIFrame({
   app,
   className,
@@ -66,9 +62,6 @@ export function AppIFrame({
         switch (messageData.type) {
           case "console-log": {
             const message = messageData.value.message;
-            if (MESSAGES_TO_FILTER.some((m) => message.includes(m))) {
-              break;
-            }
 
             setClientLogs((prev) => [
               ...prev,

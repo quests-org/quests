@@ -1,6 +1,7 @@
+import { serve, type ServerType } from "@hono/node-server";
 import { type AIGatewayApp, type AIGatewayEnv } from "@quests/ai-gateway";
 import { AI_GATEWAY_API_PATH } from "@quests/shared";
-import { type ExecutionContext, Hono } from "hono";
+import { Hono } from "hono";
 import invariant from "tiny-invariant";
 import { type ActorRefFrom, type AnyEventObject, fromCallback } from "xstate";
 
@@ -18,26 +19,13 @@ import {
   type WorkspaceServerParentRef,
 } from "./types";
 import { generateWorkspaceServerPort } from "./url";
-
-type Serve = (options: ServerOptions) => {
-  close: () => void;
-};
-
-interface ServerOptions {
-  fetch: (
-    request: Request,
-    Env?: object,
-    executionCtx?: ExecutionContext,
-  ) => Promise<Response> | Response;
-  port: number;
-}
+import { setupWebSocketProxy } from "./websocket-proxy";
 
 export const workspaceServerLogic = fromCallback<
   AnyEventObject,
   {
     aiGatewayApp?: AIGatewayApp;
     parentRef: WorkspaceServerParentRef;
-    serve: Serve;
     shimClientDir: "dev-server" | AbsolutePath;
     workspaceConfig: WorkspaceConfig;
   }
@@ -75,7 +63,7 @@ export const workspaceServerLogic = fromCallback<
     app.route("/", input.aiGatewayApp);
   }
 
-  let server: null | { close: () => void } = null;
+  let server: null | ServerType = null;
 
   void generateWorkspaceServerPort()
     .then((port) => {
@@ -84,7 +72,9 @@ export const workspaceServerLogic = fromCallback<
           apps_server_port: port,
         });
       }
-      server = input.serve({ fetch: app.fetch, port });
+      server = serve({ fetch: app.fetch, port });
+
+      setupWebSocketProxy(server, input.parentRef);
 
       input.parentRef.send({
         type: "workspaceServer.started",

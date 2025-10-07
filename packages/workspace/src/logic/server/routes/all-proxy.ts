@@ -72,11 +72,6 @@ app.all("/*", async (c, next) => {
   headers.delete("if-none-match");
   headers.delete("if-modified-since");
 
-  const isWebSocket = c.req.header("upgrade")?.toLowerCase() === "websocket";
-  if (isWebSocket) {
-    return c.notFound();
-  }
-
   let res: Response;
   try {
     res = await proxy(url, {

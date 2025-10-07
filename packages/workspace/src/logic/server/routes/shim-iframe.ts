@@ -13,12 +13,6 @@ import { type WorkspaceServerEnv } from "../types";
 const app = new Hono<WorkspaceServerEnv>();
 
 app.get(`${SHIM_IFRAME_BASE_PATH}/*`, async (c) => {
-  const isWebSocket = c.req.header("upgrade")?.toLowerCase() === "websocket";
-  if (isWebSocket) {
-    // Not supported in Hono proxy
-    return c.text("WebSocket not supported", 426); // 426 Upgrade Required
-  }
-
   const shimClientDir = c.get("shimClientDir");
   if (shimClientDir === "dev-server") {
     return await proxy(`${SHIM_DEV_HOST}${c.req.path}`, {
