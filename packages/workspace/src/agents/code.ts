@@ -98,6 +98,7 @@ export const codeAgent = setupAgent({
           - Use the \`${TOOL_EXPLANATION_PARAM_NAME}\` parameter for tools instead of replying when possible.
           - Use the \`${agentTools.RunShellCommand.name}\` tool to install dependencies when needed.
           - Only stop calling tools when you are done with the task. When you stop calling tools, the task will end and the user will be required to start a new task.
+          - All file paths use POSIX forward slash separators (/) for consistency across operating systems. Both tool outputs and your path inputs should use forward slashes.
             
           ## Making code changes
           When making code changes, NEVER output code to the USER, unless requested. Instead use one of the code edit tools to implement the change.
