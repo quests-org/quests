@@ -107,7 +107,10 @@ function ProjectDeleteDialogBody({
       await trashApp(project.subdomain);
       onDelete();
     } catch {
-      toast.error("Failed to delete project");
+      toast.error("Failed to delete project", {
+        description:
+          "Please close any external applications that might be using this folder (editors, terminals, servers, etc.) and try again.",
+      });
     }
   };
 
