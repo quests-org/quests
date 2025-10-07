@@ -55,6 +55,7 @@ export async function grep(
       "--with-filename", // Include the filename in the output, even if there's only one match
       "--field-match-separator=|", // Use a custom field match separator to avoid parsing issues on Windows due to : in the path
       "--smart-case", // Searches case insensitively if the pattern is all lowercase, otherwise searches case sensitively
+      "--path-separator=/", // Use / path separators on Windows for consistency
     ];
 
     // Don't use ripgrep's --sort option as it makes it single-threaded

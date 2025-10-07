@@ -1,23 +1,24 @@
 import { type IGitBufferResult } from "dugite";
+import path from "node:path";
 
-// Mock implementation of exec
 export const exec = (
   args: string[],
-  path: string,
+  targetPath: string,
 ): Promise<IGitBufferResult> => {
+  const normalizedPath = targetPath.split(path.sep).join("/");
   return Promise.resolve({
     exitCode: 0,
     stderr: Buffer.from(""),
-    stdout: Buffer.from(`${args.join(" ")} executed successfully in ${path}`),
+    stdout: Buffer.from(
+      `${args.join(" ")} executed successfully in ${normalizedPath}`,
+    ),
   });
 };
 
-// Mock implementation of parseError
 export const parseError = (): null | string => {
   return null;
 };
 
-// Re-export types from dugite
 export type {
   GitError,
   IGitBufferExecutionOptions,

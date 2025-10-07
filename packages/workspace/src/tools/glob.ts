@@ -19,6 +19,7 @@ export const Glob = createTool({
           return ignore.ignores(p.name);
         },
       },
+      posix: true, // Use / path separators on Windows for consistency
     });
 
     return ok({ files: alphabetical(files, (f) => f) });
