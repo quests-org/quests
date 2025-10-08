@@ -21,10 +21,10 @@
     "turbo:check": "turbo run check:types check:lint"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "^2.0.6",
-    "@ai-sdk/gateway": "^1.0.13",
+    "@ai-sdk/anthropic": "^2.0.17",
+    "@ai-sdk/gateway": "^1.0.23",
     "@ai-sdk/google": "^2.0.9",
-    "@ai-sdk/openai": "^2.0.19",
+    "@ai-sdk/openai": "^2.0.32",
     "@openrouter/ai-sdk-provider": "^1.1.2",
     "@quests/shared": "workspace:*",
     "@types/ms": "^2.1.0",
