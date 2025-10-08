@@ -3,7 +3,7 @@ import type { Duplex } from "node:stream";
 
 import { type ServerType } from "@hono/node-server";
 import invariant from "tiny-invariant";
-import WebSocket, { WebSocketServer } from "ws";
+import { WebSocket, WebSocketServer } from "ws";
 
 import { SHIM_IFRAME_BASE_PATH } from "./constants";
 import { type WorkspaceServerParentRef } from "./types";
