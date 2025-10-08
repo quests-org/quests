@@ -96,6 +96,9 @@ export function AppView({
           )}
           clientLogsAtom={clientLogsAtom}
           iframeRef={iframeRef}
+          // Ensures the iframe is recreated when the app changes so old loading
+          // states are cleared
+          key={app.subdomain}
           onOpenConsole={() => {
             setIsConsoleOpen(true);
           }}
