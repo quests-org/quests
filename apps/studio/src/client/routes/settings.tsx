@@ -81,7 +81,7 @@ function SettingsLayout() {
   ];
 
   return (
-    <div className="bg-background h-full w-full flex flex-col overflow-hidden">
+    <div className="bg-background min-h-svh w-full flex flex-col overflow-hidden">
       {isLinux() ? (
         <div className="pt-4"></div>
       ) : (
