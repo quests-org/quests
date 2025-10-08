@@ -20,6 +20,7 @@ import path from "node:path";
 
 import { createWorkspaceActor } from "./lib/create-workspace-actor";
 import { registerTelemetry } from "./lib/register-telemetry";
+import { setupBinDirectory } from "./lib/setup-bin-directory";
 import { watchThemePreferenceAndApply } from "./lib/theme-utils";
 import { initializeRPC } from "./rpc/initialize";
 
@@ -113,6 +114,8 @@ void app.whenReady().then(async () => {
   nativeTheme.on("updated", () => {
     updateTitleBarOverlay();
   });
+
+  await setupBinDirectory();
 
   appUpdater = new StudioAppUpdater();
   appUpdater.pollForUpdates();

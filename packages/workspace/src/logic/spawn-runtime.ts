@@ -1,7 +1,6 @@
 import { envForProviders } from "@quests/ai-gateway";
-import { ExecaError, parseCommandString, type ResultPromise } from "execa";
+import { execa, ExecaError, type ResultPromise } from "execa";
 import ms from "ms";
-import { type NormalizedPackageJson, readPackage } from "read-pkg";
 import {
   type ActorRef,
   type ActorRefFrom,
@@ -14,7 +13,10 @@ import { type AppConfig } from "../lib/app-config/types";
 import { cancelableTimeout, TimeoutError } from "../lib/cancelable-timeout";
 import { pathExists } from "../lib/path-exists";
 import { PortManager } from "../lib/port-manager";
-import { type RunPackageJsonScript } from "../types";
+import {
+  detectRuntimeTypeFromDirectory,
+  getRuntimeConfigByType,
+} from "../lib/runtime-config";
 import { getWorkspaceServerURL } from "./server/url";
 
 const BASE_RUNTIME_TIMEOUT_MS = ms("1 minute");
@@ -107,15 +109,21 @@ export const spawnRuntimeLogic = fromCallback<
     appConfig: AppConfig;
     attempt: number;
     parentRef: ActorRef<AnyMachineSnapshot, SpawnRuntimeEvent>;
-    runPackageJsonScript: RunPackageJsonScript;
   }
->(({ input: { appConfig, attempt, parentRef, runPackageJsonScript } }) => {
+>(({ input: { appConfig, attempt, parentRef } }) => {
   const abortController = new AbortController();
   const timeout = cancelableTimeout(
     BASE_RUNTIME_TIMEOUT_MS + attempt * RUNTIME_TIMEOUT_MULTIPLIER_MS,
   );
 
   let port: number | undefined;
+
+  const baseEnv = {
+    PATH: `${appConfig.workspaceConfig.binDir}:${process.env.PATH || ""}`,
+    // Required for normal node processes to work
+    // See https://www.electronjs.org/docs/latest/api/environment-variables
+    ELECTRON_RUN_AS_NODE: "1",
+  };
 
   async function main() {
     port = await portManager.reservePort();
@@ -126,96 +134,6 @@ export const spawnRuntimeLogic = fromCallback<
         shouldLog: true,
         type: "spawnRuntime.error.unknown",
         value: { error: new Error("Failed to initialize port") },
-      });
-      return;
-    }
-
-    const installTimeout = cancelableTimeout(INSTALL_TIMEOUT_MS);
-    const installSignal = AbortSignal.any([
-      abortController.signal,
-      installTimeout.controller.signal,
-    ]);
-    const installCommand =
-      appConfig.type === "version" || appConfig.type === "sandbox"
-        ? // These app types are nested in the project directory, so we need
-          // to ignore the workspace config otherwise PNPM may not install the
-          // dependencies correctly
-          "pnpm install --ignore-workspace"
-        : "pnpm install";
-
-    parentRef.send({
-      type: "spawnRuntime.log",
-      value: { message: `$ ${installCommand}`, type: "normal" },
-    });
-
-    const installResult = await appConfig.workspaceConfig.runShellCommand(
-      installCommand,
-      {
-        cwd: appConfig.appDir,
-        signal: installSignal,
-      },
-    );
-    installTimeout.cancel();
-    if (installResult.isErr()) {
-      parentRef.send({
-        isRetryable: true,
-        shouldLog: true,
-        type: "spawnRuntime.error.install-failed",
-        value: {
-          error: new Error(installResult.error.message, {
-            cause: installResult.error,
-          }),
-        },
-      });
-      return;
-    }
-
-    const installProcessPromise = installResult.value;
-    sendProcessLogs(installProcessPromise, parentRef);
-    await installProcessPromise;
-
-    const scriptName = "dev";
-
-    let pkg: NormalizedPackageJson;
-    try {
-      pkg = await readPackage({ cwd: appConfig.appDir });
-    } catch (error) {
-      parentRef.send({
-        isRetryable: false,
-        shouldLog: true,
-        type: "spawnRuntime.error.package-json",
-        value: {
-          error: new Error("Unknown error reading package.json", {
-            cause: error instanceof Error ? error : new Error(String(error)),
-          }),
-        },
-      });
-      return;
-    }
-
-    const script = pkg.scripts?.[scriptName];
-    if (!script) {
-      parentRef.send({
-        isRetryable: false,
-        shouldLog: true,
-        type: "spawnRuntime.error.package-json",
-        value: {
-          error: new Error(`No script \`${scriptName}\` found in package.json`),
-        },
-      });
-      return;
-    }
-    const [commandName] = parseCommandString(script);
-    if (commandName !== "vite") {
-      parentRef.send({
-        isRetryable: false,
-        shouldLog: true,
-        type: "spawnRuntime.error.unsupported-script",
-        value: {
-          error: new Error(
-            `Unsupported command \`${commandName ?? "missing"}\` for script \`${scriptName}\` in package.json`,
-          ),
-        },
       });
       return;
     }
@@ -232,6 +150,56 @@ export const spawnRuntimeLogic = fromCallback<
       return;
     }
 
+    const runtimeTypeResult = await detectRuntimeTypeFromDirectory(
+      appConfig.appDir,
+    );
+
+    if (runtimeTypeResult.isErr()) {
+      const { message, scriptName } = runtimeTypeResult.error;
+      parentRef.send({
+        isRetryable: false,
+        shouldLog: true,
+        type: scriptName
+          ? "spawnRuntime.error.unsupported-script"
+          : "spawnRuntime.error.package-json",
+        value: {
+          error: new Error(message),
+        },
+      });
+      return;
+    }
+
+    const runtimeType = runtimeTypeResult.value;
+    const runtimeConfig = getRuntimeConfigByType(runtimeType);
+
+    const installTimeout = cancelableTimeout(INSTALL_TIMEOUT_MS);
+    const installSignal = AbortSignal.any([
+      abortController.signal,
+      installTimeout.controller.signal,
+    ]);
+    const installCommand = runtimeConfig.installCommand(appConfig);
+
+    parentRef.send({
+      type: "spawnRuntime.log",
+      value: {
+        message: `$ ${installCommand.join(" ")}`,
+        type: "normal",
+      },
+    });
+
+    const installResult = execa({
+      cancelSignal: installSignal,
+      cwd: appConfig.appDir,
+      env: {
+        ...baseEnv,
+      },
+      // node: true,
+    })`${installCommand}`;
+
+    sendProcessLogs(installResult, parentRef);
+    await installResult;
+    installTimeout.cancel();
+
     const providerEnv = envForProviders({
       providers: appConfig.workspaceConfig.getAIProviders(),
       workspaceServerURL: getWorkspaceServerURL(),
@@ -242,39 +210,28 @@ export const spawnRuntimeLogic = fromCallback<
       timeout.controller.signal,
     ]);
 
+    const devServerCommand = await runtimeConfig.command({
+      appDir: appConfig.appDir,
+      port,
+    });
+
     parentRef.send({
       type: "spawnRuntime.log",
-      value: { message: `$ pnpm run ${script}`, type: "normal" },
+      value: { message: `$ ${devServerCommand.join(" ")}`, type: "normal" },
     });
 
     timeout.start();
-    const result = await runPackageJsonScript({
+    const runtimeProcess = execa({
+      cancelSignal: signal,
       cwd: appConfig.appDir,
-      script,
-      scriptOptions: {
-        env: {
-          ...providerEnv,
-          NO_COLOR: "1", // Disable color to avoid ANSI escape codes in logs
-          QUESTS_INSIDE_STUDIO: "true", // Used by apps to detect if they are running inside Studio
-        },
-        port,
+      env: {
+        ...providerEnv,
+        NO_COLOR: "1",
+        QUESTS_INSIDE_STUDIO: "true",
+        ...baseEnv,
       },
-      signal,
-    });
-    if (result.isErr()) {
-      // Happens for immediate errors
-      parentRef.send({
-        isRetryable: true,
-        shouldLog: false,
-        type: "spawnRuntime.error.unknown",
-        value: {
-          error: result.error,
-        },
-      });
-      return;
-    }
-    const processPromise = result.value;
-    sendProcessLogs(processPromise, parentRef);
+    })`${devServerCommand}`;
+    sendProcessLogs(runtimeProcess, parentRef);
 
     let shouldCheckServer = true;
     const checkServer = async () => {
@@ -318,10 +275,10 @@ export const spawnRuntimeLogic = fromCallback<
     // Must abort check server if the process promise rejects because it
     // means the server is not running and we could accidentally check
     // another server and say it's running
-    processPromise.catch(() => (shouldCheckServer = false));
+    runtimeProcess.catch(() => (shouldCheckServer = false));
 
     // Ensures we catch errors from the process promise
-    await Promise.all([checkServer(), processPromise]);
+    await Promise.all([checkServer(), runtimeProcess]);
   }
 
   main()

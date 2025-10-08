@@ -324,7 +324,6 @@ export const runtimeMachine = setup({
             appConfig: context.appConfig,
             attempt: context.retryCount,
             parentRef: self,
-            runPackageJsonScript: context.runPackageJsonScript,
           },
         }),
       })),
