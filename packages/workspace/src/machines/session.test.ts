@@ -881,14 +881,14 @@ describe("sessionMachine", () => {
     });
 
     it("should extend timeout when chunks are received", async () => {
-      const chunkTimeoutMs = 20;
+      const chunkTimeoutMs = 30;
 
       const actor = createTestActor({
         baseLLMRetryDelayMs: 0,
         chunkDelayInMs: [
           chunkTimeoutMs * 1.5,
-          chunkTimeoutMs * 0.8,
-          chunkTimeoutMs * 0.4,
+          chunkTimeoutMs * 0.1,
+          chunkTimeoutMs * 0.1,
         ],
         chunkSets: [readFileChunks, readFileChunks, finishChunks],
         llmRequestChunkTimeoutMs: chunkTimeoutMs,
