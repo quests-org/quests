@@ -157,6 +157,7 @@ export function createWorkspaceActor() {
               return;
             }
             if (
+              event.event.type === "llmRequest.chunkReceived" ||
               event.event.type === "workspaceServer.heartbeat" ||
               event.event.type === "spawnRuntime.log" ||
               event.event.type === "updateHeartbeat"

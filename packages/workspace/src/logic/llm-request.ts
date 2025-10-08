@@ -1,4 +1,5 @@
 import type { LanguageModel, ToolSet } from "ai";
+import type { ActorRef, AnyMachineSnapshot } from "xstate";
 
 import { providerOptionsForModel } from "@quests/ai-gateway";
 import {
@@ -24,6 +25,7 @@ interface LLMRequestInput {
   agent: AnyAgent;
   appConfig: AppConfig;
   model: LanguageModel;
+  self: ActorRef<AnyMachineSnapshot, { type: "llmRequest.chunkReceived" }>;
   sessionId: StoreId.Session;
   stepCount: number;
   toolChoice?: "auto" | "none" | "required";
@@ -149,15 +151,12 @@ export const llmRequestLogic = fromPromise<
 
     for await (const part of result.fullStream) {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (signal.aborted) {
+      if (signal.aborted || part.type === "abort") {
         // Ensures we don't try to process any more parts
-        continue;
+        break;
       }
+      input.self.send({ type: "llmRequest.chunkReceived" });
       switch (part.type) {
-        case "abort": {
-          // Handled by catch block
-          break;
-        }
         case "error": {
           // This blows up the whole stream for any error, but it does not have
           // to. E.g. an invalid tool call could still contain other valid tool

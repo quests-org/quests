@@ -6,7 +6,13 @@ import {
 import { simulateReadableStream } from "ai";
 import { MockLanguageModelV2 } from "ai/test";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { type ActorRefFrom, createActor, setup, waitFor } from "xstate";
+import {
+  type ActorRefFrom,
+  type AnyActorRef,
+  createActor,
+  setup,
+  waitFor,
+} from "xstate";
 
 import { Store } from "../lib/store";
 import { RelativePathSchema } from "../schemas/paths";
@@ -152,6 +158,7 @@ describe("llmRequestLogic", () => {
               },
               emitDeltas: true,
               model,
+              self: { send: vi.fn() } as unknown as AnyActorRef,
               sessionId,
               stepCount: 1,
             }),

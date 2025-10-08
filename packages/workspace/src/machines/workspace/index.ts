@@ -366,6 +366,8 @@ export const workspaceMachine = setup({
             input: {
               agent: AGENTS.code,
               appConfig,
+              baseLLMRetryDelayMs: 1000, // 1 second
+              llmRequestChunkTimeoutMs: 5 * 60 * 1000, // 5 minutes
               model,
               parentRef: self,
               queuedMessages: [message],

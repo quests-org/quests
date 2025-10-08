@@ -158,8 +158,9 @@ export const sessionMachine = setup({
       agent: AnyAgent;
       agentRef?: AgentMachineActorRef;
       appConfig: AppConfig;
+      baseLLMRetryDelayMs: number;
       error?: unknown;
-      llmRequestTimeoutMs: number;
+      llmRequestChunkTimeoutMs: number;
       maxStepCount: number;
       model: LanguageModel;
       parentRef: ParentActorRef;
@@ -171,7 +172,8 @@ export const sessionMachine = setup({
     input: {} as {
       agent: AnyAgent;
       appConfig: AppConfig;
-      llmRequestTimeoutMs?: number;
+      baseLLMRetryDelayMs: number;
+      llmRequestChunkTimeoutMs: number;
       maxStepCount?: number;
       model: LanguageModel;
       parentRef: ParentActorRef;
@@ -185,7 +187,8 @@ export const sessionMachine = setup({
     return {
       agent: input.agent,
       appConfig: input.appConfig,
-      llmRequestTimeoutMs: input.llmRequestTimeoutMs ?? 5 * 60 * 1000,
+      baseLLMRetryDelayMs: input.baseLLMRetryDelayMs,
+      llmRequestChunkTimeoutMs: input.llmRequestChunkTimeoutMs,
       maxStepCount: input.maxStepCount ?? 50,
       model: input.model,
       parentRef: input.parentRef,
@@ -387,7 +390,8 @@ export const sessionMachine = setup({
                   input: {
                     agent: context.agent,
                     appConfig: context.appConfig,
-                    llmRequestTimeoutMs: context.llmRequestTimeoutMs,
+                    baseLLMRetryDelayMs: context.baseLLMRetryDelayMs,
+                    llmRequestChunkTimeoutMs: context.llmRequestChunkTimeoutMs,
                     maxStepCount: context.maxStepCount,
                     model: context.model,
                     parentMessageId: event.output.id,

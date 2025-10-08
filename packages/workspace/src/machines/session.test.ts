@@ -176,18 +176,22 @@ describe("sessionMachine", () => {
   function createTestActor({
     agent = AGENTS.code,
     appConfig = projectAppConfig,
+    baseLLMRetryDelayMs = 1000,
+    chunkDelayInMs = [],
     chunkSets = [],
     initialChunkDelaysMs = [],
-    llmRequestTimeoutMs = 120_000,
+    llmRequestChunkTimeoutMs = 120_000,
     maxStepCount,
     queuedMessages = [defaultQueuedMessage],
     sessionId = defaultSessionId,
   }: {
     agent?: AnyAgent;
     appConfig?: AppConfig;
+    baseLLMRetryDelayMs?: number;
+    chunkDelayInMs?: number[];
     chunkSets?: Part[][];
     initialChunkDelaysMs?: number[];
-    llmRequestTimeoutMs?: number;
+    llmRequestChunkTimeoutMs?: number;
     maxStepCount?: number;
     queuedMessages?: SessionMessage.UserWithParts[];
     sessionId?: StoreId.Session;
@@ -200,11 +204,14 @@ describe("sessionMachine", () => {
         if (!currentChunks) {
           throw new Error("No chunks left");
         }
+
+        const chunkIndex = currentChunkIndex;
         currentChunkIndex++;
 
         return {
           rawCall: { rawPrompt: null, rawSettings: {} },
           stream: simulateReadableStream({
+            chunkDelayInMs: chunkDelayInMs[chunkIndex],
             chunks: [
               ...currentChunks,
               {
@@ -220,7 +227,7 @@ describe("sessionMachine", () => {
                 },
               },
             ],
-            initialDelayInMs: initialChunkDelaysMs[currentChunkIndex],
+            initialDelayInMs: initialChunkDelaysMs[chunkIndex],
           }),
         };
       },
@@ -230,7 +237,8 @@ describe("sessionMachine", () => {
       input: {
         agent,
         appConfig,
-        llmRequestTimeoutMs,
+        baseLLMRetryDelayMs,
+        llmRequestChunkTimeoutMs,
         maxStepCount,
         model,
         parentRef: {
@@ -818,14 +826,15 @@ describe("sessionMachine", () => {
 
     it("should retry and fail on timeout", async () => {
       const actor = createTestActor({
+        baseLLMRetryDelayMs: 0,
         chunkSets: [
           readFileChunks,
           readFileChunks,
           readFileChunks,
           finishChunks,
         ],
-        initialChunkDelaysMs: [1000, 1000, 1000],
-        llmRequestTimeoutMs: 100,
+        initialChunkDelaysMs: [40, 40, 1, 1],
+        llmRequestChunkTimeoutMs: 20,
       });
 
       const session = await runTestMachine(actor);
@@ -863,6 +872,61 @@ describe("sessionMachine", () => {
           </assistant>
           <assistant finishReason="stop" tokens="0" model="mock-model-id" provider="mock-provider">
             <step-start step="4" />
+            <text state="done">I'm done.</text>
+          </assistant>
+          <session-context code realRole="system" />
+          <session-context code realRole="user" />
+        </session>"
+      `);
+    });
+
+    it("should extend timeout when chunks are received", async () => {
+      const chunkTimeoutMs = 20;
+
+      const actor = createTestActor({
+        baseLLMRetryDelayMs: 0,
+        chunkDelayInMs: [
+          chunkTimeoutMs * 1.5,
+          chunkTimeoutMs * 0.8,
+          chunkTimeoutMs * 0.4,
+        ],
+        chunkSets: [readFileChunks, readFileChunks, finishChunks],
+        llmRequestChunkTimeoutMs: chunkTimeoutMs,
+      });
+
+      const session = await runTestMachine(actor);
+      expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
+        "<session title="Test session" count="6">
+          <user>
+            <text>Hello, I need help with something.</text>
+          </user>
+          <assistant finishReason="aborted" model="mock-model-id" provider="mock-provider">
+            <step-start step="1" />
+            <tool tool="read_file" state="input-streaming" callId="test-call-1"></tool>
+          </assistant>
+          <assistant finishReason="stop" tokens="0" model="mock-model-id" provider="mock-provider">
+            <step-start step="2" />
+            <tool tool="read_file" state="output-available" callId="test-call-1">
+              <input>
+                {
+                  "filePath": "test.txt"
+                }
+              </input>
+              <output>
+                {
+                  "content": "Hello, world!",
+                  "displayedLines": 1,
+                  "filePath": "./test.txt",
+                  "hasMoreLines": false,
+                  "offset": 0,
+                  "state": "exists",
+                  "totalLines": 1
+                }
+              </output>
+            </tool>
+          </assistant>
+          <assistant finishReason="stop" tokens="0" model="mock-model-id" provider="mock-provider">
+            <step-start step="3" />
             <text state="done">I'm done.</text>
           </assistant>
           <session-context code realRole="system" />

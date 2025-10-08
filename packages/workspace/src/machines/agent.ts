@@ -52,6 +52,7 @@ export type ToolCallUpdate =
 type AgentMachineEvent =
   | { error: Error; type: "error" }
   | { type: "executeToolCalls" }
+  | { type: "llmRequest.chunkReceived" }
   | { type: "retry" }
   | { type: "stop" }
   | {
@@ -187,11 +188,9 @@ export const agentMachine = setup({
   },
 
   delays: {
-    llmRequestTimeoutMs: ({ context }) => context.llmRequestTimeoutMs,
+    llmRequestChunkTimeoutMs: ({ context }) => context.llmRequestChunkTimeoutMs,
     retryBackoff: ({ context }) => {
-      // Exponential backoff: 1s, 2s, 4s for retries 1, 2, 3
-      const baseDelay = 1000;
-      return baseDelay * Math.pow(2, context.retryCount - 1);
+      return context.baseLLMRetryDelayMs * Math.pow(2, context.retryCount - 1);
     },
   },
 
@@ -199,8 +198,9 @@ export const agentMachine = setup({
     context: {} as {
       agent: AnyAgent;
       appConfig: AppConfig;
+      baseLLMRetryDelayMs: number;
       error?: unknown;
-      llmRequestTimeoutMs: number;
+      llmRequestChunkTimeoutMs: number;
       maxRetryCount: number;
       maxStepCount: number;
       model: LanguageModel;
@@ -218,7 +218,8 @@ export const agentMachine = setup({
     input: {} as {
       agent: AnyAgent;
       appConfig: AppConfig;
-      llmRequestTimeoutMs: number;
+      baseLLMRetryDelayMs: number;
+      llmRequestChunkTimeoutMs: number;
       maxStepCount: number;
       model: LanguageModel;
       parentMessageId: StoreId.Message;
@@ -232,7 +233,8 @@ export const agentMachine = setup({
   context: ({ input }) => ({
     agent: input.agent,
     appConfig: input.appConfig,
-    llmRequestTimeoutMs: input.llmRequestTimeoutMs,
+    baseLLMRetryDelayMs: input.baseLLMRetryDelayMs,
+    llmRequestChunkTimeoutMs: input.llmRequestChunkTimeoutMs,
     maxRetryCount: 3,
     maxStepCount: input.maxStepCount || 1,
     model: input.model,
@@ -378,20 +380,17 @@ export const agentMachine = setup({
     },
 
     LLMStreaming: {
-      after: {
-        llmRequestTimeoutMs: {
-          actions: raise({ type: "retry" }),
-        },
-      },
       entry: assign({
         stepCount: ({ context }) => context.stepCount + 1,
       }),
+      initial: "PendingTimeout",
       invoke: {
-        input: ({ context }) => {
+        input: ({ context, self }) => {
           return {
             agent: context.agent,
             appConfig: context.appConfig,
             model: context.model,
+            self,
             sessionId: context.sessionId,
             stepCount: context.stepCount,
             toolChoice: context.toolChoice,
@@ -482,6 +481,21 @@ export const agentMachine = setup({
             target: "Finishing",
           },
         ],
+      },
+      states: {
+        PendingTimeout: {
+          after: {
+            llmRequestChunkTimeoutMs: {
+              actions: raise({ type: "retry" }),
+            },
+          },
+          on: {
+            "llmRequest.chunkReceived": "ResettingTimeout",
+          },
+        },
+        ResettingTimeout: {
+          always: "PendingTimeout",
+        },
       },
     },
 
