@@ -126,5 +126,15 @@ function getNodeBinaryPath(): string {
 
 function getNodeModulePath(...parts: string[]): string {
   const appPath = app.getAppPath();
-  return path.join(appPath, "node_modules", ...parts);
+  const modulePath = path.join(appPath, "node_modules", ...parts);
+
+  if (app.isPackaged && appPath.endsWith(".asar")) {
+    const unpackedPath = modulePath.replace(
+      /app\.asar([/\\])/,
+      "app.asar.unpacked$1",
+    );
+    return unpackedPath;
+  }
+
+  return modulePath;
 }
