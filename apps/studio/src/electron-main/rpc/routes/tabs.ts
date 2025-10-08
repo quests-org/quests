@@ -20,6 +20,12 @@ const navigateCurrent = base
       return false;
     }
 
+    const existingTab = tabsManager.doesTabExist({ urlPath: input.urlPath });
+    if (existingTab) {
+      tabsManager.selectTab({ id: existingTab.id });
+      return true;
+    }
+
     const currentTab = tabsManager.getCurrentTab();
     if (!currentTab) {
       return false;
