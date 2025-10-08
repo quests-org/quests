@@ -1,5 +1,6 @@
 // Adapted from
 // https://github.com/sst/opencode/blob/dev/packages/opencode/src/tool/write.ts
+import ms from "ms";
 import { err, ok } from "neverthrow";
 import { dedent, sift } from "radashi";
 import { z } from "zod";
@@ -65,7 +66,7 @@ export const WriteFile = createTool({
     isNewFile: z.boolean(),
   }),
   readOnly: false,
-  timeoutMs: 15_000,
+  timeoutMs: ms("15 seconds"),
   toModelOutput: ({ output }) => {
     const baseContent = output.isNewFile
       ? "Successfully wrote new file"

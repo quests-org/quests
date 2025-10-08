@@ -1,3 +1,4 @@
+import ms from "ms";
 import { ulid } from "ulid";
 import {
   type ActorRefFrom,
@@ -110,8 +111,7 @@ export const runtimeMachine = setup({
 
   delays: {
     retryBackoff: ({ context }) => {
-      // Exponential backoff: 1s, 2s, 4s for retries 1, 2, 3
-      const baseDelay = 1000;
+      const baseDelay = ms("1 second");
       return baseDelay * Math.pow(2, context.retryCount - 1);
     },
   },

@@ -1,8 +1,9 @@
 import { LRUCache } from "lru-cache";
+import ms from "ms";
 
 const globalCache = new LRUCache<string, object>({
   max: 1000,
-  ttl: 60 * 60 * 1000, // 1 hour TTL
+  ttl: ms("1 hour"),
 });
 
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters

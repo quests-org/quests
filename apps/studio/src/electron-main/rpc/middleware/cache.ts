@@ -1,4 +1,5 @@
 import { os } from "@orpc/server";
+import ms from "ms";
 
 interface CacheEntry<T> {
   expiresAt: number;
@@ -58,19 +59,15 @@ class TTLCache<T> {
 
 const cache = new TTLCache();
 
-// Optional: Run cleanup every 10 minutes
-setInterval(
-  () => {
-    cache.cleanup();
-  },
-  10 * 60 * 1000,
-);
+setInterval(() => {
+  cache.cleanup();
+}, ms("10 minutes"));
 
 export const cacheMiddleware = os
   .$context<{ cacheTTL?: number }>()
   .middleware(async ({ context, next, path }, input, output) => {
     const cacheKey = path.join("/") + JSON.stringify(input);
-    const ttl = context.cacheTTL ?? 5 * 60 * 1000; // Default to 5 minutes if not provided
+    const ttl = context.cacheTTL ?? ms("5 minutes");
 
     if (cache.has(cacheKey)) {
       return output(cache.get(cacheKey));

@@ -1,3 +1,4 @@
+import ms from "ms";
 import { err } from "neverthrow";
 import { dedent } from "radashi";
 import { z } from "zod";
@@ -22,7 +23,7 @@ export const Unavailable = createTool({
   name: "unavailable",
   outputSchema: z.any(),
   readOnly: true,
-  timeoutMs: 1000,
+  timeoutMs: ms("1 second"),
   toModelOutput: () => {
     return {
       type: "text",

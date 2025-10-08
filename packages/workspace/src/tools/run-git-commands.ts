@@ -1,3 +1,4 @@
+import ms from "ms";
 import { err, ok } from "neverthrow";
 import { sift } from "radashi";
 import { z } from "zod";
@@ -55,7 +56,7 @@ export const RunGitCommands = createTool({
     ),
   }),
   readOnly: false,
-  timeoutMs: 30_000, // Git commands can take longer
+  timeoutMs: ms("30 seconds"), // Git commands can be slow
   toModelOutput: ({ output }) => {
     const hasErrors = output.results.some(
       (cmdResult) => cmdResult.exitCode !== 0,

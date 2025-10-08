@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { streamSSE } from "hono/streaming";
+import ms from "ms";
 import { isEqual } from "radashi";
 import { type Subscription } from "xstate";
 
@@ -178,7 +179,7 @@ app.get("/heartbeat-stream", (c) => {
           const gitRefResult = await git(
             GitCommands.verifyCommitRef(gitRef),
             projectConfig.appDir,
-            { signal: AbortSignal.timeout(5000) },
+            { signal: AbortSignal.timeout(ms("5 seconds")) },
           );
 
           if (gitRefResult.isErr()) {
@@ -233,7 +234,7 @@ app.get("/heartbeat-stream", (c) => {
 
         try {
           await sendHeartbeat();
-          await stream.sleep(500);
+          await stream.sleep(ms("500ms"));
         } catch (error) {
           c.var.workspaceConfig.captureException(
             error instanceof Error ? error : new Error(String(error)),

@@ -1,3 +1,4 @@
+import ms from "ms";
 import { dedent } from "radashi";
 import { z } from "zod";
 
@@ -25,7 +26,7 @@ export const FileTree = createTool({
     tree: z.string().meta({ description: "The file tree of the codebase" }),
   }),
   readOnly: true,
-  timeoutMs: 5000, // File system operations
+  timeoutMs: ms("5 seconds"),
   toModelOutput: ({ output }) => {
     return {
       type: "text",

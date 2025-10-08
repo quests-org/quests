@@ -1,3 +1,4 @@
+import ms from "ms";
 import { ok } from "neverthrow";
 import { z } from "zod";
 
@@ -21,7 +22,7 @@ export const Think = createTool({
     thought: z.string(),
   }),
   readOnly: true,
-  timeoutMs: 1000,
+  timeoutMs: ms("1 second"),
   toModelOutput: () => {
     return {
       type: "text",

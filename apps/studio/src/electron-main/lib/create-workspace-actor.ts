@@ -12,6 +12,7 @@ import {
 } from "@quests/workspace/electron";
 import { app, shell } from "electron";
 import { execa, parseCommandString } from "execa";
+import ms from "ms";
 import { err, ok } from "neverthrow";
 import path from "node:path";
 import { createActor } from "xstate";
@@ -53,7 +54,7 @@ export function createWorkspaceActor() {
 
         return providers;
       },
-      previewCacheTimeMs: 60 * 60 * 1000 * 24, // 24 hours
+      previewCacheTimeMs: ms("24 hours"),
       registryDir: app.isPackaged
         ? path.join(process.resourcesPath, REGISTRY_DIR_NAME)
         : path.resolve(import.meta.dirname, REGISTRY_DEV_DIR_PATH),

@@ -1,3 +1,4 @@
+import ms from "ms";
 import { err } from "neverthrow";
 import { z } from "zod";
 
@@ -28,7 +29,7 @@ export const Choose = createTool({
     selectedChoice: z.string(),
   }),
   readOnly: true,
-  timeoutMs: 1000,
+  timeoutMs: ms("1 second"),
   toModelOutput: ({ output: result }) => {
     return {
       type: "text",

@@ -1,3 +1,4 @@
+import ms from "ms";
 import { err, ok } from "neverthrow";
 import { z } from "zod";
 
@@ -40,7 +41,7 @@ export async function getGitRefInfo(
   const refResult = await git(
     GitCommands.verifyCommitRef(gitRef),
     projectConfig.appDir,
-    { signal: AbortSignal.timeout(5000) },
+    { signal: AbortSignal.timeout(ms("5 seconds")) },
   );
 
   if (refResult.isErr()) {
@@ -52,7 +53,7 @@ export async function getGitRefInfo(
   const commitMessageResult = await git(
     GitCommands.getCommitMessage(gitRef),
     projectConfig.appDir,
-    { signal: AbortSignal.timeout(5000) },
+    { signal: AbortSignal.timeout(ms("5 seconds")) },
   );
 
   if (commitMessageResult.isErr()) {
@@ -69,7 +70,7 @@ export async function getGitRefInfo(
   const commitCountResult = await git(
     GitCommands.revList(gitRef),
     projectConfig.appDir,
-    { signal: AbortSignal.timeout(5000) },
+    { signal: AbortSignal.timeout(ms("5 seconds")) },
   );
 
   if (commitCountResult.isErr()) {
@@ -91,7 +92,7 @@ export async function getGitRefInfo(
     : GitCommands.diffNumstat(gitRef);
 
   const numstatResult = await git(numstatCommand, projectConfig.appDir, {
-    signal: AbortSignal.timeout(10_000),
+    signal: AbortSignal.timeout(ms("10 seconds")),
   });
 
   if (numstatResult.isErr()) {

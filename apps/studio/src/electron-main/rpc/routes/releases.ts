@@ -1,5 +1,6 @@
 import { base } from "@/electron-main/rpc/base";
 import { APP_REPO_NAME, GITHUB_ORG } from "@quests/shared";
+import ms from "ms";
 import { z } from "zod";
 
 import { cacheMiddleware } from "../middleware/cache";
@@ -25,7 +26,7 @@ const list = base
   .use(async ({ next }) => {
     return next({
       context: {
-        cacheTTL: 5 * 60 * 1000,
+        cacheTTL: ms("5 minutes"),
       },
     });
   })

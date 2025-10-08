@@ -1,3 +1,4 @@
+import ms from "ms";
 import { err, ok } from "neverthrow";
 import { dedent } from "radashi";
 import { z } from "zod";
@@ -68,7 +69,7 @@ export const Grep = createTool({
     truncated: z.boolean(),
   }),
   readOnly: true,
-  timeoutMs: 5000,
+  timeoutMs: ms("5 seconds"),
   toModelOutput: ({ output }) => {
     if (output.matches.length === 0) {
       return {

@@ -5,6 +5,7 @@ import {
   type CaptureExceptionFunction,
 } from "@quests/shared";
 import { type LanguageModel } from "ai";
+import ms from "ms";
 import path from "node:path";
 import invariant from "tiny-invariant";
 import {
@@ -366,8 +367,8 @@ export const workspaceMachine = setup({
             input: {
               agent: AGENTS.code,
               appConfig,
-              baseLLMRetryDelayMs: 1000, // 1 second
-              llmRequestChunkTimeoutMs: 5 * 60 * 1000, // 5 minutes
+              baseLLMRetryDelayMs: ms("1 second"),
+              llmRequestChunkTimeoutMs: ms("5 minutes"),
               model,
               parentRef: self,
               queuedMessages: [message],

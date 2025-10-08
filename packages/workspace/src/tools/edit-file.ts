@@ -2,6 +2,7 @@
 // Adapted from
 // https://github.com/sst/opencode/blob/dev/packages/opencode/src/tool/edit.ts
 // Kept as a single file for now so we can easily merge changes from upstream.
+import ms from "ms";
 import { err, ok } from "neverthrow";
 import { dedent, sift } from "radashi";
 import { z } from "zod";
@@ -576,7 +577,7 @@ export const EditFile = createTool({
     oldContent: z.string(),
   }),
   readOnly: false,
-  timeoutMs: 15_000,
+  timeoutMs: ms("15 seconds"),
   toModelOutput: ({ output: result }) => {
     return {
       type: "text",

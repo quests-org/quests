@@ -1,5 +1,6 @@
 import { envForProviders } from "@quests/ai-gateway";
 import { ExecaError, parseCommandString, type ResultPromise } from "execa";
+import ms from "ms";
 import { type NormalizedPackageJson, readPackage } from "read-pkg";
 import {
   type ActorRef,
@@ -16,14 +17,14 @@ import { PortManager } from "../lib/port-manager";
 import { type RunPackageJsonScript } from "../types";
 import { getWorkspaceServerURL } from "./server/url";
 
-const BASE_RUNTIME_TIMEOUT_MS = 60 * 1000; // 1 minute
-const RUNTIME_TIMEOUT_MULTIPLIER_MS = 30 * 1000; // 30 seconds
-const INSTALL_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
+const BASE_RUNTIME_TIMEOUT_MS = ms("1 minute");
+const RUNTIME_TIMEOUT_MULTIPLIER_MS = ms("30 seconds");
+const INSTALL_TIMEOUT_MS = ms("5 minutes");
 
 const portManager = new PortManager({
   basePort: 9200,
   maxAttempts: 1000,
-  retryDelayMs: 100,
+  retryDelayMs: ms("100ms"),
 });
 
 export type SpawnRuntimeEvent =
@@ -277,7 +278,7 @@ export const spawnRuntimeLogic = fromCallback<
 
     let shouldCheckServer = true;
     const checkServer = async () => {
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, ms("500ms")));
       if (!port) {
         parentRef.send({
           isRetryable: true,

@@ -1,4 +1,5 @@
 import { parseCommandString } from "execa";
+import ms from "ms";
 import { err, ok, type Result } from "neverthrow";
 import fs from "node:fs/promises";
 import path from "node:path";
@@ -423,7 +424,7 @@ export const RunShellCommand = createTool({
   },
   inputSchema: BaseInputSchema.extend({
     command: z.string().meta({ description: "The shell command to run" }),
-    timeoutMs: z.number().optional().default(15_000).meta({
+    timeoutMs: z.number().optional().default(ms("15 seconds")).meta({
       description: "The timeout in milliseconds for the shell command",
     }),
   }),

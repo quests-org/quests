@@ -1,3 +1,4 @@
+import ms from "ms";
 import { err, ok, ResultAsync } from "neverthrow";
 import fs from "node:fs/promises";
 
@@ -100,6 +101,6 @@ async function rmrf(path: string): Promise<void> {
     force: true,
     maxRetries: 3,
     recursive: true,
-    retryDelay: 2000,
+    retryDelay: ms("2 seconds"),
   });
 }

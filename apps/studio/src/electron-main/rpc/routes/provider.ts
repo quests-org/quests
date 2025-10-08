@@ -10,6 +10,7 @@ import {
   ProviderMetadataWithTypeSchema,
 } from "@quests/ai-gateway";
 import { safeStorage } from "electron";
+import ms from "ms";
 import { ulid } from "ulid";
 import { z } from "zod";
 
@@ -118,7 +119,7 @@ const credits = base
   .use(async ({ next }) => {
     return next({
       context: {
-        cacheTTL: 30 * 1000,
+        cacheTTL: ms("30 seconds"),
       },
     });
   })

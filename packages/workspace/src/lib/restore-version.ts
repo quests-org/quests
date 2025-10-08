@@ -1,3 +1,4 @@
+import ms from "ms";
 import { err, ok, safeTry } from "neverthrow";
 
 import { type SessionMessage } from "../schemas/session/message";
@@ -46,7 +47,7 @@ export async function restoreVersion({
     const refResult = yield* git(
       GitCommands.verifyCommitRef(gitRef),
       projectConfig.appDir,
-      { signal: AbortSignal.timeout(5000) },
+      { signal: AbortSignal.timeout(ms("5 seconds")) },
     ).mapErr(
       (error) =>
         new TypedError.NotFound("The selected version could not be found", {
@@ -60,7 +61,7 @@ export async function restoreVersion({
       GitCommands.status(),
       projectConfig.appDir,
       {
-        signal: AbortSignal.timeout(5000),
+        signal: AbortSignal.timeout(ms("5 seconds")),
       },
     );
 
@@ -80,7 +81,7 @@ export async function restoreVersion({
       const getCommitRefResult = yield* git(
         GitCommands.revParse("HEAD"),
         projectConfig.appDir,
-        { signal: AbortSignal.timeout(5000) },
+        { signal: AbortSignal.timeout(ms("5 seconds")) },
       );
 
       const commitRef = getCommitRefResult.stdout.toString().trim();
@@ -123,7 +124,7 @@ export async function restoreVersion({
     const statusAfterCheckoutResult = yield* git(
       GitCommands.status(),
       projectConfig.appDir,
-      { signal: AbortSignal.timeout(5000) },
+      { signal: AbortSignal.timeout(ms("5 seconds")) },
     );
 
     if (statusAfterCheckoutResult.stdout.toString().trim() === "") {
@@ -143,7 +144,7 @@ export async function restoreVersion({
     const getRestoreCommitRefResult = yield* git(
       GitCommands.revParse("HEAD"),
       projectConfig.appDir,
-      { signal: AbortSignal.timeout(5000) },
+      { signal: AbortSignal.timeout(ms("5 seconds")) },
     );
 
     const restoreCommitRef = getRestoreCommitRefResult.stdout.toString().trim();

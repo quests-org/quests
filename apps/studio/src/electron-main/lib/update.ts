@@ -2,6 +2,7 @@ import { logger } from "@/electron-main/lib/electron-logger";
 import { publisher } from "@/electron-main/rpc/publisher";
 import { app } from "electron";
 import pkg, { type ProgressInfo, type UpdateInfo } from "electron-updater";
+import ms from "ms";
 import fs from "node:fs";
 import os from "node:os";
 
@@ -179,13 +180,10 @@ export class StudioAppUpdater {
 
   public pollForUpdates() {
     void this.checkForUpdates();
-    setInterval(
-      () => {
-        void this.checkForUpdates();
-        setLastUpdateCheck();
-      },
-      60 * 60 * 1000,
-    );
+    setInterval(() => {
+      void this.checkForUpdates();
+      setLastUpdateCheck();
+    }, ms("1 hour"));
   }
 
   public quitAndInstall() {

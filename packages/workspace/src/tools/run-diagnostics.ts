@@ -1,3 +1,4 @@
+import ms from "ms";
 import { ok } from "neverthrow";
 import { dedent } from "radashi";
 import { z } from "zod";
@@ -35,7 +36,7 @@ export const RunDiagnostics = createTool({
     errors: z.array(z.string()),
   }),
   readOnly: true,
-  timeoutMs: 15_000, // Diagnostics can take time
+  timeoutMs: ms("15 seconds"), // Diagnostics can be slow
   toModelOutput: ({ output }) => {
     return {
       type: "text",

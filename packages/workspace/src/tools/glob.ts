@@ -1,4 +1,5 @@
 import { glob } from "glob";
+import ms from "ms";
 import { ok } from "neverthrow";
 import { alphabetical } from "radashi";
 import { z } from "zod";
@@ -34,7 +35,7 @@ export const Glob = createTool({
     files: z.array(z.string()),
   }),
   readOnly: true,
-  timeoutMs: 5000,
+  timeoutMs: ms("5 seconds"),
   toModelOutput: ({ output }) => {
     if (output.files.length === 0) {
       return {

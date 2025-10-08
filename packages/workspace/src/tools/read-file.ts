@@ -1,5 +1,6 @@
 // Adapted from
 // https://github.com/sst/opencode/blob/dev/packages/opencode/src/tool/read.ts
+import ms from "ms";
 import { err, ok } from "neverthrow";
 import fs from "node:fs/promises";
 import path from "node:path";
@@ -212,7 +213,7 @@ export const ReadFile = createTool({
     }),
   ]),
   readOnly: true,
-  timeoutMs: 5000,
+  timeoutMs: ms("5 seconds"),
   toModelOutput: ({ output }) => {
     if (output.state === "does-not-exist") {
       const suggestionText =
