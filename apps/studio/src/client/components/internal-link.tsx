@@ -106,6 +106,7 @@ export function InternalLink(
   return (
     <Link
       {...rest}
+      draggable={false}
       onAuxClick={handleAuxClick}
       onClick={handleClick}
       onMouseDown={handleMouseDown}
