@@ -9,13 +9,7 @@ import { cn, isMacOS } from "@/client/lib/utils";
 import { type AIGatewayModel } from "@quests/ai-gateway";
 import { useQuery } from "@tanstack/react-query";
 import { useAtom, useAtomValue } from "jotai";
-import {
-  ArrowUp,
-  Circle,
-  Loader2,
-  Square,
-  SquareArrowOutUpRight,
-} from "lucide-react";
+import { ArrowUp, Circle, Loader2, Square } from "lucide-react";
 import {
   forwardRef,
   useCallback,
@@ -79,7 +73,6 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
     ref,
   ) => {
     const [showAIProviderGuard, setShowAIProviderGuard] = useState(false);
-    const [modifierKeyPressed, setModifierKeyPressed] = useState(false);
     const textareaRef = useRef<HTMLDivElement>(null);
     const textareaInnerRef = useRef<HTMLTextAreaElement>(null);
     const hasAIProvider = useAtomValue(hasAIProviderAtom);
@@ -90,38 +83,6 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
         textareaInnerRef.current?.focus();
       },
     }));
-
-    useEffect(() => {
-      if (!allowOpenInNewTab) {
-        return;
-      }
-
-      const handleKeyDown = (e: KeyboardEvent) => {
-        if (isMacOS() ? e.metaKey : e.ctrlKey) {
-          setModifierKeyPressed(true);
-        }
-      };
-
-      const handleKeyUp = (e: KeyboardEvent) => {
-        if (isMacOS() ? !e.metaKey : !e.ctrlKey) {
-          setModifierKeyPressed(false);
-        }
-      };
-
-      const handleBlur = () => {
-        setModifierKeyPressed(false);
-      };
-
-      window.addEventListener("keydown", handleKeyDown);
-      window.addEventListener("keyup", handleKeyUp);
-      window.addEventListener("blur", handleBlur);
-
-      return () => {
-        window.removeEventListener("keydown", handleKeyDown);
-        window.removeEventListener("keyup", handleKeyUp);
-        window.removeEventListener("blur", handleBlur);
-      };
-    }, [allowOpenInNewTab]);
 
     const {
       data: modelsData,
@@ -295,8 +256,6 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
                 </div>
               ) : isLoading ? (
                 <Loader2 className="size-4 animate-spin" />
-              ) : modifierKeyPressed ? (
-                <SquareArrowOutUpRight className="size-4" />
               ) : (
                 <ArrowUp className="size-4" />
               )}
