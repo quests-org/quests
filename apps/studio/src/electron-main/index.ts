@@ -15,7 +15,7 @@ import {
 } from "@/electron-main/windows/main";
 import { is, optimizer } from "@electron-toolkit/utils";
 import { APP_PROTOCOL } from "@quests/shared";
-import { app, BrowserWindow, nativeTheme, protocol } from "electron";
+import { app, BrowserWindow, dialog, nativeTheme, protocol } from "electron";
 import path from "node:path";
 
 import { createWorkspaceActor } from "./lib/create-workspace-actor";
@@ -63,6 +63,44 @@ registerTelemetry(app);
 
 // eslint-disable-next-line unicorn/prefer-top-level-await
 void app.whenReady().then(async () => {
+  if (
+    process.platform === "darwin" &&
+    !is.dev &&
+    !app.isInApplicationsFolder()
+  ) {
+    const choice = dialog.showMessageBoxSync({
+      buttons: ["Move to Applications Folder", "Not Now"],
+      cancelId: 1,
+      defaultId: 0,
+      message:
+        "Quests works best when run from the Applications folder. Would you like to move it now?",
+      title: "Move to Applications Folder?",
+      type: "question",
+    });
+
+    if (choice === 0) {
+      const moved = app.moveToApplicationsFolder({
+        conflictHandler: () => {
+          return (
+            dialog.showMessageBoxSync({
+              buttons: ["Replace", "Cancel"],
+              cancelId: 1,
+              defaultId: 0,
+              message:
+                "An app with the same name already exists in the Applications folder. Do you want to replace it?",
+              title: "Replace Existing App?",
+              type: "question",
+            }) === 0
+          );
+        },
+      });
+
+      if (moved) {
+        return;
+      }
+    }
+  }
+
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
   // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
