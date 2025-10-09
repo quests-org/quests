@@ -126,19 +126,17 @@ export const spawnRuntimeLogic = fromCallback<
     ELECTRON_RUN_AS_NODE: "1",
   };
 
-  // FIXME: remove after done debugging
+  // TODO(FP-595): remove after done debugging
   const pnpmVersionProcess = execa({
     cwd: appConfig.appDir,
     env: baseEnv,
-    windowsHide: true,
   })`pnpm --version`;
   sendProcessLogs(pnpmVersionProcess, parentRef);
 
-  // FIXME: remove after done debugging
+  // TODO(FP-595): remove after done debugging
   const nodeVersionProcess = execa({
     cwd: appConfig.appDir,
     env: baseEnv,
-    windowsHide: true,
   })`node --version`;
   sendProcessLogs(nodeVersionProcess, parentRef);
 
@@ -210,7 +208,6 @@ export const spawnRuntimeLogic = fromCallback<
       env: {
         ...baseEnv,
       },
-      windowsHide: true,
     })`${installCommand}`;
 
     sendProcessLogs(installProcess, parentRef);
@@ -247,7 +244,6 @@ export const spawnRuntimeLogic = fromCallback<
         QUESTS_INSIDE_STUDIO: "true",
         ...baseEnv,
       },
-      windowsHide: true,
     })`${devServerCommand}`;
     sendProcessLogs(runtimeProcess, parentRef);
 
