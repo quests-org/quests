@@ -51,29 +51,89 @@ async function createSymlinkOrShim(
   targetPath: string,
 ): Promise<void> {
   const isWindows = process.platform === "win32";
-  const symlinkPath = path.join(binDir, isWindows ? `${name}.cmd` : name);
 
   try {
-    try {
-      await fs.unlink(symlinkPath);
-    } catch {
-      // Ignore error
-    }
-
     if (isWindows) {
-      const isCjsFile = targetPath.endsWith(".cjs");
-      const batchContent = isCjsFile
-        ? `@ECHO OFF\r\n@SETLOCAL\r\n@IF EXIST "%~dp0\\node.exe" (\r\n  "%~dp0\\node.exe" "${targetPath}" %*\r\n) ELSE (\r\n  @SET PATHEXT=%PATHEXT:;.JS;=;%\r\n  node "${targetPath}" %*\r\n)\r\n@EXIT /b %errorlevel%\r\n`
-        : `@ECHO OFF\r\n@SETLOCAL\r\n@"${targetPath}" %*\r\n@EXIT /b %errorlevel%\r\n`;
-      await fs.writeFile(symlinkPath, batchContent, "utf8");
-      logger.info(`Created batch file: ${symlinkPath} -> ${targetPath}`);
+      await createWindowsShims(binDir, name, targetPath);
     } else {
+      const symlinkPath = path.join(binDir, name);
+      try {
+        await fs.unlink(symlinkPath);
+      } catch {
+        // Ignore error
+      }
       await fs.symlink(targetPath, symlinkPath);
       logger.info(`Created symlink: ${symlinkPath} -> ${targetPath}`);
     }
   } catch (error) {
     logger.error(`Failed to create symlink/shim for ${name}:`, error);
     throw error;
+  }
+}
+
+async function createWindowsShims(
+  binDir: string,
+  name: string,
+  targetPath: string,
+): Promise<void> {
+  const isCjsFile = targetPath.endsWith(".cjs");
+  const isJsFile = targetPath.endsWith(".js") || isCjsFile;
+
+  const cmdPath = path.join(binDir, `${name}.cmd`);
+  const ps1Path = path.join(binDir, `${name}.ps1`);
+
+  try {
+    await fs.unlink(cmdPath);
+  } catch {
+    // Ignore error
+  }
+  try {
+    await fs.unlink(ps1Path);
+  } catch {
+    // Ignore error
+  }
+
+  if (isJsFile) {
+    const cmdContent = `@IF EXIST "%~dp0\\node.exe" (\r\n  "%~dp0\\node.exe" "${targetPath}" %*\r\n) ELSE (\r\n  @SET PATHEXT=%PATHEXT:;.JS;=;%\r\n  node "${targetPath}" %*\r\n)\r\n`;
+
+    const ps1Content = `#!/usr/bin/env pwsh
+$basedir=Split-Path $MyInvocation.MyCommand.Definition -Parent
+
+$exe=""
+if ($PSVersionTable.PSVersion -lt "6.0" -or $IsWindows) {
+  $exe=".exe"
+}
+$ret=0
+if (Test-Path "$basedir/node$exe") {
+  & "$basedir/node$exe" "${targetPath}" $args
+  $ret=$LASTEXITCODE
+} else {
+  & "node$exe" "${targetPath}" $args
+  $ret=$LASTEXITCODE
+}
+exit $ret
+`;
+
+    await fs.writeFile(cmdPath, cmdContent, "utf8");
+    await fs.writeFile(ps1Path, ps1Content, "utf8");
+    logger.info(
+      `Created PowerShell shim: ${ps1Path} and CMD fallback: ${cmdPath} -> ${targetPath}`,
+    );
+  } else {
+    const cmdContent = `@"${targetPath}" %*\r\n`;
+
+    const ps1Content = `#!/usr/bin/env pwsh
+$basedir=Split-Path $MyInvocation.MyCommand.Definition -Parent
+
+& "${targetPath}" $args
+exit $LASTEXITCODE
+`;
+
+    await fs.writeFile(cmdPath, cmdContent, "utf8");
+    await fs.writeFile(ps1Path, ps1Content, "utf8");
+    logger.info(
+      `Created PowerShell shim: ${ps1Path} and CMD fallback: ${cmdPath} -> ${targetPath}`,
+    );
   }
 }
 
