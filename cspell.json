@@ -25,6 +25,7 @@
     "dryrun",
     "dugite",
     "dyld",
+    "errorlevel",
     "esbenp",
     "esbuild",
     "eslintcache",
@@ -45,6 +46,8 @@
     "kimi",
     "kmscng",
     "konsole",
+    "kwallet",
+    "libsecret",
     "listify",
     "logprobs",
     "lucide",
@@ -72,6 +75,7 @@
     "rharkor",
     "rmrf",
     "serviceworker",
+    "SETLOCAL",
     "signtool",
     "softprops",
     "sonner",
@@ -89,8 +93,6 @@
     "winstaller",
     "workerd",
     "worktree",
-    "XAPI",
-    "libsecret",
-    "kwallet"
+    "XAPI"
   ]
 }
