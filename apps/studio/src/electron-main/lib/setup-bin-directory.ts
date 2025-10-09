@@ -100,7 +100,9 @@ function getBinaryConfigs(): BinaryConfig[] {
     },
     {
       getTargetPath: () => {
-        const basePath = getNodeModulePath("dugite", "git", "bin");
+        const basePath = isWindows
+          ? getNodeModulePath("dugite", "git", "cmd")
+          : getNodeModulePath("dugite", "git", "bin");
         return isWindows
           ? path.join(basePath, "git.exe")
           : path.join(basePath, "git");
