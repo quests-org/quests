@@ -1,3 +1,4 @@
+import cmdShim from "@zkochan/cmd-shim";
 import { app } from "electron";
 import fs from "node:fs/promises";
 import path from "node:path";
@@ -19,6 +20,12 @@ export async function setupBinDirectory(): Promise<string> {
   const binDir = getBinDirectoryPath();
 
   logger.info(`Setting up bin directory at: ${binDir}`);
+
+  try {
+    await fs.rm(binDir, { force: true, recursive: true });
+  } catch {
+    /* empty */
+  }
 
   await ensureDirectoryExists(binDir);
 
@@ -57,11 +64,6 @@ async function createSymlinkOrShim(
       await createWindowsShims(binDir, name, targetPath);
     } else {
       const symlinkPath = path.join(binDir, name);
-      try {
-        await fs.unlink(symlinkPath);
-      } catch {
-        // Ignore error
-      }
       await fs.symlink(targetPath, symlinkPath);
       logger.info(`Created symlink: ${symlinkPath} -> ${targetPath}`);
     }
@@ -77,23 +79,19 @@ async function createWindowsShims(
   targetPath: string,
 ): Promise<void> {
   const isCjsFile = targetPath.endsWith(".cjs");
-  const isJsFile = targetPath.endsWith(".js") || isCjsFile;
 
-  const cmdPath = path.join(binDir, `${name}.cmd`);
+  const shimPath = path.join(binDir, name);
 
-  try {
-    await fs.unlink(cmdPath);
-  } catch {
-    // Ignore error
-  }
-
-  if (isJsFile) {
-    const cmdContent = `@IF EXIST "%~dp0\\node.exe" (\r\n  "%~dp0\\node.exe" "${targetPath}" %*\r\n) ELSE (\r\n  @SET PATHEXT=%PATHEXT:;.JS;=;%\r\n  node "${targetPath}" %*\r\n)\r\n`;
-
-    await fs.writeFile(cmdPath, cmdContent, "utf8");
-    logger.info(`Created CMD shim: ${cmdPath} -> ${targetPath}`);
+  if (isCjsFile) {
+    await cmdShim(targetPath, shimPath, {
+      createCmdFile: true,
+      createPwshFile: false,
+      nodeExecPath: getNodeBinaryPath(),
+    });
+    logger.info(`Created cmd-shim: ${shimPath} -> ${targetPath}`);
   } else {
-    const cmdContent = `@"${targetPath}" %*\r\n`;
+    const cmdPath = path.join(binDir, `${name}.cmd`);
+    const cmdContent = `@echo off\r\n"${targetPath}" %*\r\n`;
 
     await fs.writeFile(cmdPath, cmdContent, "utf8");
     logger.info(`Created CMD shim: ${cmdPath} -> ${targetPath}`);
@@ -140,10 +138,6 @@ function getBinaryConfigs(): BinaryConfig[] {
           : path.join(basePath, "rg");
       },
       name: "rg",
-    },
-    {
-      getTargetPath: getNodeBinaryPath,
-      name: "node",
     },
   ];
 }

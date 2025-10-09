@@ -83,6 +83,7 @@
     "@tanstack/react-router-devtools": "^1.131.28",
     "@types/ws": "^8.18.1",
     "@vscode/ripgrep": "^1.15.13",
+    "@zkochan/cmd-shim": "^7.0.0",
     "arctic": "^3.6.0",
     "better-auth": "catalog:",
     "class-variance-authority": "^0.7.1",
