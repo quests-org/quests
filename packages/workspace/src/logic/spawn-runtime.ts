@@ -1,6 +1,7 @@
 import { envForProviders } from "@quests/ai-gateway";
 import { execa, ExecaError, type ResultPromise } from "execa";
 import ms from "ms";
+import path from "node:path";
 import {
   type ActorRef,
   type ActorRefFrom,
@@ -119,11 +120,25 @@ export const spawnRuntimeLogic = fromCallback<
   let port: number | undefined;
 
   const baseEnv = {
-    PATH: `${appConfig.workspaceConfig.binDir}:${process.env.PATH || ""}`,
+    PATH: `${appConfig.workspaceConfig.binDir}${path.delimiter}${process.env.PATH || ""}`,
     // Required for normal node processes to work
     // See https://www.electronjs.org/docs/latest/api/environment-variables
     ELECTRON_RUN_AS_NODE: "1",
   };
+
+  // FIXME: remove after done debugging
+  const pnpmVersionProcess = execa({
+    cwd: appConfig.appDir,
+    env: baseEnv,
+  })`pnpm --version`;
+  sendProcessLogs(pnpmVersionProcess, parentRef);
+
+  // FIXME: remove after done debugging
+  const nodeVersionProcess = execa({
+    cwd: appConfig.appDir,
+    env: baseEnv,
+  })`node --version`;
+  sendProcessLogs(nodeVersionProcess, parentRef);
 
   async function main() {
     port = await portManager.reservePort();
@@ -187,17 +202,16 @@ export const spawnRuntimeLogic = fromCallback<
       },
     });
 
-    const installResult = execa({
+    const installProcess = execa({
       cancelSignal: installSignal,
       cwd: appConfig.appDir,
       env: {
         ...baseEnv,
       },
-      // node: true,
     })`${installCommand}`;
 
-    sendProcessLogs(installResult, parentRef);
-    await installResult;
+    sendProcessLogs(installProcess, parentRef);
+    await installProcess;
     installTimeout.cancel();
 
     const providerEnv = envForProviders({
