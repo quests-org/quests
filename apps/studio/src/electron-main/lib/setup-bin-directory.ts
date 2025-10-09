@@ -80,15 +80,9 @@ async function createWindowsShims(
   const isJsFile = targetPath.endsWith(".js") || isCjsFile;
 
   const cmdPath = path.join(binDir, `${name}.cmd`);
-  const ps1Path = path.join(binDir, `${name}.ps1`);
 
   try {
     await fs.unlink(cmdPath);
-  } catch {
-    // Ignore error
-  }
-  try {
-    await fs.unlink(ps1Path);
   } catch {
     // Ignore error
   }
@@ -96,44 +90,13 @@ async function createWindowsShims(
   if (isJsFile) {
     const cmdContent = `@IF EXIST "%~dp0\\node.exe" (\r\n  "%~dp0\\node.exe" "${targetPath}" %*\r\n) ELSE (\r\n  @SET PATHEXT=%PATHEXT:;.JS;=;%\r\n  node "${targetPath}" %*\r\n)\r\n`;
 
-    const ps1Content = `#!/usr/bin/env pwsh
-$basedir=Split-Path $MyInvocation.MyCommand.Definition -Parent
-
-$exe=""
-if ($PSVersionTable.PSVersion -lt "6.0" -or $IsWindows) {
-  $exe=".exe"
-}
-$ret=0
-if (Test-Path "$basedir/node$exe") {
-  & "$basedir/node$exe" "${targetPath}" $args
-  $ret=$LASTEXITCODE
-} else {
-  & "node$exe" "${targetPath}" $args
-  $ret=$LASTEXITCODE
-}
-exit $ret
-`;
-
     await fs.writeFile(cmdPath, cmdContent, "utf8");
-    await fs.writeFile(ps1Path, ps1Content, "utf8");
-    logger.info(
-      `Created PowerShell shim: ${ps1Path} and CMD fallback: ${cmdPath} -> ${targetPath}`,
-    );
+    logger.info(`Created CMD shim: ${cmdPath} -> ${targetPath}`);
   } else {
     const cmdContent = `@"${targetPath}" %*\r\n`;
 
-    const ps1Content = `#!/usr/bin/env pwsh
-$basedir=Split-Path $MyInvocation.MyCommand.Definition -Parent
-
-& "${targetPath}" $args
-exit $LASTEXITCODE
-`;
-
     await fs.writeFile(cmdPath, cmdContent, "utf8");
-    await fs.writeFile(ps1Path, ps1Content, "utf8");
-    logger.info(
-      `Created PowerShell shim: ${ps1Path} and CMD fallback: ${cmdPath} -> ${targetPath}`,
-    );
+    logger.info(`Created CMD shim: ${cmdPath} -> ${targetPath}`);
   }
 }
 
