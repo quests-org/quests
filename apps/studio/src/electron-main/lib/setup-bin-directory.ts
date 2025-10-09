@@ -61,7 +61,10 @@ async function createSymlinkOrShim(
     }
 
     if (isWindows) {
-      const batchContent = `@echo off\r\n"${targetPath}" %*\r\n`;
+      const isCjsFile = targetPath.endsWith(".cjs");
+      const batchContent = isCjsFile
+        ? `@echo off\r\nnode "${targetPath}" %*\r\n`
+        : `@echo off\r\n"${targetPath}" %*\r\n`;
       await fs.writeFile(symlinkPath, batchContent, "utf8");
       logger.info(`Created batch file: ${symlinkPath} -> ${targetPath}`);
     } else {
