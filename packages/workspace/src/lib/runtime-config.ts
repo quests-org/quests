@@ -79,6 +79,11 @@ const RUNTIME_CONFIGS: Record<string, RuntimeConfig> = {
       "--port",
       port.toString(),
       "--strictPort",
+      "--clearScreen",
+      "false",
+      // Avoids logging confusing localhost and port info
+      "--logLevel",
+      "warn",
     ],
     detect: (appDir: string) => detectJavaScriptRuntime(appDir, "vite"),
     envVars: () => ({}),
