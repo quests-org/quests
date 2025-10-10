@@ -118,7 +118,6 @@ export const spawnRuntimeLogic = fromCallback<
   );
 
   let port: number | undefined;
-  let runtimeProcessPid: number | undefined;
 
   const baseEnv = {
     PATH: `${appConfig.workspaceConfig.binDir}${path.delimiter}${process.env.PATH || ""}`,
@@ -258,7 +257,6 @@ export const spawnRuntimeLogic = fromCallback<
       },
       windowsHide: true,
     })`${devServerCommand}`;
-    runtimeProcessPid = runtimeProcess.pid;
     sendProcessLogs(runtimeProcess, parentRef);
 
     let shouldCheckServer = true;
@@ -402,19 +400,6 @@ export const spawnRuntimeLogic = fromCallback<
     }
     timeout.cancel();
     abortController.abort();
-    try {
-      if (
-        process.platform === "win32" &&
-        runtimeProcessPid &&
-        Number.isFinite(runtimeProcessPid)
-      ) {
-        void execa({
-          windowsHide: true,
-        })`taskkill /PID ${runtimeProcessPid} /T /F`;
-      }
-    } catch {
-      void 0;
-    }
   };
 });
 
