@@ -72,6 +72,20 @@ async function cleanBinDirectory(binDir: string): Promise<void> {
   }
 }
 
+async function createNodeShim(
+  binDir: string,
+  nodeExePath: string,
+): Promise<void> {
+  const shimCmdPath = path.join(binDir, "node.cmd");
+
+  const shimContent = `@ECHO OFF
+SETLOCAL
+"${nodeExePath}" %*
+`;
+
+  await fs.writeFile(shimCmdPath, shimContent, "utf8");
+}
+
 async function ensureDirectoryExists(dirPath: string): Promise<void> {
   try {
     await fs.mkdir(dirPath, { recursive: true });
@@ -142,10 +156,13 @@ async function linkDirect(
 ): Promise<void> {
   const isWindows = process.platform === "win32";
 
-  if (isWindows && targetPath.endsWith(".exe")) {
-    const linkPath = path.join(binDir, `${name}.exe`);
-    await fs.link(targetPath, linkPath);
-    logger.info(`Created hard link: ${linkPath} -> ${targetPath}`);
+  if (isWindows) {
+    const outputPath = path.join(binDir, name);
+    await cmdShim(targetPath, outputPath, {
+      createCmdFile: true,
+      createPwshFile: false,
+    });
+    logger.info(`Created shim: ${outputPath} -> ${targetPath}`);
   } else {
     const linkPath = path.join(binDir, name);
     await fs.symlink(targetPath, linkPath);
@@ -183,8 +200,8 @@ async function setupNodeLink(binDir: string): Promise<void> {
 
   try {
     if (isWindows) {
-      await fs.link(nodeExePath, linkPath);
-      logger.info(`Created node.exe hard link: ${linkPath} -> ${nodeExePath}`);
+      await createNodeShim(binDir, nodeExePath);
+      logger.info(`Created node shim: ${binDir} -> ${nodeExePath}`);
     } else {
       await fs.symlink(nodeExePath, linkPath);
       logger.info(`Created node symlink: ${linkPath} -> ${nodeExePath}`);
