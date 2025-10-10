@@ -130,7 +130,6 @@ export const spawnRuntimeLogic = fromCallback<
   const pnpmVersionProcess = execa({
     cwd: appConfig.appDir,
     env: baseEnv,
-    windowsHide: true,
   })`pnpm --version`;
   sendProcessLogs(pnpmVersionProcess, parentRef);
 
@@ -138,7 +137,6 @@ export const spawnRuntimeLogic = fromCallback<
   const nodeVersionProcess = execa({
     cwd: appConfig.appDir,
     env: baseEnv,
-    windowsHide: true,
   })`node --version`;
   sendProcessLogs(nodeVersionProcess, parentRef);
 
@@ -146,8 +144,7 @@ export const spawnRuntimeLogic = fromCallback<
   const whichPnpmProcess = execa({
     cwd: appConfig.appDir,
     env: baseEnv,
-    windowsHide: true,
-  })`which pnpm`;
+  })`${process.platform === "win32" ? "where" : "which"} pnpm`;
   sendProcessLogs(whichPnpmProcess, parentRef);
 
   async function main() {
@@ -218,7 +215,6 @@ export const spawnRuntimeLogic = fromCallback<
       env: {
         ...baseEnv,
       },
-      windowsHide: true,
     })`${installCommand}`;
 
     sendProcessLogs(installProcess, parentRef);
@@ -255,7 +251,6 @@ export const spawnRuntimeLogic = fromCallback<
         QUESTS_INSIDE_STUDIO: "true",
         ...baseEnv,
       },
-      windowsHide: true,
     })`${devServerCommand}`;
     sendProcessLogs(runtimeProcess, parentRef);
 
