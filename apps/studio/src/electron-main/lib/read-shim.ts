@@ -39,8 +39,8 @@ function readPosixShim(content: string, shimPath: string): null | string {
 }
 
 function readWindowsShim(content: string, shimPath: string): null | string {
-  const ifExistPattern = /@IF EXIST[^(]*\([^"]*"([^"]+)"/;
-  const elsePattern = /ELSE[^(]*\([^"]*node[^"]*"([^"]+)"/;
+  const ifExistPattern = /@IF EXIST[^"]*"[^"]*node\.exe"[^"]*"([^"]+)"/;
+  const elsePattern = /node\s+"([^"]+)"/;
 
   let match = ifExistPattern.exec(content);
   if (!match?.[1]) {
