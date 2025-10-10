@@ -67,22 +67,6 @@ async function isLocalServerRunning(port: number) {
   }
 }
 
-async function killProcessTree(pid: number) {
-  if (process.platform === "win32") {
-    try {
-      await execa`taskkill /pid ${pid.toString()} /T /F`;
-    } catch {
-      // Process might already be dead
-    }
-  } else {
-    try {
-      process.kill(pid, "SIGTERM");
-    } catch {
-      // Process might already be dead
-    }
-  }
-}
-
 function sendProcessLogs(
   execaProcess: ResultPromise<{ cancelSignal: AbortSignal; cwd: string }>,
   parentRef: ActorRef<AnyMachineSnapshot, SpawnRuntimeEvent>,
@@ -134,12 +118,6 @@ export const spawnRuntimeLogic = fromCallback<
   );
 
   let port: number | undefined;
-  let runtimeProcess:
-    | ResultPromise<{ cancelSignal: AbortSignal; cwd: string }>
-    | undefined;
-  let installProcess:
-    | ResultPromise<{ cancelSignal: AbortSignal; cwd: string }>
-    | undefined;
 
   const baseEnv = {
     PATH: `${appConfig.workspaceConfig.binDir}${path.delimiter}${process.env.PATH || ""}`,
@@ -231,7 +209,7 @@ export const spawnRuntimeLogic = fromCallback<
       },
     });
 
-    installProcess = execa({
+    const installProcess = execa({
       cancelSignal: installSignal,
       cwd: appConfig.appDir,
       env: {
@@ -264,7 +242,7 @@ export const spawnRuntimeLogic = fromCallback<
     });
 
     timeout.start();
-    runtimeProcess = execa({
+    const runtimeProcess = execa({
       cancelSignal: signal,
       cwd: appConfig.appDir,
       env: {
@@ -416,17 +394,7 @@ export const spawnRuntimeLogic = fromCallback<
       portManager.releasePort(port);
     }
     timeout.cancel();
-
-    if (process.platform === "win32") {
-      if (runtimeProcess?.pid) {
-        void killProcessTree(runtimeProcess.pid);
-      }
-      if (installProcess?.pid) {
-        void killProcessTree(installProcess.pid);
-      }
-    } else {
-      abortController.abort();
-    }
+    abortController.abort();
   };
 });
 
