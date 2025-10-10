@@ -180,6 +180,7 @@ export const workspaceMachine = setup({
     events: {} as WorkspaceEvent,
     input: {} as {
       aiGatewayApp: AIGatewayApp;
+      binDir: string;
       captureEvent: CaptureEventFunction;
       captureException: CaptureExceptionFunction;
       getAIProviders: GetAIProviders;
@@ -196,6 +197,7 @@ export const workspaceMachine = setup({
 }).createMachine({
   context: ({ input, self, spawn }) => {
     const workspaceConfig: WorkspaceConfig = {
+      binDir: AbsolutePathSchema.parse(input.binDir),
       captureEvent: input.captureEvent,
       captureException: input.captureException,
       getAIProviders: input.getAIProviders,

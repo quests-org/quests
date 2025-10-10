@@ -13,6 +13,7 @@
         "ELECTRON_USE_NEW_USER_FOLDER",
         "FORCE_DEV_AUTO_UPDATE",
         "NODE_ENV",
+        "PATH",
         "SIGNTOOL_PATH",
         "WIN_CERT_PATH",
         "WIN_GCP_KMS_KEY_VERSION",

@@ -225,6 +225,9 @@ importers:
       '@vscode/ripgrep':
         specifier: ^1.15.13
         version: 1.15.13
+      '@zkochan/cmd-shim':
+        specifier: ^7.0.0
+        version: 7.0.0
       arctic:
         specifier: ^3.6.0
         version: 3.6.0
@@ -3405,6 +3408,10 @@ packages:
     resolution: {integrity: sha512-2WALfTl4xo2SkGCYRt6rDTFfk9R1czmBvUQy12gK2KuRKIpWEhcbbzy8EZXtz/jkRqHX8bFEc6FC1HjX4TUWYw==}
     engines: {node: '>=10.0.0'}
 
+  '@zkochan/cmd-shim@7.0.0':
+    resolution: {integrity: sha512-E5mgrRS8Kk80n19Xxmrx5qO9UG03FyZd8Me5gxYi++VPZsOv8+OsclA+0Fth4KTDCrQ/FkJryNFKJ6/642lo4g==}
+    engines: {node: '>=18.12'}
+
   abbrev@1.1.1:
     resolution: {integrity: sha512-nne9/IiQ/hzIhY6pdDnbBtz7DjPTKrY00P/zvPSm5pOFkl6xuGrGnXn/VtTNNfNtAfZ9/1RtehkszU9qcTii0Q==}
 
@@ -3893,6 +3900,10 @@ packages:
   cluster-key-slot@1.1.2:
     resolution: {integrity: sha512-RMr0FhtfXemyinomL4hrWcYJxmX6deFdCxpJzhDttxgO1+bcCnkk+9drydLVDmAMG7NE6aN/fl4F7ucU/90gAA==}
     engines: {node: '>=0.10.0'}
+
+  cmd-extension@1.0.2:
+    resolution: {integrity: sha512-iWDjmP8kvsMdBmLTHxFaqXikO8EdFRDfim7k6vUHglY/2xJ5jLrPsnQGijdfp4U+sr/BeecG0wKm02dSIAeQ1g==}
+    engines: {node: '>=10'}
 
   cmdk@1.1.1:
     resolution: {integrity: sha512-Vsv7kFaXm+ptHDMZ7izaRsP70GgrW9NBNGswt9OZaVBLlE0SNpDq8eu/VGXyF9r7M0azK3Wy7OlYXsuyYLFzHg==}
@@ -10787,6 +10798,12 @@ snapshots:
 
   '@xmldom/xmldom@0.8.10': {}
 
+  '@zkochan/cmd-shim@7.0.0':
+    dependencies:
+      cmd-extension: 1.0.2
+      graceful-fs: 4.2.11
+      is-windows: 1.0.2
+
   abbrev@1.1.1: {}
 
   acorn-jsx@5.3.2(acorn@8.15.0):
@@ -11445,6 +11462,8 @@ snapshots:
 
   cluster-key-slot@1.1.2:
     optional: true
+
+  cmd-extension@1.0.2: {}
 
   cmdk@1.1.1(@types/react-dom@19.1.6(@types/react@19.1.8))(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
     dependencies:

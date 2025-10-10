@@ -23,6 +23,7 @@ import { captureServerException } from "./capture-server-exception";
 import { getFramework } from "./frameworks";
 import { getAllPackageBinaryPaths } from "./link-bins";
 import { getPnpmPath } from "./pnpm";
+import { getBinDirectoryPath } from "./setup-bin-directory";
 
 const scopedLogger = logger.scope("workspace-actor");
 
@@ -36,6 +37,7 @@ export function createWorkspaceActor() {
   const actor = createActor(workspaceMachine, {
     input: {
       aiGatewayApp,
+      binDir: getBinDirectoryPath(),
       captureEvent: captureServerEvent,
       captureException: captureServerException,
       getAIProviders: () => {
