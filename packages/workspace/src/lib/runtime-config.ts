@@ -52,7 +52,7 @@ const UNKNOWN_CONFIG: RuntimeConfig = {
 
 const RUNTIME_CONFIGS: Record<string, RuntimeConfig> = {
   nextjs: {
-    command: ({ port }) => ["pnpm", "run", "dev", "-p", port.toString()],
+    command: ({ port }) => ["pnpm", "exec", "next", "-p", port.toString()],
     detect: (appDir) => detectJavaScriptRuntime(appDir, "next"),
     envVars: ({ port }) => ({
       PORT: port.toString(),
@@ -61,7 +61,7 @@ const RUNTIME_CONFIGS: Record<string, RuntimeConfig> = {
   },
 
   nuxt: {
-    command: ({ port }) => ["pnpm", "run", "dev", "--port", port.toString()],
+    command: ({ port }) => ["pnpm", "exec", "nuxt", "--port", port.toString()],
     detect: (appDir: string) => detectJavaScriptRuntime(appDir, "nuxt"),
     envVars: ({ port }) => ({
       PORT: port.toString(),
@@ -74,8 +74,8 @@ const RUNTIME_CONFIGS: Record<string, RuntimeConfig> = {
   vite: {
     command: ({ port }) => [
       "pnpm",
-      "run",
-      "dev",
+      "exec",
+      "vite",
       "--port",
       port.toString(),
       "--strictPort",
