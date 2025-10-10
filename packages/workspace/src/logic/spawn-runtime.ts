@@ -142,6 +142,14 @@ export const spawnRuntimeLogic = fromCallback<
   })`node --version`;
   sendProcessLogs(nodeVersionProcess, parentRef);
 
+  // TODO(FP-595): remove after done debugging
+  const whichPnpmProcess = execa({
+    cwd: appConfig.appDir,
+    env: baseEnv,
+    windowsHide: true,
+  })`which pnpm`;
+  sendProcessLogs(whichPnpmProcess, parentRef);
+
   async function main() {
     port = await portManager.reservePort();
 

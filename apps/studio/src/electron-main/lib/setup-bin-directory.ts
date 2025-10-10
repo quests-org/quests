@@ -4,12 +4,14 @@ import fs from "node:fs/promises";
 import path from "node:path";
 
 import { logger } from "./electron-logger";
+import { readShim } from "./read-shim";
 
 const BIN_DIR_NAME = "bin";
 
 interface BinaryConfig {
   getTargetPath: () => string;
   name: string;
+  type: "direct" | "node-modules-bin";
 }
 
 export function getBinDirectoryPath(): string {
@@ -21,13 +23,10 @@ export async function setupBinDirectory(): Promise<string> {
 
   logger.info(`Setting up bin directory at: ${binDir}`);
 
-  try {
-    await fs.rm(binDir, { force: true, recursive: true });
-  } catch {
-    /* empty */
-  }
-
   await ensureDirectoryExists(binDir);
+  await cleanBinDirectory(binDir);
+
+  await setupNodeLink(binDir);
 
   const binaries = getBinaryConfigs();
 
@@ -42,7 +41,9 @@ export async function setupBinDirectory(): Promise<string> {
         continue;
       }
 
-      await createSymlinkOrShim(binDir, binary.name, targetPath);
+      await (binary.type === "node-modules-bin"
+        ? linkFromNodeModulesBin(binDir, binary.name, targetPath)
+        : linkDirect(binDir, binary.name, targetPath));
     } catch (error) {
       logger.error(`Failed to setup binary ${binary.name}:`, error);
     }
@@ -52,49 +53,22 @@ export async function setupBinDirectory(): Promise<string> {
   return binDir;
 }
 
-async function createSymlinkOrShim(
-  binDir: string,
-  name: string,
-  targetPath: string,
-): Promise<void> {
-  const isWindows = process.platform === "win32";
-
+async function cleanBinDirectory(binDir: string): Promise<void> {
   try {
-    if (isWindows) {
-      await createWindowsShims(binDir, name, targetPath);
-    } else {
-      const symlinkPath = path.join(binDir, name);
-      await fs.symlink(targetPath, symlinkPath);
-      logger.info(`Created symlink: ${symlinkPath} -> ${targetPath}`);
+    const entries = await fs.readdir(binDir);
+
+    for (const entry of entries) {
+      const entryPath = path.join(binDir, entry);
+      try {
+        await fs.rm(entryPath, { force: true, recursive: true });
+      } catch (error) {
+        logger.warn(`Failed to remove ${entryPath}:`, error);
+      }
     }
-  } catch (error) {
-    logger.error(`Failed to create symlink/shim for ${name}:`, error);
-    throw error;
-  }
-}
 
-async function createWindowsShims(
-  binDir: string,
-  name: string,
-  targetPath: string,
-): Promise<void> {
-  const isCjsFile = targetPath.endsWith(".cjs");
-
-  const shimPath = path.join(binDir, name);
-
-  if (isCjsFile) {
-    await cmdShim(targetPath, shimPath, {
-      createCmdFile: true,
-      createPwshFile: false,
-      nodeExecPath: getNodeBinaryPath(),
-    });
-    logger.info(`Created cmd-shim: ${shimPath} -> ${targetPath}`);
-  } else {
-    const cmdPath = path.join(binDir, `${name}.cmd`);
-    const cmdContent = `@echo off\r\n"${targetPath}" %*\r\n`;
-
-    await fs.writeFile(cmdPath, cmdContent, "utf8");
-    logger.info(`Created CMD shim: ${cmdPath} -> ${targetPath}`);
+    logger.info(`Cleaned bin directory: ${binDir}`);
+  } catch {
+    logger.info(`Bin directory does not exist yet, will be created: ${binDir}`);
   }
 }
 
@@ -112,12 +86,14 @@ function getBinaryConfigs(): BinaryConfig[] {
 
   return [
     {
-      getTargetPath: () => getNodeModulePath("pnpm", "bin", "pnpm.cjs"),
+      getTargetPath: () => getNodeModulePath(".bin"),
       name: "pnpm",
+      type: "node-modules-bin",
     },
     {
-      getTargetPath: () => getNodeModulePath("pnpm", "bin", "pnpx.cjs"),
+      getTargetPath: () => getNodeModulePath(".bin"),
       name: "pnpx",
+      type: "node-modules-bin",
     },
     {
       getTargetPath: () => {
@@ -129,6 +105,7 @@ function getBinaryConfigs(): BinaryConfig[] {
           : path.join(basePath, "git");
       },
       name: "git",
+      type: "direct",
     },
     {
       getTargetPath: () => {
@@ -138,12 +115,9 @@ function getBinaryConfigs(): BinaryConfig[] {
           : path.join(basePath, "rg");
       },
       name: "rg",
+      type: "direct",
     },
   ];
-}
-
-function getNodeBinaryPath(): string {
-  return process.execPath;
 }
 
 function getNodeModulePath(...parts: string[]): string {
@@ -159,4 +133,64 @@ function getNodeModulePath(...parts: string[]): string {
   }
 
   return modulePath;
+}
+
+async function linkDirect(
+  binDir: string,
+  name: string,
+  targetPath: string,
+): Promise<void> {
+  const isWindows = process.platform === "win32";
+
+  if (isWindows && targetPath.endsWith(".exe")) {
+    const linkPath = path.join(binDir, `${name}.exe`);
+    await fs.link(targetPath, linkPath);
+    logger.info(`Created hard link: ${linkPath} -> ${targetPath}`);
+  } else {
+    const linkPath = path.join(binDir, name);
+    await fs.symlink(targetPath, linkPath);
+    logger.info(`Created symlink: ${linkPath} -> ${targetPath}`);
+  }
+}
+
+async function linkFromNodeModulesBin(
+  binDir: string,
+  name: string,
+  nodeModulesBinPath: string,
+): Promise<void> {
+  const shimPath = path.join(nodeModulesBinPath, name);
+  const targetCjsPath = await readShim(shimPath);
+
+  if (!targetCjsPath) {
+    logger.error(`Failed to read shim: ${shimPath}`);
+    throw new Error(`Failed to read shim: ${shimPath}`);
+  }
+
+  const outputPath = path.join(binDir, name);
+
+  await cmdShim(targetCjsPath, outputPath, {
+    createCmdFile: true,
+    createPwshFile: false,
+  });
+
+  logger.info(`Created shim: ${outputPath} -> ${targetCjsPath}`);
+}
+
+async function setupNodeLink(binDir: string): Promise<void> {
+  const isWindows = process.platform === "win32";
+  const nodeExePath = process.execPath;
+  const linkPath = path.join(binDir, isWindows ? "node.exe" : "node");
+
+  try {
+    if (isWindows) {
+      await fs.link(nodeExePath, linkPath);
+      logger.info(`Created node.exe hard link: ${linkPath} -> ${nodeExePath}`);
+    } else {
+      await fs.symlink(nodeExePath, linkPath);
+      logger.info(`Created node symlink: ${linkPath} -> ${nodeExePath}`);
+    }
+  } catch (error) {
+    logger.error("Failed to create node link:", error);
+    throw error;
+  }
 }
