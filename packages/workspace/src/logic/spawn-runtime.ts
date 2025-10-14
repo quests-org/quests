@@ -1,6 +1,6 @@
 import { getBuildInfo } from "@netlify/build-info/node";
 import { envForProviders } from "@quests/ai-gateway";
-import { execa, ExecaError, type ResultPromise } from "execa";
+import { ExecaError, type ResultPromise } from "execa";
 import ms from "ms";
 import {
   type ActorRef,
@@ -12,6 +12,7 @@ import {
 
 import { type AppConfig } from "../lib/app-config/types";
 import { cancelableTimeout, TimeoutError } from "../lib/cancelable-timeout";
+import { execaElectronNode } from "../lib/execa-electron-node";
 import { getFramework } from "../lib/get-framework";
 import { getPackageManager } from "../lib/get-package-manager";
 import { pathExists } from "../lib/path-exists";
@@ -66,13 +67,13 @@ async function isLocalServerRunning(port: number) {
 }
 
 function sendProcessLogs(
-  execaProcess: ResultPromise<{ cancelSignal: AbortSignal; cwd: string }>,
+  execaProcess: ResultPromise,
   parentRef: ActorRef<AnyMachineSnapshot, SpawnRuntimeEvent>,
   options: { errorOnly?: boolean } = {},
 ) {
   const { stderr, stdout } = execaProcess;
 
-  stderr.on("data", (data: Buffer) => {
+  stderr?.on("data", (data: Buffer) => {
     const message = data.toString().trim();
     if (message) {
       if (
@@ -91,7 +92,7 @@ function sendProcessLogs(
   });
 
   if (!options.errorOnly) {
-    stdout.on("data", (data: Buffer) => {
+    stdout?.on("data", (data: Buffer) => {
       const message = data.toString().trim();
       if (message) {
         parentRef.send({
@@ -116,12 +117,6 @@ export const spawnRuntimeLogic = fromCallback<
   );
 
   let port: number | undefined;
-
-  const baseEnv = {
-    // Required for normal node processes to work
-    // See https://www.electronjs.org/docs/latest/api/environment-variables
-    ELECTRON_RUN_AS_NODE: "1",
-  };
 
   async function main() {
     const buildInfo = await getBuildInfo({ projectDir: appConfig.appDir });
@@ -179,14 +174,12 @@ export const spawnRuntimeLogic = fromCallback<
       },
     });
 
-    const installProcess = execa(
+    const installProcess = execaElectronNode(
       packageManager.command,
       packageManager.arguments,
       {
         cancelSignal: installSignal,
         cwd: appConfig.appDir,
-        env: baseEnv,
-        node: true,
       },
     );
 
@@ -231,18 +224,20 @@ export const spawnRuntimeLogic = fromCallback<
     });
 
     timeout.start();
-    const runtimeProcess = execa(framework.command, framework.arguments, {
-      cancelSignal: signal,
-      cwd: appConfig.appDir,
-      env: {
-        ...providerEnv,
-        ...baseEnv,
-        NO_COLOR: "1",
-        PORT: port.toString(),
-        QUESTS_INSIDE_STUDIO: "true",
+    const runtimeProcess = execaElectronNode(
+      framework.command,
+      framework.arguments,
+      {
+        cancelSignal: signal,
+        cwd: appConfig.appDir,
+        env: {
+          ...providerEnv,
+          NO_COLOR: "1",
+          PORT: port.toString(),
+          QUESTS_INSIDE_STUDIO: "true",
+        },
       },
-      node: true,
-    });
+    );
     sendProcessLogs(runtimeProcess, parentRef);
 
     let shouldCheckServer = true;
