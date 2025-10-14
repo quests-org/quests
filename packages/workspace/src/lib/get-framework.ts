@@ -1,7 +1,6 @@
 import { type Info } from "@netlify/build-info/node";
 import { parseCommandString } from "execa";
 import { err, ok } from "neverthrow";
-import { sort } from "radashi";
 import invariant from "tiny-invariant";
 
 import { type AppDir } from "../schemas/paths";
@@ -20,8 +19,7 @@ export async function getFramework({
   buildInfo: Info;
   port: number;
 }) {
-  const sortedFrameworks = sort(frameworks, (f) => f.detected.accuracy);
-  const [framework] = sortedFrameworks;
+  const [framework] = frameworks; // First framework is already sorted by accuracy
   invariant(framework, "No framework found");
   const [devCommand, ...devCommandArgs] = parseCommandString(
     framework.dev?.command ?? "",
