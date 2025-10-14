@@ -164,7 +164,7 @@ export const spawnRuntimeLogic = fromCallback<
       abortController.signal,
       installTimeout.controller.signal,
     ]);
-    const packageManager = getPackageManager({ appConfig, buildInfo });
+    const packageManager = getPackageManager({ appConfig });
 
     parentRef.send({
       type: "spawnRuntime.log",
