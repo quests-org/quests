@@ -1,7 +1,6 @@
 import { envForProviders } from "@quests/ai-gateway";
 import { execa, ExecaError, type ResultPromise } from "execa";
 import ms from "ms";
-import path from "node:path";
 import {
   type ActorRef,
   type ActorRefFrom,
@@ -120,7 +119,6 @@ export const spawnRuntimeLogic = fromCallback<
   let port: number | undefined;
 
   const baseEnv = {
-    PATH: `${appConfig.workspaceConfig.binDir}${path.delimiter}${process.env.PATH || ""}`,
     // Required for normal node processes to work
     // See https://www.electronjs.org/docs/latest/api/environment-variables
     ELECTRON_RUN_AS_NODE: "1",

@@ -45,6 +45,8 @@ export async function setupBinDirectory(): Promise<string> {
     }
   }
 
+  prependBinDirectoryToPath(binDir);
+
   logger.info(`Bin directory setup complete: ${binDir}`);
   return binDir;
 }
@@ -98,10 +100,6 @@ function getBinaryConfigs(): BinaryConfig[] {
     {
       getTargetPath: () => getNodeModulePath("pnpm", "bin", "pnpm.cjs"),
       name: "pnpm",
-    },
-    {
-      getTargetPath: () => getNodeModulePath("pnpm", "bin", "pnpx.cjs"),
-      name: "pnpx",
     },
     {
       getTargetPath: () => {
@@ -160,6 +158,24 @@ async function linkDirect(
     await fs.symlink(targetPath, linkPath);
     logger.info(`Created symlink: ${linkPath} -> ${targetPath}`);
   }
+}
+
+function prependBinDirectoryToPath(binDir: string): void {
+  const currentPath = process.env.PATH || "";
+  const pathSeparator = path.delimiter;
+
+  const pathParts = currentPath.split(pathSeparator).filter(Boolean);
+
+  const binDirIndex = pathParts.indexOf(binDir);
+  if (binDirIndex !== -1) {
+    pathParts.splice(binDirIndex, 1);
+  }
+
+  const newPath = [binDir, ...pathParts].join(pathSeparator);
+
+  process.env.PATH = newPath;
+
+  logger.info(`Updated PATH: bin directory prepended (${binDir})`);
 }
 
 async function setupNodeLink(binDir: string): Promise<void> {
