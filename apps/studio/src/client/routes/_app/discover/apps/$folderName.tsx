@@ -1,10 +1,8 @@
 /* eslint-disable unicorn/filename-case */
 /* eslint-enable unicorn/filename-case */
 import { hasAIProviderAtom } from "@/client/atoms/has-ai-provider";
-import { AIProviderGuard } from "@/client/components/ai-provider-guard";
 import { AIProviderGuardDialog } from "@/client/components/ai-provider-guard-dialog";
 import { SmallAppIcon } from "@/client/components/app-icon";
-import { AppView } from "@/client/components/app-view";
 import { InternalLink } from "@/client/components/internal-link";
 import { Markdown } from "@/client/components/markdown";
 import { NotFoundComponent } from "@/client/components/not-found";
@@ -65,6 +63,11 @@ function RouteComponent() {
       input: { folderName },
     }),
   );
+  const { data: screenshot } = useQuery(
+    rpcClient.workspace.registry.template.screenshot.queryOptions({
+      input: { folderName },
+    }),
+  );
   const navigate = useNavigate();
   const createProjectFromPreviewMutation = useMutation(
     rpcClient.workspace.project.createFromPreview.mutationOptions(),
@@ -104,7 +107,7 @@ function RouteComponent() {
 
   return (
     <div className="h-full w-full overflow-y-auto">
-      <div className="max-w-6xl mx-auto p-6 space-y-6">
+      <div className="max-w-3xl mx-auto p-6 space-y-6">
         <nav className="flex items-center space-x-1 text-sm text-muted-foreground">
           <InternalLink
             className="hover:text-foreground transition-colors"
@@ -159,18 +162,13 @@ function RouteComponent() {
           </Button>
         </div>
 
-        <div className="w-full h-[600px]">
-          {hasAIProvider ? (
-            <AppView
-              app={appDetails.preview}
-              className="w-full h-full rounded-lg border border-border overflow-hidden flex flex-col"
-            />
-          ) : (
-            <div className="w-full h-full rounded-lg border border-border flex items-center justify-center bg-background">
-              <AIProviderGuard description="You need to add an AI provider to view app previews." />
-            </div>
-          )}
-        </div>
+        {screenshot && (
+          <img
+            alt={`${title} screenshot`}
+            className="w-full rounded-lg border border-border"
+            src={screenshot}
+          />
+        )}
 
         {appDetails.readme && (
           <div className="prose prose-sm max-w-none prose-neutral dark:prose-invert">
