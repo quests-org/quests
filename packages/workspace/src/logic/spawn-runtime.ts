@@ -237,7 +237,7 @@ export const spawnRuntimeLogic = fromCallback<
 
     parentRef.send({
       type: "spawnRuntime.log",
-      value: { message: `$ ${devServerCommand.join(" ")}`, type: "normal" },
+      value: { message: `Starting ${runtimeType} dev server`, type: "normal" },
     });
 
     timeout.start();
