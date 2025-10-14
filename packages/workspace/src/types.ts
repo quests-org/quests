@@ -21,10 +21,10 @@ export type RunPackageJsonScript = (options: {
 }) => Promise<ShellResult> | ShellResult;
 
 export interface WorkspaceConfig {
-  binDir: AbsolutePath;
   captureEvent: CaptureEventFunction;
   captureException: CaptureExceptionFunction;
   getAIProviders: GetAIProviders;
+  pnpmBinPath: AbsolutePath;
   previewCacheTimeMs?: number;
   previewsDir: AbsolutePath;
   projectsDir: AbsolutePath;

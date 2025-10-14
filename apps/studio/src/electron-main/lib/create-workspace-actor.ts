@@ -22,8 +22,7 @@ import { captureServerEvent } from "./capture-server-event";
 import { captureServerException } from "./capture-server-exception";
 import { getFramework } from "./frameworks";
 import { getAllPackageBinaryPaths } from "./link-bins";
-import { getPnpmPath } from "./pnpm";
-import { getBinDirectoryPath } from "./setup-bin-directory";
+import { getPNPMBinPath } from "./setup-bin-directory";
 
 const scopedLogger = logger.scope("workspace-actor");
 
@@ -37,7 +36,6 @@ export function createWorkspaceActor() {
   const actor = createActor(workspaceMachine, {
     input: {
       aiGatewayApp,
-      binDir: getBinDirectoryPath(),
       captureEvent: captureServerEvent,
       captureException: captureServerException,
       getAIProviders: () => {
@@ -56,6 +54,7 @@ export function createWorkspaceActor() {
 
         return providers;
       },
+      pnpmBinPath: getPNPMBinPath(),
       previewCacheTimeMs: ms("24 hours"),
       registryDir: app.isPackaged
         ? path.join(process.resourcesPath, REGISTRY_DIR_NAME)
@@ -88,7 +87,7 @@ export function createWorkspaceActor() {
       },
       runShellCommand: async (command, { cwd, signal }) => {
         const [commandName, ...rest] = parseCommandString(command);
-        const pnpmPath = getPnpmPath();
+        const pnpmPath = getPNPMBinPath();
 
         if (commandName === "pnpm") {
           return ok(

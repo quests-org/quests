@@ -2,14 +2,17 @@ import { parseCommandString } from "execa";
 import { err, ok, type Result } from "neverthrow";
 import { type NormalizedPackageJson, readPackage } from "read-pkg";
 
+import { type AppDir } from "../schemas/paths";
+import { absolutePathJoin } from "./absolute-path-join";
 import { type AppConfig } from "./app-config/types";
+import { readShim } from "./read-shim";
 
 interface RuntimeConfig {
-  command: (options: {
-    appDir: string;
-    port: number;
-  }) => Promise<string[]> | string[];
   detect: (appDir: string) => boolean | Promise<boolean>;
+  devCommand: (options: {
+    appDir: AppDir;
+    port: number;
+  }) => Promise<null | string[]>;
   envVars: (options: { port: number }) => Record<string, string>;
   installCommand: (appConfig: AppConfig) => string[];
 }
@@ -19,8 +22,8 @@ function defaultInstallCommand(appConfig: AppConfig) {
     ? // These app types are nested in the project directory, so we need
       // to ignore the workspace config otherwise PNPM may not install the
       // dependencies correctly
-      ["pnpm", "install", "--ignore-workspace"]
-    : ["pnpm", "install"];
+      [appConfig.workspaceConfig.pnpmBinPath, "install", "--ignore-workspace"]
+    : [appConfig.workspaceConfig.pnpmBinPath, "install"];
 }
 
 async function detectJavaScriptRuntime(
@@ -41,19 +44,20 @@ async function detectJavaScriptRuntime(
   }
 }
 
-const UNKNOWN_CONFIG: RuntimeConfig = {
-  command: ({ port }) => ["pnpm", "run", "dev", "--port", port.toString()],
-  detect: (): boolean => true,
-  envVars: ({ port }) => ({
-    PORT: port.toString(),
-  }),
-  installCommand: defaultInstallCommand,
-};
+function getBinShimPath(appDir: AppDir, command: string) {
+  return absolutePathJoin(appDir, "node_modules", ".bin", command);
+}
 
 const RUNTIME_CONFIGS: Record<string, RuntimeConfig> = {
   nextjs: {
-    command: ({ port }) => ["pnpm", "exec", "next", "-p", port.toString()],
     detect: (appDir) => detectJavaScriptRuntime(appDir, "next"),
+    devCommand: async ({ appDir, port }) => {
+      const binPath = await readShim(getBinShimPath(appDir, "next"));
+      if (!binPath) {
+        return null;
+      }
+      return [binPath, "-p", port.toString()];
+    },
     envVars: ({ port }) => ({
       PORT: port.toString(),
     }),
@@ -61,31 +65,39 @@ const RUNTIME_CONFIGS: Record<string, RuntimeConfig> = {
   },
 
   nuxt: {
-    command: ({ port }) => ["pnpm", "exec", "nuxt", "--port", port.toString()],
     detect: (appDir: string) => detectJavaScriptRuntime(appDir, "nuxt"),
+    devCommand: async ({ appDir, port }) => {
+      const binPath = await readShim(getBinShimPath(appDir, "nuxt"));
+      if (!binPath) {
+        return null;
+      }
+      return [binPath, "dev", "--port", port.toString()];
+    },
     envVars: ({ port }) => ({
       PORT: port.toString(),
     }),
     installCommand: defaultInstallCommand,
   },
 
-  unknown: UNKNOWN_CONFIG,
-
   vite: {
-    command: ({ port }) => [
-      "pnpm",
-      "exec",
-      "vite",
-      "--port",
-      port.toString(),
-      "--strictPort",
-      "--clearScreen",
-      "false",
-      // Avoids logging confusing localhost and port info
-      "--logLevel",
-      "warn",
-    ],
     detect: (appDir: string) => detectJavaScriptRuntime(appDir, "vite"),
+    devCommand: async ({ appDir, port }) => {
+      const binPath = await readShim(getBinShimPath(appDir, "vite"));
+      if (!binPath) {
+        return null;
+      }
+      return [
+        binPath,
+        "--port",
+        port.toString(),
+        "--strictPort",
+        "--clearScreen",
+        "false",
+        // Avoids logging confusing localhost and port info
+        "--logLevel",
+        "warn",
+      ];
+    },
     envVars: () => ({}),
     installCommand: defaultInstallCommand,
   },
@@ -130,6 +142,6 @@ export async function detectRuntimeTypeFromDirectory(
   }
 }
 
-export function getRuntimeConfigByType(runtimeType: string): RuntimeConfig {
-  return RUNTIME_CONFIGS[runtimeType] ?? UNKNOWN_CONFIG;
+export function getRuntimeConfigByType(runtimeType: string) {
+  return RUNTIME_CONFIGS[runtimeType];
 }

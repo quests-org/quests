@@ -43,8 +43,6 @@ const registryDir = path.resolve("../../registry");
 const actor = createActor(workspaceMachine, {
   input: {
     aiGatewayApp,
-    // For this script, we depend on the developer's local pnpm, node, rg, etc.
-    binDir: path.resolve("/tmp/not-real"),
     captureEvent: (...args: unknown[]) => {
       // eslint-disable-next-line no-console
       console.log("captureEvent", args);
@@ -105,6 +103,9 @@ const actor = createActor(workspaceMachine, {
 
       return providers;
     },
+    pnpmBinPath: await execa({ reject: false })`which pnpm`.then(
+      (result) => result.stdout.trim() || "pnpm",
+    ),
     registryDir,
     // Sibling directory to monorepo to avoid using same pnpm and git
     rootDir: path.resolve("../../../workspace.local"),

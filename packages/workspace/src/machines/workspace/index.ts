@@ -180,10 +180,10 @@ export const workspaceMachine = setup({
     events: {} as WorkspaceEvent,
     input: {} as {
       aiGatewayApp: AIGatewayApp;
-      binDir: string;
       captureEvent: CaptureEventFunction;
       captureException: CaptureExceptionFunction;
       getAIProviders: GetAIProviders;
+      pnpmBinPath: string;
       previewCacheTimeMs?: number;
       registryDir: string;
       rootDir: string;
@@ -197,10 +197,10 @@ export const workspaceMachine = setup({
 }).createMachine({
   context: ({ input, self, spawn }) => {
     const workspaceConfig: WorkspaceConfig = {
-      binDir: AbsolutePathSchema.parse(input.binDir),
       captureEvent: input.captureEvent,
       captureException: input.captureException,
       getAIProviders: input.getAIProviders,
+      pnpmBinPath: AbsolutePathSchema.parse(input.pnpmBinPath),
       previewCacheTimeMs: input.previewCacheTimeMs,
       previewsDir: AbsolutePathSchema.parse(
         path.join(input.rootDir, PREVIEWS_FOLDER),

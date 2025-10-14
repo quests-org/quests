@@ -7,7 +7,6 @@ import { type AppSubdomain } from "../../schemas/subdomains";
 import { type WorkspaceConfig } from "../../types";
 
 const MOCK_WORKSPACE_DIR = "/tmp/workspace";
-const MOCK_BIN_DIR = "/tmp/bin";
 
 export const MOCK_WORKSPACE_DIRS = {
   previews: `${MOCK_WORKSPACE_DIR}/previews`,
@@ -26,7 +25,6 @@ export function createMockAppConfig(
   return createAppConfig({
     subdomain,
     workspaceConfig: {
-      binDir: AbsolutePathSchema.parse(MOCK_BIN_DIR),
       captureEvent: () => {
         // No-op
       },
@@ -35,6 +33,7 @@ export function createMockAppConfig(
         console.error("captureException", args);
       },
       getAIProviders: () => [],
+      pnpmBinPath: AbsolutePathSchema.parse("/tmp/pnpm"),
       previewsDir: AbsolutePathSchema.parse(MOCK_WORKSPACE_DIRS.previews),
       projectsDir: AbsolutePathSchema.parse(MOCK_WORKSPACE_DIRS.projects),
       registryDir: AbsolutePathSchema.parse(MOCK_WORKSPACE_DIRS.registry),

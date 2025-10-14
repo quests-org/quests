@@ -12,8 +12,8 @@ interface BinaryConfig {
   name: string;
 }
 
-export function getBinDirectoryPath(): string {
-  return path.join(app.getPath("userData"), BIN_DIR_NAME);
+export function getPNPMBinPath(): string {
+  return getNodeModulePath("pnpm", "bin", "pnpm.cjs");
 }
 
 export async function setupBinDirectory(): Promise<string> {
@@ -122,6 +122,10 @@ function getBinaryConfigs(): BinaryConfig[] {
       name: "rg",
     },
   ];
+}
+
+function getBinDirectoryPath(): string {
+  return path.join(app.getPath("userData"), BIN_DIR_NAME);
 }
 
 function getNodeModulePath(...parts: string[]): string {

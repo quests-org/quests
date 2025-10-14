@@ -124,27 +124,6 @@ export const spawnRuntimeLogic = fromCallback<
     ELECTRON_RUN_AS_NODE: "1",
   };
 
-  // TODO(FP-595): remove after done debugging
-  const pnpmVersionProcess = execa({
-    cwd: appConfig.appDir,
-    env: baseEnv,
-  })`pnpm --version`;
-  sendProcessLogs(pnpmVersionProcess, parentRef);
-
-  // TODO(FP-595): remove after done debugging
-  const nodeVersionProcess = execa({
-    cwd: appConfig.appDir,
-    env: baseEnv,
-  })`node --version`;
-  sendProcessLogs(nodeVersionProcess, parentRef);
-
-  // TODO(FP-595): remove after done debugging
-  const whichPnpmProcess = execa({
-    cwd: appConfig.appDir,
-    env: baseEnv,
-  })`${process.platform === "win32" ? "where" : "which"} pnpm`;
-  sendProcessLogs(whichPnpmProcess, parentRef);
-
   async function main() {
     port = await portManager.reservePort();
 
@@ -197,6 +176,19 @@ export const spawnRuntimeLogic = fromCallback<
       abortController.signal,
       installTimeout.controller.signal,
     ]);
+    if (!runtimeConfig) {
+      parentRef.send({
+        isRetryable: false,
+        shouldLog: true,
+        type: "spawnRuntime.error.unknown",
+        value: {
+          error: new Error(
+            "Unsupported runtime type. Supported: vite, next, nuxt",
+          ),
+        },
+      });
+      return;
+    }
     const installCommand = runtimeConfig.installCommand(appConfig);
 
     parentRef.send({
@@ -210,9 +202,8 @@ export const spawnRuntimeLogic = fromCallback<
     const installProcess = execa({
       cancelSignal: installSignal,
       cwd: appConfig.appDir,
-      env: {
-        ...baseEnv,
-      },
+      env: baseEnv,
+      node: true,
     })`${installCommand}`;
 
     sendProcessLogs(installProcess, parentRef);
@@ -229,10 +220,20 @@ export const spawnRuntimeLogic = fromCallback<
       timeout.controller.signal,
     ]);
 
-    const devServerCommand = await runtimeConfig.command({
+    const devServerCommand = await runtimeConfig.devCommand({
       appDir: appConfig.appDir,
       port,
     });
+
+    if (!devServerCommand) {
+      parentRef.send({
+        isRetryable: false,
+        shouldLog: true,
+        type: "spawnRuntime.error.unknown",
+        value: { error: new Error("Failed to get dev server command") },
+      });
+      return;
+    }
 
     parentRef.send({
       type: "spawnRuntime.log",
@@ -245,10 +246,11 @@ export const spawnRuntimeLogic = fromCallback<
       cwd: appConfig.appDir,
       env: {
         ...providerEnv,
+        ...baseEnv,
         NO_COLOR: "1",
         QUESTS_INSIDE_STUDIO: "true",
-        ...baseEnv,
       },
+      node: true,
     })`${devServerCommand}`;
     sendProcessLogs(runtimeProcess, parentRef);
 
