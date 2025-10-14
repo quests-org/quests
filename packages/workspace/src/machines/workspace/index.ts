@@ -186,7 +186,6 @@ export const workspaceMachine = setup({
       previewCacheTimeMs?: number;
       registryDir: string;
       rootDir: string;
-      runPackageJsonScript: WorkspaceContext["runPackageJsonScript"];
       shimClientDir: string;
       trashItem: (path: AbsolutePath) => Promise<void>;
     },
@@ -215,7 +214,6 @@ export const workspaceMachine = setup({
       checkoutVersionRefs: new Map(),
       config: workspaceConfig,
       createPreviewRefs: new Map(),
-      runPackageJsonScript: input.runPackageJsonScript,
       runtimeRefs: new Map(),
       sessionRefsBySubdomain: new Map(),
       workspaceServerRef: spawn("workspaceServerLogic", {
@@ -485,7 +483,6 @@ export const workspaceMachine = setup({
             spawn("runtimeMachine", {
               input: {
                 appConfig: event.value.appConfig,
-                runPackageJsonScript: context.runPackageJsonScript,
               },
             }),
           ),

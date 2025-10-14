@@ -5,8 +5,7 @@ import {
   type AIGatewayProvider,
   fetchAISDKModel,
 } from "@quests/ai-gateway";
-import { execa, parseCommandString } from "execa";
-import { err, ok, type Result } from "neverthrow";
+import { execa } from "execa";
 import path from "node:path";
 import readline from "node:readline";
 import { createActor } from "xstate";
@@ -16,28 +15,6 @@ import { getCurrentDate } from "../src/lib/get-current-date";
 import { project } from "../src/rpc/routes/project";
 import { StoreId } from "../src/schemas/store-id";
 import { env } from "./lib/env";
-
-function scriptToCommand({
-  port,
-  script,
-}: {
-  port: number;
-  script: string;
-}): Result<string[], Error> {
-  const [firstPart, ...rest] = parseCommandString(script);
-  if (firstPart === "vite") {
-    return ok([
-      "pnpm",
-      "exec",
-      firstPart,
-      ...rest,
-      "--port",
-      port.toString(),
-      "--strictPort",
-    ]);
-  }
-  return err(new Error(`Unknown script: ${script}`));
-}
 
 const registryDir = path.resolve("../../registry");
 const actor = createActor(workspaceMachine, {
@@ -109,39 +86,6 @@ const actor = createActor(workspaceMachine, {
     registryDir,
     // Sibling directory to monorepo to avoid using same pnpm and git
     rootDir: path.resolve("../../../workspace.local"),
-    runPackageJsonScript: ({ cwd, script, scriptOptions, signal }) => {
-      const command = scriptToCommand({
-        port: scriptOptions.port,
-        script,
-      });
-      if (command.isErr()) {
-        return Promise.resolve(err(command.error));
-      }
-      try {
-        let finalCommand = command.value;
-        // Spawning directly to avoid orphaned processes
-        if (
-          command.value[0] === "pnpm" &&
-          command.value[1] === "exec" &&
-          command.value[2] === "vite"
-        ) {
-          finalCommand = ["node_modules/.bin/vite", ...command.value.slice(3)];
-        }
-        return Promise.resolve(
-          ok(
-            execa({
-              cancelSignal: signal,
-              cwd,
-              env: scriptOptions.env,
-            })`${finalCommand}`,
-          ),
-        );
-      } catch (error) {
-        return Promise.resolve(
-          err(error instanceof Error ? error : new Error(String(error))),
-        );
-      }
-    },
     // Uncomment to test built shim
     // shimClientDir: path.resolve("../shim-client/dist"),
     shimClientDir: "dev-server",

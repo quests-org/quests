@@ -19,7 +19,7 @@ import {
   type SpawnRuntimeRef,
 } from "../logic/spawn-runtime";
 import { publisher } from "../rpc/publisher";
-import { type AppStatus, type RunPackageJsonScript } from "../types";
+import { type AppStatus } from "../types";
 
 const MAX_RETRIES = 3;
 
@@ -123,13 +123,11 @@ export const runtimeMachine = setup({
       logs: RuntimeLogEntry[];
       port?: number;
       retryCount: number;
-      runPackageJsonScript: RunPackageJsonScript;
       spawnRuntimeRef?: SpawnRuntimeRef;
     },
     events: {} as RuntimeEvent,
     input: {} as {
       appConfig: AppConfig;
-      runPackageJsonScript: RunPackageJsonScript;
     },
     output: {} as { error?: unknown },
     tags: {} as Exclude<AppStatus, "not-found" | "unavailable">,
@@ -141,7 +139,6 @@ export const runtimeMachine = setup({
       lastHeartbeat: new Date(),
       logs: [],
       retryCount: 0,
-      runPackageJsonScript: input.runPackageJsonScript,
     };
   },
   id: "runtime",

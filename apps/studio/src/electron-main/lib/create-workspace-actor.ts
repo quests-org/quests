@@ -11,27 +11,19 @@ import {
   workspacePublisher,
 } from "@quests/workspace/electron";
 import { app, shell } from "electron";
-import { execa } from "execa";
 import ms from "ms";
-import { err, ok } from "neverthrow";
 import path from "node:path";
 import { createActor } from "xstate";
 
 import { getProvidersStore } from "../stores/providers";
 import { captureServerEvent } from "./capture-server-event";
 import { captureServerException } from "./capture-server-exception";
-import { getFramework } from "./frameworks";
 import { getPNPMBinPath } from "./setup-bin-directory";
 
 const scopedLogger = logger.scope("workspace-actor");
 
 export function createWorkspaceActor() {
   const rootDir = path.join(app.getPath("userData"), WORKSPACE_FOLDER);
-  const execaEnv = {
-    // Required for normal node processes to work
-    // See https://www.electronjs.org/docs/latest/api/environment-variables
-    ELECTRON_RUN_AS_NODE: "1",
-  };
   const actor = createActor(workspaceMachine, {
     input: {
       aiGatewayApp,
@@ -59,31 +51,6 @@ export function createWorkspaceActor() {
         ? path.join(process.resourcesPath, REGISTRY_DIR_NAME)
         : path.resolve(import.meta.dirname, REGISTRY_DEV_DIR_PATH),
       rootDir,
-      runPackageJsonScript: async ({ cwd, script, scriptOptions, signal }) => {
-        const { framework, frameworkModulePath } = await getFramework({
-          rootDir: cwd,
-          script,
-        });
-        if (!framework) {
-          return err(new Error(`Unsupported framework: ${script}`));
-        }
-
-        try {
-          return ok(
-            execa({
-              cancelSignal: signal,
-              cwd,
-              env: {
-                ...execaEnv,
-                ...scriptOptions.env,
-              },
-              node: true,
-            })`${frameworkModulePath} ${framework.args("dev", scriptOptions.port)}`,
-          );
-        } catch (error) {
-          return err(error instanceof Error ? error : new Error(String(error)));
-        }
-      },
       shimClientDir: app.isPackaged
         ? path.resolve(process.resourcesPath, "shim-client")
         : // Uncomment to test built shim
