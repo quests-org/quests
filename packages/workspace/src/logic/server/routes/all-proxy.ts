@@ -62,13 +62,15 @@ app.all("/*", async (c, next) => {
     return c.html(fallbackPage);
   }
 
-  const url = `http://localhost:${port}${c.req.path}`;
+  const requestUrl = new URL(c.req.url);
+  const url = `http://localhost:${port}${requestUrl.pathname}${requestUrl.search}`;
   const headers = new Headers(c.req.raw.headers);
   headers.set(
     "X-Forwarded-For",
     c.req.header("x-forwarded-for") || c.req.header("x-real-ip") || "127.0.0.1",
   );
   headers.set("X-Forwarded-Host", host);
+  headers.set("X-Forwarded-Proto", requestUrl.protocol.replace(":", ""));
   headers.delete("if-none-match");
   headers.delete("if-modified-since");
 
