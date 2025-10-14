@@ -3,11 +3,11 @@ import { RegistryAppCard } from "@/client/components/registry-app-card";
 import { type RPCOutput } from "../rpc/client";
 
 export function DiscoverAppsGrid({
-  registryApps,
+  registryTemplates,
 }: {
-  registryApps: RPCOutput["workspace"]["registry"]["app"]["list"];
+  registryTemplates: RPCOutput["workspace"]["registry"]["template"]["list"];
 }) {
-  if (registryApps.length === 0) {
+  if (registryTemplates.length === 0) {
     return (
       <div className="text-center py-16">
         <div className="mx-auto max-w-md">
@@ -38,10 +38,10 @@ export function DiscoverAppsGrid({
 
   return (
     <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4">
-      {registryApps.map((registryApp) => (
+      {registryTemplates.map((registryTemplate) => (
         <RegistryAppCard
-          folderName={registryApp.folderName}
-          key={registryApp.folderName}
+          folderName={registryTemplate.folderName}
+          key={registryTemplate.folderName}
         />
       ))}
     </div>

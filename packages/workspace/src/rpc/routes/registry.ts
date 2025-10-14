@@ -2,20 +2,20 @@ import fs from "node:fs/promises";
 import { z } from "zod";
 
 import {
-  getRegistryAppDetails,
-  RegistryAppDetailsSchema,
-} from "../../lib/get-registry-app-details";
+  getRegistryTemplateDetails,
+  RegistryTemplateDetailsSchema,
+} from "../../lib/get-registry-template-details";
 import {
-  getRegistryApps,
-  RegistryAppSchema,
-} from "../../lib/get-registry-apps";
+  getRegistryTemplates,
+  RegistryTemplateSchema,
+} from "../../lib/get-registry-templates";
 import { base } from "../base";
 
 const byFolderName = base
   .input(z.object({ folderName: z.string() }))
-  .output(RegistryAppDetailsSchema)
+  .output(RegistryTemplateDetailsSchema)
   .handler(async ({ context, errors, input }) => {
-    const result = await getRegistryAppDetails(
+    const result = await getRegistryTemplateDetails(
       input.folderName,
       context.workspaceConfig,
     );
@@ -29,16 +29,16 @@ const byFolderName = base
   });
 
 const list = base
-  .output(z.array(RegistryAppSchema))
+  .output(z.array(RegistryTemplateSchema))
   .handler(async ({ context }) => {
-    return getRegistryApps(context.workspaceConfig);
+    return getRegistryTemplates(context.workspaceConfig);
   });
 
 const screenshot = base
   .input(z.object({ folderName: z.string() }))
   .output(z.string().nullable())
   .handler(async ({ context, input }) => {
-    const appDetails = await getRegistryAppDetails(
+    const appDetails = await getRegistryTemplateDetails(
       input.folderName,
       context.workspaceConfig,
     );
@@ -57,7 +57,7 @@ const screenshot = base
   });
 
 export const registry = {
-  app: {
+  template: {
     byFolderName,
     list,
     screenshot,

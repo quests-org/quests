@@ -14,12 +14,12 @@ export function RegistryAppCard({
   folderName: string;
 }) {
   const { data: appDetails } = useQuery(
-    rpcClient.workspace.registry.app.byFolderName.queryOptions({
+    rpcClient.workspace.registry.template.byFolderName.queryOptions({
       input: { folderName },
     }),
   );
   const { data: screenshotDataUrl } = useQuery(
-    rpcClient.workspace.registry.app.screenshot.queryOptions({
+    rpcClient.workspace.registry.template.screenshot.queryOptions({
       input: { folderName },
     }),
   );

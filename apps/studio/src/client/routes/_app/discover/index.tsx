@@ -19,15 +19,16 @@ export const Route = createFileRoute("/_app/discover/")({
     ],
   }),
   loader: async () => {
-    const registryApps = await vanillaRpcClient.workspace.registry.app.list();
+    const registryTemplates =
+      await vanillaRpcClient.workspace.registry.template.list();
     return {
-      registryApps,
+      registryTemplates,
     };
   },
 });
 
 function RouteComponent() {
-  const { registryApps } = Route.useLoaderData();
+  const { registryTemplates } = Route.useLoaderData();
 
   useReload();
 
@@ -52,7 +53,7 @@ function RouteComponent() {
 
       <div className="px-6 py-12 lg:px-8">
         <div className="mx-auto max-w-2xl lg:max-w-6xl xl:max-w-7xl">
-          <DiscoverAppsGrid registryApps={registryApps} />
+          <DiscoverAppsGrid registryTemplates={registryTemplates} />
         </div>
       </div>
     </div>

@@ -13,7 +13,7 @@ import { absolutePathJoin } from "./absolute-path-join";
 import { getWorkspaceAppForSubdomain } from "./get-workspace-app-for-subdomain";
 import { getQuestManifest } from "./quest-manifest";
 
-export const RegistryAppDetailsSchema = z.object({
+export const RegistryTemplateDetailsSchema = z.object({
   description: QuestManifestSchema.shape.description.optional(),
   icon: QuestManifestSchema.shape.icon.optional(),
   preview: WorkspaceAppPreviewSchema,
@@ -22,26 +22,25 @@ export const RegistryAppDetailsSchema = z.object({
   title: z.string(),
 });
 
-type RegistryAppDetails = z.output<typeof RegistryAppDetailsSchema>;
+type RegistryTemplateDetails = z.output<typeof RegistryTemplateDetailsSchema>;
 
-export async function getRegistryAppDetails(
+export async function getRegistryTemplateDetails(
   folderName: string,
   workspaceConfig: WorkspaceConfig,
-): Promise<null | RegistryAppDetails> {
-  const appsDir = absolutePathJoin(
+): Promise<null | RegistryTemplateDetails> {
+  const templatesDir = absolutePathJoin(
     workspaceConfig.registryDir,
     REGISTRY_TEMPLATES_FOLDER,
   );
 
-  const appDir = path.resolve(appsDir, folderName);
+  const templateDir = path.resolve(templatesDir, folderName);
 
-  // Check if the app directory exists
-  const appDirExists = await fs
-    .stat(appDir)
+  const templateDirExists = await fs
+    .stat(templateDir)
     .then((stat) => stat.isDirectory())
     .catch(() => false);
 
-  if (!appDirExists) {
+  if (!templateDirExists) {
     return null;
   }
 
@@ -52,16 +51,16 @@ export async function getRegistryAppDetails(
   }
 
   try {
-    const parsedAppDir = AppDirSchema.parse(appDir);
+    const parsedTemplateDir = AppDirSchema.parse(templateDir);
     const previewSubdomain = PreviewSubdomainSchema.parse(
       `${subdomainPart.data}.preview`,
     );
 
     // Read all metadata in parallel for better performance
     const [questsConfig, readme, screenshotPath] = await Promise.all([
-      getQuestManifest(parsedAppDir),
-      readAppReadme(parsedAppDir),
-      findAppScreenshot(parsedAppDir),
+      getQuestManifest(parsedTemplateDir),
+      readTemplateReadme(parsedTemplateDir),
+      findTemplateScreenshot(parsedTemplateDir),
     ]);
 
     const title = questsConfig?.name ?? folderName;
@@ -86,9 +85,11 @@ export async function getRegistryAppDetails(
   }
 }
 
-async function findAppScreenshot(appDir: string): Promise<string | undefined> {
+async function findTemplateScreenshot(
+  templateDir: string,
+): Promise<string | undefined> {
   try {
-    const screenshotFilePath = path.join(appDir, "screenshot.png");
+    const screenshotFilePath = path.join(templateDir, "screenshot.png");
     await fs.access(screenshotFilePath);
     return screenshotFilePath;
   } catch {
@@ -96,9 +97,11 @@ async function findAppScreenshot(appDir: string): Promise<string | undefined> {
   }
 }
 
-async function readAppReadme(appDir: string): Promise<string | undefined> {
+async function readTemplateReadme(
+  templateDir: string,
+): Promise<string | undefined> {
   try {
-    const readmePath = path.join(appDir, "README.md");
+    const readmePath = path.join(templateDir, "README.md");
     return await fs.readFile(readmePath, "utf8");
   } catch {
     return undefined;

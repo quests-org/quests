@@ -14,28 +14,30 @@ import { pathExists } from "./path-exists";
 
 const EMPTY_TEMPLATE = "empty";
 
-export const RegistryAppSchema = z.object({
+export const RegistryTemplateSchema = z.object({
   appDir: AppDirSchema,
   folderName: z.string(),
   previewSubdomain: PreviewSubdomainSchema,
 });
 
-type RegistryApp = z.output<typeof RegistryAppSchema>;
+type RegistryTemplate = z.output<typeof RegistryTemplateSchema>;
 
-export async function getRegistryApps(
+export async function getRegistryTemplates(
   workspaceConfig: WorkspaceConfig,
-): Promise<RegistryApp[]> {
-  const registryAppsDir = absolutePathJoin(
+): Promise<RegistryTemplate[]> {
+  const registryTemplatesDir = absolutePathJoin(
     workspaceConfig.registryDir,
     REGISTRY_TEMPLATES_FOLDER,
   );
 
-  if (!(await pathExists(registryAppsDir))) {
+  if (!(await pathExists(registryTemplatesDir))) {
     return [];
   }
 
   try {
-    const entries = await fs.readdir(registryAppsDir, { withFileTypes: true });
+    const entries = await fs.readdir(registryTemplatesDir, {
+      withFileTypes: true,
+    });
     return entries
       .filter(
         (entry) =>
@@ -44,8 +46,8 @@ export async function getRegistryApps(
           entry.name !== EMPTY_TEMPLATE,
       )
       .map((entry) => {
-        const appDir = absolutePathJoin(registryAppsDir, entry.name);
-        return RegistryAppSchema.parse({
+        const appDir = absolutePathJoin(registryTemplatesDir, entry.name);
+        return RegistryTemplateSchema.parse({
           appDir,
           folderName: entry.name,
           previewSubdomain: `${SubdomainPartSchema.parse(entry.name)}.${PREVIEW_SUBDOMAIN_PART}`,

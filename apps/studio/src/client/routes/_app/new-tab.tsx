@@ -36,15 +36,16 @@ export const Route = createFileRoute("/_app/new-tab")({
     ],
   }),
   loader: async () => {
-    const registryApps = await vanillaRpcClient.workspace.registry.app.list();
+    const registryTemplates =
+      await vanillaRpcClient.workspace.registry.template.list();
     return {
-      registryApps,
+      registryTemplates,
     };
   },
 });
 
 function RouteComponent() {
-  const { registryApps } = Route.useLoaderData();
+  const { registryTemplates } = Route.useLoaderData();
   const [selectedModelURI, setSelectedModelURI] = useAtom(selectedModelURIAtom);
   const navigate = useNavigate({ from: "/new-tab" });
   const router = useRouter();
@@ -153,7 +154,7 @@ function RouteComponent() {
             </InternalLink>
           </Button>
         </div>
-        <DiscoverAppsGrid registryApps={registryApps} />
+        <DiscoverAppsGrid registryTemplates={registryTemplates} />
       </div>
 
       <footer className="w-full py-4 px-8">
