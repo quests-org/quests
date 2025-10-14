@@ -3,7 +3,6 @@ import path from "node:path";
 
 import {
   APP_PRIVATE_FOLDER,
-  REGISTRY_APPS_FOLDER,
   REGISTRY_TEMPLATES_FOLDER,
   SANDBOXES_FOLDER,
   SESSIONS_DB_FILE_NAME,
@@ -35,7 +34,7 @@ export function registryAppExists({
   workspaceConfig: WorkspaceConfig;
 }): Promise<boolean> {
   const registryAppsDir = absolutePathJoin(
-    absolutePathJoin(workspaceConfig.registryDir, REGISTRY_APPS_FOLDER),
+    absolutePathJoin(workspaceConfig.registryDir, REGISTRY_TEMPLATES_FOLDER),
     folderName,
   );
   return fs

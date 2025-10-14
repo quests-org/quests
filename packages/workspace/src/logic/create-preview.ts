@@ -6,7 +6,7 @@ import {
   fromCallback,
 } from "xstate";
 
-import { REGISTRY_APPS_FOLDER } from "../constants";
+import { REGISTRY_TEMPLATES_FOLDER } from "../constants";
 import { absolutePathJoin } from "../lib/absolute-path-join";
 import { type AppConfigPreview } from "../lib/app-config/types";
 import { copyTemplate } from "../lib/copy-template";
@@ -37,7 +37,7 @@ export const createPreviewLogic = fromCallback<
 >(({ input, self }) => {
   const templateDir = absolutePathJoin(
     input.appConfig.workspaceConfig.registryDir,
-    REGISTRY_APPS_FOLDER,
+    REGISTRY_TEMPLATES_FOLDER,
     input.appConfig.folderName,
   );
 

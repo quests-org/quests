@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { z } from "zod";
 
-import { REGISTRY_APPS_FOLDER } from "../constants";
+import { REGISTRY_TEMPLATES_FOLDER } from "../constants";
 import { WorkspaceAppPreviewSchema } from "../schemas/app";
 import { AppDirSchema } from "../schemas/paths";
 import { QuestManifestSchema } from "../schemas/quest-manifest";
@@ -30,7 +30,7 @@ export async function getRegistryAppDetails(
 ): Promise<null | RegistryAppDetails> {
   const appsDir = absolutePathJoin(
     workspaceConfig.registryDir,
-    REGISTRY_APPS_FOLDER,
+    REGISTRY_TEMPLATES_FOLDER,
   );
 
   const appDir = path.resolve(appsDir, folderName);
