@@ -3,7 +3,7 @@ import { app } from "electron";
 import fs from "node:fs/promises";
 import path from "node:path";
 
-import { logger } from "./electron-logger";
+import { captureServerException } from "./capture-server-exception";
 
 const BIN_DIR_NAME = "bin";
 
@@ -16,10 +16,11 @@ export function getPNPMBinPath(): string {
   return getNodeModulePath("pnpm", "bin", "pnpm.cjs");
 }
 
+// Added to PATH so that child processes (the users's apps) can access the binaries
+// as if they were installed globally. We don't use these ourselves due to issues
+// with orphaned processes on Windows.
 export async function setupBinDirectory(): Promise<string> {
   const binDir = getBinDirectoryPath();
-
-  logger.info(`Setting up bin directory at: ${binDir}`);
 
   await ensureDirectoryExists(binDir);
   await cleanBinDirectory(binDir);
@@ -35,19 +36,19 @@ export async function setupBinDirectory(): Promise<string> {
       try {
         await fs.access(targetPath);
       } catch {
-        logger.warn(`Binary not found, skipping: ${targetPath}`);
         continue;
       }
 
       await linkDirect(binDir, binary.name, targetPath);
     } catch (error) {
-      logger.error(`Failed to setup binary ${binary.name}:`, error);
+      captureServerException(error, {
+        scopes: ["studio"],
+      });
     }
   }
 
   prependBinDirectoryToPath(binDir);
 
-  logger.info(`Bin directory setup complete: ${binDir}`);
   return binDir;
 }
 
@@ -60,13 +61,13 @@ async function cleanBinDirectory(binDir: string): Promise<void> {
       try {
         await fs.rm(entryPath, { force: true, recursive: true });
       } catch (error) {
-        logger.warn(`Failed to remove ${entryPath}:`, error);
+        captureServerException(error, {
+          scopes: ["studio"],
+        });
       }
     }
-
-    logger.info(`Cleaned bin directory: ${binDir}`);
-  } catch {
-    logger.info(`Bin directory does not exist yet, will be created: ${binDir}`);
+  } catch (error) {
+    captureServerException(error, { scopes: ["studio"] });
   }
 }
 
@@ -88,7 +89,9 @@ async function ensureDirectoryExists(dirPath: string): Promise<void> {
   try {
     await fs.mkdir(dirPath, { recursive: true });
   } catch (error) {
-    logger.error(`Failed to create directory ${dirPath}:`, error);
+    captureServerException(error, {
+      scopes: ["studio"],
+    });
     throw error;
   }
 }
@@ -156,11 +159,9 @@ async function linkDirect(
       createCmdFile: true,
       createPwshFile: false,
     });
-    logger.info(`Created shim: ${outputPath} -> ${targetPath}`);
   } else {
     const linkPath = path.join(binDir, name);
     await fs.symlink(targetPath, linkPath);
-    logger.info(`Created symlink: ${linkPath} -> ${targetPath}`);
   }
 }
 
@@ -178,8 +179,6 @@ function prependBinDirectoryToPath(binDir: string): void {
   const newPath = [binDir, ...pathParts].join(pathSeparator);
 
   process.env.PATH = newPath;
-
-  logger.info(`Updated PATH: bin directory prepended (${binDir})`);
 }
 
 async function setupNodeLink(binDir: string): Promise<void> {
@@ -188,15 +187,13 @@ async function setupNodeLink(binDir: string): Promise<void> {
   const linkPath = path.join(binDir, isWindows ? "node.exe" : "node");
 
   try {
-    if (isWindows) {
-      await createNodeShim(binDir, nodeExePath);
-      logger.info(`Created node shim: ${binDir} -> ${nodeExePath}`);
-    } else {
-      await fs.symlink(nodeExePath, linkPath);
-      logger.info(`Created node symlink: ${linkPath} -> ${nodeExePath}`);
-    }
+    await (isWindows
+      ? createNodeShim(binDir, nodeExePath)
+      : fs.symlink(nodeExePath, linkPath));
   } catch (error) {
-    logger.error("Failed to create node link:", error);
+    captureServerException(error, {
+      scopes: ["studio"],
+    });
     throw error;
   }
 }
