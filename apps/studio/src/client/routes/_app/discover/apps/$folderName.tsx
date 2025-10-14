@@ -1,13 +1,22 @@
 /* eslint-disable unicorn/filename-case */
 /* eslint-enable unicorn/filename-case */
 import { hasAIProviderAtom } from "@/client/atoms/has-ai-provider";
+import { AIProviderGuard } from "@/client/components/ai-provider-guard";
 import { AIProviderGuardDialog } from "@/client/components/ai-provider-guard-dialog";
 import { SmallAppIcon } from "@/client/components/app-icon";
+import { AppView } from "@/client/components/app-view";
 import { InternalLink } from "@/client/components/internal-link";
 import { Markdown } from "@/client/components/markdown";
 import { NotFoundComponent } from "@/client/components/not-found";
 import { GithubLogo } from "@/client/components/service-icons";
+import { Badge } from "@/client/components/ui/badge";
 import { Button } from "@/client/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/client/components/ui/dialog";
 import { rpcClient } from "@/client/rpc/client";
 import { META_TAG_ICON_BACKGROUND, META_TAG_LUCIDE_ICON } from "@/shared/tabs";
 import {
@@ -19,7 +28,7 @@ import { StoreId } from "@quests/workspace/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
-import { ChevronRight, Plus } from "lucide-react";
+import { ChevronRight, Eye, Plus, X } from "lucide-react";
 import { useState } from "react";
 
 export const Route = createFileRoute("/_app/discover/apps/$folderName")({
@@ -74,6 +83,7 @@ function RouteComponent() {
   );
   const hasAIProvider = useAtomValue(hasAIProviderAtom);
   const [showAIProviderGuard, setShowAIProviderGuard] = useState(false);
+  const [showPreviewDialog, setShowPreviewDialog] = useState(false);
 
   const handleCreateProject = () => {
     if (!hasAIProvider) {
@@ -107,8 +117,8 @@ function RouteComponent() {
 
   return (
     <div className="h-full w-full overflow-y-auto">
-      <div className="max-w-3xl mx-auto p-6 space-y-6">
-        <nav className="flex items-center space-x-1 text-sm text-muted-foreground">
+      <div className="max-w-3xl mx-auto p-6">
+        <nav className="flex items-center space-x-1 text-sm text-muted-foreground mb-6">
           <InternalLink
             className="hover:text-foreground transition-colors"
             to="/discover"
@@ -119,27 +129,75 @@ function RouteComponent() {
           <span className="text-foreground font-medium">{title}</span>
         </nav>
 
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex items-start justify-between gap-4 mb-6">
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              {appDetails.icon && (
-                <SmallAppIcon
-                  background={appDetails.icon.background}
-                  icon={appDetails.icon.lucide}
-                  size="lg"
-                />
-              )}
-              <h1 className="text-3xl font-bold text-foreground">{title}</h1>
+            <h1 className="text-3xl font-bold text-foreground mb-2">{title}</h1>
+            {description && (
+              <div className="text-sm text-muted-foreground">{description}</div>
+            )}
+          </div>
+
+          <div className="flex gap-2 shrink-0">
+            <Button
+              disabled={createProjectFromPreviewMutation.isPending}
+              onClick={handleCreateProject}
+              size="lg"
+              variant="brand"
+            >
+              <Plus className="h-4 w-4" />
+              Start Project
+            </Button>
+            <Button
+              disabled={!hasAIProvider}
+              onClick={() => {
+                setShowPreviewDialog(true);
+              }}
+              size="lg"
+              variant="secondary"
+            >
+              <Eye className="h-4 w-4" />
+              View Demo
+            </Button>
+          </div>
+        </div>
+
+        {screenshot && (
+          <div className="relative group mb-6">
+            <img
+              alt={`${title} screenshot`}
+              className="w-full rounded-lg border border-border"
+              src={screenshot}
+            />
+            <div className="absolute bottom-4 left-4">
+              <Button
+                disabled={!hasAIProvider}
+                onClick={() => {
+                  setShowPreviewDialog(true);
+                }}
+                size="sm"
+                variant="secondary"
+              >
+                <Eye className="h-4 w-4" />
+                View Preview
+              </Button>
             </div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              {description && (
-                <>
-                  <span>{description}</span>
-                  <span>•</span>
-                </>
-              )}
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_200px] gap-8">
+          <div>
+            {appDetails.readme && (
+              <div className="prose prose-sm max-w-none prose-neutral dark:prose-invert">
+                <Markdown markdown={appDetails.readme} />
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-sm font-medium mb-2">Repository</h3>
               <a
-                className="flex items-center gap-1 hover:text-foreground transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
                 href={REGISTRY_REPO_URL}
                 rel="noopener noreferrer"
                 target="_blank"
@@ -149,38 +207,70 @@ function RouteComponent() {
               </a>
             </div>
           </div>
-
-          <Button
-            className="shrink-0"
-            disabled={createProjectFromPreviewMutation.isPending}
-            onClick={handleCreateProject}
-            size="lg"
-            variant="brand"
-          >
-            <Plus className="h-4 w-4" />
-            Start Project
-          </Button>
         </div>
-
-        {screenshot && (
-          <img
-            alt={`${title} screenshot`}
-            className="w-full rounded-lg border border-border"
-            src={screenshot}
-          />
-        )}
-
-        {appDetails.readme && (
-          <div className="prose prose-sm max-w-none prose-neutral dark:prose-invert">
-            <Markdown markdown={appDetails.readme} />
-          </div>
-        )}
 
         <AIProviderGuardDialog
           description="You need to add an AI provider to create projects."
           onOpenChange={setShowAIProviderGuard}
           open={showAIProviderGuard}
         />
+
+        <Dialog onOpenChange={setShowPreviewDialog} open={showPreviewDialog}>
+          <DialogContent
+            className="max-w-[calc(100vw-2rem)] sm:max-w-[calc(100vw-2rem)] w-full max-h-[calc(100vh-2rem)] h-full flex flex-col"
+            showCloseButton={false}
+          >
+            <DialogHeader className="flex-shrink-0">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2">
+                    {appDetails.icon && (
+                      <SmallAppIcon
+                        background={appDetails.icon.background}
+                        icon={appDetails.icon.lucide}
+                        size="sm"
+                      />
+                    )}
+                    <DialogTitle>{title}</DialogTitle>
+                  </div>
+                  <Badge variant="secondary">Preview</Badge>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    disabled={createProjectFromPreviewMutation.isPending}
+                    onClick={handleCreateProject}
+                    size="sm"
+                    variant="brand"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Start Project
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setShowPreviewDialog(false);
+                    }}
+                    size="sm"
+                    variant="ghost"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </DialogHeader>
+            <div className="flex-1 min-h-0">
+              {hasAIProvider ? (
+                <AppView
+                  app={appDetails.preview}
+                  className="w-full h-full rounded-lg border border-border overflow-hidden flex flex-col"
+                />
+              ) : (
+                <div className="w-full h-full rounded-lg border border-border flex items-center justify-center bg-background">
+                  <AIProviderGuard description="You need to add an AI provider to view previews." />
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
