@@ -7,12 +7,11 @@ import { type AppDir } from "../schemas/paths";
 import { absolutePathJoin } from "./absolute-path-join";
 import { type AppConfig } from "./app-config/types";
 import { TypedError } from "./errors";
-import { PackageManager } from "./package-manager";
 import { readPNPMShim } from "./read-pnpm-shim";
 
 export async function getFramework({
   appConfig,
-  buildInfo: { frameworks, packageManager },
+  buildInfo: { frameworks },
   port,
 }: {
   appConfig: AppConfig;
@@ -32,14 +31,6 @@ export async function getFramework({
     );
   }
 
-  if (packageManager && packageManager.name !== PackageManager.PNPM) {
-    return err(
-      new TypedError.NotFound(
-        `Unsupported package manager ${packageManager.name}`,
-      ),
-    );
-  }
-
   const binPathResult = await readPNPMShim(
     getBinShimPath(appConfig.appDir, devCommand),
   );
@@ -51,23 +42,42 @@ export async function getFramework({
   const binPath = binPathResult.value;
 
   switch (devCommand) {
+    case "astro": {
+      return ok({
+        arguments: [...devCommandArgs, "--port", port.toString()],
+        command: binPath,
+        name: framework.name,
+      });
+    }
     case "next": {
       return ok({
-        ...framework,
         arguments: [...devCommandArgs, "-p", port.toString()],
         command: binPath,
+        name: framework.name,
       });
     }
     case "nuxt": {
       return ok({
-        ...framework,
         arguments: [...devCommandArgs, "--port", port.toString()],
         command: binPath,
+        name: framework.name,
+      });
+    }
+    case "qwik": {
+      return ok({
+        arguments: [
+          ...devCommandArgs,
+          "--mode",
+          "ssr",
+          "--port",
+          port.toString(),
+        ],
+        command: binPath,
+        name: framework.name,
       });
     }
     case "vite": {
       return ok({
-        ...framework,
         arguments: [
           ...devCommandArgs,
           "--port",
@@ -79,14 +89,16 @@ export async function getFramework({
           "warn",
         ],
         command: binPath,
+        name: framework.name,
       });
     }
   }
-  return err(
-    new TypedError.NotFound(
-      `Unsupported dev command: ${devCommand}. Supported commands are: next, nuxt, vite`,
-    ),
-  );
+  // Fallback to a --port argument
+  return ok({
+    arguments: [...devCommandArgs, "--port", port.toString()],
+    command: binPath,
+    name: framework.name,
+  });
 }
 
 function getBinShimPath(appDir: AppDir, command: string) {
