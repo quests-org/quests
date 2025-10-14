@@ -1,6 +1,6 @@
 import { type Info } from "@netlify/build-info/node";
 import { parseCommandString } from "execa";
-import { err, ok } from "neverthrow";
+import { err, ok, type Result } from "neverthrow";
 import invariant from "tiny-invariant";
 
 import { type AppDir } from "../schemas/paths";
@@ -17,7 +17,17 @@ export async function getFramework({
   appConfig: AppConfig;
   buildInfo: Info;
   port: number;
-}) {
+}): Promise<
+  Result<
+    {
+      arguments: string[];
+      command: string;
+      errorMessage?: string;
+      name: string;
+    },
+    TypedError.FileSystem | TypedError.NotFound | TypedError.Parse
+  >
+> {
   const [framework] = frameworks; // First framework is already sorted by accuracy
   invariant(framework, "No framework found");
   const [devCommand, ...devCommandArgs] = parseCommandString(
@@ -93,10 +103,16 @@ export async function getFramework({
       });
     }
   }
-  // Fallback to a --port argument
+  appConfig.workspaceConfig.captureEvent("framework.not-supported", {
+    framework: framework.name,
+  });
+
+  // Falling back to generic --port argument and hopefully it works
   return ok({
     arguments: [...devCommandArgs, "--port", port.toString()],
     command: binPath,
+    errorMessage:
+      "Unsupported framework, falling back to generic --port argument",
     name: framework.name,
   });
 }

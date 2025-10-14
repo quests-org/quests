@@ -216,6 +216,16 @@ export const spawnRuntimeLogic = fromCallback<
 
     const framework = frameworkResult.value;
 
+    if (framework.errorMessage) {
+      parentRef.send({
+        type: "spawnRuntime.log",
+        value: {
+          message: framework.errorMessage,
+          type: "error",
+        },
+      });
+    }
+
     parentRef.send({
       type: "spawnRuntime.log",
       value: {
