@@ -12,8 +12,8 @@ import {
 
 import { type AppConfig } from "../lib/app-config/types";
 import { cancelableTimeout, TimeoutError } from "../lib/cancelable-timeout";
-import { getDevCommand } from "../lib/get-dev-command";
-import { getInstallCommand } from "../lib/get-install-command";
+import { getFramework } from "../lib/get-framework";
+import { getPackageManager } from "../lib/get-package-manager";
 import { pathExists } from "../lib/path-exists";
 import { PortManager } from "../lib/port-manager";
 import { getWorkspaceServerURL } from "./server/url";
@@ -169,7 +169,7 @@ export const spawnRuntimeLogic = fromCallback<
       abortController.signal,
       installTimeout.controller.signal,
     ]);
-    const packageManager = getInstallCommand({ appConfig, buildInfo });
+    const packageManager = getPackageManager({ appConfig, buildInfo });
 
     parentRef.send({
       type: "spawnRuntime.log",
@@ -179,12 +179,16 @@ export const spawnRuntimeLogic = fromCallback<
       },
     });
 
-    const installProcess = execa({
-      cancelSignal: installSignal,
-      cwd: appConfig.appDir,
-      env: baseEnv,
-      node: true,
-    })`${packageManager.installCommand}`;
+    const installProcess = execa(
+      packageManager.command,
+      packageManager.arguments,
+      {
+        cancelSignal: installSignal,
+        cwd: appConfig.appDir,
+        env: baseEnv,
+        node: true,
+      },
+    );
 
     sendProcessLogs(installProcess, parentRef);
     await installProcess;
@@ -200,23 +204,23 @@ export const spawnRuntimeLogic = fromCallback<
       timeout.controller.signal,
     ]);
 
-    const devServerCommandResult = await getDevCommand({
+    const frameworkResult = await getFramework({
       appConfig,
       buildInfo,
       port,
     });
 
-    if (devServerCommandResult.isErr()) {
+    if (frameworkResult.isErr()) {
       parentRef.send({
         isRetryable: false,
         shouldLog: true,
         type: "spawnRuntime.error.unknown",
-        value: { error: devServerCommandResult.error },
+        value: { error: frameworkResult.error },
       });
       return;
     }
 
-    const { command, framework } = devServerCommandResult.value;
+    const framework = frameworkResult.value;
 
     parentRef.send({
       type: "spawnRuntime.log",
@@ -227,7 +231,7 @@ export const spawnRuntimeLogic = fromCallback<
     });
 
     timeout.start();
-    const runtimeProcess = execa({
+    const runtimeProcess = execa(framework.command, framework.arguments, {
       cancelSignal: signal,
       cwd: appConfig.appDir,
       env: {
@@ -238,7 +242,7 @@ export const spawnRuntimeLogic = fromCallback<
         QUESTS_INSIDE_STUDIO: "true",
       },
       node: true,
-    })`${command}`;
+    });
     sendProcessLogs(runtimeProcess, parentRef);
 
     let shouldCheckServer = true;

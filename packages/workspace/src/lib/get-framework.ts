@@ -11,7 +11,7 @@ import { TypedError } from "./errors";
 import { PackageManager } from "./package-manager";
 import { readPNPMShim } from "./read-pnpm-shim";
 
-export async function getDevCommand({
+export async function getFramework({
   appConfig,
   buildInfo: { frameworks, packageManager },
   port,
@@ -34,24 +34,18 @@ export async function getDevCommand({
     );
   }
 
-  if (packageManager?.name !== PackageManager.PNPM) {
-    const commandArgs = ["--port", port.toString()];
-    return ok({
-      command: packageManager
-        ? [
-            ...parseCommandString(packageManager.runCommand),
-            devCommand,
-            ...devCommandArgs,
-            ...commandArgs,
-          ]
-        : [devCommand, ...devCommandArgs, ...commandArgs],
-      framework,
-    });
+  if (packageManager && packageManager.name !== PackageManager.PNPM) {
+    return err(
+      new TypedError.NotFound(
+        `Unsupported package manager ${packageManager.name}`,
+      ),
+    );
   }
 
   const binPathResult = await readPNPMShim(
     getBinShimPath(appConfig.appDir, devCommand),
   );
+
   if (binPathResult.isErr()) {
     return err(binPathResult.error);
   }
@@ -61,20 +55,22 @@ export async function getDevCommand({
   switch (devCommand) {
     case "next": {
       return ok({
-        command: [binPath, ...devCommandArgs, "-p", port.toString()],
-        framework,
+        ...framework,
+        arguments: [...devCommandArgs, "-p", port.toString()],
+        command: binPath,
       });
     }
     case "nuxt": {
       return ok({
-        command: [binPath, ...devCommandArgs, "--port", port.toString()],
-        framework,
+        ...framework,
+        arguments: [...devCommandArgs, "--port", port.toString()],
+        command: binPath,
       });
     }
     case "vite": {
       return ok({
-        command: [
-          binPath,
+        ...framework,
+        arguments: [
           ...devCommandArgs,
           "--port",
           port.toString(),
@@ -84,7 +80,7 @@ export async function getDevCommand({
           "--logLevel",
           "warn",
         ],
-        framework,
+        command: binPath,
       });
     }
   }
