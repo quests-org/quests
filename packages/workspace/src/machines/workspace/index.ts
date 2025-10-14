@@ -182,6 +182,7 @@ export const workspaceMachine = setup({
       captureEvent: CaptureEventFunction;
       captureException: CaptureExceptionFunction;
       getAIProviders: GetAIProviders;
+      nodeExecEnv: Record<string, string>;
       pnpmBinPath: string;
       previewCacheTimeMs?: number;
       registryDir: string;
@@ -197,6 +198,7 @@ export const workspaceMachine = setup({
       captureEvent: input.captureEvent,
       captureException: input.captureException,
       getAIProviders: input.getAIProviders,
+      nodeExecEnv: input.nodeExecEnv,
       pnpmBinPath: AbsolutePathSchema.parse(input.pnpmBinPath),
       previewCacheTimeMs: input.previewCacheTimeMs,
       previewsDir: AbsolutePathSchema.parse(

@@ -22,6 +22,7 @@ export function createMockAppConfig(subdomain: AppSubdomain) {
         console.error("captureException", args);
       },
       getAIProviders: () => [],
+      nodeExecEnv: {},
       pnpmBinPath: AbsolutePathSchema.parse("/tmp/pnpm"),
       previewsDir: AbsolutePathSchema.parse(MOCK_WORKSPACE_DIRS.previews),
       projectsDir: AbsolutePathSchema.parse(MOCK_WORKSPACE_DIRS.projects),

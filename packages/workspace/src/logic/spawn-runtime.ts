@@ -12,7 +12,7 @@ import {
 
 import { type AppConfig } from "../lib/app-config/types";
 import { cancelableTimeout, TimeoutError } from "../lib/cancelable-timeout";
-import { execaElectronNode } from "../lib/execa-electron-node";
+import { execaNodeForApp } from "../lib/execa-node-for-app";
 import { getFramework } from "../lib/get-framework";
 import { getPackageManager } from "../lib/get-package-manager";
 import { pathExists } from "../lib/path-exists";
@@ -174,7 +174,8 @@ export const spawnRuntimeLogic = fromCallback<
       },
     });
 
-    const installProcess = execaElectronNode(
+    const installProcess = execaNodeForApp(
+      appConfig,
       packageManager.command,
       packageManager.arguments,
       {
@@ -224,7 +225,8 @@ export const spawnRuntimeLogic = fromCallback<
     });
 
     timeout.start();
-    const runtimeProcess = execaElectronNode(
+    const runtimeProcess = execaNodeForApp(
+      appConfig,
       framework.command,
       framework.arguments,
       {

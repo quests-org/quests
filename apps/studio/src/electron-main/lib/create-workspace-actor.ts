@@ -45,6 +45,11 @@ export function createWorkspaceActor() {
 
         return providers;
       },
+      nodeExecEnv: {
+        // Required to allow Electron to operate as a node process
+        // See https://www.electronjs.org/docs/latest/api/environment-variables
+        ELECTRON_RUN_AS_NODE: "1",
+      },
       pnpmBinPath: getPNPMBinPath(),
       previewCacheTimeMs: ms("24 hours"),
       registryDir: app.isPackaged

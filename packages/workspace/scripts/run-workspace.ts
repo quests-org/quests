@@ -80,6 +80,7 @@ const actor = createActor(workspaceMachine, {
 
       return providers;
     },
+    nodeExecEnv: {},
     pnpmBinPath: await execa({ reject: false })`which pnpm`.then(
       (result) => result.stdout.trim() || "pnpm",
     ),

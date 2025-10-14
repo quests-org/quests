@@ -15,8 +15,8 @@ import { executeToolCallMachine } from "./execute-tool-call";
 vi.mock(import("ulid"));
 vi.mock(import("../lib/session-store-storage"));
 vi.mock(import("../lib/get-current-date"));
-vi.mock(import("../lib/execa-electron-node"), () => ({
-  execaElectronNode: vi.fn(),
+vi.mock(import("../lib/execa-node-for-app"), () => ({
+  execaNodeForApp: vi.fn(),
 }));
 
 describe("executeToolCallMachine", () => {
@@ -28,9 +28,11 @@ describe("executeToolCallMachine", () => {
   const mockDate = new Date("2025-01-01T00:00:00.000Z");
 
   beforeEach(async () => {
-    const { execaElectronNode } = await import("../lib/execa-electron-node");
+    const { execaNodeForApp: execaElectronNode } = await import(
+      "../lib/execa-node-for-app"
+    );
     vi.mocked(execaElectronNode).mockImplementation(
-      async (file, args, _options) => {
+      async (_appConfig, file, args, _options) => {
         const command = [file, ...(args ?? [])].join(" ");
 
         if (command.includes("throw-error")) {

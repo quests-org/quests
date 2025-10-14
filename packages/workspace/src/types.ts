@@ -13,6 +13,7 @@ export interface WorkspaceConfig {
   captureEvent: CaptureEventFunction;
   captureException: CaptureExceptionFunction;
   getAIProviders: GetAIProviders;
+  nodeExecEnv: Record<string, string>;
   pnpmBinPath: AbsolutePath;
   previewCacheTimeMs?: number;
   previewsDir: AbsolutePath;

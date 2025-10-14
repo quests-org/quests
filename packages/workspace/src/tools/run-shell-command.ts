@@ -9,7 +9,7 @@ import { z } from "zod";
 import type { AppConfig } from "../lib/app-config/types";
 
 import { absolutePathJoin } from "../lib/absolute-path-join";
-import { execaElectronNode } from "../lib/execa-electron-node";
+import { execaNodeForApp } from "../lib/execa-node-for-app";
 import { fixRelativePath } from "../lib/fix-relative-path";
 import { pathExists } from "../lib/path-exists";
 import { readPNPMShim } from "../lib/read-pnpm-shim";
@@ -411,7 +411,8 @@ export const RunShellCommand = createTool({
     }
 
     if (commandName === "pnpm") {
-      const process = await execaElectronNode(
+      const process = await execaNodeForApp(
+        appConfig,
         appConfig.workspaceConfig.pnpmBinPath,
         args,
         {
@@ -436,7 +437,7 @@ export const RunShellCommand = createTool({
           type: "execute-error",
         });
       }
-      const process = await execaElectronNode(binPath.value, args, {
+      const process = await execaNodeForApp(appConfig, binPath.value, args, {
         cancelSignal: signal,
         cwd: appConfig.appDir,
       });
