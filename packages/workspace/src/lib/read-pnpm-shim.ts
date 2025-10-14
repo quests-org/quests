@@ -1,11 +1,15 @@
+import { err, ok, type Result } from "neverthrow";
 import fs from "node:fs/promises";
 import path from "node:path";
 
 import { type AbsolutePath } from "../schemas/paths";
+import { TypedError } from "./errors";
 
 const SHEBANG = "#!/bin/sh";
 
-export async function readShim(shimPath: AbsolutePath): Promise<null | string> {
+export async function readPNPMShim(
+  shimPath: AbsolutePath,
+): Promise<Result<string, TypedError.FileSystem | TypedError.Parse>> {
   const isWindows = process.platform === "win32";
   const shimFilePath = isWindows ? `${shimPath}.cmd` : shimPath;
 
@@ -17,12 +21,20 @@ export async function readShim(shimPath: AbsolutePath): Promise<null | string> {
       : readPosixShim(content);
 
     if (!relativePath) {
-      return null;
+      return err(
+        new TypedError.Parse(
+          `Failed to parse shim file at ${shimFilePath}: could not extract relative path`,
+        ),
+      );
     }
 
-    return resolveShimTarget(shimFilePath, relativePath);
-  } catch {
-    return null;
+    return ok(resolveShimTarget(shimFilePath, relativePath));
+  } catch (error) {
+    return err(
+      new TypedError.FileSystem(`Failed to read shim file at ${shimFilePath}`, {
+        cause: error,
+      }),
+    );
   }
 }
 

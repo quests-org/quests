@@ -1,3 +1,4 @@
+import { getBuildInfo } from "@netlify/build-info/node";
 import { envForProviders } from "@quests/ai-gateway";
 import { execa, ExecaError, type ResultPromise } from "execa";
 import ms from "ms";
@@ -11,12 +12,10 @@ import {
 
 import { type AppConfig } from "../lib/app-config/types";
 import { cancelableTimeout, TimeoutError } from "../lib/cancelable-timeout";
+import { getDevCommand } from "../lib/get-dev-command";
+import { getInstallCommand } from "../lib/get-install-command";
 import { pathExists } from "../lib/path-exists";
 import { PortManager } from "../lib/port-manager";
-import {
-  detectRuntimeTypeFromDirectory,
-  getRuntimeConfigByType,
-} from "../lib/runtime-config";
 import { getWorkspaceServerURL } from "./server/url";
 
 const BASE_RUNTIME_TIMEOUT_MS = ms("1 minute");
@@ -125,6 +124,22 @@ export const spawnRuntimeLogic = fromCallback<
   };
 
   async function main() {
+    const buildInfo = await getBuildInfo({ projectDir: appConfig.appDir });
+
+    if (buildInfo.frameworks.length === 0) {
+      parentRef.send({
+        isRetryable: false,
+        shouldLog: true,
+        type: "spawnRuntime.error.unknown",
+        value: {
+          error: new Error(
+            "No frameworks detected. Ensure a framework like Next.js, Nuxt.js, or Vite exists in the package.json.",
+          ),
+        },
+      });
+      return;
+    }
+
     port = await portManager.reservePort();
 
     if (!port) {
@@ -149,52 +164,17 @@ export const spawnRuntimeLogic = fromCallback<
       return;
     }
 
-    const runtimeTypeResult = await detectRuntimeTypeFromDirectory(
-      appConfig.appDir,
-    );
-
-    if (runtimeTypeResult.isErr()) {
-      const { message, scriptName } = runtimeTypeResult.error;
-      parentRef.send({
-        isRetryable: false,
-        shouldLog: true,
-        type: scriptName
-          ? "spawnRuntime.error.unsupported-script"
-          : "spawnRuntime.error.package-json",
-        value: {
-          error: new Error(message),
-        },
-      });
-      return;
-    }
-
-    const runtimeType = runtimeTypeResult.value;
-    const runtimeConfig = getRuntimeConfigByType(runtimeType);
-
     const installTimeout = cancelableTimeout(INSTALL_TIMEOUT_MS);
     const installSignal = AbortSignal.any([
       abortController.signal,
       installTimeout.controller.signal,
     ]);
-    if (!runtimeConfig) {
-      parentRef.send({
-        isRetryable: false,
-        shouldLog: true,
-        type: "spawnRuntime.error.unknown",
-        value: {
-          error: new Error(
-            "Unsupported runtime type. Supported: vite, next, nuxt",
-          ),
-        },
-      });
-      return;
-    }
-    const installCommand = runtimeConfig.installCommand(appConfig);
+    const packageManager = getInstallCommand({ appConfig, buildInfo });
 
     parentRef.send({
       type: "spawnRuntime.log",
       value: {
-        message: `$ ${installCommand.join(" ")}`,
+        message: `Installing dependencies with ${packageManager.name}`,
         type: "normal",
       },
     });
@@ -204,7 +184,7 @@ export const spawnRuntimeLogic = fromCallback<
       cwd: appConfig.appDir,
       env: baseEnv,
       node: true,
-    })`${installCommand}`;
+    })`${packageManager.installCommand}`;
 
     sendProcessLogs(installProcess, parentRef);
     await installProcess;
@@ -220,24 +200,30 @@ export const spawnRuntimeLogic = fromCallback<
       timeout.controller.signal,
     ]);
 
-    const devServerCommand = await runtimeConfig.devCommand({
-      appDir: appConfig.appDir,
+    const devServerCommandResult = await getDevCommand({
+      appConfig,
+      buildInfo,
       port,
     });
 
-    if (!devServerCommand) {
+    if (devServerCommandResult.isErr()) {
       parentRef.send({
         isRetryable: false,
         shouldLog: true,
         type: "spawnRuntime.error.unknown",
-        value: { error: new Error("Failed to get dev server command") },
+        value: { error: devServerCommandResult.error },
       });
       return;
     }
 
+    const { command, framework } = devServerCommandResult.value;
+
     parentRef.send({
       type: "spawnRuntime.log",
-      value: { message: `Starting ${runtimeType} dev server`, type: "normal" },
+      value: {
+        message: `Starting ${framework.name} dev server`,
+        type: "normal",
+      },
     });
 
     timeout.start();
@@ -248,10 +234,11 @@ export const spawnRuntimeLogic = fromCallback<
         ...providerEnv,
         ...baseEnv,
         NO_COLOR: "1",
+        PORT: port.toString(),
         QUESTS_INSIDE_STUDIO: "true",
       },
       node: true,
-    })`${devServerCommand}`;
+    })`${command}`;
     sendProcessLogs(runtimeProcess, parentRef);
 
     let shouldCheckServer = true;
