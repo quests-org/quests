@@ -4,14 +4,12 @@ import fs from "node:fs/promises";
 import path from "node:path";
 
 import { logger } from "./electron-logger";
-import { readShim } from "./read-shim";
 
 const BIN_DIR_NAME = "bin";
 
 interface BinaryConfig {
   getTargetPath: () => string;
   name: string;
-  type: "direct" | "node-modules-bin";
 }
 
 export function getBinDirectoryPath(): string {
@@ -41,9 +39,7 @@ export async function setupBinDirectory(): Promise<string> {
         continue;
       }
 
-      await (binary.type === "node-modules-bin"
-        ? linkFromNodeModulesBin(binDir, binary.name, targetPath)
-        : linkDirect(binDir, binary.name, targetPath));
+      await linkDirect(binDir, binary.name, targetPath);
     } catch (error) {
       logger.error(`Failed to setup binary ${binary.name}:`, error);
     }
@@ -100,14 +96,12 @@ function getBinaryConfigs(): BinaryConfig[] {
 
   return [
     {
-      getTargetPath: () => getNodeModulePath(".bin"),
+      getTargetPath: () => getNodeModulePath("pnpm", "bin", "pnpm.cjs"),
       name: "pnpm",
-      type: "node-modules-bin",
     },
     {
-      getTargetPath: () => getNodeModulePath(".bin"),
+      getTargetPath: () => getNodeModulePath("pnpm", "bin", "pnpx.cjs"),
       name: "pnpx",
-      type: "node-modules-bin",
     },
     {
       getTargetPath: () => {
@@ -119,7 +113,6 @@ function getBinaryConfigs(): BinaryConfig[] {
           : path.join(basePath, "git");
       },
       name: "git",
-      type: "direct",
     },
     {
       getTargetPath: () => {
@@ -129,7 +122,6 @@ function getBinaryConfigs(): BinaryConfig[] {
           : path.join(basePath, "rg");
       },
       name: "rg",
-      type: "direct",
     },
   ];
 }
@@ -168,29 +160,6 @@ async function linkDirect(
     await fs.symlink(targetPath, linkPath);
     logger.info(`Created symlink: ${linkPath} -> ${targetPath}`);
   }
-}
-
-async function linkFromNodeModulesBin(
-  binDir: string,
-  name: string,
-  nodeModulesBinPath: string,
-): Promise<void> {
-  const shimPath = path.join(nodeModulesBinPath, name);
-  const targetCjsPath = await readShim(shimPath);
-
-  if (!targetCjsPath) {
-    logger.error(`Failed to read shim: ${shimPath}`);
-    throw new Error(`Failed to read shim: ${shimPath}`);
-  }
-
-  const outputPath = path.join(binDir, name);
-
-  await cmdShim(targetCjsPath, outputPath, {
-    createCmdFile: true,
-    createPwshFile: false,
-  });
-
-  logger.info(`Created shim: ${outputPath} -> ${targetCjsPath}`);
 }
 
 async function setupNodeLink(binDir: string): Promise<void> {
