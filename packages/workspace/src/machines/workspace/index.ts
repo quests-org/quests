@@ -42,7 +42,6 @@ import {
 import { type SessionMessage } from "../../schemas/session/message";
 import { type StoreId } from "../../schemas/store-id";
 import { type AppSubdomain } from "../../schemas/subdomains";
-import { type RunShellCommand } from "../../tools/types";
 import { type WorkspaceConfig } from "../../types";
 import { type ToolCallUpdate } from "../agent";
 import { runtimeMachine } from "../runtime";
@@ -188,7 +187,6 @@ export const workspaceMachine = setup({
       registryDir: string;
       rootDir: string;
       runPackageJsonScript: WorkspaceContext["runPackageJsonScript"];
-      runShellCommand: RunShellCommand;
       shimClientDir: string;
       trashItem: (path: AbsolutePath) => Promise<void>;
     },
@@ -210,7 +208,6 @@ export const workspaceMachine = setup({
       ),
       registryDir: AbsolutePathSchema.parse(input.registryDir),
       rootDir: WorkspaceDirSchema.parse(input.rootDir),
-      runShellCommand: input.runShellCommand,
       trashItem: input.trashItem,
     };
     return {

@@ -11,7 +11,7 @@ import {
   workspacePublisher,
 } from "@quests/workspace/electron";
 import { app, shell } from "electron";
-import { execa, parseCommandString } from "execa";
+import { execa } from "execa";
 import ms from "ms";
 import { err, ok } from "neverthrow";
 import path from "node:path";
@@ -21,7 +21,6 @@ import { getProvidersStore } from "../stores/providers";
 import { captureServerEvent } from "./capture-server-event";
 import { captureServerException } from "./capture-server-exception";
 import { getFramework } from "./frameworks";
-import { getAllPackageBinaryPaths } from "./link-bins";
 import { getPNPMBinPath } from "./setup-bin-directory";
 
 const scopedLogger = logger.scope("workspace-actor");
@@ -84,49 +83,6 @@ export function createWorkspaceActor() {
         } catch (error) {
           return err(error instanceof Error ? error : new Error(String(error)));
         }
-      },
-      runShellCommand: async (command, { cwd, signal }) => {
-        const [commandName, ...rest] = parseCommandString(command);
-        const pnpmPath = getPNPMBinPath();
-
-        if (commandName === "pnpm") {
-          return ok(
-            execa({
-              cancelSignal: signal,
-              cwd,
-              env: execaEnv,
-              node: true,
-            })`${pnpmPath} ${rest}`,
-          );
-        }
-
-        if (commandName === "tsc") {
-          const binaryPaths = await getAllPackageBinaryPaths(cwd);
-          const binPaths = binaryPaths.get("typescript");
-
-          if (!binPaths) {
-            return err(new Error(`tsc not found in ${cwd}`));
-          }
-
-          const modulePath = binPaths.find(
-            (binPath) => path.basename(binPath) === "tsc",
-          );
-
-          if (!modulePath) {
-            return err(new Error(`tsc not found in ${cwd}`));
-          }
-
-          return ok(
-            execa({
-              cancelSignal: signal,
-              cwd,
-              env: execaEnv,
-              node: true,
-            })`${modulePath} ${rest}`,
-          );
-        }
-
-        return err(new Error(`Not implemented: ${command}`));
       },
       shimClientDir: app.isPackaged
         ? path.resolve(process.resourcesPath, "shim-client")

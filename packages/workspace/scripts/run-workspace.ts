@@ -142,30 +142,6 @@ const actor = createActor(workspaceMachine, {
         );
       }
     },
-    runShellCommand: (command, { cwd, signal }) => {
-      const [commandName, ...rest] = parseCommandString(command);
-      if (commandName === "pnpm") {
-        return Promise.resolve(
-          ok(
-            execa({
-              cancelSignal: signal,
-              cwd,
-            })`${commandName} ${rest} --ignore-workspace`,
-          ),
-        );
-      }
-      if (commandName === "tsc") {
-        return Promise.resolve(
-          ok(
-            execa({
-              cancelSignal: signal,
-              cwd,
-            })`pnpm exec tsc ${rest.join(" ")}`,
-          ),
-        );
-      }
-      return Promise.resolve(err(new Error(`Not implemented: ${command}`)));
-    },
     // Uncomment to test built shim
     // shimClientDir: path.resolve("../shim-client/dist"),
     shimClientDir: "dev-server",

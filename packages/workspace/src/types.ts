@@ -6,7 +6,7 @@ import {
 
 import { type APP_STATUSES } from "./constants";
 import { type AbsolutePath, type WorkspaceDir } from "./schemas/paths";
-import { type RunShellCommand, type ShellResult } from "./tools/types";
+import { type ShellResult } from "./tools/types";
 
 export type AppStatus = (typeof APP_STATUSES)[number];
 
@@ -30,6 +30,5 @@ export interface WorkspaceConfig {
   projectsDir: AbsolutePath;
   registryDir: AbsolutePath;
   rootDir: WorkspaceDir;
-  runShellCommand: RunShellCommand;
   trashItem: (path: AbsolutePath) => Promise<void>;
 }
