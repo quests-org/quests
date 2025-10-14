@@ -42,7 +42,6 @@ import {
 import { type SessionMessage } from "../../schemas/session/message";
 import { type StoreId } from "../../schemas/store-id";
 import { type AppSubdomain } from "../../schemas/subdomains";
-import { type RunShellCommand } from "../../tools/types";
 import { type WorkspaceConfig } from "../../types";
 import { type ToolCallUpdate } from "../agent";
 import { runtimeMachine } from "../runtime";
@@ -183,11 +182,11 @@ export const workspaceMachine = setup({
       captureEvent: CaptureEventFunction;
       captureException: CaptureExceptionFunction;
       getAIProviders: GetAIProviders;
+      nodeExecEnv: Record<string, string>;
+      pnpmBinPath: string;
       previewCacheTimeMs?: number;
       registryDir: string;
       rootDir: string;
-      runPackageJsonScript: WorkspaceContext["runPackageJsonScript"];
-      runShellCommand: RunShellCommand;
       shimClientDir: string;
       trashItem: (path: AbsolutePath) => Promise<void>;
     },
@@ -199,6 +198,8 @@ export const workspaceMachine = setup({
       captureEvent: input.captureEvent,
       captureException: input.captureException,
       getAIProviders: input.getAIProviders,
+      nodeExecEnv: input.nodeExecEnv,
+      pnpmBinPath: AbsolutePathSchema.parse(input.pnpmBinPath),
       previewCacheTimeMs: input.previewCacheTimeMs,
       previewsDir: AbsolutePathSchema.parse(
         path.join(input.rootDir, PREVIEWS_FOLDER),
@@ -208,7 +209,6 @@ export const workspaceMachine = setup({
       ),
       registryDir: AbsolutePathSchema.parse(input.registryDir),
       rootDir: WorkspaceDirSchema.parse(input.rootDir),
-      runShellCommand: input.runShellCommand,
       trashItem: input.trashItem,
     };
     return {
@@ -216,7 +216,6 @@ export const workspaceMachine = setup({
       checkoutVersionRefs: new Map(),
       config: workspaceConfig,
       createPreviewRefs: new Map(),
-      runPackageJsonScript: input.runPackageJsonScript,
       runtimeRefs: new Map(),
       sessionRefsBySubdomain: new Map(),
       workspaceServerRef: spawn("workspaceServerLogic", {
@@ -486,7 +485,6 @@ export const workspaceMachine = setup({
             spawn("runtimeMachine", {
               input: {
                 appConfig: event.value.appConfig,
-                runPackageJsonScript: context.runPackageJsonScript,
               },
             }),
           ),

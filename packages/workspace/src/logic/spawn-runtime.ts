@@ -1,7 +1,7 @@
+import { getBuildInfo } from "@netlify/build-info/node";
 import { envForProviders } from "@quests/ai-gateway";
-import { ExecaError, parseCommandString, type ResultPromise } from "execa";
+import { ExecaError, type ResultPromise } from "execa";
 import ms from "ms";
-import { type NormalizedPackageJson, readPackage } from "read-pkg";
 import {
   type ActorRef,
   type ActorRefFrom,
@@ -12,9 +12,11 @@ import {
 
 import { type AppConfig } from "../lib/app-config/types";
 import { cancelableTimeout, TimeoutError } from "../lib/cancelable-timeout";
+import { execaNodeForApp } from "../lib/execa-node-for-app";
+import { getFramework } from "../lib/get-framework";
+import { getPackageManager } from "../lib/get-package-manager";
 import { pathExists } from "../lib/path-exists";
 import { PortManager } from "../lib/port-manager";
-import { type RunPackageJsonScript } from "../types";
 import { getWorkspaceServerURL } from "./server/url";
 
 const BASE_RUNTIME_TIMEOUT_MS = ms("1 minute");
@@ -65,13 +67,13 @@ async function isLocalServerRunning(port: number) {
 }
 
 function sendProcessLogs(
-  execaProcess: ResultPromise<{ cancelSignal: AbortSignal; cwd: string }>,
+  execaProcess: ResultPromise,
   parentRef: ActorRef<AnyMachineSnapshot, SpawnRuntimeEvent>,
   options: { errorOnly?: boolean } = {},
 ) {
   const { stderr, stdout } = execaProcess;
 
-  stderr.on("data", (data: Buffer) => {
+  stderr?.on("data", (data: Buffer) => {
     const message = data.toString().trim();
     if (message) {
       if (
@@ -90,7 +92,7 @@ function sendProcessLogs(
   });
 
   if (!options.errorOnly) {
-    stdout.on("data", (data: Buffer) => {
+    stdout?.on("data", (data: Buffer) => {
       const message = data.toString().trim();
       if (message) {
         parentRef.send({
@@ -107,9 +109,8 @@ export const spawnRuntimeLogic = fromCallback<
     appConfig: AppConfig;
     attempt: number;
     parentRef: ActorRef<AnyMachineSnapshot, SpawnRuntimeEvent>;
-    runPackageJsonScript: RunPackageJsonScript;
   }
->(({ input: { appConfig, attempt, parentRef, runPackageJsonScript } }) => {
+>(({ input: { appConfig, attempt, parentRef } }) => {
   const abortController = new AbortController();
   const timeout = cancelableTimeout(
     BASE_RUNTIME_TIMEOUT_MS + attempt * RUNTIME_TIMEOUT_MULTIPLIER_MS,
@@ -118,6 +119,22 @@ export const spawnRuntimeLogic = fromCallback<
   let port: number | undefined;
 
   async function main() {
+    const buildInfo = await getBuildInfo({ projectDir: appConfig.appDir });
+
+    if (buildInfo.frameworks.length === 0) {
+      parentRef.send({
+        isRetryable: false,
+        shouldLog: true,
+        type: "spawnRuntime.error.unknown",
+        value: {
+          error: new Error(
+            "No frameworks detected. Ensure a framework like Next.js, Nuxt.js, or Vite exists in the package.json.",
+          ),
+        },
+      });
+      return;
+    }
+
     port = await portManager.reservePort();
 
     if (!port) {
@@ -126,96 +143,6 @@ export const spawnRuntimeLogic = fromCallback<
         shouldLog: true,
         type: "spawnRuntime.error.unknown",
         value: { error: new Error("Failed to initialize port") },
-      });
-      return;
-    }
-
-    const installTimeout = cancelableTimeout(INSTALL_TIMEOUT_MS);
-    const installSignal = AbortSignal.any([
-      abortController.signal,
-      installTimeout.controller.signal,
-    ]);
-    const installCommand =
-      appConfig.type === "version" || appConfig.type === "sandbox"
-        ? // These app types are nested in the project directory, so we need
-          // to ignore the workspace config otherwise PNPM may not install the
-          // dependencies correctly
-          "pnpm install --ignore-workspace"
-        : "pnpm install";
-
-    parentRef.send({
-      type: "spawnRuntime.log",
-      value: { message: `$ ${installCommand}`, type: "normal" },
-    });
-
-    const installResult = await appConfig.workspaceConfig.runShellCommand(
-      installCommand,
-      {
-        cwd: appConfig.appDir,
-        signal: installSignal,
-      },
-    );
-    installTimeout.cancel();
-    if (installResult.isErr()) {
-      parentRef.send({
-        isRetryable: true,
-        shouldLog: true,
-        type: "spawnRuntime.error.install-failed",
-        value: {
-          error: new Error(installResult.error.message, {
-            cause: installResult.error,
-          }),
-        },
-      });
-      return;
-    }
-
-    const installProcessPromise = installResult.value;
-    sendProcessLogs(installProcessPromise, parentRef);
-    await installProcessPromise;
-
-    const scriptName = "dev";
-
-    let pkg: NormalizedPackageJson;
-    try {
-      pkg = await readPackage({ cwd: appConfig.appDir });
-    } catch (error) {
-      parentRef.send({
-        isRetryable: false,
-        shouldLog: true,
-        type: "spawnRuntime.error.package-json",
-        value: {
-          error: new Error("Unknown error reading package.json", {
-            cause: error instanceof Error ? error : new Error(String(error)),
-          }),
-        },
-      });
-      return;
-    }
-
-    const script = pkg.scripts?.[scriptName];
-    if (!script) {
-      parentRef.send({
-        isRetryable: false,
-        shouldLog: true,
-        type: "spawnRuntime.error.package-json",
-        value: {
-          error: new Error(`No script \`${scriptName}\` found in package.json`),
-        },
-      });
-      return;
-    }
-    const [commandName] = parseCommandString(script);
-    if (commandName !== "vite") {
-      parentRef.send({
-        isRetryable: false,
-        shouldLog: true,
-        type: "spawnRuntime.error.unsupported-script",
-        value: {
-          error: new Error(
-            `Unsupported command \`${commandName ?? "missing"}\` for script \`${scriptName}\` in package.json`,
-          ),
-        },
       });
       return;
     }
@@ -232,6 +159,35 @@ export const spawnRuntimeLogic = fromCallback<
       return;
     }
 
+    const installTimeout = cancelableTimeout(INSTALL_TIMEOUT_MS);
+    const installSignal = AbortSignal.any([
+      abortController.signal,
+      installTimeout.controller.signal,
+    ]);
+    const packageManager = getPackageManager({ appConfig });
+
+    parentRef.send({
+      type: "spawnRuntime.log",
+      value: {
+        message: `Installing dependencies with ${packageManager.name}`,
+        type: "normal",
+      },
+    });
+
+    const installProcess = execaNodeForApp(
+      appConfig,
+      packageManager.command,
+      packageManager.arguments,
+      {
+        cancelSignal: installSignal,
+        cwd: appConfig.appDir,
+      },
+    );
+
+    sendProcessLogs(installProcess, parentRef);
+    await installProcess;
+    installTimeout.cancel();
+
     const providerEnv = envForProviders({
       providers: appConfig.workspaceConfig.getAIProviders(),
       workspaceServerURL: getWorkspaceServerURL(),
@@ -242,39 +198,59 @@ export const spawnRuntimeLogic = fromCallback<
       timeout.controller.signal,
     ]);
 
-    parentRef.send({
-      type: "spawnRuntime.log",
-      value: { message: `$ pnpm run ${script}`, type: "normal" },
+    const frameworkResult = await getFramework({
+      appConfig,
+      buildInfo,
+      port,
     });
 
-    timeout.start();
-    const result = await runPackageJsonScript({
-      cwd: appConfig.appDir,
-      script,
-      scriptOptions: {
-        env: {
-          ...providerEnv,
-          NO_COLOR: "1", // Disable color to avoid ANSI escape codes in logs
-          QUESTS_INSIDE_STUDIO: "true", // Used by apps to detect if they are running inside Studio
-        },
-        port,
-      },
-      signal,
-    });
-    if (result.isErr()) {
-      // Happens for immediate errors
+    if (frameworkResult.isErr()) {
       parentRef.send({
-        isRetryable: true,
-        shouldLog: false,
+        isRetryable: false,
+        shouldLog: true,
         type: "spawnRuntime.error.unknown",
-        value: {
-          error: result.error,
-        },
+        value: { error: frameworkResult.error },
       });
       return;
     }
-    const processPromise = result.value;
-    sendProcessLogs(processPromise, parentRef);
+
+    const framework = frameworkResult.value;
+
+    if (framework.errorMessage) {
+      parentRef.send({
+        type: "spawnRuntime.log",
+        value: {
+          message: framework.errorMessage,
+          type: "error",
+        },
+      });
+    }
+
+    parentRef.send({
+      type: "spawnRuntime.log",
+      value: {
+        message: `Starting ${framework.name} dev server`,
+        type: "normal",
+      },
+    });
+
+    timeout.start();
+    const runtimeProcess = execaNodeForApp(
+      appConfig,
+      framework.command,
+      framework.arguments,
+      {
+        cancelSignal: signal,
+        cwd: appConfig.appDir,
+        env: {
+          ...providerEnv,
+          NO_COLOR: "1",
+          PORT: port.toString(),
+          QUESTS_INSIDE_STUDIO: "true",
+        },
+      },
+    );
+    sendProcessLogs(runtimeProcess, parentRef);
 
     let shouldCheckServer = true;
     const checkServer = async () => {
@@ -318,10 +294,10 @@ export const spawnRuntimeLogic = fromCallback<
     // Must abort check server if the process promise rejects because it
     // means the server is not running and we could accidentally check
     // another server and say it's running
-    processPromise.catch(() => (shouldCheckServer = false));
+    runtimeProcess.catch(() => (shouldCheckServer = false));
 
     // Ensures we catch errors from the process promise
-    await Promise.all([checkServer(), processPromise]);
+    await Promise.all([checkServer(), runtimeProcess]);
   }
 
   main()

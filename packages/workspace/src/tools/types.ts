@@ -2,7 +2,6 @@ import type { Tool } from "ai";
 import type { Result } from "neverthrow";
 
 import { type LanguageModelV2ToolResultOutput } from "@ai-sdk/provider";
-import { type ResultPromise } from "execa";
 import { type z } from "zod";
 
 import type { ToolNameSchema } from "./name";
@@ -33,18 +32,6 @@ export interface AgentTool<
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type AnyAgentTool = AgentTool<any, any, any>;
-
-export type RunShellCommand = (
-  command: string,
-  options: {
-    cwd: string;
-    signal: AbortSignal;
-  },
-) => ShellResult;
-
-export type ShellResult = Promise<
-  Result<ResultPromise<{ cancelSignal: AbortSignal; cwd: string }>, Error>
->;
 
 export type ToolName = z.output<typeof ToolNameSchema>;
 

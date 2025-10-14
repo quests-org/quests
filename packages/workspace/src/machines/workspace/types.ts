@@ -6,7 +6,7 @@ import {
   type PreviewSubdomain,
   type VersionSubdomain,
 } from "../../schemas/subdomains";
-import { type RunPackageJsonScript, type WorkspaceConfig } from "../../types";
+import { type WorkspaceConfig } from "../../types";
 import { type RuntimeActorRef } from "../runtime";
 import { type SessionActorRef } from "../session";
 
@@ -17,7 +17,6 @@ export interface WorkspaceContext {
   config: WorkspaceConfig;
   createPreviewRefs: Map<PreviewSubdomain, CreatePreviewActorRef>;
   error?: unknown;
-  runPackageJsonScript: RunPackageJsonScript;
   runtimeRefs: Map<AppSubdomain, RuntimeActorRef>;
   sessionRefsBySubdomain: Map<AppSubdomain, SessionActorRef[]>;
   workspaceServerRef: WorkspaceServerActorRef;

@@ -5,13 +5,5 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": [
-    "src",
-    "*.ts",
-    "*.js",
-    "*.cjs",
-    "scripts",
-    "__mocks__/*.ts",
-    "../../packages/ai-gateway/src/lib/add-ref.ts"
-  ]
+  "include": ["src", "*.ts", "*.js", "*.cjs", "scripts", "__mocks__/*.ts"]
 }

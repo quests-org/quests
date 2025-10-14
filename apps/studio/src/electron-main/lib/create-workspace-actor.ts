@@ -11,28 +11,19 @@ import {
   workspacePublisher,
 } from "@quests/workspace/electron";
 import { app, shell } from "electron";
-import { execa, parseCommandString } from "execa";
 import ms from "ms";
-import { err, ok } from "neverthrow";
 import path from "node:path";
 import { createActor } from "xstate";
 
 import { getProvidersStore } from "../stores/providers";
 import { captureServerEvent } from "./capture-server-event";
 import { captureServerException } from "./capture-server-exception";
-import { getFramework } from "./frameworks";
-import { getAllPackageBinaryPaths } from "./link-bins";
-import { getPnpmPath } from "./pnpm";
+import { getPNPMBinPath } from "./setup-bin-directory";
 
 const scopedLogger = logger.scope("workspace-actor");
 
 export function createWorkspaceActor() {
   const rootDir = path.join(app.getPath("userData"), WORKSPACE_FOLDER);
-  const execaEnv = {
-    // Required for normal node processes to work
-    // See https://www.electronjs.org/docs/latest/api/environment-variables
-    ELECTRON_RUN_AS_NODE: "1",
-  };
   const actor = createActor(workspaceMachine, {
     input: {
       aiGatewayApp,
@@ -54,79 +45,17 @@ export function createWorkspaceActor() {
 
         return providers;
       },
+      nodeExecEnv: {
+        // Required to allow Electron to operate as a node process
+        // See https://www.electronjs.org/docs/latest/api/environment-variables
+        ELECTRON_RUN_AS_NODE: "1",
+      },
+      pnpmBinPath: getPNPMBinPath(),
       previewCacheTimeMs: ms("24 hours"),
       registryDir: app.isPackaged
         ? path.join(process.resourcesPath, REGISTRY_DIR_NAME)
         : path.resolve(import.meta.dirname, REGISTRY_DEV_DIR_PATH),
       rootDir,
-      runPackageJsonScript: async ({ cwd, script, scriptOptions, signal }) => {
-        const { framework, frameworkModulePath } = await getFramework({
-          rootDir: cwd,
-          script,
-        });
-        if (!framework) {
-          return err(new Error(`Unsupported framework: ${script}`));
-        }
-
-        try {
-          return ok(
-            execa({
-              cancelSignal: signal,
-              cwd,
-              env: {
-                ...execaEnv,
-                ...scriptOptions.env,
-              },
-              node: true,
-            })`${frameworkModulePath} ${framework.args("dev", scriptOptions.port)}`,
-          );
-        } catch (error) {
-          return err(error instanceof Error ? error : new Error(String(error)));
-        }
-      },
-      runShellCommand: async (command, { cwd, signal }) => {
-        const [commandName, ...rest] = parseCommandString(command);
-        const pnpmPath = getPnpmPath();
-
-        if (commandName === "pnpm") {
-          return ok(
-            execa({
-              cancelSignal: signal,
-              cwd,
-              env: execaEnv,
-              node: true,
-            })`${pnpmPath} ${rest}`,
-          );
-        }
-
-        if (commandName === "tsc") {
-          const binaryPaths = await getAllPackageBinaryPaths(cwd);
-          const binPaths = binaryPaths.get("typescript");
-
-          if (!binPaths) {
-            return err(new Error(`tsc not found in ${cwd}`));
-          }
-
-          const modulePath = binPaths.find(
-            (binPath) => path.basename(binPath) === "tsc",
-          );
-
-          if (!modulePath) {
-            return err(new Error(`tsc not found in ${cwd}`));
-          }
-
-          return ok(
-            execa({
-              cancelSignal: signal,
-              cwd,
-              env: execaEnv,
-              node: true,
-            })`${modulePath} ${rest}`,
-          );
-        }
-
-        return err(new Error(`Not implemented: ${command}`));
-      },
       shimClientDir: app.isPackaged
         ? path.resolve(process.resourcesPath, "shim-client")
         : // Uncomment to test built shim

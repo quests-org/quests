@@ -15,48 +15,50 @@ import { executeToolCallMachine } from "./execute-tool-call";
 vi.mock(import("ulid"));
 vi.mock(import("../lib/session-store-storage"));
 vi.mock(import("../lib/get-current-date"));
+vi.mock(import("../lib/execa-node-for-app"), () => ({
+  execaNodeForApp: vi.fn(),
+}));
 
 describe("executeToolCallMachine", () => {
   const projectAppConfig = createMockAppConfig(
     ProjectSubdomainSchema.parse("test"),
-    {
-      runShellCommand: vi.fn().mockImplementation((command: string) => {
-        if (command.includes("throw-error")) {
-          throw new Error("Shell command failed");
-        }
-
-        if (command.includes("hang-command")) {
-          return Promise.resolve({
-            isErr: () => false,
-            value: new Promise((resolve) => {
-              setTimeout(() => {
-                resolve({
-                  exitCode: 0,
-                  stderr: "mocked stderr",
-                  stdout: "mocked stdout",
-                });
-              }, 100);
-            }),
-          });
-        }
-
-        // Default successful command
-        return Promise.resolve({
-          isErr: () => false,
-          value: Promise.resolve({
-            exitCode: 0,
-            stderr: "mocked stderr",
-            stdout: "mocked stdout",
-          }),
-        });
-      }),
-    },
   );
   const sessionId = StoreId.newSessionId();
   const messageId = StoreId.newMessageId();
   const mockDate = new Date("2025-01-01T00:00:00.000Z");
 
   beforeEach(async () => {
+    const { execaNodeForApp: execaElectronNode } = await import(
+      "../lib/execa-node-for-app"
+    );
+    vi.mocked(execaElectronNode).mockImplementation(
+      async (_appConfig, file, args, _options) => {
+        const command = [file, ...(args ?? [])].join(" ");
+
+        if (command.includes("throw-error")) {
+          throw new Error("Shell command failed");
+        }
+
+        if (command.includes("hang-command")) {
+          return new Promise((resolve) => {
+            setTimeout(() => {
+              resolve({
+                exitCode: 0,
+                stderr: "mocked stderr",
+                stdout: "mocked stdout",
+              });
+            }, 100);
+          });
+        }
+
+        return {
+          exitCode: 0,
+          stderr: "mocked stderr",
+          stdout: "mocked stdout",
+        };
+      },
+    );
+
     mockFs({
       [MOCK_WORKSPACE_DIRS.projects]: {
         [projectAppConfig.folderName]: {
@@ -94,6 +96,7 @@ describe("executeToolCallMachine", () => {
 
   afterEach(() => {
     mockFs.restore();
+    vi.clearAllMocks();
   });
 
   function createTestActor({

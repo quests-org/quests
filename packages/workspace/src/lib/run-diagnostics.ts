@@ -3,6 +3,7 @@ import { ExecaError } from "execa";
 import type { AppConfig } from "./app-config/types";
 
 import { cancelableTimeout } from "./cancelable-timeout";
+import { runNodeModuleBin } from "./run-pnpm-bin";
 
 export async function runDiagnostics(
   appConfig: AppConfig,
@@ -20,9 +21,11 @@ export async function runDiagnostics(
   // not just the specific file. This is a limitation of TypeScript CLI.
   // In the future, this will be replaced with LSP-based diagnostics that
   // can target specific files efficiently.
-  const diagnosticsResult = await appConfig.workspaceConfig.runShellCommand(
-    "tsc --noEmit",
-    { cwd: appConfig.appDir, signal: diagnosticsSignal },
+  const diagnosticsResult = await runNodeModuleBin(
+    appConfig.appDir,
+    "tsc",
+    ["--noEmit"],
+    { cancelSignal: diagnosticsSignal },
   );
 
   timeout.cancel();
@@ -30,7 +33,9 @@ export async function runDiagnostics(
   if (diagnosticsResult.isOk()) {
     try {
       const result = await diagnosticsResult.value;
-      const output = result.stderr + result.stdout;
+      const stderr = result.stderr?.toString() ?? "";
+      const stdout = result.stdout?.toString() ?? "";
+      const output = stderr + stdout;
       if (output.trim() && result.exitCode !== 0) {
         return output.trim();
       }

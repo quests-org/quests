@@ -9,8 +9,10 @@ import { z } from "zod";
 import type { AppConfig } from "../lib/app-config/types";
 
 import { absolutePathJoin } from "../lib/absolute-path-join";
+import { execaNodeForApp } from "../lib/execa-node-for-app";
 import { fixRelativePath } from "../lib/fix-relative-path";
 import { pathExists } from "../lib/path-exists";
+import { readPNPMShim } from "../lib/read-pnpm-shim";
 import { BaseInputSchema } from "./base";
 import { createTool } from "./create-tool";
 
@@ -37,6 +39,11 @@ const AVAILABLE_COMMANDS = {
       "A limited version of the rm command that supports the -r flag for recursive directory removal and can only remove files/directories in the app directory.",
     example: "rm temp/cache.json or rm -r temp/",
     isFileOperation: true,
+  },
+  tsc: {
+    description: "TypeScript compiler",
+    example: "tsc",
+    isFileOperation: false,
   },
 } as const;
 
@@ -403,23 +410,47 @@ export const RunShellCommand = createTool({
       });
     }
 
-    const safeResult = await appConfig.workspaceConfig.runShellCommand(
-      input.command,
-      { cwd: appConfig.appDir, signal },
-    );
-    if (safeResult.isErr()) {
-      return err({
-        message: safeResult.error.message,
-        type: "execute-error",
+    if (commandName === "pnpm") {
+      const process = await execaNodeForApp(
+        appConfig,
+        appConfig.workspaceConfig.pnpmBinPath,
+        args,
+        {
+          cancelSignal: signal,
+          cwd: appConfig.appDir,
+        },
+      );
+      return ok({
+        command: input.command,
+        exitCode: process.exitCode ?? 0,
+        stderr: process.stderr,
+        stdout: process.stdout,
+      });
+    } else if (commandName === "tsc") {
+      // TODO: Allow more bins
+      const binPath = await readPNPMShim(
+        absolutePathJoin(appConfig.appDir, "node_modules", ".bin", commandName),
+      );
+      if (binPath.isErr()) {
+        return err({
+          message: binPath.error.message,
+          type: "execute-error",
+        });
+      }
+      const process = await execaNodeForApp(appConfig, binPath.value, args, {
+        cancelSignal: signal,
+        cwd: appConfig.appDir,
+      });
+      return ok({
+        command: input.command,
+        exitCode: process.exitCode ?? 0,
+        stderr: process.stderr,
+        stdout: process.stdout,
       });
     }
-    const result = await safeResult.value;
-
-    return ok({
-      command: input.command,
-      exitCode: result.exitCode ?? 0,
-      stderr: result.stderr,
-      stdout: result.stdout,
+    return err({
+      message: `Invalid command. The available commands are: ${Object.keys(AVAILABLE_COMMANDS).join(", ")}.`,
+      type: "execute-error",
     });
   },
   inputSchema: BaseInputSchema.extend({
