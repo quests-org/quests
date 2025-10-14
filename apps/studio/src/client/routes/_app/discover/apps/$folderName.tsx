@@ -1,6 +1,7 @@
 /* eslint-disable unicorn/filename-case */
 /* eslint-enable unicorn/filename-case */
 import { hasAIProviderAtom } from "@/client/atoms/has-ai-provider";
+import { selectedModelURIAtom } from "@/client/atoms/selected-models";
 import { AIProviderGuard } from "@/client/components/ai-provider-guard";
 import { AIProviderGuardDialog } from "@/client/components/ai-provider-guard-dialog";
 import { SmallAppIcon } from "@/client/components/app-icon";
@@ -8,7 +9,9 @@ import { AppView } from "@/client/components/app-view";
 import { InternalLink } from "@/client/components/internal-link";
 import { Markdown } from "@/client/components/markdown";
 import { NotFoundComponent } from "@/client/components/not-found";
+import { PromptInput } from "@/client/components/prompt-input";
 import { GithubLogo } from "@/client/components/service-icons";
+import { TechStack } from "@/client/components/tech-stack";
 import { Badge } from "@/client/components/ui/badge";
 import { Button } from "@/client/components/ui/button";
 import {
@@ -27,9 +30,10 @@ import {
 import { StoreId } from "@quests/workspace/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
-import { useAtomValue } from "jotai";
-import { ChevronRight, Eye, Plus, X } from "lucide-react";
+import { useAtom, useAtomValue } from "jotai";
+import { ArrowUp, ChevronRight, Eye, Plus, X } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/discover/apps/$folderName")({
   component: RouteComponent,
@@ -77,15 +81,24 @@ function RouteComponent() {
       input: { folderName },
     }),
   );
+  const { data: packageJson } = useQuery(
+    rpcClient.workspace.registry.template.packageJson.queryOptions({
+      input: { folderName },
+    }),
+  );
   const navigate = useNavigate();
   const createProjectFromPreviewMutation = useMutation(
     rpcClient.workspace.project.createFromPreview.mutationOptions(),
   );
+  const createMessageMutation = useMutation(
+    rpcClient.workspace.message.create.mutationOptions(),
+  );
   const hasAIProvider = useAtomValue(hasAIProviderAtom);
+  const [selectedModelURI, setSelectedModelURI] = useAtom(selectedModelURIAtom);
   const [showAIProviderGuard, setShowAIProviderGuard] = useState(false);
   const [showPreviewDialog, setShowPreviewDialog] = useState(false);
 
-  const handleCreateProject = () => {
+  const handleCreateProject = (prompt?: string) => {
     if (!hasAIProvider) {
       setShowAIProviderGuard(true);
       return;
@@ -96,7 +109,52 @@ function RouteComponent() {
       createProjectFromPreviewMutation.mutate(
         { previewSubdomain: appDetails.preview.subdomain, sessionId },
         {
+          onError: (error) => {
+            toast.error(
+              `There was an error starting your project: ${error.message}`,
+            );
+          },
           onSuccess: (result) => {
+            if (prompt && selectedModelURI) {
+              const messageId = StoreId.newMessageId();
+              const createdAt = new Date();
+
+              createMessageMutation.mutate(
+                {
+                  message: {
+                    id: messageId,
+                    metadata: {
+                      createdAt,
+                      sessionId,
+                    },
+                    parts: [
+                      {
+                        metadata: {
+                          createdAt,
+                          id: StoreId.newPartId(),
+                          messageId,
+                          sessionId,
+                        },
+                        text: prompt,
+                        type: "text",
+                      },
+                    ],
+                    role: "user",
+                  },
+                  modelURI: selectedModelURI,
+                  sessionId,
+                  subdomain: result.subdomain,
+                },
+                {
+                  onError: (error) => {
+                    toast.error(
+                      `Project created but failed to send message: ${error.message}`,
+                    );
+                  },
+                },
+              );
+            }
+
             void navigate({
               params: { subdomain: result.subdomain },
               search: { selectedSessionId: sessionId },
@@ -129,36 +187,43 @@ function RouteComponent() {
           <span className="text-foreground font-medium">{title}</span>
         </nav>
 
-        <div className="flex items-start justify-between gap-4 mb-6">
-          <div className="min-w-0 flex-1">
-            <h1 className="text-3xl font-bold text-foreground mb-2">{title}</h1>
-            {description && (
-              <div className="text-sm text-muted-foreground">{description}</div>
-            )}
-          </div>
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-foreground mb-2">{title}</h1>
+          {description && (
+            <div className="text-sm text-muted-foreground">{description}</div>
+          )}
+        </div>
 
-          <div className="flex gap-2 shrink-0">
-            <Button
-              disabled={createProjectFromPreviewMutation.isPending}
-              onClick={handleCreateProject}
-              size="lg"
-              variant="brand"
-            >
-              <Plus className="h-4 w-4" />
-              Start Project
-            </Button>
-            <Button
-              disabled={!hasAIProvider}
-              onClick={() => {
-                setShowPreviewDialog(true);
-              }}
-              size="lg"
-              variant="secondary"
-            >
-              <Eye className="h-4 w-4" />
-              View Demo
-            </Button>
-          </div>
+        <div className="mb-6">
+          <PromptInput
+            atomKey={appDetails.preview.subdomain}
+            autoFocus={false}
+            autoResizeMaxHeight={200}
+            disabled={
+              createProjectFromPreviewMutation.isPending ||
+              createMessageMutation.isPending
+            }
+            isLoading={
+              createProjectFromPreviewMutation.isPending ||
+              createMessageMutation.isPending
+            }
+            isSubmittable={
+              !createProjectFromPreviewMutation.isPending &&
+              !createMessageMutation.isPending
+            }
+            modelURI={selectedModelURI}
+            onModelChange={setSelectedModelURI}
+            onSubmit={({ prompt }) => {
+              handleCreateProject(prompt.trim());
+            }}
+            placeholder={`Describe what you want to build with ${title}…`}
+            submitButtonContent={
+              <>
+                Create project
+                <ArrowUp className="size-4" />
+              </>
+            }
+          />
         </div>
 
         {screenshot && (
@@ -178,7 +243,7 @@ function RouteComponent() {
                 variant="secondary"
               >
                 <Eye className="h-4 w-4" />
-                View Preview
+                View Demo
               </Button>
             </div>
           </div>
@@ -206,6 +271,13 @@ function RouteComponent() {
                 {GITHUB_ORG}/{REGISTRY_REPO_NAME}
               </a>
             </div>
+
+            {packageJson && (
+              <TechStack
+                dependencies={packageJson.dependencies ?? {}}
+                devDependencies={packageJson.devDependencies ?? {}}
+              />
+            )}
           </div>
         </div>
 
@@ -233,17 +305,19 @@ function RouteComponent() {
                     )}
                     <DialogTitle>{title}</DialogTitle>
                   </div>
-                  <Badge variant="secondary">Preview</Badge>
+                  <Badge variant="secondary">Demo</Badge>
                 </div>
                 <div className="flex items-center gap-2">
                   <Button
                     disabled={createProjectFromPreviewMutation.isPending}
-                    onClick={handleCreateProject}
+                    onClick={() => {
+                      handleCreateProject();
+                    }}
                     size="sm"
                     variant="brand"
                   >
                     <Plus className="h-4 w-4" />
-                    Start Project
+                    Create Project
                   </Button>
                   <Button
                     onClick={() => {

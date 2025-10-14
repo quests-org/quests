@@ -105,6 +105,7 @@
     "radashi": "^12.6.0",
     "react": "catalog:",
     "react-dom": "catalog:",
+    "react-icons": "^5.5.0",
     "react-markdown": "^10.1.0",
     "read-pkg": "^9.0.1",
     "rehype-raw": "^7.0.0",

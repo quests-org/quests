@@ -46,6 +46,7 @@ interface PromptInputProps {
     prompt: string;
   }) => void;
   placeholder?: string;
+  submitButtonContent?: React.ReactNode;
 }
 
 interface PromptInputRef {
@@ -69,6 +70,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
       onStop,
       onSubmit,
       placeholder = "Type a message",
+      submitButtonContent,
     },
     ref,
   ) => {
@@ -235,7 +237,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
             </div>
 
             <Button
-              className="h-7 w-7 p-0"
+              className={cn(submitButtonContent ? "h-7 px-3" : "h-7 w-7 p-0")}
               disabled={isStoppable ? false : !canSubmit}
               onClick={(e) => {
                 if (isStoppable) {
@@ -257,7 +259,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
               ) : isLoading ? (
                 <Loader2 className="size-4 animate-spin" />
               ) : (
-                <ArrowUp className="size-4" />
+                (submitButtonContent ?? <ArrowUp className="size-4" />)
               )}
             </Button>
           </div>
