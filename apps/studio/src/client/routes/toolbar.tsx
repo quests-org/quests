@@ -35,9 +35,9 @@ function ToolbarPage() {
           isLinux() && "pr-[6rem]",
         )}
       >
-        <div className="flex items-center min-w-0 flex-1 [-webkit-app-region:no-drag] h-full">
+        <div className="flex items-center min-w-0 flex-1 h-full">
           {!isSidebarVisible && (
-            <>
+            <div className="flex items-center [-webkit-app-region:no-drag]">
               <div className={cn(isMacOS() ? "ml-20" : "ml-4")} />
               <Button
                 className="shrink-0 size-6 pr-1 text-muted-foreground"
@@ -51,7 +51,7 @@ function ToolbarPage() {
                 <SidebarIcon />
               </Button>
               <NavControls />
-            </>
+            </div>
           )}
           <TabBar />
         </div>
