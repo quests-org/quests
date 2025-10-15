@@ -3,7 +3,9 @@ import { type WorkspaceApp } from "@quests/workspace/client";
 import { useMutation } from "@tanstack/react-query";
 import { type atom, useSetAtom } from "jotai";
 import { Circle, Loader2, Square, XIcon } from "lucide-react";
-import React, { useEffect, useRef, useState } from "react";
+import ms from "ms";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { ulid } from "ulid";
 
 import { useAppState } from "../hooks/use-app-state";
@@ -28,6 +30,7 @@ export function AppIFrame({
   const [coverState, setCoverState] = useState<
     "dismissed" | "hidden" | "hiding" | "visible"
   >("hidden");
+  const [refreshKey, setRefreshKey] = useState(0);
   const wasActiveRef = useRef(false);
   const setClientLogs = useSetAtom(clientLogsAtom);
 
@@ -37,6 +40,10 @@ export function AppIFrame({
 
   const stopSessions = useMutation(
     rpcClient.workspace.session.stop.mutationOptions(),
+  );
+
+  const openExternalLinkMutation = useMutation(
+    rpcClient.utils.openExternalLink.mutationOptions(),
   );
 
   const hasRunningSession = (appState?.sessionActors ?? []).some((session) =>
@@ -115,14 +122,67 @@ export function AppIFrame({
     return;
   }, [hasRunningSession]);
 
+  const handleOpenBlockedURI = useCallback(
+    (blockedURI: string) => {
+      openExternalLinkMutation.mutate(
+        { url: blockedURI },
+        {
+          onError: () => {
+            toast.error("Failed to open URI");
+          },
+        },
+      );
+    },
+    [openExternalLinkMutation],
+  );
+
+  useEffect(() => {
+    const handleCSPViolation = (event: SecurityPolicyViolationEvent) => {
+      if (event.violatedDirective === "frame-src") {
+        // Signifies the iframe loaded an invalid URL (e.g.
+        // window.location.href = "https://example.com"). Since that violated
+        // the CSP, the iframe is reloaded (because navigation won't work now
+        // that JavaScript inside the iframe is not running).
+        const blockedURI = event.blockedURI;
+
+        toast.error("Blocked External Content", {
+          action: {
+            label: "Open link",
+            onClick: () => {
+              handleOpenBlockedURI(blockedURI);
+            },
+          },
+          closeButton: true,
+          description: `This app tried to load content from: ${blockedURI}`,
+          dismissible: true,
+          duration: ms("10 seconds"),
+        });
+
+        setTimeout(() => {
+          setRefreshKey((prev) => prev + 1);
+        }, ms("1 second"));
+      }
+    };
+
+    document.addEventListener("securitypolicyviolation", handleCSPViolation);
+    return () => {
+      document.removeEventListener(
+        "securitypolicyviolation",
+        handleCSPViolation,
+      );
+    };
+  }, [handleOpenBlockedURI]);
+
   const shouldShowCover = coverState === "visible" || coverState === "hiding";
+  // Must contain the url or iframe will be shared and allow navigation between apps
+  const iframeKey = `${app.urls.localhost}-${refreshKey}`;
 
   return (
     <div className={cn("relative size-full overflow-hidden", className)}>
       <iframe
         allow="accelerometer; autoplay; camera; clipboard-read; clipboard-write; display-capture; encrypted-media; fullscreen; geolocation; gyroscope; microphone; midi; payment; usb; xr-spatial-tracking"
         className="size-full bg-white"
-        key={app.urls.localhost} // Must be set or iframe will be shared and allow navigation between apps
+        key={iframeKey}
         ref={iframeRef}
         sandbox="allow-downloads allow-forms allow-modals allow-pointer-lock allow-popups allow-same-origin allow-scripts allow-presentation"
         src={app.urls.localhost}
