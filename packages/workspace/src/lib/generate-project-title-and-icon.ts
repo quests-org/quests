@@ -16,22 +16,26 @@ export async function generateProjectTitleAndIcon({
   model,
   onUpdate,
   projectSubdomain,
+  templateTitle,
   workspaceConfig,
 }: {
   message: SessionMessage.UserWithParts;
   model: LanguageModel;
   onUpdate: () => void;
   projectSubdomain: z.output<typeof ProjectSubdomainSchema>;
+  templateTitle?: string;
   workspaceConfig: WorkspaceConfig;
 }) {
   const [titleResult, iconResult] = await Promise.allSettled([
     generateProjectTitle({
       message,
       model,
+      templateTitle,
     }),
     generateProjectIcon({
       message,
       model,
+      templateTitle,
     }),
   ]);
 

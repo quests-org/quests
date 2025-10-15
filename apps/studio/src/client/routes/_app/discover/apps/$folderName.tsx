@@ -87,11 +87,8 @@ function RouteComponent() {
     }),
   );
   const navigate = useNavigate();
-  const createProjectFromPreviewMutation = useMutation(
-    rpcClient.workspace.project.createFromPreview.mutationOptions(),
-  );
-  const createMessageMutation = useMutation(
-    rpcClient.workspace.message.create.mutationOptions(),
+  const createProjectMutation = useMutation(
+    rpcClient.workspace.project.create.mutationOptions(),
   );
   const hasAIProvider = useAtomValue(hasAIProviderAtom);
   const [selectedModelURI, setSelectedModelURI] = useAtom(selectedModelURIAtom);
@@ -104,10 +101,38 @@ function RouteComponent() {
       return;
     }
 
-    if (appDetails) {
+    if (appDetails && selectedModelURI) {
       const sessionId = StoreId.newSessionId();
-      createProjectFromPreviewMutation.mutate(
-        { previewSubdomain: appDetails.preview.subdomain, sessionId },
+      const messageId = StoreId.newMessageId();
+      const createdAt = new Date();
+      const promptText = prompt?.trim() || "";
+
+      createProjectMutation.mutate(
+        {
+          message: {
+            id: messageId,
+            metadata: {
+              createdAt,
+              sessionId,
+            },
+            parts: [
+              {
+                metadata: {
+                  createdAt,
+                  id: StoreId.newPartId(),
+                  messageId,
+                  sessionId,
+                },
+                text: promptText,
+                type: "text",
+              },
+            ],
+            role: "user",
+          },
+          modelURI: selectedModelURI,
+          previewSubdomain: appDetails.preview.subdomain,
+          sessionId,
+        },
         {
           onError: (error) => {
             toast.error(
@@ -115,46 +140,6 @@ function RouteComponent() {
             );
           },
           onSuccess: (result) => {
-            if (prompt && selectedModelURI) {
-              const messageId = StoreId.newMessageId();
-              const createdAt = new Date();
-
-              createMessageMutation.mutate(
-                {
-                  message: {
-                    id: messageId,
-                    metadata: {
-                      createdAt,
-                      sessionId,
-                    },
-                    parts: [
-                      {
-                        metadata: {
-                          createdAt,
-                          id: StoreId.newPartId(),
-                          messageId,
-                          sessionId,
-                        },
-                        text: prompt,
-                        type: "text",
-                      },
-                    ],
-                    role: "user",
-                  },
-                  modelURI: selectedModelURI,
-                  sessionId,
-                  subdomain: result.subdomain,
-                },
-                {
-                  onError: (error) => {
-                    toast.error(
-                      `Project created but failed to send message: ${error.message}`,
-                    );
-                  },
-                },
-              );
-            }
-
             void navigate({
               params: { subdomain: result.subdomain },
               search: { selectedSessionId: sessionId },
@@ -199,18 +184,9 @@ function RouteComponent() {
             atomKey={appDetails.preview.subdomain}
             autoFocus={false}
             autoResizeMaxHeight={200}
-            disabled={
-              createProjectFromPreviewMutation.isPending ||
-              createMessageMutation.isPending
-            }
-            isLoading={
-              createProjectFromPreviewMutation.isPending ||
-              createMessageMutation.isPending
-            }
-            isSubmittable={
-              !createProjectFromPreviewMutation.isPending &&
-              !createMessageMutation.isPending
-            }
+            disabled={createProjectMutation.isPending}
+            isLoading={createProjectMutation.isPending}
+            isSubmittable={!createProjectMutation.isPending}
             modelURI={selectedModelURI}
             onModelChange={setSelectedModelURI}
             onSubmit={({ prompt }) => {
@@ -309,7 +285,7 @@ function RouteComponent() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Button
-                    disabled={createProjectFromPreviewMutation.isPending}
+                    disabled={createProjectMutation.isPending}
                     onClick={() => {
                       handleCreateProject();
                     }}
