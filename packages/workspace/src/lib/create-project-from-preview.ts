@@ -32,7 +32,6 @@ export async function createProjectFromPreview(
       workspaceConfig,
     });
 
-    // Ensure no project folder exists
     const projectExists = await fs
       .access(projectConfig.appDir)
       .then(() => true)
@@ -45,7 +44,6 @@ export async function createProjectFromPreview(
       );
     }
 
-    // Ensure preview folder exists
     const previewExists = await fs
       .access(previewConfig.appDir)
       .then(() => true)
@@ -58,7 +56,6 @@ export async function createProjectFromPreview(
       );
     }
 
-    // Copy the preview directory to the project directory
     yield* copyTemplate({
       targetDir: projectConfig.appDir,
       templateDir: previewConfig.appDir,
@@ -68,10 +65,8 @@ export async function createProjectFromPreview(
       );
     });
 
-    // Initialize git repository in the new project
     yield* git(GitCommands.init(), projectConfig.appDir, { signal });
 
-    // Create initial commit
     yield* git(GitCommands.addAll(), projectConfig.appDir, { signal });
     yield* git(
       GitCommands.commitWithAuthor(
