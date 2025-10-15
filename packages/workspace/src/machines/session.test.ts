@@ -833,8 +833,8 @@ describe("sessionMachine", () => {
           readFileChunks,
           finishChunks,
         ],
-        initialChunkDelaysMs: [40, 40, 1, 1],
-        llmRequestChunkTimeoutMs: 20,
+        initialChunkDelaysMs: [100, 100, 1, 1],
+        llmRequestChunkTimeoutMs: 50,
       });
 
       const session = await runTestMachine(actor);
