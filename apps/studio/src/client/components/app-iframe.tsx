@@ -178,7 +178,13 @@ export function AppIFrame({
   const iframeKey = `${app.urls.localhost}-${refreshKey}`;
 
   return (
-    <div className={cn("relative size-full overflow-hidden", className)}>
+    <div
+      className={cn("relative size-full overflow-hidden", className)}
+      style={{
+        // Forces anti aliased border radius clipping
+        WebkitMaskImage: "-webkit-radial-gradient(white, black)",
+      }}
+    >
       <iframe
         allow="accelerometer; autoplay; camera; clipboard-read; clipboard-write; display-capture; encrypted-media; fullscreen; geolocation; gyroscope; microphone; midi; payment; usb; xr-spatial-tracking"
         className="size-full bg-white"
@@ -194,7 +200,7 @@ export function AppIFrame({
       />
 
       {shouldShowCover && (
-        <div className="absolute inset-0 flex justify-center pt-8 bg-black/60 backdrop-blur-xs z-40 rounded-[inherit]">
+        <div className="absolute inset-0 flex justify-center pt-8 bg-black/60 backdrop-blur-xs z-40">
           <div className="bg-background relative z-50 grid w-full max-w-[calc(100%-2rem)] gap-4 rounded-lg border p-6 shadow-lg sm:max-w-sm h-fit mx-4">
             <button
               className="ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
