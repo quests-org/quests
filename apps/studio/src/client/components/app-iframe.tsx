@@ -126,6 +126,10 @@ export function AppIFrame({
         ref={iframeRef}
         sandbox="allow-downloads allow-forms allow-modals allow-pointer-lock allow-popups allow-same-origin allow-scripts allow-presentation"
         src={app.urls.localhost}
+        style={{
+          // Forces anti aliased border radius clipping
+          WebkitMaskImage: "-webkit-radial-gradient(white, black)",
+        }}
         title={`${app.subdomain} preview`}
       />
 
