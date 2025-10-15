@@ -181,7 +181,10 @@ const create = base
 
       let templateTitle: string | undefined;
       if (previewSubdomain) {
-        const folderName = previewSubdomain.replace(".preview", "");
+        const { folderName } = createAppConfig({
+          subdomain: previewSubdomain,
+          workspaceConfig: context.workspaceConfig,
+        });
         const templateDetails = await getRegistryTemplateDetails(
           folderName,
           context.workspaceConfig,
