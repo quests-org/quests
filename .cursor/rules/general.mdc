@@ -4,5 +4,4 @@ alwaysApply: true
 ---
 
 - NEVER add comments unless asked by the user.
-- Seriously, avoid comments unless EXPLICITLY asked by the user.
-- Don't add comments even if there are already comments in the code.
+- Don't remove existing comments unless asked by the user.
