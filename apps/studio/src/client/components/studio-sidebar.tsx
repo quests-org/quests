@@ -32,6 +32,12 @@ export function StudioSidebar({
   const [userResult] = useAtom(userAtom);
   const features = useAtomValue(featuresAtom);
 
+  const { data: sidebarVisibility } = useQuery(
+    rpcClient.sidebar.live.visibility.experimental_liveOptions({}),
+  );
+
+  const isSidebarVisible = sidebarVisibility?.visible ?? true;
+
   const data = React.useMemo(
     () => ({
       navMain: [
@@ -105,7 +111,7 @@ export function StudioSidebar({
         <div
           className={cn(
             "flex items-center py-1 mt-px",
-            !isWindows() && "[-webkit-app-region:drag]",
+            !isWindows() && isSidebarVisible && "[-webkit-app-region:drag]",
             isMacOS() ? "pl-20" : "pl-4 justify-end",
           )}
         >
