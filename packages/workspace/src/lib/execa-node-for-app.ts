@@ -15,5 +15,6 @@ export function execaNodeForApp<OptionsType extends Options = Options>(
       ...appConfig.workspaceConfig.nodeExecEnv,
     },
     node: true,
+    // Ensures callers can use stderr and stdout without null check
   } as unknown as OptionsType & { env: Record<string, string>; node: true });
 }

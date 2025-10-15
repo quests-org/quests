@@ -12,7 +12,7 @@ import { absolutePathJoin } from "../lib/absolute-path-join";
 import { execaNodeForApp } from "../lib/execa-node-for-app";
 import { fixRelativePath } from "../lib/fix-relative-path";
 import { pathExists } from "../lib/path-exists";
-import { readPNPMShim } from "../lib/read-pnpm-shim";
+import { runNodeModulesBin } from "../lib/run-node-modules-bin";
 import { BaseInputSchema } from "./base";
 import { createTool } from "./create-tool";
 
@@ -427,20 +427,16 @@ export const RunShellCommand = createTool({
         stdout: process.stdout,
       });
     } else if (commandName === "tsc") {
-      // TODO: Allow more bins
-      const binPath = await readPNPMShim(
-        absolutePathJoin(appConfig.appDir, "node_modules", ".bin", commandName),
-      );
-      if (binPath.isErr()) {
+      const binResult = await runNodeModulesBin(appConfig, "tsc", args, {
+        cancelSignal: signal,
+      });
+      if (binResult.isErr()) {
         return err({
-          message: binPath.error.message,
+          message: binResult.error.message,
           type: "execute-error",
         });
       }
-      const process = await execaNodeForApp(appConfig, binPath.value, args, {
-        cancelSignal: signal,
-        cwd: appConfig.appDir,
-      });
+      const process = await binResult.value;
       return ok({
         command: input.command,
         exitCode: process.exitCode ?? 0,
