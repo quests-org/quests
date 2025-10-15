@@ -415,10 +415,7 @@ export const RunShellCommand = createTool({
         appConfig,
         appConfig.workspaceConfig.pnpmBinPath,
         args,
-        {
-          cancelSignal: signal,
-          cwd: appConfig.appDir,
-        },
+        { cancelSignal: signal },
       );
       return ok({
         command: input.command,

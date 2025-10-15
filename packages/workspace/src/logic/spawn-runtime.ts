@@ -178,10 +178,7 @@ export const spawnRuntimeLogic = fromCallback<
       appConfig,
       packageManager.command,
       packageManager.arguments,
-      {
-        cancelSignal: installSignal,
-        cwd: appConfig.appDir,
-      },
+      { cancelSignal: installSignal },
     );
 
     sendProcessLogs(installProcess, parentRef);
@@ -241,7 +238,6 @@ export const spawnRuntimeLogic = fromCallback<
       framework.arguments,
       {
         cancelSignal: signal,
-        cwd: appConfig.appDir,
         env: {
           ...providerEnv,
           NO_COLOR: "1",

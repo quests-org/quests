@@ -7,12 +7,9 @@ import { TypedError } from "./errors";
 import { execaNodeForApp } from "./execa-node-for-app";
 import { readPNPMShim } from "./read-pnpm-shim";
 
-export async function runNodeModulesBin<OptionsType extends Options = Options>(
-  appConfig: AppConfig,
-  bin: string,
-  args: string[],
-  options?: OptionsType,
-) {
+export async function runNodeModulesBin<
+  OptionsType extends Omit<Options, "cwd"> = Omit<Options, "cwd">,
+>(appConfig: AppConfig, bin: string, args: string[], options?: OptionsType) {
   const shimPath = absolutePathJoin(
     appConfig.appDir,
     "node_modules",
@@ -32,8 +29,7 @@ export async function runNodeModulesBin<OptionsType extends Options = Options>(
       execaNodeForApp(appConfig, binPath, args, {
         cwd: appConfig.appDir,
         ...options,
-        // Ensures callers can use stderr and stdout without null check
-      } as OptionsType & { cwd: string }),
+      } as unknown as OptionsType & { cwd: string }),
     );
   } catch (error) {
     return err(
