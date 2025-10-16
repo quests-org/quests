@@ -4,8 +4,7 @@
 
 @custom-variant dark (&:is(.dark *));
 
-body,
-html {
+html:has(meta[name="transparent-background"]) body {
   background: transparent;
 }
 
