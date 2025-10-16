@@ -24,6 +24,7 @@ const OpenRouterCreditsResponseSchema = z.object({
 const KNOWN_MODEL_IDS = [
   "anthropic/claude-3.5-haiku",
   "anthropic/claude-3.7-sonnet",
+  "anthropic/claude-haiku-4.5",
   "anthropic/claude-opus-4.1",
   "anthropic/claude-sonnet-4",
   "anthropic/claude-sonnet-4.5",
@@ -72,6 +73,7 @@ export const openrouterAdapter = setupProviderAdapter({
   },
   modelTags: {
     "anthropic/claude-3.7-sonnet": ["coding"],
+    "anthropic/claude-haiku-4.5": ["coding", "recommended"],
     "anthropic/claude-opus-4.1": ["coding", "recommended"],
     "anthropic/claude-sonnet-4": ["coding", "recommended"],
     "anthropic/claude-sonnet-4.5": ["coding", "recommended", "default"],
