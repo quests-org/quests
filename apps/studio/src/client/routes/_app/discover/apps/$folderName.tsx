@@ -4,7 +4,6 @@ import { hasAIProviderConfigAtom } from "@/client/atoms/has-ai-provider-config";
 import { selectedModelURIAtom } from "@/client/atoms/selected-models";
 import { AIProviderGuard } from "@/client/components/ai-provider-guard";
 import { AIProviderGuardDialog } from "@/client/components/ai-provider-guard-dialog";
-import { SmallAppIcon } from "@/client/components/app-icon";
 import { AppView } from "@/client/components/app-view";
 import { InternalLink } from "@/client/components/internal-link";
 import { Markdown } from "@/client/components/markdown";
@@ -12,14 +11,8 @@ import { NotFoundComponent } from "@/client/components/not-found";
 import { PromptInput } from "@/client/components/prompt-input";
 import { GithubLogo } from "@/client/components/service-icons";
 import { TechStack } from "@/client/components/tech-stack";
-import { Badge } from "@/client/components/ui/badge";
 import { Button } from "@/client/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/client/components/ui/dialog";
+import { Dialog, DialogContent } from "@/client/components/ui/dialog";
 import { rpcClient } from "@/client/rpc/client";
 import { META_TAG_ICON_BACKGROUND, META_TAG_LUCIDE_ICON } from "@/shared/tabs";
 import {
@@ -31,7 +24,7 @@ import { StoreId } from "@quests/workspace/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
 import { useAtom, useAtomValue } from "jotai";
-import { ArrowUp, ChevronRight, Eye, Plus, X } from "lucide-react";
+import { ArrowUp, ChevronRight, Eye, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -265,56 +258,29 @@ function RouteComponent() {
 
         <Dialog onOpenChange={setShowPreviewDialog} open={showPreviewDialog}>
           <DialogContent
-            className="max-w-[calc(100vw-2rem)] sm:max-w-[calc(100vw-2rem)] w-full max-h-[calc(100vh-2rem)] h-full flex flex-col"
+            className="max-w-[80vw] sm:max-w-[80vw] w-full max-h-[75vh] p-0 h-full flex flex-col"
+            portalContent={
+              <Button
+                className="fixed right-[4%] top-[5%] z-[60] rounded-full size-10"
+                onClick={() => {
+                  setShowPreviewDialog(false);
+                }}
+                size="sm"
+                variant="secondary"
+              >
+                <X className="size-5" />
+              </Button>
+            }
             showCloseButton={false}
           >
-            <DialogHeader className="flex-shrink-0">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-2">
-                    {appDetails.icon && (
-                      <SmallAppIcon
-                        background={appDetails.icon.background}
-                        icon={appDetails.icon.lucide}
-                        size="sm"
-                      />
-                    )}
-                    <DialogTitle>{title}</DialogTitle>
-                  </div>
-                  <Badge variant="secondary">Demo</Badge>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    disabled={createProjectMutation.isPending}
-                    onClick={() => {
-                      handleCreateProject();
-                    }}
-                    size="sm"
-                    variant="brand"
-                  >
-                    <Plus className="h-4 w-4" />
-                    Create Project
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      setShowPreviewDialog(false);
-                    }}
-                    size="sm"
-                    variant="ghost"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </DialogHeader>
-            <div className="flex-1 min-h-0">
+            <div className="flex-1 min-h-0 relative">
               {hasAIProvider ? (
                 <AppView
                   app={appDetails.preview}
-                  className="w-full h-full rounded-lg border border-border overflow-hidden flex flex-col"
+                  className="w-full h-full overflow-hidden flex flex-col"
                 />
               ) : (
-                <div className="w-full h-full rounded-lg border border-border flex items-center justify-center bg-background">
+                <div className="w-full h-full flex items-center justify-center bg-background">
                   <AIProviderGuard description="You need to add an AI provider to view previews." />
                 </div>
               )}
