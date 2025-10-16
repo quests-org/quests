@@ -13,8 +13,6 @@ export const RunDiagnostics = createTool({
 
     - This tool runs project-wide diagnostics using TypeScript compiler
     - It returns all linting and type checking errors across the entire project
-    - This tool can return linter errors that were already present before your edits, so avoid calling it with a very wide scope of files
-    - NEVER call this tool on a file unless you've edited it or are about to edit it
   `,
   execute: async ({ appConfig, signal }) => {
     const diagnosticsOutput = await runDiagnostics(appConfig, { signal });

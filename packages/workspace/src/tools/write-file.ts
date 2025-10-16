@@ -15,11 +15,17 @@ import { createTool } from "./create-tool";
 import { DIAGNOSTICS_HELPER_MESSAGE } from "./diagnostics-helper";
 import { ReadFile } from "./read-file";
 
+const INPUT_PARAMS = {
+  content: "content",
+  filePath: "filePath",
+} as const;
+
 export const WriteFile = createTool({
   description: dedent`
     Writes a file to the local filesystem.
 
     Usage:
+    - The ${INPUT_PARAMS.filePath} parameter must be a relative path. E.g. ./src/client/app.tsx
     - This tool will overwrite the existing file if there is one at the provided path.
     - If this is an existing file, you MUST use the ${ReadFile.name} tool first to read the file's contents. This tool will fail if you did not read the file first.
     - ALWAYS prefer editing existing files in the codebase. NEVER write new files unless explicitly required.
@@ -30,7 +36,7 @@ export const WriteFile = createTool({
     const fixedPath = fixRelativePath(input.filePath);
     if (!fixedPath) {
       return err({
-        message: `Path is not relative: ${input.filePath}`,
+        message: `The ${INPUT_PARAMS.filePath} parameter must be a relative path. E.g. ./src/client/app.tsx`,
         type: "execute-error",
       });
     }
@@ -54,10 +60,12 @@ export const WriteFile = createTool({
     }
   },
   inputSchema: BaseInputSchema.extend({
-    content: z
+    [INPUT_PARAMS.content]: z
       .string()
       .meta({ description: "The content to write to the file" }),
-    filePath: z.string().meta({ description: "The path of the file to write" }),
+    [INPUT_PARAMS.filePath]: z
+      .string()
+      .meta({ description: "The path of the file to write" }),
   }),
   name: "write_file",
   outputSchema: z.object({

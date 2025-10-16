@@ -59,7 +59,7 @@ export const ReadFile = createTool({
     Reads a file from the app directory. You can access any file directly by using this tool.
 
     Usage:
-    - The ${INPUT_PARAMS.filePath} parameter must be an absolute path, not a relative path.
+    - The ${INPUT_PARAMS.filePath} parameter must be a relative path. E.g. ./src/client/app.tsx
     - By default, it reads up to ${DEFAULT_READ_LIMIT} lines starting from the beginning of the file.
     - You can optionally specify a line ${INPUT_PARAMS.offset} and ${INPUT_PARAMS.limit} (especially handy for long files), but it's recommended to read the whole file by not providing these parameters.
     - When using ${INPUT_PARAMS.limit}, avoid using too small of a limit (< 100), which can lead to tons of tokens being used.

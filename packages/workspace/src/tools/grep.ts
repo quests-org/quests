@@ -8,14 +8,21 @@ import { grep } from "../lib/grep";
 import { BaseInputSchema } from "./base";
 import { createTool } from "./create-tool";
 
+const INPUT_PARAMS = {
+  include: "include",
+  path: "path",
+  pattern: "pattern",
+} as const;
+
 export const Grep = createTool({
   description: dedent`
     - Fast content search tool that uses ripgrep (rg) that works with any codebase size.
     - Searches file contents using regular expressions.
     - Supports full regex syntax (eg. "log.*Error", "function\\s+\\w+", etc.).
-    - Uses smart case by default: searches case insensitively if the pattern is all lowercase, otherwise searches case sensitively.
-    - Filter files by pattern with the include parameter (eg. "*.js", "*.{ts,tsx}").
-    - Search in specific directories by providing a path parameter.
+    - Uses smart case by default: searches case insensitively if ${INPUT_PARAMS.pattern} is all lowercase, otherwise searches case sensitively.
+    - Filter files by pattern with the ${INPUT_PARAMS.include} parameter (eg. "*.js", "*.{ts,tsx}").
+    - Search in specific directories by providing a ${INPUT_PARAMS.path} parameter.
+    - The ${INPUT_PARAMS.path} parameter must be a relative path. E.g. ./src
     - Returns file paths with line numbers and content, sorted by modification time.
     - Use this tool when you need to find files containing specific patterns.
   `,
@@ -43,15 +50,15 @@ export const Grep = createTool({
     return ok(result);
   },
   inputSchema: BaseInputSchema.extend({
-    include: z.string().optional().meta({
+    [INPUT_PARAMS.include]: z.string().optional().meta({
       description:
         'File pattern to include in the search (e.g. "*.js", "*.{ts,tsx}")',
     }),
-    path: z.string().optional().meta({
+    [INPUT_PARAMS.path]: z.string().optional().meta({
       description:
         "The directory to search in (relative to project root). Defaults to current directory.",
     }),
-    pattern: z
+    [INPUT_PARAMS.pattern]: z
       .string()
       .meta({ description: "Valid ripgrep pattern to search for" }),
   }),

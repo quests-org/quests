@@ -473,6 +473,7 @@ export const EditFile = createTool({
     Performs exact string replacements in files. 
 
     Usage:
+    - The ${INPUT_PARAMS.filePath} parameter must be a relative path. E.g. ./src/client/app.tsx
     - You must use your \`${ReadFile.name}\` tool at least once in the conversation before editing. This tool will error if you attempt an edit without reading the file. 
     - When editing text from \`${ReadFile.name}\` tool output, ensure you preserve the exact indentation (tabs/spaces) as it appears AFTER the line number prefix. The line number prefix format is: spaces + line number + tab. Everything after that tab is the actual file content to match. Never include any part of the line number prefix in the \`${INPUT_PARAMS.oldString}\` or \`${INPUT_PARAMS.newString}\`.
     - ALWAYS prefer editing existing files in the codebase. NEVER write new files unless explicitly required.
