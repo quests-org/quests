@@ -5,6 +5,7 @@ export const AIProviderTypeSchema = z.enum([
   "google",
   "ollama",
   "openai",
+  "openai-compatible",
   "openrouter",
   "vercel",
 ]);

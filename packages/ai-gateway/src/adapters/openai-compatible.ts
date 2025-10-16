@@ -1,4 +1,4 @@
-import { createOllama } from "ollama-ai-provider-v2";
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { Result } from "typescript-result";
 import { z } from "zod";
 
@@ -6,7 +6,6 @@ import { addRef } from "../lib/add-ref";
 import { providerTypeToAuthor } from "../lib/author";
 import { TypedError } from "../lib/errors";
 import { fetchJson } from "../lib/fetch-json";
-import { isModelNew } from "../lib/is-model-new";
 import { internalAPIKey } from "../lib/key-for-provider";
 import { modelToURI } from "../lib/model-to-uri";
 import { PROVIDER_API_PATH } from "../lib/provider-paths";
@@ -17,27 +16,26 @@ function setAuthHeaders(headers: Headers, apiKey: string) {
   headers.set("Authorization", `Bearer ${apiKey}`);
 }
 
-export const ollamaAdapter = setupProviderAdapter({
+export const openaiCompatibleAdapter = setupProviderAdapter({
   knownModelIds: [],
   metadata: {
     api: {
-      defaultBaseURL: "http://localhost:11434",
+      defaultBaseURL: "",
     },
-    description: "Run local models on your own machine",
-    name: "Ollama",
-    requiresAPIKey: false,
+    description: "OpenAI-compatible endpoint with custom base URL",
+    name: "OpenAI Compatible",
+    requiresAPIKey: true,
     tags: [],
-    url: addRef("https://docs.ollama.com"),
+    url: addRef("https://quests.dev"),
   },
   modelTags: {},
-  providerType: "ollama",
+  providerType: "openai-compatible",
 }).create(({ buildURL, metadata, providerType }) => ({
   aiSDKModel: (model, { workspaceServerURL }) => {
-    return createOllama({
-      baseURL: `${workspaceServerURL}${PROVIDER_API_PATH.ollama}`,
-      headers: {
-        Authorization: `Bearer ${internalAPIKey()}`,
-      },
+    return createOpenAICompatible({
+      apiKey: internalAPIKey(),
+      baseURL: `${workspaceServerURL}${PROVIDER_API_PATH["openai-compatible"]}`,
+      name: "openai-compatible",
     })(model.providerId);
   },
   features: ["openai/chat-completions"],
@@ -47,14 +45,14 @@ export const ollamaAdapter = setupProviderAdapter({
       setAuthHeaders(headers, provider.apiKey);
 
       const data = yield* fetchJson({
-        cache: false, // Models change frequently on local, so no cache
+        cache: false,
         headers,
-        url: buildURL({ baseURL: provider.baseURL, path: "/v1/models" }),
+        url: buildURL({ baseURL: provider.baseURL, path: "/models" }),
       });
 
       const modelsResult = yield* Result.try(
         () =>
-          z.object({ data: z.array(AIGatewayModel.OllamaSchema) }).parse(data),
+          z.object({ data: z.array(AIGatewayModel.OpenAISchema) }).parse(data),
         (error) =>
           new TypedError.Parse(
             `Failed to validate models from ${provider.type}`,
@@ -68,12 +66,6 @@ export const ollamaAdapter = setupProviderAdapter({
         const canonicalModelId =
           AIGatewayModel.CanonicalIdSchema.parse(providerId);
 
-        const tags: AIGatewayModel.ModelTag[] = [];
-
-        if (isModelNew(model.created)) {
-          tags.push("new");
-        }
-
         return {
           author,
           canonicalId: canonicalModelId,
@@ -82,7 +74,7 @@ export const ollamaAdapter = setupProviderAdapter({
           providerId,
           providerName: provider.displayName ?? metadata.name,
           source: { providerType, value: model },
-          tags,
+          tags: [],
           uri: modelToURI({
             author,
             canonicalId: canonicalModelId,
@@ -92,30 +84,40 @@ export const ollamaAdapter = setupProviderAdapter({
       });
     }),
   getEnv: (baseURL) => ({
-    OLLAMA_API_KEY: internalAPIKey(),
-    OLLAMA_BASE_URL: `${baseURL}${PROVIDER_API_PATH.ollama}`,
+    OPENAI_API_KEY: internalAPIKey(),
+    OPENAI_BASE_URL: `${baseURL}${PROVIDER_API_PATH["openai-compatible"]}`,
   }),
   setAuthHeaders,
   verifyAPIKey: ({ apiKey, baseURL }) => {
     return Result.fromAsync(async () => {
+      if (!baseURL) {
+        return Result.error(
+          new TypedError.VerificationFailed(
+            "Base URL is required for OpenAI-compatible providers",
+          ),
+        );
+      }
+
       const headers = new Headers({ "Content-Type": "application/json" });
       setAuthHeaders(headers, apiKey);
-      const url = new URL(buildURL({ baseURL, path: "/v1/models" }));
+
+      const url = new URL(buildURL({ baseURL, path: "/models" }));
 
       const result = Result.try(
         async () => {
           const response = await fetch(url.toString(), { headers });
           if (!response.ok) {
-            throw new Error("Response not OK");
+            const errorText = await response.text().catch(() => "");
+            throw new Error(
+              `HTTP ${response.status}: ${response.statusText}${errorText ? ` - ${errorText}` : ""}`,
+            );
           }
           return true;
         },
         (error) =>
           new TypedError.VerificationFailed(
-            "Ollama doesn't appear to be running",
-            {
-              cause: error,
-            },
+            "Failed to connect to OpenAI-compatible endpoint. Please check your base URL and API key.",
+            { cause: error },
           ),
       );
       return result;

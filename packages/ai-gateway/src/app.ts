@@ -7,6 +7,7 @@ import { anthropicApp } from "./routes/anthropic";
 import { googleApp } from "./routes/google";
 import { ollamaApp } from "./routes/ollama";
 import { openaiApp } from "./routes/openai";
+import { openaiCompatibleApp } from "./routes/openai-compatible";
 import { openrouterApp } from "./routes/openrouter";
 import { vercelApp } from "./routes/vercel";
 import { type AIGatewayEnv } from "./types";
@@ -23,6 +24,7 @@ app.route(PROVIDER_PATH.google, googleApp);
 app.route(PROVIDER_PATH.openrouter, openrouterApp);
 app.route(PROVIDER_PATH.vercel, vercelApp);
 app.route(PROVIDER_PATH.ollama, ollamaApp);
+app.route(PROVIDER_PATH["openai-compatible"], openaiCompatibleApp);
 
 // Ensure we don't proxy unknown routes
 app.all("*", (c) => {

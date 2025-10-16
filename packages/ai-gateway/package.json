@@ -25,6 +25,7 @@
     "@ai-sdk/gateway": "^1.0.23",
     "@ai-sdk/google": "^2.0.9",
     "@ai-sdk/openai": "^2.0.32",
+    "@ai-sdk/openai-compatible": "^1.0.22",
     "@openrouter/ai-sdk-provider": "^1.1.2",
     "@quests/shared": "workspace:*",
     "@types/ms": "^2.1.0",

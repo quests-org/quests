@@ -79,7 +79,7 @@ export const anthropicAdapter = setupProviderAdapter({
     "claude-sonnet-4-20250514": ["coding", "recommended"],
   },
   providerType: "anthropic",
-}).create(({ buildURL, getModelTags, providerType }) => ({
+}).create(({ buildURL, getModelTags, metadata, providerType }) => ({
   aiSDKModel: (model, { workspaceServerURL }) => {
     return createAnthropic({
       apiKey: internalAPIKey(),
@@ -146,6 +146,7 @@ export const anthropicAdapter = setupProviderAdapter({
           features: ["inputText", "outputText", "tools"],
           params: { provider: providerType },
           providerId,
+          providerName: provider.displayName ?? metadata.name,
           source: {
             providerType,
             value: model,

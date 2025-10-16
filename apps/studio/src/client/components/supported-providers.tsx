@@ -5,11 +5,15 @@ import { useAtomValue } from "jotai";
 export function SupportedProviders() {
   const { sortedProviderMetadata } = useAtomValue(providerMetadataAtom);
 
+  const standardProviders = sortedProviderMetadata.filter(
+    (p) => p.type !== "openai-compatible",
+  );
+
   return (
     <div className="flex flex-col items-center gap-3">
       <p className="text-xs text-muted-foreground">Supported providers</p>
       <div className="flex flex-wrap justify-center gap-3">
-        {sortedProviderMetadata.map((metadata) => (
+        {standardProviders.map((metadata) => (
           <div className="flex items-center gap-2" key={metadata.type}>
             <AIProviderIcon
               className="size-4 opacity-60"

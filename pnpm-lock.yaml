@@ -427,6 +427,9 @@ importers:
       '@ai-sdk/openai':
         specifier: ^2.0.32
         version: 2.0.44(zod@4.1.3)
+      '@ai-sdk/openai-compatible':
+        specifier: ^1.0.22
+        version: 1.0.22(zod@4.1.3)
       '@openrouter/ai-sdk-provider':
         specifier: ^1.1.2
         version: 1.1.2(ai@5.0.22(zod@4.1.3))(zod@4.1.3)
@@ -820,6 +823,12 @@ packages:
     peerDependencies:
       zod: ^3.25.76 || ^4
 
+  '@ai-sdk/openai-compatible@1.0.22':
+    resolution: {integrity: sha512-Q+lwBIeMprc/iM+vg1yGjvzRrp74l316wDpqWdbmd4VXXlllblzGsUgBLTeKvcEapFTgqk0FRETvSb58Y6dsfA==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.25.76 || ^4.1.8
+
   '@ai-sdk/openai@2.0.44':
     resolution: {integrity: sha512-caK9v5YbBd38mjPmjBP5LSWiWhmHgK9mPwc7dE/3ED3c+SypH6/QWimGDA1oSsxDEdXgVCO9ORUVV+Uphzjf8Q==}
     engines: {node: '>=18'}
@@ -834,6 +843,12 @@ packages:
 
   '@ai-sdk/provider-utils@3.0.10':
     resolution: {integrity: sha512-T1gZ76gEIwffep6MWI0QNy9jgoybUHE7TRaHB5k54K8mF91ciGFlbtCGxDYhMH3nCRergKwYFIDeFF0hJSIQHQ==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.25.76 || ^4.1.8
+
+  '@ai-sdk/provider-utils@3.0.12':
+    resolution: {integrity: sha512-ZtbdvYxdMoria+2SlNarEk6Hlgyf+zzcznlD55EAl+7VZvJaSg2sqPvwArY7L6TfDEDJsnCq0fdhBSkYo0Xqdg==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
@@ -8132,6 +8147,12 @@ snapshots:
       '@ai-sdk/provider-utils': 3.0.6(zod@4.1.3)
       zod: 4.1.3
 
+  '@ai-sdk/openai-compatible@1.0.22(zod@4.1.3)':
+    dependencies:
+      '@ai-sdk/provider': 2.0.0
+      '@ai-sdk/provider-utils': 3.0.12(zod@4.1.3)
+      zod: 4.1.3
+
   '@ai-sdk/openai@2.0.44(zod@4.1.3)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
@@ -8147,6 +8168,13 @@ snapshots:
       zod-to-json-schema: 3.24.6(zod@4.1.3)
 
   '@ai-sdk/provider-utils@3.0.10(zod@4.1.3)':
+    dependencies:
+      '@ai-sdk/provider': 2.0.0
+      '@standard-schema/spec': 1.0.0
+      eventsource-parser: 3.0.5
+      zod: 4.1.3
+
+  '@ai-sdk/provider-utils@3.0.12(zod@4.1.3)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
       '@standard-schema/spec': 1.0.0
@@ -10825,14 +10853,14 @@ snapshots:
       msw: 2.7.5(@types/node@22.16.0)(typescript@5.9.2)
       vite: 7.1.3(@types/node@22.16.0)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.39.0)(tsx@4.20.3)(yaml@2.8.0)
 
-  '@vitest/mocker@3.2.4(msw@2.7.5(@types/node@24.0.14)(typescript@5.9.2))(vite@7.1.3(@types/node@22.16.0)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.39.0)(tsx@4.20.3)(yaml@2.8.0))':
+  '@vitest/mocker@3.2.4(msw@2.7.5(@types/node@24.0.14)(typescript@5.9.2))(vite@7.1.3(@types/node@24.0.14)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.39.0)(tsx@4.20.3)(yaml@2.8.0))':
     dependencies:
       '@vitest/spy': 3.2.4
       estree-walker: 3.0.3
       magic-string: 0.30.17
     optionalDependencies:
       msw: 2.7.5(@types/node@24.0.14)(typescript@5.9.2)
-      vite: 7.1.3(@types/node@22.16.0)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.39.0)(tsx@4.20.3)(yaml@2.8.0)
+      vite: 7.1.3(@types/node@24.0.14)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.39.0)(tsx@4.20.3)(yaml@2.8.0)
     optional: true
 
   '@vitest/pretty-format@3.2.4':
@@ -16295,7 +16323,7 @@ snapshots:
     dependencies:
       '@types/chai': 5.2.2
       '@vitest/expect': 3.2.4
-      '@vitest/mocker': 3.2.4(msw@2.7.5(@types/node@24.0.14)(typescript@5.9.2))(vite@7.1.3(@types/node@22.16.0)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.39.0)(tsx@4.20.3)(yaml@2.8.0))
+      '@vitest/mocker': 3.2.4(msw@2.7.5(@types/node@24.0.14)(typescript@5.9.2))(vite@7.1.3(@types/node@24.0.14)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.39.0)(tsx@4.20.3)(yaml@2.8.0))
       '@vitest/pretty-format': 3.2.4
       '@vitest/runner': 3.2.4
       '@vitest/snapshot': 3.2.4

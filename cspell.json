@@ -35,6 +35,7 @@
     "genai",
     "Geoip",
     "gitmodules",
+    "Googlegemini",
     "groq",
     "gstatic",
     "hono",
@@ -54,6 +55,7 @@
     "moonshotai",
     "msiexec",
     "neverthrow",
+    "Nextdotjs",
     "nosystem",
     "notarized",
     "nsis",
@@ -95,7 +97,6 @@
     "workerd",
     "worktree",
     "XAPI",
-    "zkochan",
-    "Nextdotjs"
+    "zkochan"
   ]
 }

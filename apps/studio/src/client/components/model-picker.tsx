@@ -1,4 +1,3 @@
-import { providerMetadataAtom } from "@/client/atoms/provider-metadata";
 import { Badge } from "@/client/components/ui/badge";
 import { Button } from "@/client/components/ui/button";
 import {
@@ -19,12 +18,11 @@ import {
   groupAndFilterModels,
 } from "@/client/lib/group-models";
 import { cn } from "@/client/lib/utils";
+import { vanillaRpcClient } from "@/client/rpc/client";
 import { type AIGatewayModel } from "@quests/ai-gateway";
-import { useAtomValue } from "jotai";
 import { AlertCircle, Check, ChevronDown, CircleOff, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 
-import { vanillaRpcClient } from "../rpc/client";
 import { AIProviderIcon } from "./ai-provider-icon";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
@@ -52,7 +50,6 @@ export function ModelPicker({
   value,
 }: ModelPickerProps) {
   const [open, setOpen] = useState(false);
-  const { providerMetadataMap } = useAtomValue(providerMetadataAtom);
 
   const selectedModel = models?.find((model) => model.uri === value);
 
@@ -93,10 +90,7 @@ export function ModelPicker({
             </div>
           </TooltipTrigger>
           <TooltipContent>
-            <p>
-              {providerMetadataMap.get(selectedModel.params.provider)?.name ??
-                selectedModel.params.provider}
-            </p>
+            <p>{selectedModel.providerName}</p>
           </TooltipContent>
         </Tooltip>
         <span className="truncate text-xs min-w-0 flex-1">
@@ -267,11 +261,7 @@ export function ModelPicker({
                                   className="size-3 flex-shrink-0"
                                   type={model.params.provider}
                                 />
-                                <span>
-                                  {providerMetadataMap.get(
-                                    model.params.provider,
-                                  )?.name ?? model.params.provider}
-                                </span>
+                                <span>{model.providerName}</span>
                               </div>
                             </div>
                           </div>

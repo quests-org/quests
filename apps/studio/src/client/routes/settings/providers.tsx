@@ -1,3 +1,4 @@
+import { providerMetadataAtom } from "@/client/atoms/provider-metadata";
 import { AddProviderDialog } from "@/client/components/add-provider-dialog";
 import { AIProviderEditDialog } from "@/client/components/ai-provider-edit-dialog";
 import { ProviderListItem } from "@/client/components/provider-list-item";
@@ -6,6 +7,7 @@ import { rpcClient } from "@/client/rpc/client";
 import { type ClientAIProvider } from "@/shared/schemas/provider";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
+import { useAtomValue } from "jotai";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { z } from "zod";
@@ -25,6 +27,7 @@ function SettingsProvidersPage() {
   );
   const { showNewProviderDialog } = Route.useSearch();
   const navigate = Route.useNavigate();
+  const { providerMetadataMap } = useAtomValue(providerMetadataAtom);
 
   const [selectedProvider, setSelectedProvider] =
     useState<ClientAIProvider | null>(null);
@@ -58,6 +61,7 @@ function SettingsProvidersPage() {
           providers?.map((provider) => (
             <ProviderListItem
               key={provider.id}
+              metadata={providerMetadataMap.get(provider.type)}
               onConfigure={() => {
                 setSelectedProvider(provider);
               }}

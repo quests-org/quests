@@ -78,7 +78,7 @@ export const vercelAdapter = setupProviderAdapter({
     "zai/glm-4.6": ["coding", "recommended"],
   },
   providerType: "vercel",
-}).create(({ buildURL, getModelTags, providerType }) => ({
+}).create(({ buildURL, getModelTags, metadata, providerType }) => ({
   aiSDKModel: (model, { workspaceServerURL }) => {
     return createGateway({
       apiKey: internalAPIKey(),
@@ -144,6 +144,7 @@ export const vercelAdapter = setupProviderAdapter({
           features,
           params: { provider: providerType },
           providerId,
+          providerName: provider.displayName ?? metadata.name,
           source: {
             providerType,
             value: model,

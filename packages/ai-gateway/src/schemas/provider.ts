@@ -9,6 +9,7 @@ export namespace AIGatewayProvider {
     ),
     baseURL: z.string().optional(),
     cacheIdentifier: z.string(),
+    displayName: z.string().optional(),
     type: AIProviderTypeSchema,
   });
   export type GetAIProviders = () => Type[];

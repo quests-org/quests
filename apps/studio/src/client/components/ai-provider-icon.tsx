@@ -1,13 +1,14 @@
 import { type AIGatewayProvider } from "@quests/ai-gateway";
-
+import { GrNodes } from "react-icons/gr";
 import {
-  Anthropic,
-  Google,
-  Ollama,
-  OpenAI,
-  OpenRouter,
-  Vercel,
-} from "./service-icons";
+  SiAnthropic,
+  SiGooglegemini,
+  SiOllama,
+  SiOpenai,
+  SiVercel,
+} from "react-icons/si";
+
+import { OpenRouter } from "./service-icons";
 
 interface AIProviderIconProps {
   className?: string;
@@ -20,22 +21,25 @@ export function AIProviderIcon({
 }: AIProviderIconProps) {
   switch (type) {
     case "anthropic": {
-      return <Anthropic className={className} />;
+      return <SiAnthropic className={className} />;
     }
     case "google": {
-      return <Google className={className} />;
+      return <SiGooglegemini className={className} />;
     }
     case "ollama": {
-      return <Ollama className={className} />;
+      return <SiOllama className={className} />;
     }
     case "openai": {
-      return <OpenAI className={className} />;
+      return <SiOpenai className={className} />;
+    }
+    case "openai-compatible": {
+      return <GrNodes className={className} />;
     }
     case "openrouter": {
       return <OpenRouter className={className} />;
     }
     case "vercel": {
-      return <Vercel className={className} />;
+      return <SiVercel className={className} />;
     }
     default: {
       const exhaustiveCheck: never = type;

@@ -97,7 +97,7 @@ export const openrouterAdapter = setupProviderAdapter({
     "z-ai/glm-4.6": ["coding", "recommended"],
   },
   providerType: "openrouter",
-}).create(({ buildURL, getModelTags, providerType }) => {
+}).create(({ buildURL, getModelTags, metadata, providerType }) => {
   function fetchCredits(provider: AIGatewayProvider.Type) {
     return Result.fromAsync(async () => {
       const headers = new Headers({ "Content-Type": "application/json" });
@@ -211,6 +211,7 @@ export const openrouterAdapter = setupProviderAdapter({
             features,
             params: { provider: providerType },
             providerId,
+            providerName: provider.displayName ?? metadata.name,
             source: {
               providerType,
               value: model,

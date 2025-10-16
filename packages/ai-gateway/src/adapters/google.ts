@@ -46,7 +46,7 @@ export const googleAdapter = setupProviderAdapter({
     "models/gemini-2.5-pro": ["coding", "recommended", "default"],
   },
   providerType: "google",
-}).create(({ buildURL, getModelTags, providerType }) => ({
+}).create(({ buildURL, getModelTags, metadata, providerType }) => ({
   aiSDKModel: (model, { workspaceServerURL }) => {
     return createGoogleGenerativeAI({
       apiKey: internalAPIKey(),
@@ -110,6 +110,7 @@ export const googleAdapter = setupProviderAdapter({
           features,
           params: { provider: providerType },
           providerId,
+          providerName: provider.displayName ?? metadata.name,
           source: {
             providerType,
             value: model,

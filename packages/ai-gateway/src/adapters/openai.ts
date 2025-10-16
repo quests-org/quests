@@ -57,7 +57,7 @@ export const openaiAdapter = setupProviderAdapter({
     "gpt-5-mini": ["coding", "recommended"],
   },
   providerType: "openai",
-}).create(({ buildURL, getModelTags, providerType }) => ({
+}).create(({ buildURL, getModelTags, metadata, providerType }) => ({
   aiSDKModel: (model, { workspaceServerURL }) => {
     return createOpenAI({
       apiKey: internalAPIKey(),
@@ -136,6 +136,7 @@ export const openaiAdapter = setupProviderAdapter({
           features,
           params: { provider: providerType },
           providerId,
+          providerName: provider.displayName ?? metadata.name,
           source: { providerType, value: model },
           tags,
           uri: modelToURI({

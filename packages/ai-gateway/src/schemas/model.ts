@@ -92,6 +92,10 @@ export namespace AIGatewayModel {
       value: OpenRouterSchema,
     }),
     z.object({ providerType: z.literal("ollama"), value: OllamaSchema }),
+    z.object({
+      providerType: z.literal("openai-compatible"),
+      value: OpenAISchema,
+    }),
   ]);
 
   export const CanonicalIdSchema = z
@@ -139,6 +143,7 @@ export namespace AIGatewayModel {
     features: ModelFeaturesSchema.array(),
     params: z.object({ provider: AIProviderTypeSchema }),
     providerId: ProviderIdSchema,
+    providerName: z.string(),
     source: SourceSchema,
     tags: ModelTagSchema.array(),
     uri: URISchema,

@@ -10,6 +10,9 @@ export function providerTypeToAuthor(
     case "openai": {
       return "openai";
     }
+    case "openai-compatible": {
+      return "openai-compatible";
+    }
     case "openrouter": {
       return "openrouter";
     }

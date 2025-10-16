@@ -61,9 +61,44 @@ const remove = base
     });
   });
 
+const update = base
+  .input(
+    z.object({
+      displayName: z.string().optional(),
+      id: StoreAIProviderId,
+    }),
+  )
+  .handler(({ errors, input }) => {
+    const providersStore = getProvidersStore();
+    const providers = providersStore.get("providers");
+
+    const providerIndex = providers.findIndex((p) => p.id === input.id);
+
+    if (providerIndex === -1) {
+      throw errors.NOT_FOUND({ message: "Provider not found" });
+    }
+
+    const updatedProviders = [...providers];
+    const existingProvider = updatedProviders[providerIndex];
+    if (!existingProvider) {
+      throw errors.NOT_FOUND({ message: "Provider not found" });
+    }
+    updatedProviders[providerIndex] = {
+      ...existingProvider,
+      displayName: input.displayName,
+    };
+
+    providersStore.set("providers", updatedProviders);
+  });
+
 const create = base
-  .input(StoreAIProviderSchema.omit({ cacheIdentifier: true, id: true }))
-  .handler(async ({ context, errors, input: provider }) => {
+  .input(
+    StoreAIProviderSchema.omit({ cacheIdentifier: true, id: true }).extend({
+      skipValidation: z.boolean().optional(),
+    }),
+  )
+  .handler(async ({ context, errors, input }) => {
+    const { skipValidation, ...provider } = input;
     const providersStore = getProvidersStore();
     const existingProviders = providersStore.get("providers");
 
@@ -78,22 +113,24 @@ const create = base
       });
     }
 
-    const adapter = getProviderAdapter(provider.type);
+    if (!skipValidation) {
+      const adapter = getProviderAdapter(provider.type);
 
-    const result = await adapter.verifyAPIKey({
-      apiKey: provider.apiKey,
-      baseURL: provider.baseURL,
-    });
-
-    if (!result.ok) {
-      context.workspaceConfig.captureEvent("provider.verification_failed", {
-        provider_type: provider.type,
+      const result = await adapter.verifyAPIKey({
+        apiKey: provider.apiKey,
+        baseURL: provider.baseURL,
       });
 
-      throw errors.UNAUTHORIZED({
-        cause: result.error,
-        message: result.error.message,
-      });
+      if (!result.ok) {
+        context.workspaceConfig.captureEvent("provider.verification_failed", {
+          provider_type: provider.type,
+        });
+
+        throw errors.UNAUTHORIZED({
+          cause: result.error,
+          message: result.error.message,
+        });
+      }
     }
 
     const newProvider = {
@@ -212,4 +249,5 @@ export const provider = {
   },
   remove,
   safeStorageInfo,
+  update,
 };

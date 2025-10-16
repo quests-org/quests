@@ -1,10 +1,10 @@
-import { providerMetadataAtom } from "@/client/atoms/provider-metadata";
+import { Badge } from "@/client/components/ui/badge";
 import { Button } from "@/client/components/ui/button";
 import { cn } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
 import { type ClientAIProvider } from "@/shared/schemas/provider";
+import { type ProviderMetadata } from "@quests/ai-gateway/client";
 import { useQuery } from "@tanstack/react-query";
-import { useAtomValue } from "jotai";
 
 import { AIProviderIcon } from "./ai-provider-icon";
 
@@ -14,18 +14,17 @@ const formatCredits = (credits: number) => {
 
 interface ProviderListItemProps {
   className?: string;
+  metadata?: ProviderMetadata;
   onConfigure: () => void;
   provider: ClientAIProvider;
 }
 
 export function ProviderListItem({
   className,
+  metadata,
   onConfigure,
   provider,
 }: ProviderListItemProps) {
-  const { providerMetadataMap } = useAtomValue(providerMetadataAtom);
-  const metadata = providerMetadataMap.get(provider.type);
-
   const { data: openRouterCredits, isLoading: isLoadingCredits } = useQuery({
     ...rpcClient.provider.credits.queryOptions({
       input: { provider: "openrouter" },
@@ -48,7 +47,12 @@ export function ProviderListItem({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="font-medium">{metadata?.name ?? provider.type}</h3>
+              <h3 className="font-medium">
+                {provider.displayName || metadata?.name}
+              </h3>
+              {provider.displayName && (
+                <Badge variant="secondary">{metadata?.name}</Badge>
+              )}
               {provider.type === "openrouter" && (
                 <span className="text-sm text-muted-foreground">
                   {isLoadingCredits
@@ -59,9 +63,15 @@ export function ProviderListItem({
                 </span>
               )}
             </div>
-            <p className="text-sm text-muted-foreground">
-              {metadata?.description ?? "Metadata not found"}
-            </p>
+            {provider.type === "openai-compatible" && provider.baseURL ? (
+              <div className="text-sm text-muted-foreground">
+                <div className="text-xs">{provider.baseURL}</div>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                {metadata?.description ?? "Metadata not found"}
+              </p>
+            )}
           </div>
         </div>
         <Button onClick={onConfigure} size="sm" variant="outline">

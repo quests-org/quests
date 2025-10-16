@@ -7,6 +7,7 @@ export const PROVIDER_PATH: Record<AIGatewayProvider.Type["type"], string> = {
   google: "/google",
   ollama: "/ollama",
   openai: "/openai",
+  "openai-compatible": "/openai-compatible",
   openrouter: "/openrouter",
   vercel: "/vercel",
 };
@@ -18,6 +19,7 @@ export const PROVIDER_API_PATH: Record<AIGatewayProvider.Type["type"], string> =
     google: `${AI_GATEWAY_API_PATH}${PROVIDER_PATH.google}`,
     ollama: `${AI_GATEWAY_API_PATH}${PROVIDER_PATH.ollama}`,
     openai: `${AI_GATEWAY_API_PATH}${PROVIDER_PATH.openai}`,
+    "openai-compatible": `${AI_GATEWAY_API_PATH}${PROVIDER_PATH["openai-compatible"]}`,
     openrouter: `${AI_GATEWAY_API_PATH}${PROVIDER_PATH.openrouter}`,
     vercel: `${AI_GATEWAY_API_PATH}${PROVIDER_PATH.vercel}`,
   };

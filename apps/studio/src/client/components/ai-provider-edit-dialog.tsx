@@ -36,18 +36,23 @@ export function AIProviderEditDialog({
   const { providerMetadataMap } = useAtomValue(providerMetadataAtom);
   const providerMetadata = providerMetadataMap.get(provider.type);
   const [apiKey, setAPIKey] = useState("");
+  const [displayName, setDisplayName] = useState(provider.displayName || "");
   const [errorMessage, setErrorMessage] = useState<null | string>(null);
 
   const removeMutation = useMutation(
     rpcClient.provider.remove.mutationOptions(),
   );
+  const updateMutation = useMutation(
+    rpcClient.provider.update.mutationOptions(),
+  );
 
   useEffect(() => {
     if (open) {
       setAPIKey("");
+      setDisplayName(provider.displayName || "");
       setErrorMessage(null);
     }
-  }, [open]);
+  }, [open, provider.displayName]);
 
   const handleApiKeyChange = (value: string) => {
     setAPIKey(value);
@@ -68,9 +73,30 @@ export function AIProviderEditDialog({
     );
   };
 
+  const handleSave = async () => {
+    await updateMutation.mutateAsync(
+      {
+        displayName: displayName.trim() || undefined,
+        id: provider.id,
+      },
+      {
+        onError: () => {
+          setErrorMessage("Failed to update provider");
+        },
+        onSuccess: () => {
+          onSuccess?.();
+        },
+      },
+    );
+  };
+
   const handleClose = () => {
     onOpenChange(false);
   };
+
+  const hasChanges =
+    provider.type === "openai-compatible" &&
+    displayName.trim() !== (provider.displayName || "");
 
   if (!providerMetadata) {
     return null;
@@ -82,11 +108,45 @@ export function AIProviderEditDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <AIProviderIcon type={provider.type} />
-            {providerMetadata.name}
+            {provider.displayName ?? providerMetadata.name}
           </DialogTitle>
           <DialogDescription>{providerMetadata.description}</DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
+          {provider.type === "openai-compatible" && (
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <Label htmlFor="display-name">Name</Label>
+              </div>
+              <Input
+                id="display-name"
+                onChange={(e) => {
+                  setDisplayName(e.target.value);
+                }}
+                placeholder="E.g. My Custom Provider"
+                spellCheck={false}
+                type="text"
+                value={displayName}
+              />
+            </div>
+          )}
+
+          {provider.type === "openai-compatible" && provider.baseURL && (
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <Label htmlFor="base-url">Base URL</Label>
+              </div>
+              <Input
+                className="font-mono"
+                disabled
+                id="base-url"
+                readOnly
+                spellCheck={false}
+                type="text"
+                value={provider.baseURL}
+              />
+            </div>
+          )}
           {providerMetadata.requiresAPIKey && (
             <div className="space-y-3">
               <div className="space-y-1">
@@ -120,13 +180,14 @@ export function AIProviderEditDialog({
               )}
             </div>
           )}
-          {!providerMetadata.requiresAPIKey && (
-            <Alert>
-              <AlertDescription className="text-center">
-                No additional configuration required for this provider.
-              </AlertDescription>
-            </Alert>
-          )}
+          {!providerMetadata.requiresAPIKey &&
+            provider.type !== "openai-compatible" && (
+              <Alert>
+                <AlertDescription className="text-center">
+                  No additional configuration required for this provider.
+                </AlertDescription>
+              </Alert>
+            )}
           {errorMessage && (
             <Alert variant="destructive">
               <AlertCircle />
@@ -134,18 +195,44 @@ export function AIProviderEditDialog({
             </Alert>
           )}
         </div>
-        <DialogFooter className="flex gap-2">
-          <Button onClick={handleClose} type="button" variant="secondary">
-            Cancel
-          </Button>
-          <Button
-            disabled={removeMutation.isPending}
-            onClick={handleRemove}
-            variant="destructive"
-          >
-            {removeMutation.isPending ? "Removing..." : "Remove"}
-          </Button>
-        </DialogFooter>
+        {provider.type === "openai-compatible" ? (
+          <DialogFooter className="flex items-center">
+            <Button
+              disabled={removeMutation.isPending || updateMutation.isPending}
+              onClick={handleRemove}
+              variant="ghost-destructive"
+            >
+              {removeMutation.isPending ? "Removing..." : "Remove"}
+            </Button>
+            <div className="flex-1" />
+            <Button onClick={handleClose} type="button" variant="secondary">
+              Cancel
+            </Button>
+            <Button
+              disabled={
+                !hasChanges ||
+                updateMutation.isPending ||
+                removeMutation.isPending
+              }
+              onClick={handleSave}
+            >
+              {updateMutation.isPending ? "Saving..." : "Save"}
+            </Button>
+          </DialogFooter>
+        ) : (
+          <DialogFooter className="flex gap-2">
+            <Button onClick={handleClose} type="button" variant="secondary">
+              Cancel
+            </Button>
+            <Button
+              disabled={removeMutation.isPending || updateMutation.isPending}
+              onClick={handleRemove}
+              variant="destructive"
+            >
+              {removeMutation.isPending ? "Removing..." : "Remove"}
+            </Button>
+          </DialogFooter>
+        )}
       </DialogContent>
     </Dialog>
   );
