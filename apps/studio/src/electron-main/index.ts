@@ -13,7 +13,7 @@ import {
   createMainWindow,
   updateTitleBarOverlay,
 } from "@/electron-main/windows/main";
-import { is, optimizer } from "@electron-toolkit/utils";
+import { is, optimizer, platform } from "@electron-toolkit/utils";
 import { APP_PROTOCOL } from "@quests/shared";
 import { app, BrowserWindow, dialog, nativeTheme, protocol } from "electron";
 import fixPath from "fix-path";
@@ -25,8 +25,10 @@ import { setupBinDirectory } from "./lib/setup-bin-directory";
 import { watchThemePreferenceAndApply } from "./lib/theme-utils";
 import { initializeRPC } from "./rpc/initialize";
 
-// Fix the $PATH on macOS and Linux when run from a GUI app
-fixPath();
+if (!platform.isWindows) {
+  // Fix the $PATH on macOS and Linux when run from a GUI app
+  fixPath();
+}
 
 if (is.dev) {
   let suffix = "";
