@@ -34,13 +34,8 @@ export function createWorkspaceActor() {
         const providersStore = getProvidersStore();
         const aiProviders = providersStore.get("providers");
 
-        for (const provider of aiProviders) {
-          providers.push({
-            apiKey: provider.apiKey,
-            baseURL: provider.baseURL,
-            cacheIdentifier: provider.cacheIdentifier,
-            type: provider.type,
-          });
+        for (const { id: _, ...rest } of aiProviders) {
+          providers.push(rest);
         }
 
         return providers;

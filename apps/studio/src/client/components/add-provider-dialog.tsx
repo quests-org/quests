@@ -31,7 +31,9 @@ import { useEffect, useMemo, useState } from "react";
 
 import { providerMetadataAtom } from "../atoms/provider-metadata";
 import { selectedModelURIAtom } from "../atoms/selected-models";
+import { OPENAI_COMPATIBLE_PROVIDERS } from "../data/openai-compatible-providers";
 import { AIProviderIcon } from "./ai-provider-icon";
+import { OpenAICompatibleProviderPicker } from "./openai-compatible-provider-picker";
 import { Alert, AlertDescription } from "./ui/alert";
 import { Badge } from "./ui/badge";
 
@@ -54,6 +56,9 @@ export function AddProviderDialog({
   const [stage, setStage] = useState<DialogStage>("provider-selection");
   const [selectedProviderType, setSelectedProviderType] = useState<
     AIGatewayProvider.Type["type"] | undefined
+  >(undefined);
+  const [selectedPresetProvider, setSelectedPresetProvider] = useState<
+    string | undefined
   >(undefined);
   const [apiKey, setAPIKey] = useState("");
   const [baseURL, setBaseURL] = useState("");
@@ -106,6 +111,7 @@ export function AddProviderDialog({
       setErrorMessage(null);
       setValidationFailed(false);
       setSelectedProviderType(undefined);
+      setSelectedPresetProvider(undefined);
       setStage("provider-selection");
     }
   }, [open]);
@@ -120,6 +126,7 @@ export function AddProviderDialog({
   const handleBackToSelection = () => {
     setStage("provider-selection");
     setSelectedProviderType(undefined);
+    setSelectedPresetProvider(undefined);
     setErrorMessage(null);
     setValidationFailed(false);
   };
@@ -130,12 +137,48 @@ export function AddProviderDialog({
     setValidationFailed(false);
   };
 
+  const handlePresetProviderSelect = (providerName: string | undefined) => {
+    if (providerName === undefined) {
+      setSelectedPresetProvider(undefined);
+      setBaseURL("");
+      setDisplayName("");
+    } else if (providerName === "custom") {
+      setSelectedPresetProvider("custom");
+      setBaseURL("");
+      setDisplayName("");
+    } else {
+      const provider = OPENAI_COMPATIBLE_PROVIDERS.find(
+        (p) => p.name === providerName,
+      );
+      if (provider) {
+        setSelectedPresetProvider(providerName);
+        setBaseURL(provider.api.defaultBaseURL);
+        setDisplayName("");
+      }
+    }
+    setErrorMessage(null);
+    setValidationFailed(false);
+  };
+
+  const selectedPresetProviderData = useMemo(() => {
+    if (!selectedPresetProvider || selectedPresetProvider === "custom") {
+      return null;
+    }
+    return (
+      OPENAI_COMPATIBLE_PROVIDERS.find(
+        (p) => p.name === selectedPresetProvider,
+      ) ?? null
+    );
+  }, [selectedPresetProvider]);
+
   const handleSave = async (skipValidation = false) => {
     if (
       !selectedProviderType ||
       (providerMetadata?.requiresAPIKey && !apiKey) ||
       (selectedProviderType === "openai-compatible" && !baseURL) ||
-      (selectedProviderType === "openai-compatible" && !displayName.trim())
+      (selectedProviderType === "openai-compatible" &&
+        selectedPresetProvider === "custom" &&
+        !displayName.trim())
     ) {
       return;
     }
@@ -149,12 +192,19 @@ export function AddProviderDialog({
       setBaseURL(normalizedBaseURL);
     }
 
+    const finalDisplayName =
+      selectedProviderType === "openai-compatible" &&
+      selectedPresetProvider &&
+      selectedPresetProvider !== "custom"
+        ? selectedPresetProviderData?.name
+        : displayName.trim() || undefined;
+
     try {
       await createMutation.mutateAsync(
         {
           apiKey: providerMetadata?.requiresAPIKey ? apiKey : "NOT_NEEDED",
           baseURL: normalizedBaseURL,
-          displayName: displayName.trim() || undefined,
+          displayName: finalDisplayName,
           skipValidation,
           type: selectedProviderType,
         },
@@ -335,114 +385,123 @@ export function AddProviderDialog({
         {selectedProviderType === "openai-compatible" && (
           <>
             <div className="flex flex-col gap-y-1">
-              <Label htmlFor="display-name">Name</Label>
-              <div className="text-xs text-muted-foreground">
-                Custom name to identify this provider
-              </div>
+              <Label>Provider</Label>
             </div>
 
-            <Input
-              autoFocus
-              id="display-name"
-              onChange={(e) => {
-                setDisplayName(e.target.value);
-              }}
-              placeholder="E.g. My Custom Provider"
-              spellCheck={false}
-              type="text"
-              value={displayName}
-            />
-          </>
-        )}
-
-        {selectedProviderType === "openai-compatible" && (
-          <>
-            <div className="flex flex-col gap-y-1">
-              <Label htmlFor="base-url">Base URL</Label>
-              <div className="text-xs text-muted-foreground">
-                The base URL of your OpenAI-compatible endpoint
-              </div>
-            </div>
-
-            <Input
-              className="font-mono"
-              id="base-url"
-              onChange={(e) => {
-                setBaseURL(e.target.value);
-                setErrorMessage(null);
-                setValidationFailed(false);
-              }}
-              placeholder="E.g. https://api.example.com/v1"
-              spellCheck={false}
-              type="text"
-              value={baseURL}
+            <OpenAICompatibleProviderPicker
+              onSelect={handlePresetProviderSelect}
+              selectedProvider={selectedPresetProvider}
             />
 
-            {matchingBuiltInProvider && (
-              <Alert variant="warning">
-                <TriangleAlert className="size-4" />
-                <AlertDescription>
-                  This URL matches the {matchingBuiltInProvider.name} provider.
-                  Use the built-in provider for better performance.
-                </AlertDescription>
-              </Alert>
+            {selectedPresetProviderData && (
+              <ProviderLinks
+                keyURL={selectedPresetProviderData.api.keyURL}
+                name={selectedPresetProviderData.name}
+                url={selectedPresetProviderData.url}
+              />
+            )}
+
+            {selectedPresetProvider === "custom" && (
+              <>
+                <div className="flex flex-col gap-y-1">
+                  <Label htmlFor="display-name">Name</Label>
+                  <div className="text-xs text-muted-foreground">
+                    Custom name to identify this provider
+                  </div>
+                </div>
+
+                <Input
+                  id="display-name"
+                  onChange={(e) => {
+                    setDisplayName(e.target.value);
+                  }}
+                  placeholder="E.g. My Custom Provider"
+                  spellCheck={false}
+                  type="text"
+                  value={displayName}
+                />
+              </>
             )}
           </>
         )}
 
-        {selectedProviderType && providerMetadata?.requiresAPIKey && (
-          <>
-            <div className="flex flex-col gap-y-1">
-              <Label htmlFor="api-key">API Key</Label>
-              {selectedProviderType !== "openai-compatible" && (
-                <div className="flex items-center gap-x-1 text-xs text-muted-foreground">
-                  <a
-                    className="inline-flex items-center gap-x-1 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 underline underline-offset-2"
-                    href={providerMetadata.api.keyURL}
-                    rel="noopener noreferrer"
-                    target="_blank"
-                  >
-                    Get your API key
-                    <ExternalLink className="h-3 w-3" />
-                  </a>
-                  <span>or</span>
-                  <a
-                    className="inline-flex items-center gap-x-1 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 underline underline-offset-2"
-                    href={providerMetadata.url}
-                    rel="noopener noreferrer"
-                    target="_blank"
-                  >
-                    learn more
-                    <ExternalLink className="h-3 w-3" />
-                  </a>
+        {selectedProviderType === "openai-compatible" &&
+          selectedPresetProvider !== undefined && (
+            <>
+              <div className="flex flex-col gap-y-1">
+                <Label htmlFor="base-url">Base URL</Label>
+                <div className="text-xs text-muted-foreground">
+                  The base URL of your OpenAI-compatible endpoint
                 </div>
+              </div>
+
+              <Input
+                className="font-mono"
+                id="base-url"
+                onChange={(e) => {
+                  setBaseURL(e.target.value);
+                  setErrorMessage(null);
+                  setValidationFailed(false);
+                }}
+                placeholder="E.g. https://api.example.com/v1"
+                spellCheck={false}
+                type="text"
+                value={baseURL}
+              />
+
+              {matchingBuiltInProvider && (
+                <Alert variant="warning">
+                  <TriangleAlert className="size-4" />
+                  <AlertDescription>
+                    This URL matches the {matchingBuiltInProvider.name}{" "}
+                    provider. Use the built-in provider for better performance.
+                  </AlertDescription>
+                </Alert>
               )}
-            </div>
+            </>
+          )}
 
-            <Input
-              autoFocus={selectedProviderType !== "openai-compatible"}
-              className="font-mono"
-              id="api-key"
-              onChange={(e) => {
-                handleApiKeyChange(e.target.value);
-              }}
-              placeholder={`${providerMetadata.api.keyFormat ?? ""}...xyz123`}
-              spellCheck={false}
-              type="text"
-              value={apiKey}
-            />
+        {selectedProviderType &&
+          providerMetadata?.requiresAPIKey &&
+          (selectedProviderType !== "openai-compatible" ||
+            selectedPresetProvider !== undefined) && (
+            <>
+              <div className="flex flex-col gap-y-1">
+                <Label htmlFor="api-key">API Key</Label>
+                {selectedProviderType !== "openai-compatible" && (
+                  <ProviderLinks
+                    keyURL={providerMetadata.api.keyURL}
+                    name={providerMetadata.name}
+                    url={providerMetadata.url}
+                  />
+                )}
+              </div>
 
-            <Alert>
-              <Lock className="size-4" />
-              <AlertDescription className="text-xs">
-                Your API key is encrypted and stored locally on your computer.
-              </AlertDescription>
-            </Alert>
-          </>
-        )}
+              <Input
+                autoFocus={selectedProviderType !== "openai-compatible"}
+                className="font-mono"
+                id="api-key"
+                onChange={(e) => {
+                  handleApiKeyChange(e.target.value);
+                }}
+                placeholder={`${selectedPresetProviderData?.api.keyFormat ?? providerMetadata.api.keyFormat ?? ""}...xyz123`}
+                spellCheck={false}
+                type="text"
+                value={apiKey}
+              />
+
+              <Alert>
+                <Lock className="size-4" />
+                <AlertDescription className="text-xs">
+                  Your API key is encrypted and stored locally on your computer.
+                </AlertDescription>
+              </Alert>
+            </>
+          )}
         {selectedProviderType &&
           !providerMetadata?.requiresAPIKey &&
-          providerMetadata && (
+          providerMetadata &&
+          selectedProviderType !== "openai-compatible" && (
             <a
               className="inline-flex items-center gap-x-1 text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 underline underline-offset-2"
               href={providerMetadata.url}
@@ -450,6 +509,20 @@ export function AddProviderDialog({
               target="_blank"
             >
               Learn more about {providerMetadata.name}
+              <ExternalLink className="h-3 w-3" />
+            </a>
+          )}
+        {selectedProviderType === "openai-compatible" &&
+          !providerMetadata?.requiresAPIKey &&
+          selectedPresetProviderData &&
+          selectedPresetProvider !== undefined && (
+            <a
+              className="inline-flex items-center gap-x-1 text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 underline underline-offset-2"
+              href={selectedPresetProviderData.url}
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              Learn more about {selectedPresetProviderData.name}
               <ExternalLink className="h-3 w-3" />
             </a>
           )}
@@ -488,6 +561,7 @@ export function AddProviderDialog({
             (providerMetadata?.requiresAPIKey && !apiKey) ||
             (selectedProviderType === "openai-compatible" && !baseURL) ||
             (selectedProviderType === "openai-compatible" &&
+              selectedPresetProvider === "custom" &&
               !displayName.trim())
           }
           type="submit"
@@ -503,18 +577,16 @@ export function AddProviderDialog({
       <DialogContent
         className={cn(
           "transition-none",
-          stage === "provider-selection" ? "sm:max-w-xl" : "sm:max-w-lg",
+          stage === "configuration" ? "sm:max-w-lg" : "sm:max-w-xl",
         )}
       >
-        {stage === "provider-selection"
-          ? renderProviderSelection()
-          : renderConfiguration()}
+        {stage === "provider-selection" && renderProviderSelection()}
+        {stage === "configuration" && renderConfiguration()}
       </DialogContent>
     </Dialog>
   );
 }
 
-// Attempt to fix bad URL input from users
 function normalizeURL(url: string): string {
   let normalized = url.trim();
   if (!normalized) {
@@ -534,4 +606,48 @@ function normalizeURL(url: string): string {
   }
 
   return normalized;
+}
+
+function ProviderLinks({
+  keyURL,
+  name,
+  url,
+}: {
+  keyURL?: string;
+  name: string;
+  url: string;
+}) {
+  return (
+    <div className="flex items-center gap-x-1 text-xs text-muted-foreground">
+      {keyURL && (
+        <>
+          <span>
+            Get your {name}{" "}
+            <a
+              className="inline-flex items-center gap-x-1 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 underline underline-offset-2"
+              href={keyURL}
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              API key
+              <ExternalLink className="h-3 w-3" />
+            </a>
+          </span>
+          <span>or</span>
+        </>
+      )}
+      <span>
+        <a
+          className="inline-flex items-center gap-x-1 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 underline underline-offset-2"
+          href={url}
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          learn more
+          <ExternalLink className="h-3 w-3" />
+        </a>{" "}
+        about {name}
+      </span>
+    </div>
+  );
 }

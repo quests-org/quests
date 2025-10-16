@@ -43,7 +43,10 @@ export function ProviderListItem({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="flex items-center justify-center size-8">
-            <AIProviderIcon type={provider.type} />
+            <AIProviderIcon
+              providerName={provider.displayName}
+              type={provider.type}
+            />
           </div>
           <div>
             <div className="flex items-center gap-2">

@@ -380,6 +380,7 @@ function RouteComponent() {
                                   />
                                   <AIProviderIcon
                                     className="size-4 opacity-90 shrink-0"
+                                    providerName={model.providerName}
                                     type={model.params.provider}
                                   />
                                   <span className="truncate text-sm">
@@ -454,6 +455,7 @@ function RouteComponent() {
                             >
                               <AIProviderIcon
                                 className="size-3"
+                                providerName={model.providerName}
                                 type={model.params.provider}
                               />
                               <span className="truncate max-w-32">
