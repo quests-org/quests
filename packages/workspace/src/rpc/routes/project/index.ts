@@ -248,9 +248,10 @@ const createFromEval = base
     z.object({
       evalName: z.string(),
       iconName: SelectableAppIconsSchema,
-      message: SessionMessage.UserSchemaWithParts,
       modelURI: AIGatewayModel.URISchema,
       sessionId: StoreId.SessionSchema,
+      systemPrompt: z.string().optional(),
+      userPrompt: z.string(),
     }),
   )
   .output(WorkspaceAppProjectSchema)
@@ -258,7 +259,14 @@ const createFromEval = base
     async ({
       context,
       errors,
-      input: { evalName, iconName, message, modelURI, sessionId },
+      input: {
+        evalName,
+        iconName,
+        modelURI,
+        sessionId,
+        systemPrompt,
+        userPrompt,
+      },
       signal,
     }) => {
       const [model, error] = (
@@ -320,6 +328,34 @@ const createFromEval = base
       publisher.publish("project.updated", {
         subdomain: result.value.projectConfig.subdomain,
       });
+
+      const messageId = StoreId.newMessageId();
+      const createdAt = new Date();
+      // For now, we're not using an actual system role
+      const promptText = systemPrompt
+        ? `${systemPrompt}\n\n${userPrompt}`
+        : userPrompt;
+
+      const message: SessionMessage.UserWithParts = {
+        id: messageId,
+        metadata: {
+          createdAt,
+          sessionId,
+        },
+        parts: [
+          {
+            metadata: {
+              createdAt,
+              id: StoreId.newPartId(),
+              messageId,
+              sessionId,
+            },
+            text: promptText,
+            type: "text",
+          },
+        ],
+        role: "user",
+      };
 
       context.workspaceRef.send({
         type: "createSession",

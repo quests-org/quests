@@ -170,35 +170,15 @@ function RouteComponent() {
         }
 
         for (const modelURI of selectedModels) {
-          const messageId = StoreId.newMessageId();
           const sessionId = StoreId.newSessionId();
-          const createdAt = new Date();
 
           const project = await createFromEvalMutation.mutateAsync({
             evalName: template.name,
             iconName: template.iconName,
-            message: {
-              id: messageId,
-              metadata: {
-                createdAt,
-                sessionId,
-              },
-              parts: [
-                {
-                  metadata: {
-                    createdAt,
-                    id: StoreId.newPartId(),
-                    messageId,
-                    sessionId,
-                  },
-                  text: template.prompt,
-                  type: "text",
-                },
-              ],
-              role: "user",
-            },
             modelURI,
             sessionId,
+            systemPrompt: template.systemPrompt,
+            userPrompt: template.userPrompt,
           });
           createdProjects.push(project);
         }
@@ -292,7 +272,7 @@ function RouteComponent() {
                               onSelect={() => {
                                 handleToggleEvalTemplate(template.name);
                               }}
-                              value={`${template.name} ${template.prompt}`}
+                              value={`${template.name} ${template.userPrompt}`}
                             >
                               <div className="flex items-start gap-2 flex-1 min-w-0">
                                 <Checkbox
@@ -307,7 +287,7 @@ function RouteComponent() {
                                     {template.name}
                                   </div>
                                   <div className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
-                                    {template.prompt}
+                                    {template.userPrompt}
                                   </div>
                                 </div>
                               </div>
