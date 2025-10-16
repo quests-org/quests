@@ -1,12 +1,6 @@
 import { providerMetadataAtom } from "@/client/atoms/provider-metadata";
 import { AIProviderIcon } from "@/client/components/ai-provider-icon";
 import { IconMap } from "@/client/components/app-icons";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/client/components/ui/accordion";
 import { Button } from "@/client/components/ui/button";
 import { Checkbox } from "@/client/components/ui/checkbox";
 import {
@@ -243,200 +237,257 @@ function RouteComponent() {
     );
   }
 
-  const selectedModelsList = models?.filter((m) => selectedModels.has(m.uri));
   const totalProjectsToCreate =
     selectedEvalTemplates.size * selectedModels.size;
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-start justify-between gap-4">
-        <div className="space-y-2">
-          <h1 className="text-2xl font-bold">Evals</h1>
-          <p className="text-sm text-muted-foreground">
-            Run evaluation prompts across multiple models to compare results.
-          </p>
-        </div>
-        <div className="flex flex-col items-end gap-2">
-          <Button
-            disabled={
-              selectedEvalTemplates.size === 0 ||
-              selectedModels.size === 0 ||
-              isCreating
-            }
-            onClick={handleRunEvals}
-            size="lg"
-          >
-            {isCreating
-              ? `Creating (${totalProjectsToCreate})...`
-              : `Run Evals (${totalProjectsToCreate})`}
-          </Button>
-          <div className="text-xs text-muted-foreground text-right">
-            {totalProjectsToCreate > 0 ? (
-              <>
-                {selectedEvalTemplates.size} template
-                {selectedEvalTemplates.size === 1 ? "" : "s"} ×{" "}
-                {selectedModels.size} model
-                {selectedModels.size === 1 ? "" : "s"}
-              </>
-            ) : (
-              "Select templates and models"
-            )}
-          </div>
-        </div>
+    <div className="p-6 max-w-7xl mx-auto">
+      <div className="space-y-2 mb-6">
+        <h1 className="text-2xl font-bold">Evals</h1>
+        <p className="text-sm text-muted-foreground">
+          Run evaluation prompts across multiple models to compare results.
+        </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="space-y-4">
-          <h2 className="text-lg font-semibold">Select Eval Templates</h2>
-          <Accordion className="border rounded-lg" type="multiple">
-            {evalTemplateGroups?.map((group) => (
-              <AccordionItem key={group.name} value={group.name}>
-                <AccordionTrigger className="px-4">
-                  <span className="text-sm font-medium">{group.name}</span>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <div className="divide-y">
-                    {group.templates.map((template) => {
-                      const IconComponent = IconMap[template.iconName];
-                      return (
-                        <div
-                          className="px-4 py-3 hover:bg-muted/50 cursor-pointer"
-                          key={template.name}
-                          onClick={() => {
-                            handleToggleEvalTemplate(template.name);
-                          }}
-                        >
-                          <div className="flex items-start gap-3">
-                            <Checkbox
-                              checked={selectedEvalTemplates.has(template.name)}
-                              className="mt-1"
-                              id={`eval-template-${template.name}`}
-                            />
-                            <IconComponent className="size-4 text-muted-foreground mt-1 shrink-0" />
-                            <div className="flex-1 min-w-0">
-                              <h3 className="text-sm font-medium">
-                                {template.name}
-                              </h3>
-                              <p className="text-xs text-muted-foreground mt-1">
-                                {template.prompt}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
+        <div className="space-y-6">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold">Select Prompts</h2>
+              <div className="flex items-center gap-2">
+                {selectedEvalTemplates.size > 0 && (
+                  <span className="text-sm text-muted-foreground">
+                    {selectedEvalTemplates.size} selected
+                  </span>
+                )}
+                <Button
+                  disabled={selectedEvalTemplates.size === 0}
+                  onClick={() => {
+                    setSelectedEvalTemplatesArray([]);
+                  }}
+                  size="sm"
+                  variant="outline"
+                >
+                  Clear
+                </Button>
+              </div>
+            </div>
+            <div className="border rounded-lg">
+              <Command>
+                <CommandInput placeholder="Search prompts..." />
+                <CommandList className="max-h-96">
+                  <CommandEmpty>No prompts found</CommandEmpty>
+                  {!evalTemplateGroups || evalTemplateGroups.length === 0 ? (
+                    <CommandGroup>
+                      <CommandItem disabled>No prompts available</CommandItem>
+                    </CommandGroup>
+                  ) : (
+                    evalTemplateGroups.map((group) => (
+                      <CommandGroup heading={group.name} key={group.name}>
+                        {group.templates.map((template) => {
+                          const IconComponent = IconMap[template.iconName];
+                          return (
+                            <CommandItem
+                              key={template.name}
+                              onSelect={() => {
+                                handleToggleEvalTemplate(template.name);
+                              }}
+                              value={`${template.name} ${template.prompt}`}
+                            >
+                              <div className="flex items-start gap-2 flex-1 min-w-0">
+                                <Checkbox
+                                  checked={selectedEvalTemplates.has(
+                                    template.name,
+                                  )}
+                                  className="shrink-0 mt-0.5 [&_svg]:text-primary-foreground!"
+                                />
+                                <IconComponent className="size-4 text-muted-foreground shrink-0 mt-0.5" />
+                                <div className="flex-1 min-w-0">
+                                  <div className="text-sm font-medium">
+                                    {template.name}
+                                  </div>
+                                  <div className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+                                    {template.prompt}
+                                  </div>
+                                </div>
+                              </div>
+                            </CommandItem>
+                          );
+                        })}
+                      </CommandGroup>
+                    ))
+                  )}
+                </CommandList>
+              </Command>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold">Select Models</h2>
+              <div className="flex items-center gap-2">
+                {selectedModels.size > 0 && (
+                  <span className="text-sm text-muted-foreground">
+                    {selectedModels.size} selected
+                  </span>
+                )}
+                <Button
+                  disabled={selectedModels.size === 0}
+                  onClick={() => {
+                    setSelectedModelsArray([]);
+                  }}
+                  size="sm"
+                  variant="outline"
+                >
+                  Clear
+                </Button>
+              </div>
+            </div>
+
+            <Tabs
+              onValueChange={(value) => {
+                setSelectedProvider(value as typeof selectedProvider);
+              }}
+              value={selectedProvider}
+            >
+              <TabsList>
+                <TabsTrigger value="all">All</TabsTrigger>
+                {availableProviders.map((provider) => {
+                  const metadata = providerMetadataMap.get(provider);
+                  if (!metadata) {
+                    return null;
+                  }
+                  return (
+                    <TabsTrigger key={provider} value={provider}>
+                      <AIProviderIcon className="size-4" type={provider} />
+                      {metadata.name}
+                    </TabsTrigger>
+                  );
+                })}
+              </TabsList>
+            </Tabs>
+
+            <div className="border rounded-lg">
+              <Command>
+                <CommandInput placeholder="Search models..." />
+                <CommandList className="max-h-96">
+                  <CommandEmpty>No models found</CommandEmpty>
+                  {!models || models.length === 0 ? (
+                    <CommandGroup>
+                      <CommandItem disabled>No models available</CommandItem>
+                    </CommandGroup>
+                  ) : (
+                    getGroupedModelsEntries(groupedModels).map(
+                      ([groupName, groupModels]) => {
+                        if (groupModels.length === 0) {
+                          return null;
+                        }
+                        return (
+                          <CommandGroup heading={groupName} key={groupName}>
+                            {groupModels.map((model) => (
+                              <CommandItem
+                                key={model.uri}
+                                onSelect={() => {
+                                  handleToggleModel(model.uri);
+                                }}
+                                value={model.uri}
+                              >
+                                <div className="flex items-center gap-2 flex-1 min-w-0">
+                                  <Checkbox
+                                    checked={selectedModels.has(model.uri)}
+                                    className="shrink-0 [&_svg]:text-primary-foreground!"
+                                  />
+                                  <AIProviderIcon
+                                    className="size-4 opacity-90 shrink-0"
+                                    type={model.params.provider}
+                                  />
+                                  <span className="truncate text-sm">
+                                    {model.canonicalId}
+                                  </span>
+                                </div>
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        );
+                      },
+                    )
+                  )}
+                </CommandList>
+              </Command>
+            </div>
+          </div>
         </div>
 
         <div className="space-y-4">
-          <h2 className="text-lg font-semibold">Select Models</h2>
-
-          <Tabs
-            onValueChange={(value) => {
-              setSelectedProvider(value as typeof selectedProvider);
-            }}
-            value={selectedProvider}
-          >
-            <TabsList>
-              <TabsTrigger value="all">All</TabsTrigger>
-              {availableProviders.map((provider) => {
-                const metadata = providerMetadataMap.get(provider);
-                if (!metadata) {
-                  return null;
+          <div className="sticky top-6">
+            <div className="border rounded-lg p-4 space-y-4 bg-card">
+              <Button
+                className="w-full"
+                disabled={
+                  selectedEvalTemplates.size === 0 ||
+                  selectedModels.size === 0 ||
+                  isCreating
                 }
-                return (
-                  <TabsTrigger key={provider} value={provider}>
-                    <AIProviderIcon className="size-4" type={provider} />
-                    {metadata.name}
-                  </TabsTrigger>
-                );
-              })}
-            </TabsList>
-          </Tabs>
+                onClick={handleRunEvals}
+                size="lg"
+              >
+                {isCreating
+                  ? "Creating..."
+                  : totalProjectsToCreate === 0
+                    ? "Run Evals"
+                    : `Run ${totalProjectsToCreate} Evaluation${totalProjectsToCreate === 1 ? "" : "s"}`}
+              </Button>
 
-          <div className="border rounded-lg">
-            <Command>
-              <CommandInput placeholder="Search models..." />
-              <CommandList className="max-h-96">
-                <CommandEmpty>No models found</CommandEmpty>
-                {!models || models.length === 0 ? (
-                  <CommandGroup>
-                    <CommandItem disabled>No models available</CommandItem>
-                  </CommandGroup>
-                ) : (
-                  getGroupedModelsEntries(groupedModels).map(
-                    ([groupName, groupModels]) => {
-                      if (groupModels.length === 0) {
-                        return null;
-                      }
-                      return (
-                        <CommandGroup heading={groupName} key={groupName}>
-                          {groupModels.map((model) => (
-                            <CommandItem
+              {totalProjectsToCreate === 0 ? (
+                <div className="text-center py-2 text-sm text-muted-foreground">
+                  Select prompts and models to begin
+                </div>
+              ) : (
+                <div className="space-y-3 max-h-64 overflow-y-auto">
+                  {[...selectedEvalTemplates].map((templateName) => {
+                    const template = evalTemplateGroups
+                      ?.flatMap((g) => g.templates)
+                      .find((t) => t.name === templateName);
+                    const IconComponent = template
+                      ? IconMap[template.iconName]
+                      : null;
+                    const selectedModelsList = models?.filter((m) =>
+                      selectedModels.has(m.uri),
+                    );
+
+                    return (
+                      <div className="space-y-1.5" key={templateName}>
+                        <div className="flex items-center gap-1.5">
+                          {IconComponent && (
+                            <IconComponent className="size-3.5 text-muted-foreground shrink-0" />
+                          )}
+                          <div className="text-sm font-medium">
+                            {templateName}
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap gap-1.5 pl-5">
+                          {selectedModelsList?.map((model) => (
+                            <div
+                              className="flex items-center gap-1 bg-muted px-1.5 py-0.5 rounded text-xs"
                               key={model.uri}
-                              onSelect={() => {
-                                handleToggleModel(model.uri);
-                              }}
-                              value={model.uri}
                             >
-                              <div className="flex items-center gap-2 flex-1 min-w-0">
-                                <Checkbox
-                                  checked={selectedModels.has(model.uri)}
-                                  className="shrink-0 [&_svg]:text-primary-foreground!"
-                                />
-                                <AIProviderIcon
-                                  className="size-4 opacity-90 shrink-0"
-                                  type={model.params.provider}
-                                />
-                                <span className="truncate text-sm">
-                                  {model.canonicalId}
-                                </span>
-                              </div>
-                            </CommandItem>
+                              <AIProviderIcon
+                                className="size-3"
+                                type={model.params.provider}
+                              />
+                              <span className="truncate max-w-32">
+                                {model.canonicalId}
+                              </span>
+                            </div>
                           ))}
-                        </CommandGroup>
-                      );
-                    },
-                  )
-                )}
-              </CommandList>
-            </Command>
-          </div>
-          {selectedModelsList && selectedModelsList.length > 0 && (
-            <div className="border rounded-lg p-4 space-y-2">
-              <p className="text-xs font-medium text-muted-foreground">
-                Selected Models
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {selectedModelsList.map((model) => (
-                  <div
-                    className="flex items-center gap-1.5 bg-muted px-2 py-1 rounded text-xs"
-                    key={model.uri}
-                  >
-                    <AIProviderIcon
-                      className="size-3 opacity-90"
-                      type={model.params.provider}
-                    />
-                    <span className="truncate max-w-48">
-                      {model.canonicalId}
-                    </span>
-                    <button
-                      className="hover:text-foreground text-muted-foreground"
-                      onClick={() => {
-                        handleToggleModel(model.uri);
-                      }}
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-              </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>
