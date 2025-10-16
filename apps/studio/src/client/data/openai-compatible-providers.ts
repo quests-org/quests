@@ -6,6 +6,9 @@ import { Fireworks } from "@/client/components/icons/fireworks";
 import { Groq } from "@/client/components/icons/groq";
 import { HuggingFace } from "@/client/components/icons/huggingface";
 import { Hyperbolic } from "@/client/components/icons/hyperbolic";
+import { Jan } from "@/client/components/icons/jan";
+import { LMStudio } from "@/client/components/icons/lmstudio";
+import { LocalAI } from "@/client/components/icons/localai";
 import { Mistral } from "@/client/components/icons/mistral";
 import { Novita } from "@/client/components/icons/novita";
 import { Perplexity } from "@/client/components/icons/perplexity";
@@ -16,11 +19,12 @@ interface OpenAICompatibleProvider {
   api: {
     defaultBaseURL: string;
     keyFormat?: string;
-    keyURL: string;
+    keyURL?: string;
   };
   description: string;
   icon: ComponentType<{ className?: string }>;
   name: string;
+  requiresAPIKey?: boolean;
   url: string;
 }
 
@@ -144,5 +148,38 @@ export const OPENAI_COMPATIBLE_PROVIDERS: OpenAICompatibleProvider[] = [
     icon: Mistral,
     name: "Mistral AI",
     url: "https://mistral.ai",
+  },
+  {
+    api: {
+      defaultBaseURL: "http://localhost:8080/v1",
+    },
+    description:
+      "Open-source offline ChatGPT alternative with 70+ models and customizable inference.",
+    icon: Jan,
+    name: "Jan.ai",
+    requiresAPIKey: false,
+    url: "https://jan.ai",
+  },
+  {
+    api: {
+      defaultBaseURL: "http://localhost:1234/v1",
+    },
+    description:
+      "Polished GUI for managing and running local LLMs with built-in chat interface.",
+    icon: LMStudio,
+    name: "LM Studio",
+    requiresAPIKey: false,
+    url: "https://lmstudio.ai",
+  },
+  {
+    api: {
+      defaultBaseURL: "http://localhost:8080/v1",
+    },
+    description:
+      "Versatile drop-in replacement for OpenAI API supporting multiple architectures.",
+    icon: LocalAI,
+    name: "LocalAI",
+    requiresAPIKey: false,
+    url: "https://localai.io",
   },
 ];

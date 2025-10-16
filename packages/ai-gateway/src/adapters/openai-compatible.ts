@@ -1,4 +1,5 @@
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
+import { AI_GATEWAY_API_KEY_NOT_NEEDED } from "@quests/shared";
 import { Result } from "typescript-result";
 import { z } from "zod";
 
@@ -13,7 +14,9 @@ import { AIGatewayModel } from "../schemas/model";
 import { setupProviderAdapter } from "./setup";
 
 function setAuthHeaders(headers: Headers, apiKey: string) {
-  headers.set("Authorization", `Bearer ${apiKey}`);
+  if (apiKey !== AI_GATEWAY_API_KEY_NOT_NEEDED) {
+    headers.set("Authorization", `Bearer ${apiKey}`);
+  }
 }
 
 export const openaiCompatibleAdapter = setupProviderAdapter({

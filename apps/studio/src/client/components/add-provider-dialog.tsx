@@ -17,6 +17,7 @@ import {
   type AIGatewayProvider,
   RECOMMENDED_TAG,
 } from "@quests/ai-gateway/client";
+import { AI_GATEWAY_API_KEY_NOT_NEEDED } from "@quests/shared";
 import { useMutation } from "@tanstack/react-query";
 import { useAtom, useAtomValue } from "jotai";
 import {
@@ -171,10 +172,15 @@ export function AddProviderDialog({
     );
   }, [selectedPresetProvider]);
 
+  const requiresAPIKey =
+    selectedProviderType === "openai-compatible"
+      ? (selectedPresetProviderData?.requiresAPIKey ?? true)
+      : (providerMetadata?.requiresAPIKey ?? false);
+
   const handleSave = async (skipValidation = false) => {
     if (
       !selectedProviderType ||
-      (providerMetadata?.requiresAPIKey && !apiKey) ||
+      (requiresAPIKey && !apiKey) ||
       (selectedProviderType === "openai-compatible" && !baseURL) ||
       (selectedProviderType === "openai-compatible" &&
         selectedPresetProvider === "custom" &&
@@ -202,7 +208,7 @@ export function AddProviderDialog({
     try {
       await createMutation.mutateAsync(
         {
-          apiKey: providerMetadata?.requiresAPIKey ? apiKey : "NOT_NEEDED",
+          apiKey: requiresAPIKey ? apiKey : AI_GATEWAY_API_KEY_NOT_NEEDED,
           baseURL: normalizedBaseURL,
           displayName: finalDisplayName,
           skipValidation,
@@ -462,19 +468,28 @@ export function AddProviderDialog({
           )}
 
         {selectedProviderType &&
-          providerMetadata?.requiresAPIKey &&
+          requiresAPIKey &&
           (selectedProviderType !== "openai-compatible" ||
             selectedPresetProvider !== undefined) && (
             <>
               <div className="flex flex-col gap-y-1">
                 <Label htmlFor="api-key">API Key</Label>
-                {selectedProviderType !== "openai-compatible" && (
-                  <ProviderLinks
-                    keyURL={providerMetadata.api.keyURL}
-                    name={providerMetadata.name}
-                    url={providerMetadata.url}
-                  />
-                )}
+                {selectedProviderType !== "openai-compatible" &&
+                  providerMetadata && (
+                    <ProviderLinks
+                      keyURL={providerMetadata.api.keyURL}
+                      name={providerMetadata.name}
+                      url={providerMetadata.url}
+                    />
+                  )}
+                {selectedProviderType === "openai-compatible" &&
+                  selectedPresetProviderData?.api.keyURL && (
+                    <ProviderLinks
+                      keyURL={selectedPresetProviderData.api.keyURL}
+                      name={selectedPresetProviderData.name}
+                      url={selectedPresetProviderData.url}
+                    />
+                  )}
               </div>
 
               <Input
@@ -484,7 +499,7 @@ export function AddProviderDialog({
                 onChange={(e) => {
                   handleApiKeyChange(e.target.value);
                 }}
-                placeholder={`${selectedPresetProviderData?.api.keyFormat ?? providerMetadata.api.keyFormat ?? ""}...xyz123`}
+                placeholder={`${selectedPresetProviderData?.api.keyFormat ?? providerMetadata?.api.keyFormat ?? ""}...xyz123`}
                 spellCheck={false}
                 type="text"
                 value={apiKey}
@@ -499,7 +514,7 @@ export function AddProviderDialog({
             </>
           )}
         {selectedProviderType &&
-          !providerMetadata?.requiresAPIKey &&
+          !requiresAPIKey &&
           providerMetadata &&
           selectedProviderType !== "openai-compatible" && (
             <a
@@ -509,20 +524,6 @@ export function AddProviderDialog({
               target="_blank"
             >
               Learn more about {providerMetadata.name}
-              <ExternalLink className="h-3 w-3" />
-            </a>
-          )}
-        {selectedProviderType === "openai-compatible" &&
-          !providerMetadata?.requiresAPIKey &&
-          selectedPresetProviderData &&
-          selectedPresetProvider !== undefined && (
-            <a
-              className="inline-flex items-center gap-x-1 text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 underline underline-offset-2"
-              href={selectedPresetProviderData.url}
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              Learn more about {selectedPresetProviderData.name}
               <ExternalLink className="h-3 w-3" />
             </a>
           )}
@@ -558,7 +559,7 @@ export function AddProviderDialog({
           disabled={
             createMutation.isPending ||
             !selectedProviderType ||
-            (providerMetadata?.requiresAPIKey && !apiKey) ||
+            (requiresAPIKey && !apiKey) ||
             (selectedProviderType === "openai-compatible" && !baseURL) ||
             (selectedProviderType === "openai-compatible" &&
               selectedPresetProvider === "custom" &&
@@ -643,7 +644,7 @@ function ProviderLinks({
           rel="noopener noreferrer"
           target="_blank"
         >
-          learn more
+          {keyURL ? "learn more" : "Learn more"}
           <ExternalLink className="h-3 w-3" />
         </a>{" "}
         about {name}
