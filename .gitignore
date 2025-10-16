@@ -33,5 +33,6 @@ node_modules/
 # Wrangler, for Knip
 .wrangler/
 
-# Code Workspaces
+# Editor Files and Workspaces
 *.code-workspace
+.idea/
