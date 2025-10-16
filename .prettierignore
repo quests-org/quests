@@ -14,3 +14,4 @@ cloudflare-env.d.ts
 dist/
 registry/
 **/out/
+_tmp_*
