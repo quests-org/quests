@@ -28,6 +28,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useAtom, useAtomValue } from "jotai";
 import { atomWithStorage } from "jotai/utils";
+import { Loader2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -203,8 +204,8 @@ function RouteComponent() {
 
   if (modelsIsLoading || evalTemplateGroupsIsLoading) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <p className="text-sm text-muted-foreground">Loading...</p>
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
   }
