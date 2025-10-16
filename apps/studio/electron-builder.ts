@@ -63,10 +63,26 @@ const config: Configuration = {
   files: [
     "out/**/*",
     "resources/**/*",
-    "!node_modules/**",
-    "node_modules/pnpm/**",
-    "node_modules/dugite/**",
-    "node_modules/@vscode/**",
+    "node_modules/**",
+    // Exclude large client-side dependencies
+    "!node_modules/lucide-react/**",
+    "!node_modules/react-icons/**",
+    "!node_modules/@tanstack/**",
+    "!node_modules/react-dom/**",
+    "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
+    "!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}",
+    "!**/node_modules/*.d.ts",
+    "!**/node_modules/.bin",
+    "!**/*.map", // someday we may want to keep these for debugging
+    /* cspell:disable */
+    "!**/*.{iml,o,hprof,orig,pyc,pyo,rbc,swp,csproj,sln,xproj}",
+    "!.editorconfig",
+    "!**/._*",
+    "!**/{.DS_Store,.git,.hg,.svn,CVS,RCS,SCCS,.gitignore,.gitattributes}",
+    "!**/{__pycache__,thumbs.db,.flowconfig,.idea,.vs,.nyc_output}",
+    "!**/{appveyor.yml,.travis.yml,circle.yml}",
+    "!**/{npm-debug.log,yarn.lock,.yarn-integrity,.yarn-metadata.json}",
+    /* cspell:enable */
   ],
   generateUpdatesFilesForAllChannels: true,
   linux: {
