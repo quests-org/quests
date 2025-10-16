@@ -65,6 +65,12 @@
       "dependsOn": ["@quests/shim-client#build"],
       "outputs": ["dist/**", "out/**"]
     },
+    "build:mac:unsigned-app-only": {
+      "cache": false,
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "dependsOn": ["@quests/shim-client#build"],
+      "outputs": ["dist/**", "out/**"]
+    },
     "build:windows": {
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "dependsOn": ["@quests/shim-client#build"],
