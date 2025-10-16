@@ -167,7 +167,7 @@ export function NavProjectItem({
       ) : (
         <SidebarMenuButton
           asChild
-          className="h-9 !pr-2 group-hover:bg-black/10 dark:group-hover:bg-white/10 data-[active=true]:bg-black/15 dark:data-[active=true]:bg-white/15 data-[active=true]:text-foreground data-[active=true]:font-normal"
+          className="h-9 group-hover:bg-black/10 dark:group-hover:bg-white/10 data-[active=true]:bg-black/15 dark:data-[active=true]:bg-white/15 data-[active=true]:text-foreground data-[active=true]:font-normal"
           isActive={isActive || undefined}
         >
           <InternalLink
