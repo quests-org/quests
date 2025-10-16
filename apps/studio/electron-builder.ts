@@ -69,7 +69,7 @@ const config: Configuration = {
     "!node_modules/react-icons/**",
     "!node_modules/@tanstack/**",
     "!node_modules/react-dom/**",
-    "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
+    "!**/node_modules/**/*.md",
     "!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}",
     "!**/node_modules/*.d.ts",
     "!**/node_modules/.bin",
