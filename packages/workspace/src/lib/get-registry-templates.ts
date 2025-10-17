@@ -52,13 +52,36 @@ async function getRegistryTemplatesImpl(
     const entries = await fs.readdir(registryTemplatesDir, {
       withFileTypes: true,
     });
+
+    if (folderNames) {
+      return folderNames
+        .filter((folderName) => {
+          const entry = entries.find(
+            (entry) =>
+              entry.isDirectory() &&
+              entry.name === folderName &&
+              !entry.name.startsWith(".") &&
+              entry.name !== EMPTY_TEMPLATE,
+          );
+          return entry !== undefined;
+        })
+        .map((folderName) => {
+          const appDir = absolutePathJoin(registryTemplatesDir, folderName);
+          return RegistryTemplateSchema.parse({
+            appDir,
+            folderName,
+            previewSubdomain: `${SubdomainPartSchema.parse(folderName)}.${PREVIEW_SUBDOMAIN_PART}`,
+          });
+        });
+    }
+
+    // If no folderNames provided, use the original logic
     return entries
       .filter(
         (entry) =>
           entry.isDirectory() &&
           !entry.name.startsWith(".") &&
-          entry.name !== EMPTY_TEMPLATE &&
-          (folderNames === undefined || folderNames.includes(entry.name)),
+          entry.name !== EMPTY_TEMPLATE,
       )
       .map((entry) => {
         const appDir = absolutePathJoin(registryTemplatesDir, entry.name);
