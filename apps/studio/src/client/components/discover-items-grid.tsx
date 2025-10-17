@@ -1,13 +1,17 @@
 import { RegistryAppCard } from "@/client/components/registry-app-card";
 
-import { type RPCOutput } from "../rpc/client";
+interface DiscoverItemsGridProps {
+  category: "apps" | "templates";
+  items: { folderName: string }[];
+  showIcon?: boolean;
+}
 
-export function DiscoverAppsGrid({
-  registryTemplates,
-}: {
-  registryTemplates: RPCOutput["workspace"]["registry"]["template"]["list"];
-}) {
-  if (registryTemplates.length === 0) {
+export function DiscoverItemsGrid({
+  category,
+  items,
+  showIcon = true,
+}: DiscoverItemsGridProps) {
+  if (items.length === 0) {
     return (
       <div className="text-center py-16">
         <div className="mx-auto max-w-md">
@@ -25,7 +29,7 @@ export function DiscoverAppsGrid({
             />
           </svg>
           <h3 className="mt-6 text-xl font-semibold text-foreground">
-            No apps available yet
+            No items available yet
           </h3>
           <p className="mt-2 text-muted-foreground">
             Starter applications and templates will appear here when they become
@@ -37,11 +41,13 @@ export function DiscoverAppsGrid({
   }
 
   return (
-    <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4">
-      {registryTemplates.map((registryTemplate) => (
+    <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-2">
+      {items.map((item) => (
         <RegistryAppCard
-          folderName={registryTemplate.folderName}
-          key={registryTemplate.folderName}
+          category={category}
+          folderName={item.folderName}
+          key={item.folderName}
+          showIcon={showIcon}
         />
       ))}
     </div>

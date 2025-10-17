@@ -10,6 +10,7 @@ import {
 } from "../../lib/get-registry-template-details";
 import {
   getRegistryTemplates,
+  getRegistryTemplatesByName,
   RegistryTemplateSchema,
 } from "../../lib/get-registry-templates";
 import { base } from "../base";
@@ -31,10 +32,44 @@ const byFolderName = base
     return result;
   });
 
-const list = base
+const listAll = base
   .output(z.array(RegistryTemplateSchema))
   .handler(async ({ context }) => {
     return getRegistryTemplates(context.workspaceConfig);
+  });
+
+const listApps = base
+  .output(z.array(RegistryTemplateSchema))
+  .handler(async ({ context }) => {
+    const directoryData = await loadDirectoryData(
+      context.workspaceConfig.registryDir,
+    );
+    const apps = directoryData.data?.apps
+      .map((app) => app.path.split("/").pop())
+      .filter((app) => app !== undefined);
+
+    if (!apps) {
+      return [];
+    }
+
+    return getRegistryTemplatesByName(apps, context.workspaceConfig);
+  });
+
+const listTemplates = base
+  .output(z.array(RegistryTemplateSchema))
+  .handler(async ({ context }) => {
+    const directoryData = await loadDirectoryData(
+      context.workspaceConfig.registryDir,
+    );
+    const templates = directoryData.data?.templates
+      .map((template) => template.path.split("/").pop())
+      .filter((template) => template !== undefined);
+
+    if (!templates) {
+      return [];
+    }
+
+    return getRegistryTemplatesByName(templates, context.workspaceConfig);
   });
 
 const screenshot = base
@@ -64,6 +99,15 @@ const PackageJsonSchema = z.object({
   devDependencies: z.record(z.string(), z.string()).optional(),
 });
 
+const DirectoryAPITemplateSchema = z.object({
+  path: z.string(),
+});
+
+const DirectoryAPISchema = z.object({
+  apps: z.array(DirectoryAPITemplateSchema),
+  templates: z.array(DirectoryAPITemplateSchema),
+});
+
 const packageJson = base
   .input(z.object({ folderName: z.string() }))
   .output(PackageJsonSchema.nullable())
@@ -88,10 +132,19 @@ const packageJson = base
     }
   });
 
+async function loadDirectoryData(registryDir: string) {
+  const directoryPath = path.join(registryDir, "api", "directory.json");
+  const content = await fs.readFile(directoryPath, "utf8");
+  const json = JSON.parse(content) as unknown;
+  return DirectoryAPISchema.safeParse(json);
+}
+
 export const registry = {
   template: {
     byFolderName,
-    list,
+    listAll,
+    listApps,
+    listTemplates,
     packageJson,
     screenshot,
   },

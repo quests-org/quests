@@ -5,7 +5,7 @@ import { rpcClient } from "@/client/rpc/client";
 import { META_TAG_ICON_BACKGROUND, META_TAG_LUCIDE_ICON } from "@/shared/tabs";
 import { createFileRoute, notFound } from "@tanstack/react-router";
 
-export const Route = createFileRoute("/_app/discover/apps/$folderName")({
+export const Route = createFileRoute("/_app/discover/templates/$folderName")({
   component: RouteComponent,
   loader: async ({ context, params }) => {
     try {
@@ -47,7 +47,7 @@ function RouteComponent() {
     <TemplateDetail
       breadcrumbItems={[
         { label: "Discover", to: "/discover" },
-        { label: "Apps", to: "/discover/apps" },
+        { label: "Templates", to: "/discover/templates" },
         { label: appDetails.title },
       ]}
       folderName={folderName}

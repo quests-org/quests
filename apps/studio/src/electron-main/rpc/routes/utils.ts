@@ -14,7 +14,7 @@ import {
 import { eventIterator } from "@orpc/server";
 import { ProjectSubdomainSchema } from "@quests/workspace/client";
 import { createAppConfig } from "@quests/workspace/electron";
-import { clipboard, shell, webContents } from "electron";
+import { app, clipboard, shell, webContents } from "electron";
 import { exec } from "node:child_process";
 import fs from "node:fs/promises";
 import os from "node:os";
@@ -207,7 +207,12 @@ const imageDataURI = base
   .input(z.object({ filePath: z.string() }))
   .handler(async ({ input }) => {
     try {
-      const fileBuffer = await fs.readFile(input.filePath);
+      const resourcesPath = app.isPackaged
+        ? path.join(process.resourcesPath, "app.asar.unpacked", "resources")
+        : path.join(process.cwd(), "resources");
+
+      const fullPath = path.join(resourcesPath, input.filePath);
+      const fileBuffer = await fs.readFile(fullPath);
       const base64 = fileBuffer.toString("base64");
 
       // Determine MIME type based on file extension

@@ -25,6 +25,20 @@ type RegistryTemplate = z.output<typeof RegistryTemplateSchema>;
 export async function getRegistryTemplates(
   workspaceConfig: WorkspaceConfig,
 ): Promise<RegistryTemplate[]> {
+  return getRegistryTemplatesImpl(workspaceConfig);
+}
+
+export async function getRegistryTemplatesByName(
+  folderNames: string[],
+  workspaceConfig: WorkspaceConfig,
+): Promise<RegistryTemplate[]> {
+  return getRegistryTemplatesImpl(workspaceConfig, folderNames);
+}
+
+async function getRegistryTemplatesImpl(
+  workspaceConfig: WorkspaceConfig,
+  folderNames?: string[],
+): Promise<RegistryTemplate[]> {
   const registryTemplatesDir = absolutePathJoin(
     workspaceConfig.registryDir,
     REGISTRY_TEMPLATES_FOLDER,
@@ -43,7 +57,8 @@ export async function getRegistryTemplates(
         (entry) =>
           entry.isDirectory() &&
           !entry.name.startsWith(".") &&
-          entry.name !== EMPTY_TEMPLATE,
+          entry.name !== EMPTY_TEMPLATE &&
+          (folderNames === undefined || folderNames.includes(entry.name)),
       )
       .map((entry) => {
         const appDir = absolutePathJoin(registryTemplatesDir, entry.name);

@@ -1,14 +1,12 @@
 import { selectedModelURIAtom } from "@/client/atoms/selected-models";
-import { DiscoverAppsGrid } from "@/client/components/discover-apps-grid";
+import { DiscoverHeroCards } from "@/client/components/discover-hero-card";
 import { ExternalLink } from "@/client/components/external-link";
-import { InternalLink } from "@/client/components/internal-link";
 import { PromptInput } from "@/client/components/prompt-input";
-import { Button } from "@/client/components/ui/button";
 import { Kbd } from "@/client/components/ui/kbd";
 import { useReload } from "@/client/hooks/use-reload";
 import { useTabs } from "@/client/hooks/use-tabs";
 import { isMacOS } from "@/client/lib/utils";
-import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
+import { rpcClient } from "@/client/rpc/client";
 import {
   APP_REPO_URL,
   DISCORD_URL,
@@ -23,7 +21,6 @@ import {
   useRouter,
 } from "@tanstack/react-router";
 import { useAtom } from "jotai";
-import { ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/new-tab")({
@@ -35,17 +32,9 @@ export const Route = createFileRoute("/_app/new-tab")({
       },
     ],
   }),
-  loader: async () => {
-    const registryTemplates =
-      await vanillaRpcClient.workspace.registry.template.list();
-    return {
-      registryTemplates,
-    };
-  },
 });
 
 function RouteComponent() {
-  const { registryTemplates } = Route.useLoaderData();
   const [selectedModelURI, setSelectedModelURI] = useAtom(selectedModelURIAtom);
   const navigate = useNavigate({ from: "/new-tab" });
   const router = useRouter();
@@ -59,7 +48,7 @@ function RouteComponent() {
   return (
     <div className="w-full min-h-screen flex-1 flex flex-col items-center relative">
       <div className="flex items-center justify-center w-full">
-        <div className="w-full max-w-2xl space-y-8 px-8 pt-52">
+        <div className="w-full max-w-2xl space-y-8 px-8 pt-36">
           <div className="text-center space-y-3">
             <h1 className="text-4xl font-semibold text-foreground leading-tight">
               Start your next quest
@@ -140,21 +129,13 @@ function RouteComponent() {
         </div>
       </div>
 
-      <div className="w-full max-w-6xl px-8 pb-8 flex-1 pt-32">
-        <div className="flex items-center justify-between mb-8">
+      <div className="w-full max-w-4xl px-8 pb-8 flex-1 pt-16">
+        <div className="flex items-center justify-between mb-2">
           <div>
-            <h2 className="text-2xl font-bold text-foreground">Discover</h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              Start from built-in apps and templates
-            </p>
+            <h2 className="text-lg font-medium text-foreground">Discover</h2>
           </div>
-          <Button asChild variant="ghost">
-            <InternalLink to="/discover">
-              Browse All <ArrowRight className="h-4 w-4" />
-            </InternalLink>
-          </Button>
         </div>
-        <DiscoverAppsGrid registryTemplates={registryTemplates} />
+        <DiscoverHeroCards />
       </div>
 
       <footer className="w-full py-4 px-8">

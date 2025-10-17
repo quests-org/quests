@@ -1,42 +1,54 @@
 import {
-  SiHono,
-  SiNextdotjs,
-  SiReact,
-  SiTailwindcss,
-  SiVite,
-} from "react-icons/si";
-import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/client/components/ui/tooltip";
+import {
+  SiHono,
+  SiNextdotjs,
+  SiNuxtdotjs,
+  SiReact,
+  SiSvelte,
+  SiTailwindcss,
+  SiVite,
+  SiVuedotjs,
+} from "react-icons/si";
 
 const TECH_LOGOS: Record<
   string,
   React.ComponentType<{ className?: string }>
 > = {
+  "@sveltejs/kit": SiSvelte,
   hono: SiHono,
   next: SiNextdotjs,
+  nuxt: SiNuxtdotjs,
   react: SiReact,
   tailwindcss: SiTailwindcss,
   vite: SiVite,
+  vue: SiVuedotjs,
 };
 
 const TECH_DISPLAY_NAMES: Record<string, string> = {
+  "@sveltejs/kit": "SvelteKit",
   hono: "Hono",
   next: "Next.js",
+  nuxt: "Nuxt",
   react: "React",
   tailwindcss: "Tailwind CSS",
   vite: "Vite",
+  vue: "Vue",
 };
 
 const KEY_FRAMEWORKS = new Set([
+  "@sveltejs/kit",
   "hono",
   "next",
+  "nuxt",
   "react",
   "tailwindcss",
   "vite",
+  "vue",
 ]);
 
 export function TechStack({

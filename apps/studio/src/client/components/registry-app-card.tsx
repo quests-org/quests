@@ -7,11 +7,15 @@ import { Package } from "lucide-react";
 import { rpcClient } from "../rpc/client";
 
 export function RegistryAppCard({
+  category,
   className,
   folderName,
+  showIcon = true,
   ...props
 }: React.HTMLAttributes<HTMLDivElement> & {
+  category: "apps" | "templates";
   folderName: string;
+  showIcon?: boolean;
 }) {
   const { data: appDetails } = useQuery(
     rpcClient.workspace.registry.template.byFolderName.queryOptions({
@@ -31,7 +35,10 @@ export function RegistryAppCard({
   return (
     <div className={cn("group relative block", className)} {...props}>
       <div className="flex flex-col gap-2">
-        <InternalLink params={{ folderName }} to="/discover/apps/$folderName">
+        <InternalLink
+          params={{ folderName }}
+          to={`/discover/${category}/$folderName`}
+        >
           <div className="overflow-hidden rounded-md border border-border relative">
             <div className="aspect-video w-full bg-muted flex items-center justify-center relative">
               {appDetails?.screenshotPath && screenshotDataUrl ? (
@@ -53,17 +60,19 @@ export function RegistryAppCard({
           </div>
         </InternalLink>
         <div className="flex items-start gap-2 text-sm">
-          <SmallAppIcon
-            background={icon?.background}
-            icon={icon?.lucide}
-            size="lg"
-          />
+          {showIcon && (
+            <SmallAppIcon
+              background={icon?.background}
+              icon={icon?.lucide}
+              size="lg"
+            />
+          )}
           <div className="space-y-1 flex-1 min-w-0">
             <InternalLink
               params={{ folderName }}
-              to="/discover/apps/$folderName"
+              to={`/discover/${category}/$folderName`}
             >
-              <h3 className="font-medium leading-none text-foreground">
+              <h3 className="font-medium leading-none text-foreground mb-1">
                 {title}
               </h3>
             </InternalLink>
