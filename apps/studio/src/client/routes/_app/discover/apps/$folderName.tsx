@@ -130,8 +130,8 @@ function RouteComponent() {
             role: "user",
           },
           modelURI: selectedModelURI,
-          previewSubdomain: appDetails.preview.subdomain,
           sessionId,
+          templateName: folderName,
         },
         {
           onError: (error) => {

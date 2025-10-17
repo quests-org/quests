@@ -9,14 +9,12 @@ import { mergeGenerators } from "@quests/shared/merge-generators";
 import { draw } from "radashi";
 import { z } from "zod";
 
-import { createAppConfig } from "../../../lib/app-config/create";
+import { DEFAULT_TEMPLATE_NAME } from "../../../constants";
 import { newProjectConfig } from "../../../lib/app-config/new";
 import { createProject } from "../../../lib/create-project";
-import { createProjectFromPreview } from "../../../lib/create-project-from-preview";
 import { duplicateProject } from "../../../lib/duplicate-project";
 import { generateProjectTitleAndIcon } from "../../../lib/generate-project-title-and-icon";
 import { getApp, getProjects } from "../../../lib/get-apps";
-import { getRegistryTemplateDetails } from "../../../lib/get-registry-template-details";
 import { getWorkspaceAppForSubdomain } from "../../../lib/get-workspace-app-for-subdomain";
 import { setProjectState } from "../../../lib/project-state-store";
 import { updateQuestManifest } from "../../../lib/quest-manifest";
@@ -25,10 +23,7 @@ import { getWorkspaceServerURL } from "../../../logic/server/url";
 import { WorkspaceAppProjectSchema } from "../../../schemas/app";
 import { SessionMessage } from "../../../schemas/session/message";
 import { StoreId } from "../../../schemas/store-id";
-import {
-  PreviewSubdomainSchema,
-  ProjectSubdomainSchema,
-} from "../../../schemas/subdomains";
+import { ProjectSubdomainSchema } from "../../../schemas/subdomains";
 import { base, toORPCError } from "../../base";
 import { publisher } from "../../publisher";
 import { projectGit } from "./git";
@@ -116,8 +111,8 @@ const create = base
     z.object({
       message: SessionMessage.UserSchemaWithParts,
       modelURI: AIGatewayModel.URISchema,
-      previewSubdomain: PreviewSubdomainSchema.optional(),
       sessionId: StoreId.SessionSchema,
+      templateName: z.string().optional().default(DEFAULT_TEMPLATE_NAME),
     }),
   )
   .output(WorkspaceAppProjectSchema)
@@ -125,7 +120,7 @@ const create = base
     async ({
       context,
       errors,
-      input: { message, modelURI, previewSubdomain, sessionId },
+      input: { message, modelURI, sessionId, templateName },
       signal,
     }) => {
       const [model, error] = (
@@ -150,25 +145,14 @@ const create = base
         workspaceConfig: context.workspaceConfig,
       });
 
-      const result = previewSubdomain
-        ? await createProjectFromPreview(
-            {
-              previewConfig: createAppConfig({
-                subdomain: previewSubdomain,
-                workspaceConfig: context.workspaceConfig,
-              }),
-              sessionId,
-              workspaceConfig: context.workspaceConfig,
-            },
-            { signal },
-          )
-        : await createProject(
-            {
-              projectConfig,
-              workspaceConfig: context.workspaceConfig,
-            },
-            { signal },
-          );
+      const result = await createProject(
+        {
+          projectConfig,
+          templateName,
+          workspaceConfig: context.workspaceConfig,
+        },
+        { signal },
+      );
 
       if (result.isErr()) {
         context.workspaceConfig.captureException(result.error);
@@ -178,19 +162,6 @@ const create = base
       await setProjectState(result.value.projectConfig.appDir, {
         selectedModelURI: modelURI,
       });
-
-      let templateTitle: string | undefined;
-      if (previewSubdomain) {
-        const { folderName } = createAppConfig({
-          subdomain: previewSubdomain,
-          workspaceConfig: context.workspaceConfig,
-        });
-        const templateDetails = await getRegistryTemplateDetails(
-          folderName,
-          context.workspaceConfig,
-        );
-        templateTitle = templateDetails?.title;
-      }
 
       // Not awaiting promise here because we want to return the project immediately
       generateProjectTitleAndIcon({
@@ -202,7 +173,7 @@ const create = base
           });
         },
         projectSubdomain: result.value.projectConfig.subdomain,
-        templateTitle,
+        templateName,
         workspaceConfig: context.workspaceConfig,
       }).catch(context.workspaceConfig.captureException);
 
@@ -225,19 +196,11 @@ const create = base
         context.workspaceConfig,
       );
 
-      context.workspaceConfig.captureEvent(
-        previewSubdomain ? "project.created_from_preview" : "project.created",
-        {
-          modelId: model.modelId,
-          ...(previewSubdomain && {
-            preview_folder_name: createAppConfig({
-              subdomain: previewSubdomain,
-              workspaceConfig: context.workspaceConfig,
-            }).folderName,
-          }),
-          providerId: model.provider,
-        },
-      );
+      context.workspaceConfig.captureEvent("project.created", {
+        modelId: model.modelId,
+        providerId: model.provider,
+        template_name: templateName,
+      });
 
       return workspaceApp;
     },
@@ -294,6 +257,7 @@ const createFromEval = base
       const result = await createProject(
         {
           projectConfig,
+          templateName: DEFAULT_TEMPLATE_NAME,
           workspaceConfig: context.workspaceConfig,
         },
         { signal },
@@ -372,9 +336,11 @@ const createFromEval = base
         context.workspaceConfig,
       );
 
-      context.workspaceConfig.captureEvent("project.created_from_eval", {
+      context.workspaceConfig.captureEvent("project.created", {
+        eval_name: evalName,
         modelId: model.modelId,
         providerId: model.provider,
+        template_name: DEFAULT_TEMPLATE_NAME,
       });
 
       return workspaceApp;

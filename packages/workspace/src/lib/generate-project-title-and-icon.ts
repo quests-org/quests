@@ -9,6 +9,7 @@ import { type ProjectSubdomainSchema } from "../schemas/subdomains";
 import { type WorkspaceConfig } from "../types";
 import { generateProjectIcon } from "./generate-project-icon";
 import { generateProjectTitle } from "./generate-project-title";
+import { getRegistryTemplateDetails } from "./get-registry-template-details";
 import { updateQuestManifest } from "./quest-manifest";
 
 export async function generateProjectTitleAndIcon({
@@ -16,16 +17,21 @@ export async function generateProjectTitleAndIcon({
   model,
   onUpdate,
   projectSubdomain,
-  templateTitle,
+  templateName,
   workspaceConfig,
 }: {
   message: SessionMessage.UserWithParts;
   model: LanguageModel;
   onUpdate: () => void;
   projectSubdomain: z.output<typeof ProjectSubdomainSchema>;
-  templateTitle?: string;
+  templateName: string;
   workspaceConfig: WorkspaceConfig;
 }) {
+  const templateDetails = await getRegistryTemplateDetails(
+    templateName,
+    workspaceConfig,
+  );
+  const templateTitle = templateDetails?.title;
   const [titleResult, iconResult] = await Promise.allSettled([
     generateProjectTitle({
       message,

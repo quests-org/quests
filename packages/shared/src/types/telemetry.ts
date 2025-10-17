@@ -34,11 +34,10 @@ export interface AnalyticsEvents {
   "llm.tool_called": WithModelProperties<{ tool_name: string }>;
   "llm.tool_executed": { success: boolean; tool_name: string };
   "message.created": WithModelProperties<{ length: number }>;
-  "project.created": WithModelProperties;
-  "project.created_from_eval": WithModelProperties;
-  "project.created_from_preview": {
-    preview_folder_name: string;
-  };
+  "project.created": WithModelProperties<{
+    eval_name?: string;
+    template_name: string;
+  }>;
   "project.forked": never;
   "project.restored_version": never;
   "project.trashed": never;
