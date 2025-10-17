@@ -232,7 +232,7 @@ function RouteComponent() {
               <h3 className="text-sm font-medium mb-2">Repository</h3>
               <a
                 className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                href={REGISTRY_REPO_URL}
+                href={`${REGISTRY_REPO_URL}/tree/main/templates/${folderName}`}
                 rel="noopener noreferrer"
                 target="_blank"
               >
