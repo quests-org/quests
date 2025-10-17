@@ -16,12 +16,12 @@ interface DiscoverHeroCardProps {
 export function DiscoverHeroCards() {
   const { data: appsHeroImageDataUrl } = useQuery(
     rpcClient.utils.imageDataURI.queryOptions({
-      input: { filePath: "apps-hero.png" },
+      input: { filePath: "apps-hero.jpg" },
     }),
   );
   const { data: templatesHeroImageDataUrl } = useQuery(
     rpcClient.utils.imageDataURI.queryOptions({
-      input: { filePath: "templates-hero.png" },
+      input: { filePath: "templates-hero.jpg" },
     }),
   );
   return (

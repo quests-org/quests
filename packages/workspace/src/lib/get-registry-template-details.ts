@@ -88,13 +88,19 @@ export async function getRegistryTemplateDetails(
 async function findTemplateScreenshot(
   templateDir: string,
 ): Promise<string | undefined> {
-  try {
-    const screenshotFilePath = path.join(templateDir, "screenshot.png");
-    await fs.access(screenshotFilePath);
-    return screenshotFilePath;
-  } catch {
-    return undefined;
+  const possibleExtensions = ["png", "jpg", "jpeg"];
+
+  for (const ext of possibleExtensions) {
+    try {
+      const screenshotFilePath = path.join(templateDir, `screenshot.${ext}`);
+      await fs.access(screenshotFilePath);
+      return screenshotFilePath;
+    } catch {
+      continue;
+    }
   }
+
+  return undefined;
 }
 
 async function readTemplateReadme(

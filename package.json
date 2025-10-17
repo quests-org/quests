@@ -28,6 +28,7 @@
     "fix:unused": "knip --fix",
     "format": "prettier --write \"**/*.{ts,tsx,md,json,css,mjs,js}\"",
     "lint:fix": "eslint . --fix",
+    "scripts:convert-screenshots": "tsx scripts/convert-screenshots.ts",
     "scripts:update-registry": "tsx scripts/update-registry.ts",
     "test": "vitest",
     "turbo:check-without-packages": "turbo check:format check:unused check:spelling check:md check:types check:lint --ui tui --continue=dependencies-successful --output-logs errors-only",
