@@ -49,6 +49,7 @@
     "ms": "^2.1.3",
     "neverthrow": "^8.1.1",
     "radashi": "^12.6.0",
+    "read-pkg": "^9.0.1",
     "superjson": "^2.2.2",
     "tiny-invariant": "^1.3.3",
     "typescript": "catalog:",

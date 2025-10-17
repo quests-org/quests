@@ -1,7 +1,7 @@
 import { type Info } from "@netlify/build-info/node";
 import { parseCommandString } from "execa";
 import { err, ok, type Result } from "neverthrow";
-import invariant from "tiny-invariant";
+import { readPackage } from "read-pkg";
 
 import { type AppDir } from "../schemas/paths";
 import { absolutePathJoin } from "./absolute-path-join";
@@ -22,14 +22,45 @@ export async function getFramework({
     {
       arguments: string[];
       command: string;
-      errorMessage?: string;
+      log?: {
+        message: string;
+        type: "error" | "normal";
+      };
       name: string;
     },
     TypedError.FileSystem | TypedError.NotFound | TypedError.Parse
   >
 > {
   const [framework] = frameworks; // First framework is already sorted by accuracy
-  invariant(framework, "No framework found");
+
+  if (!framework) {
+    const packageJson = await readPackage({ cwd: appConfig.appDir });
+    const scripts = packageJson.scripts ?? {};
+    const scriptName = scripts.dev ? "dev" : scripts.start ? "start" : null;
+
+    if (scriptName) {
+      return ok({
+        arguments: [scriptName],
+        command: appConfig.workspaceConfig.pnpmBinPath,
+        log: {
+          message: `No framework found, falling back to npm ${scriptName}`,
+          type: "normal",
+        },
+        name: scripts[scriptName] ?? "unknown",
+      });
+    }
+
+    appConfig.workspaceConfig.captureEvent("framework.not-supported", {
+      framework: "unknown",
+    });
+
+    return err(
+      new TypedError.NotFound(
+        "No framework found and no dev or start script in package.json",
+      ),
+    );
+  }
+
   const [devCommand, ...devCommandArgs] = parseCommandString(
     framework.dev?.command ?? "",
   );
@@ -111,8 +142,10 @@ export async function getFramework({
   return ok({
     arguments: [...devCommandArgs, "--port", port.toString()],
     command: binPath,
-    errorMessage:
-      "Unsupported framework, falling back to generic --port argument",
+    log: {
+      message: "Unsupported framework, falling back to generic --port argument",
+      type: "normal",
+    },
     name: framework.name,
   });
 }

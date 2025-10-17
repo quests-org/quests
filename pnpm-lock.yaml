@@ -732,6 +732,9 @@ importers:
       radashi:
         specifier: ^12.6.0
         version: 12.6.0
+      read-pkg:
+        specifier: ^9.0.1
+        version: 9.0.1
       superjson:
         specifier: ^2.2.2
         version: 2.2.2

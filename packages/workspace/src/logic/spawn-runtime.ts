@@ -121,20 +121,6 @@ export const spawnRuntimeLogic = fromCallback<
   async function main() {
     const buildInfo = await getBuildInfo({ projectDir: appConfig.appDir });
 
-    if (buildInfo.frameworks.length === 0) {
-      parentRef.send({
-        isRetryable: false,
-        shouldLog: true,
-        type: "spawnRuntime.error.unknown",
-        value: {
-          error: new Error(
-            "No frameworks detected. Ensure a framework like Next.js, Nuxt.js, or Vite exists in the package.json.",
-          ),
-        },
-      });
-      return;
-    }
-
     port = await portManager.reservePort();
 
     if (!port) {
@@ -213,13 +199,10 @@ export const spawnRuntimeLogic = fromCallback<
 
     const framework = frameworkResult.value;
 
-    if (framework.errorMessage) {
+    if (framework.log) {
       parentRef.send({
         type: "spawnRuntime.log",
-        value: {
-          message: framework.errorMessage,
-          type: "error",
-        },
+        value: framework.log,
       });
     }
 
