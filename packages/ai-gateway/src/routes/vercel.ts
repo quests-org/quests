@@ -11,7 +11,7 @@ export const vercelApp = new Hono<AIGatewayEnv>();
 vercelApp.use("*", createBearerAuthMiddleware());
 
 vercelApp.all("*", async (c) => {
-  const providers = c.var.getAIProviders();
+  const providers = c.var.getAIProviderConfigs();
   const vercel = providers.find((provider) => provider.type === "vercel");
 
   if (!vercel) {

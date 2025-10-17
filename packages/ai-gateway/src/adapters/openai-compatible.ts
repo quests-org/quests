@@ -42,15 +42,15 @@ export const openaiCompatibleAdapter = setupProviderAdapter({
     })(model.providerId);
   },
   features: ["openai/chat-completions"],
-  fetchModels: (provider) =>
+  fetchModels: (config) =>
     Result.gen(function* () {
       const headers = new Headers({ "Content-Type": "application/json" });
-      setAuthHeaders(headers, provider.apiKey);
+      setAuthHeaders(headers, config.apiKey);
 
       const data = yield* fetchJson({
         cache: false,
         headers,
-        url: buildURL({ baseURL: provider.baseURL, path: "/models" }),
+        url: buildURL({ baseURL: config.baseURL, path: "/models" }),
       });
 
       const modelsResult = yield* Result.try(
@@ -58,7 +58,7 @@ export const openaiCompatibleAdapter = setupProviderAdapter({
           z.object({ data: z.array(AIGatewayModel.OpenAISchema) }).parse(data),
         (error) =>
           new TypedError.Parse(
-            `Failed to validate models from ${provider.type}`,
+            `Failed to validate models from ${config.type}`,
             { cause: error },
           ),
       );
@@ -75,7 +75,7 @@ export const openaiCompatibleAdapter = setupProviderAdapter({
           features: ["inputText", "outputText", "tools"],
           params: { provider: providerType },
           providerId,
-          providerName: provider.displayName ?? metadata.name,
+          providerName: config.displayName ?? metadata.name,
           source: { providerType, value: model },
           tags: [],
           uri: modelToURI({

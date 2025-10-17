@@ -20,7 +20,7 @@ const list = base
   })
   .output(ListSchema)
   .handler(async ({ context }) => {
-    const providers = context.workspaceConfig.getAIProviders();
+    const providers = context.workspaceConfig.getAIProviderConfigs();
     const modelsForProviders = await fetchModelResultsForProviders(providers, {
       captureException: context.workspaceConfig.captureException,
     });
@@ -46,7 +46,7 @@ const live = {
   }) {
     yield call(list, {}, { context, signal });
 
-    for await (const _ of publisher.subscribe("store-provider.updated", {
+    for await (const _ of publisher.subscribe("provider-config.updated", {
       signal,
     })) {
       yield call(list, {}, { context, signal });

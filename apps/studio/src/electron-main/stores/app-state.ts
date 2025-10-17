@@ -3,7 +3,7 @@ import Store from "electron-store";
 import { ulid } from "ulid";
 import { z } from "zod";
 
-import { getProvidersStore } from "./providers";
+import { getProviderConfigsStore } from "./provider-configs";
 
 function generateTelemetryId(): string {
   return `anon-${ulid().toLowerCase()}`;
@@ -42,7 +42,7 @@ export const getAppStateStore = (): Store<AppState> => {
     });
 
     if (!APP_STATE_STORE.get("hasCompletedProviderSetup")) {
-      const providersStore = getProvidersStore();
+      const providersStore = getProviderConfigsStore();
       const providers = providersStore.get("providers");
       const hasAnyProvider = providers.length > 0;
 

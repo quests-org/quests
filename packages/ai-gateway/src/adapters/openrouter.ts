@@ -11,7 +11,7 @@ import { internalAPIKey } from "../lib/key-for-provider";
 import { modelToURI } from "../lib/model-to-uri";
 import { PROVIDER_API_PATH } from "../lib/provider-paths";
 import { AIGatewayModel } from "../schemas/model";
-import { type AIGatewayProvider } from "../schemas/provider";
+import { type AIGatewayProviderConfig } from "../schemas/provider-config";
 import { setupProviderAdapter } from "./setup";
 
 const OpenRouterCreditsResponseSchema = z.object({
@@ -98,13 +98,13 @@ export const openrouterAdapter = setupProviderAdapter({
   },
   providerType: "openrouter",
 }).create(({ buildURL, getModelTags, metadata, providerType }) => {
-  function fetchCredits(provider: AIGatewayProvider.Type) {
+  function fetchCredits(config: AIGatewayProviderConfig.Type) {
     return Result.fromAsync(async () => {
       const headers = new Headers({ "Content-Type": "application/json" });
-      setAuthHeaders(headers, provider.apiKey);
+      setAuthHeaders(headers, config.apiKey);
       const url = new URL(
         buildURL({
-          baseURL: provider.baseURL,
+          baseURL: config.baseURL,
           path: "/v1/credits",
         }),
       );
@@ -146,23 +146,23 @@ export const openrouterAdapter = setupProviderAdapter({
     },
     features: ["openai/chat-completions"],
     fetchCredits,
-    fetchModels: (provider) =>
+    fetchModels: (config) =>
       Result.gen(function* () {
         const headers = new Headers({
           "Content-Type": "application/json",
         });
-        setAuthHeaders(headers, provider.apiKey);
+        setAuthHeaders(headers, config.apiKey);
 
         const data = yield* fetchJson({
           headers,
-          url: buildURL({ baseURL: provider.baseURL, path: "/v1/models" }),
+          url: buildURL({ baseURL: config.baseURL, path: "/v1/models" }),
         });
 
         const modelsResult = yield* Result.try(
           () => OpenRouterModelsResponseSchema.parse(data),
           (error) =>
             new TypedError.Parse(
-              `Failed to validate models from ${provider.type}`,
+              `Failed to validate models from ${config.type}`,
               { cause: error },
             ),
         );
@@ -211,7 +211,7 @@ export const openrouterAdapter = setupProviderAdapter({
             features,
             params: { provider: providerType },
             providerId,
-            providerName: provider.displayName ?? metadata.name,
+            providerName: config.displayName ?? metadata.name,
             source: {
               providerType,
               value: model,

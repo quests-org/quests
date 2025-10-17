@@ -2,18 +2,18 @@ import { type WorkspaceServerURL } from "@quests/shared";
 
 import { getProviderAdapter } from "../adapters/all";
 import { DEFAULT_OPENAI_MODEL } from "../constants";
-import { type AIGatewayProvider } from "../schemas/provider";
+import { type AIGatewayProviderConfig } from "../schemas/provider-config";
 
-export function envForProviders({
-  providers,
+export function envForProviderConfigs({
+  configs,
   workspaceServerURL,
 }: {
-  providers: AIGatewayProvider.Type[];
+  configs: AIGatewayProviderConfig.Type[];
   workspaceServerURL: WorkspaceServerURL;
 }) {
   const env: Record<string, string> = {};
 
-  for (const provider of providers) {
+  for (const provider of configs) {
     const adapter = getProviderAdapter(provider.type);
     const envForProvider = adapter.getEnv(workspaceServerURL);
     if (adapter.features.includes("openai/chat-completions")) {

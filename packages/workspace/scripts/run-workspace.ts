@@ -2,7 +2,7 @@ import "dotenv/config";
 import { call } from "@orpc/server";
 import {
   aiGatewayApp,
-  type AIGatewayProvider,
+  type AIGatewayProviderConfig,
   fetchAISDKModel,
 } from "@quests/ai-gateway";
 import { execa } from "execa";
@@ -28,9 +28,9 @@ const actor = createActor(workspaceMachine, {
       // eslint-disable-next-line no-console
       console.error("captureException", args);
     },
-    getAIProviders: () => {
+    getAIProviderConfigs: () => {
       const cacheIdentifier = "quests-run-workspace";
-      const providers: AIGatewayProvider.Type[] = [
+      const providerConfigs: AIGatewayProviderConfig.Type[] = [
         {
           apiKey: "ollama",
           cacheIdentifier,
@@ -39,7 +39,7 @@ const actor = createActor(workspaceMachine, {
       ];
 
       if (env.QUESTS_OPENAI_API_KEY) {
-        providers.push({
+        providerConfigs.push({
           apiKey: env.QUESTS_OPENAI_API_KEY,
           cacheIdentifier,
           type: "openai",
@@ -47,7 +47,7 @@ const actor = createActor(workspaceMachine, {
       }
 
       if (env.QUESTS_OPENROUTER_API_KEY) {
-        providers.push({
+        providerConfigs.push({
           apiKey: env.QUESTS_OPENROUTER_API_KEY,
           cacheIdentifier,
           type: "openrouter",
@@ -55,7 +55,7 @@ const actor = createActor(workspaceMachine, {
       }
 
       if (env.QUESTS_ANTHROPIC_API_KEY) {
-        providers.push({
+        providerConfigs.push({
           apiKey: env.QUESTS_ANTHROPIC_API_KEY,
           cacheIdentifier,
           type: "anthropic",
@@ -63,7 +63,7 @@ const actor = createActor(workspaceMachine, {
       }
 
       if (env.QUESTS_GOOGLE_API_KEY) {
-        providers.push({
+        providerConfigs.push({
           apiKey: env.QUESTS_GOOGLE_API_KEY,
           cacheIdentifier,
           type: "google",
@@ -71,14 +71,14 @@ const actor = createActor(workspaceMachine, {
       }
 
       if (env.QUESTS_AI_GATEWAY_API_KEY) {
-        providers.push({
+        providerConfigs.push({
           apiKey: env.QUESTS_AI_GATEWAY_API_KEY,
           cacheIdentifier,
           type: "vercel",
         });
       }
 
-      return providers;
+      return providerConfigs;
     },
     nodeExecEnv: {},
     pnpmBinPath: await execa({ reject: false })`which pnpm`.then(

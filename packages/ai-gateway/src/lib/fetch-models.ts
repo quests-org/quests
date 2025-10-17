@@ -2,31 +2,31 @@ import { type CaptureExceptionFunction } from "@quests/shared";
 import { parallel } from "radashi";
 
 import { getProviderAdapter } from "../adapters/all";
-import { type AIGatewayProvider } from "../schemas/provider";
+import { type AIGatewayProviderConfig } from "../schemas/provider-config";
 
 export async function fetchModelResultsForProviders(
-  providers: AIGatewayProvider.Type[],
+  configs: AIGatewayProviderConfig.Type[],
   { captureException }: { captureException: CaptureExceptionFunction },
 ) {
-  return await parallel(10, providers, (provider) =>
-    fetchModelsForProvider(provider, { captureException }),
+  return await parallel(10, configs, (config) =>
+    fetchModelsForProvider(config, { captureException }),
   );
 }
 
 export async function fetchModelsForProvider(
-  provider: AIGatewayProvider.Type,
+  config: AIGatewayProviderConfig.Type,
   { captureException }: { captureException: CaptureExceptionFunction },
 ) {
-  const adapter = getProviderAdapter(provider.type);
-  return await adapter.fetchModels(provider, { captureException });
+  const adapter = getProviderAdapter(config.type);
+  return await adapter.fetchModels(config, { captureException });
 }
 
 export async function fetchModelsForProviders(
-  providers: AIGatewayProvider.Type[],
+  configs: AIGatewayProviderConfig.Type[],
   { captureException }: { captureException: CaptureExceptionFunction },
 ) {
-  const modelsByProvider = await parallel(10, providers, (provider) =>
-    fetchModelsForProvider(provider, { captureException }),
+  const modelsByProvider = await parallel(10, configs, (config) =>
+    fetchModelsForProvider(config, { captureException }),
   );
 
   return modelsByProvider.flatMap((models) => models.getOrDefault([]));

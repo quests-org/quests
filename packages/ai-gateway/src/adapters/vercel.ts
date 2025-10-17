@@ -90,16 +90,16 @@ export const vercelAdapter = setupProviderAdapter({
     })(model.providerId);
   },
   features: ["openai/chat-completions"],
-  fetchModels: (provider) => {
+  fetchModels: (config) => {
     return Result.gen(function* () {
-      const cacheKey = `vercel-models-${provider.apiKey}`;
+      const cacheKey = `vercel-models-${config.apiKey}`;
       const cachedModels = getCachedResult<AIGatewayModel.Type[]>(cacheKey);
 
       if (cachedModels !== undefined) {
         return cachedModels;
       }
 
-      const gatewayProvider = createGateway({ apiKey: provider.apiKey });
+      const gatewayProvider = createGateway({ apiKey: config.apiKey });
       const { models } = yield* Result.try(
         async () => await gatewayProvider.getAvailableModels(),
         (error) =>
@@ -144,7 +144,7 @@ export const vercelAdapter = setupProviderAdapter({
           features,
           params: { provider: providerType },
           providerId,
-          providerName: provider.displayName ?? metadata.name,
+          providerName: config.displayName ?? metadata.name,
           source: {
             providerType,
             value: model,

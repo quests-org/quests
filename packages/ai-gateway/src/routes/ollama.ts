@@ -11,7 +11,7 @@ export const ollamaApp = new Hono<AIGatewayEnv>();
 ollamaApp.use("*", createBearerAuthMiddleware());
 
 ollamaApp.all("*", async (c) => {
-  const providers = c.var.getAIProviders();
+  const providers = c.var.getAIProviderConfigs();
   const ollama = providers.find((provider) => provider.type === "ollama");
 
   if (!ollama) {

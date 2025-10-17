@@ -21,7 +21,7 @@ export function createMockAppConfig(subdomain: AppSubdomain) {
         // eslint-disable-next-line no-console
         console.error("captureException", args);
       },
-      getAIProviders: () => [],
+      getAIProviderConfigs: () => [],
       nodeExecEnv: {},
       pnpmBinPath: AbsolutePathSchema.parse("/tmp/pnpm"),
       previewsDir: AbsolutePathSchema.parse(MOCK_WORKSPACE_DIRS.previews),

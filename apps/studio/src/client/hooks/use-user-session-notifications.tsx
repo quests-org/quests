@@ -1,5 +1,5 @@
 import { featuresAtom } from "@/client/atoms/features";
-import { hasAIProviderAtom } from "@/client/atoms/has-ai-provider";
+import { hasAIProviderConfigAtom } from "@/client/atoms/has-ai-provider-config";
 import { userAtom } from "@/client/atoms/user";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
@@ -13,7 +13,7 @@ const shownErrorMessages = new Set<string>();
 
 export function useUserSessionNotifications() {
   const [userResult] = useAtom(userAtom);
-  const hasAIProvider = useAtomValue(hasAIProviderAtom);
+  const hasAIProvider = useAtomValue(hasAIProviderConfigAtom);
   const features = useAtomValue(featuresAtom);
   const { mutate: addTab } = useMutation(rpcClient.tabs.add.mutationOptions());
   const router = useRouter();

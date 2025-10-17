@@ -1,10 +1,10 @@
 import { providerMetadataAtom } from "@/client/atoms/provider-metadata";
 import { AddProviderDialog } from "@/client/components/add-provider-dialog";
 import { AIProviderEditDialog } from "@/client/components/ai-provider-edit-dialog";
-import { ProviderListItem } from "@/client/components/provider-list-item";
+import { ProviderConfigListItem } from "@/client/components/provider-config-list-item";
 import { Button } from "@/client/components/ui/button";
 import { rpcClient } from "@/client/rpc/client";
-import { type ClientAIProvider } from "@/shared/schemas/provider";
+import { type ClientAIProviderConfig } from "@/shared/schemas/provider";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
@@ -22,15 +22,15 @@ export const Route = createFileRoute("/settings/providers")({
 });
 
 function SettingsProvidersPage() {
-  const { data: providers } = useQuery(
-    rpcClient.provider.live.list.experimental_liveOptions(),
+  const { data: providerConfigs } = useQuery(
+    rpcClient.providerConfig.live.list.experimental_liveOptions(),
   );
   const { showNewProviderDialog } = Route.useSearch();
   const navigate = Route.useNavigate();
   const { providerMetadataMap } = useAtomValue(providerMetadataAtom);
 
-  const [selectedProvider, setSelectedProvider] =
-    useState<ClientAIProvider | null>(null);
+  const [selectedConfig, setSelectedConfig] =
+    useState<ClientAIProviderConfig | null>(null);
 
   return (
     <div className="space-y-6">
@@ -53,36 +53,36 @@ function SettingsProvidersPage() {
       </div>
 
       <div className="space-y-3">
-        {providers?.length === 0 ? (
+        {providerConfigs?.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground mt-32">
             <p className="text-sm">No providers configured yet.</p>
           </div>
         ) : (
-          providers?.map((provider) => (
-            <ProviderListItem
-              key={provider.id}
-              metadata={providerMetadataMap.get(provider.type)}
+          providerConfigs?.map((config) => (
+            <ProviderConfigListItem
+              config={config}
+              key={config.id}
+              metadata={providerMetadataMap.get(config.type)}
               onConfigure={() => {
-                setSelectedProvider(provider);
+                setSelectedConfig(config);
               }}
-              provider={provider}
             />
           ))
         )}
       </div>
 
-      {selectedProvider && (
+      {selectedConfig && (
         <AIProviderEditDialog
+          config={selectedConfig}
           onOpenChange={(open) => {
             if (!open) {
-              setSelectedProvider(null);
+              setSelectedConfig(null);
             }
           }}
           onSuccess={() => {
-            setSelectedProvider(null);
+            setSelectedConfig(null);
           }}
-          open={Boolean(selectedProvider)}
-          provider={selectedProvider}
+          open={Boolean(selectedConfig)}
         />
       )}
 
@@ -97,7 +97,7 @@ function SettingsProvidersPage() {
             void navigate({ search: {} });
           }}
           open={showNewProviderDialog}
-          providers={providers ?? []}
+          providers={providerConfigs ?? []}
         />
       )}
     </div>

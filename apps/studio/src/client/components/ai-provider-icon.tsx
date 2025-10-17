@@ -1,5 +1,5 @@
 import { getOpenAICompatibleIcon } from "@/client/lib/get-openai-compatible-icon";
-import { type AIGatewayProvider } from "@quests/ai-gateway";
+import { type AIProviderType } from "@quests/shared";
 import { GrNodes } from "react-icons/gr";
 import {
   SiAnthropic,
@@ -14,7 +14,7 @@ import { OpenRouter } from "./service-icons";
 interface AIProviderIconProps {
   className?: string;
   providerName?: string;
-  type: AIGatewayProvider.Type["type"];
+  type: AIProviderType;
 }
 
 export function AIProviderIcon({

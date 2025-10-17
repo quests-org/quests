@@ -1,5 +1,6 @@
 import { type SharedV2ProviderOptions } from "@ai-sdk/provider";
 import {
+  type AIProviderType,
   type CaptureExceptionFunction,
   type WorkspaceServerURL,
 } from "@quests/shared";
@@ -10,7 +11,7 @@ import { type TypedError } from "../lib/errors";
 import { internalAPIKey } from "../lib/key-for-provider";
 import { PROVIDER_API_PATH } from "../lib/provider-paths";
 import { type AIGatewayModel } from "../schemas/model";
-import { type AIGatewayProvider } from "../schemas/provider";
+import { type AIGatewayProviderConfig } from "../schemas/provider-config";
 import { type ProviderMetadata } from "../schemas/provider-metadata";
 
 export type ProviderAdapter = ReturnType<
@@ -39,7 +40,7 @@ interface SetupProviderAdapter<
   ) => SharedV2ProviderOptions | undefined;
   buildURL: (options: { baseURL?: string; path: string }) => string;
   features: AdapterFeatures[];
-  fetchCredits?: (provider: AIGatewayProvider.Type) => AsyncResult<
+  fetchCredits?: (config: AIGatewayProviderConfig.Type) => AsyncResult<
     {
       total_credits: number;
       total_usage: number;
@@ -47,14 +48,14 @@ interface SetupProviderAdapter<
     TypedError.Fetch
   >;
   fetchModels: (
-    provider: AIGatewayProvider.Type,
+    config: AIGatewayProviderConfig.Type,
     { captureException }: { captureException: CaptureExceptionFunction },
   ) => AsyncResult<AIGatewayModel.Type[], TypedError.Fetch | TypedError.Parse>;
   getEnv: (workspaceServerURL: WorkspaceServerURL) => Record<string, string>;
   knownModelIds: KnownModelIds;
   metadata: ProviderMetadata;
   modelTags: Record<KnownModelIds[number], AIGatewayModel.ModelTag[]>;
-  providerType: AIGatewayProvider.Type["type"];
+  providerType: AIProviderType;
   setAuthHeaders: (headers: Headers, apiKey: string) => void;
   verifyAPIKey: ({
     apiKey,
@@ -66,7 +67,7 @@ interface SetupProviderAdapter<
 }
 
 export function setupProviderAdapter<
-  TProviderType extends AIGatewayProvider.Type["type"],
+  TProviderType extends AIProviderType,
   const KnownModelIds extends readonly string[],
 >(options: {
   knownModelIds: KnownModelIds;

@@ -3,7 +3,7 @@ import { logger as baseLogger } from "@/electron-main/lib/electron-logger";
 import { createError } from "@/electron-main/lib/errors";
 import { base } from "@/electron-main/rpc/base";
 import { isFeatureEnabled } from "@/electron-main/stores/features";
-import { getProvidersStore } from "@/electron-main/stores/providers";
+import { getProviderConfigsStore } from "@/electron-main/stores/provider-configs";
 import { call, safe } from "@orpc/server";
 import { mergeGenerators } from "@quests/shared/merge-generators";
 import { z } from "zod";
@@ -22,14 +22,14 @@ const credits = base.handler(async () => {
   return null;
 });
 
-const hasAIProvider = base.handler(() => {
-  const providersStore = getProvidersStore();
-  const providers = providersStore.get("providers");
-  const hasProvider = providers.length > 0;
+const hasAIProviderConfig = base.handler(() => {
+  const providersStore = getProviderConfigsStore();
+  const providerConfigs = providersStore.get("providers");
+  const hasConfig = providerConfigs.length > 0;
   if (isFeatureEnabled("questsAccounts")) {
-    return hasToken() || hasProvider;
+    return hasToken() || hasConfig;
   }
-  return hasProvider;
+  return hasConfig;
 });
 
 const me = base
@@ -81,17 +81,23 @@ const me = base
 
 const live = {
   hasAIProvider: base.handler(async function* ({ context, signal }) {
-    const providerUpdates = publisher.subscribe("store-provider.updated", {
-      signal,
-    });
+    const providerConfigUpdates = publisher.subscribe(
+      "provider-config.updated",
+      {
+        signal,
+      },
+    );
     const userUpdates = publisher.subscribe("auth.updated", {
       signal,
     });
 
-    yield call(hasAIProvider, {}, { context, signal });
+    yield call(hasAIProviderConfig, {}, { context, signal });
 
-    for await (const _ of mergeGenerators([providerUpdates, userUpdates])) {
-      yield call(hasAIProvider, {}, { context, signal });
+    for await (const _ of mergeGenerators([
+      providerConfigUpdates,
+      userUpdates,
+    ])) {
+      yield call(hasAIProviderConfig, {}, { context, signal });
     }
   }),
   me: base.handler(async function* ({ context, signal }) {
@@ -106,7 +112,7 @@ const live = {
 
 export const user = {
   credits,
-  hasAIProvider,
+  hasAIProviderConfig,
   live,
   me,
 };

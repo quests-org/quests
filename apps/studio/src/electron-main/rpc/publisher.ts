@@ -19,6 +19,7 @@ export const publisher = new EventPublisher<{
     height: number;
   }>;
   "preferences.updated": null;
+  "provider-config.updated": null;
   "server-exception": {
     message: string;
     stack?: string;
@@ -26,7 +27,6 @@ export const publisher = new EventPublisher<{
   "sidebar.visibility-updated": Partial<{
     visible: boolean;
   }>;
-  "store-provider.updated": null;
   "tabs.updated": null | TabState;
   "test-notification": null;
   "updates.status": { status: AppUpdaterStatus };

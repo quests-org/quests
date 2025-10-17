@@ -60,23 +60,23 @@ export const googleAdapter = setupProviderAdapter({
     return buildURL({ baseURL, path });
   },
   features: ["openai/chat-completions"],
-  fetchModels: (provider) =>
+  fetchModels: (config) =>
     Result.gen(function* () {
       const headers = new Headers({
         "Content-Type": "application/json",
       });
-      setAuthHeaders(headers, provider.apiKey);
+      setAuthHeaders(headers, config.apiKey);
 
       const data = yield* fetchJson({
         headers,
-        url: buildURL({ baseURL: provider.baseURL, path: "/models" }),
+        url: buildURL({ baseURL: config.baseURL, path: "/models" }),
       });
 
       const modelsResult = yield* Result.try(
         () => GoogleModelsResponseSchema.parse(data),
         (error) =>
           new TypedError.Parse(
-            `Failed to validate models from ${provider.type}`,
+            `Failed to validate models from ${config.type}`,
             { cause: error },
           ),
       );
@@ -110,7 +110,7 @@ export const googleAdapter = setupProviderAdapter({
           features,
           params: { provider: providerType },
           providerId,
-          providerName: provider.displayName ?? metadata.name,
+          providerName: config.displayName ?? metadata.name,
           source: {
             providerType,
             value: model,

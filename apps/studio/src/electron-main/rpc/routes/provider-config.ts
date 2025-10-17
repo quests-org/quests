@@ -1,7 +1,7 @@
 import { base } from "@/electron-main/rpc/base";
 import {
-  StoreAIProviderId,
-  StoreAIProviderSchema,
+  StoreAIProviderConfigId,
+  StoreAIProviderConfigSchema,
 } from "@/shared/schemas/provider";
 import { call, eventIterator } from "@orpc/server";
 import {
@@ -15,18 +15,18 @@ import { ulid } from "ulid";
 import { z } from "zod";
 
 import { getAppStateStore } from "../../stores/app-state";
-import { getProvidersStore } from "../../stores/providers";
+import { getProviderConfigsStore } from "../../stores/provider-configs";
 import { cacheMiddleware } from "../middleware/cache";
 import { publisher } from "../publisher";
 
-const ClientStudioAIProviderSchema = StoreAIProviderSchema.omit({
+const ClientStudioAIProviderSchema = StoreAIProviderConfigSchema.omit({
   apiKey: true,
 }).extend({
   maskedApiKey: z.string(),
 });
 
 const list = base.output(z.array(ClientStudioAIProviderSchema)).handler(() => {
-  const providersStore = getProvidersStore();
+  const providersStore = getProviderConfigsStore();
   return providersStore.get("providers").map(({ apiKey, ...provider }) => ({
     ...provider,
     maskedApiKey: apiKey
@@ -36,15 +36,15 @@ const list = base.output(z.array(ClientStudioAIProviderSchema)).handler(() => {
 });
 
 const remove = base
-  .input(z.object({ id: StoreAIProviderId }))
+  .input(z.object({ id: StoreAIProviderConfigId }))
   .handler(({ context, errors, input }) => {
-    const providersStore = getProvidersStore();
+    const providersStore = getProviderConfigsStore();
 
-    const provider = providersStore
+    const providerConfig = providersStore
       .get("providers")
       .find((p) => p.id === input.id);
 
-    if (!provider) {
+    if (!providerConfig) {
       throw errors.NOT_FOUND({ message: "Provider not found" });
     }
 
@@ -57,7 +57,7 @@ const remove = base
     context.workspaceRef.send({ type: "restartAllRuntimes" });
 
     context.workspaceConfig.captureEvent("provider.removed", {
-      provider_type: provider.type,
+      provider_type: providerConfig.type,
     });
   });
 
@@ -65,48 +65,50 @@ const update = base
   .input(
     z.object({
       displayName: z.string().optional(),
-      id: StoreAIProviderId,
+      id: StoreAIProviderConfigId,
     }),
   )
   .handler(({ errors, input }) => {
-    const providersStore = getProvidersStore();
-    const providers = providersStore.get("providers");
+    const providersStore = getProviderConfigsStore();
+    const providerConfigs = providersStore.get("providers");
 
-    const providerIndex = providers.findIndex((p) => p.id === input.id);
+    const providerIndex = providerConfigs.findIndex((c) => c.id === input.id);
 
     if (providerIndex === -1) {
       throw errors.NOT_FOUND({ message: "Provider not found" });
     }
 
-    const updatedProviders = [...providers];
-    const existingProvider = updatedProviders[providerIndex];
-    if (!existingProvider) {
-      throw errors.NOT_FOUND({ message: "Provider not found" });
+    const updatedConfigs = [...providerConfigs];
+    const existingConfig = updatedConfigs[providerIndex];
+    if (!existingConfig) {
+      throw errors.NOT_FOUND({ message: "Provider config not found" });
     }
-    updatedProviders[providerIndex] = {
-      ...existingProvider,
+    updatedConfigs[providerIndex] = {
+      ...existingConfig,
       displayName: input.displayName,
     };
 
-    providersStore.set("providers", updatedProviders);
+    providersStore.set("providers", updatedConfigs);
   });
 
 const create = base
   .input(
-    StoreAIProviderSchema.omit({ cacheIdentifier: true, id: true }).extend({
+    StoreAIProviderConfigSchema.omit({
+      cacheIdentifier: true,
+      id: true,
+    }).extend({
       skipValidation: z.boolean().optional(),
     }),
   )
   .handler(async ({ context, errors, input }) => {
     const { skipValidation, ...provider } = input;
-    const providersStore = getProvidersStore();
-    const existingProviders = providersStore.get("providers");
+    const providersStore = getProviderConfigsStore();
+    const existingConfigs = providersStore.get("providers");
 
-    // Check if a provider of this type already exists
-    const existingProvider = existingProviders.find(
+    const existingConfig = existingConfigs.find(
       (p) => p.type === provider.type,
     );
-    if (existingProvider) {
+    if (existingConfig) {
       throw errors.UNAUTHORIZED({
         message:
           "A provider of this type already exists. Only one provider per type is allowed.",
@@ -136,10 +138,10 @@ const create = base
     const newProvider = {
       ...provider,
       cacheIdentifier: `quests.dev-${crypto.randomUUID()}`,
-      id: StoreAIProviderId.parse(ulid()),
+      id: StoreAIProviderConfigId.parse(ulid()),
     };
 
-    providersStore.set("providers", [...existingProviders, newProvider]);
+    providersStore.set("providers", [...existingConfigs, newProvider]);
 
     const appStateStore = getAppStateStore();
     appStateStore.set("hasCompletedProviderSetup", true);
@@ -162,24 +164,24 @@ const credits = base
   })
   .use(cacheMiddleware)
   .errors({ FETCH_FAILED: {} })
-  .input(z.object({ provider: z.enum(["openrouter"]) }))
+  .input(z.object({ providerType: z.enum(["openrouter"]) }))
   .handler(async ({ errors, input }) => {
-    const providersStore = getProvidersStore();
-    const provider = providersStore
+    const providersStore = getProviderConfigsStore();
+    const providerConfig = providersStore
       .get("providers")
-      .find((p) => p.type === input.provider);
+      .find((p) => p.type === input.providerType);
 
-    if (!provider) {
+    if (!providerConfig) {
       throw errors.NOT_FOUND();
     }
 
-    const adapter = getProviderAdapter(provider.type);
+    const adapter = getProviderAdapter(providerConfig.type);
     if (!adapter.fetchCredits) {
       throw errors.NOT_FOUND({
         message: "Provider does not support fetching credits",
       });
     }
-    const result = await adapter.fetchCredits(provider);
+    const result = await adapter.fetchCredits(providerConfig);
     if (!result.ok) {
       throw errors.FETCH_FAILED({ message: result.error.message });
     }
@@ -195,7 +197,7 @@ const live = {
     .handler(async function* ({ context, signal }) {
       yield call(list, {}, { context, signal });
 
-      for await (const _ of publisher.subscribe("store-provider.updated", {
+      for await (const _ of publisher.subscribe("provider-config.updated", {
         signal,
       })) {
         yield call(list, {}, { context, signal });
@@ -238,7 +240,7 @@ const byTypeMetadata = base
     return getProviderAdapter(input.type).metadata;
   });
 
-export const provider = {
+export const providerConfig = {
   create,
   credits,
   list,

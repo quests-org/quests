@@ -1,4 +1,5 @@
-import { type AIGatewayProvider } from "../schemas/provider";
+import { type AIProviderType } from "@quests/shared";
+
 import { anthropicAdapter } from "./anthropic";
 import { googleAdapter } from "./google";
 import { ollamaAdapter } from "./ollama";
@@ -8,10 +9,7 @@ import { openrouterAdapter } from "./openrouter";
 import { type ProviderAdapter } from "./setup";
 import { vercelAdapter } from "./vercel";
 
-const PROVIDER_ADAPTERS: Record<
-  AIGatewayProvider.Type["type"],
-  ProviderAdapter
-> = {
+const PROVIDER_ADAPTERS: Record<AIProviderType, ProviderAdapter> = {
   anthropic: anthropicAdapter,
   google: googleAdapter,
   ollama: ollamaAdapter,
@@ -28,7 +26,7 @@ export function getAllProviderAdapters() {
 }
 
 export function getProviderAdapter(
-  providerType: AIGatewayProvider.Type["type"],
+  providerType: AIProviderType,
 ): ProviderAdapter {
   return PROVIDER_ADAPTERS[providerType];
 }

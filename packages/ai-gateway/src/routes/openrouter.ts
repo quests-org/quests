@@ -11,7 +11,7 @@ export const openrouterApp = new Hono<AIGatewayEnv>();
 openrouterApp.use("*", createBearerAuthMiddleware());
 
 openrouterApp.all("*", async (c) => {
-  const providers = c.var.getAIProviders();
+  const providers = c.var.getAIProviderConfigs();
   const openrouter = providers.find(
     (provider) => provider.type === "openrouter",
   );

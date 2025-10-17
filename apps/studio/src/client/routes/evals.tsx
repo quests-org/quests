@@ -19,10 +19,8 @@ import {
 } from "@/client/lib/group-models";
 import { rpcClient } from "@/client/rpc/client";
 import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
-import {
-  type AIGatewayModel,
-  type AIGatewayProvider,
-} from "@quests/ai-gateway";
+import { type AIGatewayModel } from "@quests/ai-gateway";
+import { type AIProviderType } from "@quests/shared";
 import { StoreId } from "@quests/workspace/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
@@ -32,9 +30,10 @@ import { Loader2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
-const selectedEvalProviderAtom = atomWithStorage<
-  "all" | AIGatewayProvider.Type["type"]
->("evals-selected-provider", "all");
+const selectedEvalProviderAtom = atomWithStorage<"all" | AIProviderType>(
+  "evals-selected-provider",
+  "all",
+);
 
 const selectedEvalTemplatesAtom = atomWithStorage<string[]>(
   "evals-selected-templates",

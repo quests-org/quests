@@ -1,12 +1,12 @@
 import { type CaptureExceptionFunction } from "@quests/shared";
 
-import { type AIGatewayProvider } from "./schemas/provider";
+import { type AIGatewayProviderConfig } from "./schemas/provider-config";
 
 export interface AIGatewayEnv {
   Variables: {
     captureException: CaptureExceptionFunction;
-    getAIProviders: GetAIProviders;
+    getAIProviderConfigs: GetProviderConfigs;
   };
 }
 
-export type GetAIProviders = () => AIGatewayProvider.Type[];
+export type GetProviderConfigs = () => AIGatewayProviderConfig.Type[];

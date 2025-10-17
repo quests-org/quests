@@ -126,7 +126,7 @@ const create = base
       const [model, error] = (
         await context.modelRegistry.languageModel(
           modelURI,
-          context.workspaceConfig.getAIProviders(),
+          context.workspaceConfig.getAIProviderConfigs(),
           {
             captureException: context.workspaceConfig.captureException,
             workspaceServerURL: getWorkspaceServerURL(),
@@ -235,7 +235,7 @@ const createFromEval = base
       const [model, error] = (
         await context.modelRegistry.languageModel(
           modelURI,
-          context.workspaceConfig.getAIProviders(),
+          context.workspaceConfig.getAIProviderConfigs(),
           {
             captureException: context.workspaceConfig.captureException,
             workspaceServerURL: getWorkspaceServerURL(),

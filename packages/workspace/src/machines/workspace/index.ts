@@ -1,4 +1,4 @@
-import { type AIGatewayApp, type GetAIProviders } from "@quests/ai-gateway";
+import { type AIGatewayApp, type GetProviderConfigs } from "@quests/ai-gateway";
 import {
   type CaptureEventFunction,
   type CaptureExceptionFunction,
@@ -181,7 +181,7 @@ export const workspaceMachine = setup({
       aiGatewayApp: AIGatewayApp;
       captureEvent: CaptureEventFunction;
       captureException: CaptureExceptionFunction;
-      getAIProviders: GetAIProviders;
+      getAIProviderConfigs: GetProviderConfigs;
       nodeExecEnv: Record<string, string>;
       pnpmBinPath: string;
       previewCacheTimeMs?: number;
@@ -197,7 +197,7 @@ export const workspaceMachine = setup({
     const workspaceConfig: WorkspaceConfig = {
       captureEvent: input.captureEvent,
       captureException: input.captureException,
-      getAIProviders: input.getAIProviders,
+      getAIProviderConfigs: input.getAIProviderConfigs,
       nodeExecEnv: input.nodeExecEnv,
       pnpmBinPath: AbsolutePathSchema.parse(input.pnpmBinPath),
       previewCacheTimeMs: input.previewCacheTimeMs,

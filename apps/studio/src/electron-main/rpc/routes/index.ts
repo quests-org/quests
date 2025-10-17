@@ -10,7 +10,7 @@ import { features } from "./features";
 import { gateway } from "./gateway";
 import { icon } from "./icon";
 import { preferences } from "./preferences";
-import { provider } from "./provider";
+import { providerConfig } from "./provider-config";
 import { releases } from "./releases";
 import { sidebar } from "./sidebar";
 import { tabs } from "./tabs";
@@ -31,7 +31,7 @@ export const router = {
   gateway,
   icon,
   preferences,
-  provider,
+  providerConfig,
   releases,
   sidebar,
   tabs,

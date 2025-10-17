@@ -1,24 +1,24 @@
 import { Result } from "typescript-result";
 
 import { type AIGatewayModel } from "../schemas/model";
-import { type AIGatewayProvider } from "../schemas/provider";
+import { type AIGatewayProviderConfig } from "../schemas/provider-config";
 import { TypedError } from "./errors";
 import { parseModelURI } from "./parse-model-uri";
 
-export function providerForModelURI(
+export function providerConfigsForModelURI(
   modelURI: AIGatewayModel.URI,
-  providers: AIGatewayProvider.Type[],
+  configs: AIGatewayProviderConfig.Type[],
 ) {
   return Result.gen(function* () {
     const providerType = yield* parseModelURI(modelURI).map((m) => m.provider);
 
-    const modelProvider = providers.find((p) => p.type === providerType);
+    const modelConfigs = configs.find((p) => p.type === providerType);
 
-    if (!modelProvider) {
+    if (!modelConfigs) {
       return Result.error(
         new TypedError.NotFound(`Provider ${providerType} not found`),
       );
     }
-    return modelProvider;
+    return modelConfigs;
   });
 }

@@ -9,7 +9,7 @@ export const Route = createFileRoute("/settings/debug")({
 
 function SafeStorage() {
   const { data: safeStorageInfo } = useQuery(
-    rpcClient.provider.safeStorageInfo.queryOptions(),
+    rpcClient.providerConfig.safeStorageInfo.queryOptions(),
   );
 
   if (!safeStorageInfo) {

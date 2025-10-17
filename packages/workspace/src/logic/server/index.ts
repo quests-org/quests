@@ -55,7 +55,10 @@ export const workspaceServerLogic = fromCallback<
     app.use<string, AIGatewayEnv>(
       `${AI_GATEWAY_API_PATH}/*`,
       async (c, next) => {
-        c.set("getAIProviders", input.workspaceConfig.getAIProviders);
+        c.set(
+          "getAIProviderConfigs",
+          input.workspaceConfig.getAIProviderConfigs,
+        );
         c.set("captureException", input.workspaceConfig.captureException);
         await next();
       },

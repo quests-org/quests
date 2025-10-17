@@ -37,14 +37,16 @@ const formatCredits = (credits: number) => {
 export function NavUser({ user }: { user: User }) {
   const { isMobile } = useSidebar();
 
-  const { data: providers } = useQuery(
-    rpcClient.provider.live.list.experimental_liveOptions(),
+  const { data: providerConfigs } = useQuery(
+    rpcClient.providerConfig.live.list.experimental_liveOptions(),
   );
-  const openRouterProvider = providers?.find((p) => p.type === "openrouter");
+  const openRouterProvider = providerConfigs?.find(
+    (p) => p.type === "openrouter",
+  );
 
   const { data: openRouterCredits } = useQuery({
-    ...rpcClient.provider.credits.queryOptions({
-      input: { provider: "openrouter" },
+    ...rpcClient.providerConfig.credits.queryOptions({
+      input: { providerType: "openrouter" },
     }),
     enabled: Boolean(openRouterProvider),
     refetchInterval: 30_000, // Refetch every 30 seconds
@@ -127,7 +129,7 @@ export function NavUser({ user }: { user: User }) {
                 <span>Settings</span>
               </DropdownMenuItem>
 
-              {providers?.length === 0 && (
+              {providerConfigs?.length === 0 && (
                 <DropdownMenuItem
                   onClick={() => {
                     void vanillaRpcClient.preferences.openSettingsWindow({

@@ -40,7 +40,7 @@ export function LoginForm({
   );
 
   const { data: providerMetadataList = [] } = useQuery(
-    rpcClient.provider.metadata.list.queryOptions(),
+    rpcClient.providerConfig.metadata.list.queryOptions(),
   );
 
   const isSignUp = mode === "signup";

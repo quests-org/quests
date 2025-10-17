@@ -10,7 +10,7 @@ import {
 import { Input } from "@/client/components/ui/input";
 import { Label } from "@/client/components/ui/label";
 import { rpcClient } from "@/client/rpc/client";
-import { type ClientAIProvider } from "@/shared/schemas/provider";
+import { type ClientAIProviderConfig } from "@/shared/schemas/provider";
 import { useMutation } from "@tanstack/react-query";
 import { useAtomValue } from "jotai";
 import { AlertCircle } from "lucide-react";
@@ -21,38 +21,38 @@ import { AIProviderIcon } from "./ai-provider-icon";
 import { Alert, AlertDescription } from "./ui/alert";
 
 interface AIProviderEditDialogProps {
+  config: ClientAIProviderConfig;
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
   open: boolean;
-  provider: ClientAIProvider;
 }
 
 export function AIProviderEditDialog({
+  config,
   onOpenChange,
   onSuccess,
   open,
-  provider,
 }: AIProviderEditDialogProps) {
   const { providerMetadataMap } = useAtomValue(providerMetadataAtom);
-  const providerMetadata = providerMetadataMap.get(provider.type);
+  const providerMetadata = providerMetadataMap.get(config.type);
   const [apiKey, setAPIKey] = useState("");
-  const [displayName, setDisplayName] = useState(provider.displayName || "");
+  const [displayName, setDisplayName] = useState(config.displayName || "");
   const [errorMessage, setErrorMessage] = useState<null | string>(null);
 
   const removeMutation = useMutation(
-    rpcClient.provider.remove.mutationOptions(),
+    rpcClient.providerConfig.remove.mutationOptions(),
   );
   const updateMutation = useMutation(
-    rpcClient.provider.update.mutationOptions(),
+    rpcClient.providerConfig.update.mutationOptions(),
   );
 
   useEffect(() => {
     if (open) {
       setAPIKey("");
-      setDisplayName(provider.displayName || "");
+      setDisplayName(config.displayName || "");
       setErrorMessage(null);
     }
-  }, [open, provider.displayName]);
+  }, [open, config.displayName]);
 
   const handleApiKeyChange = (value: string) => {
     setAPIKey(value);
@@ -61,7 +61,7 @@ export function AIProviderEditDialog({
 
   const handleRemove = async () => {
     await removeMutation.mutateAsync(
-      { id: provider.id },
+      { id: config.id },
       {
         onError: () => {
           setErrorMessage("Failed to remove provider");
@@ -77,7 +77,7 @@ export function AIProviderEditDialog({
     await updateMutation.mutateAsync(
       {
         displayName: displayName.trim() || undefined,
-        id: provider.id,
+        id: config.id,
       },
       {
         onError: () => {
@@ -95,8 +95,8 @@ export function AIProviderEditDialog({
   };
 
   const hasChanges =
-    provider.type === "openai-compatible" &&
-    displayName.trim() !== (provider.displayName || "");
+    config.type === "openai-compatible" &&
+    displayName.trim() !== (config.displayName || "");
 
   if (!providerMetadata) {
     return null;
@@ -107,13 +107,13 @@ export function AIProviderEditDialog({
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <AIProviderIcon type={provider.type} />
-            {provider.displayName ?? providerMetadata.name}
+            <AIProviderIcon type={config.type} />
+            {config.displayName ?? providerMetadata.name}
           </DialogTitle>
           <DialogDescription>{providerMetadata.description}</DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
-          {provider.type === "openai-compatible" && (
+          {config.type === "openai-compatible" && (
             <div className="space-y-3">
               <div className="space-y-1">
                 <Label htmlFor="display-name">Name</Label>
@@ -131,7 +131,7 @@ export function AIProviderEditDialog({
             </div>
           )}
 
-          {provider.type === "openai-compatible" && provider.baseURL && (
+          {config.type === "openai-compatible" && config.baseURL && (
             <div className="space-y-3">
               <div className="space-y-1">
                 <Label htmlFor="base-url">Base URL</Label>
@@ -143,7 +143,7 @@ export function AIProviderEditDialog({
                 readOnly
                 spellCheck={false}
                 type="text"
-                value={provider.baseURL}
+                value={config.baseURL}
               />
             </div>
           )}
@@ -153,7 +153,7 @@ export function AIProviderEditDialog({
                 <Label htmlFor="api-key">API Key</Label>
               </div>
 
-              {provider.maskedApiKey ? (
+              {config.maskedApiKey ? (
                 <div className="relative">
                   <Input
                     className="font-mono pr-10"
@@ -162,7 +162,7 @@ export function AIProviderEditDialog({
                     readOnly
                     spellCheck={false}
                     type="text"
-                    value={provider.maskedApiKey}
+                    value={config.maskedApiKey}
                   />
                 </div>
               ) : (
@@ -181,7 +181,7 @@ export function AIProviderEditDialog({
             </div>
           )}
           {!providerMetadata.requiresAPIKey &&
-            provider.type !== "openai-compatible" && (
+            config.type !== "openai-compatible" && (
               <Alert>
                 <AlertDescription className="text-center">
                   No additional configuration required for this provider.
@@ -195,7 +195,7 @@ export function AIProviderEditDialog({
             </Alert>
           )}
         </div>
-        {provider.type === "openai-compatible" ? (
+        {config.type === "openai-compatible" ? (
           <DialogFooter className="flex items-center">
             <Button
               disabled={removeMutation.isPending || updateMutation.isPending}

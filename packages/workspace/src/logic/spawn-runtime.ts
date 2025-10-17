@@ -186,7 +186,7 @@ export const spawnRuntimeLogic = fromCallback<
     installTimeout.cancel();
 
     const providerEnv = envForProviders({
-      providers: appConfig.workspaceConfig.getAIProviders(),
+      configs: appConfig.workspaceConfig.getAIProviderConfigs(),
       workspaceServerURL: getWorkspaceServerURL(),
     });
 

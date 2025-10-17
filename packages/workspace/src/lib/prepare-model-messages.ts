@@ -31,7 +31,7 @@ export async function prepareModelMessages({
   signal: AbortSignal;
 }) {
   const env = envForProviders({
-    providers: appConfig.workspaceConfig.getAIProviders(),
+    configs: appConfig.workspaceConfig.getAIProviderConfigs(),
     workspaceServerURL: getWorkspaceServerURL(),
   });
 

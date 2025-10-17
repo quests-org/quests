@@ -92,15 +92,15 @@ export const anthropicAdapter = setupProviderAdapter({
     return buildURL({ baseURL, path: finalPath });
   },
   features: ["openai/chat-completions"],
-  fetchModels: (provider, { captureException }) =>
+  fetchModels: (config, { captureException }) =>
     Result.gen(function* () {
       const headers = new Headers({
         "Content-Type": "application/json",
       });
-      setAuthHeaders(headers, provider.apiKey);
+      setAuthHeaders(headers, config.apiKey);
 
       const url = new URL(
-        buildURL({ baseURL: provider.baseURL, path: "/v1/models" }),
+        buildURL({ baseURL: config.baseURL, path: "/v1/models" }),
       );
       url.searchParams.set("limit", "1000");
 
@@ -113,7 +113,7 @@ export const anthropicAdapter = setupProviderAdapter({
         () => AnthropicModelsResponseSchema.parse(data),
         (error) =>
           new TypedError.Parse(
-            `Failed to validate models from ${provider.type}`,
+            `Failed to validate models from ${config.type}`,
             { cause: error },
           ),
       );
@@ -146,7 +146,7 @@ export const anthropicAdapter = setupProviderAdapter({
           features: ["inputText", "outputText", "tools"],
           params: { provider: providerType },
           providerId,
-          providerName: provider.displayName ?? metadata.name,
+          providerName: config.displayName ?? metadata.name,
           source: {
             providerType,
             value: model,

@@ -1,8 +1,6 @@
-import { type AIGatewayProvider } from "../schemas/provider";
+import { type AIProviderType } from "@quests/shared";
 
-export function providerTypeToAuthor(
-  providerType: AIGatewayProvider.Type["type"],
-) {
+export function providerTypeToAuthor(providerType: AIProviderType) {
   switch (providerType) {
     case "anthropic": {
       return "anthropic";

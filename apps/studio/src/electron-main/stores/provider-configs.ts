@@ -1,32 +1,37 @@
 import { logger } from "@/electron-main/lib/electron-logger";
 import { publisher } from "@/electron-main/rpc/publisher";
-import { StoreAIProviderSchema } from "@/shared/schemas/provider";
+import { StoreAIProviderConfigSchema } from "@/shared/schemas/provider";
 import { is } from "@electron-toolkit/utils";
 import { safeStorage } from "electron";
 import Store from "electron-store";
 import { z } from "zod";
 
-const ProvidersStoreSchema = z
+const ProviderConfigsStoreSchema = z
   .object({
-    providers: StoreAIProviderSchema.array().default([]),
+    // Named "providers" originally, but now "providerConfigs" to avoid
+    // confusion with the AIProviderType type. Kept as "providers" here to
+    // support existing data.
+    providers: StoreAIProviderConfigSchema.array().default([]),
   })
   .default({ providers: [] });
 
-type ProvidersStore = z.output<typeof ProvidersStoreSchema>;
+type ProviderConfigsStore = z.output<typeof ProviderConfigsStoreSchema>;
 
-let PROVIDERS_STORE: null | Store<ProvidersStore> = null;
+let PROVIDER_CONFIGS_STORE: null | Store<ProviderConfigsStore> = null;
 
-export const getProvidersStore = (): Store<ProvidersStore> => {
-  if (!PROVIDERS_STORE) {
-    const defaultStore: ProvidersStore = {
+export const getProviderConfigsStore = (): Store<ProviderConfigsStore> => {
+  if (!PROVIDER_CONFIGS_STORE) {
+    const defaultStore: ProviderConfigsStore = {
       providers: [],
     };
 
-    PROVIDERS_STORE = new Store<ProvidersStore>({
+    PROVIDER_CONFIGS_STORE = new Store<ProviderConfigsStore>({
       defaults: defaultStore,
       deserialize: (value) => {
         if (is.dev) {
-          const parsed = ProvidersStoreSchema.safeParse(JSON.parse(value));
+          const parsed = ProviderConfigsStoreSchema.safeParse(
+            JSON.parse(value),
+          );
 
           if (parsed.success) {
             return parsed.data;
@@ -52,13 +57,13 @@ export const getProvidersStore = (): Store<ProvidersStore> => {
           return defaultStore;
         }
 
-        const parsed = ProvidersStoreSchema.safeParse(jsonData);
+        const parsed = ProviderConfigsStoreSchema.safeParse(jsonData);
 
         if (parsed.success) {
           return parsed.data;
         }
 
-        logger.error("Failed to parse providers state", parsed.error);
+        logger.error("Failed to parse provider configs", parsed.error);
         return defaultStore;
       },
       fileExtension: is.dev ? "json" : "json.enc",
@@ -78,10 +83,10 @@ export const getProvidersStore = (): Store<ProvidersStore> => {
       },
     });
 
-    PROVIDERS_STORE.onDidAnyChange(() => {
-      publisher.publish("store-provider.updated", null);
+    PROVIDER_CONFIGS_STORE.onDidAnyChange(() => {
+      publisher.publish("provider-config.updated", null);
     });
   }
 
-  return PROVIDERS_STORE;
+  return PROVIDER_CONFIGS_STORE;
 };

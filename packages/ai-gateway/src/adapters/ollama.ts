@@ -41,15 +41,15 @@ export const ollamaAdapter = setupProviderAdapter({
     })(model.providerId);
   },
   features: ["openai/chat-completions"],
-  fetchModels: (provider) =>
+  fetchModels: (config) =>
     Result.gen(function* () {
       const headers = new Headers({ "Content-Type": "application/json" });
-      setAuthHeaders(headers, provider.apiKey);
+      setAuthHeaders(headers, config.apiKey);
 
       const data = yield* fetchJson({
         cache: false, // Models change frequently on local, so no cache
         headers,
-        url: buildURL({ baseURL: provider.baseURL, path: "/v1/models" }),
+        url: buildURL({ baseURL: config.baseURL, path: "/v1/models" }),
       });
 
       const modelsResult = yield* Result.try(
@@ -57,7 +57,7 @@ export const ollamaAdapter = setupProviderAdapter({
           z.object({ data: z.array(AIGatewayModel.OllamaSchema) }).parse(data),
         (error) =>
           new TypedError.Parse(
-            `Failed to validate models from ${provider.type}`,
+            `Failed to validate models from ${config.type}`,
             { cause: error },
           ),
       );
@@ -80,7 +80,7 @@ export const ollamaAdapter = setupProviderAdapter({
           features: ["inputText", "outputText", "tools"],
           params: { provider: providerType },
           providerId,
-          providerName: provider.displayName ?? metadata.name,
+          providerName: config.displayName ?? metadata.name,
           source: { providerType, value: model },
           tags,
           uri: modelToURI({

@@ -11,7 +11,7 @@ export const openaiCompatibleApp = new Hono<AIGatewayEnv>();
 openaiCompatibleApp.use("*", createBearerAuthMiddleware());
 
 openaiCompatibleApp.all("*", async (c) => {
-  const providers = c.var.getAIProviders();
+  const providers = c.var.getAIProviderConfigs();
   const openaiCompatible = providers.find(
     (provider) => provider.type === "openai-compatible",
   );

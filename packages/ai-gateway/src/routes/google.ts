@@ -11,7 +11,7 @@ export const googleApp = new Hono<AIGatewayEnv>();
 googleApp.use("*", createHeaderAuthMiddleware("x-goog-api-key"));
 
 googleApp.all("*", async (c) => {
-  const providers = c.var.getAIProviders();
+  const providers = c.var.getAIProviderConfigs();
   const google = providers.find((provider) => provider.type === "google");
 
   if (!google) {

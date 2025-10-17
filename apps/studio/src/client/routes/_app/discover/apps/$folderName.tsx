@@ -1,6 +1,6 @@
 /* eslint-disable unicorn/filename-case */
 /* eslint-enable unicorn/filename-case */
-import { hasAIProviderAtom } from "@/client/atoms/has-ai-provider";
+import { hasAIProviderConfigAtom } from "@/client/atoms/has-ai-provider-config";
 import { selectedModelURIAtom } from "@/client/atoms/selected-models";
 import { AIProviderGuard } from "@/client/components/ai-provider-guard";
 import { AIProviderGuardDialog } from "@/client/components/ai-provider-guard-dialog";
@@ -90,7 +90,7 @@ function RouteComponent() {
   const createProjectMutation = useMutation(
     rpcClient.workspace.project.create.mutationOptions(),
   );
-  const hasAIProvider = useAtomValue(hasAIProviderAtom);
+  const hasAIProvider = useAtomValue(hasAIProviderConfigAtom);
   const [selectedModelURI, setSelectedModelURI] = useAtom(selectedModelURIAtom);
   const [showAIProviderGuard, setShowAIProviderGuard] = useState(false);
   const [showPreviewDialog, setShowPreviewDialog] = useState(false);

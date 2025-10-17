@@ -4,7 +4,7 @@ import {
 } from "@/electron-main/constants";
 import { logger } from "@/electron-main/lib/electron-logger";
 import { is } from "@electron-toolkit/utils";
-import { aiGatewayApp, type AIGatewayProvider } from "@quests/ai-gateway";
+import { aiGatewayApp, type AIGatewayProviderConfig } from "@quests/ai-gateway";
 import {
   WORKSPACE_FOLDER,
   workspaceMachine,
@@ -15,7 +15,7 @@ import ms from "ms";
 import path from "node:path";
 import { createActor } from "xstate";
 
-import { getProvidersStore } from "../stores/providers";
+import { getProviderConfigsStore } from "../stores/provider-configs";
 import { captureServerEvent } from "./capture-server-event";
 import { captureServerException } from "./capture-server-exception";
 import { getPNPMBinPath } from "./setup-bin-directory";
@@ -29,16 +29,16 @@ export function createWorkspaceActor() {
       aiGatewayApp,
       captureEvent: captureServerEvent,
       captureException: captureServerException,
-      getAIProviders: () => {
-        const providers: AIGatewayProvider.Type[] = [];
-        const providersStore = getProvidersStore();
-        const aiProviders = providersStore.get("providers");
+      getAIProviderConfigs: () => {
+        const providerConfigs: AIGatewayProviderConfig.Type[] = [];
+        const providerConfigsStore = getProviderConfigsStore();
+        const storedProviderConfigs = providerConfigsStore.get("providers");
 
-        for (const { id: _, ...rest } of aiProviders) {
-          providers.push(rest);
+        for (const { id: _, ...rest } of storedProviderConfigs) {
+          providerConfigs.push(rest);
         }
 
-        return providers;
+        return providerConfigs;
       },
       nodeExecEnv: {
         // Required to allow Electron to operate as a node process

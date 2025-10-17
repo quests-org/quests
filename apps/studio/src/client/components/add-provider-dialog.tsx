@@ -11,13 +11,13 @@ import { Input } from "@/client/components/ui/input";
 import { Label } from "@/client/components/ui/label";
 import { cn } from "@/client/lib/utils";
 import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
-import { type ClientAIProvider } from "@/shared/schemas/provider";
+import { type ClientAIProviderConfig } from "@/shared/schemas/provider";
 import { isDefinedError } from "@orpc/client";
+import { RECOMMENDED_TAG } from "@quests/ai-gateway/client";
 import {
-  type AIGatewayProvider,
-  RECOMMENDED_TAG,
-} from "@quests/ai-gateway/client";
-import { AI_GATEWAY_API_KEY_NOT_NEEDED } from "@quests/shared";
+  AI_GATEWAY_API_KEY_NOT_NEEDED,
+  type AIProviderType,
+} from "@quests/shared";
 import { useMutation } from "@tanstack/react-query";
 import { useAtom, useAtomValue } from "jotai";
 import {
@@ -42,7 +42,7 @@ interface AddProviderDialogProps {
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
   open: boolean;
-  providers?: ClientAIProvider[];
+  providers?: ClientAIProviderConfig[];
 }
 
 type DialogStage = "configuration" | "provider-selection";
@@ -56,7 +56,7 @@ export function AddProviderDialog({
   const [selectedModelURI, setSelectedModelURI] = useAtom(selectedModelURIAtom);
   const [stage, setStage] = useState<DialogStage>("provider-selection");
   const [selectedProviderType, setSelectedProviderType] = useState<
-    AIGatewayProvider.Type["type"] | undefined
+    AIProviderType | undefined
   >(undefined);
   const [selectedPresetProvider, setSelectedPresetProvider] = useState<
     string | undefined
@@ -101,7 +101,7 @@ export function AddProviderDialog({
   }, [baseURL, selectedProviderType, providerMetadataMap]);
 
   const createMutation = useMutation(
-    rpcClient.provider.create.mutationOptions(),
+    rpcClient.providerConfig.create.mutationOptions(),
   );
 
   useEffect(() => {
@@ -117,7 +117,7 @@ export function AddProviderDialog({
     }
   }, [open]);
 
-  const handleProviderSelect = (type: AIGatewayProvider.Type["type"]) => {
+  const handleProviderSelect = (type: AIProviderType) => {
     setSelectedProviderType(type);
     setErrorMessage(null);
     setValidationFailed(false);

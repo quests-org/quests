@@ -1,4 +1,4 @@
-import { type GetAIProviders } from "@quests/ai-gateway";
+import { type GetProviderConfigs } from "@quests/ai-gateway";
 import {
   type CaptureEventFunction,
   type CaptureExceptionFunction,
@@ -12,7 +12,7 @@ export type AppStatus = (typeof APP_STATUSES)[number];
 export interface WorkspaceConfig {
   captureEvent: CaptureEventFunction;
   captureException: CaptureExceptionFunction;
-  getAIProviders: GetAIProviders;
+  getAIProviderConfigs: GetProviderConfigs;
   nodeExecEnv: Record<string, string>;
   pnpmBinPath: AbsolutePath;
   previewCacheTimeMs?: number;

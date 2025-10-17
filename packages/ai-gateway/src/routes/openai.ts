@@ -24,15 +24,15 @@ interface OpenAIModelsResponse {
   object: "list";
 }
 
-openaiApp.get("/models", async (c) => {
-  const providers = c.var.getAIProviders();
-  const providersThatSupportOpenAICompletions = providers.filter((provider) => {
-    const adapter = getProviderAdapter(provider.type);
+openaiApp.get("/models", async (context) => {
+  const configs = context.var.getAIProviderConfigs();
+  const configsThatSupportOpenAICompletions = configs.filter((config) => {
+    const adapter = getProviderAdapter(config.type);
     return adapter.features.includes("openai/chat-completions");
   });
   const models = await fetchModelsForProviders(
-    providersThatSupportOpenAICompletions,
-    { captureException: c.var.captureException },
+    configsThatSupportOpenAICompletions,
+    { captureException: context.var.captureException },
   );
 
   const sortedModels = sortModelsByRecommended(models);
@@ -48,51 +48,50 @@ openaiApp.get("/models", async (c) => {
     object: "list",
   };
 
-  return c.json(response);
+  return context.json(response);
 });
 
-openaiApp.post("/chat/completions", async (c) => {
-  const providers = c.var.getAIProviders();
-  const firstProvider = providers[0];
+openaiApp.post("/chat/completions", async (context) => {
+  const configs = context.var.getAIProviderConfigs();
+  const firstConfig = configs[0];
 
-  if (!firstProvider) {
-    return c.json({ error: "No providers found" }, 500);
+  if (!firstConfig) {
+    return context.json({ error: "No provider config found" }, 500);
   }
 
   const bodyJsonResult = z
     .looseObject({ model: z.string() })
-    .safeParse(await c.req.raw.clone().json());
+    .safeParse(await context.req.raw.clone().json());
 
   if (!bodyJsonResult.success) {
-    return c.json({ error: "Invalid request body" }, 400);
+    return context.json({ error: "Invalid request body" }, 400);
   }
 
   const bodyJson = bodyJsonResult.data;
   const originalModelId = bodyJson.model;
   const model = await fetchModelByString(
     {
+      configs,
       id: originalModelId,
-      providers,
     },
-    { captureException: c.var.captureException },
+    { captureException: context.var.captureException },
   );
 
   if (!model) {
-    // Prioritize OpenAI provider if it exists
-    const provider =
-      providers.find((p) => p.type === "openai") ?? firstProvider;
+    // Prioritize OpenAI config if it exists
+    const config = configs.find((c) => c.type === "openai") ?? firstConfig;
     const customBody =
-      provider.type === "openai"
+      config.type === "openai"
         ? JSON.stringify({
             ...bodyJson,
-            prompt_cache_key: provider.cacheIdentifier,
+            prompt_cache_key: config.cacheIdentifier,
           })
         : undefined;
 
-    const adapter = getProviderAdapter(provider.type);
-    return providerProxy(c, {
-      apiKey: provider.apiKey,
-      baseURL: provider.baseURL,
+    const adapter = getProviderAdapter(config.type);
+    return providerProxy(context, {
+      apiKey: config.apiKey,
+      baseURL: config.baseURL,
       buildURL: adapter.buildURL,
       customBody,
       path: "/v1/chat/completions",
@@ -100,22 +99,21 @@ openaiApp.post("/chat/completions", async (c) => {
     });
   }
 
-  const providerName = model.params.provider;
-  const provider =
-    providers.find((p) => p.type === providerName) ?? firstProvider;
-  const adapter = getProviderAdapter(provider.type);
+  const config =
+    configs.find((c) => c.type === model.params.provider) ?? firstConfig;
+  const adapter = getProviderAdapter(config.type);
 
   const updatedBody = JSON.stringify({
     ...bodyJson,
     model: model.providerId,
-    ...(provider.type === "openai"
-      ? { prompt_cache_key: provider.cacheIdentifier }
+    ...(config.type === "openai"
+      ? { prompt_cache_key: config.cacheIdentifier }
       : {}),
   });
 
-  return providerProxy(c, {
-    apiKey: provider.apiKey,
-    baseURL: provider.baseURL,
+  return providerProxy(context, {
+    apiKey: config.apiKey,
+    baseURL: config.baseURL,
     buildURL: adapter.buildURL,
     customBody: updatedBody,
     path: "/v1/chat/completions",
@@ -123,28 +121,28 @@ openaiApp.post("/chat/completions", async (c) => {
   });
 });
 
-openaiApp.all("*", async (c) => {
-  const providers = c.var.getAIProviders();
-  const openai = providers.find((provider) => provider.type === "openai");
+openaiApp.all("*", async (context) => {
+  const configs = context.var.getAIProviderConfigs();
+  const openai = configs.find((c) => c.type === "openai");
 
   // Only allow direct proxy for the rest of the endpoints if user has an
-  // OpenAI provider.
+  // OpenAI config.
   if (!openai) {
-    return c.json({ error: "No OpenAI provider found" }, 500);
+    return context.json({ error: "No OpenAI config found" }, 500);
   }
 
-  const url = new URL(c.req.raw.url);
+  const url = new URL(context.req.raw.url);
   const path = url.pathname.replace(PROVIDER_API_PATH.openai, "");
-  const method = c.req.raw.method;
+  const method = context.req.raw.method;
 
   // Parse and rewrite model ID for responses API
   if (path === "/responses" && method === "POST") {
     const bodyJsonResult = z
       .looseObject({ model: z.string() })
-      .safeParse(await c.req.raw.clone().json());
+      .safeParse(await context.req.raw.clone().json());
 
     if (!bodyJsonResult.success) {
-      return c.json({ error: "Invalid request body" }, 400);
+      return context.json({ error: "Invalid request body" }, 400);
     }
 
     const originalModelId = bodyJsonResult.data.model;
@@ -152,14 +150,17 @@ openaiApp.all("*", async (c) => {
       {
         id: originalModelId,
         // Only OpenAI itself supports responses API
-        providers: providers.filter((p) => p.type === "openai"),
+        configs: configs.filter((c) => c.type === "openai"),
       },
-      { captureException: c.var.captureException },
+      { captureException: context.var.captureException },
     );
 
     if (model) {
       if (model.params.provider !== "openai") {
-        return c.json({ error: "Unsupported provider for responses API" }, 400);
+        return context.json(
+          { error: "Unsupported provider for responses API" },
+          400,
+        );
       }
 
       const updatedBody = JSON.stringify({
@@ -168,7 +169,7 @@ openaiApp.all("*", async (c) => {
         prompt_cache_key: openai.cacheIdentifier,
       });
 
-      return providerProxy(c, {
+      return providerProxy(context, {
         apiKey: openai.apiKey,
         baseURL: openai.baseURL,
         buildURL: openaiAdapter.buildURL,
@@ -179,7 +180,7 @@ openaiApp.all("*", async (c) => {
     }
   }
 
-  return providerProxy(c, {
+  return providerProxy(context, {
     apiKey: openai.apiKey,
     baseURL: openai.baseURL,
     buildURL: openaiAdapter.buildURL,

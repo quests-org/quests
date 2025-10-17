@@ -2,20 +2,20 @@ import { atomWithoutSuspense } from "@/client/lib/atom-without-suspense";
 import { logger } from "@/client/lib/logger";
 import { vanillaRpcClient } from "@/client/rpc/client";
 import {
-  type AIGatewayProvider,
   type ProviderMetadata,
   RECOMMENDED_TAG,
 } from "@quests/ai-gateway/client";
+import { type AIProviderType } from "@quests/shared";
 import { atom } from "jotai";
 import { sort } from "radashi";
 
 interface ProviderMetadataData {
   providerMetadataMap: Map<
-    AIGatewayProvider.Type["type"],
-    ProviderMetadata & { type: AIGatewayProvider.Type["type"] }
+    AIProviderType,
+    ProviderMetadata & { type: AIProviderType }
   >;
   sortedProviderMetadata: (ProviderMetadata & {
-    type: AIGatewayProvider.Type["type"];
+    type: AIProviderType;
   })[];
 }
 
@@ -26,7 +26,7 @@ const defaultProviderMetadata: ProviderMetadataData = {
 
 const baseProviderMetadataAtom = atom(async () => {
   try {
-    const list = await vanillaRpcClient.provider.metadata.list();
+    const list = await vanillaRpcClient.providerConfig.metadata.list();
     const metadataMap = new Map(list.map((item) => [item.type, item]));
 
     return {

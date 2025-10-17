@@ -13,7 +13,7 @@ export async function resolveModel(
   const [model, error] = (
     await context.modelRegistry.languageModel(
       modelURI,
-      context.workspaceConfig.getAIProviders(),
+      context.workspaceConfig.getAIProviderConfigs(),
       {
         captureException: context.workspaceConfig.captureException,
         workspaceServerURL: getWorkspaceServerURL(),

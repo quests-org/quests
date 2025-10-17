@@ -20,7 +20,7 @@ import {
 } from "react";
 import { toast } from "sonner";
 
-import { hasAIProviderAtom } from "../atoms/has-ai-provider";
+import { hasAIProviderConfigAtom } from "../atoms/has-ai-provider-config";
 import {
   promptValueAtomFamily,
   type PromptValueAtomKey,
@@ -77,7 +77,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
     const [showAIProviderGuard, setShowAIProviderGuard] = useState(false);
     const textareaRef = useRef<HTMLDivElement>(null);
     const textareaInnerRef = useRef<HTMLTextAreaElement>(null);
-    const hasAIProvider = useAtomValue(hasAIProviderAtom);
+    const hasAIProvider = useAtomValue(hasAIProviderConfigAtom);
     const [value, setValue] = useAtom(promptValueAtomFamily(atomKey));
 
     useImperativeHandle(ref, () => ({

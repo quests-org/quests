@@ -2,7 +2,7 @@ import { Badge } from "@/client/components/ui/badge";
 import { Button } from "@/client/components/ui/button";
 import { cn } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
-import { type ClientAIProvider } from "@/shared/schemas/provider";
+import { type ClientAIProviderConfig } from "@/shared/schemas/provider";
 import { type ProviderMetadata } from "@quests/ai-gateway/client";
 import { useQuery } from "@tanstack/react-query";
 
@@ -12,24 +12,22 @@ const formatCredits = (credits: number) => {
   return credits.toFixed(2);
 };
 
-interface ProviderListItemProps {
-  className?: string;
-  metadata?: ProviderMetadata;
-  onConfigure: () => void;
-  provider: ClientAIProvider;
-}
-
-export function ProviderListItem({
+export function ProviderConfigListItem({
   className,
+  config,
   metadata,
   onConfigure,
-  provider,
-}: ProviderListItemProps) {
+}: {
+  className?: string;
+  config: ClientAIProviderConfig;
+  metadata?: ProviderMetadata;
+  onConfigure: () => void;
+}) {
   const { data: openRouterCredits, isLoading: isLoadingCredits } = useQuery({
-    ...rpcClient.provider.credits.queryOptions({
-      input: { provider: "openrouter" },
+    ...rpcClient.providerConfig.credits.queryOptions({
+      input: { providerType: "openrouter" },
     }),
-    enabled: provider.type === "openrouter",
+    enabled: config.type === "openrouter",
     refetchInterval: 30_000,
   });
 
@@ -44,19 +42,19 @@ export function ProviderListItem({
         <div className="flex items-center gap-3">
           <div className="flex items-center justify-center size-8">
             <AIProviderIcon
-              providerName={provider.displayName}
-              type={provider.type}
+              providerName={config.displayName}
+              type={config.type}
             />
           </div>
           <div>
             <div className="flex items-center gap-2">
               <h3 className="font-medium">
-                {provider.displayName || metadata?.name}
+                {config.displayName || metadata?.name}
               </h3>
-              {provider.displayName && (
+              {config.displayName && (
                 <Badge variant="secondary">{metadata?.name}</Badge>
               )}
-              {provider.type === "openrouter" && (
+              {config.type === "openrouter" && (
                 <span className="text-sm text-muted-foreground">
                   {isLoadingCredits
                     ? "Loading credits..."
@@ -66,9 +64,9 @@ export function ProviderListItem({
                 </span>
               )}
             </div>
-            {provider.type === "openai-compatible" && provider.baseURL ? (
+            {config.type === "openai-compatible" && config.baseURL ? (
               <div className="text-sm text-muted-foreground">
-                <div className="text-xs">{provider.baseURL}</div>
+                <div className="text-xs">{config.baseURL}</div>
               </div>
             ) : (
               <p className="text-sm text-muted-foreground">

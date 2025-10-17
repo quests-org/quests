@@ -11,7 +11,7 @@ export const anthropicApp = new Hono<AIGatewayEnv>();
 anthropicApp.use("*", createHeaderAuthMiddleware("X-API-Key"));
 
 anthropicApp.all("*", async (c) => {
-  const providers = c.var.getAIProviders();
+  const providers = c.var.getAIProviderConfigs();
   const anthropic = providers.find((provider) => provider.type === "anthropic");
 
   if (!anthropic) {

@@ -34,10 +34,10 @@ export const Route = createFileRoute("/_app/setup")({
 
 function RouteComponent() {
   const navigate = useNavigate();
-  const { data: providers } = useQuery(
-    rpcClient.provider.live.list.experimental_liveOptions(),
+  const { data: providerConfigs } = useQuery(
+    rpcClient.providerConfig.live.list.experimental_liveOptions(),
   );
-  const hasProvider = (providers?.length ?? 0) > 0;
+  const hasProvider = (providerConfigs?.length ?? 0) > 0;
   const [showAddProviderDialog, setShowAddProviderDialog] = useState(false);
 
   return (
@@ -98,7 +98,7 @@ function RouteComponent() {
                 void navigate({ to: "/new-tab" });
               }}
               open={showAddProviderDialog}
-              providers={providers ?? []}
+              providers={providerConfigs ?? []}
             />
           </div>
         </div>

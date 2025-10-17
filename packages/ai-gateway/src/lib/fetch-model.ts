@@ -3,7 +3,7 @@ import { Result } from "typescript-result";
 
 import { getProviderAdapter } from "../adapters/all";
 import { type AIGatewayModel } from "../schemas/model";
-import { type AIGatewayProvider } from "../schemas/provider";
+import { type AIGatewayProviderConfig } from "../schemas/provider-config";
 import { TypedError } from "./errors";
 import { fetchModelsForProviders } from "./fetch-models";
 import { findModelByString } from "./find-model-by-string";
@@ -11,15 +11,15 @@ import { parseModelURI } from "./parse-model-uri";
 
 export async function fetchModelByString(
   {
+    configs,
     id,
-    providers,
   }: {
+    configs: AIGatewayProviderConfig.Type[];
     id: string;
-    providers: AIGatewayProvider.Type[];
   },
   { captureException }: { captureException: CaptureExceptionFunction },
 ) {
-  const allModels = await fetchModelsForProviders(providers, {
+  const allModels = await fetchModelsForProviders(configs, {
     captureException,
   });
 
@@ -28,7 +28,7 @@ export async function fetchModelByString(
 
 export async function fetchModelByURI(
   modelURI: AIGatewayModel.URI,
-  providers: AIGatewayProvider.Type[],
+  configs: AIGatewayProviderConfig.Type[],
   { captureException }: { captureException: CaptureExceptionFunction },
 ) {
   return Result.gen(async function* () {
@@ -39,17 +39,17 @@ export async function fetchModelByURI(
       );
     }
 
-    const provider = providers.find((p) => p.type === modelURIDetails.provider);
-    if (!provider) {
+    const config = configs.find((p) => p.type === modelURIDetails.provider);
+    if (!config) {
       return Result.error(
         new TypedError.NotFound(
-          `Provider ${modelURIDetails.provider} not found`,
+          `Provider config for ${modelURIDetails.provider} not found`,
         ),
       );
     }
 
-    const adapter = getProviderAdapter(provider.type);
-    const models = yield* await adapter.fetchModels(provider, {
+    const adapter = getProviderAdapter(config.type);
+    const models = yield* await adapter.fetchModels(config, {
       captureException,
     });
 
