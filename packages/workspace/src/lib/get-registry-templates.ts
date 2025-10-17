@@ -57,11 +57,11 @@ async function getRegistryTemplatesImpl(
       return folderNames
         .filter((folderName) => {
           const entry = entries.find(
-            (entry) =>
-              entry.isDirectory() &&
-              entry.name === folderName &&
-              !entry.name.startsWith(".") &&
-              entry.name !== EMPTY_TEMPLATE,
+            (e) =>
+              e.isDirectory() &&
+              e.name === folderName &&
+              !e.name.startsWith(".") &&
+              e.name !== EMPTY_TEMPLATE,
           );
           return entry !== undefined;
         })

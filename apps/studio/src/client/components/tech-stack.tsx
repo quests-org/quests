@@ -5,10 +5,14 @@ import {
   TooltipTrigger,
 } from "@/client/components/ui/tooltip";
 import {
+  SiAngular,
+  SiAstro,
+  SiExpress,
   SiHono,
   SiNextdotjs,
   SiNuxtdotjs,
   SiReact,
+  SiSolid,
   SiSvelte,
   SiTailwindcss,
   SiVite,
@@ -19,33 +23,45 @@ const TECH_LOGOS: Record<
   string,
   React.ComponentType<{ className?: string }>
 > = {
+  "@angular/core": SiAngular,
   "@sveltejs/kit": SiSvelte,
+  astro: SiAstro,
+  express: SiExpress,
   hono: SiHono,
   next: SiNextdotjs,
   nuxt: SiNuxtdotjs,
   react: SiReact,
+  "solid-js": SiSolid,
   tailwindcss: SiTailwindcss,
   vite: SiVite,
   vue: SiVuedotjs,
 };
 
 const TECH_DISPLAY_NAMES: Record<string, string> = {
+  "@angular/core": "Angular",
   "@sveltejs/kit": "SvelteKit",
+  astro: "Astro",
+  express: "Express",
   hono: "Hono",
   next: "Next.js",
   nuxt: "Nuxt",
   react: "React",
+  "solid-js": "Solid",
   tailwindcss: "Tailwind CSS",
   vite: "Vite",
   vue: "Vue",
 };
 
 const KEY_FRAMEWORKS = new Set([
+  "@angular/core",
   "@sveltejs/kit",
+  "astro",
+  "express",
   "hono",
   "next",
   "nuxt",
   "react",
+  "solid-js",
   "tailwindcss",
   "vite",
   "vue",
