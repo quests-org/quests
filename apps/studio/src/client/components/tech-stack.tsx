@@ -1,5 +1,3 @@
-import { ChevronDown, ChevronUp } from "lucide-react";
-import { useState } from "react";
 import {
   SiHono,
   SiNextdotjs,
@@ -7,6 +5,12 @@ import {
   SiTailwindcss,
   SiVite,
 } from "react-icons/si";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/client/components/ui/tooltip";
 
 const TECH_LOGOS: Record<
   string,
@@ -17,6 +21,14 @@ const TECH_LOGOS: Record<
   react: SiReact,
   tailwindcss: SiTailwindcss,
   vite: SiVite,
+};
+
+const TECH_DISPLAY_NAMES: Record<string, string> = {
+  hono: "Hono",
+  next: "Next.js",
+  react: "React",
+  tailwindcss: "Tailwind CSS",
+  vite: "Vite",
 };
 
 const KEY_FRAMEWORKS = new Set([
@@ -34,8 +46,6 @@ export function TechStack({
   dependencies: Record<string, string>;
   devDependencies: Record<string, string>;
 }) {
-  const [showAll, setShowAll] = useState(false);
-
   const allDeps = {
     ...dependencies,
     ...devDependencies,
@@ -56,71 +66,38 @@ export function TechStack({
     return true;
   });
 
-  const otherDeps = sortedDeps.filter((dep) => !isKeyFramework(dep));
-
   if (sortedDeps.length === 0) {
     return null;
   }
 
   return (
-    <div>
-      <h3 className="text-sm font-medium mb-3">Tech Stack</h3>
+    <TooltipProvider>
+      <div>
+        <h3 className="text-sm font-medium mb-3">Tech Stack</h3>
 
-      <div className="flex flex-wrap gap-3 mb-3">
-        {keyFrameworks.map((packageName) => {
-          const Logo = getTechLogo(packageName);
-          if (!Logo) {
-            return null;
-          }
+        <div className="flex flex-wrap gap-3">
+          {keyFrameworks.map((packageName) => {
+            const Logo = getTechLogo(packageName);
+            if (!Logo) {
+              return null;
+            }
 
-          return (
-            <div
-              key={packageName}
-              title={`${packageName}@${allDeps[packageName] || "latest"}`}
-            >
-              <Logo className="size-6 text-foreground" />
-            </div>
-          );
-        })}
+            return (
+              <Tooltip key={packageName}>
+                <TooltipTrigger asChild>
+                  <div>
+                    <Logo className="size-6 text-foreground" />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {TECH_DISPLAY_NAMES[packageName] || packageName}
+                </TooltipContent>
+              </Tooltip>
+            );
+          })}
+        </div>
       </div>
-
-      {otherDeps.length > 0 && (
-        <>
-          <button
-            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors mb-2"
-            onClick={() => {
-              setShowAll(!showAll);
-            }}
-            type="button"
-          >
-            {showAll ? (
-              <>
-                <ChevronUp className="h-3 w-3" />
-                Show Less
-              </>
-            ) : (
-              <>
-                <ChevronDown className="h-3 w-3" />
-                Show More ({otherDeps.length})
-              </>
-            )}
-          </button>
-
-          {showAll && (
-            <div className="space-y-1 text-xs text-muted-foreground">
-              {otherDeps.map((packageName) => (
-                <div key={packageName}>
-                  {packageName}
-                  <span className="text-muted-foreground/60">
-                    @{allDeps[packageName]}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-        </>
-      )}
-    </div>
+    </TooltipProvider>
   );
 }
 
