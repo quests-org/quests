@@ -56,10 +56,12 @@
     "localai",
     "logprobs",
     "lucide",
+    "magick",
     "meteo",
     "moonshotai",
     "msiexec",
     "neverthrow",
+    "Nextdotjs",
     "Nextdotjs",
     "nosystem",
     "notarized",
@@ -68,6 +70,7 @@
     "nums",
     "numstat",
     "nuxt",
+    "Nuxtdotjs",
     "ollama",
     "oneline",
     "opencode",
@@ -98,14 +101,12 @@
     "vite",
     "vitejs",
     "vitest",
+    "Vuedotjs",
     "waitlist",
     "winstaller",
     "workerd",
     "worktree",
     "XAPI",
-    "zkochan",
-    "Nextdotjs",
-    "Vuedotjs",
-    "Nuxtdotjs"
+    "zkochan"
   ]
 }
