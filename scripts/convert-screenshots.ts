@@ -107,7 +107,7 @@ async function main() {
   console.log(`Using JPEG quality: ${quality}%\n`);
 
   // Ask for confirmation to proceed
-  const proceed = await promptUser("Do you want to convert all files? (y/N): ");
+  const proceed = await promptUser("Do you want to convert files? (y/N): ");
   if (proceed !== "y" && proceed !== "yes") {
     console.log("Conversion cancelled.");
     return;
