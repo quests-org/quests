@@ -73,10 +73,10 @@ export const openrouterAdapter = setupProviderAdapter({
   },
   modelTags: {
     "anthropic/claude-3.7-sonnet": ["coding"],
-    "anthropic/claude-haiku-4.5": ["coding", "recommended"],
+    "anthropic/claude-haiku-4.5": ["coding", "recommended", "default"],
     "anthropic/claude-opus-4.1": ["coding", "recommended"],
     "anthropic/claude-sonnet-4": ["coding", "recommended"],
-    "anthropic/claude-sonnet-4.5": ["coding", "recommended", "default"],
+    "anthropic/claude-sonnet-4.5": ["coding", "recommended"],
     "google/gemini-2.5-flash": ["recommended"],
     "google/gemini-2.5-pro": ["coding", "recommended"],
     "moonshotai/kimi-k2": ["coding"],

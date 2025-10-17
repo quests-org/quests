@@ -73,9 +73,9 @@ export const anthropicAdapter = setupProviderAdapter({
   },
   modelTags: {
     "claude-3-7-sonnet-20250219": ["coding"],
-    "claude-haiku-4-5-20251001": ["coding", "recommended"],
+    "claude-haiku-4-5-20251001": ["coding", "recommended", "default"],
     "claude-opus-4-1-20250805": ["coding", "recommended"],
-    "claude-sonnet-4-5-20250929": ["coding", "recommended", "default"],
+    "claude-sonnet-4-5-20250929": ["coding", "recommended"],
     "claude-sonnet-4-20250514": ["coding", "recommended"],
   },
   providerType: "anthropic",
