@@ -273,7 +273,7 @@ function RouteComponent() {
                               onSelect={() => {
                                 handleToggleEvalTemplate(template.name);
                               }}
-                              value={`${template.name} ${template.userPrompt}`}
+                              value={template.name}
                             >
                               <div className="flex items-start gap-2 flex-1 min-w-0">
                                 <Checkbox
