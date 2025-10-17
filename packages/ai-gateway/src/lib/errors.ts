@@ -17,4 +17,8 @@ export namespace TypedError {
   export class VerificationFailed extends Error {
     readonly type = `${PREFIX}-verification-failed-error`;
   }
+
+  export class Unknown extends Error {
+    readonly type = `${PREFIX}-unknown-error`;
+  }
 }
