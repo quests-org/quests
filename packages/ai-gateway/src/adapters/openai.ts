@@ -11,9 +11,9 @@ import { TypedError } from "../lib/errors";
 import { fetchJson } from "../lib/fetch-json";
 import { isModelNew } from "../lib/is-model-new";
 import { internalAPIKey } from "../lib/key-for-provider";
-import { modelToURI } from "../lib/model-to-uri";
 import { PROVIDER_API_PATH } from "../lib/provider-paths";
 import { AIGatewayModel } from "../schemas/model";
+import { AIGatewayModelURI } from "../schemas/model-uri";
 import { setupProviderAdapter } from "./setup";
 
 const KNOWN_MODEL_IDS = [
@@ -130,19 +130,20 @@ export const openaiAdapter = setupProviderAdapter({
           tags.push("new");
         }
 
+        const params = { provider: providerType, providerConfigId: config.id };
         return {
           author,
           canonicalId: canonicalModelId,
           features,
-          params: { provider: providerType },
+          params,
           providerId,
           providerName: config.displayName ?? metadata.name,
           source: { providerType, value: model },
           tags,
-          uri: modelToURI({
+          uri: AIGatewayModelURI.fromModel({
             author,
             canonicalId: canonicalModelId,
-            params: { provider: providerType },
+            params,
           }),
         } satisfies AIGatewayModel.Type;
       });

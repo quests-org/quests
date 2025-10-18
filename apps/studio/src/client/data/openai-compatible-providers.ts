@@ -14,8 +14,9 @@ import { Novita } from "@/client/components/icons/novita";
 import { Perplexity } from "@/client/components/icons/perplexity";
 import { Together } from "@/client/components/icons/together";
 import { ZAI } from "@/client/components/icons/zai";
+import { type AIProviderConfigSubType } from "@quests/shared";
 
-interface OpenAICompatibleProvider {
+export interface OpenAICompatibleProvider {
   api: {
     defaultBaseURL: string;
     keyFormat?: string;
@@ -25,6 +26,7 @@ interface OpenAICompatibleProvider {
   icon: ComponentType<{ className?: string }>;
   name: string;
   requiresAPIKey?: boolean;
+  subType: AIProviderConfigSubType;
   url: string;
 }
 
@@ -37,6 +39,7 @@ export const OPENAI_COMPATIBLE_PROVIDERS: OpenAICompatibleProvider[] = [
     description: "GLM Coding Plan with GLM-4.5 and GLM-4.6 models.",
     icon: ZAI,
     name: "Z.ai",
+    subType: "z-ai",
     url: "https://z.ai",
   },
   {
@@ -48,6 +51,7 @@ export const OPENAI_COMPATIBLE_PROVIDERS: OpenAICompatibleProvider[] = [
       "Ultra-fast AI inference powered by custom LPU hardware designed for speed.",
     icon: Groq,
     name: "Groq",
+    subType: "groq",
     url: "https://groq.com",
   },
   {
@@ -59,6 +63,7 @@ export const OPENAI_COMPATIBLE_PROVIDERS: OpenAICompatibleProvider[] = [
       "Access to 200+ open-source AI models with optimized performance at scale.",
     icon: Together,
     name: "Together AI",
+    subType: "together",
     url: "https://www.together.ai",
   },
   {
@@ -70,6 +75,7 @@ export const OPENAI_COMPATIBLE_PROVIDERS: OpenAICompatibleProvider[] = [
       "High-speed multi-modal AI inference with advanced FireAttention technology.",
     icon: Fireworks,
     name: "Fireworks AI",
+    subType: "fireworks",
     url: "https://fireworks.ai",
   },
   {
@@ -81,6 +87,7 @@ export const OPENAI_COMPATIBLE_PROVIDERS: OpenAICompatibleProvider[] = [
       "Cloud platform for running large AI models with flexible pricing.",
     icon: DeepInfra,
     name: "DeepInfra",
+    subType: "deepinfra",
     url: "https://deepinfra.com",
   },
   {
@@ -92,6 +99,7 @@ export const OPENAI_COMPATIBLE_PROVIDERS: OpenAICompatibleProvider[] = [
       "Affordable serverless GPU platform with access to 200+ AI models.",
     icon: Novita,
     name: "Novita AI",
+    subType: "novita",
     url: "https://novita.ai",
   },
   {
@@ -104,6 +112,7 @@ export const OPENAI_COMPATIBLE_PROVIDERS: OpenAICompatibleProvider[] = [
       "Community-driven platform with thousands of open-source AI models.",
     icon: HuggingFace,
     name: "Hugging Face Inference",
+    subType: "huggingface",
     url: "https://huggingface.co",
   },
   {
@@ -115,6 +124,7 @@ export const OPENAI_COMPATIBLE_PROVIDERS: OpenAICompatibleProvider[] = [
       "AI models specialized in search and real-time knowledge retrieval.",
     icon: Perplexity,
     name: "Perplexity AI",
+    subType: "perplexity",
     url: "https://www.perplexity.ai",
   },
   {
@@ -126,6 +136,7 @@ export const OPENAI_COMPATIBLE_PROVIDERS: OpenAICompatibleProvider[] = [
       "Scalable AI infrastructure built on Ray for distributed computing.",
     icon: Anyscale,
     name: "Anyscale",
+    subType: "anyscale",
     url: "https://www.anyscale.com",
   },
   {
@@ -136,6 +147,7 @@ export const OPENAI_COMPATIBLE_PROVIDERS: OpenAICompatibleProvider[] = [
     description: "Budget-friendly GPU access for running various AI models.",
     icon: Hyperbolic,
     name: "Hyperbolic",
+    subType: "hyperbolic",
     url: "https://hyperbolic.ai",
   },
   {
@@ -147,6 +159,7 @@ export const OPENAI_COMPATIBLE_PROVIDERS: OpenAICompatibleProvider[] = [
       "European AI provider with models optimized for coding and general tasks.",
     icon: Mistral,
     name: "Mistral AI",
+    subType: "mistral",
     url: "https://mistral.ai",
   },
   {
@@ -158,6 +171,7 @@ export const OPENAI_COMPATIBLE_PROVIDERS: OpenAICompatibleProvider[] = [
     icon: Jan,
     name: "Jan.ai",
     requiresAPIKey: false,
+    subType: "jan",
     url: "https://jan.ai",
   },
   {
@@ -169,6 +183,7 @@ export const OPENAI_COMPATIBLE_PROVIDERS: OpenAICompatibleProvider[] = [
     icon: LMStudio,
     name: "LM Studio",
     requiresAPIKey: false,
+    subType: "lmstudio",
     url: "https://lmstudio.ai",
   },
   {
@@ -180,6 +195,7 @@ export const OPENAI_COMPATIBLE_PROVIDERS: OpenAICompatibleProvider[] = [
     icon: LocalAI,
     name: "LocalAI",
     requiresAPIKey: false,
+    subType: "localai",
     url: "https://localai.io",
   },
 ];

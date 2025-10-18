@@ -57,13 +57,9 @@ interface SetupProviderAdapter<
   modelTags: Record<KnownModelIds[number], AIGatewayModel.ModelTag[]>;
   providerType: AIProviderType;
   setAuthHeaders: (headers: Headers, apiKey: string) => void;
-  verifyAPIKey: ({
-    apiKey,
-    baseURL,
-  }: {
-    apiKey: string;
-    baseURL?: string;
-  }) => AsyncResult<boolean, TypedError.VerificationFailed>;
+  verifyAPIKey: (
+    config: Omit<AIGatewayProviderConfig.Type, "cacheIdentifier" | "id">,
+  ) => AsyncResult<boolean, TypedError.VerificationFailed>;
 }
 
 export function setupProviderAdapter<

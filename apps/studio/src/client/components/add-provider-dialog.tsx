@@ -32,7 +32,10 @@ import { useEffect, useMemo, useState } from "react";
 
 import { providerMetadataAtom } from "../atoms/provider-metadata";
 import { selectedModelURIAtom } from "../atoms/selected-models";
-import { OPENAI_COMPATIBLE_PROVIDERS } from "../data/openai-compatible-providers";
+import {
+  OPENAI_COMPATIBLE_PROVIDERS,
+  type OpenAICompatibleProvider,
+} from "../data/openai-compatible-providers";
 import { AIProviderIcon } from "./ai-provider-icon";
 import { OpenAICompatibleProviderPicker } from "./openai-compatible-provider-picker";
 import { Alert, AlertDescription } from "./ui/alert";
@@ -58,9 +61,10 @@ export function AddProviderDialog({
   const [selectedProviderType, setSelectedProviderType] = useState<
     AIProviderType | undefined
   >(undefined);
-  const [selectedPresetProvider, setSelectedPresetProvider] = useState<
-    string | undefined
-  >(undefined);
+  const [
+    selectedOpenAICompatibleProvider,
+    setSelectedOpenAICompatibleProvider,
+  ] = useState<"custom" | OpenAICompatibleProvider | undefined>(undefined);
   const [apiKey, setAPIKey] = useState("");
   const [baseURL, setBaseURL] = useState("");
   const [displayName, setDisplayName] = useState("");
@@ -112,7 +116,7 @@ export function AddProviderDialog({
       setErrorMessage(null);
       setValidationFailed(false);
       setSelectedProviderType(undefined);
-      setSelectedPresetProvider(undefined);
+      setSelectedOpenAICompatibleProvider(undefined);
       setStage("provider-selection");
     }
   }, [open]);
@@ -127,7 +131,7 @@ export function AddProviderDialog({
   const handleBackToSelection = () => {
     setStage("provider-selection");
     setSelectedProviderType(undefined);
-    setSelectedPresetProvider(undefined);
+    setSelectedOpenAICompatibleProvider(undefined);
     setErrorMessage(null);
     setValidationFailed(false);
   };
@@ -138,13 +142,15 @@ export function AddProviderDialog({
     setValidationFailed(false);
   };
 
-  const handlePresetProviderSelect = (providerName: string | undefined) => {
+  const handleOpenAICompatibleProviderSelect = (
+    providerName: string | undefined,
+  ) => {
     if (providerName === undefined) {
-      setSelectedPresetProvider(undefined);
+      setSelectedOpenAICompatibleProvider(undefined);
       setBaseURL("");
       setDisplayName("");
     } else if (providerName === "custom") {
-      setSelectedPresetProvider("custom");
+      setSelectedOpenAICompatibleProvider("custom");
       setBaseURL("");
       setDisplayName("");
     } else {
@@ -152,7 +158,7 @@ export function AddProviderDialog({
         (p) => p.name === providerName,
       );
       if (provider) {
-        setSelectedPresetProvider(providerName);
+        setSelectedOpenAICompatibleProvider(provider);
         setBaseURL(provider.api.defaultBaseURL);
         setDisplayName("");
       }
@@ -161,58 +167,59 @@ export function AddProviderDialog({
     setValidationFailed(false);
   };
 
-  const selectedPresetProviderData = useMemo(() => {
-    if (!selectedPresetProvider || selectedPresetProvider === "custom") {
-      return null;
-    }
-    return (
-      OPENAI_COMPATIBLE_PROVIDERS.find(
-        (p) => p.name === selectedPresetProvider,
-      ) ?? null
-    );
-  }, [selectedPresetProvider]);
+  const hasOpenAICompatibleProvider =
+    typeof selectedOpenAICompatibleProvider === "object";
+  const isCustomProvider = selectedOpenAICompatibleProvider === "custom";
 
-  const requiresAPIKey =
-    selectedProviderType === "openai-compatible"
-      ? (selectedPresetProviderData?.requiresAPIKey ?? true)
-      : (providerMetadata?.requiresAPIKey ?? false);
+  const requiresAPIKey = (() => {
+    if (selectedProviderType === "openai-compatible") {
+      return hasOpenAICompatibleProvider
+        ? (selectedOpenAICompatibleProvider.requiresAPIKey ?? true)
+        : true;
+    }
+    return providerMetadata?.requiresAPIKey ?? false;
+  })();
 
   const handleSave = async (skipValidation = false) => {
+    const isOpenAICompatible = selectedProviderType === "openai-compatible";
+    const needsCustomName = isOpenAICompatible && isCustomProvider;
+
     if (
       !selectedProviderType ||
       (requiresAPIKey && !apiKey) ||
-      (selectedProviderType === "openai-compatible" && !baseURL) ||
-      (selectedProviderType === "openai-compatible" &&
-        selectedPresetProvider === "custom" &&
-        !displayName.trim())
+      (isOpenAICompatible && !baseURL) ||
+      (needsCustomName && !displayName.trim())
     ) {
       return;
     }
 
-    const normalizedBaseURL =
-      selectedProviderType === "openai-compatible"
-        ? normalizeURL(baseURL)
-        : undefined;
+    const normalizedBaseURL = isOpenAICompatible
+      ? normalizeURL(baseURL)
+      : undefined;
 
     if (normalizedBaseURL && normalizedBaseURL !== baseURL) {
       setBaseURL(normalizedBaseURL);
     }
 
-    const finalDisplayName =
-      selectedProviderType === "openai-compatible" &&
-      selectedPresetProvider &&
-      selectedPresetProvider !== "custom"
-        ? selectedPresetProviderData?.name
-        : displayName.trim() || undefined;
+    const finalDisplayName = hasOpenAICompatibleProvider
+      ? selectedOpenAICompatibleProvider.name
+      : displayName.trim() || undefined;
+
+    const subType = hasOpenAICompatibleProvider
+      ? selectedOpenAICompatibleProvider.subType
+      : undefined;
 
     try {
       await createMutation.mutateAsync(
         {
-          apiKey: requiresAPIKey ? apiKey : AI_GATEWAY_API_KEY_NOT_NEEDED,
-          baseURL: normalizedBaseURL,
-          displayName: finalDisplayName,
+          config: {
+            apiKey: requiresAPIKey ? apiKey : AI_GATEWAY_API_KEY_NOT_NEEDED,
+            baseURL: normalizedBaseURL,
+            displayName: finalDisplayName,
+            subType,
+            type: selectedProviderType,
+          },
           skipValidation,
-          type: selectedProviderType,
         },
         {
           onError: (error) => {
@@ -395,19 +402,23 @@ export function AddProviderDialog({
             </div>
 
             <OpenAICompatibleProviderPicker
-              onSelect={handlePresetProviderSelect}
-              selectedProvider={selectedPresetProvider}
+              onSelect={handleOpenAICompatibleProviderSelect}
+              selectedProvider={
+                hasOpenAICompatibleProvider
+                  ? selectedOpenAICompatibleProvider.name
+                  : selectedOpenAICompatibleProvider
+              }
             />
 
-            {selectedPresetProviderData && (
+            {hasOpenAICompatibleProvider && (
               <ProviderLinks
-                keyURL={selectedPresetProviderData.api.keyURL}
-                name={selectedPresetProviderData.name}
-                url={selectedPresetProviderData.url}
+                keyURL={selectedOpenAICompatibleProvider.api.keyURL}
+                name={selectedOpenAICompatibleProvider.name}
+                url={selectedOpenAICompatibleProvider.url}
               />
             )}
 
-            {selectedPresetProvider === "custom" && (
+            {isCustomProvider && (
               <>
                 <div className="flex flex-col gap-y-1">
                   <Label htmlFor="display-name">Name</Label>
@@ -432,7 +443,7 @@ export function AddProviderDialog({
         )}
 
         {selectedProviderType === "openai-compatible" &&
-          selectedPresetProvider !== undefined && (
+          selectedOpenAICompatibleProvider !== undefined && (
             <>
               <div className="flex flex-col gap-y-1">
                 <Label htmlFor="base-url">Base URL</Label>
@@ -469,8 +480,7 @@ export function AddProviderDialog({
 
         {selectedProviderType &&
           requiresAPIKey &&
-          (selectedProviderType !== "openai-compatible" ||
-            selectedPresetProvider !== undefined) && (
+          selectedOpenAICompatibleProvider !== undefined && (
             <>
               <div className="flex flex-col gap-y-1">
                 <Label htmlFor="api-key">API Key</Label>
@@ -482,12 +492,12 @@ export function AddProviderDialog({
                       url={providerMetadata.url}
                     />
                   )}
-                {selectedProviderType === "openai-compatible" &&
-                  selectedPresetProviderData?.api.keyURL && (
+                {hasOpenAICompatibleProvider &&
+                  selectedOpenAICompatibleProvider.api.keyURL && (
                     <ProviderLinks
-                      keyURL={selectedPresetProviderData.api.keyURL}
-                      name={selectedPresetProviderData.name}
-                      url={selectedPresetProviderData.url}
+                      keyURL={selectedOpenAICompatibleProvider.api.keyURL}
+                      name={selectedOpenAICompatibleProvider.name}
+                      url={selectedOpenAICompatibleProvider.url}
                     />
                   )}
               </div>
@@ -499,7 +509,7 @@ export function AddProviderDialog({
                 onChange={(e) => {
                   handleApiKeyChange(e.target.value);
                 }}
-                placeholder={`${selectedPresetProviderData?.api.keyFormat ?? providerMetadata?.api.keyFormat ?? ""}...xyz123`}
+                placeholder={`${hasOpenAICompatibleProvider ? (selectedOpenAICompatibleProvider.api.keyFormat ?? "") : (providerMetadata?.api.keyFormat ?? "")}...xyz123`}
                 spellCheck={false}
                 type="text"
                 value={apiKey}
@@ -561,9 +571,7 @@ export function AddProviderDialog({
             !selectedProviderType ||
             (requiresAPIKey && !apiKey) ||
             (selectedProviderType === "openai-compatible" && !baseURL) ||
-            (selectedProviderType === "openai-compatible" &&
-              selectedPresetProvider === "custom" &&
-              !displayName.trim())
+            (isCustomProvider && !displayName.trim())
           }
           type="submit"
         >

@@ -1,26 +1,53 @@
+import {
+  type AIProviderConfigId,
+  AIProviderConfigIdSchema,
+} from "@quests/shared";
 import { describe, expect, it } from "vitest";
 
 import { DEFAULT_OPENAI_MODEL } from "../constants";
 import { AIGatewayModel } from "../schemas/model";
+import { AIGatewayModelURI } from "../schemas/model-uri";
 import { findModelByString } from "./find-model-by-string";
-import { modelToURI } from "./model-to-uri";
+
+const TEST_PROVIDER_CONFIG_ID = AIProviderConfigIdSchema.parse(
+  "test-provider-config-id",
+);
+
+const createModelURI = (
+  author: string,
+  canonicalId: string,
+  params: Omit<AIGatewayModelURI.Params, "providerConfigId"> & {
+    providerConfigId?: string;
+  },
+): string => {
+  return `${author}/${canonicalId}?${new URLSearchParams({
+    ...params,
+    providerConfigId:
+      params.providerConfigId ?? TEST_PROVIDER_CONFIG_ID.toString(),
+  }).toString()}`;
+};
 
 const createMockModel = ({
   author,
   canonicalId,
   provider,
+  providerConfigId = TEST_PROVIDER_CONFIG_ID,
   providerId,
 }: {
   author: string;
   canonicalId: string;
   provider: "anthropic" | "openai" | "openrouter";
+  providerConfigId?: AIProviderConfigId;
   providerId: string;
 }): AIGatewayModel.Type => {
   const model: Omit<AIGatewayModel.Type, "uri"> = {
     author,
     canonicalId: AIGatewayModel.CanonicalIdSchema.parse(canonicalId),
     features: ["inputText", "outputText", "tools"],
-    params: { provider },
+    params: {
+      provider,
+      providerConfigId,
+    },
     providerId: AIGatewayModel.ProviderIdSchema.parse(providerId),
     providerName: "Test Provider",
     source: {
@@ -31,7 +58,7 @@ const createMockModel = ({
   };
   return {
     ...model,
-    uri: modelToURI(model),
+    uri: AIGatewayModelURI.fromModel(model),
   };
 };
 
@@ -86,7 +113,9 @@ describe("findModelByString", () => {
       description: "should find model by exact URI match",
       expectedAuthor: "openai",
       expectedCanonicalId: "gpt-4",
-      input: "openai/gpt-4?provider=openai",
+      input: createModelURI("openai", "gpt-4", {
+        provider: "openai",
+      }),
       models: mockModels,
     },
     {
@@ -107,7 +136,9 @@ describe("findModelByString", () => {
       description: "should find openrouter models by URI",
       expectedAuthor: "meta-llama",
       expectedCanonicalId: "llama-4-scout",
-      input: "meta-llama/llama-4-scout?provider=openrouter",
+      input: createModelURI("meta-llama", "llama-4-scout", {
+        provider: "openrouter",
+      }),
       models: mockModels,
     },
     {
@@ -162,20 +193,22 @@ describe("findModelByString", () => {
     const modelsWithConflict = [
       createMockModel({
         author: "openai",
-        canonicalId: "gpt-4",
+        canonicalId: "some-model",
         provider: "openai",
-        providerId: "gpt-4",
+        providerId: "some-model",
       }),
       createMockModel({
         author: "anthropic",
-        canonicalId: "gpt-4",
-        provider: "openai",
-        providerId: "gpt-4",
+        canonicalId: "some-model",
+        provider: "anthropic",
+        providerId: "some-model",
       }),
     ];
 
     const result = findModelByString(
-      "anthropic/gpt-4?provider=openai",
+      createModelURI("anthropic", "some-model", {
+        provider: "anthropic",
+      }),
       modelsWithConflict,
     );
     expect(result.exact).toBe(true);
@@ -201,12 +234,16 @@ describe("findModelByString", () => {
       {
         expectedAuthor: "openai",
         expectedCanonicalId: "gpt-3.5-turbo",
-        input: "openai/gpt-3.5-turbo?provider=openai",
+        input: createModelURI("openai", "gpt-3.5-turbo", {
+          provider: "openai",
+        }),
       },
       {
         expectedAuthor: "anthropic",
         expectedCanonicalId: "claude-3-haiku",
-        input: "anthropic/claude-3-haiku?provider=anthropic",
+        input: createModelURI("anthropic", "claude-3-haiku", {
+          provider: "anthropic",
+        }),
       },
     ])(
       "should find $input by URI",
@@ -253,6 +290,173 @@ describe("findModelByString", () => {
       expect(result).toBeDefined();
       expect(result.model?.canonicalId).toBe("default-model");
       expect(result.model?.tags).toContain("default");
+    });
+  });
+
+  describe("provider config ID matching", () => {
+    const alternativeConfigId = AIProviderConfigIdSchema.parse(
+      "alternative-config-id",
+    );
+    const thirdConfigId = AIProviderConfigIdSchema.parse("third-config-id");
+
+    it("should match model by URI with specific provider config ID", () => {
+      const modelsWithDifferentConfigs = [
+        createMockModel({
+          author: "openai",
+          canonicalId: "gpt-4",
+          provider: "openai",
+          providerConfigId: TEST_PROVIDER_CONFIG_ID,
+          providerId: "gpt-4",
+        }),
+        createMockModel({
+          author: "openai",
+          canonicalId: "gpt-4",
+          provider: "openai",
+          providerConfigId: alternativeConfigId,
+          providerId: "gpt-4",
+        }),
+      ];
+
+      const result = findModelByString(
+        createModelURI("openai", "gpt-4", {
+          provider: "openai",
+          providerConfigId: alternativeConfigId.toString(),
+        }),
+        modelsWithDifferentConfigs,
+      );
+
+      expect(result.exact).toBe(true);
+      expect(result.model?.params.providerConfigId).toBe(alternativeConfigId);
+    });
+
+    it("should not match when provider config ID differs", () => {
+      const modelsWithDifferentConfigs = [
+        createMockModel({
+          author: "openai",
+          canonicalId: "gpt-4",
+          provider: "openai",
+          providerConfigId: TEST_PROVIDER_CONFIG_ID,
+          providerId: "gpt-4",
+        }),
+      ];
+
+      const result = findModelByString(
+        createModelURI("openai", "gpt-4", {
+          provider: "openai",
+          providerConfigId: alternativeConfigId.toString(),
+        }),
+        modelsWithDifferentConfigs,
+      );
+
+      expect(result.model).toBeUndefined();
+    });
+
+    it("should match correct model among multiple with same canonicalId but different provider configs", () => {
+      const modelsWithMultipleConfigs = [
+        createMockModel({
+          author: "anthropic",
+          canonicalId: "claude-3-opus",
+          provider: "anthropic",
+          providerConfigId: TEST_PROVIDER_CONFIG_ID,
+          providerId: "claude-3-opus",
+        }),
+        createMockModel({
+          author: "anthropic",
+          canonicalId: "claude-3-opus",
+          provider: "anthropic",
+          providerConfigId: alternativeConfigId,
+          providerId: "claude-3-opus",
+        }),
+        createMockModel({
+          author: "anthropic",
+          canonicalId: "claude-3-opus",
+          provider: "anthropic",
+          providerConfigId: thirdConfigId,
+          providerId: "claude-3-opus",
+        }),
+      ];
+
+      const result = findModelByString(
+        createModelURI("anthropic", "claude-3-opus", {
+          provider: "anthropic",
+          providerConfigId: thirdConfigId.toString(),
+        }),
+        modelsWithMultipleConfigs,
+      );
+
+      expect(result.exact).toBe(true);
+      expect(result.model?.params.providerConfigId).toBe(thirdConfigId);
+    });
+
+    it("should fallback to canonicalId match when URI doesn't specify provider config ID", () => {
+      const modelsWithDifferentConfigs = [
+        createMockModel({
+          author: "openai",
+          canonicalId: "gpt-4",
+          provider: "openai",
+          providerConfigId: TEST_PROVIDER_CONFIG_ID,
+          providerId: "gpt-4",
+        }),
+        createMockModel({
+          author: "openai",
+          canonicalId: "gpt-4",
+          provider: "openai",
+          providerConfigId: alternativeConfigId,
+          providerId: "gpt-4",
+        }),
+      ];
+
+      const result = findModelByString("gpt-4", modelsWithDifferentConfigs);
+
+      expect(result.exact).toBe(false);
+      expect(result.model?.canonicalId).toBe("gpt-4");
+    });
+
+    it("should distinguish between same model on different providers with different configs", () => {
+      const modelsAcrossProviders = [
+        createMockModel({
+          author: "openai",
+          canonicalId: "gpt-4",
+          provider: "openai",
+          providerConfigId: TEST_PROVIDER_CONFIG_ID,
+          providerId: "gpt-4",
+        }),
+        createMockModel({
+          author: "openai",
+          canonicalId: "gpt-4",
+          provider: "openrouter",
+          providerConfigId: alternativeConfigId,
+          providerId: "openai/gpt-4",
+        }),
+      ];
+
+      const openrouterResult = findModelByString(
+        createModelURI("openai", "gpt-4", {
+          provider: "openrouter",
+          providerConfigId: alternativeConfigId.toString(),
+        }),
+        modelsAcrossProviders,
+      );
+
+      expect(openrouterResult.exact).toBe(true);
+      expect(openrouterResult.model?.params.provider).toBe("openrouter");
+      expect(openrouterResult.model?.params.providerConfigId).toBe(
+        alternativeConfigId,
+      );
+
+      const openaiResult = findModelByString(
+        createModelURI("openai", "gpt-4", {
+          provider: "openai",
+          providerConfigId: TEST_PROVIDER_CONFIG_ID.toString(),
+        }),
+        modelsAcrossProviders,
+      );
+
+      expect(openaiResult.exact).toBe(true);
+      expect(openaiResult.model?.params.provider).toBe("openai");
+      expect(openaiResult.model?.params.providerConfigId).toBe(
+        TEST_PROVIDER_CONFIG_ID,
+      );
     });
   });
 });

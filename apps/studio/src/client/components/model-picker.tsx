@@ -19,7 +19,10 @@ import {
 } from "@/client/lib/group-models";
 import { cn } from "@/client/lib/utils";
 import { vanillaRpcClient } from "@/client/rpc/client";
-import { type AIGatewayModel } from "@quests/ai-gateway";
+import {
+  type AIGatewayModel,
+  type AIGatewayModelURI,
+} from "@quests/ai-gateway/client";
 import { AlertCircle, Check, ChevronDown, CircleOff, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 
@@ -33,9 +36,9 @@ interface ModelPickerProps {
   isError?: boolean;
   isLoading?: boolean;
   models?: AIGatewayModel.Type[];
-  onValueChange: (value: AIGatewayModel.URI) => void;
+  onValueChange: (value: AIGatewayModelURI.Type) => void;
   placeholder?: string;
-  value?: AIGatewayModel.URI;
+  selectedModel?: AIGatewayModel.Type;
 }
 
 export function ModelPicker({
@@ -47,11 +50,9 @@ export function ModelPicker({
   models,
   onValueChange,
   placeholder = "Select a model",
-  value,
+  selectedModel,
 }: ModelPickerProps) {
   const [open, setOpen] = useState(false);
-
-  const selectedModel = models?.find((model) => model.uri === value);
 
   const groupedModels = useMemo(
     () => groupAndFilterModels(models ?? []),
@@ -248,7 +249,7 @@ export function ModelPicker({
                             <Check
                               className={cn(
                                 "mr-2 size-4",
-                                value === model.uri
+                                selectedModel?.uri === model.uri
                                   ? "opacity-100"
                                   : "opacity-0",
                               )}

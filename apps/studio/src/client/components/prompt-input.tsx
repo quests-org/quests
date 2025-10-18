@@ -6,7 +6,7 @@ import {
   TextareaInner,
 } from "@/client/components/ui/textarea-container";
 import { cn, isMacOS } from "@/client/lib/utils";
-import { type AIGatewayModel } from "@quests/ai-gateway";
+import { type AIGatewayModelURI } from "@quests/ai-gateway/client";
 import { useQuery } from "@tanstack/react-query";
 import { useAtom, useAtomValue } from "jotai";
 import { ArrowUp, Circle, Loader2, Square } from "lucide-react";
@@ -37,11 +37,11 @@ interface PromptInputProps {
   isLoading: boolean;
   isStoppable?: boolean;
   isSubmittable?: boolean;
-  modelURI?: AIGatewayModel.URI;
-  onModelChange: (modelURI: AIGatewayModel.URI) => void;
+  modelURI?: AIGatewayModelURI.Type;
+  onModelChange: (modelURI: AIGatewayModelURI.Type) => void;
   onStop?: () => void;
   onSubmit: (value: {
-    modelURI: AIGatewayModel.URI;
+    modelURI: AIGatewayModelURI.Type;
     openInNewTab?: boolean;
     prompt: string;
   }) => void;
@@ -232,7 +232,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
                 isLoading={modelsIsLoading}
                 models={models}
                 onValueChange={onModelChange}
-                value={modelURI}
+                selectedModel={selectedModel}
               />
             </div>
 

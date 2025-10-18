@@ -1,12 +1,15 @@
+import { isEqual, pick } from "radashi";
+
 import { DEFAULT_OPENAI_MODEL } from "../constants";
 import { type AIGatewayModel } from "../schemas/model";
+import { AIGatewayModelURI } from "../schemas/model-uri";
 import { sortModelsByRecommended } from "./sort-models-by-recommended";
 
 export function findModelByString(
-  id: string,
+  modelString: string,
   models: AIGatewayModel.Type[],
 ): { exact: boolean; model: AIGatewayModel.Type | undefined } {
-  if (id === DEFAULT_OPENAI_MODEL) {
+  if (modelString === DEFAULT_OPENAI_MODEL) {
     const sortedModels = sortModelsByRecommended(models);
     const firstOpenAIModel = sortedModels.find((m) => m.author === "openai");
     return {
@@ -15,11 +18,29 @@ export function findModelByString(
     };
   }
 
-  const uriMatch = models.find((m) => m.uri === id);
-  const canonicalIdMatch = models.find((m) => m.canonicalId === id);
-  const providerIdMatch = models.find((m) => m.providerId === id);
-  return {
-    exact: uriMatch?.uri === id,
-    model: uriMatch ?? canonicalIdMatch ?? providerIdMatch,
-  };
+  const [parsedModel] = AIGatewayModelURI.parse(modelString).toTuple();
+
+  if (parsedModel) {
+    for (const model of models) {
+      if (
+        isEqual(pick(model, ["author", "canonicalId", "params"]), parsedModel)
+      ) {
+        return { exact: true, model };
+      }
+    }
+  }
+
+  for (const model of models) {
+    if (model.canonicalId === modelString) {
+      return { exact: false, model };
+    }
+  }
+
+  for (const model of models) {
+    if (model.providerId === modelString) {
+      return { exact: false, model };
+    }
+  }
+
+  return { exact: false, model: undefined };
 }

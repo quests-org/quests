@@ -19,7 +19,7 @@ import {
 } from "@/client/lib/group-models";
 import { rpcClient } from "@/client/rpc/client";
 import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
-import { type AIGatewayModel } from "@quests/ai-gateway";
+import { type AIGatewayModelURI } from "@quests/ai-gateway/client";
 import { type AIProviderType } from "@quests/shared";
 import { StoreId } from "@quests/workspace/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -40,7 +40,7 @@ const selectedEvalTemplatesAtom = atomWithStorage<string[]>(
   [],
 );
 
-const selectedModelsAtom = atomWithStorage<AIGatewayModel.URI[]>(
+const selectedModelsAtom = atomWithStorage<AIGatewayModelURI.Type[]>(
   "evals-selected-models",
   [],
 );
@@ -133,7 +133,7 @@ function RouteComponent() {
     setSelectedEvalTemplatesArray([...newSelected]);
   };
 
-  const handleToggleModel = (modelURI: AIGatewayModel.URI) => {
+  const handleToggleModel = (modelURI: AIGatewayModelURI.Type) => {
     const newSelected = new Set(selectedModels);
     if (newSelected.has(modelURI)) {
       newSelected.delete(modelURI);

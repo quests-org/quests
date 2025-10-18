@@ -5,13 +5,13 @@ import {
 import { Result } from "typescript-result";
 
 import { getProviderAdapter } from "../adapters/all";
-import { type AIGatewayModel } from "../schemas/model";
+import { type AIGatewayModelURI } from "../schemas/model-uri";
 import { type AIGatewayProviderConfig } from "../schemas/provider-config";
 import { TypedError } from "./errors";
 import { fetchModelByURI } from "./fetch-model";
 
 export async function fetchAISDKModel(
-  modelURI: AIGatewayModel.URI,
+  modelURI: AIGatewayModelURI.Type,
   configs: AIGatewayProviderConfig.Type[],
   {
     captureException,

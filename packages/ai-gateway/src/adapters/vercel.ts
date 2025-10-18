@@ -6,9 +6,9 @@ import { addRef, REF_PARAM_KEY, REF_PARAM_VALUE } from "../lib/add-ref";
 import { getCachedResult, setCachedResult } from "../lib/cache";
 import { TypedError } from "../lib/errors";
 import { internalAPIKey } from "../lib/key-for-provider";
-import { modelToURI } from "../lib/model-to-uri";
 import { PROVIDER_API_PATH } from "../lib/provider-paths";
 import { AIGatewayModel } from "../schemas/model";
+import { AIGatewayModelURI } from "../schemas/model-uri";
 import { setupProviderAdapter } from "./setup";
 
 const KNOWN_MODEL_IDS = [
@@ -138,11 +138,12 @@ export const vercelAdapter = setupProviderAdapter({
 
         const tags = getModelTags(providerId);
 
+        const params = { provider: providerType, providerConfigId: config.id };
         validModels.push({
           author: modelAuthor,
           canonicalId: canonicalModelId,
           features,
-          params: { provider: providerType },
+          params,
           providerId,
           providerName: config.displayName ?? metadata.name,
           source: {
@@ -150,10 +151,10 @@ export const vercelAdapter = setupProviderAdapter({
             value: model,
           },
           tags,
-          uri: modelToURI({
+          uri: AIGatewayModelURI.fromModel({
             author: modelAuthor,
             canonicalId: canonicalModelId,
-            params: { provider: providerType },
+            params,
           }),
         } satisfies AIGatewayModel.Type);
       }

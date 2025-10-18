@@ -1,5 +1,5 @@
 import { call } from "@orpc/server";
-import { AIGatewayModel } from "@quests/ai-gateway";
+import { AIGatewayModelURI } from "@quests/ai-gateway";
 import { mergeGenerators } from "@quests/shared/merge-generators";
 import { z } from "zod";
 
@@ -143,7 +143,7 @@ const createWithMessage = base
   .input(
     z.object({
       message: SessionMessage.UserSchemaWithParts,
-      modelURI: AIGatewayModel.URISchema,
+      modelURI: AIGatewayModelURI.Schema,
       sessionId: StoreId.SessionSchema,
       subdomain: AppSubdomainSchema,
     }),

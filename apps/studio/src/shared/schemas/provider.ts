@@ -1,19 +1,9 @@
-import { AIGatewayProviderConfig } from "@quests/ai-gateway";
+import { AIGatewayProviderConfig } from "@quests/ai-gateway/client";
 import { z } from "zod";
 
-export const StoreAIProviderConfigId = z
-  .string()
-  .brand("StoreAIProviderConfigId");
-
-export const StoreAIProviderConfigSchema =
-  AIGatewayProviderConfig.Schema.extend({
-    id: StoreAIProviderConfigId,
-  });
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const ClientAIProviderConfigSchema = StoreAIProviderConfigSchema.omit({
-  apiKey: true,
-}).extend({
+export const ClientAIProviderConfigSchema = AIGatewayProviderConfig.Schema.omit(
+  { apiKey: true },
+).extend({
   maskedApiKey: z.string(),
 });
 

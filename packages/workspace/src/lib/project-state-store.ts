@@ -1,4 +1,8 @@
-import { AIGatewayModel } from "@quests/ai-gateway";
+import {
+  AIGatewayModelURI,
+  type AIGatewayProviderConfig,
+  migrateModelURI,
+} from "@quests/ai-gateway";
 import fs from "node:fs/promises";
 import { z } from "zod";
 
@@ -8,13 +12,47 @@ import { getAppPrivateDir } from "./app-dir-utils";
 
 const PROJECT_STATE_FILE_NAME = "project-state.json";
 
-export const ProjectStateSchema = z
-  .object({
-    selectedModelURI: AIGatewayModel.URISchema.optional(),
-  })
+const StoredProjectStateSchema = z
+  // Relaxed schema for backwards compatibility
+  .object({ selectedModelURI: z.string().optional() })
   .default({});
 
-type ProjectState = z.output<typeof ProjectStateSchema>;
+export const ProjectStateSchema = z.object({
+  selectedModelURI: AIGatewayModelURI.Schema.optional(),
+});
+
+type ProjectState = z.output<typeof StoredProjectStateSchema>;
+
+export async function getMigratedProjectState({
+  appDir,
+  captureException,
+  configs,
+}: {
+  appDir: AppDir;
+  captureException: (error: Error) => void;
+  configs: AIGatewayProviderConfig.Type[];
+}): Promise<z.output<typeof ProjectStateSchema>> {
+  const { selectedModelURI, ...rest } = await getProjectState(appDir);
+
+  if (!selectedModelURI) {
+    return rest;
+  }
+
+  const [migratedURI, error] = migrateModelURI({
+    configs,
+    modelURI: selectedModelURI,
+  }).toTuple();
+
+  if (error) {
+    captureException(error);
+    return rest;
+  }
+
+  return {
+    ...rest,
+    selectedModelURI: migratedURI,
+  };
+}
 
 export async function getProjectState(appDir: AppDir): Promise<ProjectState> {
   const stateFilePath = getProjectStateFilePath(appDir);
@@ -22,12 +60,12 @@ export async function getProjectState(appDir: AppDir): Promise<ProjectState> {
   try {
     const content = await fs.readFile(stateFilePath, "utf8");
     const rawState = JSON.parse(content) as unknown;
-    return ProjectStateSchema.parse(rawState);
+    return StoredProjectStateSchema.parse(rawState);
   } catch (error) {
     if (error instanceof Error && "code" in error && error.code === "ENOENT") {
-      return ProjectStateSchema.parse({});
+      return StoredProjectStateSchema.parse({});
     }
-    return ProjectStateSchema.parse({});
+    return StoredProjectStateSchema.parse({});
   }
 }
 
@@ -42,7 +80,7 @@ export async function setProjectState(
 
   const currentState = await getProjectState(appDir);
 
-  const newState = ProjectStateSchema.parse({
+  const newState = StoredProjectStateSchema.parse({
     ...currentState,
     ...state,
   });

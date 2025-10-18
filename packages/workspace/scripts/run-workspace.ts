@@ -5,9 +5,11 @@ import {
   type AIGatewayProviderConfig,
   fetchAISDKModel,
 } from "@quests/ai-gateway";
+import { AIProviderConfigIdSchema } from "@quests/shared";
 import { execa } from "execa";
 import path from "node:path";
 import readline from "node:readline";
+import { ulid } from "ulid";
 import { createActor } from "xstate";
 
 import { workspaceMachine } from "../src/electron";
@@ -34,6 +36,7 @@ const actor = createActor(workspaceMachine, {
         {
           apiKey: "ollama",
           cacheIdentifier,
+          id: AIProviderConfigIdSchema.parse(ulid()),
           type: "ollama",
         },
       ];
@@ -42,6 +45,7 @@ const actor = createActor(workspaceMachine, {
         providerConfigs.push({
           apiKey: env.QUESTS_OPENAI_API_KEY,
           cacheIdentifier,
+          id: AIProviderConfigIdSchema.parse(ulid()),
           type: "openai",
         });
       }
@@ -50,6 +54,7 @@ const actor = createActor(workspaceMachine, {
         providerConfigs.push({
           apiKey: env.QUESTS_OPENROUTER_API_KEY,
           cacheIdentifier,
+          id: AIProviderConfigIdSchema.parse(ulid()),
           type: "openrouter",
         });
       }
@@ -58,6 +63,7 @@ const actor = createActor(workspaceMachine, {
         providerConfigs.push({
           apiKey: env.QUESTS_ANTHROPIC_API_KEY,
           cacheIdentifier,
+          id: AIProviderConfigIdSchema.parse(ulid()),
           type: "anthropic",
         });
       }
@@ -66,6 +72,7 @@ const actor = createActor(workspaceMachine, {
         providerConfigs.push({
           apiKey: env.QUESTS_GOOGLE_API_KEY,
           cacheIdentifier,
+          id: AIProviderConfigIdSchema.parse(ulid()),
           type: "google",
         });
       }
@@ -74,6 +81,7 @@ const actor = createActor(workspaceMachine, {
         providerConfigs.push({
           apiKey: env.QUESTS_AI_GATEWAY_API_KEY,
           cacheIdentifier,
+          id: AIProviderConfigIdSchema.parse(ulid()),
           type: "vercel",
         });
       }

@@ -1,14 +1,13 @@
 import { base } from "@/electron-main/rpc/base";
-import {
-  StoreAIProviderConfigId,
-  StoreAIProviderConfigSchema,
-} from "@/shared/schemas/provider";
+import { ClientAIProviderConfigSchema } from "@/shared/schemas/provider";
 import { call, eventIterator } from "@orpc/server";
 import {
+  AIGatewayProviderConfig,
   getAllProviderAdapters,
   getProviderAdapter,
   ProviderMetadataWithTypeSchema,
 } from "@quests/ai-gateway";
+import { AIProviderConfigIdSchema } from "@quests/shared";
 import { safeStorage } from "electron";
 import ms from "ms";
 import { ulid } from "ulid";
@@ -19,13 +18,7 @@ import { getProviderConfigsStore } from "../../stores/provider-configs";
 import { cacheMiddleware } from "../middleware/cache";
 import { publisher } from "../publisher";
 
-const ClientStudioAIProviderSchema = StoreAIProviderConfigSchema.omit({
-  apiKey: true,
-}).extend({
-  maskedApiKey: z.string(),
-});
-
-const list = base.output(z.array(ClientStudioAIProviderSchema)).handler(() => {
+const list = base.output(z.array(ClientAIProviderConfigSchema)).handler(() => {
   const providersStore = getProviderConfigsStore();
   return providersStore.get("providers").map(({ apiKey, ...provider }) => ({
     ...provider,
@@ -36,7 +29,7 @@ const list = base.output(z.array(ClientStudioAIProviderSchema)).handler(() => {
 });
 
 const remove = base
-  .input(z.object({ id: StoreAIProviderConfigId }))
+  .input(z.object({ id: AIProviderConfigIdSchema }))
   .handler(({ context, errors, input }) => {
     const providersStore = getProviderConfigsStore();
 
@@ -65,7 +58,7 @@ const update = base
   .input(
     z.object({
       displayName: z.string().optional(),
-      id: StoreAIProviderConfigId,
+      id: AIProviderConfigIdSchema,
     }),
   )
   .handler(({ errors, input }) => {
@@ -93,66 +86,69 @@ const update = base
 
 const create = base
   .input(
-    StoreAIProviderConfigSchema.omit({
-      cacheIdentifier: true,
-      id: true,
-    }).extend({
+    z.object({
+      config: AIGatewayProviderConfig.Schema.omit({
+        cacheIdentifier: true,
+        id: true,
+      }),
       skipValidation: z.boolean().optional(),
     }),
   )
-  .handler(async ({ context, errors, input }) => {
-    const { skipValidation, ...provider } = input;
-    const providersStore = getProviderConfigsStore();
-    const existingConfigs = providersStore.get("providers");
+  .handler(
+    async ({
+      context,
+      errors,
+      input: { config: newConfig, skipValidation },
+    }) => {
+      const providersStore = getProviderConfigsStore();
+      const existingConfigs = providersStore.get("providers");
 
-    const existingConfig = existingConfigs.find(
-      (p) => p.type === provider.type,
-    );
-    if (existingConfig) {
-      throw errors.UNAUTHORIZED({
-        message:
-          "A provider of this type already exists. Only one provider per type is allowed.",
-      });
-    }
-
-    if (!skipValidation) {
-      const adapter = getProviderAdapter(provider.type);
-
-      const result = await adapter.verifyAPIKey({
-        apiKey: provider.apiKey,
-        baseURL: provider.baseURL,
-      });
-
-      if (!result.ok) {
-        context.workspaceConfig.captureEvent("provider.verification_failed", {
-          provider_type: provider.type,
-        });
-
+      const existingConfig = existingConfigs.find(
+        (p) => p.type === newConfig.type,
+      );
+      if (existingConfig) {
         throw errors.UNAUTHORIZED({
-          cause: result.error,
-          message: result.error.message,
+          message:
+            "A provider of this type already exists. Only one provider per type is allowed.",
         });
       }
-    }
 
-    const newProvider = {
-      ...provider,
-      cacheIdentifier: `quests.dev-${crypto.randomUUID()}`,
-      id: StoreAIProviderConfigId.parse(ulid()),
-    };
+      if (!skipValidation) {
+        const adapter = getProviderAdapter(newConfig.type);
 
-    providersStore.set("providers", [...existingConfigs, newProvider]);
+        const result = await adapter.verifyAPIKey(newConfig);
 
-    const appStateStore = getAppStateStore();
-    appStateStore.set("hasCompletedProviderSetup", true);
+        if (!result.ok) {
+          context.workspaceConfig.captureEvent("provider.verification_failed", {
+            provider_type: newConfig.type,
+          });
 
-    // Ensures environment variables inside the apps themselves are updated
-    context.workspaceRef.send({ type: "restartAllRuntimes" });
+          throw errors.UNAUTHORIZED({
+            cause: result.error,
+            message: result.error.message,
+          });
+        }
+      }
 
-    context.workspaceConfig.captureEvent("provider.created", {
-      provider_type: provider.type,
-    });
-  });
+      const configToSave = {
+        ...newConfig,
+        cacheIdentifier: `quests.dev-${crypto.randomUUID()}`,
+        id: AIProviderConfigIdSchema.parse(ulid()),
+      };
+
+      providersStore.set("providers", [...existingConfigs, configToSave]);
+
+      const appStateStore = getAppStateStore();
+      appStateStore.set("hasCompletedProviderSetup", true);
+
+      // Ensures environment variables inside the apps themselves are updated
+      context.workspaceRef.send({ type: "restartAllRuntimes" });
+
+      context.workspaceConfig.captureEvent("provider.created", {
+        provider_type: configToSave.type,
+      });
+    },
+  );
 
 const credits = base
   .use(async ({ next }) => {
@@ -193,7 +189,7 @@ const credits = base
 
 const live = {
   list: base
-    .output(eventIterator(z.array(ClientStudioAIProviderSchema)))
+    .output(eventIterator(z.array(ClientAIProviderConfigSchema)))
     .handler(async function* ({ context, signal }) {
       yield call(list, {}, { context, signal });
 

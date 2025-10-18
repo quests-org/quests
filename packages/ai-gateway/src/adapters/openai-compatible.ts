@@ -8,9 +8,9 @@ import { providerTypeToAuthor } from "../lib/author";
 import { TypedError } from "../lib/errors";
 import { fetchJson } from "../lib/fetch-json";
 import { internalAPIKey } from "../lib/key-for-provider";
-import { modelToURI } from "../lib/model-to-uri";
 import { PROVIDER_API_PATH } from "../lib/provider-paths";
 import { AIGatewayModel } from "../schemas/model";
+import { AIGatewayModelURI } from "../schemas/model-uri";
 import { setupProviderAdapter } from "./setup";
 
 function setAuthHeaders(headers: Headers, apiKey: string) {
@@ -46,9 +46,17 @@ export const openaiCompatibleAdapter = setupProviderAdapter({
     Result.gen(function* () {
       const headers = new Headers({ "Content-Type": "application/json" });
       setAuthHeaders(headers, config.apiKey);
+      if (!config.baseURL) {
+        return Result.error(
+          new TypedError.Fetch(
+            "Base URL is required for OpenAI-compatible providers",
+          ),
+        );
+      }
 
       const data = yield* fetchJson({
-        cache: false,
+        // Don't cache local models, they change frequently and load fast
+        cache: !config.baseURL.startsWith("http://localhost"),
         headers,
         url: buildURL({ baseURL: config.baseURL, path: "/models" }),
       });
@@ -66,22 +74,25 @@ export const openaiCompatibleAdapter = setupProviderAdapter({
       const author = providerTypeToAuthor(providerType);
       return modelsResult.data.map((model) => {
         const providerId = AIGatewayModel.ProviderIdSchema.parse(model.id);
-        const canonicalModelId =
-          AIGatewayModel.CanonicalIdSchema.parse(providerId);
-
+        const canonicalId = AIGatewayModel.CanonicalIdSchema.parse(providerId);
+        const params = {
+          provider: providerType,
+          providerConfigId: config.id,
+          providerSubType: config.subType,
+        };
         return {
           author,
-          canonicalId: canonicalModelId,
+          canonicalId,
           features: ["inputText", "outputText", "tools"],
-          params: { provider: providerType },
+          params,
           providerId,
           providerName: config.displayName ?? metadata.name,
           source: { providerType, value: model },
           tags: [],
-          uri: modelToURI({
+          uri: AIGatewayModelURI.fromModel({
             author,
-            canonicalId: canonicalModelId,
-            params: { provider: providerType },
+            canonicalId,
+            params,
           }),
         } satisfies AIGatewayModel.Type;
       });

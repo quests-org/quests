@@ -1,4 +1,4 @@
-import { type AIGatewayModel } from "@quests/ai-gateway";
+import { type AIGatewayModel } from "@quests/ai-gateway/client";
 import { fork, listify } from "radashi";
 
 export interface GroupedModels {

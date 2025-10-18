@@ -6,9 +6,9 @@ export { envForProviderConfigs as envForProviders } from "./lib/env-for-provider
 export type { TypedError as AIGatewayTypedError } from "./lib/errors";
 export * from "./lib/fetch-ai-sdk-model";
 export * from "./lib/fetch-models";
-export { parseModelURI } from "./lib/parse-model-uri";
-export { providerConfigsForModelURI as providerForModelURI } from "./lib/provider-configs-for-model-uri";
+export * from "./lib/migrate-model-uri";
 export * from "./schemas/model";
+export * from "./schemas/model-uri";
 export * from "./schemas/provider-config";
 export * from "./schemas/provider-metadata";
 export type * from "./types";

@@ -1,5 +1,5 @@
 import { type LanguageModelV2 } from "@ai-sdk/provider";
-import { type AIGatewayModel } from "@quests/ai-gateway";
+import { type AIGatewayModelURI } from "@quests/ai-gateway";
 
 import { type SessionMessage } from "../schemas/session/message";
 import { type AppSubdomain } from "../schemas/subdomains";
@@ -11,7 +11,7 @@ import { textForMessage } from "./text-for-message";
 interface CreateMessageParams {
   message: SessionMessage.WithParts;
   model: LanguageModelV2;
-  modelURI: AIGatewayModel.URI;
+  modelURI: AIGatewayModelURI.Type;
   subdomain: AppSubdomain;
   workspaceConfig: WorkspaceConfig;
 }

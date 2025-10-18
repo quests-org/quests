@@ -1,8 +1,7 @@
 import { type GatewayModelEntry } from "@ai-sdk/gateway";
-import { AIProviderTypeSchema } from "@quests/shared";
 import { z } from "zod";
 
-import { parseModelURI } from "../lib/parse-model-uri";
+import { AIGatewayModelURI } from "./model-uri";
 
 export namespace AIGatewayModel {
   type InputModalities = "audio" | "file" | "image" | "text" | (string & {});
@@ -98,29 +97,10 @@ export namespace AIGatewayModel {
     }),
   ]);
 
-  export const CanonicalIdSchema = z
-    .string()
-    .brand<"AIGatewayCanonicalModelId">();
-  export type CanonicalId = z.output<typeof CanonicalIdSchema>;
   export const ProviderIdSchema = z
     .string()
     .brand<"AIGatewayProviderModelId">();
   export type ProviderId = z.output<typeof ProviderIdSchema>;
-  export const URISchema = z
-    .string()
-    .brand<"AIGatewayModelURI">()
-    .refine(
-      (uri) => {
-        const result = parseModelURI(uri);
-        return result.ok;
-      },
-      {
-        error:
-          "Invalid AI Gateway model URI. Format is author/canonical-model-id?provider=provider-id",
-      },
-    );
-
-  export type URI = z.output<typeof URISchema>;
 
   export const ModelTagSchema = z.enum([
     "coding",
@@ -137,16 +117,18 @@ export namespace AIGatewayModel {
   ]);
   export type ModelFeatures = z.output<typeof ModelFeaturesSchema>;
 
+  export const CanonicalIdSchema = AIGatewayModelURI.CanonicalIdSchema;
+
   export const Schema = z.object({
     author: z.string(),
-    canonicalId: CanonicalIdSchema,
+    canonicalId: AIGatewayModelURI.CanonicalIdSchema,
     features: ModelFeaturesSchema.array(),
-    params: z.object({ provider: AIProviderTypeSchema }),
+    params: AIGatewayModelURI.ParamsSchema,
     providerId: ProviderIdSchema,
     providerName: z.string(),
     source: SourceSchema,
     tags: ModelTagSchema.array(),
-    uri: URISchema,
+    uri: AIGatewayModelURI.Schema,
   });
 
   export type Type = z.output<typeof Schema>;

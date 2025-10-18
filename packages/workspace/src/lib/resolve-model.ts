@@ -1,4 +1,4 @@
-import { type AIGatewayModel } from "@quests/ai-gateway";
+import { type AIGatewayModelURI } from "@quests/ai-gateway";
 
 import { getWorkspaceServerURL } from "../logic/server/url";
 import { type WorkspaceErrorMap, type WorkspaceRPCContext } from "../rpc/base";
@@ -6,7 +6,7 @@ import { toORPCError } from "../rpc/base";
 import { TypedError } from "./errors";
 
 export async function resolveModel(
-  modelURI: AIGatewayModel.URI,
+  modelURI: AIGatewayModelURI.Type,
   context: WorkspaceRPCContext,
   errors: WorkspaceErrorMap,
 ) {

@@ -8,9 +8,9 @@ import { TypedError } from "../lib/errors";
 import { fetchJson } from "../lib/fetch-json";
 import { isModelNew } from "../lib/is-model-new";
 import { internalAPIKey } from "../lib/key-for-provider";
-import { modelToURI } from "../lib/model-to-uri";
 import { PROVIDER_API_PATH } from "../lib/provider-paths";
 import { AIGatewayModel } from "../schemas/model";
+import { AIGatewayModelURI } from "../schemas/model-uri";
 import { type AIGatewayProviderConfig } from "../schemas/provider-config";
 import { setupProviderAdapter } from "./setup";
 
@@ -98,7 +98,9 @@ export const openrouterAdapter = setupProviderAdapter({
   },
   providerType: "openrouter",
 }).create(({ buildURL, getModelTags, metadata, providerType }) => {
-  function fetchCredits(config: AIGatewayProviderConfig.Type) {
+  function fetchCredits(
+    config: Pick<AIGatewayProviderConfig.Type, "apiKey" | "baseURL">,
+  ) {
     return Result.fromAsync(async () => {
       const headers = new Headers({ "Content-Type": "application/json" });
       setAuthHeaders(headers, config.apiKey);
@@ -205,11 +207,15 @@ export const openrouterAdapter = setupProviderAdapter({
             tags.push("new");
           }
 
+          const params = {
+            provider: providerType,
+            providerConfigId: config.id,
+          };
           validModels.push({
             author: modelAuthor,
             canonicalId: canonicalModelId,
             features,
-            params: { provider: providerType },
+            params,
             providerId,
             providerName: config.displayName ?? metadata.name,
             source: {
@@ -217,10 +223,10 @@ export const openrouterAdapter = setupProviderAdapter({
               value: model,
             },
             tags,
-            uri: modelToURI({
+            uri: AIGatewayModelURI.fromModel({
               author: modelAuthor,
               canonicalId: canonicalModelId,
-              params: { provider: providerType },
+              params,
             }),
           } satisfies AIGatewayModel.Type);
         }
@@ -231,13 +237,8 @@ export const openrouterAdapter = setupProviderAdapter({
       OPENROUTER_BASE_URL: `${baseURL}${PROVIDER_API_PATH.openrouter}`,
     }),
     setAuthHeaders,
-    verifyAPIKey: ({ apiKey, baseURL }) => {
-      return fetchCredits({
-        apiKey,
-        baseURL,
-        cacheIdentifier: "not-used", // Not sent with this request
-        type: "openrouter",
-      })
+    verifyAPIKey: (config) => {
+      return fetchCredits(config)
         .map(() => true)
         .mapError(
           (error) =>

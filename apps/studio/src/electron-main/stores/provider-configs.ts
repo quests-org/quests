@@ -1,7 +1,7 @@
 import { logger } from "@/electron-main/lib/electron-logger";
 import { publisher } from "@/electron-main/rpc/publisher";
-import { StoreAIProviderConfigSchema } from "@/shared/schemas/provider";
 import { is } from "@electron-toolkit/utils";
+import { AIGatewayProviderConfig } from "@quests/ai-gateway";
 import { safeStorage } from "electron";
 import Store from "electron-store";
 import { z } from "zod";
@@ -11,7 +11,7 @@ const ProviderConfigsStoreSchema = z
     // Named "providers" originally, but now "providerConfigs" to avoid
     // confusion with the AIProviderType type. Kept as "providers" here to
     // support existing data.
-    providers: StoreAIProviderConfigSchema.array().default([]),
+    providers: AIGatewayProviderConfig.Schema.array().default([]),
   })
   .default({ providers: [] });
 

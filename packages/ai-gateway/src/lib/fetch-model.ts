@@ -2,12 +2,11 @@ import { type CaptureExceptionFunction } from "@quests/shared";
 import { Result } from "typescript-result";
 
 import { getProviderAdapter } from "../adapters/all";
-import { type AIGatewayModel } from "../schemas/model";
+import { AIGatewayModelURI } from "../schemas/model-uri";
 import { type AIGatewayProviderConfig } from "../schemas/provider-config";
 import { TypedError } from "./errors";
 import { fetchModelsForProviders } from "./fetch-models";
 import { findModelByString } from "./find-model-by-string";
-import { parseModelURI } from "./parse-model-uri";
 
 export async function fetchModelByString(
   {
@@ -27,23 +26,26 @@ export async function fetchModelByString(
 }
 
 export async function fetchModelByURI(
-  modelURI: AIGatewayModel.URI,
+  modelURI: AIGatewayModelURI.Type,
   configs: AIGatewayProviderConfig.Type[],
   { captureException }: { captureException: CaptureExceptionFunction },
 ) {
   return Result.gen(async function* () {
-    const [modelURIDetails, error] = parseModelURI(modelURI).toTuple();
+    const [modelURIDetails, error] =
+      AIGatewayModelURI.parse(modelURI).toTuple();
     if (error) {
       return Result.error(
         new TypedError.NotFound(`Invalid model URI: ${modelURI}`),
       );
     }
 
-    const config = configs.find((p) => p.type === modelURIDetails.provider);
+    const config = configs.find(
+      (c) => c.id === modelURIDetails.params.providerConfigId,
+    );
     if (!config) {
       return Result.error(
         new TypedError.NotFound(
-          `Provider config for ${modelURIDetails.provider} not found`,
+          `Provider config for ${modelURIDetails.params.providerConfigId} not found`,
         ),
       );
     }

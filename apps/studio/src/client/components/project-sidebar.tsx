@@ -1,4 +1,4 @@
-import { type AIGatewayModel } from "@quests/ai-gateway";
+import { type AIGatewayModelURI } from "@quests/ai-gateway/client";
 import { type WorkspaceAppProject } from "@quests/workspace/client";
 import { StoreId } from "@quests/workspace/client";
 import { useMutation } from "@tanstack/react-query";
@@ -22,7 +22,7 @@ import { VersionList } from "./version-list";
 interface ProjectSidebarProps {
   collapsed?: boolean;
   project: WorkspaceAppProject;
-  selectedModelURI?: AIGatewayModel.URI;
+  selectedModelURI?: AIGatewayModelURI.Type;
   selectedVersion?: string;
 }
 
@@ -58,7 +58,7 @@ export function ProjectSidebar({
   const [bottomSectionHeight, setBottomSectionHeight] = useState(0);
   const [filterMode, setFilterMode] = useState<FilterMode>("chat");
   const [selectedModelURI, setSelectedModelURI] = useState<
-    AIGatewayModel.URI | undefined
+    AIGatewayModelURI.Type | undefined
   >(initialSelectedModelURI);
 
   const { data: appState } = useAppState({

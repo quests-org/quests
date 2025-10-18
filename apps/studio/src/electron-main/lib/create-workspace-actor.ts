@@ -4,7 +4,7 @@ import {
 } from "@/electron-main/constants";
 import { logger } from "@/electron-main/lib/electron-logger";
 import { is } from "@electron-toolkit/utils";
-import { aiGatewayApp, type AIGatewayProviderConfig } from "@quests/ai-gateway";
+import { aiGatewayApp } from "@quests/ai-gateway";
 import {
   WORKSPACE_FOLDER,
   workspaceMachine,
@@ -30,15 +30,8 @@ export function createWorkspaceActor() {
       captureEvent: captureServerEvent,
       captureException: captureServerException,
       getAIProviderConfigs: () => {
-        const providerConfigs: AIGatewayProviderConfig.Type[] = [];
         const providerConfigsStore = getProviderConfigsStore();
-        const storedProviderConfigs = providerConfigsStore.get("providers");
-
-        for (const { id: _, ...rest } of storedProviderConfigs) {
-          providerConfigs.push(rest);
-        }
-
-        return providerConfigs;
+        return providerConfigsStore.get("providers");
       },
       nodeExecEnv: {
         // Required to allow Electron to operate as a node process

@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { createAppConfig } from "../../../lib/app-config/create";
 import {
-  getProjectState,
+  getMigratedProjectState,
   ProjectStateSchema,
 } from "../../../lib/project-state-store";
 import { ProjectSubdomainSchema } from "../../../schemas/subdomains";
@@ -17,7 +17,11 @@ const get = base
       workspaceConfig: context.workspaceConfig,
     });
 
-    return getProjectState(appConfig.appDir);
+    return getMigratedProjectState({
+      appDir: appConfig.appDir,
+      captureException: context.workspaceConfig.captureException,
+      configs: context.workspaceConfig.getAIProviderConfigs(),
+    });
   });
 
 export const projectState = {

@@ -1,5 +1,5 @@
 import { call, eventIterator } from "@orpc/server";
-import { AIGatewayModel, parseModelURI } from "@quests/ai-gateway";
+import { AIGatewayModelURI } from "@quests/ai-gateway";
 import {
   DEFAULT_THEME_GRADIENT,
   SelectableAppIconsSchema,
@@ -110,7 +110,7 @@ const create = base
   .input(
     z.object({
       message: SessionMessage.UserSchemaWithParts,
-      modelURI: AIGatewayModel.URISchema,
+      modelURI: AIGatewayModelURI.Schema,
       sessionId: StoreId.SessionSchema,
       templateName: z.string().optional().default(DEFAULT_TEMPLATE_NAME),
     }),
@@ -211,7 +211,7 @@ const createFromEval = base
     z.object({
       evalName: z.string(),
       iconName: SelectableAppIconsSchema,
-      modelURI: AIGatewayModel.URISchema,
+      modelURI: AIGatewayModelURI.Schema,
       sessionId: StoreId.SessionSchema,
       systemPrompt: z.string().optional(),
       userPrompt: z.string(),
@@ -272,7 +272,7 @@ const createFromEval = base
         selectedModelURI: modelURI,
       });
 
-      const modelId = parseModelURI(modelURI)
+      const modelId = AIGatewayModelURI.parse(modelURI)
         .map((m) => m.canonicalId)
         .getOrDefault(model.modelId);
       const projectName = `${modelId} - ${evalName}`;
