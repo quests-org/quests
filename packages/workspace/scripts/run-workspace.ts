@@ -86,6 +86,17 @@ const actor = createActor(workspaceMachine, {
         });
       }
 
+      if (env.QUESTS_ZAI_API_KEY) {
+        providerConfigs.push({
+          apiKey: env.QUESTS_ZAI_API_KEY,
+          baseURL: "https://api.z.ai/api/coding/paas/v4",
+          cacheIdentifier,
+          id: AIProviderConfigIdSchema.parse(ulid()),
+          subType: "z-ai",
+          type: "openai-compatible",
+        });
+      }
+
       return providerConfigs;
     },
     nodeExecEnv: {},

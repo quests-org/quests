@@ -12,5 +12,6 @@ export const env = createEnv({
     QUESTS_GOOGLE_API_KEY: z.string().optional(),
     QUESTS_OPENAI_API_KEY: z.string().optional(),
     QUESTS_OPENROUTER_API_KEY: z.string().optional(),
+    QUESTS_ZAI_API_KEY: z.string().optional(),
   },
 });
