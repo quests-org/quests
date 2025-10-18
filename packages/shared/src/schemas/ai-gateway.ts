@@ -16,6 +16,7 @@ export type AIProviderConfigId = z.output<typeof AIProviderConfigIdSchema>;
 
 export const AIProviderConfigSubTypeSchema = z.enum([
   "anyscale",
+  "cerebras",
   "deepinfra",
   "fireworks",
   "groq",
@@ -28,6 +29,7 @@ export const AIProviderConfigSubTypeSchema = z.enum([
   "novita",
   "perplexity",
   "together",
+  "x-ai",
   "z-ai",
 ]);
 export type AIProviderConfigSubType = z.infer<

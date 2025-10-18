@@ -1,6 +1,7 @@
 import type { ComponentType } from "react";
 
 import { Anyscale } from "@/client/components/icons/anyscale";
+import { Cerebras } from "@/client/components/icons/cerebras";
 import { DeepInfra } from "@/client/components/icons/deepinfra";
 import { Fireworks } from "@/client/components/icons/fireworks";
 import { Groq } from "@/client/components/icons/groq";
@@ -13,7 +14,8 @@ import { Mistral } from "@/client/components/icons/mistral";
 import { Novita } from "@/client/components/icons/novita";
 import { Perplexity } from "@/client/components/icons/perplexity";
 import { Together } from "@/client/components/icons/together";
-import { ZAI } from "@/client/components/icons/zai";
+import { XAI } from "@/client/components/icons/x-ai";
+import { ZAI } from "@/client/components/icons/z-ai";
 import { type AIProviderConfigSubType } from "@quests/shared";
 
 export interface OpenAICompatibleProvider {
@@ -41,6 +43,18 @@ export const OPENAI_COMPATIBLE_PROVIDERS: OpenAICompatibleProvider[] = [
     name: "Z.ai",
     subType: "z-ai",
     url: "https://z.ai",
+  },
+  {
+    api: {
+      defaultBaseURL: "https://api.cerebras.ai/v1",
+      keyURL: "https://cloud.cerebras.ai",
+    },
+    description:
+      "Ultra-fast inference with popular open-source models like Llama and Qwen.",
+    icon: Cerebras,
+    name: "Cerebras",
+    subType: "cerebras",
+    url: "https://www.cerebras.ai",
   },
   {
     api: {
@@ -149,6 +163,17 @@ export const OPENAI_COMPATIBLE_PROVIDERS: OpenAICompatibleProvider[] = [
     name: "Hyperbolic",
     subType: "hyperbolic",
     url: "https://hyperbolic.ai",
+  },
+  {
+    api: {
+      defaultBaseURL: "https://api.x.ai/v1",
+      keyURL: "https://console.x.ai/team/default/api-keys",
+    },
+    description: "Grok models from xAI",
+    icon: XAI,
+    name: "xAI Grok",
+    subType: "x-ai",
+    url: "https://x.ai",
   },
   {
     api: {
