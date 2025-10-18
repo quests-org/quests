@@ -1,4 +1,4 @@
-import { AddProviderDialog } from "@/client/components/add-provider-dialog";
+import { AddProviderDialog } from "@/client/components/add-provider/dialog";
 import Particles from "@/client/components/particles";
 import { SupportedProviders } from "@/client/components/supported-providers";
 import { Button } from "@/client/components/ui/button";

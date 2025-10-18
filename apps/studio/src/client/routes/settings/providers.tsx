@@ -1,5 +1,5 @@
 import { providerMetadataAtom } from "@/client/atoms/provider-metadata";
-import { AddProviderDialog } from "@/client/components/add-provider-dialog";
+import { AddProviderDialog } from "@/client/components/add-provider/dialog";
 import { AIProviderEditDialog } from "@/client/components/ai-provider-edit-dialog";
 import { ProviderConfigListItem } from "@/client/components/provider-config-list-item";
 import { Button } from "@/client/components/ui/button";
