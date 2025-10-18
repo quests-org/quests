@@ -356,6 +356,11 @@ export function AddProviderDialog({
                 <div className="flex items-center gap-2">
                   <AIProviderIcon
                     className="opacity-80 size-4.5"
+                    subType={
+                      hasOpenAICompatibleProvider
+                        ? selectedOpenAICompatibleProvider.subType
+                        : undefined
+                    }
                     type="openai-compatible"
                   />
                   <div className="font-medium">{openaiCompatible.name}</div>
@@ -386,7 +391,14 @@ export function AddProviderDialog({
       <DialogHeader>
         <DialogTitle className="flex items-center gap-2">
           {selectedProviderType && (
-            <AIProviderIcon type={selectedProviderType} />
+            <AIProviderIcon
+              subType={
+                hasOpenAICompatibleProvider
+                  ? selectedOpenAICompatibleProvider.subType
+                  : undefined
+              }
+              type={selectedProviderType}
+            />
           )}
           {providerMetadata?.name ?? "Provider"}
         </DialogTitle>

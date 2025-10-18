@@ -1,5 +1,8 @@
 import { getOpenAICompatibleIcon } from "@/client/lib/get-openai-compatible-icon";
-import { type AIProviderType } from "@quests/shared";
+import {
+  type AIProviderConfigSubType,
+  type AIProviderType,
+} from "@quests/shared";
 import { GrNodes } from "react-icons/gr";
 import {
   SiAnthropic,
@@ -11,19 +14,17 @@ import {
 
 import { OpenRouter } from "./service-icons";
 
-interface AIProviderIconProps {
-  className?: string;
-  providerName?: string;
-  type: AIProviderType;
-}
-
 export function AIProviderIcon({
   className = "size-5",
-  providerName,
+  subType,
   type,
-}: AIProviderIconProps) {
-  if (type === "openai-compatible" && providerName) {
-    const CustomIcon = getOpenAICompatibleIcon(providerName);
+}: {
+  className?: string;
+  subType?: AIProviderConfigSubType;
+  type: AIProviderType;
+}) {
+  if (type === "openai-compatible" && subType) {
+    const CustomIcon = getOpenAICompatibleIcon(subType);
     return <CustomIcon className={className} />;
   }
 
