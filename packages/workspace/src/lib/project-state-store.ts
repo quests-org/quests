@@ -44,7 +44,11 @@ export async function getMigratedProjectState({
   }).toTuple();
 
   if (error) {
-    captureException(error);
+    if (error.type !== "gateway-not-found-error") {
+      // Ignoring not found errors, because that just means they don't have
+      // that provider anymore.
+      captureException(error);
+    }
     return rest;
   }
 

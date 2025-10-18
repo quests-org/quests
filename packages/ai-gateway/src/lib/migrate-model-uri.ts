@@ -1,3 +1,4 @@
+import { AIProviderTypeSchema } from "@quests/shared";
 import { Result } from "typescript-result";
 
 import { TypedError } from "../lib/errors";
@@ -27,27 +28,30 @@ export function migrateModelURI({
 
   const queryParams = new URLSearchParams(queryPart);
   const paramEntries = [...queryParams.keys()];
-  const provider = queryParams.get("provider");
+  const providerTypeResult = AIProviderTypeSchema.safeParse(
+    queryParams.get("provider"),
+  );
 
   // 2025-10-18 Migrates old model URIs to the new format
   // Remove after 1 month
   if (
     paramEntries.length !== 1 ||
     paramEntries[0] !== "provider" ||
-    !provider
+    !providerTypeResult.success
   ) {
     return Result.error(
       new TypedError.Parse(
-        `Can only migrate model URIs with a single "provider" parameter`,
+        `Can only migrate model URIs with a single "provider" parameter. Model URI: ${modelURI}`,
       ),
     );
   }
+  const providerType = providerTypeResult.data;
 
   // Find a provider for this model URI
-  const config = configs.find((c) => c.id === provider);
+  const config = configs.find((c) => c.type === providerType);
   if (!config) {
     return Result.error(
-      new TypedError.Parse(`Provider config for ${provider} not found`),
+      new TypedError.NotFound(`Provider config for ${providerType} not found`),
     );
   }
 

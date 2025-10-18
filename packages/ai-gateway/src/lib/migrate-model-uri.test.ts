@@ -27,7 +27,7 @@ const mockConfigs: AIGatewayProviderConfig.Type[] = [
 
 describe("migrateModelURI", () => {
   it("should migrate old URI format with provider parameter to new format with provider and providerConfigId", () => {
-    const oldURI = "openai/gpt-4?provider=openai-config-id";
+    const oldURI = "openai/gpt-4?provider=openai";
 
     const result = migrateModelURI({
       configs: mockConfigs,
