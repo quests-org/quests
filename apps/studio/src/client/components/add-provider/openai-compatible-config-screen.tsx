@@ -119,14 +119,7 @@ export function OpenAICompatibleConfigScreen({
     >
       <DialogHeader>
         <DialogTitle className="flex items-center gap-2">
-          <AIProviderIcon
-            subType={
-              hasOpenAICompatibleProvider
-                ? state.selectedOpenAICompatibleProvider?.subType
-                : undefined
-            }
-            type="openai-compatible"
-          />
+          <AIProviderIcon type="openai-compatible" />
           {providerMetadata?.name ?? "OpenAI-Compatible Provider"}
         </DialogTitle>
         <DialogDescription>
@@ -221,14 +214,6 @@ export function OpenAICompatibleConfigScreen({
             <>
               <div className="flex flex-col gap-y-1">
                 <Label htmlFor="api-key">API Key</Label>
-                {hasOpenAICompatibleProvider &&
-                  state.selectedOpenAICompatibleProvider?.api.keyURL && (
-                    <ProviderLinks
-                      keyURL={state.selectedOpenAICompatibleProvider.api.keyURL}
-                      name={state.selectedOpenAICompatibleProvider.name}
-                      url={state.selectedOpenAICompatibleProvider.url}
-                    />
-                  )}
               </div>
 
               <Input
