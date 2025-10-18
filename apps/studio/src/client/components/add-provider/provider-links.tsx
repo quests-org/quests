@@ -1,4 +1,6 @@
-import { ExternalLink } from "lucide-react";
+const S = {
+  link: "inline-flex items-center gap-x-0.5 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 underline underline-offset-2",
+} as const;
 
 export function ProviderLinks({
   keyURL,
@@ -10,36 +12,45 @@ export function ProviderLinks({
   url: string;
 }) {
   return (
-    <div className="flex items-center gap-x-1 text-xs text-muted-foreground">
-      {keyURL && (
+    <div className="text-xs text-muted-foreground">
+      {keyURL ? (
         <>
           <span>
-            Get your {name}{" "}
             <a
-              className="inline-flex items-center gap-x-1 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 underline underline-offset-2"
+              className={S.link}
               href={keyURL}
               rel="noopener noreferrer"
               target="_blank"
             >
-              API key
-              <ExternalLink className="h-3 w-3" />
+              Get API key
             </a>
+          </span>{" "}
+          <span>or</span>{" "}
+          <span>
+            <a
+              className={S.link}
+              href={url}
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              learn more
+            </a>{" "}
+            about {name}.
           </span>
-          <span>or</span>
         </>
+      ) : (
+        <span>
+          <a
+            className={S.link}
+            href={url}
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            Learn more
+          </a>{" "}
+          about {name}.
+        </span>
       )}
-      <span>
-        <a
-          className="inline-flex items-center gap-x-1 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 underline underline-offset-2"
-          href={url}
-          rel="noopener noreferrer"
-          target="_blank"
-        >
-          {keyURL ? "learn more" : "Learn more"}
-          <ExternalLink className="h-3 w-3" />
-        </a>{" "}
-        about {name}
-      </span>
     </div>
   );
 }
