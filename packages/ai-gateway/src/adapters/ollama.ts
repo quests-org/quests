@@ -1,8 +1,8 @@
+import { addRef } from "@quests/shared";
 import { createOllama } from "ollama-ai-provider-v2";
 import { Result } from "typescript-result";
 import { z } from "zod";
 
-import { addRef } from "../lib/add-ref";
 import { providerTypeToAuthor } from "../lib/author";
 import { TypedError } from "../lib/errors";
 import { fetchJson } from "../lib/fetch-json";

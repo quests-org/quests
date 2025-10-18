@@ -1,8 +1,13 @@
 import { createGateway } from "@ai-sdk/gateway";
-import { ATTRIBUTION_NAME, ATTRIBUTION_URL } from "@quests/shared";
+import {
+  addRef,
+  ATTRIBUTION_NAME,
+  ATTRIBUTION_URL,
+  REF_PARAM_KEY,
+  REF_PARAM_VALUE,
+} from "@quests/shared";
 import { Result } from "typescript-result";
 
-import { addRef, REF_PARAM_KEY, REF_PARAM_VALUE } from "../lib/add-ref";
 import { getCachedResult, setCachedResult } from "../lib/cache";
 import { TypedError } from "../lib/errors";
 import { internalAPIKey } from "../lib/key-for-provider";

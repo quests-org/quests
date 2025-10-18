@@ -1,8 +1,8 @@
 import { createAnthropic } from "@ai-sdk/anthropic";
+import { addRef } from "@quests/shared";
 import { Result } from "typescript-result";
 import { z } from "zod";
 
-import { addRef } from "../lib/add-ref";
 import { providerTypeToAuthor } from "../lib/author";
 import { TypedError } from "../lib/errors";
 import { fetchJson } from "../lib/fetch-json";
@@ -63,7 +63,7 @@ export const anthropicAdapter = setupProviderAdapter({
     api: {
       defaultBaseURL: DEFAULT_BASE_URL,
       keyFormat: "sk-ant-",
-      keyURL: addRef("https://console.anthropic.com/account/keys"),
+      keyURL: addRef("https://console.anthropic.com/settings/keys"),
     },
     description: "Claude Sonnet, Opus, and other Anthropic models",
     name: "Anthropic",

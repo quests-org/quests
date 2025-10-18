@@ -1,9 +1,8 @@
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
-import { AI_GATEWAY_API_KEY_NOT_NEEDED } from "@quests/shared";
+import { addRef, AI_GATEWAY_API_KEY_NOT_NEEDED } from "@quests/shared";
 import { Result } from "typescript-result";
 import { z } from "zod";
 
-import { addRef } from "../lib/add-ref";
 import { providerTypeToAuthor } from "../lib/author";
 import { TypedError } from "../lib/errors";
 import { fetchJson } from "../lib/fetch-json";

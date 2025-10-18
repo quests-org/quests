@@ -1,11 +1,10 @@
 import { cn } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
 import { isDefinedError } from "@orpc/client";
+import { addRef } from "@quests/shared";
 import { useMutation } from "@tanstack/react-query";
 import * as React from "react";
 import { toast } from "sonner";
-
-import { addRef } from "../../../../../packages/ai-gateway/src/lib/add-ref";
 
 export function ExternalLink(
   props: React.ComponentProps<"a"> & {

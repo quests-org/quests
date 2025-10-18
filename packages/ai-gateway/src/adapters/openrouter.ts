@@ -1,5 +1,5 @@
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
-import { ATTRIBUTION_NAME, ATTRIBUTION_URL } from "@quests/shared";
+import { addRef, ATTRIBUTION_NAME, ATTRIBUTION_URL } from "@quests/shared";
 import { Result } from "typescript-result";
 import { z } from "zod";
 
@@ -63,7 +63,7 @@ export const openrouterAdapter = setupProviderAdapter({
     api: {
       defaultBaseURL: "https://openrouter.ai/api",
       keyFormat: "sk-or-",
-      keyURL: "https://openrouter.ai",
+      keyURL: addRef("https://openrouter.ai/settings/keys"),
     },
     description: "Access an extensive catalog of models across providers",
     name: "OpenRouter",
