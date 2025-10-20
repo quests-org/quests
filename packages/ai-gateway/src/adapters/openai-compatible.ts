@@ -25,7 +25,7 @@ export const openaiCompatibleAdapter = setupProviderAdapter({
     api: {
       defaultBaseURL: "",
     },
-    description: "OpenAI-compatible endpoint with custom base URL",
+    description: "Access local models, GLM, Cerebras, Groq, and more",
     name: "OpenAI Compatible",
     requiresAPIKey: true,
     tags: [],
