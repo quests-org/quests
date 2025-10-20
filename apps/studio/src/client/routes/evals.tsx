@@ -383,7 +383,7 @@ function RouteComponent() {
                                     type={model.params.provider}
                                   />
                                   <span className="truncate text-sm">
-                                    {model.canonicalId}
+                                    {model.name}
                                   </span>
                                 </div>
                               </CommandItem>
@@ -458,7 +458,7 @@ function RouteComponent() {
                                 type={model.params.provider}
                               />
                               <span className="truncate max-w-32">
-                                {model.canonicalId}
+                                {model.name}
                               </span>
                             </div>
                           ))}

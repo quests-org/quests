@@ -7,6 +7,7 @@ import { providerTypeToAuthor } from "../lib/author";
 import { canonicalizeAnthropicModelId } from "../lib/canonicalize-model-id";
 import { TypedError } from "../lib/errors";
 import { fetchJson } from "../lib/fetch-json";
+import { generateModelName } from "../lib/generate-model-name";
 import { getModelTags } from "../lib/get-model-tags";
 import { isModelNew } from "../lib/is-model-new";
 import {
@@ -111,6 +112,7 @@ export const anthropicAdapter = setupProviderAdapter({
           author,
           canonicalId: canonicalModelId,
           features: ["inputText", "outputText", "tools"],
+          name: model.display_name ?? generateModelName(canonicalModelId),
           params,
           providerId,
           providerName: config.displayName ?? metadata.name,

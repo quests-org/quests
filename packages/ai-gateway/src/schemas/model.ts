@@ -124,6 +124,7 @@ export namespace AIGatewayModel {
     author: z.string(),
     canonicalId: AIGatewayModelURI.CanonicalIdSchema,
     features: ModelFeaturesSchema.array(),
+    name: z.string(),
     params: AIGatewayModelURI.ParamsSchema,
     providerId: ProviderIdSchema,
     providerName: z.string(),

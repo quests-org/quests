@@ -2,6 +2,7 @@ import {
   type AIProviderConfigId,
   AIProviderConfigIdSchema,
 } from "@quests/shared";
+import { title } from "radashi";
 import { describe, expect, it } from "vitest";
 
 import { DEFAULT_OPENAI_MODEL } from "../constants";
@@ -44,6 +45,7 @@ const createMockModel = ({
     author,
     canonicalId: AIGatewayModel.CanonicalIdSchema.parse(canonicalId),
     features: ["inputText", "outputText", "tools"],
+    name: title(canonicalId),
     params: {
       provider,
       providerConfigId,

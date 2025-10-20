@@ -93,6 +93,7 @@ export const vercelAdapter = setupProviderAdapter({
           author: modelAuthor,
           canonicalId: canonicalModelId,
           features,
+          name: model.name,
           params,
           providerId,
           providerName: config.displayName ?? metadata.name,

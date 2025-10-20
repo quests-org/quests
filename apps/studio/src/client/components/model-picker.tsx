@@ -96,7 +96,7 @@ export function ModelPicker({
           </TooltipContent>
         </Tooltip>
         <span className="truncate text-xs min-w-0 flex-1">
-          {selectedModel.canonicalId}
+          {selectedModel.name}
         </span>
       </div>
     );
@@ -255,9 +255,7 @@ export function ModelPicker({
                               )}
                             />
                             <div className="flex flex-col gap-1">
-                              <span className="text-sm">
-                                {model.canonicalId}
-                              </span>
+                              <span className="text-sm">{model.name}</span>
                               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                                 <AIProviderIcon
                                   className="size-3 flex-shrink-0"

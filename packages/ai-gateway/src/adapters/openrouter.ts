@@ -6,6 +6,7 @@ import { z } from "zod";
 import { RECOMMENDED_TAG } from "../constants";
 import { TypedError } from "../lib/errors";
 import { fetchJson } from "../lib/fetch-json";
+import { generateModelName } from "../lib/generate-model-name";
 import { getModelTags } from "../lib/get-model-tags";
 import { isModelNew } from "../lib/is-model-new";
 import { internalAPIKey } from "../lib/key-for-provider";
@@ -152,10 +153,15 @@ export const openrouterAdapter = setupProviderAdapter({
             provider: providerType,
             providerConfigId: config.id,
           };
+          const [_authorName, ...modelNameParts] = model.name.split(":");
+          const modelName =
+            modelNameParts.join(":") || generateModelName(canonicalModelId);
+
           validModels.push({
             author: modelAuthor,
             canonicalId: canonicalModelId,
             features,
+            name: modelName,
             params,
             providerId,
             providerName: config.displayName ?? metadata.name,
@@ -169,7 +175,7 @@ export const openrouterAdapter = setupProviderAdapter({
               canonicalId: canonicalModelId,
               params,
             }),
-          } satisfies AIGatewayModel.Type);
+          });
         }
         return validModels;
       }),

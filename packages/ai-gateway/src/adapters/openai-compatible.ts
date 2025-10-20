@@ -6,6 +6,7 @@ import { z } from "zod";
 import { providerTypeToAuthor } from "../lib/author";
 import { TypedError } from "../lib/errors";
 import { fetchJson } from "../lib/fetch-json";
+import { generateModelName } from "../lib/generate-model-name";
 import { getModelTags } from "../lib/get-model-tags";
 import { internalAPIKey } from "../lib/key-for-provider";
 import { PROVIDER_API_PATH } from "../lib/provider-paths";
@@ -83,6 +84,7 @@ export const openaiCompatibleAdapter = setupProviderAdapter({
           author,
           canonicalId,
           features: ["inputText", "outputText", "tools"],
+          name: generateModelName(canonicalId),
           params,
           providerId,
           providerName: config.displayName ?? metadata.name,

@@ -101,6 +101,7 @@ export const googleAdapter = setupProviderAdapter({
           author,
           canonicalId: canonicalModelId,
           features,
+          name: model.displayName,
           params,
           providerId,
           providerName: config.displayName ?? metadata.name,
