@@ -34,13 +34,13 @@ export const googleAdapter = setupProviderAdapter({
     api: {
       defaultBaseURL: "https://generativelanguage.googleapis.com/v1beta",
       keyFormat: "AI",
-      keyURL: addRef("https://aistudio.google.com/app/apikey"),
+      keyURL: addRef("https://aistudio.google.com/api-keys"),
     },
-    description: "Gemini and other Google models",
+    description: "Google AI Studio with Gemini and other models",
     name: "Google",
     requiresAPIKey: true,
     tags: ["Free tier"],
-    url: addRef("https://ai.google.dev/"),
+    url: addRef("https://ai.google.dev/gemini-api/docs"),
   },
   modelTags: {
     "models/gemini-2.5-pro": ["coding", "recommended", "default"],
