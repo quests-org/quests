@@ -6,13 +6,16 @@ import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig, externalizeDepsPlugin } from "electron-vite";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { analyzer } from "vite-bundle-analyzer";
-import tsconfigPaths from "vite-tsconfig-paths";
 
 const isAnalyzing = process.env.ANALYZE_BUILD === "true";
-// Avoids random type error due to
-// https://github.com/aleclarson/vite-tsconfig-paths/issues/176
-const fixedTsConfigPaths = tsconfigPaths() as unknown as Plugin;
+
+const resolve = {
+  alias: {
+    "@": path.join(path.dirname(fileURLToPath(import.meta.url)), "src"),
+  },
+};
 
 const validateProductionEnv: Plugin = {
   configResolved(config) {
@@ -41,11 +44,11 @@ export default defineConfig({
     plugins: [
       ...(isAnalyzing ? [analyzer()] : []),
       validateProductionEnv,
-      fixedTsConfigPaths,
       externalizeDepsPlugin({
         exclude: ["@quests/workspace", "@quests/shared", "@quests/ai-gateway"],
       }),
     ],
+    resolve,
   },
   preload: {
     build: {
@@ -57,9 +60,9 @@ export default defineConfig({
     plugins: [
       ...(isAnalyzing ? [analyzer()] : []),
       validateProductionEnv,
-      fixedTsConfigPaths,
       externalizeDepsPlugin(),
     ],
+    resolve,
   },
   renderer: {
     build: {
@@ -73,7 +76,6 @@ export default defineConfig({
     plugins: [
       ...(isAnalyzing ? [analyzer()] : []),
       validateProductionEnv,
-      fixedTsConfigPaths,
       tanstackRouter({
         autoCodeSplitting: true,
         generatedRouteTree: "./src/client/routeTree.gen.ts",
@@ -83,6 +85,7 @@ export default defineConfig({
       tailwindcss(),
       ValidateEnv({ configFile: "./src/client/validate-env" }),
     ],
+    resolve,
     root: path.resolve("src"),
   },
 });

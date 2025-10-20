@@ -145,7 +145,6 @@
     "typescript": "catalog:",
     "vite": "catalog:",
     "vite-bundle-analyzer": "^1.2.1",
-    "vite-tsconfig-paths": "^5.1.4",
     "vitest": "catalog:",
     "write-package": "^7.1.0"
   },
