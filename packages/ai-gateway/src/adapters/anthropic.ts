@@ -4,8 +4,10 @@ import { Result } from "typescript-result";
 import { z } from "zod";
 
 import { providerTypeToAuthor } from "../lib/author";
+import { canonicalizeAnthropicModelId } from "../lib/canonicalize-model-id";
 import { TypedError } from "../lib/errors";
 import { fetchJson } from "../lib/fetch-json";
+import { getModelTags } from "../lib/get-model-tags";
 import { isModelNew } from "../lib/is-model-new";
 import {
   internalAPIKey as gatewayAPIKey,
@@ -15,33 +17,6 @@ import { PROVIDER_API_PATH } from "../lib/provider-paths";
 import { AIGatewayModel } from "../schemas/model";
 import { AIGatewayModelURI } from "../schemas/model-uri";
 import { setupProviderAdapter } from "./setup";
-
-const KNOWN_MODEL_IDS = [
-  "claude-3-5-haiku-20241022",
-  "claude-3-5-sonnet-20240620",
-  "claude-3-7-sonnet-20250219",
-  "claude-3-haiku-20240307",
-  "claude-haiku-4-5-20251001",
-  "claude-opus-4-1-20250805",
-  "claude-opus-4-20250514",
-  "claude-sonnet-4-20250514",
-  "claude-sonnet-4-5-20250929",
-] as const;
-
-type KnownModelId = (typeof KNOWN_MODEL_IDS)[number];
-
-// Best effort to reduce duplication of model IDs on OpenAI models endpoint
-// Derived from OpenRouter's model IDs
-const CANONICAL_MAP: Partial<Record<KnownModelId, string>> = {
-  "claude-3-5-haiku-20241022": "claude-3.5-haiku",
-  "claude-3-7-sonnet-20250219": "claude-3.7-sonnet",
-  "claude-3-haiku-20240307": "claude-3-haiku",
-  "claude-haiku-4-5-20251001": "claude-haiku-4.5",
-  "claude-opus-4-1-20250805": "claude-opus-4.1",
-  "claude-opus-4-20250514": "claude-opus-4",
-  "claude-sonnet-4-5-20250929": "claude-sonnet-4.5",
-  "claude-sonnet-4-20250514": "claude-sonnet-4",
-};
 
 const AnthropicModelsResponseSchema = z.object({
   data: z.array(AIGatewayModel.AnthropicSchema),
@@ -58,7 +33,6 @@ function setAuthHeaders(headers: Headers, apiKey: string) {
 const DEFAULT_BASE_URL = "https://api.anthropic.com";
 
 export const anthropicAdapter = setupProviderAdapter({
-  knownModelIds: KNOWN_MODEL_IDS,
   metadata: {
     api: {
       defaultBaseURL: DEFAULT_BASE_URL,
@@ -71,15 +45,8 @@ export const anthropicAdapter = setupProviderAdapter({
     tags: [],
     url: addRef("https://anthropic.com"),
   },
-  modelTags: {
-    "claude-3-7-sonnet-20250219": ["coding"],
-    "claude-haiku-4-5-20251001": ["coding", "recommended", "default"],
-    "claude-opus-4-1-20250805": ["coding"],
-    "claude-sonnet-4-5-20250929": ["coding", "recommended"],
-    "claude-sonnet-4-20250514": ["coding"],
-  },
   providerType: "anthropic",
-}).create(({ buildURL, getModelTags, metadata, providerType }) => ({
+}).create(({ buildURL, metadata, providerType }) => ({
   aiSDKModel: (model, { workspaceServerURL }) => {
     return createAnthropic({
       apiKey: internalAPIKey(),
@@ -130,12 +97,11 @@ export const anthropicAdapter = setupProviderAdapter({
       const author = providerTypeToAuthor(providerType);
       return modelsResult.data.map((model) => {
         const providerId = AIGatewayModel.ProviderIdSchema.parse(model.id);
-        const normalizedModelId =
-          CANONICAL_MAP[model.id as KnownModelId] ?? model.id;
+        const normalizedModelId = canonicalizeAnthropicModelId(model.id);
         const canonicalModelId =
           AIGatewayModel.CanonicalIdSchema.parse(normalizedModelId);
 
-        const tags = getModelTags(providerId);
+        const tags = getModelTags(canonicalModelId);
         if (isModelNew(model.created_at)) {
           tags.push("new");
         }

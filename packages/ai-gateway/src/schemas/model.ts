@@ -118,6 +118,7 @@ export namespace AIGatewayModel {
   export type ModelFeatures = z.output<typeof ModelFeaturesSchema>;
 
   export const CanonicalIdSchema = AIGatewayModelURI.CanonicalIdSchema;
+  export type CanonicalId = z.output<typeof CanonicalIdSchema>;
 
   export const Schema = z.object({
     author: z.string(),

@@ -6,6 +6,7 @@ import { z } from "zod";
 import { providerTypeToAuthor } from "../lib/author";
 import { TypedError } from "../lib/errors";
 import { fetchJson } from "../lib/fetch-json";
+import { getModelTags } from "../lib/get-model-tags";
 import {
   internalAPIKey as gatewayAPIKey,
   internalAPIKey,
@@ -25,11 +26,6 @@ function setAuthHeaders(headers: Headers, apiKey: string) {
 }
 
 export const googleAdapter = setupProviderAdapter({
-  knownModelIds: [
-    "models/gemini-2.5-pro",
-    "models/gemini-2.5-flash-lite",
-    "models/gemini-2.5-flash",
-  ],
   metadata: {
     api: {
       defaultBaseURL: "https://generativelanguage.googleapis.com/v1beta",
@@ -42,11 +38,8 @@ export const googleAdapter = setupProviderAdapter({
     tags: ["Free tier"],
     url: addRef("https://ai.google.dev/gemini-api/docs"),
   },
-  modelTags: {
-    "models/gemini-2.5-pro": ["coding", "recommended", "default"],
-  },
   providerType: "google",
-}).create(({ buildURL, getModelTags, metadata, providerType }) => ({
+}).create(({ buildURL, metadata, providerType }) => ({
   aiSDKModel: (model, { workspaceServerURL }) => {
     return createGoogleGenerativeAI({
       apiKey: internalAPIKey(),
@@ -83,7 +76,6 @@ export const googleAdapter = setupProviderAdapter({
 
       const author = providerTypeToAuthor(providerType);
       return modelsResult.models.map((model) => {
-        // models/gemini-2.5-pro -> gemini-2.5-pro
         const providerId = AIGatewayModel.ProviderIdSchema.parse(model.name);
         let canonicalModelId = AIGatewayModel.CanonicalIdSchema.parse(
           model.name,
@@ -93,7 +85,7 @@ export const googleAdapter = setupProviderAdapter({
           canonicalModelId = AIGatewayModel.CanonicalIdSchema.parse(modelId);
         }
 
-        const tags = getModelTags(providerId);
+        const tags = getModelTags(canonicalModelId);
         const features: AIGatewayModel.ModelFeatures[] = ["inputText"];
 
         if (model.supportedGenerationMethods.includes("generateContent")) {

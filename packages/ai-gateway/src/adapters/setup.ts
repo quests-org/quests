@@ -20,13 +20,11 @@ export type ProviderAdapter = ReturnType<
 
 type AdapterFeatures = "openai/chat-completions";
 
-type OmittedKeys = "knownModelIds" | "metadata" | "modelTags" | "providerType";
+type OmittedKeys = "metadata" | "providerType";
 
 type OptionalKeys = "buildURL";
 
-interface SetupProviderAdapter<
-  KnownModelIds extends readonly string[] = readonly string[],
-> {
+interface SetupProviderAdapter {
   aiSDKModel: (
     model: AIGatewayModel.Type,
     provider: {
@@ -52,9 +50,7 @@ interface SetupProviderAdapter<
     { captureException }: { captureException: CaptureExceptionFunction },
   ) => AsyncResult<AIGatewayModel.Type[], TypedError.Fetch | TypedError.Parse>;
   getEnv: (workspaceServerURL: WorkspaceServerURL) => Record<string, string>;
-  knownModelIds: KnownModelIds;
   metadata: ProviderMetadata;
-  modelTags: Record<KnownModelIds[number], AIGatewayModel.ModelTag[]>;
   providerType: AIProviderType;
   setAuthHeaders: (headers: Headers, apiKey: string) => void;
   verifyAPIKey: (
@@ -64,27 +60,18 @@ interface SetupProviderAdapter<
 
 export function setupProviderAdapter<
   TProviderType extends AIProviderType,
-  const KnownModelIds extends readonly string[],
 >(options: {
-  knownModelIds: KnownModelIds;
   metadata: ProviderMetadata;
-  modelTags: Partial<Record<KnownModelIds[number], AIGatewayModel.ModelTag[]>>;
   providerType: TProviderType;
 }): {
   create: (
     createAdapter: (options: {
       buildURL: (options: { baseURL?: string; path: string }) => string;
-      getModelTags: (
-        modelId: AIGatewayModel.ProviderId,
-      ) => AIGatewayModel.ModelTag[];
       metadata: ProviderMetadata;
       providerType: TProviderType;
-    }) => Omit<
-      SetupProviderAdapter<KnownModelIds>,
-      OmittedKeys | OptionalKeys
-    > &
-      Partial<Pick<SetupProviderAdapter<KnownModelIds>, OptionalKeys>>,
-  ) => Omit<SetupProviderAdapter<KnownModelIds>, "modelTags">;
+    }) => Omit<SetupProviderAdapter, OmittedKeys | OptionalKeys> &
+      Partial<Pick<SetupProviderAdapter, OptionalKeys>>,
+  ) => SetupProviderAdapter;
 } {
   return {
     create: (createAdapter) => {
@@ -99,8 +86,6 @@ export function setupProviderAdapter<
       };
       const { features, getEnv, ...rest } = createAdapter({
         buildURL,
-        getModelTags: (modelId: string) =>
-          options.modelTags[modelId as KnownModelIds[number]] ?? [],
         metadata: options.metadata,
         providerType: options.providerType,
       });
@@ -113,9 +98,7 @@ export function setupProviderAdapter<
             getOpenAICompatibleEnv(workspaceServerURL)),
           ...getEnv(workspaceServerURL),
         }),
-        knownModelIds: options.knownModelIds,
         metadata: options.metadata,
-        modelTags: options.modelTags,
         providerType: options.providerType,
       };
     },

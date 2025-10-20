@@ -9,22 +9,13 @@ import { z } from "zod";
 import { providerTypeToAuthor } from "../lib/author";
 import { TypedError } from "../lib/errors";
 import { fetchJson } from "../lib/fetch-json";
+import { getModelTags } from "../lib/get-model-tags";
 import { isModelNew } from "../lib/is-model-new";
 import { internalAPIKey } from "../lib/key-for-provider";
 import { PROVIDER_API_PATH } from "../lib/provider-paths";
 import { AIGatewayModel } from "../schemas/model";
 import { AIGatewayModelURI } from "../schemas/model-uri";
 import { setupProviderAdapter } from "./setup";
-
-const KNOWN_MODEL_IDS = [
-  "gpt-5",
-  "gpt-5-codex",
-  "gpt-5-mini",
-  "gpt-5-nano",
-  "gpt-4.1",
-  "gpt-4.1-mini",
-  "gpt-4.1-nano",
-] as const;
 
 const OpenAIModelsResponseSchema = z.object({
   data: z.array(AIGatewayModel.OpenAISchema),
@@ -36,7 +27,6 @@ function setAuthHeaders(headers: Headers, apiKey: string) {
 }
 
 export const openaiAdapter = setupProviderAdapter({
-  knownModelIds: KNOWN_MODEL_IDS,
   metadata: {
     api: {
       defaultBaseURL: "https://api.openai.com",
@@ -49,15 +39,8 @@ export const openaiAdapter = setupProviderAdapter({
     tags: [],
     url: addRef("https://openai.com"),
   },
-  modelTags: {
-    "gpt-4.1": ["coding"],
-    "gpt-4.1-mini": ["coding"],
-    "gpt-5": ["coding", "recommended", "default"],
-    "gpt-5-codex": ["coding", "recommended"],
-    "gpt-5-mini": ["coding", "recommended"],
-  },
   providerType: "openai",
-}).create(({ buildURL, getModelTags, metadata, providerType }) => ({
+}).create(({ buildURL, metadata, providerType }) => ({
   aiSDKModel: (model, { workspaceServerURL }) => {
     return createOpenAI({
       apiKey: internalAPIKey(),
@@ -116,7 +99,7 @@ export const openaiAdapter = setupProviderAdapter({
           features.push("inputText", "outputText", "tools");
         }
 
-        const tags = getModelTags(providerId);
+        const tags = getModelTags(canonicalModelId);
         if (
           model.id.startsWith("gpt-3") ||
           model.id.startsWith("gpt-4-") ||

@@ -10,43 +10,18 @@ import { Result } from "typescript-result";
 
 import { getCachedResult, setCachedResult } from "../lib/cache";
 import { TypedError } from "../lib/errors";
+import { getModelTags } from "../lib/get-model-tags";
 import { internalAPIKey } from "../lib/key-for-provider";
 import { PROVIDER_API_PATH } from "../lib/provider-paths";
 import { AIGatewayModel } from "../schemas/model";
 import { AIGatewayModelURI } from "../schemas/model-uri";
 import { setupProviderAdapter } from "./setup";
 
-const KNOWN_MODEL_IDS = [
-  "alibaba/qwen3-coder",
-  "alibaba/qwen3-coder-plus",
-  "alibaba/qwen3-max",
-  "anthropic/claude-3.5-haiku",
-  "anthropic/claude-3.7-sonnet",
-  "anthropic/claude-haiku-4.5",
-  "anthropic/claude-opus-4.1",
-  "anthropic/claude-sonnet-4",
-  "anthropic/claude-sonnet-4.5",
-  "google/gemini-2.5-flash",
-  "google/gemini-2.5-pro",
-  "moonshotai/kimi-k2",
-  "moonshotai/kimi-k2-0905",
-  "openai/gpt-5",
-  "openai/gpt-5-codex",
-  "openai/gpt-5-mini",
-  "openai/gpt-5-nano",
-  "xai/grok-4",
-  "xai/grok-code-fast-1",
-  "zai/glm-4.5",
-  "zai/glm-4.5-air",
-  "zai/glm-4.6",
-] as const;
-
 function setAuthHeaders(headers: Headers, apiKey: string) {
   headers.set("Authorization", `Bearer ${apiKey}`);
 }
 
 export const vercelAdapter = setupProviderAdapter({
-  knownModelIds: KNOWN_MODEL_IDS,
   metadata: {
     api: {
       defaultBaseURL: "https://ai-gateway.vercel.sh",
@@ -59,31 +34,8 @@ export const vercelAdapter = setupProviderAdapter({
     tags: ["$5 free credit with card"],
     url: addRef("https://vercel.com/ai-gateway"),
   },
-  modelTags: {
-    "alibaba/qwen3-coder": ["coding", "recommended"],
-    "alibaba/qwen3-coder-plus": ["coding", "recommended"],
-    "alibaba/qwen3-max": ["coding"],
-    "anthropic/claude-3.7-sonnet": ["coding"],
-    "anthropic/claude-haiku-4.5": ["coding", "recommended", "default"],
-    "anthropic/claude-opus-4.1": ["coding"],
-    "anthropic/claude-sonnet-4": ["coding"],
-    "anthropic/claude-sonnet-4.5": ["coding", "recommended"],
-    "google/gemini-2.5-flash": ["recommended"],
-    "google/gemini-2.5-pro": ["coding", "recommended"],
-    "moonshotai/kimi-k2": ["coding"],
-    "moonshotai/kimi-k2-0905": ["coding", "recommended"],
-    "openai/gpt-5": ["coding", "recommended"],
-    "openai/gpt-5-codex": ["coding", "recommended"],
-    "openai/gpt-5-mini": ["coding", "recommended"],
-    "openai/gpt-5-nano": ["recommended"],
-    "xai/grok-4": ["coding"],
-    "xai/grok-code-fast-1": ["coding", "recommended"],
-    "zai/glm-4.5": ["coding", "recommended"],
-    "zai/glm-4.5-air": ["coding", "recommended"],
-    "zai/glm-4.6": ["coding", "recommended"],
-  },
   providerType: "vercel",
-}).create(({ buildURL, getModelTags, metadata, providerType }) => ({
+}).create(({ buildURL, metadata, providerType }) => ({
   aiSDKModel: (model, { workspaceServerURL }) => {
     return createGateway({
       apiKey: internalAPIKey(),
@@ -125,15 +77,8 @@ export const vercelAdapter = setupProviderAdapter({
           );
         }
 
-        const canonicalModelId = yield* Result.try(
-          () => AIGatewayModel.CanonicalIdSchema.parse(modelId),
-          (error) =>
-            new TypedError.Parse(
-              `Failed to parse canonical model ID: ${modelId}`,
-              { cause: error },
-            ),
-        );
-
+        const canonicalModelId =
+          AIGatewayModel.CanonicalIdSchema.parse(modelId);
         const features: AIGatewayModel.ModelFeatures[] = [];
 
         if (model.modelType === "language") {
@@ -141,7 +86,7 @@ export const vercelAdapter = setupProviderAdapter({
           features.push("tools", "inputText", "outputText");
         }
 
-        const tags = getModelTags(providerId);
+        const tags = getModelTags(canonicalModelId);
 
         const params = { provider: providerType, providerConfigId: config.id };
         validModels.push({

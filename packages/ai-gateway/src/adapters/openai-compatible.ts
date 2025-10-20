@@ -6,6 +6,7 @@ import { z } from "zod";
 import { providerTypeToAuthor } from "../lib/author";
 import { TypedError } from "../lib/errors";
 import { fetchJson } from "../lib/fetch-json";
+import { getModelTags } from "../lib/get-model-tags";
 import { internalAPIKey } from "../lib/key-for-provider";
 import { PROVIDER_API_PATH } from "../lib/provider-paths";
 import { AIGatewayModel } from "../schemas/model";
@@ -19,7 +20,6 @@ function setAuthHeaders(headers: Headers, apiKey: string) {
 }
 
 export const openaiCompatibleAdapter = setupProviderAdapter({
-  knownModelIds: [],
   metadata: {
     api: {
       defaultBaseURL: "",
@@ -30,7 +30,6 @@ export const openaiCompatibleAdapter = setupProviderAdapter({
     tags: [],
     url: addRef("https://quests.dev"),
   },
-  modelTags: {},
   providerType: "openai-compatible",
 }).create(({ buildURL, metadata, providerType }) => ({
   aiSDKModel: (model, { workspaceServerURL }) => {
@@ -74,6 +73,7 @@ export const openaiCompatibleAdapter = setupProviderAdapter({
       return modelsResult.data.map((model) => {
         const providerId = AIGatewayModel.ProviderIdSchema.parse(model.id);
         const canonicalId = AIGatewayModel.CanonicalIdSchema.parse(providerId);
+        const tags = getModelTags(canonicalId);
         const params = {
           provider: providerType,
           providerConfigId: config.id,
@@ -87,7 +87,7 @@ export const openaiCompatibleAdapter = setupProviderAdapter({
           providerId,
           providerName: config.displayName ?? metadata.name,
           source: { providerType, value: model },
-          tags: [],
+          tags,
           uri: AIGatewayModelURI.fromModel({
             author,
             canonicalId,

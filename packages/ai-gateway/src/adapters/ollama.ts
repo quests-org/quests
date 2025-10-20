@@ -6,6 +6,7 @@ import { z } from "zod";
 import { providerTypeToAuthor } from "../lib/author";
 import { TypedError } from "../lib/errors";
 import { fetchJson } from "../lib/fetch-json";
+import { getModelTags } from "../lib/get-model-tags";
 import { isModelNew } from "../lib/is-model-new";
 import { internalAPIKey } from "../lib/key-for-provider";
 import { PROVIDER_API_PATH } from "../lib/provider-paths";
@@ -18,7 +19,6 @@ function setAuthHeaders(headers: Headers, apiKey: string) {
 }
 
 export const ollamaAdapter = setupProviderAdapter({
-  knownModelIds: [],
   metadata: {
     api: {
       defaultBaseURL: "http://localhost:11434",
@@ -29,7 +29,6 @@ export const ollamaAdapter = setupProviderAdapter({
     tags: [],
     url: addRef("https://docs.ollama.com"),
   },
-  modelTags: {},
   providerType: "ollama",
 }).create(({ buildURL, metadata, providerType }) => ({
   aiSDKModel: (model, { workspaceServerURL }) => {
@@ -68,7 +67,7 @@ export const ollamaAdapter = setupProviderAdapter({
         const canonicalModelId =
           AIGatewayModel.CanonicalIdSchema.parse(providerId);
 
-        const tags: AIGatewayModel.ModelTag[] = [];
+        const tags = getModelTags(canonicalModelId);
 
         if (isModelNew(model.created)) {
           tags.push("new");
