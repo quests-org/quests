@@ -54,14 +54,31 @@ export async function duplicateProject(
       );
     }
 
-    const statusResult = yield* git(GitCommands.status(), sourceConfig.appDir, {
-      signal,
-    });
+    const sourceGitDir = absolutePathJoin(sourceConfig.appDir, ".git");
+    const hasGitRepo = await pathExists(sourceGitDir);
 
-    if (statusResult.stdout.toString("utf8").trim() !== "") {
+    if (hasGitRepo) {
+      const statusResult = yield* git(
+        GitCommands.status(),
+        sourceConfig.appDir,
+        {
+          signal,
+        },
+      );
+
+      if (statusResult.stdout.toString("utf8").trim() !== "") {
+        yield* git(GitCommands.addAll(), sourceConfig.appDir, { signal });
+        yield* git(
+          GitCommands.commitWithAuthor("Auto-commit before duplicate"),
+          sourceConfig.appDir,
+          { signal },
+        );
+      }
+    } else {
+      yield* git(GitCommands.init(), sourceConfig.appDir, { signal });
       yield* git(GitCommands.addAll(), sourceConfig.appDir, { signal });
       yield* git(
-        GitCommands.commitWithAuthor("Auto-commit before duplicate"),
+        GitCommands.commitWithAuthor("Initial commit"),
         sourceConfig.appDir,
         { signal },
       );
