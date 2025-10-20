@@ -260,10 +260,12 @@ export const spawnRuntimeLogic = fromCallback<
         parentRef.send({ type: "spawnRuntime.exited" });
         return;
       }
-      if ((await isLocalServerRunning(port)) && shouldCheckServer) {
-        shouldCheckServer = false;
-        timeout.cancel();
-        parentRef.send({ type: "spawnRuntime.started", value: { port } });
+      if (await isLocalServerRunning(port)) {
+        if (shouldCheckServer) {
+          shouldCheckServer = false;
+          timeout.cancel();
+          parentRef.send({ type: "spawnRuntime.started", value: { port } });
+        }
         return;
       } else {
         await checkServer();
