@@ -57,12 +57,12 @@ function RouteComponent() {
                   )}
                 </div>
                 <h1 className="text-3xl font-bold">
-                  {hasProvider ? "Setup complete!" : "Configure an AI provider"}
+                  {hasProvider ? "You're all set!" : "Connect your AI service"}
                 </h1>
                 <p className="text-sm text-muted-foreground text-center max-w-md text-balance">
                   {hasProvider
-                    ? "You can now start creating with Quests."
-                    : "Add an AI provider to get started. API keys are encrypted and stored locally."}
+                    ? "Ready to start building amazing things with AI."
+                    : "Connect your an AI service to begin creating. Your API keys stay safe and private on your device."}
                 </p>
               </div>
 
@@ -83,7 +83,7 @@ function RouteComponent() {
                     }}
                     variant="default"
                   >
-                    Add an AI provider
+                    Connect your AI
                   </Button>
                   <SupportedProviders />
                 </div>
