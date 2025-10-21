@@ -847,10 +847,10 @@ describe("sessionMachine", () => {
             <step-start step="1" />
           </assistant>
           <assistant finishReason="aborted" model="mock-model-id" provider="mock-provider">
-            <step-start step="2" />
+            <step-start step="1" />
           </assistant>
           <assistant finishReason="stop" tokens="0" model="mock-model-id" provider="mock-provider">
-            <step-start step="3" />
+            <step-start step="1" />
             <tool tool="read_file" state="output-available" callId="test-call-1">
               <input>
                 {
@@ -871,7 +871,7 @@ describe("sessionMachine", () => {
             </tool>
           </assistant>
           <assistant finishReason="stop" tokens="0" model="mock-model-id" provider="mock-provider">
-            <step-start step="4" />
+            <step-start step="2" />
             <text state="done">I'm done.</text>
           </assistant>
           <session-context code realRole="system" />
@@ -905,7 +905,7 @@ describe("sessionMachine", () => {
             <tool tool="read_file" state="input-streaming" callId="test-call-1"></tool>
           </assistant>
           <assistant finishReason="stop" tokens="0" model="mock-model-id" provider="mock-provider">
-            <step-start step="2" />
+            <step-start step="1" />
             <tool tool="read_file" state="output-available" callId="test-call-1">
               <input>
                 {
@@ -926,7 +926,7 @@ describe("sessionMachine", () => {
             </tool>
           </assistant>
           <assistant finishReason="stop" tokens="0" model="mock-model-id" provider="mock-provider">
-            <step-start step="3" />
+            <step-start step="2" />
             <text state="done">I'm done.</text>
           </assistant>
           <session-context code realRole="system" />
