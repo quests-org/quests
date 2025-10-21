@@ -380,9 +380,6 @@ export const agentMachine = setup({
     },
 
     LLMStreaming: {
-      entry: assign({
-        stepCount: ({ context }) => context.stepCount + 1,
-      }),
       initial: "PendingTimeout",
       invoke: {
         input: ({ context, self }) => {
@@ -472,8 +469,11 @@ export const agentMachine = setup({
         },
         retry: [
           {
+            actions: assign({
+              retryCount: ({ context }) => context.retryCount + 1,
+            }),
             guard: ({ context }) => {
-              return context.retryCount < context.maxRetryCount;
+              return context.retryCount + 1 < context.maxRetryCount;
             },
             target: "RetryingWithDelay",
           },
@@ -544,8 +544,11 @@ export const agentMachine = setup({
     MaybeStartingLLMRequest: {
       always: [
         {
+          actions: assign({
+            stepCount: ({ context }) => context.stepCount + 1,
+          }),
           guard: ({ context }) => {
-            return context.stepCount < context.maxStepCount;
+            return context.stepCount + 1 <= context.maxStepCount;
           },
           target: "LLMStreaming",
         },
@@ -572,9 +575,6 @@ export const agentMachine = setup({
     RetryingWithDelay: {
       after: {
         retryBackoff: {
-          actions: assign({
-            retryCount: ({ context }) => context.retryCount + 1,
-          }),
           target: "LLMStreaming",
         },
       },
