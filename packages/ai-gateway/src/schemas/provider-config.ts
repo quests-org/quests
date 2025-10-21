@@ -2,7 +2,6 @@
 import {
   type AI_GATEWAY_API_KEY_NOT_NEEDED,
   AIProviderConfigIdSchema,
-  AIProviderConfigSubTypeSchema,
   AIProviderTypeSchema,
 } from "@quests/shared";
 import { z } from "zod";
@@ -17,7 +16,6 @@ export namespace AIGatewayProviderConfig {
     cacheIdentifier: z.string(),
     displayName: z.string().optional(),
     id: AIProviderConfigIdSchema,
-    subType: AIProviderConfigSubTypeSchema.optional(),
     type: AIProviderTypeSchema,
   });
   export type Type = z.output<typeof Schema>;

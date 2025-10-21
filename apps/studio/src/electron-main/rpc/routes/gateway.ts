@@ -2,6 +2,7 @@ import { base } from "@/electron-main/rpc/base";
 import { call, eventIterator } from "@orpc/server";
 import {
   AIGatewayModel,
+  AIGatewayProviderConfig,
   fetchModelResultsForProviders,
 } from "@quests/ai-gateway";
 import { z } from "zod";
@@ -9,9 +10,19 @@ import { z } from "zod";
 import { publisher } from "../publisher";
 
 const ListSchema = z.object({
-  errors: z.array(z.string()),
+  errors: z.array(
+    z.object({
+      config: AIGatewayProviderConfig.Schema.pick({
+        displayName: true,
+        type: true,
+      }),
+      message: z.string(),
+    }),
+  ),
   models: z.array(AIGatewayModel.Schema),
 });
+
+type ListErrors = z.output<typeof ListSchema>["errors"];
 
 const list = base
   .errors({
@@ -25,14 +36,17 @@ const list = base
       captureException: context.workspaceConfig.captureException,
     });
 
-    const errors: string[] = [];
+    const errors: ListErrors = [];
     const models: AIGatewayModel.Type[] = [];
 
     for (const modelResults of modelsForProviders) {
       if (modelResults.ok) {
         models.push(...modelResults.value);
       } else {
-        errors.push(modelResults.error.message);
+        errors.push({
+          config: modelResults.error.config,
+          message: modelResults.error.message,
+        });
       }
     }
 

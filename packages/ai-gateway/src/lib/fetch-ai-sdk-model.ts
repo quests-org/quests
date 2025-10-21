@@ -4,9 +4,9 @@ import {
 } from "@quests/shared";
 import { Result } from "typescript-result";
 
-import { getProviderAdapter } from "../adapters/all";
 import { type AIGatewayModelURI } from "../schemas/model-uri";
 import { type AIGatewayProviderConfig } from "../schemas/provider-config";
+import { aiSDKForProviderConfig } from "./ai-sdk-for-provider-config";
 import { TypedError } from "./errors";
 import { fetchModelByURI } from "./fetch-model";
 
@@ -26,16 +26,13 @@ export async function fetchAISDKModel(
       captureException,
     });
 
-    const adapter = getProviderAdapter(model.params.provider);
-    const config = configs.find((p) => p.type === model.params.provider);
+    const config = configs.find((c) => c.id === model.params.providerConfigId);
     if (!config) {
       return Result.error(
         new TypedError.NotFound(`Provider ${model.params.provider} not found`),
       );
     }
-    return adapter.aiSDKModel(model, {
-      cacheIdentifier: config.cacheIdentifier,
-      workspaceServerURL,
-    });
+    const sdk = aiSDKForProviderConfig(config, workspaceServerURL);
+    return sdk(model.providerId);
   });
 }

@@ -86,7 +86,6 @@ export function ModelPicker({
             <div className="shrink-0">
               <AIProviderIcon
                 className="size-3 opacity-90"
-                subType={selectedModel.params.providerSubType}
                 type={selectedModel.params.provider}
               />
             </div>
@@ -259,7 +258,6 @@ export function ModelPicker({
                               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                                 <AIProviderIcon
                                   className="size-3 flex-shrink-0"
-                                  subType={model.params.providerSubType}
                                   type={model.params.provider}
                                 />
                                 <span>{model.providerName}</span>

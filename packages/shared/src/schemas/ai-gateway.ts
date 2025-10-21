@@ -2,23 +2,11 @@ import { z } from "zod";
 
 export const AIProviderTypeSchema = z.enum([
   "anthropic",
-  "google",
-  "ollama",
-  "openai",
-  "openai-compatible",
-  "openrouter",
-  "vercel",
-]);
-export type AIProviderType = z.infer<typeof AIProviderTypeSchema>;
-
-export const AIProviderConfigIdSchema = z.string().brand("AIProviderConfigId");
-export type AIProviderConfigId = z.output<typeof AIProviderConfigIdSchema>;
-
-export const AIProviderConfigSubTypeSchema = z.enum([
   "anyscale",
   "cerebras",
   "deepinfra",
   "fireworks",
+  "google",
   "groq",
   "huggingface",
   "hyperbolic",
@@ -27,11 +15,18 @@ export const AIProviderConfigSubTypeSchema = z.enum([
   "localai",
   "mistral",
   "novita",
+  "ollama",
+  "ollama",
+  "openai",
+  "openai-compatible",
+  "openrouter",
   "perplexity",
   "together",
+  "vercel",
   "x-ai",
   "z-ai",
 ]);
-export type AIProviderConfigSubType = z.infer<
-  typeof AIProviderConfigSubTypeSchema
->;
+export type AIProviderType = z.infer<typeof AIProviderTypeSchema>;
+
+export const AIProviderConfigIdSchema = z.string().brand("AIProviderConfigId");
+export type AIProviderConfigId = z.output<typeof AIProviderConfigIdSchema>;

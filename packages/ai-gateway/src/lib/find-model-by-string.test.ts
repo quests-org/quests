@@ -52,10 +52,6 @@ const createMockModel = ({
     },
     providerId: AIGatewayModel.ProviderIdSchema.parse(providerId),
     providerName: "Test Provider",
-    source: {
-      providerType: "openai",
-      value: { id: providerId },
-    },
     tags: [],
   };
   return {

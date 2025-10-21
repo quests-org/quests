@@ -1,25 +1,22 @@
+import { type OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
 import { type SharedV2ProviderOptions } from "@ai-sdk/provider";
 import { type LanguageModel } from "ai";
-
-import { ALL_PROVIDER_ADAPTERS } from "../adapters/all";
 
 export function providerOptionsForModel(
   model: LanguageModel,
 ): SharedV2ProviderOptions {
   const result: SharedV2ProviderOptions = {};
 
-  for (const adapter of ALL_PROVIDER_ADAPTERS) {
-    const options = adapter.aiSDKProviderOptions?.(model);
-    if (!options) {
-      continue;
-    }
-
-    for (const [key, value] of Object.entries(options)) {
-      if (key in result) {
-        throw new Error(`Duplicate provider option key: ${key}`);
-      }
-      result[key] = value;
-    }
+  if (
+    typeof model !== "string" &&
+    model.provider === "openai.responses" &&
+    // Only gpt-5 and o-series models support reasoning.encrypted_content
+    (model.modelId.startsWith("gpt-5") || model.modelId.startsWith("o-"))
+  ) {
+    result.openai = {
+      include: ["reasoning.encrypted_content"],
+      store: false,
+    } satisfies OpenAIResponsesProviderOptions;
   }
 
   return result;

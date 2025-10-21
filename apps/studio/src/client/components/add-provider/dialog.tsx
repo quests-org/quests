@@ -1,19 +1,17 @@
 import { Dialog, DialogContent } from "@/client/components/ui/dialog";
-import { cn } from "@/client/lib/utils";
+import { fixURL } from "@/client/lib/fix-url";
 import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
 import { type ClientAIProviderConfig } from "@/shared/schemas/provider";
 import { isDefinedError } from "@orpc/client";
 import { AI_GATEWAY_API_KEY_NOT_NEEDED } from "@quests/shared";
 import { useMutation } from "@tanstack/react-query";
-import { useAtom } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 import { useEffect } from "react";
 
 import { addProviderDialogAtom } from "../../atoms/add-provider";
+import { providerMetadataAtom } from "../../atoms/provider-metadata";
 import { selectedModelURIAtom } from "../../atoms/selected-models";
-import { fixURL } from "../../lib/fix-url";
-import { OpenAICompatibleConfigScreen } from "./openai-compatible-config-screen";
-import { ProviderSelectionScreen } from "./provider-selection-screen";
-import { StandardProviderConfigScreen } from "./standard-provider-config-screen";
+import { ProviderConfigScreen } from "./provider-config-screen";
 
 export function AddProviderDialog({
   onOpenChange,
@@ -28,6 +26,7 @@ export function AddProviderDialog({
 }) {
   const [selectedModelURI, setSelectedModelURI] = useAtom(selectedModelURIAtom);
   const [state, dispatch] = useAtom(addProviderDialogAtom);
+  const { providerMetadataMap } = useAtomValue(providerMetadataAtom);
 
   const createMutation = useMutation(
     rpcClient.providerConfig.create.mutationOptions(),
@@ -39,57 +38,24 @@ export function AddProviderDialog({
     }
   }, [open, dispatch]);
 
-  const hasOpenAICompatibleProvider =
-    state.selectedOpenAICompatibleProvider !== undefined;
-  const isCustomProvider = state.isCustomProvider;
-
   const handleSave = async (skipValidation = false) => {
     if (!state.selectedProviderType) {
       return;
     }
 
+    const providerMetadata = providerMetadataMap.get(
+      state.selectedProviderType,
+    );
+    const requiresAPIKey = providerMetadata?.requiresAPIKey ?? true;
     const isOpenAICompatible =
       state.selectedProviderType === "openai-compatible";
 
-    if (isOpenAICompatible) {
-      const requiresAPIKey =
-        hasOpenAICompatibleProvider && state.selectedOpenAICompatibleProvider
-          ? (state.selectedOpenAICompatibleProvider.requiresAPIKey ?? true)
-          : true;
-
-      if (
-        !state.baseURL ||
-        (requiresAPIKey && !state.apiKey) ||
-        (isCustomProvider && !state.displayName.trim())
-      ) {
-        return;
-      }
-    }
-
-    const normalizedBaseURL = isOpenAICompatible
-      ? fixURL(state.baseURL)
-      : undefined;
+    const normalizedBaseURL =
+      isOpenAICompatible && state.baseURL ? fixURL(state.baseURL) : undefined;
 
     if (normalizedBaseURL && normalizedBaseURL !== state.baseURL) {
       dispatch({ type: "SET_BASE_URL", value: normalizedBaseURL });
     }
-
-    const finalDisplayName = hasOpenAICompatibleProvider
-      ? state.selectedOpenAICompatibleProvider?.name
-      : state.displayName.trim() || undefined;
-
-    const subType = hasOpenAICompatibleProvider
-      ? state.selectedOpenAICompatibleProvider?.subType
-      : undefined;
-
-    const requiresAPIKey = (() => {
-      if (isOpenAICompatible) {
-        return hasOpenAICompatibleProvider
-          ? (state.selectedOpenAICompatibleProvider?.requiresAPIKey ?? true)
-          : true;
-      }
-      return true;
-    })();
 
     try {
       await createMutation.mutateAsync(
@@ -99,8 +65,10 @@ export function AddProviderDialog({
               ? state.apiKey
               : AI_GATEWAY_API_KEY_NOT_NEEDED,
             baseURL: normalizedBaseURL,
-            displayName: finalDisplayName,
-            subType,
+            displayName:
+              isOpenAICompatible && state.displayName.trim()
+                ? state.displayName.trim()
+                : undefined,
             type: state.selectedProviderType,
           },
           skipValidation,
@@ -140,31 +108,12 @@ export function AddProviderDialog({
 
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent
-        className={cn(
-          "transition-none",
-          state.stage === "configuration" ? "sm:max-w-lg" : "sm:max-w-xl",
-        )}
-      >
-        {state.stage === "provider-selection" && (
-          <ProviderSelectionScreen providers={providers} />
-        )}
-        {state.stage === "configuration" &&
-          state.selectedProviderType &&
-          state.selectedProviderType !== "openai-compatible" && (
-            <StandardProviderConfigScreen
-              onSave={handleSave}
-              providerType={state.selectedProviderType}
-              saving={createMutation.isPending}
-            />
-          )}
-        {state.stage === "configuration" &&
-          state.selectedProviderType === "openai-compatible" && (
-            <OpenAICompatibleConfigScreen
-              onSave={handleSave}
-              saving={createMutation.isPending}
-            />
-          )}
+      <DialogContent className="transition-none sm:max-w-lg">
+        <ProviderConfigScreen
+          onSave={handleSave}
+          providers={providers}
+          saving={createMutation.isPending}
+        />
       </DialogContent>
     </Dialog>
   );

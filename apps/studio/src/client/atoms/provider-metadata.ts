@@ -33,7 +33,12 @@ const baseProviderMetadataAtom = atom(async () => {
       providerMetadataMap: metadataMap,
       sortedProviderMetadata: sort(
         [...metadataMap.values()],
-        (metadata) => Number(metadata.tags.includes(RECOMMENDED_TAG)),
+        (metadata) => {
+          if (metadata.type === "openai-compatible") {
+            return -1;
+          }
+          return Number(metadata.tags.includes(RECOMMENDED_TAG));
+        },
         true,
       ),
     };

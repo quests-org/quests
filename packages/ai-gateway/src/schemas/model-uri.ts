@@ -1,8 +1,6 @@
 import {
   type AIProviderConfigId,
   AIProviderConfigIdSchema,
-  type AIProviderConfigSubType,
-  AIProviderConfigSubTypeSchema,
   type AIProviderType,
   AIProviderTypeSchema,
 } from "@quests/shared";
@@ -18,7 +16,6 @@ export namespace AIGatewayModelURI {
   export const ParamsSchema = z.object({
     provider: AIProviderTypeSchema,
     providerConfigId: AIProviderConfigIdSchema,
-    providerSubType: AIProviderConfigSubTypeSchema.optional(),
   });
   export type Params = z.output<typeof ParamsSchema>;
   export const CanonicalIdSchema = z
@@ -45,7 +42,6 @@ export namespace AIGatewayModelURI {
     params: {
       provider: AIProviderType;
       providerConfigId: AIProviderConfigId;
-      providerSubType?: AIProviderConfigSubType;
     };
   }) {
     const { author, canonicalId, params } = model;

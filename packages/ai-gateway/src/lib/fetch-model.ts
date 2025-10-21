@@ -1,12 +1,12 @@
 import { type CaptureExceptionFunction } from "@quests/shared";
 import { Result } from "typescript-result";
 
-import { getProviderAdapter } from "../adapters/all";
 import { AIGatewayModelURI } from "../schemas/model-uri";
 import { type AIGatewayProviderConfig } from "../schemas/provider-config";
 import { TypedError } from "./errors";
 import { fetchModelsForProviders } from "./fetch-models";
 import { findModelByString } from "./find-model-by-string";
+import { fetchModels } from "./models";
 
 export async function fetchModelByString(
   {
@@ -50,8 +50,7 @@ export async function fetchModelByURI(
       );
     }
 
-    const adapter = getProviderAdapter(config.type);
-    const models = yield* await adapter.fetchModels(config, {
+    const models = yield* await fetchModels(config, {
       captureException,
     });
 

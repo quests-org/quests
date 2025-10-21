@@ -3,44 +3,31 @@ import { type MiddlewareHandler } from "hono";
 import { type AIGatewayEnv } from "../types";
 import { getInternalKey } from "./key-for-provider";
 
-export function createBearerAuthMiddleware(): MiddlewareHandler<AIGatewayEnv> {
+export function createAuthMiddleware(): MiddlewareHandler<AIGatewayEnv> {
   return async (c, next) => {
+    const expectedKey = getInternalKey();
+
     const authHeader = c.req.header("Authorization");
-    const expectedKey = getInternalKey();
-
-    if (!authHeader?.startsWith("Bearer ")) {
-      return c.json({ error: "Missing Quests internal Bearer header" }, 401);
+    if (authHeader?.startsWith("Bearer ")) {
+      const token = authHeader.slice(7);
+      if (token === expectedKey) {
+        await next();
+        return;
+      }
     }
 
-    const token = authHeader.slice(7);
-    if (token !== expectedKey) {
-      return c.json({ error: "Invalid Quests internal API key" }, 401);
+    const xApiKey = c.req.header("X-API-Key");
+    if (xApiKey === expectedKey) {
+      await next();
+      return;
     }
 
-    await next();
-    return;
-  };
-}
-
-export function createHeaderAuthMiddleware(
-  headerName: string,
-): MiddlewareHandler<AIGatewayEnv> {
-  return async (c, next) => {
-    const apiKeyHeader = c.req.header(headerName);
-    const expectedKey = getInternalKey();
-
-    if (!apiKeyHeader) {
-      return c.json(
-        { error: `Missing Quests internal ${headerName} header` },
-        401,
-      );
+    const googApiKey = c.req.header("x-goog-api-key");
+    if (googApiKey === expectedKey) {
+      await next();
+      return;
     }
 
-    if (apiKeyHeader !== expectedKey) {
-      return c.json({ error: "Invalid Quests internal API key" }, 401);
-    }
-
-    await next();
-    return;
+    return c.json({ error: "Missing or invalid Quests internal API key" }, 401);
   };
 }

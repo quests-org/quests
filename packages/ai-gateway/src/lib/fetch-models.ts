@@ -2,9 +2,9 @@ import { type CaptureExceptionFunction } from "@quests/shared";
 import { parallel } from "radashi";
 import { Result } from "typescript-result";
 
-import { getProviderAdapter } from "../adapters/all";
 import { type AIGatewayProviderConfig } from "../schemas/provider-config";
 import { TypedError } from "./errors";
+import { fetchModels } from "./models";
 
 export async function fetchModelResultsForProviders(
   configs: AIGatewayProviderConfig.Type[],
@@ -21,8 +21,7 @@ export function fetchModelsForProvider(
 ) {
   return Result.fromAsyncCatching(
     async () => {
-      const adapter = getProviderAdapter(config.type);
-      return await adapter.fetchModels(config, { captureException });
+      return await fetchModels(config, { captureException });
     },
     (error) => {
       captureException(error);

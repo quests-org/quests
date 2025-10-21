@@ -3,9 +3,10 @@ import { ClientAIProviderConfigSchema } from "@/shared/schemas/provider";
 import { call, eventIterator } from "@orpc/server";
 import {
   AIGatewayProviderConfig,
-  getAllProviderAdapters,
-  getProviderAdapter,
-  ProviderMetadataWithTypeSchema,
+  fetchCredits,
+  getAllProviderMetadata,
+  ProviderMetadataSchema,
+  verifyAPIKey,
 } from "@quests/ai-gateway";
 import { AIProviderConfigIdSchema } from "@quests/shared";
 import { safeStorage } from "electron";
@@ -114,9 +115,7 @@ const create = base
       }
 
       if (!skipValidation) {
-        const adapter = getProviderAdapter(newConfig.type);
-
-        const result = await adapter.verifyAPIKey(newConfig);
+        const result = await verifyAPIKey(newConfig);
 
         if (!result.ok) {
           context.workspaceConfig.captureEvent("provider.verification_failed", {
@@ -161,6 +160,11 @@ const credits = base
   .use(cacheMiddleware)
   .errors({ FETCH_FAILED: {} })
   .input(z.object({ providerType: z.enum(["openrouter"]) }))
+  .output(
+    z.object({
+      credits: z.object({ total_credits: z.number(), total_usage: z.number() }),
+    }),
+  )
   .handler(async ({ errors, input }) => {
     const providersStore = getProviderConfigsStore();
     const providerConfig = providersStore
@@ -171,13 +175,7 @@ const credits = base
       throw errors.NOT_FOUND();
     }
 
-    const adapter = getProviderAdapter(providerConfig.type);
-    if (!adapter.fetchCredits) {
-      throw errors.NOT_FOUND({
-        message: "Provider does not support fetching credits",
-      });
-    }
-    const result = await adapter.fetchCredits(providerConfig);
+    const result = await fetchCredits(providerConfig);
     if (!result.ok) {
       throw errors.FETCH_FAILED({ message: result.error.message });
     }
@@ -222,18 +220,9 @@ const safeStorageInfo = base
   });
 
 const listMetadata = base
-  .output(z.array(ProviderMetadataWithTypeSchema))
+  .output(z.array(ProviderMetadataSchema))
   .handler(() => {
-    return getAllProviderAdapters().map((adapter) => ({
-      ...adapter.metadata,
-      type: adapter.providerType,
-    }));
-  });
-
-const byTypeMetadata = base
-  .input(z.object({ type: ProviderMetadataWithTypeSchema.shape.type }))
-  .handler(({ input }) => {
-    return getProviderAdapter(input.type).metadata;
+    return getAllProviderMetadata();
   });
 
 export const providerConfig = {
@@ -242,7 +231,6 @@ export const providerConfig = {
   list,
   live,
   metadata: {
-    byType: byTypeMetadata,
     list: listMetadata,
   },
   remove,

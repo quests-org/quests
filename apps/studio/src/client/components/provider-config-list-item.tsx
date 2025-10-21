@@ -41,7 +41,7 @@ export function ProviderConfigListItem({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="flex items-center justify-center size-8">
-            <AIProviderIcon subType={config.subType} type={config.type} />
+            <AIProviderIcon type={config.type} />
           </div>
           <div>
             <div className="flex items-center gap-2">

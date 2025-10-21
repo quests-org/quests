@@ -101,7 +101,6 @@ export function NavUser({ user }: { user: User }) {
                 <DropdownMenuItem>
                   <AIProviderIcon
                     className="size-4 shrink-0"
-                    subType={openRouterProvider.subType}
                     type="openrouter"
                   />
                   <span>

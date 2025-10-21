@@ -15,11 +15,6 @@ describe("AIGatewayModelURI.parse", () => {
       valid: true,
     },
     {
-      description: "valid model URI with providerSubType",
-      uri: "openai/gpt-4?provider=openai&providerConfigId=openai-config-id&providerSubType=groq",
-      valid: true,
-    },
-    {
       description: "valid model URI with special characters in canonicalId",
       uri: "google/gemini-1.5-pro-002?provider=google&providerConfigId=google-config-id",
       valid: true,

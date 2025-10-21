@@ -18,6 +18,42 @@ import { project } from "../src/rpc/routes/project";
 import { StoreId } from "../src/schemas/store-id";
 import { env } from "./lib/env";
 
+const cacheIdentifier = "quests-run-workspace";
+const PROVIDER_CONFIGS: AIGatewayProviderConfig.Type[] = [
+  {
+    apiKey: "ollama",
+    cacheIdentifier,
+    id: AIProviderConfigIdSchema.parse(ulid()),
+    type: "ollama",
+  },
+];
+
+const providerConfigs: {
+  envKey: keyof typeof env;
+  type: AIGatewayProviderConfig.Type["type"];
+}[] = [
+  { envKey: "QUESTS_OPENAI_API_KEY", type: "openai" },
+  { envKey: "QUESTS_OPENROUTER_API_KEY", type: "openrouter" },
+  { envKey: "QUESTS_ANTHROPIC_API_KEY", type: "anthropic" },
+  { envKey: "QUESTS_GOOGLE_API_KEY", type: "google" },
+  { envKey: "QUESTS_AI_GATEWAY_API_KEY", type: "vercel" },
+  { envKey: "QUESTS_ZAI_API_KEY", type: "z-ai" },
+  { envKey: "QUESTS_CEREBRAS_API_KEY", type: "cerebras" },
+  { envKey: "QUESTS_GROQ_API_KEY", type: "groq" },
+];
+
+for (const { envKey, type } of providerConfigs) {
+  const apiKey = env[envKey];
+  if (apiKey) {
+    PROVIDER_CONFIGS.push({
+      apiKey,
+      cacheIdentifier,
+      id: AIProviderConfigIdSchema.parse(ulid()),
+      type,
+    });
+  }
+}
+
 const registryDir = path.resolve("../../registry");
 const actor = createActor(workspaceMachine, {
   input: {
@@ -30,75 +66,7 @@ const actor = createActor(workspaceMachine, {
       // eslint-disable-next-line no-console
       console.error("captureException", args);
     },
-    getAIProviderConfigs: () => {
-      const cacheIdentifier = "quests-run-workspace";
-      const providerConfigs: AIGatewayProviderConfig.Type[] = [
-        {
-          apiKey: "ollama",
-          cacheIdentifier,
-          id: AIProviderConfigIdSchema.parse(ulid()),
-          type: "ollama",
-        },
-      ];
-
-      if (env.QUESTS_OPENAI_API_KEY) {
-        providerConfigs.push({
-          apiKey: env.QUESTS_OPENAI_API_KEY,
-          cacheIdentifier,
-          id: AIProviderConfigIdSchema.parse(ulid()),
-          type: "openai",
-        });
-      }
-
-      if (env.QUESTS_OPENROUTER_API_KEY) {
-        providerConfigs.push({
-          apiKey: env.QUESTS_OPENROUTER_API_KEY,
-          cacheIdentifier,
-          id: AIProviderConfigIdSchema.parse(ulid()),
-          type: "openrouter",
-        });
-      }
-
-      if (env.QUESTS_ANTHROPIC_API_KEY) {
-        providerConfigs.push({
-          apiKey: env.QUESTS_ANTHROPIC_API_KEY,
-          cacheIdentifier,
-          id: AIProviderConfigIdSchema.parse(ulid()),
-          type: "anthropic",
-        });
-      }
-
-      if (env.QUESTS_GOOGLE_API_KEY) {
-        providerConfigs.push({
-          apiKey: env.QUESTS_GOOGLE_API_KEY,
-          cacheIdentifier,
-          id: AIProviderConfigIdSchema.parse(ulid()),
-          type: "google",
-        });
-      }
-
-      if (env.QUESTS_AI_GATEWAY_API_KEY) {
-        providerConfigs.push({
-          apiKey: env.QUESTS_AI_GATEWAY_API_KEY,
-          cacheIdentifier,
-          id: AIProviderConfigIdSchema.parse(ulid()),
-          type: "vercel",
-        });
-      }
-
-      if (env.QUESTS_ZAI_API_KEY) {
-        providerConfigs.push({
-          apiKey: env.QUESTS_ZAI_API_KEY,
-          baseURL: "https://api.z.ai/api/coding/paas/v4",
-          cacheIdentifier,
-          id: AIProviderConfigIdSchema.parse(ulid()),
-          subType: "z-ai",
-          type: "openai-compatible",
-        });
-      }
-
-      return providerConfigs;
-    },
+    getAIProviderConfigs: () => PROVIDER_CONFIGS,
     nodeExecEnv: {},
     pnpmBinPath: await execa({ reject: false })`which pnpm`.then(
       (result) => result.stdout.trim() || "pnpm",
