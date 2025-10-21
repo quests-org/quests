@@ -2,7 +2,7 @@ import { AI_GATEWAY_API_PATH } from "@quests/shared";
 import { type Context, Hono } from "hono";
 import { proxy } from "hono/proxy";
 import { unique } from "radashi";
-import z from "zod";
+import { z } from "zod";
 
 import { OPENAI_COMPATIBLE_PATH, PROVIDERS_PATH } from "../constants";
 import { fetchModelByString } from "../lib/fetch-model";
