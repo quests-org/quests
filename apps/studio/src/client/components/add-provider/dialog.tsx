@@ -65,10 +65,7 @@ export function AddProviderDialog({
               ? state.apiKey
               : AI_GATEWAY_API_KEY_NOT_NEEDED,
             baseURL: normalizedBaseURL,
-            displayName:
-              isOpenAICompatible && state.displayName.trim()
-                ? state.displayName.trim()
-                : undefined,
+            displayName: state.displayName.trim() || undefined,
             type: state.selectedProviderType,
           },
           skipValidation,
@@ -76,13 +73,16 @@ export function AddProviderDialog({
         {
           onError: (error) => {
             if (isDefinedError(error)) {
+              const isBadRequest = error.code === "BAD_REQUEST";
               dispatch({
+                allowBypass: !isBadRequest,
                 message: error.message,
                 type: "SET_ERROR",
                 validationFailed: true,
               });
             } else {
               dispatch({
+                allowBypass: false,
                 message: "Failed to validate provider",
                 type: "SET_ERROR",
                 validationFailed: true,

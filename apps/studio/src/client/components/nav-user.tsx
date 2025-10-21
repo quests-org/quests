@@ -46,10 +46,10 @@ export function NavUser({ user }: { user: User }) {
 
   const { data: openRouterCredits } = useQuery({
     ...rpcClient.providerConfig.credits.queryOptions({
-      input: { providerType: "openrouter" },
+      input: { id: openRouterProvider?.id ?? "" },
     }),
     enabled: Boolean(openRouterProvider),
-    refetchInterval: 30_000, // Refetch every 30 seconds
+    refetchInterval: 30_000,
   });
 
   return (

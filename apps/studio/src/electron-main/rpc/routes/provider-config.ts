@@ -86,6 +86,7 @@ const update = base
   });
 
 const create = base
+  .errors({ BAD_REQUEST: {} })
   .input(
     z.object({
       config: AIGatewayProviderConfig.Schema.omit({
@@ -104,13 +105,14 @@ const create = base
       const providersStore = getProviderConfigsStore();
       const existingConfigs = providersStore.get("providers");
 
-      const existingConfig = existingConfigs.find(
-        (p) => p.type === newConfig.type,
+      const duplicateProvider = existingConfigs.find(
+        (p) =>
+          p.type === newConfig.type && p.displayName === newConfig.displayName,
       );
-      if (existingConfig) {
-        throw errors.UNAUTHORIZED({
-          message:
-            "A provider of this type already exists. Only one provider per type is allowed.",
+
+      if (duplicateProvider) {
+        throw errors.BAD_REQUEST({
+          message: `A provider of type "${newConfig.type}" with the name "${newConfig.displayName ?? ""}" already exists`,
         });
       }
 
@@ -159,7 +161,7 @@ const credits = base
   })
   .use(cacheMiddleware)
   .errors({ FETCH_FAILED: {} })
-  .input(z.object({ providerType: z.enum(["openrouter"]) }))
+  .input(z.object({ id: AIProviderConfigIdSchema }))
   .output(
     z.object({
       credits: z.object({ total_credits: z.number(), total_usage: z.number() }),
@@ -169,7 +171,7 @@ const credits = base
     const providersStore = getProviderConfigsStore();
     const providerConfig = providersStore
       .get("providers")
-      .find((p) => p.type === input.providerType);
+      .find((p) => p.id === input.id);
 
     if (!providerConfig) {
       throw errors.NOT_FOUND();

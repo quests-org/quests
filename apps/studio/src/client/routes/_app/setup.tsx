@@ -61,7 +61,7 @@ function RouteComponent() {
                 </h1>
                 <p className="text-sm text-muted-foreground text-center max-w-md text-balance">
                   {hasProvider
-                    ? "Ready to start building amazing things with AI."
+                    ? "You're now ready to start building!"
                     : "Connect your an AI service to begin creating. Your API keys stay safe and private on your device."}
                 </p>
               </div>

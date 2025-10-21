@@ -12,7 +12,7 @@ import {
 import { createOllama } from "ollama-ai-provider-v2";
 
 import { type AIGatewayProviderConfig } from "../schemas/provider-config";
-import { apiBaseURL } from "./api-base-url";
+import { internalURL } from "./internal-url";
 import { internalAPIKey } from "./key-for-provider";
 
 export function aiSDKForProviderConfig(
@@ -23,18 +23,18 @@ export function aiSDKForProviderConfig(
     case "anthropic": {
       return createAnthropic({
         apiKey: internalAPIKey(),
-        baseURL: apiBaseURL({ type: config.type, workspaceServerURL }),
+        baseURL: internalURL({ config, workspaceServerURL }),
       });
     }
     case "google": {
       return createGoogleGenerativeAI({
         apiKey: internalAPIKey(),
-        baseURL: apiBaseURL({ type: config.type, workspaceServerURL }),
+        baseURL: internalURL({ config, workspaceServerURL }),
       });
     }
     case "ollama": {
       return createOllama({
-        baseURL: apiBaseURL({ type: config.type, workspaceServerURL }),
+        baseURL: internalURL({ config, workspaceServerURL }),
         headers: {
           Authorization: `Bearer ${internalAPIKey()}`,
         },
@@ -43,13 +43,13 @@ export function aiSDKForProviderConfig(
     case "openai": {
       return createOpenAI({
         apiKey: internalAPIKey(),
-        baseURL: apiBaseURL({ type: config.type, workspaceServerURL }),
+        baseURL: internalURL({ config, workspaceServerURL }),
       });
     }
     case "openrouter": {
       return createOpenRouter({
         apiKey: internalAPIKey(),
-        baseURL: apiBaseURL({ type: config.type, workspaceServerURL }),
+        baseURL: internalURL({ config, workspaceServerURL }),
         extraBody: {
           user: config.cacheIdentifier,
         },
@@ -62,7 +62,7 @@ export function aiSDKForProviderConfig(
     case "vercel": {
       return createGateway({
         apiKey: internalAPIKey(),
-        baseURL: apiBaseURL({ type: config.type, workspaceServerURL }),
+        baseURL: internalURL({ config, workspaceServerURL }),
         headers: {
           "http-referer": ATTRIBUTION_URL,
           "x-title": ATTRIBUTION_NAME,
@@ -72,7 +72,7 @@ export function aiSDKForProviderConfig(
     default: {
       return createOpenAICompatible({
         apiKey: internalAPIKey(),
-        baseURL: apiBaseURL({ type: "openai-compatible", workspaceServerURL }),
+        baseURL: internalURL({ config, workspaceServerURL }),
         name: config.type,
       });
     }

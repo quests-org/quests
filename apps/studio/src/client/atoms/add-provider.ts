@@ -2,8 +2,17 @@ import { type AIProviderType } from "@quests/shared";
 import { atomWithReducer } from "jotai/utils";
 
 type AddProviderAction =
-  | { message: string; type: "SET_ERROR"; validationFailed: boolean }
-  | { providerType: AIProviderType; type: "SELECT_PROVIDER" }
+  | {
+      allowBypass: boolean;
+      message: string;
+      type: "SET_ERROR";
+      validationFailed: boolean;
+    }
+  | {
+      displayName?: string;
+      providerType: AIProviderType;
+      type: "SELECT_PROVIDER";
+    }
   | { type: "CLEAR_ERROR" }
   | { type: "RESET" }
   | { type: "SET_API_KEY"; value: string }
@@ -11,6 +20,7 @@ type AddProviderAction =
   | { type: "SET_DISPLAY_NAME"; value: string };
 
 interface AddProviderState {
+  allowBypass: boolean;
   apiKey: string;
   baseURL: string;
   displayName: string;
@@ -20,6 +30,7 @@ interface AddProviderState {
 }
 
 const initialState: AddProviderState = {
+  allowBypass: false,
   apiKey: "",
   baseURL: "",
   displayName: "",
@@ -36,6 +47,7 @@ function addProviderReducer(
     case "CLEAR_ERROR": {
       return {
         ...state,
+        allowBypass: false,
         errorMessage: null,
         validationFailed: false,
       };
@@ -48,8 +60,9 @@ function addProviderReducer(
     case "SELECT_PROVIDER": {
       return {
         ...state,
+        allowBypass: false,
         baseURL: "",
-        displayName: "",
+        displayName: action.displayName ?? "",
         errorMessage: null,
         selectedProviderType: action.providerType,
         validationFailed: false,
@@ -59,6 +72,7 @@ function addProviderReducer(
     case "SET_API_KEY": {
       return {
         ...state,
+        allowBypass: false,
         apiKey: action.value,
         errorMessage: null,
         validationFailed: false,
@@ -68,6 +82,7 @@ function addProviderReducer(
     case "SET_BASE_URL": {
       return {
         ...state,
+        allowBypass: false,
         baseURL: action.value,
         errorMessage: null,
         validationFailed: false,
@@ -84,6 +99,7 @@ function addProviderReducer(
     case "SET_ERROR": {
       return {
         ...state,
+        allowBypass: action.allowBypass,
         errorMessage: action.message,
         validationFailed: action.validationFailed,
       };

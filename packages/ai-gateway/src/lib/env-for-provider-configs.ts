@@ -1,9 +1,13 @@
-import { type WorkspaceServerURL } from "@quests/shared";
+import { AI_GATEWAY_API_PATH, type WorkspaceServerURL } from "@quests/shared";
 
-import { DEFAULT_OPENAI_MODEL } from "../constants";
+import {
+  DEFAULT_OPENAI_MODEL,
+  OPENAI_COMPATIBLE_PATH,
+  PROVIDERS_PATH,
+} from "../constants";
 import { internalAPIKey } from "../lib/key-for-provider";
 import { type AIGatewayProviderConfig } from "../schemas/provider-config";
-import { apiBaseURL } from "./api-base-url";
+import { internalURL } from "./internal-url";
 import { isOpenAICompatible } from "./providers/is-openai-compatible";
 
 export function envForProviderConfigs({
@@ -19,8 +23,8 @@ export function envForProviderConfigs({
     switch (config.type) {
       case "anthropic": {
         env.ANTHROPIC_API_KEY = internalAPIKey();
-        env.ANTHROPIC_BASE_URL = apiBaseURL({
-          type: config.type,
+        env.ANTHROPIC_BASE_URL = internalURL({
+          config,
           workspaceServerURL,
         });
         break;
@@ -28,46 +32,46 @@ export function envForProviderConfigs({
       case "google": {
         // For @google/genai
         env.GEMINI_API_KEY = internalAPIKey();
-        env.GEMINI_BASE_URL = apiBaseURL({
-          type: config.type,
+        env.GEMINI_BASE_URL = internalURL({
+          config,
           workspaceServerURL,
         });
         // For @ai-sdk/google
         env.GOOGLE_GENERATIVE_AI_API_KEY = internalAPIKey();
-        env.GOOGLE_GENERATIVE_AI_BASE_URL = apiBaseURL({
-          type: config.type,
+        env.GOOGLE_GENERATIVE_AI_BASE_URL = internalURL({
+          config,
           workspaceServerURL,
         });
         break;
       }
       case "ollama": {
         env.OLLAMA_API_KEY = internalAPIKey();
-        env.OLLAMA_BASE_URL = apiBaseURL({
-          type: config.type,
+        env.OLLAMA_BASE_URL = internalURL({
+          config,
           workspaceServerURL,
         });
         break;
       }
       case "openai": {
         env.OPENAI_API_KEY = internalAPIKey();
-        env.OPENAI_BASE_URL = apiBaseURL({
-          type: config.type,
+        env.OPENAI_BASE_URL = internalURL({
+          config,
           workspaceServerURL,
         });
         break;
       }
       case "openrouter": {
         env.OPENROUTER_API_KEY = internalAPIKey();
-        env.OPENROUTER_BASE_URL = apiBaseURL({
-          type: config.type,
+        env.OPENROUTER_BASE_URL = internalURL({
+          config,
           workspaceServerURL,
         });
         break;
       }
       case "vercel": {
         env.AI_GATEWAY_API_KEY = internalAPIKey();
-        env.AI_GATEWAY_BASE_URL = apiBaseURL({
-          type: config.type,
+        env.AI_GATEWAY_BASE_URL = internalURL({
+          config,
           workspaceServerURL,
         });
         break;
@@ -85,10 +89,12 @@ export function envForProviderConfigs({
     );
     if (hasNonOpenAICompatibleConfig) {
       env.OPENAI_API_KEY = internalAPIKey();
-      env.OPENAI_BASE_URL = apiBaseURL({
-        type: "openai-compatible",
+      env.OPENAI_BASE_URL = [
         workspaceServerURL,
-      });
+        AI_GATEWAY_API_PATH,
+        PROVIDERS_PATH,
+        OPENAI_COMPATIBLE_PATH,
+      ].join("");
     }
   }
 

@@ -94,9 +94,7 @@ export function AIProviderEditDialog({
     onOpenChange(false);
   };
 
-  const hasChanges =
-    config.type === "openai-compatible" &&
-    displayName.trim() !== (config.displayName || "");
+  const hasChanges = displayName.trim() !== (config.displayName || "");
 
   if (!providerMetadata) {
     return null;
@@ -113,23 +111,25 @@ export function AIProviderEditDialog({
           <DialogDescription>{providerMetadata.description}</DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
-          {config.type === "openai-compatible" && (
-            <div className="space-y-3">
-              <div className="space-y-1">
-                <Label htmlFor="display-name">Name</Label>
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <Label htmlFor="display-name">Name</Label>
+              <div className="text-xs text-muted-foreground">
+                Custom name to identify this provider
               </div>
-              <Input
-                id="display-name"
-                onChange={(e) => {
-                  setDisplayName(e.target.value);
-                }}
-                placeholder="E.g. My Custom Provider"
-                spellCheck={false}
-                type="text"
-                value={displayName}
-              />
             </div>
-          )}
+            <Input
+              id="display-name"
+              onChange={(e) => {
+                setDisplayName(e.target.value);
+                setErrorMessage(null);
+              }}
+              placeholder={`E.g. ${providerMetadata.name}`}
+              spellCheck={false}
+              type="text"
+              value={displayName}
+            />
+          </div>
 
           {config.type === "openai-compatible" && config.baseURL && (
             <div className="space-y-3">
@@ -180,14 +180,6 @@ export function AIProviderEditDialog({
               )}
             </div>
           )}
-          {!providerMetadata.requiresAPIKey &&
-            config.type !== "openai-compatible" && (
-              <Alert>
-                <AlertDescription className="text-center">
-                  No additional configuration required for this provider.
-                </AlertDescription>
-              </Alert>
-            )}
           {errorMessage && (
             <Alert variant="destructive">
               <AlertCircle />
@@ -195,44 +187,29 @@ export function AIProviderEditDialog({
             </Alert>
           )}
         </div>
-        {config.type === "openai-compatible" ? (
-          <DialogFooter className="flex items-center">
-            <Button
-              disabled={removeMutation.isPending || updateMutation.isPending}
-              onClick={handleRemove}
-              variant="ghost-destructive"
-            >
-              {removeMutation.isPending ? "Removing..." : "Remove"}
-            </Button>
-            <div className="flex-1" />
-            <Button onClick={handleClose} type="button" variant="secondary">
-              Cancel
-            </Button>
-            <Button
-              disabled={
-                !hasChanges ||
-                updateMutation.isPending ||
-                removeMutation.isPending
-              }
-              onClick={handleSave}
-            >
-              {updateMutation.isPending ? "Saving..." : "Save"}
-            </Button>
-          </DialogFooter>
-        ) : (
-          <DialogFooter className="flex gap-2">
-            <Button onClick={handleClose} type="button" variant="secondary">
-              Cancel
-            </Button>
-            <Button
-              disabled={removeMutation.isPending || updateMutation.isPending}
-              onClick={handleRemove}
-              variant="destructive"
-            >
-              {removeMutation.isPending ? "Removing..." : "Remove"}
-            </Button>
-          </DialogFooter>
-        )}
+        <DialogFooter className="flex items-center">
+          <Button
+            disabled={removeMutation.isPending || updateMutation.isPending}
+            onClick={handleRemove}
+            variant="ghost-destructive"
+          >
+            {removeMutation.isPending ? "Removing..." : "Remove"}
+          </Button>
+          <div className="flex-1" />
+          <Button onClick={handleClose} type="button" variant="secondary">
+            Cancel
+          </Button>
+          <Button
+            disabled={
+              !hasChanges ||
+              updateMutation.isPending ||
+              removeMutation.isPending
+            }
+            onClick={handleSave}
+          >
+            {updateMutation.isPending ? "Saving..." : "Save"}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

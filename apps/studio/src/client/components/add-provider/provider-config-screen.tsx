@@ -8,10 +8,11 @@ import {
 } from "@/client/components/ui/dialog";
 import { Input } from "@/client/components/ui/input";
 import { Label } from "@/client/components/ui/label";
+import { type ClientAIProviderConfig } from "@/shared/schemas/provider";
 import { type AIProviderType } from "@quests/shared";
 import { useAtom, useAtomValue } from "jotai";
 import { AlertCircle, Lock } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 
 import { addProviderDialogAtom } from "../../atoms/add-provider";
 import { ProviderPicker } from "../provider-picker";
@@ -24,11 +25,13 @@ export function ProviderConfigScreen({
   saving,
 }: {
   onSave: (skipValidation?: boolean) => Promise<void>;
-  providers: { type: AIProviderType }[];
+  providers: ClientAIProviderConfig[];
   saving: boolean;
 }) {
   const { providerMetadataMap } = useAtomValue(providerMetadataAtom);
   const [state, dispatch] = useAtom(addProviderDialogAtom);
+  const displayNameInputRef = useRef<HTMLInputElement>(null);
+  const apiKeyInputRef = useRef<HTMLInputElement>(null);
 
   const providerMetadata = useMemo(() => {
     return state.selectedProviderType
@@ -39,10 +42,17 @@ export function ProviderConfigScreen({
   const requiresAPIKey = providerMetadata?.requiresAPIKey ?? true;
   const isOpenAICompatible = state.selectedProviderType === "openai-compatible";
 
+  const isSecondProviderOfSameType = state.selectedProviderType
+    ? providers.some((p) => p.type === state.selectedProviderType)
+    : false;
+
+  const hasSelectedProvider = state.selectedProviderType !== undefined;
+  const hasAPIKey = !requiresAPIKey || Boolean(state.apiKey.trim());
+  const hasDisplayName = Boolean(state.displayName.trim());
+  const hasValidBaseURL = !isOpenAICompatible || Boolean(state.baseURL.trim());
+
   const isFormValid =
-    state.selectedProviderType !== undefined &&
-    (!requiresAPIKey || state.apiKey) &&
-    (!isOpenAICompatible || (state.baseURL && state.displayName));
+    hasSelectedProvider && hasAPIKey && hasDisplayName && hasValidBaseURL;
 
   const handleApiKeyChange = (value: string) => {
     dispatch({ type: "SET_API_KEY", value });
@@ -58,7 +68,31 @@ export function ProviderConfigScreen({
 
   const handleProviderSelect = (providerType: AIProviderType | undefined) => {
     if (providerType) {
-      dispatch({ providerType, type: "SELECT_PROVIDER" });
+      const selectedProviderMetadata = providerMetadataMap.get(providerType);
+      const hasExistingProvider = providers.some(
+        (p) => p.type === providerType,
+      );
+
+      const shouldSetDefaultDisplayName =
+        providerType !== "openai-compatible" && !hasExistingProvider;
+
+      const displayName = shouldSetDefaultDisplayName
+        ? (selectedProviderMetadata?.name ?? "")
+        : "";
+
+      dispatch({
+        displayName,
+        providerType,
+        type: "SELECT_PROVIDER",
+      });
+
+      setTimeout(() => {
+        if (shouldSetDefaultDisplayName) {
+          apiKeyInputRef.current?.focus();
+        } else {
+          displayNameInputRef.current?.focus();
+        }
+      }, 0);
     }
   };
 
@@ -85,34 +119,35 @@ export function ProviderConfigScreen({
         </div>
 
         <ProviderPicker
-          addedProviderTypes={providers.map((p) => p.type)}
           onSelect={handleProviderSelect}
           selectedProvider={state.selectedProviderType}
         />
 
         {state.selectedProviderType && providerMetadata && (
           <>
+            <div className="flex flex-col gap-y-1">
+              <Label htmlFor="display-name">Name</Label>
+              <div className="text-xs text-muted-foreground">
+                {isSecondProviderOfSameType
+                  ? "Custom name to distinguish this provider from others of the same type"
+                  : "Custom name to identify this provider"}
+              </div>
+            </div>
+
+            <Input
+              id="display-name"
+              onChange={(e) => {
+                handleDisplayNameChange(e.target.value);
+              }}
+              placeholder={`E.g. My ${providerMetadata.name}`}
+              ref={displayNameInputRef}
+              spellCheck={false}
+              type="text"
+              value={state.displayName}
+            />
+
             {isOpenAICompatible && (
               <>
-                <div className="flex flex-col gap-y-1">
-                  <Label htmlFor="display-name">Name</Label>
-                  <div className="text-xs text-muted-foreground">
-                    Custom name to identify this provider
-                  </div>
-                </div>
-
-                <Input
-                  autoFocus
-                  id="display-name"
-                  onChange={(e) => {
-                    handleDisplayNameChange(e.target.value);
-                  }}
-                  placeholder="E.g. My Custom Provider"
-                  spellCheck={false}
-                  type="text"
-                  value={state.displayName}
-                />
-
                 <div className="flex flex-col gap-y-1">
                   <Label htmlFor="base-url">Base URL</Label>
                   <div className="text-xs text-muted-foreground">
@@ -148,13 +183,13 @@ export function ProviderConfigScreen({
                 </div>
 
                 <Input
-                  autoFocus={!isOpenAICompatible}
                   className="font-mono"
                   id="api-key"
                   onChange={(e) => {
                     handleApiKeyChange(e.target.value);
                   }}
                   placeholder={`${providerMetadata.api.keyFormat ?? ""}...xyz123`}
+                  ref={apiKeyInputRef}
                   spellCheck={false}
                   type="text"
                   value={state.apiKey}
@@ -182,7 +217,7 @@ export function ProviderConfigScreen({
             <AlertCircle />
             <AlertDescription className="flex flex-col gap-2">
               <div>{state.errorMessage}</div>
-              {state.validationFailed && (
+              {state.validationFailed && state.allowBypass && (
                 <Button
                   className="w-fit"
                   onClick={() => onSave(true)}

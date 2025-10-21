@@ -14,24 +14,24 @@ export const providerApp = new Hono<AIGatewayEnv>();
 
 providerApp.route(OPENAI_COMPATIBLE_PATH, openaiCompatibleApp);
 
-providerApp.all("/:providerType/*", async (context) => {
-  const { providerType } = context.req.param();
+providerApp.all("/:providerConfigId/*", async (context) => {
+  const { providerConfigId } = context.req.param();
   const configs = context.var.getAIProviderConfigs();
   if (configs.length === 0) {
     return context.json({ error: "No AI providers have been configured" }, 500);
   }
-  const config = configs.find((c) => c.type === providerType);
+  const config = configs.find((c) => c.id === providerConfigId);
 
   if (!config) {
     return context.json(
-      { error: `No provider config found for ${providerType}` },
+      { error: `No provider config found for ${providerConfigId}` },
       500,
     );
   }
 
   const url = new URL(context.req.raw.url);
   const path = url.pathname.replace(
-    [AI_GATEWAY_API_PATH, PROVIDERS_PATH, `/${providerType}`].join(""),
+    [AI_GATEWAY_API_PATH, PROVIDERS_PATH, `/${providerConfigId}`].join(""),
     "",
   );
 
