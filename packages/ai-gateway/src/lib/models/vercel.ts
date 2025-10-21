@@ -46,7 +46,7 @@ export function fetchModelsForVercel(config: AIGatewayProviderConfig.Type) {
         features.push("tools", "inputText", "outputText");
       }
 
-      const tags = getModelTags(canonicalModelId);
+      const tags = getModelTags(canonicalModelId, config);
 
       const params = { provider: config.type, providerConfigId: config.id };
       validModels.push({

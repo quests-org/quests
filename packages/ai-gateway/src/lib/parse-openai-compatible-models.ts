@@ -36,7 +36,7 @@ export function parseOpenAICompatibleModels(
     return modelsResult.data.map((model) => {
       const providerId = AIGatewayModel.ProviderIdSchema.parse(model.id);
       const canonicalId = AIGatewayModel.CanonicalIdSchema.parse(providerId);
-      const tags = getModelTags(canonicalId);
+      const tags = getModelTags(canonicalId, config);
       const isNew = isModelNew(model.created);
       if (isNew) {
         tags.push("new");

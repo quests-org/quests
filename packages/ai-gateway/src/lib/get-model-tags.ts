@@ -1,4 +1,5 @@
 import { type AIGatewayModel } from "../schemas/model";
+import { type AIGatewayProviderConfig } from "../schemas/provider-config";
 
 const MODEL_TAGS: Record<string, AIGatewayModel.ModelTag[]> = {
   "claude-3.7-sonnet": ["coding"],
@@ -27,7 +28,14 @@ const MODEL_TAGS: Record<string, AIGatewayModel.ModelTag[]> = {
 
 export function getModelTags(
   canonicalId: AIGatewayModel.CanonicalId,
+  config: AIGatewayProviderConfig.Type,
 ): AIGatewayModel.ModelTag[] {
   const tags: AIGatewayModel.ModelTag[] = MODEL_TAGS[canonicalId] ?? [];
+
+  // Don't recommend Codex for OpenAI compatible because it requires the responses API
+  if (config.type === "openai-compatible" && canonicalId === "gpt-5-codex") {
+    return tags.filter((tag) => tag !== "recommended" && tag !== "default");
+  }
+
   return [...tags];
 }

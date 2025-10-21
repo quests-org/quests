@@ -106,7 +106,7 @@ export function fetchModelsForOpenRouter(config: AIGatewayProviderConfig.Type) {
         features.push("tools");
       }
 
-      const tags = getModelTags(canonicalModelId);
+      const tags = getModelTags(canonicalModelId, config);
       if (isModelNew(model.created)) {
         tags.push("new");
       }

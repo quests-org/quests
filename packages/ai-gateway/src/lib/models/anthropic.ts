@@ -68,7 +68,7 @@ export function fetchModelsForAnthropic(
       const canonicalModelId =
         AIGatewayModel.CanonicalIdSchema.parse(normalizedModelId);
 
-      const tags = getModelTags(canonicalModelId);
+      const tags = getModelTags(canonicalModelId, config);
       if (isModelNew(model.created_at)) {
         tags.push("new");
       }

@@ -61,7 +61,7 @@ export function fetchModelsForGoogle(config: AIGatewayProviderConfig.Type) {
         canonicalModelId = AIGatewayModel.CanonicalIdSchema.parse(modelId);
       }
 
-      const tags = getModelTags(canonicalModelId);
+      const tags = getModelTags(canonicalModelId, config);
       const features: AIGatewayModel.ModelFeatures[] = ["inputText"];
 
       if (model.supportedGenerationMethods.includes("generateContent")) {
