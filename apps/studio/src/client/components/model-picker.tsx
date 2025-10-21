@@ -136,7 +136,7 @@ export function ModelPicker({
     return tags;
   };
 
-  if (!errors && models && models.length === 0) {
+  if (errors?.length === 0 && models && models.length === 0) {
     return (
       <Button
         disabled={disabled}
@@ -203,7 +203,26 @@ export function ModelPicker({
               </div>
             </CommandEmpty>
             {errors && errors.length > 0 && (
-              <CommandGroup heading="Errors">
+              <CommandGroup
+                heading={
+                  <div className="flex items-center justify-between w-full">
+                    <span>Errors</span>
+                    <Button
+                      className="h-6 px-2 text-xs"
+                      onClick={() => {
+                        void vanillaRpcClient.preferences.openSettingsWindow({
+                          showNewProviderDialog: false,
+                          tab: "Providers",
+                        });
+                      }}
+                      size="sm"
+                      variant="outline"
+                    >
+                      Edit providers
+                    </Button>
+                  </div>
+                }
+              >
                 {errors.map((error, index) => (
                   <CommandItem
                     className="flex items-center py-2 cursor-default data-[disabled]:opacity-80!"
@@ -228,26 +247,6 @@ export function ModelPicker({
                   </CommandItem>
                 ))}
               </CommandGroup>
-            )}
-            {models && models.length === 0 && (
-              <div className="flex flex-col items-center gap-3 py-6">
-                <p className="text-sm text-muted-foreground">
-                  No models available
-                </p>
-                <Button
-                  onClick={() => {
-                    void vanillaRpcClient.preferences.openSettingsWindow({
-                      showNewProviderDialog: true,
-                      tab: "Providers",
-                    });
-                  }}
-                  size="sm"
-                  variant="outline"
-                >
-                  <Plus className="mr-2 size-4" />
-                  Add AI provider
-                </Button>
-              </div>
             )}
             {isLoading && (
               <CommandGroup>
