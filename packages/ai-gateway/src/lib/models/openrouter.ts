@@ -5,13 +5,11 @@ import { AIGatewayModel } from "../../schemas/model";
 import { AIGatewayModelURI } from "../../schemas/model-uri";
 import { type AIGatewayProviderConfig } from "../../schemas/provider-config";
 import { TypedError } from "../errors";
-import { fetchJson } from "../fetch-json";
 import { generateModelName } from "../generate-model-name";
 import { getModelTags } from "../get-model-tags";
 import { isModelNew } from "../is-model-new";
 import { getProviderMetadata } from "../providers/metadata";
-import { openAICompatibleURL } from "../providers/openai-compatible-url";
-import { setProviderAuthHeaders } from "../providers/set-auth-headers";
+import { fetchOpenAICompatibleModels } from "./openai-compatible";
 
 type InputModalities = "audio" | "file" | "image" | "text" | (string & {});
 type OutputModalities = "text" | (string & {});
@@ -64,15 +62,8 @@ const OpenRouterModelsResponseSchema = z.object({
 export function fetchModelsForOpenRouter(config: AIGatewayProviderConfig.Type) {
   return Result.gen(function* () {
     const metadata = getProviderMetadata(config.type);
-    const headers = new Headers({
-      "Content-Type": "application/json",
-    });
-    setProviderAuthHeaders(headers, config);
 
-    const data = yield* fetchJson({
-      headers,
-      url: openAICompatibleURL({ config, path: "/models" }),
-    });
+    const data = yield* fetchOpenAICompatibleModels(config);
 
     const modelsResult = yield* Result.try(
       () => OpenRouterModelsResponseSchema.parse(data),

@@ -1,10 +1,10 @@
 import { type CaptureExceptionFunction } from "@quests/shared";
 
 import { type AIGatewayProviderConfig } from "../../schemas/provider-config";
-import { fetchModelsForAnthropic } from "./anthropic";
-import { fetchModelsForGoogle } from "./google";
-import { fetchModelsForOpenAI } from "./openai";
-import { fetchModelsForOpenAICompatible } from "./openai-compatible";
+import { fetchAndParseAnthropicModels } from "./anthropic";
+import { fetchAndParseGoogleModels } from "./google";
+import { fetchAndParseOpenAIModels } from "./openai";
+import { fetchAndParseOpenAICompatibleModels } from "./openai-compatible";
 import { fetchModelsForOpenRouter } from "./openrouter";
 import { fetchModelsForVercel } from "./vercel";
 
@@ -14,15 +14,15 @@ export function fetchModels(
 ) {
   switch (config.type) {
     case "anthropic": {
-      return fetchModelsForAnthropic(config, {
+      return fetchAndParseAnthropicModels(config, {
         captureException: options.captureException,
       });
     }
     case "google": {
-      return fetchModelsForGoogle(config);
+      return fetchAndParseGoogleModels(config);
     }
     case "openai": {
-      return fetchModelsForOpenAI(config);
+      return fetchAndParseOpenAIModels(config);
     }
     case "openrouter": {
       return fetchModelsForOpenRouter(config);
@@ -31,7 +31,7 @@ export function fetchModels(
       return fetchModelsForVercel(config);
     }
     default: {
-      return fetchModelsForOpenAICompatible(config);
+      return fetchAndParseOpenAICompatibleModels(config);
     }
   }
 }

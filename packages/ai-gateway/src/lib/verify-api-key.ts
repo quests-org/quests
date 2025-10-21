@@ -2,10 +2,13 @@ import { type AsyncResult, Result } from "typescript-result";
 
 import { type AIGatewayProviderConfig } from "../schemas/provider-config";
 import { TypedError } from "./errors";
+import { fetchAnthropicModels } from "./models/anthropic";
+import { fetchGoogleModels } from "./models/google";
+import { fetchOpenAIModels } from "./models/openai";
+import { fetchOpenAICompatibleModels } from "./models/openai-compatible";
 import { apiURL } from "./providers/api-url";
 import { baseURLWithDefault } from "./providers/base-url-with-default";
 import { getProviderMetadata } from "./providers/metadata";
-import { openAICompatibleURL } from "./providers/openai-compatible-url";
 import { setProviderAuthHeaders } from "./providers/set-auth-headers";
 
 type VerifyConfig = Pick<
@@ -64,14 +67,6 @@ export function verifyAPIKey(
       });
     }
 
-    case "z-ai": {
-      return verifyWithModelsEndpoint({
-        config,
-        errorMessage: `Failed to verify API key for ${metadata.name}`,
-        path: "/models",
-      });
-    }
-
     default: {
       return verifyWithModelsEndpoint({
         config,
@@ -87,26 +82,33 @@ function verifyWithModelsEndpoint({
 }: {
   config: VerifyConfig;
   errorMessage?: string;
-  path?: `/${string}`;
 }): AsyncResult<boolean, TypedError.VerificationFailed> {
   return Result.fromAsync(async () => {
-    const headers = new Headers({ "Content-Type": "application/json" });
-    setProviderAuthHeaders(headers, config);
-    const url = openAICompatibleURL({
-      config,
-      path: "/models",
-    });
+    let result;
+    switch (config.type) {
+      case "anthropic": {
+        result = await fetchAnthropicModels(config);
+        break;
+      }
+      case "google": {
+        result = await fetchGoogleModels(config);
+        break;
+      }
+      case "openai": {
+        result = await fetchOpenAIModels(config);
+        break;
+      }
+      default: {
+        result = await fetchOpenAICompatibleModels(config);
+        break;
+      }
+    }
 
-    return Result.try(
-      async () => {
-        const response = await fetch(url, { headers });
-        if (!response.ok) {
-          throw new Error("API key verification failed");
-        }
-        return true;
-      },
-      (error) =>
-        new TypedError.VerificationFailed(errorMessage, { cause: error }),
+    if (result.ok) {
+      return Result.ok(true);
+    }
+    return Result.error(
+      new TypedError.VerificationFailed(errorMessage, { cause: result.error }),
     );
   });
 }

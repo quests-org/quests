@@ -7,20 +7,32 @@ import { getProviderMetadata } from "../providers/metadata";
 import { openAICompatibleURL } from "../providers/openai-compatible-url";
 import { setProviderAuthHeaders } from "../providers/set-auth-headers";
 
-export function fetchModelsForOpenAICompatible(
+type MinimalProviderConfig = Pick<
+  AIGatewayProviderConfig.Type,
+  "apiKey" | "baseURL" | "type"
+>;
+
+export function fetchAndParseOpenAICompatibleModels(
   config: AIGatewayProviderConfig.Type,
 ) {
   return Result.gen(function* () {
-    const metadata = getProviderMetadata(config.type);
-    const headers = new Headers({ "Content-Type": "application/json" });
-    setProviderAuthHeaders(headers, config);
-
-    const data = yield* fetchJson({
-      cache: !metadata.api.defaultBaseURL.startsWith("http://localhost"),
-      headers,
-      url: openAICompatibleURL({ config, path: "/models" }),
-    });
+    const data = yield* fetchOpenAICompatibleModels(config);
 
     return yield* parseOpenAICompatibleModels(data, config);
+  });
+}
+
+export function fetchOpenAICompatibleModels(
+  config: MinimalProviderConfig,
+  { cache = false }: { cache?: boolean } = {},
+) {
+  const metadata = getProviderMetadata(config.type);
+  const headers = new Headers({ "Content-Type": "application/json" });
+  setProviderAuthHeaders(headers, config);
+
+  return fetchJson({
+    cache: cache || !metadata.api.defaultBaseURL.startsWith("http://localhost"),
+    headers,
+    url: openAICompatibleURL({ config, path: "/models" }),
   });
 }

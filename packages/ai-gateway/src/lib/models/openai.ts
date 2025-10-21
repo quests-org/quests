@@ -7,16 +7,16 @@ import { parseOpenAICompatibleModels } from "../parse-openai-compatible-models";
 import { apiURL } from "../providers/api-url";
 import { setProviderAuthHeaders } from "../providers/set-auth-headers";
 
-export function fetchModelsForOpenAI(config: AIGatewayProviderConfig.Type) {
-  return Result.gen(function* () {
-    const headers = new Headers({ "Content-Type": "application/json" });
-    setProviderAuthHeaders(headers, config);
+type MinimalProviderConfig = Pick<
+  AIGatewayProviderConfig.Type,
+  "apiKey" | "baseURL" | "type"
+>;
 
-    const data = yield* fetchJson({
-      cache: true,
-      headers,
-      url: apiURL({ config, path: "/models" }),
-    });
+export function fetchAndParseOpenAIModels(
+  config: AIGatewayProviderConfig.Type,
+) {
+  return Result.gen(function* () {
+    const data = yield* fetchOpenAIModels(config);
 
     const baseModels = yield* parseOpenAICompatibleModels(data, config);
 
@@ -48,5 +48,16 @@ export function fetchModelsForOpenAI(config: AIGatewayProviderConfig.Type) {
         tags,
       } satisfies AIGatewayModel.Type;
     });
+  });
+}
+
+export function fetchOpenAIModels(config: MinimalProviderConfig) {
+  const headers = new Headers({ "Content-Type": "application/json" });
+  setProviderAuthHeaders(headers, config);
+
+  return fetchJson({
+    cache: true,
+    headers,
+    url: apiURL({ config, path: "/models" }),
   });
 }

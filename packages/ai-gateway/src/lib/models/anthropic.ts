@@ -1,3 +1,4 @@
+import { type CaptureExceptionFunction } from "@quests/shared";
 import { Result } from "typescript-result";
 import { z } from "zod";
 
@@ -31,22 +32,18 @@ const AnthropicModelsResponseSchema = z.object({
   last_id: z.string().optional(),
 });
 
-export function fetchModelsForAnthropic(
+type MinimalProviderConfig = Pick<
+  AIGatewayProviderConfig.Type,
+  "apiKey" | "baseURL" | "type"
+>;
+
+export function fetchAndParseAnthropicModels(
   config: AIGatewayProviderConfig.Type,
-  { captureException }: { captureException: (error: Error) => void },
+  { captureException }: { captureException: CaptureExceptionFunction },
 ) {
   return Result.gen(function* () {
+    const data = yield* fetchAnthropicModels(config);
     const metadata = getProviderMetadata(config.type);
-    const headers = new Headers({ "Content-Type": "application/json" });
-    setProviderAuthHeaders(headers, config);
-
-    const url = new URL(apiURL({ config, path: "/models" }));
-    url.searchParams.set("limit", "1000");
-
-    const data = yield* fetchJson({
-      headers,
-      url: url.toString(),
-    });
 
     const modelsResult = yield* Result.try(
       () => AnthropicModelsResponseSchema.parse(data),
@@ -128,5 +125,18 @@ export function fetchModelsForAnthropic(
         } satisfies AIGatewayModel.Type;
       },
     );
+  });
+}
+
+export function fetchAnthropicModels(config: MinimalProviderConfig) {
+  const headers = new Headers({ "Content-Type": "application/json" });
+  setProviderAuthHeaders(headers, config);
+
+  const url = new URL(apiURL({ config, path: "/models" }));
+  url.searchParams.set("limit", "1000");
+
+  return fetchJson({
+    headers,
+    url: url.toString(),
   });
 }

@@ -31,18 +31,17 @@ const GoogleModelsResponseSchema = z.object({
   nextPageToken: z.string().optional(),
 });
 
-export function fetchModelsForGoogle(config: AIGatewayProviderConfig.Type) {
-  return Result.gen(function* () {
-    const metadata = getProviderMetadata(config.type);
-    const headers = new Headers({
-      "Content-Type": "application/json",
-    });
-    setProviderAuthHeaders(headers, config);
+type MinimalProviderConfig = Pick<
+  AIGatewayProviderConfig.Type,
+  "apiKey" | "baseURL" | "type"
+>;
 
-    const data = yield* fetchJson({
-      headers,
-      url: apiURL({ config, path: "/models" }),
-    });
+export function fetchAndParseGoogleModels(
+  config: AIGatewayProviderConfig.Type,
+) {
+  return Result.gen(function* () {
+    const data = yield* fetchGoogleModels(config);
+    const metadata = getProviderMetadata(config.type);
 
     const modelsResult = yield* Result.try(
       () => GoogleModelsResponseSchema.parse(data),
@@ -89,5 +88,16 @@ export function fetchModelsForGoogle(config: AIGatewayProviderConfig.Type) {
         }),
       } satisfies AIGatewayModel.Type;
     });
+  });
+}
+
+export function fetchGoogleModels(config: MinimalProviderConfig) {
+  const headers = new Headers({ "Content-Type": "application/json" });
+  setProviderAuthHeaders(headers, config);
+
+  const url = new URL(apiURL({ config, path: "/models" }));
+  return fetchJson({
+    headers,
+    url: url.toString(),
   });
 }
