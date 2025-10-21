@@ -46,6 +46,11 @@ const config: Configuration = {
       to: "registry/templates",
     },
     {
+      filter: ["**/*"],
+      from: "../../registry/api",
+      to: "registry/api",
+    },
+    {
       filter: [
         "**/*",
         "!**/node_modules/**",
