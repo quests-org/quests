@@ -46,7 +46,7 @@ const config: Configuration = {
       to: "registry/templates",
     },
     {
-      filter: ["**/*"],
+      filter: ["**/*.json"],
       from: "../../registry/api",
       to: "registry/api",
     },
