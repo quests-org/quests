@@ -1,4 +1,10 @@
-import { type ErrorMap, type ORPCErrorConstructorMap, os } from "@orpc/server";
+import {
+  type ErrorMap,
+  isDefinedError,
+  onError,
+  type ORPCErrorConstructorMap,
+  os,
+} from "@orpc/server";
 import {
   type AIGatewayTypedError,
   type fetchAISDKModel,
@@ -27,7 +33,23 @@ const ORPC_ERRORS = {
 
 export type WorkspaceErrorMap = ORPCErrorConstructorMap<typeof ORPC_ERRORS>;
 
-export const base = os.$context<WorkspaceRPCContext>().errors(ORPC_ERRORS);
+export const base = os
+  .$context<WorkspaceRPCContext>()
+  .errors(ORPC_ERRORS)
+  .use(
+    // Surprisingly not handled by Studio's onError handler
+    // May be an oRPC bug.
+    onError((error, { context }) => {
+      if (isDefinedError(error)) {
+        // eslint-disable-next-line no-console
+        console.error("orpc error", error);
+        return;
+      }
+      context.workspaceConfig.captureException(error, {
+        scopes: ["workspace", "rpc"],
+      });
+    }),
+  );
 
 export function toORPCError(
   error: AIGatewayTypedError.Type | TypedError.Type,
