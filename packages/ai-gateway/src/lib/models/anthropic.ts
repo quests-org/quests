@@ -10,6 +10,7 @@ import { fetchJson } from "../fetch-json";
 import { generateModelName } from "../generate-model-name";
 import { getModelTags } from "../get-model-tags";
 import { isModelNew } from "../is-model-new";
+import { parseModelDate } from "../parse-model-date";
 import { apiURL } from "../providers/api-url";
 import { getProviderMetadata } from "../providers/metadata";
 import { setProviderAuthHeaders } from "../providers/set-auth-headers";
@@ -20,6 +21,8 @@ const ModelSchema = z.object({
   id: z.string(),
   type: z.string().optional(),
 });
+
+type Model = z.infer<typeof ModelSchema>;
 
 const AnthropicModelsResponseSchema = z.object({
   data: z.array(ModelSchema),
@@ -37,7 +40,7 @@ export function fetchModelsForAnthropic(
     const headers = new Headers({ "Content-Type": "application/json" });
     setProviderAuthHeaders(headers, config);
 
-    const url = new URL(apiURL({ config, path: "/v1/models" }));
+    const url = new URL(apiURL({ config, path: "/models" }));
     url.searchParams.set("limit", "1000");
 
     const data = yield* fetchJson({
@@ -62,40 +65,68 @@ export function fetchModelsForAnthropic(
     }
 
     const author = config.type;
-    return modelsResult.data.map((model) => {
-      const providerId = AIGatewayModel.ProviderIdSchema.parse(model.id);
+    const modelMap = new Map<
+      string,
+      {
+        canonicalModelId: AIGatewayModel.CanonicalId;
+        model: Model;
+        normalizedModelId: string;
+      }
+    >();
+
+    for (const model of modelsResult.data) {
       const normalizedModelId = canonicalizeAnthropicModelId(model.id);
       const canonicalModelId =
         AIGatewayModel.CanonicalIdSchema.parse(normalizedModelId);
 
-      const tags = getModelTags(canonicalModelId, config);
-      if (isModelNew(model.created_at)) {
-        tags.push("new");
+      const existing = modelMap.get(canonicalModelId);
+      const shouldReplace =
+        !existing ||
+        parseModelDate(model.created_at) >
+          parseModelDate(existing.model.created_at);
+
+      if (shouldReplace) {
+        modelMap.set(canonicalModelId, {
+          canonicalModelId,
+          model,
+          normalizedModelId,
+        });
       }
+    }
 
-      const features: AIGatewayModel.ModelFeatures[] = [];
+    return [...modelMap.values()].map(
+      ({ canonicalModelId, model, normalizedModelId }) => {
+        const providerId = AIGatewayModel.ProviderIdSchema.parse(model.id);
 
-      // All claude models support inputText, outputText, and tools
-      if (normalizedModelId.startsWith("claude-")) {
-        features.push("inputText", "outputText", "tools");
-      }
+        const tags = getModelTags(canonicalModelId, config);
+        if (isModelNew(model.created_at)) {
+          tags.push("new");
+        }
 
-      const params = { provider: config.type, providerConfigId: config.id };
-      return {
-        author,
-        canonicalId: canonicalModelId,
-        features,
-        name: model.display_name ?? generateModelName(canonicalModelId),
-        params,
-        providerId,
-        providerName: config.displayName ?? metadata.name,
-        tags,
-        uri: AIGatewayModelURI.fromModel({
+        const features: AIGatewayModel.ModelFeatures[] = [];
+
+        // All claude models support inputText, outputText, and tools
+        if (normalizedModelId.startsWith("claude-")) {
+          features.push("inputText", "outputText", "tools");
+        }
+
+        const params = { provider: config.type, providerConfigId: config.id };
+        return {
           author,
           canonicalId: canonicalModelId,
+          features,
+          name: model.display_name ?? generateModelName(canonicalModelId),
           params,
-        }),
-      } satisfies AIGatewayModel.Type;
-    });
+          providerId,
+          providerName: config.displayName ?? metadata.name,
+          tags,
+          uri: AIGatewayModelURI.fromModel({
+            author,
+            canonicalId: canonicalModelId,
+            params,
+          }),
+        } satisfies AIGatewayModel.Type;
+      },
+    );
   });
 }

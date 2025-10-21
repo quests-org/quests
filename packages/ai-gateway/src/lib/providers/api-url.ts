@@ -12,6 +12,11 @@ export function apiURL({
 }) {
   const baseURL = baseURLWithDefault(config);
   switch (config.type) {
+    case "anthropic": {
+      // If missing a /v1, add it (Anthropic SDK expects no /v1 but AI SDK does)
+      const finalPath = path.startsWith("/v1") ? path : `/v1${path}`;
+      return `${baseURL}${finalPath}`;
+    }
     case "google": {
       let adjustedPath = path;
       // Google's SDK adds a /v1beta prefix to the path, Vercel's SDK does not.

@@ -1,17 +1,15 @@
-import { isAfter, isValid, parseISO, subDays } from "date-fns";
+import { isAfter, subDays } from "date-fns";
+
+import { parseModelDate } from "./parse-model-date";
 
 export function isModelNew(createdDate: number | string | undefined): boolean {
-  if (!createdDate) {
+  const parsedDate = parseModelDate(createdDate);
+  if (parsedDate.getTime() === 0) {
     return false;
   }
 
   const now = new Date();
   const thirtyDaysAgo = subDays(now, 30);
 
-  const parsedDate =
-    typeof createdDate === "string"
-      ? parseISO(createdDate)
-      : new Date(createdDate * 1000);
-
-  return isValid(parsedDate) && isAfter(parsedDate, thirtyDaysAgo);
+  return isAfter(parsedDate, thirtyDaysAgo);
 }
