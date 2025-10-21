@@ -46,6 +46,16 @@ export function ProviderConfigScreen({
     ? providers.some((p) => p.type === state.selectedProviderType)
     : false;
 
+  const disabledProviderTypes = useMemo(() => {
+    // Users can only add providers multiple times if they require an API key
+    return providers
+      .filter((provider) => {
+        const metadata = providerMetadataMap.get(provider.type);
+        return metadata && !metadata.requiresAPIKey;
+      })
+      .map((provider) => provider.type);
+  }, [providers, providerMetadataMap]);
+
   const hasSelectedProvider = state.selectedProviderType !== undefined;
   const hasAPIKey = !requiresAPIKey || Boolean(state.apiKey.trim());
   const hasDisplayName = Boolean(state.displayName.trim());
@@ -119,6 +129,7 @@ export function ProviderConfigScreen({
         </div>
 
         <ProviderPicker
+          disabledProviderTypes={disabledProviderTypes}
           onSelect={handleProviderSelect}
           selectedProvider={state.selectedProviderType}
         />
