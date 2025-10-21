@@ -1,4 +1,4 @@
-import { selectedModelURIAtom } from "@/client/atoms/selected-models";
+import { selectedModelURIAtom } from "@/client/atoms/selected-model";
 import { NewTabDiscoverHeroCards } from "@/client/components/discover-hero-card";
 import { ExternalLink } from "@/client/components/external-link";
 import { PromptInput } from "@/client/components/prompt-input";

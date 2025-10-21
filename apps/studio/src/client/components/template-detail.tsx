@@ -1,5 +1,5 @@
 import { hasAIProviderConfigAtom } from "@/client/atoms/has-ai-provider-config";
-import { selectedModelURIAtom } from "@/client/atoms/selected-models";
+import { selectedModelURIAtom } from "@/client/atoms/selected-model";
 import { AIProviderGuard } from "@/client/components/ai-provider-guard";
 import { AIProviderGuardDialog } from "@/client/components/ai-provider-guard-dialog";
 import { AppView } from "@/client/components/app-view";

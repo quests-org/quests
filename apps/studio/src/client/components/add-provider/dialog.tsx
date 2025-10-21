@@ -1,3 +1,4 @@
+import { selectedModelURIAtom } from "@/client/atoms/selected-model";
 import { Dialog, DialogContent } from "@/client/components/ui/dialog";
 import { fixURL } from "@/client/lib/fix-url";
 import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
@@ -10,7 +11,6 @@ import { useEffect } from "react";
 
 import { addProviderDialogAtom } from "../../atoms/add-provider";
 import { providerMetadataAtom } from "../../atoms/provider-metadata";
-import { selectedModelURIAtom } from "../../atoms/selected-models";
 import { ProviderConfigScreen } from "./provider-config-screen";
 
 export function AddProviderDialog({
