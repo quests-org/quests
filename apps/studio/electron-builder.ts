@@ -51,16 +51,6 @@ const config: Configuration = {
       to: "registry/api",
     },
     {
-      filter: [
-        "**/*",
-        "!**/node_modules/**",
-        "!**/.turbo/**",
-        "!**/.eslintcache",
-      ],
-      from: "../../registry/apps",
-      to: "registry/apps",
-    },
-    {
       from: "../../packages/shim-client/dist",
       to: "shim-client",
     },
