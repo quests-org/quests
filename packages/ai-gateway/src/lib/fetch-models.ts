@@ -5,6 +5,7 @@ import { Result } from "typescript-result";
 import { type AIGatewayProviderConfig } from "../schemas/provider-config";
 import { TypedError } from "./errors";
 import { fetchModels } from "./models";
+import { getProviderMetadata } from "./providers/metadata";
 
 export async function fetchModelResultsForProviders(
   configs: AIGatewayProviderConfig.Type[],
@@ -29,7 +30,16 @@ export function fetchModelsForProvider(
         cause: error,
       });
     },
-  );
+  ).mapError((error) => {
+    const metadata = getProviderMetadata(config.type);
+    return {
+      config: {
+        displayName: config.displayName || metadata.name,
+        type: config.type,
+      },
+      message: error.message,
+    };
+  });
 }
 
 export async function fetchModelsForProviders(

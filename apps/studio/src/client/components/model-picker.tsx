@@ -18,7 +18,7 @@ import {
   groupAndFilterModels,
 } from "@/client/lib/group-models";
 import { cn } from "@/client/lib/utils";
-import { vanillaRpcClient } from "@/client/rpc/client";
+import { type RPCOutput, vanillaRpcClient } from "@/client/rpc/client";
 import {
   type AIGatewayModel,
   type AIGatewayModelURI,
@@ -32,7 +32,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 interface ModelPickerProps {
   className?: string;
   disabled?: boolean;
-  errors?: string[];
+  errors?: RPCOutput["gateway"]["models"]["list"]["errors"];
   isError?: boolean;
   isLoading?: boolean;
   models?: AIGatewayModel.Type[];
@@ -211,12 +211,43 @@ export function ModelPicker({
                     key={index}
                   >
                     <AlertCircle className="mr-2 size-4 shrink-0 text-destructive" />
-                    <span className="text-xs line-clamp-2 break-words">
-                      {error}
-                    </span>
+                    <div className="flex flex-col gap-1 flex-1 min-w-0">
+                      <div className="flex items-center gap-1 text-xs">
+                        <AIProviderIcon
+                          className="size-3 flex-shrink-0"
+                          type={error.config.type}
+                        />
+                        <span className="text-muted-foreground">
+                          {error.config.displayName}
+                        </span>
+                      </div>
+                      <span className="text-xs line-clamp-2 break-words">
+                        {error.message}
+                      </span>
+                    </div>
                   </CommandItem>
                 ))}
               </CommandGroup>
+            )}
+            {models && models.length === 0 && (
+              <div className="flex flex-col items-center gap-3 py-6">
+                <p className="text-sm text-muted-foreground">
+                  No models available
+                </p>
+                <Button
+                  onClick={() => {
+                    void vanillaRpcClient.preferences.openSettingsWindow({
+                      showNewProviderDialog: true,
+                      tab: "Providers",
+                    });
+                  }}
+                  size="sm"
+                  variant="outline"
+                >
+                  <Plus className="mr-2 size-4" />
+                  Add AI provider
+                </Button>
+              </div>
             )}
             {isLoading && (
               <CommandGroup>
