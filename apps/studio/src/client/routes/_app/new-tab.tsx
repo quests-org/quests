@@ -1,5 +1,5 @@
 import { selectedModelURIAtom } from "@/client/atoms/selected-models";
-import { DiscoverHeroCards } from "@/client/components/discover-hero-card";
+import { NewTabDiscoverHeroCards } from "@/client/components/discover-hero-card";
 import { ExternalLink } from "@/client/components/external-link";
 import { PromptInput } from "@/client/components/prompt-input";
 import { Kbd } from "@/client/components/ui/kbd";
@@ -135,7 +135,7 @@ function RouteComponent() {
             <h2 className="text-lg font-medium text-foreground">Discover</h2>
           </div>
         </div>
-        <DiscoverHeroCards />
+        <NewTabDiscoverHeroCards />
       </div>
 
       <footer className="w-full py-4 px-8">

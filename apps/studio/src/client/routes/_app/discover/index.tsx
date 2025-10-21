@@ -2,7 +2,6 @@ import { DiscoverHorizontalSection } from "@/client/components/discover-horizont
 import { useReload } from "@/client/hooks/use-reload";
 import { vanillaRpcClient } from "@/client/rpc/client";
 import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
-import { QuestsAnimatedLogo } from "@quests/components/animated-logo";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_app/discover/")({

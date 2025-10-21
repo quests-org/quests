@@ -144,10 +144,10 @@ html:has(meta[name="transparent-background"]) body {
 @utility scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
-}
 
-@utility scrollbar-hide::-webkit-scrollbar {
-  display: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @utility inset-shadow-toolbar {

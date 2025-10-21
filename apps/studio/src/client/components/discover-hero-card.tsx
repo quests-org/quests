@@ -1,4 +1,5 @@
 import { InternalLink } from "@/client/components/internal-link";
+import { telemetry } from "@/client/lib/telemetry";
 import { cn } from "@/client/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { type LinkProps } from "@tanstack/react-router";
@@ -6,6 +7,7 @@ import { type LinkProps } from "@tanstack/react-router";
 import { rpcClient } from "../rpc/client";
 
 interface DiscoverHeroCardProps {
+  cardType: "apps" | "templates";
   className?: string;
   heroImageDataUrl?: null | string;
   href: LinkProps["to"];
@@ -13,7 +15,7 @@ interface DiscoverHeroCardProps {
   title: string;
 }
 
-export function DiscoverHeroCards() {
+export function NewTabDiscoverHeroCards() {
   const { data: appsHeroImageDataUrl } = useQuery(
     rpcClient.utils.imageDataURI.queryOptions({
       input: { filePath: "apps-hero.jpg" },
@@ -26,13 +28,15 @@ export function DiscoverHeroCards() {
   );
   return (
     <div className="grid gap-6 md:grid-cols-2">
-      <DiscoverHeroCard
+      <NewTabDiscoverHeroCard
+        cardType="templates"
         heroImageDataUrl={templatesHeroImageDataUrl}
         href="/discover/templates"
         subtitle="Next.js, Svelte, Vue, and more"
         title="Templates"
       />
-      <DiscoverHeroCard
+      <NewTabDiscoverHeroCard
+        cardType="apps"
         heroImageDataUrl={appsHeroImageDataUrl}
         href="/discover/apps"
         subtitle="Explore example apps"
@@ -42,7 +46,8 @@ export function DiscoverHeroCards() {
   );
 }
 
-function DiscoverHeroCard({
+function NewTabDiscoverHeroCard({
+  cardType,
   className,
   heroImageDataUrl,
   href,
@@ -50,10 +55,15 @@ function DiscoverHeroCard({
   title,
   ...props
 }: DiscoverHeroCardProps & React.HTMLAttributes<HTMLDivElement>) {
+  const handleClick = () => {
+    telemetry?.capture("new_tab.hero_card_clicked", {
+      card_type: cardType,
+    });
+  };
   return (
     <div className={cn("group relative block", className)} {...props}>
       <div className="flex flex-col gap-2">
-        <InternalLink to={href}>
+        <InternalLink onClick={handleClick} to={href}>
           <div className="overflow-hidden rounded-md border border-border relative">
             <div className="aspect-video w-full bg-muted flex items-center justify-center relative">
               {heroImageDataUrl ? (
@@ -75,7 +85,7 @@ function DiscoverHeroCard({
           </div>
         </InternalLink>
         <div className="text-left">
-          <InternalLink to={href}>
+          <InternalLink onClick={handleClick} to={href}>
             <h3 className="text-sm font-medium text-foreground">{title}</h3>
             {subtitle && (
               <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>
