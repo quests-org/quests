@@ -1,9 +1,12 @@
+import { err, ok } from "neverthrow";
 import fs from "node:fs/promises";
 import path from "node:path";
+import { last, sift } from "radashi";
 import { z } from "zod";
 
 import { REGISTRY_TEMPLATES_FOLDER } from "../../constants";
 import { absolutePathJoin } from "../../lib/absolute-path-join";
+import { TypedError } from "../../lib/errors";
 import {
   getRegistryTemplateDetails,
   RegistryTemplateDetailsSchema,
@@ -13,7 +16,8 @@ import {
   getRegistryTemplatesByName,
   RegistryTemplateSchema,
 } from "../../lib/get-registry-templates";
-import { base } from "../base";
+import { type AbsolutePath } from "../../schemas/paths";
+import { base, toORPCError } from "../base";
 
 const byFolderName = base
   .input(z.object({ folderName: z.string() }))
@@ -40,34 +44,40 @@ const listAll = base
 
 const listApps = base
   .output(z.array(RegistryTemplateSchema))
-  .handler(async ({ context }) => {
+  .handler(async ({ context, errors }) => {
     const directoryData = await loadDirectoryData(
       context.workspaceConfig.registryDir,
     );
-    const apps = directoryData.data?.apps
-      .map((app) => app.path.split("/").pop())
-      .filter((app) => app !== undefined);
 
-    if (!apps) {
-      return [];
+    if (directoryData.isErr()) {
+      context.workspaceConfig.captureException(directoryData.error);
+      throw toORPCError(directoryData.error, errors);
     }
+
+    const apps = sift(
+      directoryData.value.apps.map((app) => last(app.path.split("/"))),
+    );
 
     return getRegistryTemplatesByName(apps, context.workspaceConfig);
   });
 
 const listTemplates = base
   .output(z.array(RegistryTemplateSchema))
-  .handler(async ({ context }) => {
+  .handler(async ({ context, errors }) => {
     const directoryData = await loadDirectoryData(
       context.workspaceConfig.registryDir,
     );
-    const templates = directoryData.data?.templates
-      .map((template) => template.path.split("/").pop())
-      .filter((template) => template !== undefined);
 
-    if (!templates) {
-      return [];
+    if (directoryData.isErr()) {
+      context.workspaceConfig.captureException(directoryData.error);
+      throw toORPCError(directoryData.error, errors);
     }
+
+    const templates = sift(
+      directoryData.value.templates.map((template) =>
+        last(template.path.split("/")),
+      ),
+    );
 
     return getRegistryTemplatesByName(templates, context.workspaceConfig);
   });
@@ -132,11 +142,42 @@ const packageJson = base
     }
   });
 
-async function loadDirectoryData(registryDir: string) {
+async function loadDirectoryData(registryDir: AbsolutePath) {
   const directoryPath = path.join(registryDir, "api", "directory.json");
-  const content = await fs.readFile(directoryPath, "utf8");
-  const json = JSON.parse(content) as unknown;
-  return DirectoryAPISchema.safeParse(json);
+
+  try {
+    const content = await fs.readFile(directoryPath, "utf8");
+
+    let json: unknown;
+    try {
+      json = JSON.parse(content);
+    } catch (parseError) {
+      return err(
+        new TypedError.Parse(
+          `Failed to parse directory.json at ${directoryPath}`,
+          { cause: parseError },
+        ),
+      );
+    }
+
+    const parseResult = DirectoryAPISchema.safeParse(json);
+    if (!parseResult.success) {
+      return err(
+        new TypedError.Parse(
+          `Invalid schema in directory.json at ${directoryPath}: ${parseResult.error.message}`,
+        ),
+      );
+    }
+
+    return ok(parseResult.data);
+  } catch (error) {
+    return err(
+      new TypedError.FileSystem(
+        `Failed to read directory.json at ${directoryPath}`,
+        { cause: error },
+      ),
+    );
+  }
 }
 
 export const registry = {
