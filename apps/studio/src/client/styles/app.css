@@ -141,6 +141,15 @@ html:has(meta[name="transparent-background"]) body {
   scrollbar-color: --alpha(var(--foreground) / 30%) transparent;
 }
 
+@utility scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@utility scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 @utility inset-shadow-toolbar {
   box-shadow: inset 0 0px 4px var(--tw-inset-shadow-color, rgb(0 0 0 / 0.05));
 }

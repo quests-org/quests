@@ -1,5 +1,6 @@
-import { DiscoverHeroCards } from "@/client/components/discover-hero-card";
+import { DiscoverHorizontalSection } from "@/client/components/discover-horizontal-section";
 import { useReload } from "@/client/hooks/use-reload";
+import { vanillaRpcClient } from "@/client/rpc/client";
 import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
 import { QuestsAnimatedLogo } from "@quests/components/animated-logo";
 import { createFileRoute } from "@tanstack/react-router";
@@ -17,19 +18,27 @@ export const Route = createFileRoute("/_app/discover/")({
       },
     ],
   }),
+  loader: async () => {
+    const [apps, templates] = await Promise.all([
+      vanillaRpcClient.workspace.registry.template.listApps(),
+      vanillaRpcClient.workspace.registry.template.listTemplates(),
+    ]);
+    return {
+      apps,
+      templates,
+    };
+  },
 });
 
 function RouteComponent() {
   useReload();
+  const { apps, templates } = Route.useLoaderData();
 
   return (
-    <div className="flex-1 mx-auto max-w-2xl lg:max-w-4xl">
+    <div className="flex-1 mx-auto max-w-7xl w-full">
       <div>
-        <div className="mx-auto max-w-7xl px-6 pt-20 pb-12 lg:px-8">
+        <div className="mx-auto px-4 pt-10 lg:pt-20 lg:pb-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <div className="mb-6 flex justify-center">
-              <QuestsAnimatedLogo size={48} />
-            </div>
             <h1 className="text-3xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
               Discover
             </h1>
@@ -42,8 +51,24 @@ function RouteComponent() {
         </div>
       </div>
 
-      <div className="px-6 py-12 lg:px-8">
-        <DiscoverHeroCards />
+      <div className="px-4 py-12 sm:px-6 lg:px-8 space-y-16">
+        <DiscoverHorizontalSection
+          category="templates"
+          description="Next.js, Svelte, Vue, and more"
+          items={templates}
+          showIcon={false}
+          title="Templates"
+          viewAllHref="/discover/templates"
+        />
+
+        <DiscoverHorizontalSection
+          category="apps"
+          description="Explore example apps"
+          items={apps}
+          showIcon={false}
+          title="Apps"
+          viewAllHref="/discover/apps"
+        />
       </div>
     </div>
   );

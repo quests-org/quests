@@ -24,7 +24,7 @@ export const Route = createFileRoute("/_app/discover/templates/$folderName")({
     return {
       meta: [
         {
-          title: `${loaderData?.title ?? params.folderName} · Discover`,
+          title: `${loaderData?.title ?? params.folderName} · Templates`,
         },
         {
           content: loaderData?.icon?.lucide,
