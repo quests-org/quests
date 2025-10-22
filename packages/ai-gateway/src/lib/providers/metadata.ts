@@ -32,6 +32,7 @@ const PROVIDER_METADATA: Record<AIProviderType, ProviderMetadataInput> = {
   cerebras: {
     api: {
       defaultBaseURL: "https://api.cerebras.ai/v1",
+      keyFormat: "csk-",
       keyURL: addRef("https://cloud.cerebras.ai"),
     },
     description:
@@ -54,6 +55,7 @@ const PROVIDER_METADATA: Record<AIProviderType, ProviderMetadataInput> = {
   deepseek: {
     api: {
       defaultBaseURL: "https://api.deepseek.com/v1",
+      keyFormat: "sk-",
       keyURL: addRef("https://platform.deepseek.com/api_keys"),
     },
     description:
@@ -65,6 +67,7 @@ const PROVIDER_METADATA: Record<AIProviderType, ProviderMetadataInput> = {
   fireworks: {
     api: {
       defaultBaseURL: "https://api.fireworks.ai/inference/v1",
+      keyFormat: "fw_",
       keyURL: addRef("https://docs.fireworks.ai/getting-started/quickstart"),
     },
     description:
@@ -88,6 +91,7 @@ const PROVIDER_METADATA: Record<AIProviderType, ProviderMetadataInput> = {
   groq: {
     api: {
       defaultBaseURL: "https://api.groq.com/openai/v1",
+      keyFormat: "gsk-",
       keyURL: addRef("https://console.groq.com/keys"),
     },
     description:
