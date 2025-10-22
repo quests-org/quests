@@ -83,7 +83,9 @@ export async function getFramework({
   const binPath = binPathResult.value;
 
   switch (devCommand) {
-    case "astro": {
+    case "astro":
+    case "ng":
+    case "nuxt": {
       return ok({
         arguments: [...devCommandArgs, "--port", port.toString()],
         command: binPath,
@@ -93,13 +95,6 @@ export async function getFramework({
     case "next": {
       return ok({
         arguments: [...devCommandArgs, "-p", port.toString()],
-        command: binPath,
-        name: framework.name,
-      });
-    }
-    case "nuxt": {
-      return ok({
-        arguments: [...devCommandArgs, "--port", port.toString()],
         command: binPath,
         name: framework.name,
       });
@@ -143,7 +138,8 @@ export async function getFramework({
     arguments: [...devCommandArgs, "--port", port.toString()],
     command: binPath,
     log: {
-      message: "Unsupported framework, falling back to generic --port argument",
+      message:
+        "Unknown framework. if your app does not boot, try using a different framework",
       type: "normal",
     },
     name: framework.name,
