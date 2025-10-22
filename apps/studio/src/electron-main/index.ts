@@ -28,9 +28,16 @@ import { initializeRPC } from "./rpc/initialize";
 
 const passwordStore = setupDBusEnvironment();
 
-if (passwordStore && platform.isLinux) {
-  app.commandLine.appendSwitch("password-store", passwordStore);
-  logger.info(`Using password store: ${passwordStore}`);
+if (platform.isLinux) {
+  const existing = app.commandLine.getSwitchValue("password-store");
+  if (existing) {
+    logger.info(
+      `Command line already has password-store: ${existing} — not overriding`,
+    );
+  } else if (passwordStore) {
+    app.commandLine.appendSwitch("password-store", passwordStore);
+    logger.info(`Using password store: ${passwordStore}`);
+  }
 }
 
 if (!platform.isWindows) {

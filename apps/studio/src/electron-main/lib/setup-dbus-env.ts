@@ -22,38 +22,40 @@ const hasValidDBusAddress = (): boolean => {
   );
 };
 
-const listDBusServices = (): null | string => {
+const hasDBusService = (serviceName: string): boolean => {
   try {
-    return execSync(
-      "dbus-send --session --print-reply --dest=org.freedesktop.DBus /org/freedesktop/DBus org.freedesktop.DBus.ListNames",
-      { encoding: "utf8", timeout: 2000 },
+    execSync(
+      `dbus-send --session --print-reply --dest=org.freedesktop.DBus /org/freedesktop/DBus org.freedesktop.DBus.NameHasOwner string:${serviceName}`,
+      { encoding: "utf8", stdio: "pipe", timeout: 2000 },
     );
+    return true;
   } catch {
-    logger.warn("Failed to query D-Bus services");
-    return null;
+    return false;
   }
 };
 
 const detectKWalletVersion = (): string => {
   const kdeSession = env.KDE_SESSION_VERSION;
-  if (kdeSession === "6") return "kwallet6";
-  if (kdeSession === "5") return "kwallet5";
+  if (kdeSession === "6") {
+    return "kwallet6";
+  }
+  if (kdeSession === "5") {
+    return "kwallet5";
+  }
   return "kwallet";
 };
 
 const detectPasswordStore = (): null | string => {
-  const dbusServices = listDBusServices();
-  if (!dbusServices) {
-    return null;
-  }
-
-  if (dbusServices.includes("org.freedesktop.secrets")) {
+  // Check for GNOME Secrets first
+  if (hasDBusService("org.freedesktop.secrets")) {
     return "gnome-libsecret";
   }
 
+  // Check for KWallet services in priority order
   if (
-    dbusServices.includes("org.kde.kwalletd5") ||
-    dbusServices.includes("org.kde.kwalletd")
+    hasDBusService("org.kde.kwalletd6") ||
+    hasDBusService("org.kde.kwalletd5") ||
+    hasDBusService("org.kde.kwalletd")
   ) {
     return detectKWalletVersion();
   }
@@ -117,7 +119,9 @@ const setupDBusAddress = (): void => {
   const addressFromFile = readDBusAddressFromSessionFile();
   if (addressFromFile) {
     env.DBUS_SESSION_BUS_ADDRESS = addressFromFile;
-    logger.info(`Set DBUS_SESSION_BUS_ADDRESS from session file: ${addressFromFile}`);
+    logger.info(
+      `Set DBUS_SESSION_BUS_ADDRESS from session file: ${addressFromFile}`,
+    );
   }
 };
 
@@ -158,15 +162,4 @@ export const setupDBusEnvironment = (): null | string => {
     logger.error("Failed to setup D-Bus environment", error);
     return null;
   }
-};
-
-/**
- * Detects the available password store on Linux without modifying the environment.
- * @returns The detected password store name or null.
- */
-export const getPasswordStore = (): null | string => {
-  if (!isLinux()) {
-    return null;
-  }
-  return detectPasswordStore();
 };
