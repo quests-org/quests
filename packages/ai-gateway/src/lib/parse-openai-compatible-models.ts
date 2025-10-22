@@ -35,7 +35,37 @@ export function parseOpenAICompatibleModels(
 
     return modelsResult.data.map((model) => {
       const providerId = AIGatewayModel.ProviderIdSchema.parse(model.id);
-      const canonicalId = AIGatewayModel.CanonicalIdSchema.parse(providerId);
+
+      let canonicalId: AIGatewayModel.CanonicalId;
+      let modelAuthor: string = author;
+
+      // Handle Fireworks model ID format: accounts/{author}/models/{modelId}
+      if (
+        config.type === "fireworks" &&
+        model.id.startsWith("accounts/") &&
+        model.id.includes("/models/")
+      ) {
+        const regex = /^accounts\/([^/]+)\/models\/(.+)$/;
+        const match = regex.exec(model.id);
+        if (match?.[1] && match[2]) {
+          const modelId = match[2];
+          canonicalId = AIGatewayModel.CanonicalIdSchema.parse(modelId);
+        } else {
+          canonicalId = AIGatewayModel.CanonicalIdSchema.parse(providerId);
+        }
+      } else if (config.type === "groq" && model.id.includes("/")) {
+        // Handle Groq model ID format: author/model-id
+        const [authorPart, modelId] = model.id.split("/");
+        if (authorPart && modelId) {
+          canonicalId = AIGatewayModel.CanonicalIdSchema.parse(modelId);
+          modelAuthor = authorPart;
+        } else {
+          canonicalId = AIGatewayModel.CanonicalIdSchema.parse(providerId);
+        }
+      } else {
+        canonicalId = AIGatewayModel.CanonicalIdSchema.parse(providerId);
+      }
+
       const tags = getModelTags(canonicalId, config);
       const isNew = isModelNew(model.created);
       if (isNew) {
@@ -46,7 +76,7 @@ export function parseOpenAICompatibleModels(
         providerConfigId: config.id,
       };
       return {
-        author,
+        author: modelAuthor,
         canonicalId,
         features: ["inputText", "outputText", "tools"],
         name: generateModelName(canonicalId),
@@ -55,7 +85,7 @@ export function parseOpenAICompatibleModels(
         providerName: config.displayName ?? metadata.name,
         tags,
         uri: AIGatewayModelURI.fromModel({
-          author,
+          author: modelAuthor,
           canonicalId,
           params,
         }),
