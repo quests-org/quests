@@ -51,6 +51,17 @@ const PROVIDER_METADATA: Record<AIProviderType, ProviderMetadataInput> = {
     type: "deepinfra",
     url: addRef("https://deepinfra.com"),
   },
+  deepseek: {
+    api: {
+      defaultBaseURL: "https://api.deepseek.com/v1",
+      keyURL: addRef("https://platform.deepseek.com/api_keys"),
+    },
+    description:
+      "Advanced reasoning models with strong coding and mathematical capabilities.",
+    name: "DeepSeek",
+    type: "deepseek",
+    url: addRef("https://deepseek.com"),
+  },
   fireworks: {
     api: {
       defaultBaseURL: "https://api.fireworks.ai/inference/v1",

@@ -3,6 +3,7 @@ import type { ComponentType } from "react";
 import { Anyscale } from "@/client/components/icons/anyscale";
 import { Cerebras } from "@/client/components/icons/cerebras";
 import { DeepInfra } from "@/client/components/icons/deepinfra";
+import { DeepSeek } from "@/client/components/icons/deepseek";
 import { Fireworks } from "@/client/components/icons/fireworks";
 import { Groq } from "@/client/components/icons/groq";
 import { HuggingFace } from "@/client/components/icons/huggingface";
@@ -46,6 +47,7 @@ const PROVIDER_ICON_MAP: Record<
   anyscale: Anyscale,
   cerebras: Cerebras,
   deepinfra: DeepInfra,
+  deepseek: DeepSeek,
   fireworks: Fireworks,
   google: SiGooglegemini,
   groq: Groq,
