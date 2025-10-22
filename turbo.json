@@ -95,6 +95,10 @@
       "dependsOn": ["^check:unused"]
     },
     "//#check:unused": {},
+    "check:unused-words": {
+      "dependsOn": ["^check:unused-words"]
+    },
+    "//#check:unused-words": {},
     "//#check:packages": {
       "inputs": ["pnpm-lock.yaml"]
     },
