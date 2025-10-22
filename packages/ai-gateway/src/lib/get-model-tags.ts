@@ -1,6 +1,7 @@
 import { type AIGatewayModel } from "../schemas/model";
 import { type AIGatewayProviderConfig } from "../schemas/provider-config";
 
+// cspell:ignore devstral
 const MODEL_TAGS: Record<string, AIGatewayModel.ModelTag[]> = {
   "claude-3.7-sonnet": ["coding"],
   "claude-haiku-4.5": ["coding", "recommended", "default"],
@@ -8,6 +9,7 @@ const MODEL_TAGS: Record<string, AIGatewayModel.ModelTag[]> = {
   "claude-opus-4.1": ["coding"],
   "claude-sonnet-4": ["coding"],
   "claude-sonnet-4.5": ["coding", "recommended"],
+  "devstral-medium-2507": ["coding", "recommended"],
   "gemini-2.5-flash": ["recommended"],
   "gemini-2.5-pro": ["coding", "recommended", "default"],
   "glm-4.5": ["coding", "recommended"],
@@ -24,6 +26,7 @@ const MODEL_TAGS: Record<string, AIGatewayModel.ModelTag[]> = {
   "qwen3-coder": ["coding", "recommended"],
   "qwen3-coder-plus": ["coding", "recommended"],
   "qwen3-max": ["coding"],
+  "qwen-3-coder-480b": ["coding", "recommended"], // Cerebras
 };
 
 export function getModelTags(
