@@ -260,16 +260,17 @@ export const spawnRuntimeLogic = fromCallback<
         parentRef.send({ type: "spawnRuntime.exited" });
         return;
       }
-      if (await isLocalServerRunning(port)) {
-        if (shouldCheckServer) {
-          shouldCheckServer = false;
-          timeout.cancel();
-          parentRef.send({ type: "spawnRuntime.started", value: { port } });
-        }
+      if (!shouldCheckServer) {
         return;
-      } else {
-        await checkServer();
       }
+      const isRunning = await isLocalServerRunning(port);
+      if (isRunning) {
+        shouldCheckServer = false;
+        timeout.cancel();
+        parentRef.send({ type: "spawnRuntime.started", value: { port } });
+        return;
+      }
+      await checkServer();
     };
 
     // Must abort check server if the process promise rejects because it
