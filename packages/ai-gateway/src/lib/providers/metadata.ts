@@ -98,10 +98,8 @@ const PROVIDER_METADATA: Record<AIProviderType, ProviderMetadataInput> = {
   },
   huggingface: {
     api: {
-      defaultBaseURL: "https://api-inference.huggingface.co/v1",
-      keyURL: addRef(
-        "https://huggingface.co/docs/huggingface_hub/v0.13.2/en/guides/inference",
-      ),
+      defaultBaseURL: "https://router.huggingface.co/v1",
+      keyURL: addRef("https://huggingface.co/settings/tokens"),
     },
     description:
       "Community-driven platform with thousands of open-source AI models.",

@@ -29,6 +29,38 @@ export function envForProviderConfigs({
         });
         break;
       }
+      case "cerebras": {
+        env.CEREBRAS_API_KEY = internalAPIKey();
+        env.CEREBRAS_BASE_URL = internalURL({
+          config,
+          workspaceServerURL,
+        });
+        break;
+      }
+      case "deepinfra": {
+        env.DEEPINFRA_API_KEY = internalAPIKey();
+        env.DEEPINFRA_BASE_URL = internalURL({
+          config,
+          workspaceServerURL,
+        });
+        break;
+      }
+      case "deepseek": {
+        env.DEEPSEEK_API_KEY = internalAPIKey();
+        env.DEEPSEEK_BASE_URL = internalURL({
+          config,
+          workspaceServerURL,
+        });
+        break;
+      }
+      case "fireworks": {
+        env.FIREWORKS_API_KEY = internalAPIKey();
+        env.FIREWORKS_BASE_URL = internalURL({
+          config,
+          workspaceServerURL,
+        });
+        break;
+      }
       case "google": {
         // For @google/genai
         env.GEMINI_API_KEY = internalAPIKey();
@@ -39,6 +71,22 @@ export function envForProviderConfigs({
         // For @ai-sdk/google
         env.GOOGLE_GENERATIVE_AI_API_KEY = internalAPIKey();
         env.GOOGLE_GENERATIVE_AI_BASE_URL = internalURL({
+          config,
+          workspaceServerURL,
+        });
+        break;
+      }
+      case "groq": {
+        env.GROQ_API_KEY = internalAPIKey();
+        env.GROQ_BASE_URL = internalURL({
+          config,
+          workspaceServerURL,
+        });
+        break;
+      }
+      case "mistral": {
+        env.MISTRAL_API_KEY = internalAPIKey();
+        env.MISTRAL_BASE_URL = internalURL({
           config,
           workspaceServerURL,
         });
@@ -68,9 +116,33 @@ export function envForProviderConfigs({
         });
         break;
       }
+      case "perplexity": {
+        env.PERPLEXITY_API_KEY = internalAPIKey();
+        env.PERPLEXITY_BASE_URL = internalURL({
+          config,
+          workspaceServerURL,
+        });
+        break;
+      }
+      case "together": {
+        env.TOGETHER_AI_API_KEY = internalAPIKey();
+        env.TOGETHER_AI_BASE_URL = internalURL({
+          config,
+          workspaceServerURL,
+        });
+        break;
+      }
       case "vercel": {
         env.AI_GATEWAY_API_KEY = internalAPIKey();
         env.AI_GATEWAY_BASE_URL = internalURL({
+          config,
+          workspaceServerURL,
+        });
+        break;
+      }
+      case "x-ai": {
+        env.XAI_API_KEY = internalAPIKey();
+        env.XAI_BASE_URL = internalURL({
           config,
           workspaceServerURL,
         });
