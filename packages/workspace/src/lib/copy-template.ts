@@ -19,7 +19,7 @@ export function copyTemplate({
       getIgnore(templateDir),
       (error) =>
         new TypedError.FileSystem(
-          `Failed to get ignore patterns: ${error instanceof Error ? error.message : String(error)}`,
+          `Failed to get ignore patterns for template copy: ${error instanceof Error ? error.message : String(error)}`,
           { cause: error },
         ),
     )
@@ -37,7 +37,7 @@ export function copyTemplate({
           }),
           (error) =>
             new TypedError.FileSystem(
-              `Failed to copy template: ${error instanceof Error ? error.message : String(error)}`,
+              `Failed to copy template files: ${error instanceof Error ? error.message : String(error)}`,
               { cause: error },
             ),
         ).map(() => true),

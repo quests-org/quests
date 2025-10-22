@@ -60,9 +60,12 @@ export function verifyAPIKey(
             return true;
           },
           (error) =>
-            new TypedError.VerificationFailed("Failed to verify API key", {
-              cause: error,
-            }),
+            new TypedError.VerificationFailed(
+              `Failed to verify API key for ${config.type} provider`,
+              {
+                cause: error,
+              },
+            ),
         );
       });
     }
@@ -70,7 +73,7 @@ export function verifyAPIKey(
     default: {
       return verifyWithModelsEndpoint({
         config,
-        errorMessage: `Failed to verify API key for ${metadata.name}`,
+        errorMessage: `Failed to verify API key for ${metadata.name} (${config.type})`,
       });
     }
   }

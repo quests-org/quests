@@ -161,7 +161,7 @@ async function handleMkdirCommand(
   } catch (error) {
     return err(
       createError(
-        `mkdir: ${error instanceof Error ? error.message : "Unknown error"}`,
+        `mkdir command failed: ${error instanceof Error ? error.message : "Unknown error"}`,
       ),
     );
   }
@@ -238,7 +238,7 @@ async function handleMvCommand(
   } catch (error) {
     return err(
       createError(
-        `mv: ${error instanceof Error ? error.message : "Unknown error"}`,
+        `mv command failed: ${error instanceof Error ? error.message : "Unknown error"}`,
       ),
     );
   }
@@ -324,7 +324,7 @@ async function handleRmCommand(
   } catch (error) {
     return err(
       createError(
-        `rm: ${error instanceof Error ? error.message : "Unknown error"}`,
+        `rm command failed: ${error instanceof Error ? error.message : "Unknown error"}`,
       ),
     );
   }

@@ -63,7 +63,7 @@ const executeToolLogic = fromPromise<
     await Store.savePart(
       {
         ...part,
-        errorText: `Tool call execution failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+        errorText: `Tool call execution failed for '${part.type}': ${error instanceof Error ? error.message : "Unknown error"}`,
         metadata: {
           ...part.metadata,
           endedAt: getCurrentDate(),
