@@ -24,10 +24,13 @@ export function logUnhandledEvent({
   }
 
   const snapshot = self.getSnapshot() as { value: unknown };
-  captureException(new Error("Unhandled event in state machine"), {
-    machine_name: name,
-    machine_state: JSON.stringify(snapshot.value),
-    scopes: ["workspace"],
-    unhandled_event: event.type,
-  });
+  captureException(
+    new Error(`Unhandled event '${event.type}' in state machine '${name}'`),
+    {
+      machine_name: name,
+      machine_state: JSON.stringify(snapshot.value),
+      scopes: ["workspace"],
+      unhandled_event: event.type,
+    },
+  );
 }

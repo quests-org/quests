@@ -220,7 +220,7 @@ describe("executeToolCallMachine", () => {
 
       expect(updatedPart).toMatchInlineSnapshot(`
         {
-          "errorText": "Tool call execution failed: Shell command failed",
+          "errorText": "Tool call execution failed for 'tool-run_shell_command': Shell command failed",
           "input": {
             "command": "pnpm throw-error",
             "explanation": "Installing packages",
