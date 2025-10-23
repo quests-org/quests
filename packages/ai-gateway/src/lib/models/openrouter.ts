@@ -126,6 +126,45 @@ export function fetchModelsForOpenRouter(config: AIGatewayProviderConfig.Type) {
         }),
       });
     }
+
+    // Exacto variants (`:exacto` suffix) route to providers with higher
+    // tool-calling accuracy. When available, transfer "recommended"/"default"
+    // tags from base models to Exacto variants.
+    // See: https://openrouter.ai/docs/features/exacto-variant
+    const baseModelsWithExacto = new Set<string>();
+
+    for (const model of validModels) {
+      if (model.canonicalId.endsWith(":exacto")) {
+        const baseModelId = model.canonicalId.slice(0, -7);
+        baseModelsWithExacto.add(baseModelId);
+      }
+    }
+
+    for (const model of validModels) {
+      const isExactoModel = model.canonicalId.endsWith(":exacto");
+
+      if (isExactoModel) {
+        model.tags.push("exacto");
+        // We will display this in the UI with a tag to not confuse users
+        model.name = model.name.replace(/\s*\(exacto\)\s*$/i, "");
+        const baseModelId = model.canonicalId.slice(0, -7);
+        const baseModelTags = getModelTags(
+          AIGatewayModel.CanonicalIdSchema.parse(baseModelId),
+          config,
+        );
+
+        for (const tag of baseModelTags) {
+          if (!model.tags.includes(tag)) {
+            model.tags.push(tag);
+          }
+        }
+      } else if (baseModelsWithExacto.has(model.canonicalId)) {
+        model.tags = model.tags.filter(
+          (tag) => tag !== "recommended" && tag !== "default",
+        );
+      }
+    }
+
     return validModels;
   });
 }

@@ -1,4 +1,3 @@
-import { Badge } from "@/client/components/ui/badge";
 import { Button } from "@/client/components/ui/button";
 import {
   Command,
@@ -23,10 +22,11 @@ import {
   type AIGatewayModel,
   type AIGatewayModelURI,
 } from "@quests/ai-gateway/client";
-import { AlertCircle, Check, ChevronDown, CircleOff, Plus } from "lucide-react";
+import { AlertCircle, Check, ChevronDown, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { AIProviderIcon } from "./ai-provider-icon";
+import { ModelTags } from "./model-tags";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 interface ModelPickerProps {
@@ -99,41 +99,6 @@ export function ModelPicker({
         </span>
       </div>
     );
-  };
-
-  const renderModelTags = (model: AIGatewayModel.Type) => {
-    const tags = [];
-
-    if (model.tags.includes("legacy")) {
-      tags.push(
-        <Badge className="text-xs px-1 py-0" key="legacy" variant="outline">
-          legacy
-        </Badge>,
-      );
-    }
-
-    if (model.tags.includes("new")) {
-      tags.push(
-        <Badge className="text-xs px-1 py-0" key="new" variant="outline">
-          new
-        </Badge>,
-      );
-    }
-
-    if (!model.features.includes("tools")) {
-      tags.push(
-        <Badge
-          className="text-xs px-1 py-0"
-          key="no-tools"
-          variant="destructive"
-        >
-          <CircleOff className="mr-0.5 size-3" />
-          tools
-        </Badge>,
-      );
-    }
-
-    return tags;
   };
 
   if (errors?.length === 0 && models && models.length === 0) {
@@ -295,7 +260,7 @@ export function ModelPicker({
                             </div>
                           </div>
                           <div className="flex items-center gap-1 ml-2">
-                            {renderModelTags(model)}
+                            <ModelTags model={model} />
                           </div>
                         </CommandItem>
                       ))}

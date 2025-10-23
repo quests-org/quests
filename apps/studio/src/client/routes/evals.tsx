@@ -1,6 +1,7 @@
 import { providerMetadataAtom } from "@/client/atoms/provider-metadata";
 import { AIProviderIcon } from "@/client/components/ai-provider-icon";
 import { IconMap } from "@/client/components/app-icons";
+import { ModelTags } from "@/client/components/model-tags";
 import { Button } from "@/client/components/ui/button";
 import { Checkbox } from "@/client/components/ui/checkbox";
 import {
@@ -384,6 +385,9 @@ function RouteComponent() {
                                   <span className="truncate text-sm">
                                     {model.name}
                                   </span>
+                                </div>
+                                <div className="flex items-center gap-1 ml-2">
+                                  <ModelTags model={model} />
                                 </div>
                               </CommandItem>
                             ))}
