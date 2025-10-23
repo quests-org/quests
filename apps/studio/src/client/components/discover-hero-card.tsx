@@ -1,5 +1,4 @@
 import { InternalLink } from "@/client/components/internal-link";
-import { telemetry } from "@/client/lib/telemetry";
 import { cn } from "@/client/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { type LinkProps } from "@tanstack/react-router";
@@ -7,7 +6,6 @@ import { type LinkProps } from "@tanstack/react-router";
 import { rpcClient } from "../rpc/client";
 
 interface DiscoverHeroCardProps {
-  cardType: "apps" | "templates";
   className?: string;
   heroImageDataUrl?: null | string;
   href: LinkProps["to"];
@@ -29,14 +27,12 @@ export function NewTabDiscoverHeroCards() {
   return (
     <div className="grid gap-6 md:grid-cols-2">
       <NewTabDiscoverHeroCard
-        cardType="templates"
         heroImageDataUrl={templatesHeroImageDataUrl}
         href="/discover/templates"
         subtitle="Next.js, Svelte, Vue, and more"
         title="Templates"
       />
       <NewTabDiscoverHeroCard
-        cardType="apps"
         heroImageDataUrl={appsHeroImageDataUrl}
         href="/discover/apps"
         subtitle="Explore example apps"
@@ -47,7 +43,6 @@ export function NewTabDiscoverHeroCards() {
 }
 
 function NewTabDiscoverHeroCard({
-  cardType,
   className,
   heroImageDataUrl,
   href,
@@ -55,15 +50,10 @@ function NewTabDiscoverHeroCard({
   title,
   ...props
 }: DiscoverHeroCardProps & React.HTMLAttributes<HTMLDivElement>) {
-  const handleClick = () => {
-    telemetry?.capture("new_tab.hero_card_clicked", {
-      card_type: cardType,
-    });
-  };
   return (
     <div className={cn("group relative block", className)} {...props}>
       <div className="flex flex-col gap-2">
-        <InternalLink onClick={handleClick} to={href}>
+        <InternalLink to={href}>
           <div className="overflow-hidden rounded-md border border-border relative">
             <div className="aspect-video w-full bg-muted flex items-center justify-center relative">
               {heroImageDataUrl ? (
@@ -85,7 +75,7 @@ function NewTabDiscoverHeroCard({
           </div>
         </InternalLink>
         <div className="text-left">
-          <InternalLink onClick={handleClick} to={href}>
+          <InternalLink to={href}>
             <h3 className="text-sm font-medium text-foreground">{title}</h3>
             {subtitle && (
               <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>

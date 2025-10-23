@@ -34,9 +34,6 @@ export interface AnalyticsEvents {
   "llm.tool_called": WithModelProperties<{ tool_name: string }>;
   "llm.tool_executed": { success: boolean; tool_name: string };
   "message.created": WithModelProperties<{ length: number }>;
-  "new_tab.hero_card_clicked": {
-    card_type: "apps" | "templates";
-  };
   "project.created": WithModelProperties<{
     eval_name?: string;
     template_name: string;
