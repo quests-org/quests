@@ -50,7 +50,7 @@ export async function getFramework({
       });
     }
 
-    appConfig.workspaceConfig.captureEvent("framework.not-supported", {
+    appConfig.workspaceConfig.captureEvent("framework.not_supported", {
       framework: "unknown",
     });
 
@@ -129,7 +129,7 @@ export async function getFramework({
       });
     }
   }
-  appConfig.workspaceConfig.captureEvent("framework.not-supported", {
+  appConfig.workspaceConfig.captureEvent("framework.not_supported", {
     framework: framework.name,
   });
 

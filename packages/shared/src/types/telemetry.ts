@@ -15,7 +15,7 @@ export interface AnalyticsEvents {
   "app.sidebar_opened": never;
   "favorite.added": never;
   "favorite.removed": never;
-  "framework.not-supported": {
+  "framework.not_supported": {
     framework: string;
   };
   "llm.error": WithModelProperties<LLMAnalyticsError>;
