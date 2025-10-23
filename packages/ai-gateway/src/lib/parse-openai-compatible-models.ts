@@ -38,6 +38,7 @@ export function parseOpenAICompatibleModels(
 
       let canonicalId: AIGatewayModel.CanonicalId;
       let modelAuthor: string = author;
+      let modelName: string | undefined;
 
       // Handle Fireworks model ID format: accounts/{author}/models/{modelId}
       if (
@@ -62,9 +63,37 @@ export function parseOpenAICompatibleModels(
         } else {
           canonicalId = AIGatewayModel.CanonicalIdSchema.parse(providerId);
         }
+      } else if (config.type === "cerebras" && model.id.includes("-")) {
+        // Handle Cerebras model ID format with known prefixes
+        const cerebrasAuthorMap: Record<string, string> = {
+          gpt: "openai",
+          llama: "meta",
+          llama3: "meta",
+          llama4: "meta",
+          qwen: "qwen",
+          zai: "zai",
+        };
+
+        const firstDashIndex = model.id.indexOf("-");
+        const prefix = model.id.slice(0, firstDashIndex).toLowerCase();
+        const mappedAuthor = cerebrasAuthorMap[prefix];
+
+        if (mappedAuthor) {
+          const modelId = model.id.slice(firstDashIndex + 1);
+          canonicalId = AIGatewayModel.CanonicalIdSchema.parse(modelId);
+          modelAuthor = mappedAuthor;
+          // Use the original provider ID to generate the model name so it's still readable
+          modelName = generateModelName(
+            AIGatewayModel.CanonicalIdSchema.parse(providerId),
+          );
+        } else {
+          canonicalId = AIGatewayModel.CanonicalIdSchema.parse(providerId);
+        }
       } else {
         canonicalId = AIGatewayModel.CanonicalIdSchema.parse(providerId);
       }
+
+      modelName ||= generateModelName(canonicalId);
 
       const tags = getModelTags(canonicalId, config);
       const isNew = isModelNew(model.created);
@@ -79,7 +108,7 @@ export function parseOpenAICompatibleModels(
         author: modelAuthor,
         canonicalId,
         features: ["inputText", "outputText", "tools"],
-        name: generateModelName(canonicalId),
+        name: modelName,
         params,
         providerId,
         providerName: config.displayName ?? metadata.name,
