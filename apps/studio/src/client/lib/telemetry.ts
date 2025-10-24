@@ -3,42 +3,6 @@ import { type CaptureResult, posthog } from "posthog-js";
 
 import { vanillaRpcClient } from "../rpc/client";
 
-type PropertyRedactionConfig = Record<string, RedactionStrategy>;
-
-type RedactionStrategy =
-  | { pattern: RegExp; replacement: string; type: "regex" }
-  | { type: "delete" };
-
-function redactProperties(
-  properties: Record<string, unknown>,
-  config: PropertyRedactionConfig,
-): void {
-  for (const [propertyName, strategy] of Object.entries(config)) {
-    const value = properties[propertyName];
-
-    if (value === undefined) {
-      continue;
-    }
-
-    switch (strategy.type) {
-      case "delete": {
-        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-        delete properties[propertyName];
-        break;
-      }
-      case "regex": {
-        if (typeof value === "string") {
-          properties[propertyName] = value.replaceAll(
-            strategy.pattern,
-            strategy.replacement,
-          );
-        }
-        break;
-      }
-    }
-  }
-}
-
 const API_KEY = import.meta.env.VITE_POSTHOG_API_KEY;
 const API_HOST = import.meta.env.VITE_POSTHOG_API_HOST;
 
@@ -79,55 +43,34 @@ async function initTelemetry() {
         return event;
       }
 
-      if (
-        event.properties.$current_url &&
-        typeof event.properties.$current_url === "string"
-      ) {
-        const convertedUrl = convertHashUrlToPath(
-          event.properties.$current_url,
-        );
-        event.properties.$current_url = convertedUrl;
+      const { properties } = event;
+
+      if (typeof properties.$current_url === "string") {
+        const convertedUrl = convertHashUrlToPath(properties.$current_url);
+        properties.$current_url = convertedUrl;
 
         // Also update pathname from the hash
         try {
           const parsed = new URL(convertedUrl);
-          event.properties.$pathname = parsed.pathname;
+          properties.$pathname = parsed.pathname;
         } catch {
           // If parsing fails, keep original pathname
         }
       }
 
-      if (
-        event.properties.$session_entry_url &&
-        typeof event.properties.$session_entry_url === "string"
-      ) {
-        event.properties.$session_entry_url = convertHashUrlToPath(
-          event.properties.$session_entry_url,
+      if (typeof properties.$session_entry_url === "string") {
+        properties.$session_entry_url = convertHashUrlToPath(
+          properties.$session_entry_url,
         );
       }
 
-      redactProperties(event.properties, {
-        // Remove page titles
-        $title: { type: "delete" },
-        title: { type: "delete" },
-
-        // Redact project subdomains from URLs and paths
-        $current_url: {
-          pattern: /\/projects\/[a-z0-9]+/g,
-          replacement: "/projects/:project_subdomain",
-          type: "regex",
-        },
-        $pathname: {
-          pattern: /\/projects\/[a-z0-9]+/g,
-          replacement: "/projects/:project_subdomain",
-          type: "regex",
-        },
-        $session_entry_url: {
-          pattern: /\/projects\/[a-z0-9]+/g,
-          replacement: "/projects/:project_subdomain",
-          type: "regex",
-        },
-      });
+      if (
+        typeof properties.$pathname === "string" &&
+        properties.$pathname.startsWith("/projects/")
+      ) {
+        delete properties.$title;
+        delete properties.title;
+      }
 
       return event;
     },
