@@ -280,7 +280,15 @@ const takeScreenshot = base
           y: z.number(),
         })
         .optional(),
-      subdomain: ProjectSubdomainSchema,
+      name: z.string().transform((name) =>
+        name
+          // Safe filename characters
+          // eslint-disable-next-line no-control-regex
+          .replaceAll(/[<>:"/\\|?*\u0000-\u001F]/g, "-")
+          .replaceAll(/\s+/g, "-")
+          .replaceAll(/^\.+/g, "")
+          .slice(0, 200),
+      ),
     }),
   )
   .output(
@@ -308,8 +316,8 @@ const takeScreenshot = base
       const buffer = image.toPNG();
 
       const timestamp = new Date().toISOString().replaceAll(/[:.]/g, "-");
-      const filename = `${input.subdomain}-screenshot-${timestamp}.png`;
-      const downloadsPath = path.join(os.homedir(), "Downloads");
+      const filename = `${input.name}-screenshot-${timestamp}.png`;
+      const downloadsPath = app.getPath("downloads");
       const filepath = path.join(downloadsPath, filename);
 
       await fs.writeFile(filepath, buffer);
@@ -338,7 +346,6 @@ const copyScreenshotToClipboard = base
           y: z.number(),
         })
         .optional(),
-      subdomain: ProjectSubdomainSchema,
     }),
   )
   .handler(async ({ context, errors, input }) => {

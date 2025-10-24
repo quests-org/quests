@@ -7,6 +7,7 @@ import { SmallAppIcon } from "@/client/components/app-icon";
 import { ProjectSettingsDialog } from "@/client/components/project-settings-dialog";
 import { Button } from "@/client/components/ui/button";
 import { ToolbarFavoriteAction } from "@/client/components/ui/toolbar-favorite-action";
+import { captureClientEvent } from "@/client/lib/capture-client-event";
 import { cn, isMacOS } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
 import { OpenAppInTypeSchema } from "@/shared/schemas/editors";
@@ -78,11 +79,20 @@ export function ProjectHeaderToolbar({
     rpcClient.utils.showFileInFolder.mutationOptions(),
   );
 
+  const { data: supportedEditors = [] } = useQuery<SupportedEditor[]>(
+    rpcClient.utils.getSupportedEditors.queryOptions(),
+  );
+
   const openAppInMutation = useMutation(
     rpcClient.utils.openAppIn.mutationOptions({
       onError: (error) => {
         toast.error("Failed to open in app", {
           description: error.message,
+        });
+      },
+      onSuccess: (_, variables) => {
+        captureClientEvent("project.opened_in", {
+          app_name: variables.type,
         });
       },
     }),
@@ -96,9 +106,10 @@ export function ProjectHeaderToolbar({
         });
       },
       onSuccess: (result) => {
-        toast.success(`Screenshot saved to Downloads`, {
+        captureClientEvent("project.share.saved_screenshot");
+        toast.success(`Screenshot saved to your Downloads folder`, {
           action: {
-            label: isMacOS() ? "Reveal in Finder" : "Show File",
+            label: isMacOS() ? "Reveal in Finder" : "Open in File Explorer",
             onClick: () => {
               showFileInFolderMutation.mutate({
                 filepath: result.filepath,
@@ -120,13 +131,10 @@ export function ProjectHeaderToolbar({
         });
       },
       onSuccess: () => {
+        captureClientEvent("project.share.copied_screenshot");
         toast.success("Screenshot copied to clipboard");
       },
     }),
-  );
-
-  const { data: supportedEditors = [] } = useQuery<SupportedEditor[]>(
-    rpcClient.utils.getSupportedEditors.queryOptions(),
   );
 
   const handleTakeScreenshot = async () => {
@@ -144,7 +152,7 @@ export function ProjectHeaderToolbar({
 
     takeScreenshotMutation.mutate({
       bounds,
-      subdomain: project.subdomain,
+      name: project.title || project.subdomain,
     });
   };
 
@@ -163,7 +171,6 @@ export function ProjectHeaderToolbar({
 
     copyScreenshotMutation.mutate({
       bounds,
-      subdomain: project.subdomain,
     });
   };
 
@@ -377,7 +384,13 @@ export function ProjectHeaderToolbar({
                     })()}
                   </DropdownMenuContent>
                 </DropdownMenu>
-                <DropdownMenu>
+                <DropdownMenu
+                  onOpenChange={(open) => {
+                    if (open) {
+                      captureClientEvent("project.share.opened");
+                    }
+                  }}
+                >
                   <DropdownMenuTrigger asChild>
                     <Button className="gap-1 h-7" size="sm" variant="secondary">
                       Share

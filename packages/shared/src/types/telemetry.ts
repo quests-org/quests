@@ -39,7 +39,13 @@ export interface AnalyticsEvents {
     template_name: string;
   }>;
   "project.forked": never;
+  "project.opened_in": {
+    app_name: string;
+  };
   "project.restored_version": never;
+  "project.share.copied_screenshot": never;
+  "project.share.opened": never;
+  "project.share.saved_screenshot": never;
   "project.trashed": never;
   "project.updated": never;
   "provider.created": {
