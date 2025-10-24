@@ -110,7 +110,7 @@
         "--configLoader",
         "runner",
         "--port",
-        "9150",
+        "8150",
         "--clearScreen",
         "false"
       ],

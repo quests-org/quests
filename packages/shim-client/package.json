@@ -14,7 +14,7 @@
     "check:build": "pnpm run build",
     "check:lint": "eslint . --max-warnings 0 --cache",
     "check:types": "tsc --noEmit",
-    "dev": "vite --configLoader runner --port 9150",
+    "dev": "vite --configLoader runner --port 8150",
     "turbo:check": "turbo run check:types check:lint"
   },
   "dependencies": {

@@ -17,6 +17,7 @@ import { getFramework } from "../lib/get-framework";
 import { getPackageManager } from "../lib/get-package-manager";
 import { pathExists } from "../lib/path-exists";
 import { PortManager } from "../lib/port-manager";
+import { DEFAULT_RUNTIME_BASE_PORT } from "./server/constants";
 import { getWorkspaceServerURL } from "./server/url";
 
 const BASE_RUNTIME_TIMEOUT_MS = ms("1 minute");
@@ -24,7 +25,7 @@ const RUNTIME_TIMEOUT_MULTIPLIER_MS = ms("30 seconds");
 const INSTALL_TIMEOUT_MS = ms("5 minutes");
 
 const portManager = new PortManager({
-  basePort: 9200,
+  basePort: DEFAULT_RUNTIME_BASE_PORT,
   maxAttempts: 1000,
   retryDelayMs: ms("100ms"),
 });
