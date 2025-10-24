@@ -14,6 +14,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/client/components/ui/popover";
+import { captureClientEvent } from "@/client/lib/capture-client-event";
 import { RECOMMENDED_TAG } from "@quests/ai-gateway/client";
 import { type AIProviderType } from "@quests/shared";
 import { useAtomValue } from "jotai";
@@ -33,6 +34,9 @@ export function ProviderPicker({
   const { sortedProviderMetadata } = useAtomValue(providerMetadataAtom);
 
   const handleSelect = (providerType: AIProviderType) => {
+    captureClientEvent("provider.selected", {
+      provider_type: providerType,
+    });
     onSelect(providerType);
     setOpen(false);
   };
@@ -42,7 +46,15 @@ export function ProviderPicker({
     : null;
 
   return (
-    <Popover onOpenChange={setOpen} open={open}>
+    <Popover
+      onOpenChange={(newOpen) => {
+        if (newOpen) {
+          captureClientEvent("provider.picker_opened");
+        }
+        setOpen(newOpen);
+      }}
+      open={open}
+    >
       <PopoverTrigger asChild>
         <Button
           aria-expanded={open}

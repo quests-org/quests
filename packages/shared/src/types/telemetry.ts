@@ -51,7 +51,11 @@ export interface AnalyticsEvents {
   "provider.created": {
     provider_type: AIProviderType;
   };
+  "provider.picker_opened": never;
   "provider.removed": {
+    provider_type: AIProviderType;
+  };
+  "provider.selected": {
     provider_type: AIProviderType;
   };
   "provider.verification_failed": {
