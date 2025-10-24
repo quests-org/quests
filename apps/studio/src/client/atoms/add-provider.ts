@@ -9,6 +9,7 @@ type AddProviderAction =
       validationFailed: boolean;
     }
   | {
+      baseURL?: string;
       displayName?: string;
       providerType: AIProviderType;
       type: "SELECT_PROVIDER";
@@ -61,7 +62,7 @@ function addProviderReducer(
       return {
         ...state,
         allowBypass: false,
-        baseURL: "",
+        baseURL: action.baseURL ?? "",
         displayName: action.displayName ?? "",
         errorMessage: null,
         selectedProviderType: action.providerType,

@@ -47,14 +47,24 @@ export function AddProviderDialog({
       state.selectedProviderType,
     );
     const requiresAPIKey = providerMetadata?.requiresAPIKey ?? true;
-    const isOpenAICompatible =
-      state.selectedProviderType === "openai-compatible";
+    const defaultBaseURL = providerMetadata?.api.defaultBaseURL ?? "";
 
-    const normalizedBaseURL =
-      isOpenAICompatible && state.baseURL ? fixURL(state.baseURL) : undefined;
+    let baseURLToSave: string | undefined;
 
-    if (normalizedBaseURL && normalizedBaseURL !== state.baseURL) {
-      dispatch({ type: "SET_BASE_URL", value: normalizedBaseURL });
+    if (state.baseURL.trim()) {
+      const normalizedBaseURL = fixURL(state.baseURL);
+      if (normalizedBaseURL !== state.baseURL) {
+        dispatch({
+          type: "SET_BASE_URL",
+          value: normalizedBaseURL,
+        });
+      }
+      // Only save the base URL if the user modified it from the default.
+      // This allows us to update defaults in the future without affecting
+      // existing configurations.
+      if (normalizedBaseURL !== defaultBaseURL) {
+        baseURLToSave = normalizedBaseURL;
+      }
     }
 
     try {
@@ -64,7 +74,7 @@ export function AddProviderDialog({
             apiKey: requiresAPIKey
               ? state.apiKey
               : AI_GATEWAY_API_KEY_NOT_NEEDED,
-            baseURL: normalizedBaseURL,
+            baseURL: baseURLToSave,
             displayName: state.displayName.trim() || undefined,
             type: state.selectedProviderType,
           },

@@ -3,8 +3,10 @@ import { ClientAIProviderConfigSchema } from "@/shared/schemas/provider";
 import { call, eventIterator } from "@orpc/server";
 import {
   AIGatewayProviderConfig,
+  baseURLWithDefault,
   fetchCredits,
   getAllProviderMetadata,
+  getProviderMetadata,
   ProviderMetadataSchema,
   verifyAPIKey,
 } from "@quests/ai-gateway";
@@ -105,15 +107,34 @@ const create = base
       const providersStore = getProviderConfigsStore();
       const existingConfigs = providersStore.get("providers");
 
-      const duplicateProvider = existingConfigs.find(
+      const duplicateProviderByName = existingConfigs.find(
         (p) =>
           p.type === newConfig.type && p.displayName === newConfig.displayName,
       );
 
-      if (duplicateProvider) {
+      if (duplicateProviderByName) {
         throw errors.BAD_REQUEST({
           message: `A provider of type "${newConfig.type}" with the name "${newConfig.displayName ?? ""}" already exists`,
         });
+      }
+
+      const providerMetadata = getProviderMetadata(newConfig.type);
+      const requiresAPIKey = providerMetadata.requiresAPIKey ?? true;
+
+      if (!requiresAPIKey) {
+        const newConfigBaseURL = baseURLWithDefault(newConfig);
+        const duplicateProviderByBaseURL = existingConfigs.find((p) => {
+          const existingBaseURL = baseURLWithDefault(p);
+          return (
+            p.type === newConfig.type && existingBaseURL === newConfigBaseURL
+          );
+        });
+
+        if (duplicateProviderByBaseURL) {
+          throw errors.BAD_REQUEST({
+            message: `A provider of type "${providerMetadata.name}" with the base URL "${newConfigBaseURL}" already exists.`,
+          });
+        }
       }
 
       if (!skipValidation) {

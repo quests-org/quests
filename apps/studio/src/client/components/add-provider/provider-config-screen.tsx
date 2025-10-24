@@ -12,10 +12,16 @@ import { type ClientAIProviderConfig } from "@/shared/schemas/provider";
 import { type AIProviderType } from "@quests/shared";
 import { useAtom, useAtomValue } from "jotai";
 import { AlertCircle, Lock } from "lucide-react";
-import { useMemo, useRef } from "react";
+import { useRef, useState } from "react";
 
 import { addProviderDialogAtom } from "../../atoms/add-provider";
 import { ProviderPicker } from "../provider-picker";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "../ui/accordion";
 import { Alert, AlertDescription } from "../ui/alert";
 import { ProviderLinks } from "./provider-links";
 
@@ -32,12 +38,13 @@ export function ProviderConfigScreen({
   const [state, dispatch] = useAtom(addProviderDialogAtom);
   const displayNameInputRef = useRef<HTMLInputElement>(null);
   const apiKeyInputRef = useRef<HTMLInputElement>(null);
+  const [advancedOpen, setAdvancedOpen] = useState<string | undefined>(
+    undefined,
+  );
 
-  const providerMetadata = useMemo(() => {
-    return state.selectedProviderType
-      ? providerMetadataMap.get(state.selectedProviderType)
-      : undefined;
-  }, [state.selectedProviderType, providerMetadataMap]);
+  const providerMetadata = state.selectedProviderType
+    ? providerMetadataMap.get(state.selectedProviderType)
+    : undefined;
 
   const requiresAPIKey = providerMetadata?.requiresAPIKey ?? true;
   const isOpenAICompatible = state.selectedProviderType === "openai-compatible";
@@ -46,20 +53,10 @@ export function ProviderConfigScreen({
     ? providers.some((p) => p.type === state.selectedProviderType)
     : false;
 
-  const disabledProviderTypes = useMemo(() => {
-    // Users can only add providers multiple times if they require an API key
-    return providers
-      .filter((provider) => {
-        const metadata = providerMetadataMap.get(provider.type);
-        return metadata && !metadata.requiresAPIKey;
-      })
-      .map((provider) => provider.type);
-  }, [providers, providerMetadataMap]);
-
   const hasSelectedProvider = state.selectedProviderType !== undefined;
   const hasAPIKey = !requiresAPIKey || Boolean(state.apiKey.trim());
   const hasDisplayName = Boolean(state.displayName.trim());
-  const hasValidBaseURL = !isOpenAICompatible || Boolean(state.baseURL.trim());
+  const hasValidBaseURL = Boolean(state.baseURL.trim());
 
   const isFormValid =
     hasSelectedProvider && hasAPIKey && hasDisplayName && hasValidBaseURL;
@@ -90,11 +87,22 @@ export function ProviderConfigScreen({
         ? (selectedProviderMetadata?.name ?? "")
         : "";
 
+      const baseURL = selectedProviderMetadata?.api.defaultBaseURL ?? "";
+
       dispatch({
+        baseURL,
         displayName,
         providerType,
         type: "SELECT_PROVIDER",
       });
+
+      const providerRequiresAPIKey =
+        selectedProviderMetadata?.requiresAPIKey ?? true;
+      if (hasExistingProvider && !providerRequiresAPIKey) {
+        setAdvancedOpen("advanced");
+      } else {
+        setAdvancedOpen(undefined);
+      }
 
       setTimeout(() => {
         if (shouldSetDefaultDisplayName) {
@@ -129,7 +137,6 @@ export function ProviderConfigScreen({
         </div>
 
         <ProviderPicker
-          disabledProviderTypes={disabledProviderTypes}
           onSelect={handleProviderSelect}
           selectedProvider={state.selectedProviderType}
         />
@@ -219,6 +226,62 @@ export function ProviderConfigScreen({
                 name={providerMetadata.name}
                 url={providerMetadata.url}
               />
+            )}
+
+            {!isOpenAICompatible && (
+              <Accordion
+                collapsible
+                onValueChange={setAdvancedOpen}
+                type="single"
+                value={advancedOpen}
+              >
+                <AccordionItem className="border-b-0" value="advanced">
+                  <AccordionTrigger className="py-3 text-muted-foreground font-normal text-xs justify-start gap-1.5">
+                    Advanced
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div className="flex flex-col gap-y-3">
+                      <div className="flex flex-col gap-y-1">
+                        <Label htmlFor="base-url">Base URL</Label>
+                        <div className="text-xs text-muted-foreground">
+                          Only change this if you know what you&apos;re doing.{" "}
+                          Use the{" "}
+                          <span
+                            className="cursor-pointer underline underline-offset-2 hover:text-foreground"
+                            onClick={() => {
+                              handleProviderSelect("openai-compatible");
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                handleProviderSelect("openai-compatible");
+                              }
+                            }}
+                            role="button"
+                            tabIndex={0}
+                          >
+                            OpenAI-compatible provider
+                          </span>{" "}
+                          if you want to add a custom OpenAI-compatible
+                          provider.
+                        </div>
+                      </div>
+
+                      <Input
+                        className="font-mono"
+                        id="base-url"
+                        onChange={(e) => {
+                          handleBaseURLChange(e.target.value);
+                        }}
+                        placeholder={providerMetadata.api.defaultBaseURL}
+                        spellCheck={false}
+                        type="text"
+                        value={state.baseURL}
+                      />
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
             )}
           </>
         )}

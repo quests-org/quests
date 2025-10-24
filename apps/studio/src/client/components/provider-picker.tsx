@@ -23,11 +23,9 @@ import { useState } from "react";
 import { AIProviderIcon } from "./ai-provider-icon";
 
 export function ProviderPicker({
-  disabledProviderTypes = [],
   onSelect,
   selectedProvider,
 }: {
-  disabledProviderTypes?: AIProviderType[];
   onSelect: (providerType: AIProviderType | undefined) => void;
   selectedProvider: AIProviderType | undefined;
 }) {
@@ -81,18 +79,11 @@ export function ProviderPicker({
             <CommandEmpty>No providers found.</CommandEmpty>
             <CommandGroup>
               {sortedProviderMetadata.map((provider) => {
-                const isDisabled = disabledProviderTypes.includes(
-                  provider.type,
-                );
-
                 return (
                   <CommandItem
-                    disabled={isDisabled}
                     key={provider.type}
                     onSelect={() => {
-                      if (!isDisabled) {
-                        handleSelect(provider.type);
-                      }
+                      handleSelect(provider.type);
                     }}
                     value={provider.name}
                   >
@@ -103,30 +94,24 @@ export function ProviderPicker({
                     <div className="flex flex-col gap-y-0.5 flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="font-medium">{provider.name}</span>
-                        {isDisabled ? (
-                          <span className="text-xs text-muted-foreground">
-                            Already added
-                          </span>
-                        ) : (
-                          provider.tags.length > 0 && (
-                            <div className="flex flex-wrap gap-1">
-                              {provider.tags.map((tag) => (
-                                <Badge
-                                  key={tag}
-                                  variant={
-                                    tag === RECOMMENDED_TAG
-                                      ? "brand-outline"
-                                      : "outline"
-                                  }
-                                >
-                                  {tag === RECOMMENDED_TAG && (
-                                    <Award className="size-3 stroke-brand" />
-                                  )}
-                                  {tag}
-                                </Badge>
-                              ))}
-                            </div>
-                          )
+                        {provider.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-1">
+                            {provider.tags.map((tag) => (
+                              <Badge
+                                key={tag}
+                                variant={
+                                  tag === RECOMMENDED_TAG
+                                    ? "brand-outline"
+                                    : "outline"
+                                }
+                              >
+                                {tag === RECOMMENDED_TAG && (
+                                  <Award className="size-3 stroke-brand" />
+                                )}
+                                {tag}
+                              </Badge>
+                            ))}
+                          </div>
                         )}
                       </div>
                       <div className="text-xs text-muted-foreground">
