@@ -43,7 +43,7 @@ export function getModelTags(
 ): AIGatewayModel.ModelTag[] {
   const tags: AIGatewayModel.ModelTag[] = MODEL_TAGS[canonicalId] ?? [];
 
-  // Don't recommend Codex for OpenAI compatible because it requires the responses API
+  // Don't recommend Codex for OpenAI-compatible because it requires the responses API
   if (config.type === "openai-compatible" && canonicalId === "gpt-5-codex") {
     return tags.filter((tag) => tag !== "recommended" && tag !== "default");
   }

@@ -24,7 +24,7 @@ const PROVIDER_METADATA: Record<AIProviderType, ProviderMetadataInput> = {
       keyURL: addRef("https://docs.anyscale.com/auth/api-keys"),
     },
     description:
-      "Scalable AI infrastructure built on Ray for distributed computing.",
+      "Scalable AI infrastructure built on Ray for distributed computing",
     name: "Anyscale",
     type: "anyscale",
     url: addRef("https://www.anyscale.com"),
@@ -36,7 +36,7 @@ const PROVIDER_METADATA: Record<AIProviderType, ProviderMetadataInput> = {
       keyURL: addRef("https://cloud.cerebras.ai"),
     },
     description:
-      "Ultra-fast inference with popular open-source models like Llama and Qwen.",
+      "Ultra-fast inference with popular open-source models like Llama and Qwen",
     name: "Cerebras",
     type: "cerebras",
     url: addRef("https://www.cerebras.ai"),
@@ -47,7 +47,7 @@ const PROVIDER_METADATA: Record<AIProviderType, ProviderMetadataInput> = {
       keyURL: addRef("https://deepinfra.com/docs/deep_infra_api"),
     },
     description:
-      "Cloud platform for running large AI models with flexible pricing.",
+      "Cloud platform for running large AI models with flexible pricing",
     name: "DeepInfra",
     type: "deepinfra",
     url: addRef("https://deepinfra.com"),
@@ -59,7 +59,7 @@ const PROVIDER_METADATA: Record<AIProviderType, ProviderMetadataInput> = {
       keyURL: addRef("https://platform.deepseek.com/api_keys"),
     },
     description:
-      "Advanced reasoning models with strong coding and mathematical capabilities.",
+      "Advanced reasoning models with strong coding and mathematical capabilities",
     name: "DeepSeek",
     type: "deepseek",
     url: addRef("https://deepseek.com"),
@@ -71,7 +71,7 @@ const PROVIDER_METADATA: Record<AIProviderType, ProviderMetadataInput> = {
       keyURL: addRef("https://docs.fireworks.ai/getting-started/quickstart"),
     },
     description:
-      "High-speed multi-modal AI inference with advanced FireAttention technology.",
+      "High-speed multimodal AI inference with advanced FireAttention technology",
     name: "Fireworks AI",
     type: "fireworks",
     url: addRef("https://fireworks.ai"),
@@ -95,7 +95,7 @@ const PROVIDER_METADATA: Record<AIProviderType, ProviderMetadataInput> = {
       keyURL: addRef("https://console.groq.com/keys"),
     },
     description:
-      "Ultra-fast AI inference powered by custom LPU hardware designed for speed.",
+      "Ultra-fast AI inference powered by custom LPU hardware designed for speed",
     name: "Groq",
     type: "groq",
     url: addRef("https://groq.com"),
@@ -106,7 +106,7 @@ const PROVIDER_METADATA: Record<AIProviderType, ProviderMetadataInput> = {
       keyURL: addRef("https://huggingface.co/settings/tokens"),
     },
     description:
-      "Community-driven platform with thousands of open-source AI models.",
+      "Community-driven platform with thousands of open-source AI models",
     name: "Hugging Face Inference",
     type: "huggingface",
     url: addRef("https://huggingface.co"),
@@ -116,7 +116,7 @@ const PROVIDER_METADATA: Record<AIProviderType, ProviderMetadataInput> = {
       defaultBaseURL: "https://api.hyperbolic.xyz/v1",
       keyURL: addRef("https://docs.hyperbolic.xyz/docs/getting-started"),
     },
-    description: "Budget-friendly GPU access for running various AI models.",
+    description: "Budget-friendly GPU access for running various AI models",
     name: "Hyperbolic",
     type: "hyperbolic",
     url: addRef("https://hyperbolic.ai"),
@@ -126,7 +126,7 @@ const PROVIDER_METADATA: Record<AIProviderType, ProviderMetadataInput> = {
       defaultBaseURL: "http://localhost:8080/v1",
     },
     description:
-      "Open-source offline ChatGPT alternative with 70+ models and customizable inference.",
+      "Open-source offline ChatGPT alternative with 70+ models and customizable inference",
     name: "Jan.ai",
     requiresAPIKey: false,
     type: "jan",
@@ -137,7 +137,7 @@ const PROVIDER_METADATA: Record<AIProviderType, ProviderMetadataInput> = {
       defaultBaseURL: "http://localhost:1234/v1",
     },
     description:
-      "Polished GUI for managing and running local LLMs with built-in chat interface.",
+      "Polished GUI for managing and running local LLMs with built-in chat interface",
     name: "LM Studio",
     requiresAPIKey: false,
     type: "lmstudio",
@@ -148,7 +148,7 @@ const PROVIDER_METADATA: Record<AIProviderType, ProviderMetadataInput> = {
       defaultBaseURL: "http://localhost:8080/v1",
     },
     description:
-      "Versatile drop-in replacement for OpenAI API supporting multiple architectures.",
+      "Versatile drop-in replacement for OpenAI API supporting multiple architectures",
     name: "LocalAI",
     requiresAPIKey: false,
     type: "localai",
@@ -160,7 +160,7 @@ const PROVIDER_METADATA: Record<AIProviderType, ProviderMetadataInput> = {
       keyURL: addRef("https://docs.mistral.ai/getting-started/quickstart/"),
     },
     description:
-      "European AI provider with models optimized for coding and general tasks.",
+      "European AI provider with models optimized for coding and general tasks",
     name: "Mistral AI",
     type: "mistral",
     url: addRef("https://mistral.ai"),
@@ -171,7 +171,7 @@ const PROVIDER_METADATA: Record<AIProviderType, ProviderMetadataInput> = {
       keyURL: addRef("https://novita.ai/docs/get-started/quickstart.html"),
     },
     description:
-      "Affordable serverless GPU platform with access to 200+ AI models.",
+      "Affordable serverless GPU platform with access to 200+ AI models",
     name: "Novita AI",
     type: "novita",
     url: addRef("https://novita.ai"),
@@ -201,8 +201,8 @@ const PROVIDER_METADATA: Record<AIProviderType, ProviderMetadataInput> = {
     api: {
       defaultBaseURL: "",
     },
-    description: "Add your own custom OpenAI compatible provider",
-    name: "Custom OpenAI Compatible Provider",
+    description: "Add your own custom OpenAI-compatible provider",
+    name: "Custom OpenAI-Compatible Provider",
     type: "openai-compatible",
     url: "",
   },
@@ -224,7 +224,7 @@ const PROVIDER_METADATA: Record<AIProviderType, ProviderMetadataInput> = {
       keyURL: addRef("https://docs.perplexity.ai/getting-started/quickstart"),
     },
     description:
-      "AI models specialized in search and real-time knowledge retrieval.",
+      "AI models specialized in search and real-time knowledge retrieval",
     name: "Perplexity AI",
     type: "perplexity",
     url: addRef("https://www.perplexity.ai"),
@@ -235,7 +235,7 @@ const PROVIDER_METADATA: Record<AIProviderType, ProviderMetadataInput> = {
       keyURL: addRef("https://docs.together.ai/docs/quickstart"),
     },
     description:
-      "Access to 200+ open-source AI models with optimized performance at scale.",
+      "Access to 200+ open-source AI models with optimized performance at scale",
     name: "Together AI",
     type: "together",
     url: addRef("https://www.together.ai"),
@@ -267,7 +267,7 @@ const PROVIDER_METADATA: Record<AIProviderType, ProviderMetadataInput> = {
       defaultBaseURL: "https://api.z.ai/api/coding/paas/v4",
       keyURL: addRef("https://docs.z.ai"),
     },
-    description: "GLM Coding Plan with GLM-4.5 and GLM-4.6 models.",
+    description: "GLM Coding Plan with GLM-4.5 and GLM-4.6 models",
     name: "Z.ai GLM Coding Plan",
     type: "z-ai",
     url: addRef("https://z.ai"),
