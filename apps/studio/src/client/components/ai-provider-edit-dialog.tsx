@@ -131,7 +131,7 @@ export function AIProviderEditDialog({
             />
           </div>
 
-          {config.type === "openai-compatible" && config.baseURL && (
+          {config.baseURL && (
             <div className="space-y-3">
               <div className="space-y-1">
                 <Label htmlFor="base-url">Base URL</Label>
