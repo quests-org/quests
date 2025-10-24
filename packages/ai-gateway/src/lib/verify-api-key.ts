@@ -26,7 +26,7 @@ export function verifyAPIKey(
       Promise.resolve(
         Result.error(
           new TypedError.VerificationFailed(
-            `Base URL is required for ${config.type} provider`,
+            `Please enter a base URL for ${metadata.name}`,
           ),
         ),
       ),
@@ -52,7 +52,7 @@ export function verifyAPIKey(
         }
         return Result.error(
           new TypedError.VerificationFailed(
-            `Failed to verify API key for ${config.type} provider`,
+            `Unable to verify ${metadata.name} API key`,
             { cause: result.error },
           ),
         );
@@ -62,7 +62,7 @@ export function verifyAPIKey(
     default: {
       return verifyWithModelsEndpoint({
         config,
-        errorMessage: `Failed to verify API key for ${metadata.name} (${config.type})`,
+        errorMessage: `Unable to verify ${metadata.name} API key`,
       });
     }
   }
@@ -70,7 +70,7 @@ export function verifyAPIKey(
 
 function verifyWithModelsEndpoint({
   config,
-  errorMessage = "Failed to verify API key",
+  errorMessage = "Unable to verify API key",
 }: {
   config: VerifyConfig;
   errorMessage?: string;
