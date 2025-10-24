@@ -6,10 +6,9 @@ import { fetchAnthropicModels } from "./models/anthropic";
 import { fetchGoogleModels } from "./models/google";
 import { fetchOpenAIModels } from "./models/openai";
 import { fetchOpenAICompatibleModels } from "./models/openai-compatible";
-import { apiURL } from "./providers/api-url";
 import { baseURLWithDefault } from "./providers/base-url-with-default";
+import { fetchCredits } from "./providers/fetch-credits";
 import { getProviderMetadata } from "./providers/metadata";
-import { setProviderAuthHeaders } from "./providers/set-auth-headers";
 
 type VerifyConfig = Pick<
   AIGatewayProviderConfig.Type,
@@ -47,25 +46,15 @@ export function verifyAPIKey(
 
     case "openrouter": {
       return Result.fromAsync(async () => {
-        const headers = new Headers({ "Content-Type": "application/json" });
-        setProviderAuthHeaders(headers, config);
-        const url = apiURL({ config, path: "/credits" });
-
-        return Result.try(
-          async () => {
-            const response = await fetch(url, { headers });
-            if (!response.ok) {
-              throw new Error("Failed to fetch credits");
-            }
-            return true;
-          },
-          (error) =>
-            new TypedError.VerificationFailed(
-              `Failed to verify API key for ${config.type} provider`,
-              {
-                cause: error,
-              },
-            ),
+        const result = await fetchCredits(config);
+        if (result.ok) {
+          return Result.ok(true);
+        }
+        return Result.error(
+          new TypedError.VerificationFailed(
+            `Failed to verify API key for ${config.type} provider`,
+            { cause: result.error },
+          ),
         );
       });
     }
