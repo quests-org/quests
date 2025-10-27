@@ -2,7 +2,7 @@ import { featuresAtom } from "@/client/atoms/features";
 import { Label } from "@/client/components/ui/label";
 import { Switch } from "@/client/components/ui/switch";
 import { vanillaRpcClient } from "@/client/rpc/client";
-import { type FeatureName } from "@/shared/features";
+import { FEATURE_METADATA, type FeatureName } from "@/shared/features";
 import { createFileRoute } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
 import { useEffect, useState } from "react";
@@ -10,20 +10,6 @@ import { useEffect, useState } from "react";
 export const Route = createFileRoute("/settings/features")({
   component: SettingsFeaturesPage,
 });
-
-const featureDescriptions: Record<
-  FeatureName,
-  { description: string; title: string }
-> = {
-  evals: {
-    description: "Enable the evaluations page and sidebar item.",
-    title: "Evaluations",
-  },
-  questsAccounts: {
-    description: "Enable Quests accounts.",
-    title: "Quests Accounts",
-  },
-};
 
 function SettingsFeaturesPage() {
   const features = useAtomValue(featuresAtom);
@@ -56,9 +42,9 @@ function SettingsFeaturesPage() {
 
       <div className="space-y-4">
         {(
-          Object.entries(featureDescriptions) as [
+          Object.entries(FEATURE_METADATA) as [
             FeatureName,
-            (typeof featureDescriptions)[FeatureName],
+            (typeof FEATURE_METADATA)[FeatureName],
           ][]
         ).map(([feature, { description, title }]) => (
           <div

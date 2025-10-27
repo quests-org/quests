@@ -1,13 +1,12 @@
-import type { FeatureName } from "@/shared/features";
+import type { Features } from "@/shared/features";
 
 import { atomWithoutSuspense } from "@/client/lib/atom-without-suspense";
 import { logger } from "@/client/lib/logger";
 import { vanillaRpcClient } from "@/client/rpc/client";
 import { atomWithRefresh } from "jotai/utils";
 
-type Features = Record<FeatureName, boolean>;
-
 const defaultFeatures: Features = {
+  browser: false,
   evals: false,
   questsAccounts: false,
 };

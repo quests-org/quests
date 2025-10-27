@@ -13,6 +13,7 @@ import { Route as ToolbarRouteImport } from './routes/toolbar'
 import { Route as SidebarRouteImport } from './routes/sidebar'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as EvalsRouteImport } from './routes/evals'
+import { Route as BrowserRouteImport } from './routes/browser'
 import { Route as AuthRouteRouteImport } from './routes/_auth/route'
 import { Route as AppRouteRouteImport } from './routes/_app/route'
 import { Route as IndexRouteImport } from './routes/index'
@@ -59,6 +60,11 @@ const SettingsRoute = SettingsRouteImport.update({
 const EvalsRoute = EvalsRouteImport.update({
   id: '/evals',
   path: '/evals',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BrowserRoute = BrowserRouteImport.update({
+  id: '/browser',
+  path: '/browser',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRouteRoute = AuthRouteRouteImport.update({
@@ -202,6 +208,7 @@ const AppDiscoverAppsFolderNameRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/browser': typeof BrowserRoute
   '/evals': typeof EvalsRoute
   '/settings': typeof SettingsRouteWithChildren
   '/sidebar': typeof SidebarRoute
@@ -233,6 +240,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/browser': typeof BrowserRoute
   '/evals': typeof EvalsRoute
   '/sidebar': typeof SidebarRoute
   '/toolbar': typeof ToolbarRoute
@@ -265,6 +273,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_app': typeof AppRouteRouteWithChildren
   '/_auth': typeof AuthRouteRouteWithChildren
+  '/browser': typeof BrowserRoute
   '/evals': typeof EvalsRoute
   '/settings': typeof SettingsRouteWithChildren
   '/sidebar': typeof SidebarRoute
@@ -298,6 +307,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/browser'
     | '/evals'
     | '/settings'
     | '/sidebar'
@@ -329,6 +339,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/browser'
     | '/evals'
     | '/sidebar'
     | '/toolbar'
@@ -360,6 +371,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_app'
     | '/_auth'
+    | '/browser'
     | '/evals'
     | '/settings'
     | '/sidebar'
@@ -394,6 +406,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRouteRoute: typeof AppRouteRouteWithChildren
   AuthRouteRoute: typeof AuthRouteRouteWithChildren
+  BrowserRoute: typeof BrowserRoute
   EvalsRoute: typeof EvalsRoute
   SettingsRoute: typeof SettingsRouteWithChildren
   SidebarRoute: typeof SidebarRoute
@@ -428,6 +441,13 @@ declare module '@tanstack/react-router' {
       path: '/evals'
       fullPath: '/evals'
       preLoaderRoute: typeof EvalsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/browser': {
+      id: '/browser'
+      path: '/browser'
+      fullPath: '/browser'
+      preLoaderRoute: typeof BrowserRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_auth': {
@@ -714,6 +734,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRouteRoute: AppRouteRouteWithChildren,
   AuthRouteRoute: AuthRouteRouteWithChildren,
+  BrowserRoute: BrowserRoute,
   EvalsRoute: EvalsRoute,
   SettingsRoute: SettingsRouteWithChildren,
   SidebarRoute: SidebarRoute,

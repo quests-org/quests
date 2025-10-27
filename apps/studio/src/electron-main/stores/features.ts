@@ -1,14 +1,14 @@
 import { logger } from "@/electron-main/lib/electron-logger";
 import { publisher } from "@/electron-main/rpc/publisher";
+import { type FeatureName, FeatureNameSchema } from "@/shared/features";
 import Store from "electron-store";
 import { z } from "zod";
 
-/* eslint-disable unicorn/prefer-top-level-await */
-const FeaturesStoreSchema = z.object({
-  evals: z.boolean().catch(false),
-  questsAccounts: z.boolean().catch(false),
-});
-/* eslint-enable unicorn/prefer-top-level-await */
+const FeaturesStoreSchema = z.record(
+  FeatureNameSchema,
+  // eslint-disable-next-line unicorn/prefer-top-level-await
+  z.boolean().catch(false),
+);
 
 type FeaturesStore = z.output<typeof FeaturesStoreSchema>;
 
@@ -40,8 +40,6 @@ export const getFeaturesStore = (): Store<FeaturesStore> => {
 
   return FEATURES_STORE;
 };
-
-export type FeatureName = keyof FeaturesStore;
 
 export const isFeatureEnabled = (feature: FeatureName): boolean => {
   const store = getFeaturesStore();

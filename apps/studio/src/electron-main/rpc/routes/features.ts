@@ -1,30 +1,14 @@
-import {
-  type FeatureName,
-  getFeaturesStore,
-} from "@/electron-main/stores/features";
-import { FeatureNameSchema } from "@/shared/features";
+import { getFeaturesStore } from "@/electron-main/stores/features";
+import { FeatureNameSchema, FeaturesSchema } from "@/shared/features";
 import { call, eventIterator } from "@orpc/server";
 import { z } from "zod";
 
 import { base } from "../base";
 import { publisher } from "../publisher";
 
-const FeaturesSchema = z.object({
-  evals: z.boolean(),
-  questsAccounts: z.boolean(),
-});
-
-const isEnabled = base
-  .input(z.object({ feature: FeatureNameSchema }))
-  .output(z.boolean())
-  .handler(({ input }) => {
-    const store = getFeaturesStore();
-    return store.get(input.feature);
-  });
-
 const getAll = base.output(FeaturesSchema).handler(() => {
   const store = getFeaturesStore();
-  return store.store as Record<FeatureName, boolean>;
+  return store.store;
 });
 
 const setEnabled = base
@@ -51,7 +35,6 @@ const live = {
 
 export const features = {
   getAll,
-  isEnabled,
   live,
   setEnabled,
 };

@@ -19,6 +19,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useAtom, useAtomValue } from "jotai";
 import {
   ChartLine,
+  Globe,
   LayoutGrid,
   PlusIcon,
   SettingsIcon,
@@ -51,6 +52,15 @@ export function StudioSidebar({
           title: "Discover",
           url: "/discover" as const,
         },
+        ...(features.browser
+          ? [
+              {
+                icon: Globe,
+                title: "Browser",
+                url: "/browser" as const,
+              },
+            ]
+          : []),
         ...(features.evals
           ? [
               {
@@ -62,7 +72,7 @@ export function StudioSidebar({
           : []),
       ],
     }),
-    [features.evals],
+    [features.browser, features.evals],
   );
 
   const { data: favorites } = useQuery(
