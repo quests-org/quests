@@ -5,7 +5,6 @@ import { base } from "@/electron-main/rpc/base";
 import { isFeatureEnabled } from "@/electron-main/stores/features";
 import { getProviderConfigsStore } from "@/electron-main/stores/provider-configs";
 import { call, safe } from "@orpc/server";
-import { mergeGenerators } from "@quests/shared/merge-generators";
 import { z } from "zod";
 
 import { publisher } from "../publisher";
@@ -80,26 +79,6 @@ const me = base
   });
 
 const live = {
-  hasAIProvider: base.handler(async function* ({ context, signal }) {
-    const providerConfigUpdates = publisher.subscribe(
-      "provider-config.updated",
-      {
-        signal,
-      },
-    );
-    const userUpdates = publisher.subscribe("auth.updated", {
-      signal,
-    });
-
-    yield call(hasAIProviderConfig, {}, { context, signal });
-
-    for await (const _ of mergeGenerators([
-      providerConfigUpdates,
-      userUpdates,
-    ])) {
-      yield call(hasAIProviderConfig, {}, { context, signal });
-    }
-  }),
   me: base.handler(async function* ({ context, signal }) {
     for await (const payload of publisher.subscribe("auth.updated", {
       signal,

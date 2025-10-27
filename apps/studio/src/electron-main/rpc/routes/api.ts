@@ -18,11 +18,6 @@ export const api = {
         };
       }),
   },
-  root: {
-    ping: os.handler(() => {
-      return "pong";
-    }),
-  },
   users: {
     getMe: os.handler(() => {
       return {

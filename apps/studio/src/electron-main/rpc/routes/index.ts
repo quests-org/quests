@@ -15,7 +15,6 @@ import { releases } from "./releases";
 import { sidebar } from "./sidebar";
 import { tabs } from "./tabs";
 import { telemetry } from "./telemetry";
-import { toolbar } from "./toolbar";
 import { updates } from "./updates";
 import { user } from "./user";
 import { utils } from "./utils";
@@ -36,7 +35,6 @@ export const router = {
   sidebar,
   tabs,
   telemetry,
-  toolbar,
   updates,
   user,
   utils,

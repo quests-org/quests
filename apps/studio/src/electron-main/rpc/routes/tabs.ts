@@ -45,17 +45,6 @@ const navigateCurrentForward = base.handler(({ context }) => {
   context.tabsManager?.goForward();
 });
 
-const doesExist = base
-  .input(z.object({ urlPath: z.string() }))
-  .handler(({ context, input }) => {
-    const { tabsManager } = context;
-    if (!tabsManager) {
-      return false;
-    }
-
-    return tabsManager.doesTabExist({ urlPath: input.urlPath });
-  });
-
 const close = base
   .input(z.object({ id: z.string() }))
   .handler(async ({ context, input }) => {
@@ -107,7 +96,6 @@ const live = {
 export const tabs = {
   add,
   close,
-  doesExist,
   live,
   navigateCurrent,
   navigateCurrentBack,
