@@ -411,6 +411,14 @@ export const RunShellCommand = createTool({
     }
 
     if (commandName === "pnpm") {
+      const subcommand = args[0];
+      if (subcommand === "dev" || subcommand === "start") {
+        return err({
+          message: `Quests already starts and runs the apps for you. You don't need to run 'pnpm ${subcommand}'.`,
+          type: "execute-error",
+        });
+      }
+
       const process = await execaNodeForApp(
         appConfig,
         appConfig.workspaceConfig.pnpmBinPath,
