@@ -413,4 +413,90 @@ describe("executeToolCallMachine", () => {
       `);
     });
   });
+
+  describe("with blocked pnpm commands", () => {
+    it("should block pnpm dev command", async () => {
+      const part = createShellCommandPart("pnpm dev");
+      await Store.savePart(part, projectAppConfig);
+
+      const actor = createTestActor({ part });
+      await runTestMachine(actor);
+
+      const updatedSession = await Store.getSessionWithMessagesAndParts(
+        sessionId,
+        projectAppConfig,
+      );
+      const session = updatedSession._unsafeUnwrap();
+      const updatedPart = session.messages
+        .flatMap((m) => m.parts)
+        .find(
+          (p) =>
+            p.type === "tool-run_shell_command" &&
+            p.toolCallId === "test_tool_call_1",
+        );
+
+      expect(updatedPart).toMatchInlineSnapshot(`
+        {
+          "errorText": "Quests already starts and runs the apps for you. You don't need to run 'pnpm dev'.",
+          "input": {
+            "command": "pnpm dev",
+            "explanation": "Installing packages",
+            "timeoutMs": 1000,
+          },
+          "metadata": {
+            "createdAt": 2025-01-01T00:00:00.000Z,
+            "endedAt": 2013-08-31T12:00:00.000Z,
+            "id": "prt_00000000ZC8888888888888889",
+            "messageId": "msg_00000000018888888888888889",
+            "sessionId": "ses_00000000018888888888888888",
+          },
+          "state": "output-error",
+          "toolCallId": "test_tool_call_1",
+          "type": "tool-run_shell_command",
+        }
+      `);
+    });
+
+    it("should block pnpm start command", async () => {
+      const part = createShellCommandPart("pnpm start");
+      await Store.savePart(part, projectAppConfig);
+
+      const actor = createTestActor({ part });
+      await runTestMachine(actor);
+
+      const updatedSession = await Store.getSessionWithMessagesAndParts(
+        sessionId,
+        projectAppConfig,
+      );
+      const session = updatedSession._unsafeUnwrap();
+      const updatedPart = session.messages
+        .flatMap((m) => m.parts)
+        .find(
+          (p) =>
+            p.type === "tool-run_shell_command" &&
+            p.toolCallId === "test_tool_call_1",
+        );
+
+      expect(updatedPart).toMatchInlineSnapshot(`
+        {
+          "errorText": "Quests already starts and runs the apps for you. You don't need to run 'pnpm start'.",
+          "input": {
+            "command": "pnpm start",
+            "explanation": "Installing packages",
+            "timeoutMs": 1000,
+          },
+          "metadata": {
+            "createdAt": 2025-01-01T00:00:00.000Z,
+            "endedAt": 2013-08-31T12:00:00.000Z,
+            "id": "prt_00000000ZD8888888888888888",
+            "messageId": "msg_00000000018888888888888889",
+            "sessionId": "ses_00000000018888888888888888",
+          },
+          "state": "output-error",
+          "toolCallId": "test_tool_call_1",
+          "type": "tool-run_shell_command",
+        }
+      `);
+    });
+  });
 });
