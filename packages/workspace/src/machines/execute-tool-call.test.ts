@@ -415,27 +415,28 @@ describe("executeToolCallMachine", () => {
   });
 
   describe("with blocked pnpm commands", () => {
-    it("should block pnpm dev command", async () => {
-      const part = createShellCommandPart("pnpm dev");
+    // eslint-disable-next-line unicorn/consistent-function-scoping
+    async function testBlockedCommand(command: string) {
+      const part = createShellCommandPart(command);
       await Store.savePart(part, projectAppConfig);
-
       const actor = createTestActor({ part });
       await runTestMachine(actor);
-
-      const updatedSession = await Store.getSessionWithMessagesAndParts(
+      const sessionResult = await Store.getSessionWithMessagesAndParts(
         sessionId,
         projectAppConfig,
       );
-      const session = updatedSession._unsafeUnwrap();
-      const updatedPart = session.messages
+      const session = sessionResult._unsafeUnwrap();
+      return session.messages
         .flatMap((m) => m.parts)
         .find(
           (p) =>
             p.type === "tool-run_shell_command" &&
             p.toolCallId === "test_tool_call_1",
         );
+    }
 
-      expect(updatedPart).toMatchInlineSnapshot(`
+    it("should block pnpm dev command", async () => {
+      expect(await testBlockedCommand("pnpm dev")).toMatchInlineSnapshot(`
         {
           "errorText": "Quests already starts and runs the apps for you. You don't need to run 'pnpm dev'.",
           "input": {
@@ -458,26 +459,7 @@ describe("executeToolCallMachine", () => {
     });
 
     it("should block pnpm start command", async () => {
-      const part = createShellCommandPart("pnpm start");
-      await Store.savePart(part, projectAppConfig);
-
-      const actor = createTestActor({ part });
-      await runTestMachine(actor);
-
-      const updatedSession = await Store.getSessionWithMessagesAndParts(
-        sessionId,
-        projectAppConfig,
-      );
-      const session = updatedSession._unsafeUnwrap();
-      const updatedPart = session.messages
-        .flatMap((m) => m.parts)
-        .find(
-          (p) =>
-            p.type === "tool-run_shell_command" &&
-            p.toolCallId === "test_tool_call_1",
-        );
-
-      expect(updatedPart).toMatchInlineSnapshot(`
+      expect(await testBlockedCommand("pnpm start")).toMatchInlineSnapshot(`
         {
           "errorText": "Quests already starts and runs the apps for you. You don't need to run 'pnpm start'.",
           "input": {
@@ -489,6 +471,52 @@ describe("executeToolCallMachine", () => {
             "createdAt": 2025-01-01T00:00:00.000Z,
             "endedAt": 2013-08-31T12:00:00.000Z,
             "id": "prt_00000000ZD8888888888888888",
+            "messageId": "msg_00000000018888888888888889",
+            "sessionId": "ses_00000000018888888888888888",
+          },
+          "state": "output-error",
+          "toolCallId": "test_tool_call_1",
+          "type": "tool-run_shell_command",
+        }
+      `);
+    });
+
+    it("should block pnpm run dev command", async () => {
+      expect(await testBlockedCommand("pnpm run dev")).toMatchInlineSnapshot(`
+        {
+          "errorText": "Quests already starts and runs the apps for you. You don't need to run 'pnpm run dev'.",
+          "input": {
+            "command": "pnpm run dev",
+            "explanation": "Installing packages",
+            "timeoutMs": 1000,
+          },
+          "metadata": {
+            "createdAt": 2025-01-01T00:00:00.000Z,
+            "endedAt": 2013-08-31T12:00:00.000Z,
+            "id": "prt_00000000ZE8888888888888888",
+            "messageId": "msg_00000000018888888888888889",
+            "sessionId": "ses_00000000018888888888888888",
+          },
+          "state": "output-error",
+          "toolCallId": "test_tool_call_1",
+          "type": "tool-run_shell_command",
+        }
+      `);
+    });
+
+    it("should block pnpm run start command", async () => {
+      expect(await testBlockedCommand("pnpm run start")).toMatchInlineSnapshot(`
+        {
+          "errorText": "Quests already starts and runs the apps for you. You don't need to run 'pnpm run start'.",
+          "input": {
+            "command": "pnpm run start",
+            "explanation": "Installing packages",
+            "timeoutMs": 1000,
+          },
+          "metadata": {
+            "createdAt": 2025-01-01T00:00:00.000Z,
+            "endedAt": 2013-08-31T12:00:00.000Z,
+            "id": "prt_00000000ZF8888888888888888",
             "messageId": "msg_00000000018888888888888889",
             "sessionId": "ses_00000000018888888888888888",
           },
