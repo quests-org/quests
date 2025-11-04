@@ -35,6 +35,10 @@ describe("generateModelName", () => {
       modelId: "gpt-oss-120b",
     },
     {
+      expected: "GPT OSS Latest",
+      modelId: "gpt-oss:latest",
+    },
+    {
       expected: "GLM 4.5",
       modelId: "glm-4.5",
     },

@@ -20,7 +20,7 @@ export function generateModelName(modelId: AIGatewayModel.CanonicalId): string {
     // cspell:enable
   };
 
-  const parts = modelId.split(/[-_/]/);
+  const parts = modelId.split(/[-_/:]/);
 
   const titleCased = parts.map((part) => {
     const lower = part.toLowerCase();
