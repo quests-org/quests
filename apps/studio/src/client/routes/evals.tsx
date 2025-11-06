@@ -13,6 +13,7 @@ import {
   CommandList,
 } from "@/client/components/ui/command";
 import { Tabs, TabsList, TabsTrigger } from "@/client/components/ui/tabs";
+import { captureClientEvent } from "@/client/lib/capture-client-event";
 import {
   getGroupedModelsEntries,
   groupAndFilterModels,
@@ -28,6 +29,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useAtom, useAtomValue } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 import { Loader2 } from "lucide-react";
+import { sift } from "radashi";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -158,6 +160,19 @@ function RouteComponent() {
     setIsCreating(true);
 
     const totalProjects = selectedEvalTemplates.size * selectedModels.size;
+
+    const evalNames = [...selectedEvalTemplates];
+    const modelIds = sift(
+      [...selectedModels].map((modelURI) => {
+        const model = models?.find((m) => m.uri === modelURI);
+        return model?.canonicalId;
+      }),
+    );
+
+    captureClientEvent("eval.created", {
+      eval_names: evalNames,
+      model_ids: modelIds,
+    });
 
     try {
       const createdProjects = [];

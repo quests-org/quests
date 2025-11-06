@@ -13,6 +13,10 @@ export interface AnalyticsEvents {
   };
   "app.sidebar_closed": never;
   "app.sidebar_opened": never;
+  "eval.created": {
+    eval_names: string[];
+    model_ids: string[];
+  };
   "favorite.added": never;
   "favorite.removed": never;
   "framework.not_supported": {
