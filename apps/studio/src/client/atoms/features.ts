@@ -7,7 +7,6 @@ import { atomWithRefresh } from "jotai/utils";
 
 const defaultFeatures: Features = {
   browser: false,
-  evals: false,
   questsAccounts: false,
 };
 

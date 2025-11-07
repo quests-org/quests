@@ -18,12 +18,12 @@ import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useAtom, useAtomValue } from "jotai";
 import {
-  ChartLine,
+  FlaskConical,
   Globe,
-  LayoutGrid,
   PlusIcon,
   SettingsIcon,
   SidebarIcon,
+  Telescope,
 } from "lucide-react";
 import * as React from "react";
 
@@ -39,40 +39,34 @@ export function StudioSidebar({
 
   const isSidebarVisible = sidebarVisibility?.visible ?? true;
 
-  const data = React.useMemo(
-    () => ({
-      navMain: [
-        {
-          icon: PlusIcon,
-          title: "New",
-          url: "/new-tab" as const,
-        },
-        {
-          icon: LayoutGrid,
-          title: "Discover",
-          url: "/discover" as const,
-        },
-        ...(features.browser
-          ? [
-              {
-                icon: Globe,
-                title: "Browser",
-                url: "/browser" as const,
-              },
-            ]
-          : []),
-        ...(features.evals
-          ? [
-              {
-                icon: ChartLine,
-                title: "Evals",
-                url: "/evals" as const,
-              },
-            ]
-          : []),
-      ],
-    }),
-    [features.browser, features.evals],
+  const primaryNavItems = React.useMemo(
+    () => [
+      {
+        icon: PlusIcon,
+        title: "New",
+        url: "/new-tab" as const,
+      },
+      {
+        icon: Telescope,
+        title: "Discover",
+        url: "/discover" as const,
+      },
+      {
+        icon: FlaskConical,
+        title: "Evals",
+        url: "/evals" as const,
+      },
+      ...(features.browser
+        ? [
+            {
+              icon: Globe,
+              title: "Browser",
+              url: "/browser" as const,
+            },
+          ]
+        : []),
+    ],
+    [features.browser],
   );
 
   const { data: favorites } = useQuery(
@@ -143,7 +137,7 @@ export function StudioSidebar({
         </div>
       </SidebarHeader>
       <SidebarContent>
-        <NavPrimary items={data.navMain} />
+        <NavPrimary items={primaryNavItems} />
         {favorites && favorites.length > 0 && (
           <NavProjects isFavorites projects={favorites} title="Favorites" />
         )}

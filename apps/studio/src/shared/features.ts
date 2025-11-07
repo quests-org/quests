@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const FeatureNameSchema = z.enum(["browser", "evals", "questsAccounts"]);
+export const FeatureNameSchema = z.enum(["browser", "questsAccounts"]);
 export type FeatureName = z.output<typeof FeatureNameSchema>;
 
 export const FeaturesSchema = z.record(FeatureNameSchema, z.boolean());
@@ -14,10 +14,6 @@ export const FEATURE_METADATA: Record<
   browser: {
     description: "Enable the browser page and sidebar item.",
     title: "Browser",
-  },
-  evals: {
-    description: "Enable the evaluations page and sidebar item.",
-    title: "Evaluations",
   },
   questsAccounts: {
     description: "Enable Quests accounts.",

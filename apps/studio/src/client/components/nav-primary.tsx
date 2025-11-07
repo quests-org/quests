@@ -35,7 +35,7 @@ export function NavPrimary({
                 isActive={item.isActive}
               >
                 <InternalLink
-                  className="[&>svg]:size-5"
+                  className="[&>svg]:size-4"
                   openInCurrentTab
                   to={item.url}
                 >
