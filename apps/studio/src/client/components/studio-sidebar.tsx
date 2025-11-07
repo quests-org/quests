@@ -13,6 +13,8 @@ import {
   SidebarFooter,
   SidebarHeader,
 } from "@/client/components/ui/sidebar";
+import { useTabs } from "@/client/hooks/use-tabs";
+import { useMatchesForPathname } from "@/client/lib/get-route-matches";
 import { logger } from "@/client/lib/logger";
 import { cn, isMacOS, isWindows } from "@/client/lib/utils";
 import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
@@ -40,15 +42,25 @@ export function StudioSidebar({
 
   const isSidebarVisible = sidebarVisibility?.visible ?? true;
 
+  const { data: tabsData } = useTabs();
+
+  const selectedTab = tabsData.selectedTabId
+    ? tabsData.tabs.find((tab) => tab.id === tabsData.selectedTabId)
+    : undefined;
+
+  const matches = useMatchesForPathname(selectedTab?.pathname ?? "");
+
   const primaryNavItems = React.useMemo(
     () => [
       {
         icon: PlusIcon,
+        isActive: matches.some((match) => match.routeId === "/_app/new-tab"),
         title: "New",
         url: "/new-tab" as const,
       },
       {
         icon: Telescope,
+        isActive: matches.some((match) => match.routeId === "/_app/discover/"),
         title: "Discover",
         url: "/discover" as const,
       },
@@ -59,6 +71,9 @@ export function StudioSidebar({
           </Badge>
         ),
         icon: FlaskConical,
+        isActive: matches.some((match) =>
+          match.routeId.startsWith("/_app/evals"),
+        ),
         title: "Evals",
         url: "/evals" as const,
       },
@@ -66,13 +81,14 @@ export function StudioSidebar({
         ? [
             {
               icon: Globe,
+              isActive: matches.some((match) => match.routeId === "/browser"),
               title: "Browser",
               url: "/browser" as const,
             },
           ]
         : []),
     ],
-    [features.browser],
+    [features.browser, matches],
   );
 
   const { data: favorites } = useQuery(
