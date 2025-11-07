@@ -306,8 +306,8 @@ function RouteComponent() {
               Evals
             </h1>
             <p className="mt-4 text-base leading-7 text-muted-foreground max-w-lg mx-auto">
-              Quickly create apps from multiple prompts and compare them across
-              different models.
+              Quickly see how models perform by creating apps for the prompts
+              and models you select below.
             </p>
           </div>
         </div>
@@ -375,7 +375,7 @@ function RouteComponent() {
                                     </div>
                                     <div className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
                                       {isCustom
-                                        ? "Write your own custom eval prompt below"
+                                        ? "Write your own custom eval prompt"
                                         : template.userPrompt}
                                     </div>
                                   </div>
@@ -524,8 +524,8 @@ function RouteComponent() {
                   {isCreating
                     ? "Creating..."
                     : totalProjectsToCreate === 0
-                      ? "Run Evals"
-                      : `Run ${totalProjectsToCreate} Evaluation${totalProjectsToCreate === 1 ? "" : "s"}`}
+                      ? "Run evals"
+                      : `Run ${totalProjectsToCreate} eval${totalProjectsToCreate === 1 ? "" : "s"}`}
                 </Button>
 
                 <AlertDialog
@@ -535,12 +535,12 @@ function RouteComponent() {
                   <AlertDialogContent>
                     <AlertDialogHeader>
                       <AlertDialogTitle>
-                        Create {totalProjectsToCreate} evaluations?
+                        Create {totalProjectsToCreate} evals?
                       </AlertDialogTitle>
                       <AlertDialogDescription>
-                        You are about to create {totalProjectsToCreate}{" "}
-                        evaluation projects. This may take some time and will
-                        use significant tokens.
+                        You are about to create {totalProjectsToCreate} eval
+                        projects. This may take some time and will use
+                        significant tokens.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -602,7 +602,7 @@ function RouteComponent() {
                 )}
               </div>
               {totalProjectsToCreate > 0 && (
-                <p className="text-xs text-muted-foreground text-center">
+                <p className="text-xs text-muted-foreground text-center mt-1">
                   Each prompt-model combination creates a separate app
                 </p>
               )}

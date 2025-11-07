@@ -142,7 +142,7 @@ function RouteComponent() {
                   Experiment with Evals
                 </h3>
                 <p className="text-xs text-muted-foreground">
-                  Run many prompts across multiple models
+                  Try built-in prompts across multiple models
                 </p>
               </div>
               <div className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-brand text-brand-foreground text-sm font-medium group-hover:bg-brand/90 transition-colors">
