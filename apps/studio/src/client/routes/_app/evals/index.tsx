@@ -52,7 +52,7 @@ const selectedModelsAtom = atomWithStorage<AIGatewayModelURI.Type[]>(
 
 const customEvalPromptAtom = atomWithStorage<string>("evals-custom-prompt", "");
 
-export const Route = createFileRoute("/evals")({
+export const Route = createFileRoute("/_app/evals/")({
   component: RouteComponent,
   head: () => {
     return {
@@ -239,6 +239,12 @@ function RouteComponent() {
           params: { subdomain: createdProjects[0].subdomain },
           to: "/projects/$subdomain",
         });
+      } else if (createdProjects.length > 1) {
+        const subdomains = createdProjects.map((p) => p.subdomain).join(",");
+        void navigate({
+          search: { subdomains },
+          to: "/evals/runs",
+        });
       }
     } catch (error) {
       const errorMessage =
@@ -269,17 +275,17 @@ function RouteComponent() {
     selectedEvalTemplates.size * selectedModels.size;
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-6 max-w-5xl mx-auto">
       <div className="space-y-2 mb-6">
         <h1 className="text-2xl font-bold">Evals</h1>
         <p className="text-sm text-muted-foreground">
-          Test how different AI models respond to the same questions. Choose any
-          combination of prompts and models to see which ones work best for your
-          needs.
+          Create multiple apps to compare how different AI models perform. Each
+          combination of prompt and model creates a separate app you can explore
+          and compare.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-6">
         <div className="space-y-6">
           <div className="space-y-4">
             <div className="flex items-center justify-between">

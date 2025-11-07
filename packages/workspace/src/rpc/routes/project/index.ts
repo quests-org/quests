@@ -440,6 +440,40 @@ const live = {
         }
       }
     }),
+  bySubdomains: base
+    .input(z.object({ subdomains: ProjectSubdomainSchema.array() }))
+    .output(
+      eventIterator(
+        z
+          .discriminatedUnion("ok", [
+            z.object({
+              data: WorkspaceAppProjectSchema,
+              ok: z.literal(true),
+            }),
+            z.object({
+              error: z.object({ type: z.literal("not-found") }),
+              ok: z.literal(false),
+              subdomain: ProjectSubdomainSchema,
+            }),
+          ])
+          .array(),
+      ),
+    )
+    .handler(async function* ({ context, input, signal }) {
+      yield call(bySubdomains, input, { context, signal });
+
+      const projectUpdates = publisher.subscribe("project.updated", { signal });
+      const projectRemoved = publisher.subscribe("project.removed", { signal });
+
+      for await (const payload of mergeGenerators([
+        projectUpdates,
+        projectRemoved,
+      ])) {
+        if (input.subdomains.includes(payload.subdomain)) {
+          yield call(bySubdomains, input, { context, signal });
+        }
+      }
+    }),
   list: base
     .input(ListInputSchema)
     .output(eventIterator(ProjectsWithTotalSchema))

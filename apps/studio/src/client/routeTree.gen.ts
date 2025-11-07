@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as ToolbarRouteImport } from './routes/toolbar'
 import { Route as SidebarRouteImport } from './routes/sidebar'
 import { Route as SettingsRouteImport } from './routes/settings'
-import { Route as EvalsRouteImport } from './routes/evals'
 import { Route as BrowserRouteImport } from './routes/browser'
 import { Route as AuthRouteRouteImport } from './routes/_auth/route'
 import { Route as AppRouteRouteImport } from './routes/_app/route'
@@ -30,8 +29,10 @@ import { Route as AppSetupRouteImport } from './routes/_app/setup'
 import { Route as AppReleaseNotesRouteImport } from './routes/_app/release-notes'
 import { Route as AppNewTabRouteImport } from './routes/_app/new-tab'
 import { Route as AppDebugRouteRouteImport } from './routes/_app/debug/route'
+import { Route as AppEvalsIndexRouteImport } from './routes/_app/evals/index'
 import { Route as AppDiscoverIndexRouteImport } from './routes/_app/discover/index'
 import { Route as AppDebugIndexRouteImport } from './routes/_app/debug/index'
+import { Route as AppEvalsRunsRouteImport } from './routes/_app/evals/runs'
 import { Route as AppDebugComponentsRouteImport } from './routes/_app/debug/components'
 import { Route as AppDebugColorsRouteImport } from './routes/_app/debug/colors'
 import { Route as AppDebugBulkDeleteRouteImport } from './routes/_app/debug/bulk-delete'
@@ -55,11 +56,6 @@ const SidebarRoute = SidebarRouteImport.update({
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EvalsRoute = EvalsRouteImport.update({
-  id: '/evals',
-  path: '/evals',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BrowserRoute = BrowserRouteImport.update({
@@ -145,6 +141,11 @@ const AppDebugRouteRoute = AppDebugRouteRouteImport.update({
   path: '/debug',
   getParentRoute: () => AppRouteRoute,
 } as any)
+const AppEvalsIndexRoute = AppEvalsIndexRouteImport.update({
+  id: '/evals/',
+  path: '/evals/',
+  getParentRoute: () => AppRouteRoute,
+} as any)
 const AppDiscoverIndexRoute = AppDiscoverIndexRouteImport.update({
   id: '/discover/',
   path: '/discover/',
@@ -154,6 +155,11 @@ const AppDebugIndexRoute = AppDebugIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AppDebugRouteRoute,
+} as any)
+const AppEvalsRunsRoute = AppEvalsRunsRouteImport.update({
+  id: '/evals/runs',
+  path: '/evals/runs',
+  getParentRoute: () => AppRouteRoute,
 } as any)
 const AppDebugComponentsRoute = AppDebugComponentsRouteImport.update({
   id: '/components',
@@ -209,7 +215,6 @@ const AppDiscoverAppsFolderNameRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/browser': typeof BrowserRoute
-  '/evals': typeof EvalsRoute
   '/settings': typeof SettingsRouteWithChildren
   '/sidebar': typeof SidebarRoute
   '/toolbar': typeof ToolbarRoute
@@ -229,8 +234,10 @@ export interface FileRoutesByFullPath {
   '/debug/bulk-delete': typeof AppDebugBulkDeleteRoute
   '/debug/colors': typeof AppDebugColorsRoute
   '/debug/components': typeof AppDebugComponentsRoute
+  '/evals/runs': typeof AppEvalsRunsRoute
   '/debug/': typeof AppDebugIndexRoute
   '/discover': typeof AppDiscoverIndexRoute
+  '/evals': typeof AppEvalsIndexRoute
   '/discover/apps/$folderName': typeof AppDiscoverAppsFolderNameRoute
   '/discover/templates/$folderName': typeof AppDiscoverTemplatesFolderNameRoute
   '/projects/$subdomain/view': typeof AppProjectsSubdomainViewRoute
@@ -241,7 +248,6 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/browser': typeof BrowserRoute
-  '/evals': typeof EvalsRoute
   '/sidebar': typeof SidebarRoute
   '/toolbar': typeof ToolbarRoute
   '/new-tab': typeof AppNewTabRoute
@@ -259,8 +265,10 @@ export interface FileRoutesByTo {
   '/debug/bulk-delete': typeof AppDebugBulkDeleteRoute
   '/debug/colors': typeof AppDebugColorsRoute
   '/debug/components': typeof AppDebugComponentsRoute
+  '/evals/runs': typeof AppEvalsRunsRoute
   '/debug': typeof AppDebugIndexRoute
   '/discover': typeof AppDiscoverIndexRoute
+  '/evals': typeof AppEvalsIndexRoute
   '/discover/apps/$folderName': typeof AppDiscoverAppsFolderNameRoute
   '/discover/templates/$folderName': typeof AppDiscoverTemplatesFolderNameRoute
   '/projects/$subdomain/view': typeof AppProjectsSubdomainViewRoute
@@ -274,7 +282,6 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteRouteWithChildren
   '/_auth': typeof AuthRouteRouteWithChildren
   '/browser': typeof BrowserRoute
-  '/evals': typeof EvalsRoute
   '/settings': typeof SettingsRouteWithChildren
   '/sidebar': typeof SidebarRoute
   '/toolbar': typeof ToolbarRoute
@@ -294,8 +301,10 @@ export interface FileRoutesById {
   '/_app/debug/bulk-delete': typeof AppDebugBulkDeleteRoute
   '/_app/debug/colors': typeof AppDebugColorsRoute
   '/_app/debug/components': typeof AppDebugComponentsRoute
+  '/_app/evals/runs': typeof AppEvalsRunsRoute
   '/_app/debug/': typeof AppDebugIndexRoute
   '/_app/discover/': typeof AppDiscoverIndexRoute
+  '/_app/evals/': typeof AppEvalsIndexRoute
   '/_app/discover/apps/$folderName': typeof AppDiscoverAppsFolderNameRoute
   '/_app/discover/templates/$folderName': typeof AppDiscoverTemplatesFolderNameRoute
   '/_app/projects/$subdomain/view': typeof AppProjectsSubdomainViewRoute
@@ -308,7 +317,6 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/browser'
-    | '/evals'
     | '/settings'
     | '/sidebar'
     | '/toolbar'
@@ -328,8 +336,10 @@ export interface FileRouteTypes {
     | '/debug/bulk-delete'
     | '/debug/colors'
     | '/debug/components'
+    | '/evals/runs'
     | '/debug/'
     | '/discover'
+    | '/evals'
     | '/discover/apps/$folderName'
     | '/discover/templates/$folderName'
     | '/projects/$subdomain/view'
@@ -340,7 +350,6 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/browser'
-    | '/evals'
     | '/sidebar'
     | '/toolbar'
     | '/new-tab'
@@ -358,8 +367,10 @@ export interface FileRouteTypes {
     | '/debug/bulk-delete'
     | '/debug/colors'
     | '/debug/components'
+    | '/evals/runs'
     | '/debug'
     | '/discover'
+    | '/evals'
     | '/discover/apps/$folderName'
     | '/discover/templates/$folderName'
     | '/projects/$subdomain/view'
@@ -372,7 +383,6 @@ export interface FileRouteTypes {
     | '/_app'
     | '/_auth'
     | '/browser'
-    | '/evals'
     | '/settings'
     | '/sidebar'
     | '/toolbar'
@@ -392,8 +402,10 @@ export interface FileRouteTypes {
     | '/_app/debug/bulk-delete'
     | '/_app/debug/colors'
     | '/_app/debug/components'
+    | '/_app/evals/runs'
     | '/_app/debug/'
     | '/_app/discover/'
+    | '/_app/evals/'
     | '/_app/discover/apps/$folderName'
     | '/_app/discover/templates/$folderName'
     | '/_app/projects/$subdomain/view'
@@ -407,7 +419,6 @@ export interface RootRouteChildren {
   AppRouteRoute: typeof AppRouteRouteWithChildren
   AuthRouteRoute: typeof AuthRouteRouteWithChildren
   BrowserRoute: typeof BrowserRoute
-  EvalsRoute: typeof EvalsRoute
   SettingsRoute: typeof SettingsRouteWithChildren
   SidebarRoute: typeof SidebarRoute
   ToolbarRoute: typeof ToolbarRoute
@@ -434,13 +445,6 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/evals': {
-      id: '/evals'
-      path: '/evals'
-      fullPath: '/evals'
-      preLoaderRoute: typeof EvalsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/browser': {
@@ -562,6 +566,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDebugRouteRouteImport
       parentRoute: typeof AppRouteRoute
     }
+    '/_app/evals/': {
+      id: '/_app/evals/'
+      path: '/evals'
+      fullPath: '/evals'
+      preLoaderRoute: typeof AppEvalsIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
     '/_app/discover/': {
       id: '/_app/discover/'
       path: '/discover'
@@ -575,6 +586,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/debug/'
       preLoaderRoute: typeof AppDebugIndexRouteImport
       parentRoute: typeof AppDebugRouteRoute
+    }
+    '/_app/evals/runs': {
+      id: '/_app/evals/runs'
+      path: '/evals/runs'
+      fullPath: '/evals/runs'
+      preLoaderRoute: typeof AppEvalsRunsRouteImport
+      parentRoute: typeof AppRouteRoute
     }
     '/_app/debug/components': {
       id: '/_app/debug/components'
@@ -666,7 +684,9 @@ interface AppRouteRouteChildren {
   AppReleaseNotesRoute: typeof AppReleaseNotesRoute
   AppSetupRoute: typeof AppSetupRoute
   AppWelcomeRoute: typeof AppWelcomeRoute
+  AppEvalsRunsRoute: typeof AppEvalsRunsRoute
   AppDiscoverIndexRoute: typeof AppDiscoverIndexRoute
+  AppEvalsIndexRoute: typeof AppEvalsIndexRoute
   AppDiscoverAppsFolderNameRoute: typeof AppDiscoverAppsFolderNameRoute
   AppDiscoverTemplatesFolderNameRoute: typeof AppDiscoverTemplatesFolderNameRoute
   AppProjectsSubdomainViewRoute: typeof AppProjectsSubdomainViewRoute
@@ -681,7 +701,9 @@ const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppReleaseNotesRoute: AppReleaseNotesRoute,
   AppSetupRoute: AppSetupRoute,
   AppWelcomeRoute: AppWelcomeRoute,
+  AppEvalsRunsRoute: AppEvalsRunsRoute,
   AppDiscoverIndexRoute: AppDiscoverIndexRoute,
+  AppEvalsIndexRoute: AppEvalsIndexRoute,
   AppDiscoverAppsFolderNameRoute: AppDiscoverAppsFolderNameRoute,
   AppDiscoverTemplatesFolderNameRoute: AppDiscoverTemplatesFolderNameRoute,
   AppProjectsSubdomainViewRoute: AppProjectsSubdomainViewRoute,
@@ -735,7 +757,6 @@ const rootRouteChildren: RootRouteChildren = {
   AppRouteRoute: AppRouteRouteWithChildren,
   AuthRouteRoute: AuthRouteRouteWithChildren,
   BrowserRoute: BrowserRoute,
-  EvalsRoute: EvalsRoute,
   SettingsRoute: SettingsRouteWithChildren,
   SidebarRoute: SidebarRoute,
   ToolbarRoute: ToolbarRoute,
