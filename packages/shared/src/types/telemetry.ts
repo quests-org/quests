@@ -17,6 +17,12 @@ export interface AnalyticsEvents {
     eval_names: string[];
     model_ids: string[];
   };
+  "eval.deleted_all": {
+    project_count: number;
+  };
+  "eval.stopped_all": {
+    project_count: number;
+  };
   "favorite.added": never;
   "favorite.removed": never;
   "framework.not_supported": {

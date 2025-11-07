@@ -21,6 +21,7 @@ import {
 } from "@/client/components/ui/tooltip";
 import { useAppState } from "@/client/hooks/use-app-state";
 import { useTrashApp } from "@/client/hooks/use-trash-app";
+import { captureClientEvent } from "@/client/lib/capture-client-event";
 import {
   getToolDisplayName,
   getToolIcon,
@@ -299,6 +300,9 @@ function RouteComponent() {
     }
 
     if (successCount > 0) {
+      captureClientEvent("eval.stopped_all", {
+        project_count: successCount,
+      });
       toast.success(
         `Stopped ${successCount} ${successCount === 1 ? "project" : "projects"}`,
       );
@@ -325,6 +329,9 @@ function RouteComponent() {
     }
 
     if (successCount > 0) {
+      captureClientEvent("eval.deleted_all", {
+        project_count: successCount,
+      });
       toast.success(
         `Deleted ${successCount} ${successCount === 1 ? "project" : "projects"}`,
       );
@@ -457,7 +464,7 @@ function RunStatusDisplay({
 }) {
   return (
     <div className="text-sm text-muted-foreground">
-      {projects.length} {projects.length === 1 ? "run" : "runs"}
+      {projects.length} {projects.length === 1 ? "project" : "projects"}
     </div>
   );
 }
@@ -472,13 +479,7 @@ function SessionStatusPreview({ subdomain }: { subdomain: ProjectSubdomain }) {
   const latestSession = sessions.at(-1);
 
   if (!latestSession) {
-    return (
-      <div className="inline-flex items-center gap-1.5 min-w-0 h-5 px-2 py-0.5 rounded-full bg-accent/30">
-        <span className="text-xs text-muted-foreground leading-none">
-          Ready
-        </span>
-      </div>
-    );
+    return <StatusBadge text="Ready" />;
   }
 
   return (
@@ -512,13 +513,11 @@ function SessionStatusText({
   const latestMessage = nonSystemMessages.at(-1);
 
   if (!latestMessage || latestMessage.parts.length === 0) {
-    const text = isAgentAlive ? "Working..." : "Done";
     return (
-      <div className="inline-flex items-center gap-1.5 min-w-0 h-5 px-2 py-0.5 rounded-full bg-accent/30">
-        <span className="text-xs text-muted-foreground leading-none">
-          {text}
-        </span>
-      </div>
+      <StatusBadge
+        animate={isAgentAlive}
+        text={isAgentAlive ? "Working..." : "Done"}
+      />
     );
   }
 
@@ -528,13 +527,11 @@ function SessionStatusText({
   const latestPart = relevantParts.at(-1);
 
   if (!latestPart) {
-    const text = isAgentAlive ? "Working..." : "Done";
     return (
-      <div className="inline-flex items-center gap-1.5 min-w-0 h-5 px-2 py-0.5 rounded-full bg-accent/30">
-        <span className="text-xs text-muted-foreground leading-none">
-          {text}
-        </span>
-      </div>
+      <StatusBadge
+        animate={isAgentAlive}
+        text={isAgentAlive ? "Working..." : "Done"}
+      />
     );
   }
 
@@ -565,15 +562,33 @@ function SessionStatusText({
   }
 
   return (
-    <div className="inline-flex items-center gap-1.5 min-w-0 h-5 px-2 py-0.5 rounded-full bg-accent/30">
+    <StatusBadge
+      animate={shouldAnimate}
+      icon={Icon ?? undefined}
+      text={displayText}
+    />
+  );
+}
+
+function StatusBadge({
+  animate = false,
+  icon: Icon,
+  text,
+}: {
+  animate?: boolean;
+  icon?: React.ComponentType<{ className?: string }>;
+  text: string;
+}) {
+  return (
+    <div className="inline-flex items-center gap-1.5 min-w-0 px-2 py-0.5 rounded-full bg-accent/30">
       {Icon && <Icon className="size-3 shrink-0 text-muted-foreground/60" />}
       <span
         className={cn(
-          "text-xs text-muted-foreground truncate leading-none",
-          shouldAnimate && "shiny-text",
+          "text-xs text-muted-foreground truncate",
+          animate && "shiny-text",
         )}
       >
-        {displayText}
+        {text}
       </span>
     </div>
   );
