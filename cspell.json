@@ -94,7 +94,10 @@
     "Vuedotjs",
     "waitlist",
     "worktree",
-    "zkochan"
+    "zkochan",
+    "DBUS",
+    "dbus",
+    "kwalletd"
   ],
   "import": [
     "@cspell/dict-typescript/cspell-ext.json",

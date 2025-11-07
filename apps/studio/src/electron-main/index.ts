@@ -6,6 +6,7 @@ import {
   initializeElectronLogging,
   logger,
 } from "@/electron-main/lib/electron-logger";
+import { setupDBusEnvironment } from "@/electron-main/lib/setup-dbus-env";
 import { StudioAppUpdater } from "@/electron-main/lib/update";
 import { createApplicationMenu } from "@/electron-main/menus/application";
 import { isFeatureEnabled } from "@/electron-main/stores/features";
@@ -25,6 +26,20 @@ import { setupBinDirectory } from "./lib/setup-bin-directory";
 import { watchThemePreferenceAndApply } from "./lib/theme-utils";
 import { initializeRPC } from "./rpc/initialize";
 
+const passwordStore = setupDBusEnvironment();
+
+if (platform.isLinux) {
+  const existing = app.commandLine.getSwitchValue("password-store");
+  if (existing) {
+    logger.info(
+      `Command line already has password-store: ${existing} — not overriding`,
+    );
+  } else if (passwordStore) {
+    app.commandLine.appendSwitch("password-store", passwordStore);
+    logger.info(`Using password store: ${passwordStore}`);
+  }
+}
+
 if (!platform.isWindows) {
   // Fix the $PATH on macOS and Linux when run from a GUI app
   fixPath();
@@ -39,7 +54,6 @@ if (is.dev) {
   if (suffix) {
     logger.info(`Using user folder ${DEV_APP_NAME}`);
   }
-
   // Sandbox userData during development to Quests/Quests (Dev)/*
   // Must be done as soon as possible because it's stateful
   app.setPath(
