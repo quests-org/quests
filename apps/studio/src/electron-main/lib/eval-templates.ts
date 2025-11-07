@@ -1,3 +1,4 @@
+import { CUSTOM_EVAL_TEMPLATE_NAME } from "@/shared/evals";
 import { SelectableAppIconsSchema } from "@quests/shared/icons";
 import { dedent } from "radashi";
 import { z } from "zod";
@@ -21,12 +22,53 @@ const SVG_SYSTEM_PROMPT = `Create an SVG matching the following description inli
 /* cspell:disable */
 const EVAL_TEMPLATE_GROUPS: EvalTemplateGroup[] = [
   {
+    name: CUSTOM_EVAL_TEMPLATE_NAME,
+    templates: [
+      {
+        iconName: "pencil",
+        name: "Custom",
+        systemPrompt: "",
+        userPrompt: "",
+      },
+    ],
+  },
+  {
     name: "Simple Apps",
     templates: [
       {
         iconName: "calculator",
         name: "Calculator",
         userPrompt: "create a calculator app",
+      },
+      {
+        iconName: "calendar",
+        name: "To-Do List App",
+        userPrompt:
+          "Create a simple to-do list app where users can add, edit, delete tasks, and mark them as complete with a clean interface.",
+      },
+      {
+        iconName: "list",
+        name: "Habit Tracker",
+        userPrompt:
+          "Build a habit tracking app that lets users set daily habits, log completions, view streaks, and get motivational reminders.",
+      },
+      {
+        iconName: "dumbbell",
+        name: "Workout Logger",
+        userPrompt:
+          "Develop a workout tracking app to log exercises, set goals, track progress, and integrate with fitness wearables.",
+      },
+      {
+        iconName: "leaf",
+        name: "Meditation Timer",
+        userPrompt:
+          "Create a simple meditation app with timers, guided sessions, progress tracking, and ambient sounds.",
+      },
+      {
+        iconName: "apple",
+        name: "Calorie Counter",
+        userPrompt:
+          "Build a calorie tracking app with a food database, meal logging, daily goals, and nutritional insights.",
       },
     ],
   },

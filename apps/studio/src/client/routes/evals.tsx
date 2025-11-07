@@ -13,6 +13,7 @@ import {
   CommandList,
 } from "@/client/components/ui/command";
 import { Tabs, TabsList, TabsTrigger } from "@/client/components/ui/tabs";
+import { Textarea } from "@/client/components/ui/textarea";
 import { captureClientEvent } from "@/client/lib/capture-client-event";
 import {
   getGroupedModelsEntries,
@@ -20,6 +21,7 @@ import {
   type GroupedModels,
 } from "@/client/lib/group-models";
 import { rpcClient } from "@/client/rpc/client";
+import { CUSTOM_EVAL_TEMPLATE_NAME } from "@/shared/evals";
 import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
 import { type AIGatewayModelURI } from "@quests/ai-gateway/client";
 import { type AIProviderType } from "@quests/shared";
@@ -47,6 +49,8 @@ const selectedModelsAtom = atomWithStorage<AIGatewayModelURI.Type[]>(
   "evals-selected-models",
   [],
 );
+
+const customEvalPromptAtom = atomWithStorage<string>("evals-custom-prompt", "");
 
 export const Route = createFileRoute("/evals")({
   component: RouteComponent,
@@ -76,7 +80,9 @@ function RouteComponent() {
   const [selectedProvider, setSelectedProvider] = useAtom(
     selectedEvalProviderAtom,
   );
+  const [customEvalPrompt, setCustomEvalPrompt] = useAtom(customEvalPromptAtom);
   const [isCreating, setIsCreating] = useState(false);
+  const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
 
   const selectedEvalTemplates = useMemo(
     () => new Set(selectedEvalTemplatesArray),
@@ -147,6 +153,8 @@ function RouteComponent() {
   };
 
   const handleRunEvals = async () => {
+    setHasAttemptedSubmit(true);
+
     if (selectedEvalTemplates.size === 0) {
       toast.error("Please select at least one eval template");
       return;
@@ -154,6 +162,14 @@ function RouteComponent() {
 
     if (selectedModels.size === 0) {
       toast.error("Please select at least one model");
+      return;
+    }
+
+    if (
+      selectedEvalTemplates.has(CUSTOM_EVAL_TEMPLATE_NAME) &&
+      !customEvalPrompt.trim()
+    ) {
+      toast.error("Please enter a custom eval prompt");
       return;
     }
 
@@ -178,25 +194,41 @@ function RouteComponent() {
       const createdProjects = [];
 
       for (const templateName of selectedEvalTemplates) {
-        const template = evalTemplateGroups
-          ?.flatMap((g) => g.templates)
-          .find((t) => t.name === templateName);
-        if (!template) {
-          continue;
-        }
+        if (templateName === CUSTOM_EVAL_TEMPLATE_NAME) {
+          for (const modelURI of selectedModels) {
+            const sessionId = StoreId.newSessionId();
 
-        for (const modelURI of selectedModels) {
-          const sessionId = StoreId.newSessionId();
+            const project = await createFromEvalMutation.mutateAsync({
+              evalName: CUSTOM_EVAL_TEMPLATE_NAME,
+              iconName: "pencil",
+              modelURI,
+              sessionId,
+              systemPrompt: "",
+              userPrompt: customEvalPrompt.trim(),
+            });
+            createdProjects.push(project);
+          }
+        } else {
+          const template = evalTemplateGroups
+            ?.flatMap((g) => g.templates)
+            .find((t) => t.name === templateName);
+          if (!template) {
+            continue;
+          }
 
-          const project = await createFromEvalMutation.mutateAsync({
-            evalName: template.name,
-            iconName: template.iconName,
-            modelURI,
-            sessionId,
-            systemPrompt: template.systemPrompt,
-            userPrompt: template.userPrompt,
-          });
-          createdProjects.push(project);
+          for (const modelURI of selectedModels) {
+            const sessionId = StoreId.newSessionId();
+
+            const project = await createFromEvalMutation.mutateAsync({
+              evalName: template.name,
+              iconName: template.iconName,
+              modelURI,
+              sessionId,
+              systemPrompt: template.systemPrompt,
+              userPrompt: template.userPrompt,
+            });
+            createdProjects.push(project);
+          }
         }
       }
 
@@ -241,7 +273,9 @@ function RouteComponent() {
       <div className="space-y-2 mb-6">
         <h1 className="text-2xl font-bold">Evals</h1>
         <p className="text-sm text-muted-foreground">
-          Run evaluation prompts across multiple models to compare results.
+          Test how different AI models respond to the same questions. Choose any
+          combination of prompts and models to see which ones work best for your
+          needs.
         </p>
       </div>
 
@@ -282,6 +316,8 @@ function RouteComponent() {
                       <CommandGroup heading={group.name} key={group.name}>
                         {group.templates.map((template) => {
                           const IconComponent = IconMap[template.iconName];
+                          const isCustom =
+                            template.name === CUSTOM_EVAL_TEMPLATE_NAME;
                           return (
                             <CommandItem
                               key={template.name}
@@ -303,7 +339,9 @@ function RouteComponent() {
                                     {template.name}
                                   </div>
                                   <div className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
-                                    {template.userPrompt}
+                                    {isCustom
+                                      ? "Write your own custom eval prompt below"
+                                      : template.userPrompt}
                                   </div>
                                 </div>
                               </div>
@@ -316,6 +354,24 @@ function RouteComponent() {
                 </CommandList>
               </Command>
             </div>
+            {selectedEvalTemplates.has(CUSTOM_EVAL_TEMPLATE_NAME) && (
+              <div className="space-y-2">
+                <h3 className="text-sm font-medium">Custom Eval Prompt</h3>
+                <Textarea
+                  className={`min-h-24 resize-y ${hasAttemptedSubmit && !customEvalPrompt.trim() ? "border-destructive focus-visible:ring-destructive" : ""}`}
+                  onChange={(e) => {
+                    setCustomEvalPrompt(e.target.value);
+                  }}
+                  placeholder="Enter your custom eval prompt..."
+                  value={customEvalPrompt}
+                />
+                {hasAttemptedSubmit && !customEvalPrompt.trim() && (
+                  <p className="text-sm text-destructive">
+                    Custom eval prompt is required
+                  </p>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="space-y-4">
