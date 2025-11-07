@@ -298,301 +298,313 @@ function RouteComponent() {
     selectedEvalTemplates.size * selectedModels.size;
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
-      <div className="space-y-2 mb-6">
-        <h1 className="text-2xl font-bold">Evals</h1>
-        <p className="text-sm text-muted-foreground">
-          Create multiple apps to compare how different AI models perform. Each
-          combination of prompt and model creates a separate app you can explore
-          and compare.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-6">
-        <div className="space-y-6">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold">Select Prompts</h2>
-              <div className="flex items-center gap-2">
-                {selectedEvalTemplates.size > 0 && (
-                  <span className="text-sm text-muted-foreground">
-                    {selectedEvalTemplates.size} selected
-                  </span>
-                )}
-                <Button
-                  disabled={selectedEvalTemplates.size === 0}
-                  onClick={() => {
-                    setSelectedEvalTemplatesArray([]);
-                  }}
-                  size="sm"
-                  variant="outline"
-                >
-                  Clear
-                </Button>
-              </div>
-            </div>
-            <div className="border rounded-lg">
-              <Command>
-                <CommandInput placeholder="Search prompts..." />
-                <CommandList className="max-h-96">
-                  <CommandEmpty>No prompts found</CommandEmpty>
-                  {!evalTemplateGroups || evalTemplateGroups.length === 0 ? (
-                    <CommandGroup>
-                      <CommandItem disabled>No prompts available</CommandItem>
-                    </CommandGroup>
-                  ) : (
-                    evalTemplateGroups.map((group) => (
-                      <CommandGroup heading={group.name} key={group.name}>
-                        {group.templates.map((template) => {
-                          const IconComponent = IconMap[template.iconName];
-                          const isCustom =
-                            template.name === CUSTOM_EVAL_TEMPLATE_NAME;
-                          return (
-                            <CommandItem
-                              key={template.name}
-                              onSelect={() => {
-                                handleToggleEvalTemplate(template.name);
-                              }}
-                              value={template.name}
-                            >
-                              <div className="flex items-start gap-2 flex-1 min-w-0">
-                                <Checkbox
-                                  checked={selectedEvalTemplates.has(
-                                    template.name,
-                                  )}
-                                  className="shrink-0 mt-0.5 [&_svg]:text-primary-foreground!"
-                                />
-                                <IconComponent className="size-4 text-muted-foreground shrink-0 mt-0.5" />
-                                <div className="flex-1 min-w-0">
-                                  <div className="text-sm font-medium">
-                                    {template.name}
-                                  </div>
-                                  <div className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
-                                    {isCustom
-                                      ? "Write your own custom eval prompt below"
-                                      : template.userPrompt}
-                                  </div>
-                                </div>
-                              </div>
-                            </CommandItem>
-                          );
-                        })}
-                      </CommandGroup>
-                    ))
-                  )}
-                </CommandList>
-              </Command>
-            </div>
-            {selectedEvalTemplates.has(CUSTOM_EVAL_TEMPLATE_NAME) && (
-              <div className="space-y-2">
-                <h3 className="text-sm font-medium">Custom Eval Prompt</h3>
-                <Textarea
-                  className={`min-h-24 resize-y ${hasAttemptedSubmit && !customEvalPrompt.trim() ? "border-destructive focus-visible:ring-destructive" : ""}`}
-                  onChange={(e) => {
-                    setCustomEvalPrompt(e.target.value);
-                  }}
-                  placeholder="Enter your custom eval prompt..."
-                  value={customEvalPrompt}
-                />
-                {hasAttemptedSubmit && !customEvalPrompt.trim() && (
-                  <p className="text-sm text-destructive">
-                    Custom eval prompt is required
-                  </p>
-                )}
-              </div>
-            )}
-          </div>
-
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold">Select Models</h2>
-              <div className="flex items-center gap-2">
-                {selectedModels.size > 0 && (
-                  <span className="text-sm text-muted-foreground">
-                    {selectedModels.size} selected
-                  </span>
-                )}
-                <Button
-                  disabled={selectedModels.size === 0}
-                  onClick={() => {
-                    setSelectedModelsArray([]);
-                  }}
-                  size="sm"
-                  variant="outline"
-                >
-                  Clear
-                </Button>
-              </div>
-            </div>
-
-            <Tabs
-              onValueChange={(value) => {
-                setSelectedProvider(value as typeof selectedProvider);
-              }}
-              value={selectedProvider}
-            >
-              <TabsList>
-                <TabsTrigger value="all">All</TabsTrigger>
-                {availableProviders.map((provider) => {
-                  const metadata = providerMetadataMap.get(provider);
-                  if (!metadata) {
-                    return null;
-                  }
-                  return (
-                    <TabsTrigger key={provider} value={provider}>
-                      <AIProviderIcon className="size-4" type={provider} />
-                      {metadata.name}
-                    </TabsTrigger>
-                  );
-                })}
-              </TabsList>
-            </Tabs>
-
-            <div className="border rounded-lg">
-              <Command>
-                <CommandInput placeholder="Search models..." />
-                <CommandList className="max-h-96">
-                  <CommandEmpty>No models found</CommandEmpty>
-                  {!models || models.length === 0 ? (
-                    <CommandGroup>
-                      <CommandItem disabled>No models available</CommandItem>
-                    </CommandGroup>
-                  ) : (
-                    getGroupedModelsEntries(groupedModels).map(
-                      ([groupName, groupModels]) => {
-                        if (groupModels.length === 0) {
-                          return null;
-                        }
-                        return (
-                          <CommandGroup heading={groupName} key={groupName}>
-                            {groupModels.map((model) => (
-                              <CommandItem
-                                key={model.uri}
-                                onSelect={() => {
-                                  handleToggleModel(model.uri);
-                                }}
-                                value={model.uri}
-                              >
-                                <div className="flex items-center gap-2 flex-1 min-w-0">
-                                  <Checkbox
-                                    checked={selectedModels.has(model.uri)}
-                                    className="shrink-0 [&_svg]:text-primary-foreground!"
-                                  />
-                                  <AIProviderIcon
-                                    className="size-4 opacity-90 shrink-0"
-                                    type={model.params.provider}
-                                  />
-                                  <span className="truncate text-sm">
-                                    {model.name}
-                                  </span>
-                                </div>
-                                <div className="flex items-center gap-1 ml-2">
-                                  <ModelTags model={model} />
-                                </div>
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        );
-                      },
-                    )
-                  )}
-                </CommandList>
-              </Command>
-            </div>
+    <div className="flex-1 mx-auto max-w-7xl w-full">
+      <div>
+        <div className="mx-auto px-4 pt-10 lg:pt-20 lg:pb-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h1 className="text-3xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
+              Evals
+            </h1>
+            <p className="mt-4 text-base leading-7 text-muted-foreground max-w-lg mx-auto">
+              Quickly create apps from multiple prompts and compare them across
+              different models.
+            </p>
           </div>
         </div>
+      </div>
 
-        <div className="space-y-4">
-          <div className="sticky top-6">
-            <div className="border rounded-lg p-4 space-y-4 bg-card">
-              <Button
-                className="w-full"
-                disabled={
-                  selectedEvalTemplates.size === 0 ||
-                  selectedModels.size === 0 ||
-                  isCreating
-                }
-                onClick={handleRunEvals}
-                size="lg"
-              >
-                {isCreating
-                  ? "Creating..."
-                  : totalProjectsToCreate === 0
-                    ? "Run Evals"
-                    : `Run ${totalProjectsToCreate} Evaluation${totalProjectsToCreate === 1 ? "" : "s"}`}
-              </Button>
-
-              <AlertDialog
-                onOpenChange={setShowConfirmDialog}
-                open={showConfirmDialog}
-              >
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>
-                      Create {totalProjectsToCreate} evaluations?
-                    </AlertDialogTitle>
-                    <AlertDialogDescription>
-                      You are about to create {totalProjectsToCreate} evaluation
-                      projects. This may take some time and will use significant
-                      tokens.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={createEvals}>
-                      Continue
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-
-              {totalProjectsToCreate === 0 ? (
-                <div className="text-center py-2 text-sm text-muted-foreground">
-                  Select prompts and models to begin
+      <div className="px-4 py-12 sm:px-6 lg:px-8 max-w-5xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-6">
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold">Select Prompts</h2>
+                <div className="flex items-center gap-2">
+                  {selectedEvalTemplates.size > 0 && (
+                    <span className="text-sm text-muted-foreground">
+                      {selectedEvalTemplates.size} selected
+                    </span>
+                  )}
+                  <Button
+                    disabled={selectedEvalTemplates.size === 0}
+                    onClick={() => {
+                      setSelectedEvalTemplatesArray([]);
+                    }}
+                    size="sm"
+                    variant="outline"
+                  >
+                    Clear
+                  </Button>
                 </div>
-              ) : (
-                <div className="space-y-3 max-h-64 overflow-y-auto">
-                  {[...selectedEvalTemplates].map((templateName) => {
-                    const template = evalTemplateGroups
-                      ?.flatMap((g) => g.templates)
-                      .find((t) => t.name === templateName);
-                    const IconComponent = template
-                      ? IconMap[template.iconName]
-                      : null;
-                    const selectedModelsList = models?.filter((m) =>
-                      selectedModels.has(m.uri),
-                    );
+              </div>
+              <div className="border rounded-lg">
+                <Command>
+                  <CommandInput placeholder="Search prompts..." />
+                  <CommandList className="max-h-96">
+                    <CommandEmpty>No prompts found</CommandEmpty>
+                    {!evalTemplateGroups || evalTemplateGroups.length === 0 ? (
+                      <CommandGroup>
+                        <CommandItem disabled>No prompts available</CommandItem>
+                      </CommandGroup>
+                    ) : (
+                      evalTemplateGroups.map((group) => (
+                        <CommandGroup heading={group.name} key={group.name}>
+                          {group.templates.map((template) => {
+                            const IconComponent = IconMap[template.iconName];
+                            const isCustom =
+                              template.name === CUSTOM_EVAL_TEMPLATE_NAME;
+                            return (
+                              <CommandItem
+                                key={template.name}
+                                onSelect={() => {
+                                  handleToggleEvalTemplate(template.name);
+                                }}
+                                value={template.name}
+                              >
+                                <div className="flex items-start gap-2 flex-1 min-w-0">
+                                  <Checkbox
+                                    checked={selectedEvalTemplates.has(
+                                      template.name,
+                                    )}
+                                    className="shrink-0 mt-0.5 [&_svg]:text-primary-foreground!"
+                                  />
+                                  <IconComponent className="size-4 text-muted-foreground shrink-0 mt-0.5" />
+                                  <div className="flex-1 min-w-0">
+                                    <div className="text-sm font-medium">
+                                      {template.name}
+                                    </div>
+                                    <div className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+                                      {isCustom
+                                        ? "Write your own custom eval prompt below"
+                                        : template.userPrompt}
+                                    </div>
+                                  </div>
+                                </div>
+                              </CommandItem>
+                            );
+                          })}
+                        </CommandGroup>
+                      ))
+                    )}
+                  </CommandList>
+                </Command>
+              </div>
+              {selectedEvalTemplates.has(CUSTOM_EVAL_TEMPLATE_NAME) && (
+                <div className="space-y-2">
+                  <h3 className="text-sm font-medium">Custom Eval Prompt</h3>
+                  <Textarea
+                    className={`min-h-24 resize-y ${hasAttemptedSubmit && !customEvalPrompt.trim() ? "border-destructive focus-visible:ring-destructive" : ""}`}
+                    onChange={(e) => {
+                      setCustomEvalPrompt(e.target.value);
+                    }}
+                    placeholder="Enter your custom eval prompt..."
+                    value={customEvalPrompt}
+                  />
+                  {hasAttemptedSubmit && !customEvalPrompt.trim() && (
+                    <p className="text-sm text-destructive">
+                      Custom eval prompt is required
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
 
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold">Select Models</h2>
+                <div className="flex items-center gap-2">
+                  {selectedModels.size > 0 && (
+                    <span className="text-sm text-muted-foreground">
+                      {selectedModels.size} selected
+                    </span>
+                  )}
+                  <Button
+                    disabled={selectedModels.size === 0}
+                    onClick={() => {
+                      setSelectedModelsArray([]);
+                    }}
+                    size="sm"
+                    variant="outline"
+                  >
+                    Clear
+                  </Button>
+                </div>
+              </div>
+
+              <Tabs
+                onValueChange={(value) => {
+                  setSelectedProvider(value as typeof selectedProvider);
+                }}
+                value={selectedProvider}
+              >
+                <TabsList>
+                  <TabsTrigger value="all">All</TabsTrigger>
+                  {availableProviders.map((provider) => {
+                    const metadata = providerMetadataMap.get(provider);
+                    if (!metadata) {
+                      return null;
+                    }
                     return (
-                      <div className="space-y-1.5" key={templateName}>
-                        <div className="flex items-center gap-1.5">
-                          {IconComponent && (
-                            <IconComponent className="size-3.5 text-muted-foreground shrink-0" />
-                          )}
-                          <div className="text-sm font-medium">
-                            {templateName}
-                          </div>
-                        </div>
-                        <div className="flex flex-wrap gap-1.5 pl-5">
-                          {selectedModelsList?.map((model) => (
-                            <div
-                              className="flex items-center gap-1 bg-muted px-1.5 py-0.5 rounded text-xs"
-                              key={model.uri}
-                            >
-                              <AIProviderIcon
-                                className="size-3"
-                                type={model.params.provider}
-                              />
-                              <span className="truncate max-w-32">
-                                {model.name}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
+                      <TabsTrigger key={provider} value={provider}>
+                        <AIProviderIcon className="size-4" type={provider} />
+                        {metadata.name}
+                      </TabsTrigger>
                     );
                   })}
-                </div>
+                </TabsList>
+              </Tabs>
+
+              <div className="border rounded-lg">
+                <Command>
+                  <CommandInput placeholder="Search models..." />
+                  <CommandList className="max-h-96">
+                    <CommandEmpty>No models found</CommandEmpty>
+                    {!models || models.length === 0 ? (
+                      <CommandGroup>
+                        <CommandItem disabled>No models available</CommandItem>
+                      </CommandGroup>
+                    ) : (
+                      getGroupedModelsEntries(groupedModels).map(
+                        ([groupName, groupModels]) => {
+                          if (groupModels.length === 0) {
+                            return null;
+                          }
+                          return (
+                            <CommandGroup heading={groupName} key={groupName}>
+                              {groupModels.map((model) => (
+                                <CommandItem
+                                  key={model.uri}
+                                  onSelect={() => {
+                                    handleToggleModel(model.uri);
+                                  }}
+                                  value={model.uri}
+                                >
+                                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                                    <Checkbox
+                                      checked={selectedModels.has(model.uri)}
+                                      className="shrink-0 [&_svg]:text-primary-foreground!"
+                                    />
+                                    <AIProviderIcon
+                                      className="size-4 opacity-90 shrink-0"
+                                      type={model.params.provider}
+                                    />
+                                    <span className="truncate text-sm">
+                                      {model.name}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-1 ml-2">
+                                    <ModelTags model={model} />
+                                  </div>
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          );
+                        },
+                      )
+                    )}
+                  </CommandList>
+                </Command>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="sticky top-6">
+              <div className="border rounded-lg p-4 space-y-4 bg-card">
+                <Button
+                  className="w-full"
+                  disabled={
+                    selectedEvalTemplates.size === 0 ||
+                    selectedModels.size === 0 ||
+                    isCreating
+                  }
+                  onClick={handleRunEvals}
+                  size="lg"
+                >
+                  {isCreating
+                    ? "Creating..."
+                    : totalProjectsToCreate === 0
+                      ? "Run Evals"
+                      : `Run ${totalProjectsToCreate} Evaluation${totalProjectsToCreate === 1 ? "" : "s"}`}
+                </Button>
+
+                <AlertDialog
+                  onOpenChange={setShowConfirmDialog}
+                  open={showConfirmDialog}
+                >
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>
+                        Create {totalProjectsToCreate} evaluations?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        You are about to create {totalProjectsToCreate}{" "}
+                        evaluation projects. This may take some time and will
+                        use significant tokens.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={createEvals}>
+                        Continue
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+
+                {totalProjectsToCreate === 0 ? (
+                  <div className="text-center py-2 text-sm text-muted-foreground">
+                    Select prompts and models to begin
+                  </div>
+                ) : (
+                  <div className="space-y-3 max-h-64 overflow-y-auto">
+                    {[...selectedEvalTemplates].map((templateName) => {
+                      const template = evalTemplateGroups
+                        ?.flatMap((g) => g.templates)
+                        .find((t) => t.name === templateName);
+                      const IconComponent = template
+                        ? IconMap[template.iconName]
+                        : null;
+                      const selectedModelsList = models?.filter((m) =>
+                        selectedModels.has(m.uri),
+                      );
+
+                      return (
+                        <div className="space-y-1.5" key={templateName}>
+                          <div className="flex items-center gap-1.5">
+                            {IconComponent && (
+                              <IconComponent className="size-3.5 text-muted-foreground shrink-0" />
+                            )}
+                            <div className="text-sm font-medium">
+                              {templateName}
+                            </div>
+                          </div>
+                          <div className="flex flex-wrap gap-1.5 pl-5">
+                            {selectedModelsList?.map((model) => (
+                              <div
+                                className="flex items-center gap-1 bg-muted px-1.5 py-0.5 rounded text-xs"
+                                key={model.uri}
+                              >
+                                <AIProviderIcon
+                                  className="size-3"
+                                  type={model.params.provider}
+                                />
+                                <span className="truncate max-w-32">
+                                  {model.name}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+              {totalProjectsToCreate > 0 && (
+                <p className="text-xs text-muted-foreground text-center">
+                  Each prompt-model combination creates a separate app
+                </p>
               )}
             </div>
           </div>

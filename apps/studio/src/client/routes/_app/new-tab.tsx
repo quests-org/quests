@@ -21,6 +21,7 @@ import {
   useRouter,
 } from "@tanstack/react-router";
 import { useAtom } from "jotai";
+import { ArrowRight, FlaskConical } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/new-tab")({
@@ -126,6 +127,30 @@ function RouteComponent() {
               Hold <Kbd>{isMacOS() ? "⌘" : "Ctrl"}</Kbd> to create in a new tab
             </p>
           </div>
+
+          <button
+            className="mt-8 w-full border border-brand/30 rounded-lg p-4 bg-gradient-to-br from-brand/5 via-brand/8 to-brand/10 hover:from-brand/8 hover:via-brand/12 hover:to-brand/15 hover:border-brand/40 transition-all group shadow-sm"
+            onClick={() => {
+              void navigate({ to: "/evals" });
+            }}
+            type="button"
+          >
+            <div className="flex items-start gap-3">
+              <FlaskConical className="size-5 text-brand shrink-0 mt-0.5" />
+              <div className="flex-1 text-left">
+                <h3 className="text-sm font-semibold mb-0.5">
+                  Experiment with Evals
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  Run many prompts across multiple models
+                </p>
+              </div>
+              <div className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-brand text-brand-foreground text-sm font-medium group-hover:bg-brand/90 transition-colors">
+                Run an eval
+                <ArrowRight className="size-4" />
+              </div>
+            </div>
+          </button>
         </div>
       </div>
 
