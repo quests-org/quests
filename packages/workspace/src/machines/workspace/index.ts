@@ -73,6 +73,14 @@ export type WorkspaceEvent =
       };
     }
   | {
+      type: "heartbeat";
+      value: {
+        appConfig: AppConfig;
+        createdAt: number;
+        shouldCreate: boolean;
+      };
+    }
+  | {
       type: "internal.spawnSession";
       value: {
         appConfig: AppConfig;
@@ -80,6 +88,10 @@ export type WorkspaceEvent =
         model: LanguageModel;
         sessionId: StoreId.Session;
       };
+    }
+  | {
+      type: "internal.updateHeartbeat";
+      value: { createdAt: number; subdomain: AppSubdomain };
     }
   | { type: "removeAppBeingTrashed"; value: { subdomain: AppSubdomain } }
   | {
@@ -103,10 +115,6 @@ export type WorkspaceEvent =
   | {
       type: "stopSessions";
       value: { subdomain: AppSubdomain };
-    }
-  | {
-      type: "updateHeartbeat";
-      value: { createdAt: number; subdomain: AppSubdomain };
     }
   | {
       type: "updateInteractiveToolCall";
@@ -344,17 +352,104 @@ export const workspaceMachine = setup({
         };
       }),
     },
+    heartbeat: [
+      {
+        actions: assign({
+          createPreviewRefs: ({ context, event, self, spawn }) => {
+            invariant(
+              event.value.appConfig.type === "preview",
+              "Expected preview app config",
+            );
+            const appConfig = event.value.appConfig;
+
+            if (context.createPreviewRefs.has(appConfig.subdomain)) {
+              // Already creating a preview for this app
+              return context.createPreviewRefs;
+            }
+
+            const createPreviewRef = spawn("createPreviewLogic", {
+              input: {
+                appConfig,
+                parentRef: self,
+              },
+            });
+
+            return new Map(context.createPreviewRefs).set(
+              appConfig.subdomain,
+              createPreviewRef,
+            );
+          },
+        }),
+        guard: ({ event }) =>
+          event.value.shouldCreate && event.value.appConfig.type === "preview",
+      },
+      {
+        actions: assign({
+          checkoutVersionRefs: ({ context, event, self, spawn }) => {
+            invariant(
+              event.value.appConfig.type === "version",
+              "Expected version app config",
+            );
+            const appConfig = event.value.appConfig;
+
+            if (context.checkoutVersionRefs.has(appConfig.subdomain)) {
+              // Already creating a version for this app
+              return context.checkoutVersionRefs;
+            }
+
+            const checkoutVersionRef = spawn("checkoutVersionLogic", {
+              input: {
+                appConfig,
+                parentRef: self,
+              },
+            });
+
+            return new Map(context.checkoutVersionRefs).set(
+              appConfig.subdomain,
+              checkoutVersionRef,
+            );
+          },
+        }),
+        guard: ({ event }) =>
+          event.value.shouldCreate && event.value.appConfig.type === "version",
+      },
+      {
+        actions: raise(({ context, event }) => {
+          const existingRuntimeRef = context.runtimeRefs.get(
+            event.value.appConfig.subdomain,
+          );
+
+          if (existingRuntimeRef) {
+            return {
+              type: "internal.updateHeartbeat",
+              value: {
+                createdAt: event.value.createdAt,
+                subdomain: event.value.appConfig.subdomain,
+              },
+            };
+          }
+
+          return {
+            type: "spawnRuntime",
+            value: {
+              appConfig: event.value.appConfig,
+            },
+          };
+        }),
+      },
+    ],
     "internal.spawnSession": {
       actions: [
         // Boot the runtime if it's not already running to ensure packages are
-        // installed.
+        // installed for the agent to use.
         raise(({ event }) => {
           const { appConfig } = event.value;
           return {
-            type: "updateHeartbeat",
+            type: "heartbeat",
             value: {
+              appConfig,
               createdAt: Date.now(),
-              subdomain: appConfig.subdomain,
+              shouldCreate: false,
             },
           };
         }),
@@ -399,6 +494,17 @@ export const workspaceMachine = setup({
             // Includes sandboxes for projects being trashed
             subdomain.endsWith(trashingSubdomain),
         );
+      },
+    },
+    "internal.updateHeartbeat": {
+      actions: ({ context, event }) => {
+        const runtimeRef = context.runtimeRefs.get(event.value.subdomain);
+        if (runtimeRef) {
+          runtimeRef.send({
+            type: "updateHeartbeat",
+            value: { createdAt: event.value.createdAt },
+          });
+        }
       },
     },
     removeAppBeingTrashed: {
@@ -477,6 +583,7 @@ export const workspaceMachine = setup({
       //   };
       // }),
     ],
+
     spawnRuntime: {
       actions: assign(({ context, event, spawn }) => {
         return {
@@ -541,18 +648,6 @@ export const workspaceMachine = setup({
       },
     },
 
-    updateHeartbeat: {
-      actions: ({ context, event }) => {
-        const runtimeRef = context.runtimeRefs.get(event.value.subdomain);
-        if (runtimeRef) {
-          runtimeRef.send({
-            type: "updateHeartbeat",
-            value: { createdAt: event.value.createdAt },
-          });
-        }
-      },
-    },
-
     updateInteractiveToolCall: [
       {
         actions: ({ context, event }) => {
@@ -588,92 +683,14 @@ export const workspaceMachine = setup({
       }),
     },
 
-    "workspaceServer.heartbeat": [
-      {
-        actions: assign({
-          createPreviewRefs: ({ context, event, self, spawn }) => {
-            invariant(
-              event.value.appConfig.type === "preview",
-              "Expected preview app config",
-            );
-            const appConfig = event.value.appConfig;
-
-            if (context.createPreviewRefs.has(appConfig.subdomain)) {
-              // Already creating a preview for this app
-              return context.createPreviewRefs;
-            }
-
-            const createPreviewRef = spawn("createPreviewLogic", {
-              input: {
-                appConfig,
-                parentRef: self,
-              },
-            });
-
-            return new Map(context.createPreviewRefs).set(
-              appConfig.subdomain,
-              createPreviewRef,
-            );
-          },
-        }),
-        guard: ({ event }) =>
-          event.value.shouldCreate && event.value.appConfig.type === "preview",
-      },
-      {
-        actions: assign({
-          checkoutVersionRefs: ({ context, event, self, spawn }) => {
-            invariant(
-              event.value.appConfig.type === "version",
-              "Expected version app config",
-            );
-            const appConfig = event.value.appConfig;
-
-            if (context.checkoutVersionRefs.has(appConfig.subdomain)) {
-              // Already creating a version for this app
-              return context.checkoutVersionRefs;
-            }
-
-            const checkoutVersionRef = spawn("checkoutVersionLogic", {
-              input: {
-                appConfig,
-                parentRef: self,
-              },
-            });
-
-            return new Map(context.checkoutVersionRefs).set(
-              appConfig.subdomain,
-              checkoutVersionRef,
-            );
-          },
-        }),
-        guard: ({ event }) =>
-          event.value.shouldCreate && event.value.appConfig.type === "version",
-      },
-      {
-        actions: raise(({ context, event }) => {
-          const existingRuntimeRef = context.runtimeRefs.get(
-            event.value.appConfig.subdomain,
-          );
-
-          if (existingRuntimeRef) {
-            return {
-              type: "updateHeartbeat",
-              value: {
-                createdAt: event.value.createdAt,
-                subdomain: event.value.appConfig.subdomain,
-              },
-            };
-          }
-
-          return {
-            type: "spawnRuntime",
-            value: {
-              appConfig: event.value.appConfig,
-            },
-          };
-        }),
-      },
-    ],
+    "workspaceServer.heartbeat": {
+      actions: raise(({ event }) => {
+        return {
+          type: "heartbeat",
+          value: event.value,
+        };
+      }),
+    },
 
     "workspaceServer.started": {
       actions: log(({ event }) => {
