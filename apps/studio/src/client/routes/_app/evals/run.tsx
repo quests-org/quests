@@ -48,7 +48,7 @@ const evalsRunsSearchSchema = z.object({
 });
 
 /* eslint-disable perfectionist/sort-objects */
-export const Route = createFileRoute("/_app/evals/runs")({
+export const Route = createFileRoute("/_app/evals/run")({
   validateSearch: evalsRunsSearchSchema,
   beforeLoad: ({ search }) => {
     const subdomains = search.subdomains
@@ -278,7 +278,7 @@ function RouteComponent() {
         : navigate({
             replace: true,
             search: { subdomains: remainingSubdomains.join(",") },
-            to: "/evals/runs",
+            to: "/evals/run",
           }));
     } catch {
       toast.error("Failed to delete project");

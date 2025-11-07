@@ -2,6 +2,16 @@ import { providerMetadataAtom } from "@/client/atoms/provider-metadata";
 import { AIProviderIcon } from "@/client/components/ai-provider-icon";
 import { IconMap } from "@/client/components/app-icons";
 import { ModelTags } from "@/client/components/model-tags";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/client/components/ui/alert-dialog";
 import { Button } from "@/client/components/ui/button";
 import { Checkbox } from "@/client/components/ui/checkbox";
 import {
@@ -83,6 +93,7 @@ function RouteComponent() {
   const [customEvalPrompt, setCustomEvalPrompt] = useAtom(customEvalPromptAtom);
   const [isCreating, setIsCreating] = useState(false);
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   const selectedEvalTemplates = useMemo(
     () => new Set(selectedEvalTemplatesArray),
@@ -152,27 +163,8 @@ function RouteComponent() {
     setSelectedModelsArray([...newSelected]);
   };
 
-  const handleRunEvals = async () => {
-    setHasAttemptedSubmit(true);
-
-    if (selectedEvalTemplates.size === 0) {
-      toast.error("Please select at least one eval template");
-      return;
-    }
-
-    if (selectedModels.size === 0) {
-      toast.error("Please select at least one model");
-      return;
-    }
-
-    if (
-      selectedEvalTemplates.has(CUSTOM_EVAL_TEMPLATE_NAME) &&
-      !customEvalPrompt.trim()
-    ) {
-      toast.error("Please enter a custom eval prompt");
-      return;
-    }
-
+  const createEvals = async () => {
+    setShowConfirmDialog(false);
     setIsCreating(true);
 
     const totalProjects = selectedEvalTemplates.size * selectedModels.size;
@@ -243,7 +235,7 @@ function RouteComponent() {
         const subdomains = createdProjects.map((p) => p.subdomain).join(",");
         void navigate({
           search: { subdomains },
-          to: "/evals/runs",
+          to: "/evals/run",
         });
       }
     } catch (error) {
@@ -253,6 +245,37 @@ function RouteComponent() {
     } finally {
       setIsCreating(false);
     }
+  };
+
+  const handleRunEvals = async () => {
+    setHasAttemptedSubmit(true);
+
+    if (selectedEvalTemplates.size === 0) {
+      toast.error("Please select at least one eval template");
+      return;
+    }
+
+    if (selectedModels.size === 0) {
+      toast.error("Please select at least one model");
+      return;
+    }
+
+    if (
+      selectedEvalTemplates.has(CUSTOM_EVAL_TEMPLATE_NAME) &&
+      !customEvalPrompt.trim()
+    ) {
+      toast.error("Please enter a custom eval prompt");
+      return;
+    }
+
+    const totalProjects = selectedEvalTemplates.size * selectedModels.size;
+
+    if (totalProjects > 10) {
+      setShowConfirmDialog(true);
+      return;
+    }
+
+    await createEvals();
   };
 
   if (modelsIsLoading || evalTemplateGroupsIsLoading) {
@@ -498,6 +521,30 @@ function RouteComponent() {
                     ? "Run Evals"
                     : `Run ${totalProjectsToCreate} Evaluation${totalProjectsToCreate === 1 ? "" : "s"}`}
               </Button>
+
+              <AlertDialog
+                onOpenChange={setShowConfirmDialog}
+                open={showConfirmDialog}
+              >
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                      Create {totalProjectsToCreate} evaluations?
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      You are about to create {totalProjectsToCreate} evaluation
+                      projects. This may take some time and will use significant
+                      tokens.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={createEvals}>
+                      Continue
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
 
               {totalProjectsToCreate === 0 ? (
                 <div className="text-center py-2 text-sm text-muted-foreground">

@@ -32,7 +32,7 @@ import { Route as AppDebugRouteRouteImport } from './routes/_app/debug/route'
 import { Route as AppEvalsIndexRouteImport } from './routes/_app/evals/index'
 import { Route as AppDiscoverIndexRouteImport } from './routes/_app/discover/index'
 import { Route as AppDebugIndexRouteImport } from './routes/_app/debug/index'
-import { Route as AppEvalsRunsRouteImport } from './routes/_app/evals/runs'
+import { Route as AppEvalsRunRouteImport } from './routes/_app/evals/run'
 import { Route as AppDebugComponentsRouteImport } from './routes/_app/debug/components'
 import { Route as AppDebugColorsRouteImport } from './routes/_app/debug/colors'
 import { Route as AppDebugBulkDeleteRouteImport } from './routes/_app/debug/bulk-delete'
@@ -156,9 +156,9 @@ const AppDebugIndexRoute = AppDebugIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppDebugRouteRoute,
 } as any)
-const AppEvalsRunsRoute = AppEvalsRunsRouteImport.update({
-  id: '/evals/runs',
-  path: '/evals/runs',
+const AppEvalsRunRoute = AppEvalsRunRouteImport.update({
+  id: '/evals/run',
+  path: '/evals/run',
   getParentRoute: () => AppRouteRoute,
 } as any)
 const AppDebugComponentsRoute = AppDebugComponentsRouteImport.update({
@@ -234,7 +234,7 @@ export interface FileRoutesByFullPath {
   '/debug/bulk-delete': typeof AppDebugBulkDeleteRoute
   '/debug/colors': typeof AppDebugColorsRoute
   '/debug/components': typeof AppDebugComponentsRoute
-  '/evals/runs': typeof AppEvalsRunsRoute
+  '/evals/run': typeof AppEvalsRunRoute
   '/debug/': typeof AppDebugIndexRoute
   '/discover': typeof AppDiscoverIndexRoute
   '/evals': typeof AppEvalsIndexRoute
@@ -265,7 +265,7 @@ export interface FileRoutesByTo {
   '/debug/bulk-delete': typeof AppDebugBulkDeleteRoute
   '/debug/colors': typeof AppDebugColorsRoute
   '/debug/components': typeof AppDebugComponentsRoute
-  '/evals/runs': typeof AppEvalsRunsRoute
+  '/evals/run': typeof AppEvalsRunRoute
   '/debug': typeof AppDebugIndexRoute
   '/discover': typeof AppDiscoverIndexRoute
   '/evals': typeof AppEvalsIndexRoute
@@ -301,7 +301,7 @@ export interface FileRoutesById {
   '/_app/debug/bulk-delete': typeof AppDebugBulkDeleteRoute
   '/_app/debug/colors': typeof AppDebugColorsRoute
   '/_app/debug/components': typeof AppDebugComponentsRoute
-  '/_app/evals/runs': typeof AppEvalsRunsRoute
+  '/_app/evals/run': typeof AppEvalsRunRoute
   '/_app/debug/': typeof AppDebugIndexRoute
   '/_app/discover/': typeof AppDiscoverIndexRoute
   '/_app/evals/': typeof AppEvalsIndexRoute
@@ -336,7 +336,7 @@ export interface FileRouteTypes {
     | '/debug/bulk-delete'
     | '/debug/colors'
     | '/debug/components'
-    | '/evals/runs'
+    | '/evals/run'
     | '/debug/'
     | '/discover'
     | '/evals'
@@ -367,7 +367,7 @@ export interface FileRouteTypes {
     | '/debug/bulk-delete'
     | '/debug/colors'
     | '/debug/components'
-    | '/evals/runs'
+    | '/evals/run'
     | '/debug'
     | '/discover'
     | '/evals'
@@ -402,7 +402,7 @@ export interface FileRouteTypes {
     | '/_app/debug/bulk-delete'
     | '/_app/debug/colors'
     | '/_app/debug/components'
-    | '/_app/evals/runs'
+    | '/_app/evals/run'
     | '/_app/debug/'
     | '/_app/discover/'
     | '/_app/evals/'
@@ -587,11 +587,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDebugIndexRouteImport
       parentRoute: typeof AppDebugRouteRoute
     }
-    '/_app/evals/runs': {
-      id: '/_app/evals/runs'
-      path: '/evals/runs'
-      fullPath: '/evals/runs'
-      preLoaderRoute: typeof AppEvalsRunsRouteImport
+    '/_app/evals/run': {
+      id: '/_app/evals/run'
+      path: '/evals/run'
+      fullPath: '/evals/run'
+      preLoaderRoute: typeof AppEvalsRunRouteImport
       parentRoute: typeof AppRouteRoute
     }
     '/_app/debug/components': {
@@ -684,7 +684,7 @@ interface AppRouteRouteChildren {
   AppReleaseNotesRoute: typeof AppReleaseNotesRoute
   AppSetupRoute: typeof AppSetupRoute
   AppWelcomeRoute: typeof AppWelcomeRoute
-  AppEvalsRunsRoute: typeof AppEvalsRunsRoute
+  AppEvalsRunRoute: typeof AppEvalsRunRoute
   AppDiscoverIndexRoute: typeof AppDiscoverIndexRoute
   AppEvalsIndexRoute: typeof AppEvalsIndexRoute
   AppDiscoverAppsFolderNameRoute: typeof AppDiscoverAppsFolderNameRoute
@@ -701,7 +701,7 @@ const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppReleaseNotesRoute: AppReleaseNotesRoute,
   AppSetupRoute: AppSetupRoute,
   AppWelcomeRoute: AppWelcomeRoute,
-  AppEvalsRunsRoute: AppEvalsRunsRoute,
+  AppEvalsRunRoute: AppEvalsRunRoute,
   AppDiscoverIndexRoute: AppDiscoverIndexRoute,
   AppEvalsIndexRoute: AppEvalsIndexRoute,
   AppDiscoverAppsFolderNameRoute: AppDiscoverAppsFolderNameRoute,
