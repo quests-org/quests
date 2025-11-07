@@ -1,21 +1,7 @@
 {
-  "files": [
-    "**",
-    ".github/**",
-    ".vscode/**"
-  ],
-  "dictionaries": [
-    "typescript",
-    "bash",
-    "css",
-    "html",
-    "node",
-    "npm"
-  ],
-  "ignorePaths": [
-    "pnpm-lock.yaml",
-    "registry/"
-  ],
+  "files": ["**", ".github/**", ".vscode/**"],
+  "dictionaries": ["typescript", "bash", "css", "html", "node", "npm"],
+  "ignorePaths": ["pnpm-lock.yaml", "registry/"],
   "useGitignore": true,
   "words": [
     "aisdk",
@@ -95,8 +81,6 @@
     "waitlist",
     "worktree",
     "zkochan",
-    "DBUS",
-    "dbus",
     "kwalletd"
   ],
   "import": [
