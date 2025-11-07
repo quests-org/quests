@@ -101,8 +101,7 @@ const actor = createActor(workspaceMachine, {
           }
           if (
             event.event.type === "agent.usingTool" ||
-            event.event.type === "workspaceServer.heartbeat" ||
-            event.event.type === "updateHeartbeat"
+            event.event.type.toLowerCase().includes("heartbeat")
           ) {
             // Too verbose to log
             return;

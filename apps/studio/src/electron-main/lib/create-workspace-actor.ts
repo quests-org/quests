@@ -76,9 +76,8 @@ export function createWorkspaceActor() {
             }
             if (
               event.event.type === "llmRequest.chunkReceived" ||
-              event.event.type === "workspaceServer.heartbeat" ||
-              event.event.type === "spawnRuntime.log" ||
-              event.event.type === "updateHeartbeat"
+              event.event.type.toLowerCase().includes("heartbeat") ||
+              event.event.type === "spawnRuntime.log"
             ) {
               // Too verbose to log
               return;
