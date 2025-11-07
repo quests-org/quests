@@ -100,9 +100,9 @@ const EVAL_TEMPLATE_GROUPS: EvalTemplateGroup[] = [
       },
       {
         iconName: "activity",
-        name: "Pendulum Swing Simulator",
+        name: "Pendulum Simulator",
         userPrompt:
-          "Create an animated visualization of a simple pendulum swinging back and forth, showing the bob's path as trailing lines with adjustable length and gravity.",
+          "Create an animated pendulum simulation with realistic physics. Show the bob swinging back and forth with a trailing path line. Include controls to adjust pendulum length, initial angle, and gravity strength.",
       },
       {
         iconName: "activity",
@@ -214,9 +214,9 @@ const EVAL_TEMPLATE_GROUPS: EvalTemplateGroup[] = [
       },
       {
         iconName: "cloud",
-        name: "Fluid Smoke Simulation",
+        name: "Smoke Simulation",
         userPrompt:
-          "Visualize a simple fluid dynamics simulation of rising smoke, with particles advecting and diffusing as swirling points.",
+          "Create a realistic smoke simulation with particles rising, swirling, and dispersing. Particles should follow turbulent flow patterns, fade over time, and respond to simulated air currents with natural diffusion.",
       },
       {
         iconName: "activity",
@@ -256,15 +256,9 @@ const EVAL_TEMPLATE_GROUPS: EvalTemplateGroup[] = [
       },
       {
         iconName: "sparkles",
-        name: "L-System Plant Growth",
+        name: "Fractal Tree Growth",
         userPrompt:
-          "Animate the iterative growth of an L-system plant, with branches extending as lines in a fractal-like manner.",
-      },
-      {
-        iconName: "sparkles",
-        name: "Fractal Tree Branching",
-        userPrompt:
-          "Visualize a recursive fractal tree growing over time, with branches splitting and leaves appearing as points.",
+          "Create an animated fractal tree that grows recursively from a trunk. Each branch should split into smaller branches at varying angles. Include controls for recursion depth, branching angle, and branch length ratio. Animate the growth process from root to leaves.",
       },
       {
         iconName: "sparkles",
@@ -315,12 +309,6 @@ const EVAL_TEMPLATE_GROUPS: EvalTemplateGroup[] = [
           "Simulate a spirograph with rotating gears, tracing hypnotic curves as lines in multiple colors.",
       },
       {
-        iconName: "activity",
-        name: "Harmonograph Pendulum Drawings",
-        userPrompt:
-          "Animate a harmonograph with decaying pendulums, drawing intricate, fading curves on the canvas.",
-      },
-      {
         iconName: "sparkles",
         name: "Polar Rose Petals",
         userPrompt:
@@ -358,21 +346,9 @@ const EVAL_TEMPLATE_GROUPS: EvalTemplateGroup[] = [
       },
       {
         iconName: "sparkles",
-        name: "Particle Fountain Spray",
+        name: "Particle Fountain",
         userPrompt:
-          "Simulate a fountain of particles shooting upward and falling with gravity, scattering as colorful points.",
-      },
-      {
-        iconName: "sparkles",
-        name: "Pixel Fire Embers",
-        userPrompt:
-          "Animate a pixel-based fire simulation with flames rising and embers floating upward in warm hues.",
-      },
-      {
-        iconName: "cloud",
-        name: "Turbulent Smoke Plumes",
-        userPrompt:
-          "Generate turbulent smoke plumes using vector fields, with particles twisting and dispersing realistically.",
+          "Create a particle fountain system where particles shoot upward from a source point, arc through the air under gravity, and fade as they fall. Particles should have varying initial velocities, colors that transition over their lifetime, and slight randomness in trajectory.",
       },
       {
         iconName: "activity",
