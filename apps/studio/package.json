@@ -57,6 +57,7 @@
     "@electron-toolkit/utils": "^4.0.0",
     "@hono/node-server": "^1.18.1",
     "@orpc/client": "catalog:",
+    "@orpc/contract": "catalog:",
     "@orpc/server": "catalog:",
     "@orpc/tanstack-query": "catalog:",
     "@quests/ai-gateway": "workspace:*",

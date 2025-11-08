@@ -1,6 +1,5 @@
 import { workspaceRouter } from "@quests/workspace/electron";
 
-import { api } from "./api";
 import { appState } from "./app-state";
 import { auth } from "./auth";
 import { debug } from "./debug";
@@ -19,7 +18,6 @@ import { user } from "./user";
 import { utils } from "./utils";
 
 export const router = {
-  api,
   appState,
   auth,
   debug,

@@ -1,20 +1,20 @@
+import { client as apiClient } from "@/electron-main/api/client";
 import { hasToken, isNetworkConnectionError } from "@/electron-main/api/utils";
 import { logger as baseLogger } from "@/electron-main/lib/electron-logger";
 import { createError } from "@/electron-main/lib/errors";
 import { base } from "@/electron-main/rpc/base";
 import { isFeatureEnabled } from "@/electron-main/stores/features";
 import { getProviderConfigsStore } from "@/electron-main/stores/provider-configs";
-import { call, safe } from "@orpc/server";
+import { safe } from "@orpc/server";
 import { z } from "zod";
 
 import { publisher } from "../publisher";
-import { api } from "./api";
 
 const logger = baseLogger.scope("rpc/user");
 
 const credits = base.handler(async () => {
   if (hasToken()) {
-    const [error, data] = await safe(call(api.users.getMyCredits, {}));
+    const [error, data] = await safe(apiClient.users.getMyCredits());
     return error ? null : data;
   }
 
@@ -43,7 +43,7 @@ const me = base
       }
 
       context.cache.user = null;
-      const [error, data] = await safe(call(api.users.getMe, {}));
+      const [error, data] = await safe(apiClient.users.getMe());
 
       if (isNetworkConnectionError(error)) {
         logger.error("Network error getting authenticated user", {
