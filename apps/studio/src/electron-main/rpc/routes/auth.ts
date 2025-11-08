@@ -1,3 +1,4 @@
+import { client as apiClient } from "@/electron-main/api/client";
 import { isNetworkConnectionError } from "@/electron-main/api/utils";
 import {
   signInSocial as signInSocialFn,
@@ -6,10 +7,8 @@ import {
 import { logger } from "@/electron-main/lib/electron-logger";
 import { createError } from "@/electron-main/lib/errors";
 import { base } from "@/electron-main/rpc/base";
-import { call, isDefinedError, safe } from "@orpc/server";
+import { isDefinedError, safe } from "@orpc/server";
 import { z } from "zod";
-
-import { api } from "./api";
 
 const signOut = base.handler(async () => {
   await signOutFn();
@@ -33,7 +32,7 @@ const validateBetaInvite = base
   )
   .handler(async ({ input }) => {
     const [error, data] = await safe(
-      call(api.invites.validateBetaInvite, { code: input.code }),
+      apiClient.invites.validateBetaInvite({ code: input.code }),
     );
 
     if (isNetworkConnectionError(error)) {

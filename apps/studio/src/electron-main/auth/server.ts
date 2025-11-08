@@ -4,7 +4,11 @@ import {
   decodeOAuthState,
   store,
 } from "@/electron-main/auth/client";
-import { setAuthServerPort } from "@/electron-main/auth/state";
+import {
+  getAuthServer,
+  setAuthServer,
+  setAuthServerPort,
+} from "@/electron-main/auth/state";
 import { logger } from "@/electron-main/lib/electron-logger";
 import { publisher } from "@/electron-main/rpc/publisher";
 import { getSessionStore } from "@/electron-main/stores/session";
@@ -29,6 +33,12 @@ const appIconPath = path.join(resourcesPath, "icon.png");
 const appIconBase64 = fs.readFileSync(appIconPath, { encoding: "base64" });
 
 export async function startAuthCallbackServer() {
+  const existingServer = getAuthServer();
+  if (existingServer !== null) {
+    scopedLogger.info("Auth callback server is already running");
+    return;
+  }
+
   const port = await detect(DEFAULT_PORT);
   setAuthServerPort(port);
 
@@ -142,6 +152,7 @@ export async function startAuthCallbackServer() {
     `Auth callback server running at http://localhost:${port}/`,
   );
   const server = serve({ fetch: app.fetch, port });
+  setAuthServer(server);
 
   return {
     port,

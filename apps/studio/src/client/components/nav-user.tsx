@@ -28,29 +28,12 @@ import {
   SettingsIcon,
 } from "lucide-react";
 
-import { AIProviderIcon } from "./ai-provider-icon";
-
-const formatCredits = (credits: number) => {
-  return credits.toFixed(2);
-};
-
 export function NavUser({ user }: { user: User }) {
   const { isMobile } = useSidebar();
 
   const { data: providerConfigs } = useQuery(
     rpcClient.providerConfig.live.list.experimental_liveOptions(),
   );
-  const openRouterProvider = providerConfigs?.find(
-    (p) => p.type === "openrouter",
-  );
-
-  const { data: openRouterCredits } = useQuery({
-    ...rpcClient.providerConfig.credits.queryOptions({
-      input: { id: openRouterProvider?.id ?? "" },
-    }),
-    enabled: Boolean(openRouterProvider),
-    refetchInterval: 30_000,
-  });
 
   return (
     <SidebarMenu>
@@ -95,27 +78,6 @@ export function NavUser({ user }: { user: User }) {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-
-            {openRouterProvider && (
-              <>
-                <DropdownMenuItem>
-                  <AIProviderIcon
-                    className="size-4 shrink-0"
-                    type="openrouter"
-                  />
-                  <span>
-                    OpenRouter Credits: $
-                    {openRouterCredits
-                      ? formatCredits(
-                          openRouterCredits.credits.total_credits -
-                            openRouterCredits.credits.total_usage,
-                        )
-                      : ""}
-                  </span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-              </>
-            )}
 
             <DropdownMenuGroup>
               <DropdownMenuItem
