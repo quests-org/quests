@@ -101,7 +101,7 @@ describe("EditFile", () => {
       if (result.isErr()) {
         expect(result.error).toMatchInlineSnapshot(`
           {
-            "message": "Failed to edit file ./grep-test.txt: oldString found multiple times and requires more code context to uniquely identify the intended match",
+            "message": "Failed to edit file ./grep-test.txt: Found multiple matches for oldString. Include more surrounding code lines in oldString to uniquely identify which occurrence to replace.",
             "type": "execute-error",
           }
         `);
