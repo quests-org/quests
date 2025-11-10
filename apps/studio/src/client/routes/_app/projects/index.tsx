@@ -4,7 +4,6 @@ import type {
 } from "@quests/workspace/client";
 import type { RowSelectionState } from "@tanstack/react-table";
 
-import { Breadcrumb } from "@/client/components/breadcrumb";
 import { DeleteWithProgressDialog } from "@/client/components/delete-with-progress-dialog";
 import { ProjectDeleteDialog } from "@/client/components/project-delete-dialog";
 import { ProjectSettingsDialog } from "@/client/components/project-settings-dialog";
@@ -35,10 +34,10 @@ export const Route = createFileRoute("/_app/projects/")({
     return {
       meta: [
         {
-          title: "Projects",
+          title: "Your Projects",
         },
         {
-          content: "folder-open",
+          content: "layout-grid",
           name: META_TAG_LUCIDE_ICON,
         },
       ],
@@ -241,32 +240,52 @@ function RouteComponent() {
   );
 
   return (
-    <div className="h-full w-full flex flex-col">
-      <div className="flex flex-col gap-y-3 px-4 pt-4 pb-3 border-b">
-        <div className="flex items-center justify-between">
-          <Breadcrumb items={[{ label: "Projects" }]} />
+    <div className="flex-1 mx-auto max-w-7xl w-full">
+      <div>
+        <div className="mx-auto px-4 pt-10 lg:pt-20 lg:pb-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h1 className="text-3xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
+              Your Projects
+            </h1>
+          </div>
         </div>
-        <Tabs
-          onValueChange={(v) => {
-            void navigate({ search: { filter: v as "active" | "all" } });
-          }}
-          value={filterTab}
-        >
-          <TabsList>
-            <TabsTrigger value="all">
-              All
-              <Badge variant="secondary">{projects.length}</Badge>
-            </TabsTrigger>
-            <TabsTrigger value="active">
-              Active
-              <Badge variant="secondary">{activeProjectSubdomains.size}</Badge>
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
       </div>
 
-      <div className="flex-1 overflow-auto">
-        <div className="p-4">
+      <div className="px-4 py-12 sm:px-6 lg:px-8">
+        <div className="flex flex-col gap-y-4">
+          <div className="flex items-center justify-between">
+            <Tabs
+              onValueChange={(v) => {
+                void navigate({ search: { filter: v as "active" | "all" } });
+              }}
+              value={filterTab}
+            >
+              <TabsList>
+                <TabsTrigger value="all">
+                  All
+                  <Badge className="ml-2 px-1.5" variant="secondary">
+                    {projects.length}
+                  </Badge>
+                </TabsTrigger>
+                <TabsTrigger value="active">
+                  Active
+                  <Badge className="ml-2 px-1.5" variant="secondary">
+                    {activeProjectSubdomains.size}
+                  </Badge>
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+            <Button
+              onClick={() => {
+                void navigate({ to: "/new-tab" });
+              }}
+              size="sm"
+              variant="secondary"
+            >
+              New project
+            </Button>
+          </div>
+
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="size-6 animate-spin text-muted-foreground" />

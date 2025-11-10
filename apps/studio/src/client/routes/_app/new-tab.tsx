@@ -1,6 +1,10 @@
 import { selectedModelURIAtom } from "@/client/atoms/selected-model";
+import { SmallAppIcon } from "@/client/components/app-icon";
+import { AppStatusIcon } from "@/client/components/app-status-icon";
 import { NewTabDiscoverHeroCards } from "@/client/components/discover-hero-card";
 import { ExternalLink } from "@/client/components/external-link";
+import { InternalLink } from "@/client/components/internal-link";
+import { ModelPreview } from "@/client/components/projects-data-table/model-preview";
 import { PromptInput } from "@/client/components/prompt-input";
 import { Kbd } from "@/client/components/ui/kbd";
 import { useReload } from "@/client/hooks/use-reload";
@@ -14,12 +18,13 @@ import {
   PRODUCT_NAME,
 } from "@quests/shared";
 import { StoreId } from "@quests/workspace/client";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   createFileRoute,
   useNavigate,
   useRouter,
 } from "@tanstack/react-router";
+import { formatDistanceToNow } from "date-fns";
 import { useAtom } from "jotai";
 import { ArrowRight, FlaskConical } from "lucide-react";
 import { toast } from "sonner";
@@ -43,6 +48,15 @@ function RouteComponent() {
   const createProjectMutation = useMutation(
     rpcClient.workspace.project.create.mutationOptions(),
   );
+
+  const { data: projectsData } = useQuery(
+    rpcClient.workspace.project.live.list.experimental_liveOptions({
+      input: { direction: "desc", sortBy: "updatedAt" },
+    }),
+  );
+
+  const recentProjects = projectsData?.projects.slice(0, 4) ?? [];
+  const hasProjects = (projectsData?.projects.length ?? 0) > 0;
 
   useReload();
 
@@ -161,6 +175,67 @@ function RouteComponent() {
           </div>
         </div>
         <NewTabDiscoverHeroCards />
+
+        {hasProjects && (
+          <div className="mt-16">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-lg font-medium text-foreground">
+                Recent Projects
+              </h2>
+              {(projectsData?.projects.length ?? 0) > 4 && (
+                <InternalLink
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  openInCurrentTab
+                  to="/projects"
+                >
+                  View all
+                </InternalLink>
+              )}
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              {recentProjects.map((project) => (
+                <InternalLink
+                  key={project.subdomain}
+                  openInCurrentTab
+                  params={{ subdomain: project.subdomain }}
+                  to="/projects/$subdomain"
+                >
+                  <div className="flex items-center gap-x-3 p-3 rounded-lg hover:bg-accent/50 transition-colors group">
+                    {project.icon && (
+                      <SmallAppIcon
+                        background={project.icon.background}
+                        icon={project.icon.lucide}
+                        size="lg"
+                      />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-x-2">
+                        <h3 className="text-sm font-medium text-foreground truncate">
+                          {project.title}
+                        </h3>
+                        <AppStatusIcon
+                          className="size-4 shrink-0"
+                          subdomain={project.subdomain}
+                        />
+                      </div>
+                      <div className="flex items-center gap-x-1.5 mt-1 text-xs text-muted-foreground">
+                        <ModelPreview subdomain={project.subdomain} />
+                        <span>·</span>
+                        <span>
+                          {formatDistanceToNow(project.updatedAt, {
+                            addSuffix: true,
+                          })
+                            .replace("less than ", "")
+                            .replace("about ", "")}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </InternalLink>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       <footer className="w-full py-4 px-8">
