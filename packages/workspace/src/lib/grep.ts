@@ -66,7 +66,7 @@ export async function grep(
       args.push("--glob", options.include);
     }
 
-    args.push(pattern, options.searchPath || "./");
+    args.push("--regexp", pattern, "--", options.searchPath || "./");
 
     const ripgrep = spawn(RG_DISK_PATH, args, {
       cwd: rootDir,
