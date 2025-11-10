@@ -1,6 +1,5 @@
 import type { ProjectSubdomain } from "@quests/workspace/client";
 
-import { StopIcon } from "@/client/components/stop-icon";
 import { Button } from "@/client/components/ui/button";
 import {
   DropdownMenu,
@@ -18,8 +17,10 @@ import { rpcClient } from "@/client/rpc/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   ArrowUpRight,
+  Loader2,
   MoreVertical,
   Settings,
+  Square,
   Star,
   StarOff,
   Trash2,
@@ -60,25 +61,27 @@ export function ProjectActionsCell({
   );
 
   return (
-    <div className="flex items-center gap-x-1">
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            disabled={!isRunning}
-            onClick={(e) => {
-              e.preventDefault();
-              onStop(subdomain);
-            }}
-            size="icon"
-            variant="ghost"
-          >
-            <StopIcon className="size-4 stroke-2" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>
-          {isRunning ? "Stop" : "No running agents"}
-        </TooltipContent>
-      </Tooltip>
+    <div className="flex items-center justify-end gap-x-1">
+      {isRunning && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              onClick={(e) => {
+                e.preventDefault();
+                onStop(subdomain);
+              }}
+              size="icon"
+              variant="ghost"
+            >
+              <div className="relative flex items-center justify-center">
+                <Loader2 className="size-4 animate-spin" />
+                <Square className="size-1.5 fill-current absolute inset-0 m-auto" />
+              </div>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Stop</TooltipContent>
+        </Tooltip>
+      )}
       <Tooltip>
         <TooltipTrigger asChild>
           <Button

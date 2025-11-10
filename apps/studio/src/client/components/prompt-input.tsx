@@ -1,6 +1,5 @@
 import { AIProviderGuardDialog } from "@/client/components/ai-provider-guard-dialog";
 import { ModelPicker } from "@/client/components/model-picker";
-import { StopIcon } from "@/client/components/stop-icon";
 import { Button } from "@/client/components/ui/button";
 import {
   TextareaContainer,
@@ -10,7 +9,7 @@ import { cn, isMacOS } from "@/client/lib/utils";
 import { type AIGatewayModelURI } from "@quests/ai-gateway/client";
 import { useQuery } from "@tanstack/react-query";
 import { useAtom, useAtomValue } from "jotai";
-import { ArrowUp, Loader2 } from "lucide-react";
+import { ArrowUp, Loader2, Square } from "lucide-react";
 import {
   forwardRef,
   useCallback,
@@ -253,7 +252,10 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
               variant={isStoppable ? "ghost" : "brand"}
             >
               {isStoppable ? (
-                <StopIcon className="size-6 stroke-2 animate-spin" />
+                <div className="relative flex items-center justify-center">
+                  <Loader2 className="size-6 stroke-2 animate-spin" />
+                  <Square className="size-2 fill-current absolute inset-0 m-auto" />
+                </div>
               ) : isLoading ? (
                 <Loader2 className="size-4 animate-spin" />
               ) : (

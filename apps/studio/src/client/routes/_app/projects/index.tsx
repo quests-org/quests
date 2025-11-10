@@ -10,7 +10,6 @@ import { ProjectDeleteDialog } from "@/client/components/project-delete-dialog";
 import { ProjectSettingsDialog } from "@/client/components/project-settings-dialog";
 import { ProjectsDataTable } from "@/client/components/projects-data-table";
 import { createColumns } from "@/client/components/projects-data-table/columns";
-import { StopIcon } from "@/client/components/stop-icon";
 import { Badge } from "@/client/components/ui/badge";
 import { Button } from "@/client/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/client/components/ui/tabs";
@@ -21,7 +20,7 @@ import { rpcClient } from "@/client/rpc/client";
 import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { Loader2, Trash2 } from "lucide-react";
+import { Circle, Loader2, Square, Trash2 } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -282,7 +281,10 @@ function RouteComponent() {
                     size="sm"
                     variant="outline"
                   >
-                    <StopIcon className="size-4" />
+                    <div className="relative flex items-center justify-center">
+                      <Circle className="size-4" />
+                      <Square className="size-1.5 fill-current absolute inset-0 m-auto" />
+                    </div>
                     Stop
                   </Button>
                   <Button
