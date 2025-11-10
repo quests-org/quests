@@ -1,5 +1,6 @@
 import type { ProjectSubdomain } from "@quests/workspace/client";
 
+import { AIProviderIcon } from "@/client/components/ai-provider-icon";
 import { rpcClient } from "@/client/rpc/client";
 import { useQuery } from "@tanstack/react-query";
 
@@ -28,8 +29,14 @@ export function ModelPreview({ subdomain }: { subdomain: ProjectSubdomain }) {
     : (selectedModelURI.split("?")[0] ?? "");
 
   return (
-    <span className="text-xs bg-accent/30 px-2 py-0.5 rounded-full text-muted-foreground">
-      {displayName}
+    <span className="flex items-center gap-x-1 text-muted-foreground">
+      {matchedModel && (
+        <AIProviderIcon
+          className="size-3 shrink-0"
+          type={matchedModel.params.provider}
+        />
+      )}
+      <span>{displayName}</span>
     </span>
   );
 }

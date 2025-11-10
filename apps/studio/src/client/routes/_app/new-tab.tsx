@@ -6,6 +6,7 @@ import { ExternalLink } from "@/client/components/external-link";
 import { InternalLink } from "@/client/components/internal-link";
 import { ModelPreview } from "@/client/components/projects-data-table/model-preview";
 import { PromptInput } from "@/client/components/prompt-input";
+import { Card, CardContent } from "@/client/components/ui/card";
 import { Kbd } from "@/client/components/ui/kbd";
 import { useReload } from "@/client/hooks/use-reload";
 import { useTabs } from "@/client/hooks/use-tabs";
@@ -200,37 +201,39 @@ function RouteComponent() {
                   params={{ subdomain: project.subdomain }}
                   to="/projects/$subdomain"
                 >
-                  <div className="flex items-center gap-x-3 p-3 rounded-lg hover:bg-accent/50 transition-colors group">
-                    {project.icon && (
-                      <SmallAppIcon
-                        background={project.icon.background}
-                        icon={project.icon.lucide}
-                        size="lg"
-                      />
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-x-2">
-                        <h3 className="text-sm font-medium text-foreground truncate">
-                          {project.title}
-                        </h3>
-                        <AppStatusIcon
-                          className="size-4 shrink-0"
-                          subdomain={project.subdomain}
+                  <Card className="hover:shadow-md transition-shadow py-0">
+                    <CardContent className="flex items-center gap-x-4 py-4">
+                      {project.icon && (
+                        <SmallAppIcon
+                          background={project.icon.background}
+                          icon={project.icon.lucide}
+                          size="xl"
                         />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-x-2 mb-1.5">
+                          <h3 className="text-base font-medium text-foreground truncate">
+                            {project.title}
+                          </h3>
+                          <AppStatusIcon
+                            className="size-4 shrink-0"
+                            subdomain={project.subdomain}
+                          />
+                        </div>
+                        <div className="flex items-center gap-x-1.5 text-xs text-muted-foreground">
+                          <ModelPreview subdomain={project.subdomain} />
+                          <span>·</span>
+                          <span>
+                            {formatDistanceToNow(project.updatedAt, {
+                              addSuffix: true,
+                            })
+                              .replace("less than ", "")
+                              .replace("about ", "")}
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-x-1.5 mt-1 text-xs text-muted-foreground">
-                        <ModelPreview subdomain={project.subdomain} />
-                        <span>·</span>
-                        <span>
-                          {formatDistanceToNow(project.updatedAt, {
-                            addSuffix: true,
-                          })
-                            .replace("less than ", "")
-                            .replace("about ", "")}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
+                    </CardContent>
+                  </Card>
                 </InternalLink>
               ))}
             </div>

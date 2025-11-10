@@ -56,7 +56,7 @@ export function SmallAppIcon({
 }: {
   background?: string;
   icon?: IconName;
-  size?: "lg" | "md" | "sm";
+  size?: "lg" | "md" | "sm" | "xl";
 }) {
   const IconComponent = IconMap[icon];
 
@@ -64,9 +64,10 @@ export function SmallAppIcon({
     <div
       className={cn(
         "rounded-full relative flex items-center justify-center shrink-0 shadow-md overflow-hidden",
-        size === "md" && "size-6",
         size === "sm" && "size-5",
+        size === "md" && "size-6",
         size === "lg" && "size-7",
+        size === "xl" && "size-9",
       )}
       style={{
         background,
@@ -75,9 +76,10 @@ export function SmallAppIcon({
       <IconComponent
         className={cn(
           "text-white drop-shadow-md relative z-10",
-          size === "md" && "size-4",
           size === "sm" && "size-3",
+          size === "md" && "size-4",
           size === "lg" && "size-[1.125rem]",
+          size === "xl" && "size-5",
         )}
       />
     </div>
