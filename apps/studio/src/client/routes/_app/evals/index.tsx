@@ -232,10 +232,9 @@ function RouteComponent() {
           to: "/projects/$subdomain",
         });
       } else if (createdProjects.length > 1) {
-        const subdomains = createdProjects.map((p) => p.subdomain).join(",");
         void navigate({
-          search: { subdomains },
-          to: "/evals/run",
+          search: { filter: "active" },
+          to: "/projects",
         });
       }
     } catch (error) {

@@ -36,11 +36,9 @@ import { Route as AppDebugIndexRouteImport } from './routes/_app/debug/index'
 import { Route as AppEvalsRunRouteImport } from './routes/_app/evals/run'
 import { Route as AppDebugComponentsRouteImport } from './routes/_app/debug/components'
 import { Route as AppDebugColorsRouteImport } from './routes/_app/debug/colors'
-import { Route as AppDebugBulkDeleteRouteImport } from './routes/_app/debug/bulk-delete'
 import { Route as AppProjectsSubdomainIndexRouteImport } from './routes/_app/projects/$subdomain/index'
 import { Route as AppDiscoverTemplatesIndexRouteImport } from './routes/_app/discover/templates/index'
 import { Route as AppDiscoverAppsIndexRouteImport } from './routes/_app/discover/apps/index'
-import { Route as AppProjectsSubdomainViewRouteImport } from './routes/_app/projects/$subdomain/view'
 import { Route as AppDiscoverTemplatesFolderNameRouteImport } from './routes/_app/discover/templates/$folderName'
 import { Route as AppDiscoverAppsFolderNameRouteImport } from './routes/_app/discover/apps/$folderName'
 
@@ -177,11 +175,6 @@ const AppDebugColorsRoute = AppDebugColorsRouteImport.update({
   path: '/colors',
   getParentRoute: () => AppDebugRouteRoute,
 } as any)
-const AppDebugBulkDeleteRoute = AppDebugBulkDeleteRouteImport.update({
-  id: '/bulk-delete',
-  path: '/bulk-delete',
-  getParentRoute: () => AppDebugRouteRoute,
-} as any)
 const AppProjectsSubdomainIndexRoute =
   AppProjectsSubdomainIndexRouteImport.update({
     id: '/projects/$subdomain/',
@@ -199,12 +192,6 @@ const AppDiscoverAppsIndexRoute = AppDiscoverAppsIndexRouteImport.update({
   path: '/discover/apps/',
   getParentRoute: () => AppRouteRoute,
 } as any)
-const AppProjectsSubdomainViewRoute =
-  AppProjectsSubdomainViewRouteImport.update({
-    id: '/projects/$subdomain/view',
-    path: '/projects/$subdomain/view',
-    getParentRoute: () => AppRouteRoute,
-  } as any)
 const AppDiscoverTemplatesFolderNameRoute =
   AppDiscoverTemplatesFolderNameRouteImport.update({
     id: '/discover/templates/$folderName',
@@ -237,7 +224,6 @@ export interface FileRoutesByFullPath {
   '/settings/features': typeof SettingsFeaturesRoute
   '/settings/providers': typeof SettingsProvidersRoute
   '/settings/': typeof SettingsIndexRoute
-  '/debug/bulk-delete': typeof AppDebugBulkDeleteRoute
   '/debug/colors': typeof AppDebugColorsRoute
   '/debug/components': typeof AppDebugComponentsRoute
   '/evals/run': typeof AppEvalsRunRoute
@@ -247,7 +233,6 @@ export interface FileRoutesByFullPath {
   '/projects': typeof AppProjectsIndexRoute
   '/discover/apps/$folderName': typeof AppDiscoverAppsFolderNameRoute
   '/discover/templates/$folderName': typeof AppDiscoverTemplatesFolderNameRoute
-  '/projects/$subdomain/view': typeof AppProjectsSubdomainViewRoute
   '/discover/apps': typeof AppDiscoverAppsIndexRoute
   '/discover/templates': typeof AppDiscoverTemplatesIndexRoute
   '/projects/$subdomain': typeof AppProjectsSubdomainIndexRoute
@@ -269,7 +254,6 @@ export interface FileRoutesByTo {
   '/settings/features': typeof SettingsFeaturesRoute
   '/settings/providers': typeof SettingsProvidersRoute
   '/settings': typeof SettingsIndexRoute
-  '/debug/bulk-delete': typeof AppDebugBulkDeleteRoute
   '/debug/colors': typeof AppDebugColorsRoute
   '/debug/components': typeof AppDebugComponentsRoute
   '/evals/run': typeof AppEvalsRunRoute
@@ -279,7 +263,6 @@ export interface FileRoutesByTo {
   '/projects': typeof AppProjectsIndexRoute
   '/discover/apps/$folderName': typeof AppDiscoverAppsFolderNameRoute
   '/discover/templates/$folderName': typeof AppDiscoverTemplatesFolderNameRoute
-  '/projects/$subdomain/view': typeof AppProjectsSubdomainViewRoute
   '/discover/apps': typeof AppDiscoverAppsIndexRoute
   '/discover/templates': typeof AppDiscoverTemplatesIndexRoute
   '/projects/$subdomain': typeof AppProjectsSubdomainIndexRoute
@@ -306,7 +289,6 @@ export interface FileRoutesById {
   '/settings/features': typeof SettingsFeaturesRoute
   '/settings/providers': typeof SettingsProvidersRoute
   '/settings/': typeof SettingsIndexRoute
-  '/_app/debug/bulk-delete': typeof AppDebugBulkDeleteRoute
   '/_app/debug/colors': typeof AppDebugColorsRoute
   '/_app/debug/components': typeof AppDebugComponentsRoute
   '/_app/evals/run': typeof AppEvalsRunRoute
@@ -316,7 +298,6 @@ export interface FileRoutesById {
   '/_app/projects/': typeof AppProjectsIndexRoute
   '/_app/discover/apps/$folderName': typeof AppDiscoverAppsFolderNameRoute
   '/_app/discover/templates/$folderName': typeof AppDiscoverTemplatesFolderNameRoute
-  '/_app/projects/$subdomain/view': typeof AppProjectsSubdomainViewRoute
   '/_app/discover/apps/': typeof AppDiscoverAppsIndexRoute
   '/_app/discover/templates/': typeof AppDiscoverTemplatesIndexRoute
   '/_app/projects/$subdomain/': typeof AppProjectsSubdomainIndexRoute
@@ -342,7 +323,6 @@ export interface FileRouteTypes {
     | '/settings/features'
     | '/settings/providers'
     | '/settings/'
-    | '/debug/bulk-delete'
     | '/debug/colors'
     | '/debug/components'
     | '/evals/run'
@@ -352,7 +332,6 @@ export interface FileRouteTypes {
     | '/projects'
     | '/discover/apps/$folderName'
     | '/discover/templates/$folderName'
-    | '/projects/$subdomain/view'
     | '/discover/apps'
     | '/discover/templates'
     | '/projects/$subdomain'
@@ -374,7 +353,6 @@ export interface FileRouteTypes {
     | '/settings/features'
     | '/settings/providers'
     | '/settings'
-    | '/debug/bulk-delete'
     | '/debug/colors'
     | '/debug/components'
     | '/evals/run'
@@ -384,7 +362,6 @@ export interface FileRouteTypes {
     | '/projects'
     | '/discover/apps/$folderName'
     | '/discover/templates/$folderName'
-    | '/projects/$subdomain/view'
     | '/discover/apps'
     | '/discover/templates'
     | '/projects/$subdomain'
@@ -410,7 +387,6 @@ export interface FileRouteTypes {
     | '/settings/features'
     | '/settings/providers'
     | '/settings/'
-    | '/_app/debug/bulk-delete'
     | '/_app/debug/colors'
     | '/_app/debug/components'
     | '/_app/evals/run'
@@ -420,7 +396,6 @@ export interface FileRouteTypes {
     | '/_app/projects/'
     | '/_app/discover/apps/$folderName'
     | '/_app/discover/templates/$folderName'
-    | '/_app/projects/$subdomain/view'
     | '/_app/discover/apps/'
     | '/_app/discover/templates/'
     | '/_app/projects/$subdomain/'
@@ -627,13 +602,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDebugColorsRouteImport
       parentRoute: typeof AppDebugRouteRoute
     }
-    '/_app/debug/bulk-delete': {
-      id: '/_app/debug/bulk-delete'
-      path: '/bulk-delete'
-      fullPath: '/debug/bulk-delete'
-      preLoaderRoute: typeof AppDebugBulkDeleteRouteImport
-      parentRoute: typeof AppDebugRouteRoute
-    }
     '/_app/projects/$subdomain/': {
       id: '/_app/projects/$subdomain/'
       path: '/projects/$subdomain'
@@ -655,13 +623,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDiscoverAppsIndexRouteImport
       parentRoute: typeof AppRouteRoute
     }
-    '/_app/projects/$subdomain/view': {
-      id: '/_app/projects/$subdomain/view'
-      path: '/projects/$subdomain/view'
-      fullPath: '/projects/$subdomain/view'
-      preLoaderRoute: typeof AppProjectsSubdomainViewRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
     '/_app/discover/templates/$folderName': {
       id: '/_app/discover/templates/$folderName'
       path: '/discover/templates/$folderName'
@@ -680,14 +641,12 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppDebugRouteRouteChildren {
-  AppDebugBulkDeleteRoute: typeof AppDebugBulkDeleteRoute
   AppDebugColorsRoute: typeof AppDebugColorsRoute
   AppDebugComponentsRoute: typeof AppDebugComponentsRoute
   AppDebugIndexRoute: typeof AppDebugIndexRoute
 }
 
 const AppDebugRouteRouteChildren: AppDebugRouteRouteChildren = {
-  AppDebugBulkDeleteRoute: AppDebugBulkDeleteRoute,
   AppDebugColorsRoute: AppDebugColorsRoute,
   AppDebugComponentsRoute: AppDebugComponentsRoute,
   AppDebugIndexRoute: AppDebugIndexRoute,
@@ -709,7 +668,6 @@ interface AppRouteRouteChildren {
   AppProjectsIndexRoute: typeof AppProjectsIndexRoute
   AppDiscoverAppsFolderNameRoute: typeof AppDiscoverAppsFolderNameRoute
   AppDiscoverTemplatesFolderNameRoute: typeof AppDiscoverTemplatesFolderNameRoute
-  AppProjectsSubdomainViewRoute: typeof AppProjectsSubdomainViewRoute
   AppDiscoverAppsIndexRoute: typeof AppDiscoverAppsIndexRoute
   AppDiscoverTemplatesIndexRoute: typeof AppDiscoverTemplatesIndexRoute
   AppProjectsSubdomainIndexRoute: typeof AppProjectsSubdomainIndexRoute
@@ -727,7 +685,6 @@ const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppProjectsIndexRoute: AppProjectsIndexRoute,
   AppDiscoverAppsFolderNameRoute: AppDiscoverAppsFolderNameRoute,
   AppDiscoverTemplatesFolderNameRoute: AppDiscoverTemplatesFolderNameRoute,
-  AppProjectsSubdomainViewRoute: AppProjectsSubdomainViewRoute,
   AppDiscoverAppsIndexRoute: AppDiscoverAppsIndexRoute,
   AppDiscoverTemplatesIndexRoute: AppDiscoverTemplatesIndexRoute,
   AppProjectsSubdomainIndexRoute: AppProjectsSubdomainIndexRoute,

@@ -7,6 +7,7 @@ import type { RowSelectionState } from "@tanstack/react-table";
 import { Breadcrumb } from "@/client/components/breadcrumb";
 import { DeleteWithProgressDialog } from "@/client/components/delete-with-progress-dialog";
 import { ProjectDeleteDialog } from "@/client/components/project-delete-dialog";
+import { ProjectSettingsDialog } from "@/client/components/project-settings-dialog";
 import { ProjectsDataTable } from "@/client/components/projects-data-table";
 import { createColumns } from "@/client/components/projects-data-table/columns";
 import { StopIcon } from "@/client/components/stop-icon";
@@ -55,8 +56,12 @@ function RouteComponent() {
   const [deleteSelectedDialogOpen, setDeleteSelectedDialogOpen] =
     useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] =
     useState<null | WorkspaceAppProject>(null);
+  const [projectToEdit, setProjectToEdit] = useState<null | ProjectSubdomain>(
+    null,
+  );
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const filterTab = search.filter;
   const trashTerminology = getTrashTerminology();
@@ -220,14 +225,20 @@ function RouteComponent() {
     [addTab, router],
   );
 
+  const handleSettings = useCallback((subdomain: ProjectSubdomain) => {
+    setProjectToEdit(subdomain);
+    setSettingsDialogOpen(true);
+  }, []);
+
   const columns = useMemo(
     () =>
       createColumns({
         onDelete: handleDelete,
         onOpenInNewTab: handleOpenInNewTab,
+        onSettings: handleSettings,
         onStop: handleStop,
       }),
-    [handleDelete, handleOpenInNewTab, handleStop],
+    [handleDelete, handleOpenInNewTab, handleSettings, handleStop],
   );
 
   return (
@@ -313,6 +324,20 @@ function RouteComponent() {
           }}
           open={deleteDialogOpen}
           project={projectToDelete}
+        />
+      )}
+
+      {projectToEdit && (
+        <ProjectSettingsDialog
+          dialogTitle="Project Settings"
+          onOpenChange={(open) => {
+            setSettingsDialogOpen(open);
+            if (!open) {
+              setProjectToEdit(null);
+            }
+          }}
+          open={settingsDialogOpen}
+          subdomain={projectToEdit}
         />
       )}
     </div>
