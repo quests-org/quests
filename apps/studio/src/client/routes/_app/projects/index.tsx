@@ -166,7 +166,6 @@ function RouteComponent() {
         `Stopped ${successCount} ${successCount === 1 ? "session" : "sessions"}`,
       );
     }
-    setRowSelection({});
   };
 
   const handleDelete = useCallback(
