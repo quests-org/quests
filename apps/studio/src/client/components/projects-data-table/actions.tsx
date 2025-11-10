@@ -19,6 +19,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   ArrowUpRight,
   MoreVertical,
+  Settings,
   Star,
   StarOff,
   Trash2,
@@ -27,11 +28,13 @@ import {
 export function ProjectActionsCell({
   onDelete,
   onOpenInNewTab,
+  onSettings,
   onStop,
   subdomain,
 }: {
   onDelete: (subdomain: ProjectSubdomain) => void;
   onOpenInNewTab: (subdomain: ProjectSubdomain) => void;
+  onSettings: (subdomain: ProjectSubdomain) => void;
   onStop: (subdomain: ProjectSubdomain) => void;
   subdomain: ProjectSubdomain;
 }) {
@@ -107,6 +110,15 @@ export function ProjectActionsCell({
           >
             <ArrowUpRight className="text-muted-foreground" />
             <span>Open in new tab</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={(e) => {
+              e.preventDefault();
+              onSettings(subdomain);
+            }}
+          >
+            <Settings className="text-muted-foreground" />
+            <span>Settings</span>
           </DropdownMenuItem>
           {isFavorite ? (
             <DropdownMenuItem

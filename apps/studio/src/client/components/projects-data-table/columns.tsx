@@ -19,10 +19,12 @@ import { SessionStatusPreview } from "./session-status-preview";
 export function createColumns({
   onDelete,
   onOpenInNewTab,
+  onSettings,
   onStop,
 }: {
   onDelete: (subdomain: ProjectSubdomain) => void;
   onOpenInNewTab: (subdomain: ProjectSubdomain) => void;
+  onSettings: (subdomain: ProjectSubdomain) => void;
   onStop: (subdomain: ProjectSubdomain) => void;
 }): ColumnDef<WorkspaceAppProject>[] {
   return [
@@ -98,23 +100,23 @@ export function createColumns({
       minSize: 200,
     },
     {
-      accessorKey: "status",
-      cell: ({ row }) => {
-        const project = row.original;
-        return <SessionStatusPreview subdomain={project.subdomain} />;
-      },
-      header: "Chat",
-      maxSize: 150,
-      minSize: 100,
-    },
-    {
       accessorKey: "model",
       cell: ({ row }) => {
         const project = row.original;
         return <ModelPreview subdomain={project.subdomain} />;
       },
-      header: "Last model",
+      header: "Model",
       minSize: 150,
+    },
+    {
+      accessorKey: "status",
+      cell: ({ row }) => {
+        const project = row.original;
+        return <SessionStatusPreview subdomain={project.subdomain} />;
+      },
+      header: "Chat preview",
+      maxSize: 150,
+      minSize: 100,
     },
     {
       accessorKey: "updatedAt",
@@ -179,6 +181,7 @@ export function createColumns({
           <ProjectActionsCell
             onDelete={onDelete}
             onOpenInNewTab={onOpenInNewTab}
+            onSettings={onSettings}
             onStop={onStop}
             subdomain={project.subdomain}
           />
