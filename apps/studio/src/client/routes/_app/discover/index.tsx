@@ -12,7 +12,7 @@ export const Route = createFileRoute("/_app/discover/")({
         title: "Discover",
       },
       {
-        content: "layout-grid",
+        content: "telescope",
         name: META_TAG_LUCIDE_ICON,
       },
     ],

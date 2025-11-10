@@ -84,6 +84,7 @@ export const SELECTABLE_APP_ICONS = [
   "user-round",
   "user-round-plus",
   "user-search",
+  "telescope",
   "users",
   "view",
   "wallet",
