@@ -21,7 +21,7 @@ export async function getAppDirTimestamps(appDir: AppDir) {
       if (await pathExists(path)) {
         const stats = await fs.stat(path);
         return {
-          createdAt: stats.ctime,
+          createdAt: stats.birthtime,
           updatedAt: stats.mtime,
         };
       }

@@ -1,0 +1,320 @@
+import type {
+  ProjectSubdomain,
+  WorkspaceAppProject,
+} from "@quests/workspace/client";
+import type { RowSelectionState } from "@tanstack/react-table";
+
+import { Breadcrumb } from "@/client/components/breadcrumb";
+import { DeleteWithProgressDialog } from "@/client/components/delete-with-progress-dialog";
+import { ProjectDeleteDialog } from "@/client/components/project-delete-dialog";
+import { ProjectsDataTable } from "@/client/components/projects-data-table";
+import { createColumns } from "@/client/components/projects-data-table/columns";
+import { StopIcon } from "@/client/components/stop-icon";
+import { Badge } from "@/client/components/ui/badge";
+import { Button } from "@/client/components/ui/button";
+import { Tabs, TabsList, TabsTrigger } from "@/client/components/ui/tabs";
+import { useTabs } from "@/client/hooks/use-tabs";
+import { useTrashApp } from "@/client/hooks/use-trash-app";
+import { getTrashTerminology } from "@/client/lib/trash-terminology";
+import { rpcClient } from "@/client/rpc/client";
+import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { Loader2, Trash2 } from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
+import { toast } from "sonner";
+import { z } from "zod";
+
+const projectsSearchSchema = z.object({
+  filter: z.enum(["active", "all"]).optional().default("all"),
+});
+
+export const Route = createFileRoute("/_app/projects/")({
+  component: RouteComponent,
+  head: () => {
+    return {
+      meta: [
+        {
+          title: "Projects",
+        },
+        {
+          content: "folder-open",
+          name: META_TAG_LUCIDE_ICON,
+        },
+      ],
+    };
+  },
+  validateSearch: projectsSearchSchema,
+});
+
+function RouteComponent() {
+  const router = useRouter();
+  const { addTab } = useTabs();
+  const search = Route.useSearch();
+  const navigate = Route.useNavigate();
+  const [deleteSelectedDialogOpen, setDeleteSelectedDialogOpen] =
+    useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [projectToDelete, setProjectToDelete] =
+    useState<null | WorkspaceAppProject>(null);
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+  const filterTab = search.filter;
+  const trashTerminology = getTrashTerminology();
+
+  const { data: projectsData, isLoading } = useQuery(
+    rpcClient.workspace.project.live.list.experimental_liveOptions({
+      input: { direction: "desc", sortBy: "updatedAt" },
+    }),
+  );
+
+  const projects = useMemo(
+    () => projectsData?.projects ?? [],
+    [projectsData?.projects],
+  );
+
+  const projectSubdomains = useMemo(
+    () => projects.map((p) => p.subdomain),
+    [projects],
+  );
+
+  const { data: appStates } = useQuery(
+    rpcClient.workspace.app.state.bySubdomains.queryOptions({
+      input: { subdomains: projectSubdomains },
+    }),
+  );
+
+  const activeProjectSubdomains = useMemo(() => {
+    if (!appStates) {
+      return new Set();
+    }
+    return new Set(
+      appStates
+        .filter((state) => state.sessionActors.length > 0)
+        .map((state) => state.app.subdomain as ProjectSubdomain),
+    );
+  }, [appStates]);
+
+  const filteredProjects = useMemo(() => {
+    if (filterTab === "all") {
+      return projects;
+    }
+    return projects.filter((p) => activeProjectSubdomains.has(p.subdomain));
+  }, [filterTab, projects, activeProjectSubdomains]);
+
+  const selectedProjects = useMemo(() => {
+    return Object.keys(rowSelection)
+      .filter((key) => rowSelection[key])
+      .map((key) => {
+        const index = Number.parseInt(key);
+        return filteredProjects[index];
+      })
+      .filter((p): p is WorkspaceAppProject => p !== undefined);
+  }, [rowSelection, filteredProjects]);
+
+  const hasRunningAgents = useMemo(() => {
+    if (!appStates || selectedProjects.length === 0) {
+      return false;
+    }
+    const selectedSubdomains = new Set(
+      selectedProjects.map((p) => p.subdomain),
+    );
+    return appStates.some(
+      (state) =>
+        selectedSubdomains.has(state.app.subdomain as ProjectSubdomain) &&
+        state.sessionActors.some((actor) => actor.tags.includes("agent.alive")),
+    );
+  }, [appStates, selectedProjects]);
+
+  const stopSessionMutation = useMutation(
+    rpcClient.workspace.session.stop.mutationOptions(),
+  );
+
+  const { trashApp } = useTrashApp({ navigateOnDelete: false });
+
+  const handleStop = useCallback(
+    (subdomain: ProjectSubdomain) => {
+      stopSessionMutation.mutate(
+        { subdomain },
+        {
+          onError: () => {
+            toast.error("Failed to stop session");
+          },
+        },
+      );
+    },
+    [stopSessionMutation],
+  );
+
+  const handleStopSelected = async () => {
+    const subdomainsToStop = selectedProjects.map((p) => p.subdomain);
+
+    let successCount = 0;
+    for (const subdomain of subdomainsToStop) {
+      try {
+        await stopSessionMutation.mutateAsync({ subdomain });
+        successCount++;
+      } catch {
+        toast.error(`Failed to stop session for ${subdomain}`);
+      }
+    }
+
+    if (successCount > 0) {
+      toast.success(
+        `Stopped ${successCount} ${successCount === 1 ? "session" : "sessions"}`,
+      );
+    }
+    setRowSelection({});
+  };
+
+  const handleDelete = useCallback(
+    (subdomain: ProjectSubdomain) => {
+      const project = projects.find((p) => p.subdomain === subdomain);
+      if (project) {
+        setProjectToDelete(project);
+        setDeleteDialogOpen(true);
+      }
+    },
+    [projects],
+  );
+
+  const handleDeleteSelected = () => {
+    setDeleteSelectedDialogOpen(true);
+  };
+
+  const confirmDeleteSelected = async (
+    projectsToDelete: WorkspaceAppProject[],
+  ) => {
+    let successCount = 0;
+    let hasError = false;
+
+    for (const project of projectsToDelete) {
+      try {
+        await trashApp(project.subdomain);
+        successCount++;
+      } catch {
+        toast.error(`Failed to delete project ${project.title}`);
+        hasError = true;
+      }
+    }
+
+    if (successCount > 0) {
+      toast.success(
+        `Moved ${successCount} ${successCount === 1 ? "project" : "projects"} to ${trashTerminology}`,
+      );
+    }
+    setRowSelection({});
+
+    if (hasError) {
+      throw new Error("Some projects failed to delete");
+    }
+  };
+
+  const handleOpenInNewTab = useCallback(
+    (subdomain: ProjectSubdomain) => {
+      const location = router.buildLocation({
+        params: { subdomain },
+        to: "/projects/$subdomain",
+      });
+      void addTab({ select: true, urlPath: location.href });
+    },
+    [addTab, router],
+  );
+
+  const columns = useMemo(
+    () =>
+      createColumns({
+        onDelete: handleDelete,
+        onOpenInNewTab: handleOpenInNewTab,
+        onStop: handleStop,
+      }),
+    [handleDelete, handleOpenInNewTab, handleStop],
+  );
+
+  return (
+    <div className="h-full w-full flex flex-col">
+      <div className="flex flex-col gap-y-3 px-4 pt-4 pb-3 border-b">
+        <div className="flex items-center justify-between">
+          <Breadcrumb items={[{ label: "Projects" }]} />
+        </div>
+        <Tabs
+          onValueChange={(v) => {
+            void navigate({ search: { filter: v as "active" | "all" } });
+          }}
+          value={filterTab}
+        >
+          <TabsList>
+            <TabsTrigger value="all">
+              All
+              <Badge variant="secondary">{projects.length}</Badge>
+            </TabsTrigger>
+            <TabsTrigger value="active">
+              Active
+              <Badge variant="secondary">{activeProjectSubdomains.size}</Badge>
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
+
+      <div className="flex-1 overflow-auto">
+        <div className="p-4">
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="size-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : (
+            <ProjectsDataTable
+              bulkActions={
+                <>
+                  <Button
+                    disabled={!hasRunningAgents}
+                    onClick={handleStopSelected}
+                    size="sm"
+                    variant="outline"
+                  >
+                    <StopIcon className="size-4" />
+                    Stop
+                  </Button>
+                  <Button
+                    disabled={selectedProjects.length === 0}
+                    onClick={handleDeleteSelected}
+                    size="sm"
+                    variant="outline"
+                  >
+                    <Trash2 className="size-4" />
+                    Delete
+                  </Button>
+                </>
+              }
+              columns={columns}
+              data={filteredProjects}
+              onRowSelectionChange={setRowSelection}
+              rowSelection={rowSelection}
+            />
+          )}
+        </div>
+      </div>
+
+      <DeleteWithProgressDialog
+        description={`${selectedProjects.length === 1 ? "This project" : "These projects"} will be moved to your system ${trashTerminology}.`}
+        items={selectedProjects}
+        onDelete={confirmDeleteSelected}
+        onOpenChange={setDeleteSelectedDialogOpen}
+        open={deleteSelectedDialogOpen}
+        title={`Move ${selectedProjects.length} ${selectedProjects.length === 1 ? "project" : "projects"} to ${trashTerminology}?`}
+      />
+
+      {projectToDelete && (
+        <ProjectDeleteDialog
+          onOpenChange={(open) => {
+            setDeleteDialogOpen(open);
+            if (!open) {
+              setProjectToDelete(null);
+            }
+          }}
+          open={deleteDialogOpen}
+          project={projectToDelete}
+        />
+      )}
+    </div>
+  );
+}

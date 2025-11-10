@@ -79,6 +79,7 @@
     "@tanstack/react-query-devtools": "^5.85.5",
     "@tanstack/react-router": "^1.131.28",
     "@tanstack/react-router-devtools": "^1.131.28",
+    "@tanstack/react-table": "^8.21.3",
     "@types/ws": "^8.18.1",
     "@vscode/ripgrep": "^1.15.13",
     "@zkochan/cmd-shim": "^7.0.0",

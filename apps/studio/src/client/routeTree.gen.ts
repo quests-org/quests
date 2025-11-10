@@ -29,6 +29,7 @@ import { Route as AppSetupRouteImport } from './routes/_app/setup'
 import { Route as AppReleaseNotesRouteImport } from './routes/_app/release-notes'
 import { Route as AppNewTabRouteImport } from './routes/_app/new-tab'
 import { Route as AppDebugRouteRouteImport } from './routes/_app/debug/route'
+import { Route as AppProjectsIndexRouteImport } from './routes/_app/projects/index'
 import { Route as AppEvalsIndexRouteImport } from './routes/_app/evals/index'
 import { Route as AppDiscoverIndexRouteImport } from './routes/_app/discover/index'
 import { Route as AppDebugIndexRouteImport } from './routes/_app/debug/index'
@@ -141,6 +142,11 @@ const AppDebugRouteRoute = AppDebugRouteRouteImport.update({
   path: '/debug',
   getParentRoute: () => AppRouteRoute,
 } as any)
+const AppProjectsIndexRoute = AppProjectsIndexRouteImport.update({
+  id: '/projects/',
+  path: '/projects/',
+  getParentRoute: () => AppRouteRoute,
+} as any)
 const AppEvalsIndexRoute = AppEvalsIndexRouteImport.update({
   id: '/evals/',
   path: '/evals/',
@@ -238,6 +244,7 @@ export interface FileRoutesByFullPath {
   '/debug/': typeof AppDebugIndexRoute
   '/discover': typeof AppDiscoverIndexRoute
   '/evals': typeof AppEvalsIndexRoute
+  '/projects': typeof AppProjectsIndexRoute
   '/discover/apps/$folderName': typeof AppDiscoverAppsFolderNameRoute
   '/discover/templates/$folderName': typeof AppDiscoverTemplatesFolderNameRoute
   '/projects/$subdomain/view': typeof AppProjectsSubdomainViewRoute
@@ -269,6 +276,7 @@ export interface FileRoutesByTo {
   '/debug': typeof AppDebugIndexRoute
   '/discover': typeof AppDiscoverIndexRoute
   '/evals': typeof AppEvalsIndexRoute
+  '/projects': typeof AppProjectsIndexRoute
   '/discover/apps/$folderName': typeof AppDiscoverAppsFolderNameRoute
   '/discover/templates/$folderName': typeof AppDiscoverTemplatesFolderNameRoute
   '/projects/$subdomain/view': typeof AppProjectsSubdomainViewRoute
@@ -305,6 +313,7 @@ export interface FileRoutesById {
   '/_app/debug/': typeof AppDebugIndexRoute
   '/_app/discover/': typeof AppDiscoverIndexRoute
   '/_app/evals/': typeof AppEvalsIndexRoute
+  '/_app/projects/': typeof AppProjectsIndexRoute
   '/_app/discover/apps/$folderName': typeof AppDiscoverAppsFolderNameRoute
   '/_app/discover/templates/$folderName': typeof AppDiscoverTemplatesFolderNameRoute
   '/_app/projects/$subdomain/view': typeof AppProjectsSubdomainViewRoute
@@ -340,6 +349,7 @@ export interface FileRouteTypes {
     | '/debug/'
     | '/discover'
     | '/evals'
+    | '/projects'
     | '/discover/apps/$folderName'
     | '/discover/templates/$folderName'
     | '/projects/$subdomain/view'
@@ -371,6 +381,7 @@ export interface FileRouteTypes {
     | '/debug'
     | '/discover'
     | '/evals'
+    | '/projects'
     | '/discover/apps/$folderName'
     | '/discover/templates/$folderName'
     | '/projects/$subdomain/view'
@@ -406,6 +417,7 @@ export interface FileRouteTypes {
     | '/_app/debug/'
     | '/_app/discover/'
     | '/_app/evals/'
+    | '/_app/projects/'
     | '/_app/discover/apps/$folderName'
     | '/_app/discover/templates/$folderName'
     | '/_app/projects/$subdomain/view'
@@ -566,6 +578,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDebugRouteRouteImport
       parentRoute: typeof AppRouteRoute
     }
+    '/_app/projects/': {
+      id: '/_app/projects/'
+      path: '/projects'
+      fullPath: '/projects'
+      preLoaderRoute: typeof AppProjectsIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
     '/_app/evals/': {
       id: '/_app/evals/'
       path: '/evals'
@@ -687,6 +706,7 @@ interface AppRouteRouteChildren {
   AppEvalsRunRoute: typeof AppEvalsRunRoute
   AppDiscoverIndexRoute: typeof AppDiscoverIndexRoute
   AppEvalsIndexRoute: typeof AppEvalsIndexRoute
+  AppProjectsIndexRoute: typeof AppProjectsIndexRoute
   AppDiscoverAppsFolderNameRoute: typeof AppDiscoverAppsFolderNameRoute
   AppDiscoverTemplatesFolderNameRoute: typeof AppDiscoverTemplatesFolderNameRoute
   AppProjectsSubdomainViewRoute: typeof AppProjectsSubdomainViewRoute
@@ -704,6 +724,7 @@ const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppEvalsRunRoute: AppEvalsRunRoute,
   AppDiscoverIndexRoute: AppDiscoverIndexRoute,
   AppEvalsIndexRoute: AppEvalsIndexRoute,
+  AppProjectsIndexRoute: AppProjectsIndexRoute,
   AppDiscoverAppsFolderNameRoute: AppDiscoverAppsFolderNameRoute,
   AppDiscoverTemplatesFolderNameRoute: AppDiscoverTemplatesFolderNameRoute,
   AppProjectsSubdomainViewRoute: AppProjectsSubdomainViewRoute,

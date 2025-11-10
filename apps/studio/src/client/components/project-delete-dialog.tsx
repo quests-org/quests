@@ -1,74 +1,25 @@
 import { SmallAppIcon } from "@/client/components/app-icon";
-import { Button } from "@/client/components/ui/button";
+import { DeleteWithProgressDialog } from "@/client/components/delete-with-progress-dialog";
 import { useTrashApp } from "@/client/hooks/use-trash-app";
-import { isWindows } from "@/client/lib/utils";
+import { getTrashTerminology } from "@/client/lib/trash-terminology";
 import { type WorkspaceAppProject } from "@quests/workspace/client";
 import { useQuery } from "@tanstack/react-query";
-import { GitCommitVertical, MessageSquare, Timer } from "lucide-react";
-import { useEffect, useState } from "react";
+import { GitCommitVertical, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 
 import { rpcClient } from "../rpc/client";
-import { Alert, AlertDescription } from "./ui/alert";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "./ui/alert-dialog";
-
-interface ProjectDeleteDialogBodyProps {
-  onDelete: () => void;
-  project: WorkspaceAppProject;
-}
-
-interface ProjectDeleteDialogProps {
-  onOpenChange: (open: boolean) => void;
-  open: boolean;
-  project: WorkspaceAppProject;
-}
 
 export function ProjectDeleteDialog({
   onOpenChange,
   open,
   project,
-}: ProjectDeleteDialogProps) {
-  const handleDelete = () => {
-    onOpenChange(false);
-  };
-
-  return (
-    <AlertDialog onOpenChange={onOpenChange} open={open}>
-      <AlertDialogContent>
-        {open && (
-          // Avoids stale data in the dialog by only rendering when the dialog is open
-          <ProjectDeleteDialogBody onDelete={handleDelete} project={project} />
-        )}
-      </AlertDialogContent>
-    </AlertDialog>
-  );
-}
-
-const PROGRESS_MESSAGES = [
-  "Still trashing...",
-  "Who knew deleting node_modules was so slow...",
-  "Maybe time to upgrade your from your tape drive...",
-  "Have you considered defragmenting your hard drive?",
-  "At this point it might be faster to use a microwave...",
-];
-
-function ProjectDeleteDialogBody({
-  onDelete,
-  project,
-}: ProjectDeleteDialogBodyProps) {
-  const { isPending, trashApp } = useTrashApp({ navigateOnDelete: true });
-  const trashTerminology = isWindows() ? "Recycle Bin" : "Trash";
-  const [showWarning, setShowWarning] = useState(false);
-  const [messageIndex, setMessageIndex] = useState(0);
+}: {
+  onOpenChange: (open: boolean) => void;
+  open: boolean;
+  project: WorkspaceAppProject;
+}) {
+  const { trashApp } = useTrashApp({ navigateOnDelete: true });
+  const trashTerminology = getTrashTerminology();
 
   const { data: commitsData } = useQuery(
     rpcClient.workspace.project.git.commits.list.queryOptions({
@@ -82,48 +33,21 @@ function ProjectDeleteDialogBody({
     }),
   );
 
-  useEffect(() => {
-    if (isPending) {
-      const initialTimer = setTimeout(() => {
-        setShowWarning(true);
-      }, 3000);
-
-      const cycleTimer = setInterval(() => {
-        setMessageIndex((prev) => (prev + 1) % PROGRESS_MESSAGES.length);
-      }, 7000);
-
-      return () => {
-        clearTimeout(initialTimer);
-        clearInterval(cycleTimer);
-      };
-    }
-    setShowWarning(false);
-    setMessageIndex(0);
-    return;
-  }, [isPending]);
-
   const handleDelete = async () => {
     try {
       await trashApp(project.subdomain);
-      onDelete();
     } catch {
       toast.error("Failed to delete project", {
         description:
           "Please close any external applications that might be using this folder (editors, terminals, servers, etc.) and try again.",
       });
+      throw new Error("Failed to delete project");
     }
   };
 
   return (
-    <>
-      <AlertDialogHeader>
-        <AlertDialogTitle>
-          Delete &ldquo;{project.title}&rdquo; project?
-        </AlertDialogTitle>
-        <AlertDialogDescription>
-          This project will be moved to your system {trashTerminology}. You can
-          restore it from there if needed.
-        </AlertDialogDescription>
+    <DeleteWithProgressDialog
+      content={
         <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg border">
           <SmallAppIcon
             background={project.icon?.background}
@@ -156,39 +80,13 @@ function ProjectDeleteDialogBody({
             </div>
           </div>
         </div>
-      </AlertDialogHeader>
-      <AlertDialogFooter>
-        <div className="flex flex-col gap-3 w-full">
-          {showWarning && (
-            <Alert variant="default">
-              <Timer />
-              <AlertDescription>
-                {PROGRESS_MESSAGES[messageIndex]}
-              </AlertDescription>
-            </Alert>
-          )}
-          <div className="flex justify-end gap-2">
-            <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              asChild
-              className="text-white"
-              disabled={isPending}
-            >
-              <Button
-                onClick={async (e) => {
-                  e.preventDefault();
-                  await handleDelete();
-                }}
-                variant="destructive"
-              >
-                {isPending
-                  ? `Moving to ${trashTerminology}...`
-                  : `Move to ${trashTerminology}`}
-              </Button>
-            </AlertDialogAction>
-          </div>
-        </div>
-      </AlertDialogFooter>
-    </>
+      }
+      description={`This project will be moved to your system ${trashTerminology}. You can restore it from there if needed.`}
+      items={[project]}
+      onDelete={handleDelete}
+      onOpenChange={onOpenChange}
+      open={open}
+      title={`Delete "${project.title}" project?`}
+    />
   );
 }
