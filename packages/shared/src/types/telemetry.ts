@@ -17,12 +17,6 @@ export interface AnalyticsEvents {
     eval_names: string[];
     model_ids: string[];
   };
-  "eval.deleted_all": {
-    project_count: number;
-  };
-  "eval.stopped_all": {
-    project_count: number;
-  };
   "favorite.added": never;
   "favorite.removed": never;
   "framework.not_supported": {
@@ -44,6 +38,12 @@ export interface AnalyticsEvents {
   "llm.tool_called": WithModelProperties<{ tool_name: string }>;
   "llm.tool_executed": { success: boolean; tool_name: string };
   "message.created": WithModelProperties<{ length: number }>;
+  "project.bulk_deleted": {
+    project_count: number;
+  };
+  "project.bulk_stopped": {
+    project_count: number;
+  };
   "project.created": WithModelProperties<{
     eval_name?: string;
     template_name: string;

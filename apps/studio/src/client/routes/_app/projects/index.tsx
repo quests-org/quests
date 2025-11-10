@@ -14,6 +14,7 @@ import { Button } from "@/client/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/client/components/ui/tabs";
 import { useTabs } from "@/client/hooks/use-tabs";
 import { useTrashApp } from "@/client/hooks/use-trash-app";
+import { captureClientEvent } from "@/client/lib/capture-client-event";
 import { getTrashTerminology } from "@/client/lib/trash-terminology";
 import { rpcClient } from "@/client/rpc/client";
 import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
@@ -165,6 +166,9 @@ function RouteComponent() {
       toast.success(
         `Stopped ${successCount} ${successCount === 1 ? "session" : "sessions"}`,
       );
+      captureClientEvent("project.bulk_stopped", {
+        project_count: successCount,
+      });
     }
   };
 
@@ -203,6 +207,9 @@ function RouteComponent() {
       toast.success(
         `Moved ${successCount} ${successCount === 1 ? "project" : "projects"} to ${trashTerminology}`,
       );
+      captureClientEvent("project.bulk_deleted", {
+        project_count: successCount,
+      });
     }
     setRowSelection({});
 
