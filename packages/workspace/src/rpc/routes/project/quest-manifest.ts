@@ -1,3 +1,4 @@
+import { call, eventIterator } from "@orpc/server";
 import { AppIconsSchema } from "@quests/shared/icons";
 import { z } from "zod";
 
@@ -14,10 +15,12 @@ const update = base
   .input(
     z.object({
       description: z.string().optional(),
-      icon: z.object({
-        background: z.string(),
-        lucide: AppIconsSchema,
-      }),
+      icon: z
+        .object({
+          background: z.string(),
+          lucide: AppIconsSchema,
+        })
+        .optional(),
       name: z.string(),
       subdomain: ProjectSubdomainSchema,
     }),
@@ -49,7 +52,25 @@ const bySubdomain = base
     return result ?? null;
   });
 
+const live = {
+  bySubdomain: base
+    .input(z.object({ subdomain: ProjectSubdomainSchema }))
+    .output(eventIterator(QuestManifestSchema.nullable()))
+    .handler(async function* ({ context, input, signal }) {
+      yield call(bySubdomain, input, { context, signal });
+
+      const projectUpdates = publisher.subscribe("project.updated", { signal });
+
+      for await (const payload of projectUpdates) {
+        if (payload.subdomain === input.subdomain) {
+          yield call(bySubdomain, input, { context, signal });
+        }
+      }
+    }),
+};
+
 export const projectQuestConfig = {
   bySubdomain,
+  live,
   update,
 };

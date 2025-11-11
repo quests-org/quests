@@ -13,6 +13,7 @@ const WorkspaceAppBaseSchema = z.object({
   description: QuestManifestSchema.shape.description.optional(),
   folderName: z.string(),
   icon: QuestManifestSchema.shape.icon.optional(),
+  isRunnable: z.boolean(),
   title: z.string(),
   updatedAt: z.date(),
   urls: z.object({

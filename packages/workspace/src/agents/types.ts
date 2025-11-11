@@ -9,7 +9,7 @@ import { type AppConfig } from "../lib/app-config/types";
 import { type SessionMessage } from "../schemas/session/message";
 import { type StoreId } from "../schemas/store-id";
 
-export const AgentNameSchema = z.enum(["code"]);
+export const AgentNameSchema = z.enum(["chat", "code"]);
 
 export interface Agent<T extends AgentTools> {
   agentTools: T;

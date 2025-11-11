@@ -1,4 +1,9 @@
 import { Button } from "@/client/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/client/components/ui/tooltip";
 import { cn } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
 import { type WorkspaceAppProject } from "@quests/workspace/client";
@@ -38,26 +43,33 @@ export function ToolbarFavoriteAction({
   };
 
   return (
-    <Button
-      className={cn(compact && "size-7")}
-      onClick={() => {
-        if (isFavorite) {
-          handleUnfavorite();
-        } else {
-          void handleAddFavorite();
-        }
-      }}
-      size="sm"
-      variant="ghost"
-    >
-      {isFavorite ? (
-        <Star className="h-4 w-4 fill-amber-500 text-amber-500" />
-      ) : (
-        <Star className="h-4 w-4" />
-      )}
-      <span className="sr-only">
-        {isFavorite ? "Unfavorite Project" : "Favorite Project"}
-      </span>
-    </Button>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          className={cn(compact && "size-7")}
+          onClick={() => {
+            if (isFavorite) {
+              handleUnfavorite();
+            } else {
+              void handleAddFavorite();
+            }
+          }}
+          size="sm"
+          variant="ghost"
+        >
+          {isFavorite ? (
+            <Star className="h-4 w-4 fill-amber-500 text-amber-500" />
+          ) : (
+            <Star className="h-4 w-4" />
+          )}
+          <span className="sr-only">
+            {isFavorite ? "Unfavorite Project" : "Favorite Project"}
+          </span>
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>
+        {isFavorite ? "Remove from favorites" : "Add to favorites"}
+      </TooltipContent>
+    </Tooltip>
   );
 }

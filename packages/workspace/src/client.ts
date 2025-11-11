@@ -1,3 +1,4 @@
+export type { AgentName } from "./agents/types";
 export { GIT_AUTHOR } from "./constants";
 export { getToolNameByType } from "./lib/get-tool-name-by-type";
 export { isInteractiveTool } from "./lib/is-interactive-tool";

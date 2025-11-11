@@ -27,7 +27,7 @@ import {
 } from "../schemas/subdomains";
 import { type WorkspaceConfig } from "../types";
 import { createAppConfig } from "./app-config/create";
-import { getSandboxesDir } from "./app-dir-utils";
+import { getSandboxesDir, isRunnable } from "./app-dir-utils";
 import { TypedError } from "./errors";
 import { folderNameForSubdomain } from "./folder-name-for-subdomain";
 import { getAppDirTimestamps } from "./get-app-dir-timestamps";
@@ -312,6 +312,7 @@ async function workspaceApp({
       description: questsConfig?.description,
       folderName: rawFolderName,
       icon: questsConfig?.icon,
+      isRunnable: await isRunnable(appDir),
       subdomain: rawSubdomain.data,
       title,
       type: "project",
@@ -333,6 +334,7 @@ async function workspaceApp({
     const previewApp: WorkspaceAppPreview = {
       ...(await getAppDirTimestamps(appDir)),
       folderName: rawFolderName,
+      isRunnable: await isRunnable(appDir),
       subdomain: rawSubdomain.data,
       title,
       type: "preview",
@@ -352,6 +354,7 @@ async function workspaceApp({
     const sandboxApp: WorkspaceAppSandbox = {
       ...(await getAppDirTimestamps(appDir)),
       folderName: rawFolderName,
+      isRunnable: await isRunnable(appDir),
       project: parent,
       subdomain: sandboxSubdomainResult.data,
       title,
@@ -372,6 +375,7 @@ async function workspaceApp({
     const versionApp: WorkspaceAppVersion = {
       ...(await getAppDirTimestamps(appDir)),
       folderName: rawFolderName,
+      isRunnable: await isRunnable(appDir),
       project: parent,
       subdomain: versionSubdomainResult.data,
       title,
@@ -415,6 +419,7 @@ async function workspaceAppForVersion({
   const versionApp: WorkspaceAppVersion = {
     ...(await getAppDirTimestamps(versionConfig.appDir)),
     folderName: rawFolderName.value,
+    isRunnable: await isRunnable(versionConfig.appDir),
     project: parent,
     subdomain: versionSubdomainResult.data,
     title: rawFolderName.value, // Version apps use folder name as title since they don't have physical directories

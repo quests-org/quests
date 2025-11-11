@@ -18,7 +18,7 @@ import {
   NEW_ISSUE_URL,
   PRODUCT_NAME,
 } from "@quests/shared";
-import { StoreId } from "@quests/workspace/client";
+import { type AgentName, StoreId } from "@quests/workspace/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   createFileRoute,
@@ -28,6 +28,7 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import { useAtom } from "jotai";
 import { ArrowRight, FlaskConical } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/new-tab")({
@@ -43,11 +44,15 @@ export const Route = createFileRoute("/_app/new-tab")({
 
 function RouteComponent() {
   const [selectedModelURI, setSelectedModelURI] = useAtom(selectedModelURIAtom);
+  const [agentName, setAgentName] = useState<AgentName>("code");
   const navigate = useNavigate({ from: "/new-tab" });
   const router = useRouter();
   const { addTab } = useTabs();
   const createProjectMutation = useMutation(
     rpcClient.workspace.project.create.mutationOptions(),
+  );
+  const createChatMutation = useMutation(
+    rpcClient.workspace.project.createChat.mutationOptions(),
   );
 
   const { data: projectsData } = useQuery(
@@ -72,48 +77,64 @@ function RouteComponent() {
           </div>
           <div>
             <PromptInput
+              agentName={agentName}
               allowOpenInNewTab
               atomKey="$$new-tab$$"
               autoFocus
               autoResizeMaxHeight={300}
-              isLoading={createProjectMutation.isPending}
+              isLoading={
+                createProjectMutation.isPending || createChatMutation.isPending
+              }
               modelURI={selectedModelURI}
+              onAgentChange={setAgentName}
               onModelChange={setSelectedModelURI}
-              onSubmit={({ modelURI, openInNewTab, prompt }) => {
+              onSubmit={({
+                agentName: submitAgentName,
+                modelURI,
+                openInNewTab,
+                prompt,
+              }) => {
                 const promptText = prompt.trim();
                 const messageId = StoreId.newMessageId();
                 const sessionId = StoreId.newSessionId();
                 const createdAt = new Date();
 
-                createProjectMutation.mutate(
-                  {
-                    message: {
-                      id: messageId,
+                const message = {
+                  id: messageId,
+                  metadata: {
+                    createdAt,
+                    sessionId,
+                  },
+                  parts: [
+                    {
                       metadata: {
                         createdAt,
+                        id: StoreId.newPartId(),
+                        messageId,
                         sessionId,
                       },
-                      parts: [
-                        {
-                          metadata: {
-                            createdAt,
-                            id: StoreId.newPartId(),
-                            messageId,
-                            sessionId,
-                          },
-                          text: promptText,
-                          type: "text",
-                        },
-                      ],
-                      role: "user",
+                      text: promptText,
+                      type: "text" as const,
                     },
+                  ],
+                  role: "user" as const,
+                };
+
+                const mutation =
+                  submitAgentName === "chat"
+                    ? createChatMutation
+                    : createProjectMutation;
+
+                mutation.mutate(
+                  {
+                    message,
                     modelURI,
                     sessionId,
                   },
                   {
                     onError: (error) => {
                       toast.error(
-                        `There was an error starting your project: ${error.message}`,
+                        `There was an error starting your ${submitAgentName === "chat" ? "chat" : "project"}: ${error.message}`,
                       );
                     },
                     onSuccess: ({ subdomain }) => {
@@ -136,7 +157,12 @@ function RouteComponent() {
                   },
                 );
               }}
-              placeholder="Describe the app you want to create…"
+              placeholder={
+                agentName === "chat"
+                  ? "Start a conversation…"
+                  : "Describe the app you want to create…"
+              }
+              showAgentPicker
             />
             <p className="text-xs text-muted-foreground/50 mt-2 text-right">
               Hold <Kbd>{isMacOS() ? "⌘" : "Ctrl"}</Kbd> to create in a new tab

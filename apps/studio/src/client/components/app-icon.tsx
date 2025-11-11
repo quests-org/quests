@@ -50,15 +50,26 @@ export function AppIcon({
 }
 
 export function SmallAppIcon({
-  background = DEFAULT_THEME_GRADIENT,
-  icon = DEFAULT_LUCIDE_APP_ICON,
+  background,
+  icon,
   size = "sm",
+  variant,
 }: {
   background?: string;
   icon?: IconName;
   size?: "lg" | "md" | "sm" | "xl";
+  variant?: "app" | "chat";
 }) {
-  const IconComponent = IconMap[icon];
+  const shouldShowIcon = icon || variant;
+
+  if (!shouldShowIcon) {
+    return null;
+  }
+
+  const finalIcon =
+    icon || (variant === "chat" ? "message-circle" : DEFAULT_LUCIDE_APP_ICON);
+  const finalBackground = background || DEFAULT_THEME_GRADIENT;
+  const IconComponent = IconMap[finalIcon];
 
   return (
     <div
@@ -70,7 +81,7 @@ export function SmallAppIcon({
         size === "xl" && "size-9",
       )}
       style={{
-        background,
+        background: finalBackground,
       }}
     >
       <IconComponent

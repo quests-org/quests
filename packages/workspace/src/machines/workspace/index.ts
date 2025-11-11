@@ -18,6 +18,7 @@ import {
 } from "xstate";
 
 import { AGENTS } from "../../agents/constants";
+import { type AgentName } from "../../agents/types";
 import { PREVIEWS_FOLDER, PROJECTS_FOLDER } from "../../constants";
 import { createAppConfig } from "../../lib/app-config/create";
 import { type AppConfig } from "../../lib/app-config/types";
@@ -57,6 +58,7 @@ export type WorkspaceEvent =
   | {
       type: "addMessage";
       value: {
+        agentName: AgentName;
         message: SessionMessage.UserWithParts;
         model: LanguageModel;
         sessionId: StoreId.Session;
@@ -66,6 +68,7 @@ export type WorkspaceEvent =
   | {
       type: "createSession";
       value: {
+        agentName: AgentName;
         message: SessionMessage.UserWithParts;
         model: LanguageModel;
         sessionId: StoreId.Session;
@@ -83,6 +86,7 @@ export type WorkspaceEvent =
   | {
       type: "internal.spawnSession";
       value: {
+        agentName: keyof typeof AGENTS;
         appConfig: AppConfig;
         message: SessionMessage.UserWithParts;
         model: LanguageModel;
@@ -308,6 +312,7 @@ export const workspaceMachine = setup({
           return {
             type: "internal.spawnSession",
             value: {
+              agentName: event.value.agentName,
               appConfig,
               message: event.value.message,
               model: event.value.model,
@@ -344,6 +349,7 @@ export const workspaceMachine = setup({
         return {
           type: "internal.spawnSession",
           value: {
+            agentName: event.value.agentName,
             appConfig,
             message: event.value.message,
             model: event.value.model,
@@ -439,25 +445,26 @@ export const workspaceMachine = setup({
       },
     ],
     "internal.spawnSession": {
-      actions: [
+      actions: enqueueActions(({ enqueue, event }) => {
         // Boot the runtime if it's not already running to ensure packages are
         // installed for the agent to use.
-        raise(({ event }) => {
-          const { appConfig } = event.value;
-          return {
+        if (event.value.agentName !== "chat") {
+          enqueue.raise({
             type: "heartbeat",
             value: {
-              appConfig,
+              appConfig: event.value.appConfig,
               createdAt: Date.now(),
               shouldCreate: false,
             },
-          };
-        }),
-        assign(({ context, event, self, spawn }) => {
-          const { appConfig, message, model, sessionId } = event.value;
+          });
+        }
+
+        enqueue.assign(({ context, self, spawn }) => {
+          const { agentName, appConfig, message, model, sessionId } =
+            event.value;
           const sessionMachineRef = spawn("sessionMachine", {
             input: {
-              agent: AGENTS.code,
+              agent: AGENTS[agentName],
               appConfig,
               baseLLMRetryDelayMs: ms("1 second"),
               llmRequestChunkTimeoutMs: ms("5 minutes"),
@@ -484,8 +491,8 @@ export const workspaceMachine = setup({
           return {
             sessionRefsBySubdomain: newsessionRefsBySubdomain,
           };
-        }),
-      ],
+        });
+      }),
       guard: ({ context, event }) => {
         const { subdomain } = event.value.appConfig;
         return !context.appsBeingTrashed.some(

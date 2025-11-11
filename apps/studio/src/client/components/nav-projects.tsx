@@ -1,6 +1,5 @@
 import {
   SidebarGroup,
-  SidebarGroupAction,
   SidebarGroupLabel,
   SidebarMenu,
 } from "@/client/components/ui/sidebar";
@@ -43,18 +42,15 @@ export function NavProjects({
 
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-      <SidebarGroupLabel>{title}</SidebarGroupLabel>
-      {!isFavorites && (
-        <SidebarGroupAction asChild>
-          <InternalLink
-            className="text-xs text-sidebar-foreground/70 hover:text-sidebar-foreground whitespace-nowrap"
-            openInCurrentTab
-            to="/projects"
-          >
-            View all
+      <SidebarGroupLabel asChild={!isFavorites}>
+        {isFavorites ? (
+          title
+        ) : (
+          <InternalLink openInCurrentTab to="/projects">
+            {title}
           </InternalLink>
-        </SidebarGroupAction>
-      )}
+        )}
+      </SidebarGroupLabel>
       <SidebarMenu className="gap-0">
         {projects.map((project) => (
           <NavProjectItem

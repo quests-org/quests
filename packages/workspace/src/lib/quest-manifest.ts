@@ -53,19 +53,10 @@ export async function updateQuestManifest(
 
   const questConfigPath = path.join(appConfig.appDir, QUEST_MANIFEST_FILE_NAME);
 
-  let existingConfig: QuestManifest = {
-    icon: {
-      background: "#525252",
-      lucide: "box",
-    },
-    name: "",
-  };
+  let existingConfig: QuestManifest = { name: "" };
 
   try {
-    const existing = await getQuestManifest(appConfig.appDir);
-    if (existing) {
-      existingConfig = existing;
-    }
+    existingConfig = (await getQuestManifest(appConfig.appDir)) ?? { name: "" };
   } catch {
     // File doesn't exist or is invalid, use default config
   }

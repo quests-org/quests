@@ -58,9 +58,8 @@ function RouteComponent() {
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] =
     useState<null | WorkspaceAppProject>(null);
-  const [projectToEdit, setProjectToEdit] = useState<null | ProjectSubdomain>(
-    null,
-  );
+  const [projectToEdit, setProjectToEdit] =
+    useState<null | WorkspaceAppProject>(null);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const filterTab = search.filter;
   const trashTerminology = getTrashTerminology();
@@ -243,10 +242,16 @@ function RouteComponent() {
     [addTab, router],
   );
 
-  const handleSettings = useCallback((subdomain: ProjectSubdomain) => {
-    setProjectToEdit(subdomain);
-    setSettingsDialogOpen(true);
-  }, []);
+  const handleSettings = useCallback(
+    (subdomain: ProjectSubdomain) => {
+      const project = projects.find((p) => p.subdomain === subdomain);
+      if (project) {
+        setProjectToEdit(project);
+        setSettingsDialogOpen(true);
+      }
+    },
+    [projects],
+  );
 
   const columns = useMemo(
     () =>
@@ -379,6 +384,7 @@ function RouteComponent() {
       {projectToEdit && (
         <ProjectSettingsDialog
           dialogTitle="Project Settings"
+          isChat={!projectToEdit.isRunnable}
           onOpenChange={(open) => {
             setSettingsDialogOpen(open);
             if (!open) {
@@ -386,7 +392,7 @@ function RouteComponent() {
             }
           }}
           open={settingsDialogOpen}
-          subdomain={projectToEdit}
+          subdomain={projectToEdit.subdomain}
         />
       )}
     </div>

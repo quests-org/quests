@@ -11,8 +11,10 @@ import { z } from "zod";
 
 import { DEFAULT_TEMPLATE_NAME } from "../../../constants";
 import { newProjectConfig } from "../../../lib/app-config/new";
+import { newChatConfig } from "../../../lib/app-config/new-chat";
 import { createProject } from "../../../lib/create-project";
 import { duplicateProject } from "../../../lib/duplicate-project";
+import { generateProjectTitle } from "../../../lib/generate-project-title";
 import { generateProjectTitleAndIcon } from "../../../lib/generate-project-title-and-icon";
 import { getApp, getProjects } from "../../../lib/get-apps";
 import { getWorkspaceAppForSubdomain } from "../../../lib/get-workspace-app-for-subdomain";
@@ -184,6 +186,7 @@ const create = base
       context.workspaceRef.send({
         type: "createSession",
         value: {
+          agentName: "code",
           message,
           model,
           sessionId,
@@ -324,6 +327,7 @@ const createFromEval = base
       context.workspaceRef.send({
         type: "createSession",
         value: {
+          agentName: "code",
           message,
           model,
           sessionId,
@@ -489,10 +493,118 @@ const live = {
     }),
 };
 
+const createChat = base
+  .input(
+    z.object({
+      message: SessionMessage.UserSchemaWithParts,
+      modelURI: AIGatewayModelURI.Schema,
+      sessionId: StoreId.SessionSchema,
+    }),
+  )
+  .output(WorkspaceAppProjectSchema)
+  .handler(
+    async ({
+      context,
+      errors,
+      input: { message, modelURI, sessionId },
+      signal,
+    }) => {
+      const [model, error] = (
+        await context.modelRegistry.languageModel(
+          modelURI,
+          context.workspaceConfig.getAIProviderConfigs(),
+          {
+            captureException: context.workspaceConfig.captureException,
+            workspaceServerURL: getWorkspaceServerURL(),
+          },
+        )
+      )
+        // eslint-disable-next-line unicorn/no-await-expression-member
+        .toTuple();
+
+      if (error) {
+        context.workspaceConfig.captureException(error);
+        throw toORPCError(error, errors);
+      }
+
+      const projectConfig = newChatConfig({
+        workspaceConfig: context.workspaceConfig,
+      });
+
+      const result = await createProject(
+        {
+          projectConfig,
+          templateName: "empty",
+          workspaceConfig: context.workspaceConfig,
+        },
+        { signal },
+      );
+
+      if (result.isErr()) {
+        context.workspaceConfig.captureException(result.error);
+        throw toORPCError(result.error, errors);
+      }
+
+      await setProjectState(result.value.projectConfig.appDir, {
+        selectedModelURI: modelURI,
+      });
+
+      void (async () => {
+        const titleResult = await generateProjectTitle({
+          message,
+          model,
+          templateTitle: "Chat",
+        });
+
+        if (titleResult.isOk()) {
+          await updateQuestManifest(
+            result.value.projectConfig.subdomain,
+            context.workspaceConfig,
+            {
+              name: titleResult.value,
+            },
+          );
+          publisher.publish("project.updated", {
+            subdomain: result.value.projectConfig.subdomain,
+          });
+        }
+      })().catch(context.workspaceConfig.captureException);
+
+      publisher.publish("project.updated", {
+        subdomain: result.value.projectConfig.subdomain,
+      });
+
+      context.workspaceRef.send({
+        type: "createSession",
+        value: {
+          agentName: "chat",
+          message,
+          model,
+          sessionId,
+          subdomain: result.value.projectConfig.subdomain,
+        },
+      });
+
+      const workspaceApp = await getWorkspaceAppForSubdomain(
+        result.value.projectConfig.subdomain,
+        context.workspaceConfig,
+      );
+
+      context.workspaceConfig.captureEvent("project.created", {
+        modelId: model.modelId,
+        providerId: model.provider,
+        template_name: "chat",
+      });
+
+      return workspaceApp;
+    },
+  );
+
 export const project = {
   bySubdomain,
   bySubdomains,
   create,
+  createChat,
   createFromEval,
   duplicate,
   git: projectGit,

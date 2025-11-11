@@ -1,8 +1,8 @@
 import { type SessionMessage } from "@quests/workspace/client";
-import { ChevronDown, Copy } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { memo, useMemo, useState } from "react";
-import { toast } from "sonner";
 
+import { CopyButton } from "./copy-button";
 import { DebugWrapper } from "./debug-wrapper";
 import { ContextMessage } from "./session-context-message";
 import { Button } from "./ui/button";
@@ -13,7 +13,6 @@ export const ContextMessages = memo(function ContextMessages({
   messages: SessionMessage.ContextWithParts[];
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isCopying, setIsCopying] = useState(false);
 
   const contextElements = useMemo(() => {
     const elements: React.ReactNode[] = [];
@@ -44,25 +43,13 @@ export const ContextMessages = memo(function ContextMessages({
   }, [messages]);
 
   const handleCopy = async () => {
-    if (isCopying) {
-      return;
-    }
+    const allText = messages
+      .flatMap((message) => message.parts)
+      .filter((part) => part.type === "text")
+      .map((part) => part.text)
+      .join("\n\n");
 
-    setIsCopying(true);
-    try {
-      const allText = messages
-        .flatMap((message) => message.parts)
-        .filter((part) => part.type === "text")
-        .map((part) => part.text)
-        .join("\n\n");
-
-      await navigator.clipboard.writeText(allText);
-      toast.success("System prompt copied to clipboard");
-    } catch {
-      toast.error("Failed to copy system prompt");
-    } finally {
-      setIsCopying(false);
-    }
+    await navigator.clipboard.writeText(allText);
   };
 
   return (
@@ -97,14 +84,11 @@ export const ContextMessages = memo(function ContextMessages({
           </div>
 
           <div className="flex justify-end pt-2">
-            <button
-              aria-label="Copy system prompt"
+            <CopyButton
               className="p-1 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded transition-colors disabled:opacity-50 opacity-0 group-hover:opacity-100"
-              disabled={isCopying}
-              onClick={handleCopy}
-            >
-              <Copy size={12} />
-            </button>
+              iconSize={12}
+              onCopy={handleCopy}
+            />
           </div>
         </div>
       )}

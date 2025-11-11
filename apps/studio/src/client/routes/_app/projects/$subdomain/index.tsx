@@ -1,12 +1,10 @@
 import { promptValueAtomFamily } from "@/client/atoms/prompt-value";
-import { AppView } from "@/client/components/app-view";
 import { ProjectDeleteDialog } from "@/client/components/project-delete-dialog";
 import { ProjectHeaderToolbar } from "@/client/components/project-header-toolbar";
-import { ProjectSidebar } from "@/client/components/project-sidebar";
-import { VersionOverlay } from "@/client/components/version-overlay";
+import { ProjectViewApp } from "@/client/components/project-view/app";
+import { ProjectViewChat } from "@/client/components/project-view/chat";
 import { useProjectRouteSync } from "@/client/hooks/use-project-route-sync";
 import { migrateProjectSubdomain } from "@/client/lib/migrate-project-subdomain";
-import { cn } from "@/client/lib/utils";
 import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
 import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
 import { safe } from "@orpc/client";
@@ -108,7 +106,9 @@ export const Route = createFileRoute("/_app/projects/$subdomain/")({
           title: title(project.data?.title),
         },
         {
-          content: "square-dashed",
+          content: project.data?.isRunnable
+            ? "square-dashed"
+            : "message-circle",
           name: META_TAG_LUCIDE_ICON,
         },
       ],
@@ -120,7 +120,7 @@ export const Route = createFileRoute("/_app/projects/$subdomain/")({
 
 function RouteComponent() {
   const { subdomain } = Route.useParams();
-  const { selectedVersion, showDelete } = Route.useSearch();
+  const { selectedSessionId, selectedVersion, showDelete } = Route.useSearch();
   const navigate = useNavigate();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -150,7 +150,8 @@ function RouteComponent() {
     }),
   );
 
-  // Load project-specific model selection
+  useProjectRouteSync(project);
+
   const {
     data: projectState,
     error: projectStateError,
@@ -161,8 +162,6 @@ function RouteComponent() {
       placeholderData: keepPreviousData,
     }),
   );
-
-  useProjectRouteSync(project);
 
   // Both queries must be loaded before rendering
   const isLoading = isProjectLoading || isProjectStateLoading;
@@ -196,35 +195,20 @@ function RouteComponent() {
       />
 
       <div className="flex flex-1 overflow-hidden">
-        <ProjectSidebar
-          collapsed={sidebarCollapsed}
-          project={project}
-          selectedModelURI={projectState.selectedModelURI}
-          selectedVersion={selectedVersion}
-        />
-
-        <div
-          className={cn(
-            "flex-1 flex flex-col p-2 bg-secondary border-t overflow-hidden",
-            !sidebarCollapsed && "border-l rounded-tl-lg",
-          )}
-        >
-          <div className="flex-1 flex flex-col relative">
-            <AppView
-              app={project}
-              className="rounded-lg overflow-hidden"
-              shouldReload={!selectedVersion}
-              showSendToChat
-            />
-
-            {selectedVersion && (
-              <VersionOverlay
-                projectSubdomain={subdomain}
-                versionRef={selectedVersion}
-              />
-            )}
-          </div>
-        </div>
+        {project.isRunnable ? (
+          <ProjectViewApp
+            project={project}
+            selectedModelURI={projectState.selectedModelURI}
+            selectedVersion={selectedVersion}
+            sidebarCollapsed={sidebarCollapsed}
+          />
+        ) : (
+          <ProjectViewChat
+            project={project}
+            selectedModelURI={projectState.selectedModelURI}
+            selectedSessionId={selectedSessionId}
+          />
+        )}
       </div>
 
       <ProjectDeleteDialog

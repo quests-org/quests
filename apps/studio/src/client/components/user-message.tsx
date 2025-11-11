@@ -1,9 +1,9 @@
 import { cn } from "@/client/lib/utils";
 import { type SessionMessagePart } from "@quests/workspace/client";
-import { ChevronUp, Copy } from "lucide-react";
+import { ChevronUp } from "lucide-react";
 import { memo, useState } from "react";
-import { toast } from "sonner";
 
+import { CopyButton } from "./copy-button";
 import { Markdown } from "./markdown";
 
 interface UserMessageProps {
@@ -22,25 +22,12 @@ function formatDate(date: Date) {
 export const UserMessage = memo(function UserMessage({
   part,
 }: UserMessageProps) {
-  const [isCopying, setIsCopying] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
 
   const messageText = part.text;
 
   const handleCopy = async () => {
-    if (isCopying) {
-      return;
-    }
-
-    setIsCopying(true);
-    try {
-      await navigator.clipboard.writeText(messageText);
-      toast.success("Message copied to clipboard");
-    } catch {
-      toast.error("Failed to copy message");
-    } finally {
-      setIsCopying(false);
-    }
+    await navigator.clipboard.writeText(messageText);
   };
 
   const shouldShowExpansion =
@@ -84,14 +71,11 @@ export const UserMessage = memo(function UserMessage({
       </div>
       <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
         <span>{formatDate(part.metadata.createdAt)}</span>
-        <button
-          aria-label="Copy message"
+        <CopyButton
           className="p-1 rounded hover:text-foreground hover:bg-muted/50 transition-colors disabled:opacity-50"
-          disabled={isCopying}
-          onClick={handleCopy}
-        >
-          <Copy size={12} />
-        </button>
+          iconSize={12}
+          onCopy={handleCopy}
+        />
       </div>
     </div>
   );

@@ -84,6 +84,7 @@ export function ProjectSidebar({
 
     createMessage.mutate(
       {
+        agentName: "code",
         message: {
           id: messageId,
           metadata: {
@@ -213,6 +214,7 @@ export function ProjectSidebar({
               onContinue={handleContinue}
               selectedVersion={selectedVersion}
               sessionId={selectedSessionId}
+              showMessageActions={false}
             />
           ) : (
             <ChatZeroState
@@ -238,7 +240,7 @@ export function ProjectSidebar({
       )}
 
       {filterMode === "chat" && (
-        <div className="p-4 border-t" ref={bottomSectionRef}>
+        <div className="p-4" ref={bottomSectionRef}>
           <PromptInput
             atomKey={project.subdomain}
             autoFocus
@@ -252,7 +254,7 @@ export function ProjectSidebar({
             onStop={() => {
               stopSessions.mutate({ subdomain: project.subdomain });
             }}
-            onSubmit={({ modelURI, prompt }) => {
+            onSubmit={({ agentName, modelURI, prompt }) => {
               const promptText = prompt.trim();
               const messageId = StoreId.newMessageId();
               const createdAt = new Date();
@@ -260,6 +262,7 @@ export function ProjectSidebar({
               if (selectedSessionId) {
                 createMessage.mutate(
                   {
+                    agentName,
                     message: {
                       id: messageId,
                       metadata: {
@@ -309,6 +312,7 @@ export function ProjectSidebar({
 
                 createSessionWithMessage.mutate(
                   {
+                    agentName: "code",
                     message: {
                       id: messageId,
                       metadata: {

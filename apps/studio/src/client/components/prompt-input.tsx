@@ -1,3 +1,4 @@
+import { AgentPicker } from "@/client/components/agent-picker";
 import { AIProviderGuardDialog } from "@/client/components/ai-provider-guard-dialog";
 import { ModelPicker } from "@/client/components/model-picker";
 import { Button } from "@/client/components/ui/button";
@@ -7,6 +8,7 @@ import {
 } from "@/client/components/ui/textarea-container";
 import { cn, isMacOS } from "@/client/lib/utils";
 import { type AIGatewayModelURI } from "@quests/ai-gateway/client";
+import { type AgentName } from "@quests/workspace/client";
 import { useQuery } from "@tanstack/react-query";
 import { useAtom, useAtomValue } from "jotai";
 import { ArrowUp, Loader2, Square } from "lucide-react";
@@ -28,6 +30,7 @@ import {
 import { rpcClient } from "../rpc/client";
 
 interface PromptInputProps {
+  agentName?: AgentName;
   allowOpenInNewTab?: boolean;
   atomKey: PromptValueAtomKey;
   autoFocus?: boolean;
@@ -38,14 +41,17 @@ interface PromptInputProps {
   isStoppable?: boolean;
   isSubmittable?: boolean;
   modelURI?: AIGatewayModelURI.Type;
+  onAgentChange?: (agentName: AgentName) => void;
   onModelChange: (modelURI: AIGatewayModelURI.Type) => void;
   onStop?: () => void;
   onSubmit: (value: {
+    agentName: AgentName;
     modelURI: AIGatewayModelURI.Type;
     openInNewTab?: boolean;
     prompt: string;
   }) => void;
   placeholder?: string;
+  showAgentPicker?: boolean;
   submitButtonContent?: React.ReactNode;
 }
 
@@ -56,6 +62,7 @@ interface PromptInputRef {
 export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
   (
     {
+      agentName = "code",
       allowOpenInNewTab = false,
       atomKey,
       autoFocus = false,
@@ -66,10 +73,12 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
       isStoppable = false,
       isSubmittable = true,
       modelURI,
+      onAgentChange,
       onModelChange,
       onStop,
       onSubmit,
       placeholder = "Type a message",
+      showAgentPicker = false,
       submitButtonContent,
     },
     ref,
@@ -167,13 +176,19 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
           return;
         }
 
-        onSubmit({ modelURI, openInNewTab, prompt: value.trim() });
+        onSubmit({
+          agentName,
+          modelURI,
+          openInNewTab,
+          prompt: value.trim(),
+        });
         if (!(allowOpenInNewTab && openInNewTab)) {
           setValue("");
           resetTextareaHeight();
         }
       },
       [
+        agentName,
         allowOpenInNewTab,
         modelURI,
         onSubmit,
@@ -224,16 +239,25 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
           />
 
           <div className="flex items-center gap-2 justify-end pt-2">
-            <div className="flex-1 min-w-0">
-              <ModelPicker
-                disabled={disabled}
-                errors={modelsErrors}
-                isError={modelsIsError}
-                isLoading={modelsIsLoading}
-                models={models}
-                onValueChange={onModelChange}
-                selectedModel={selectedModel}
-              />
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              {showAgentPicker && onAgentChange && (
+                <AgentPicker
+                  disabled={disabled}
+                  onValueChange={onAgentChange}
+                  value={agentName}
+                />
+              )}
+              <div className="flex-1 min-w-0">
+                <ModelPicker
+                  disabled={disabled}
+                  errors={modelsErrors}
+                  isError={modelsIsError}
+                  isLoading={modelsIsLoading}
+                  models={models}
+                  onValueChange={onModelChange}
+                  selectedModel={selectedModel}
+                />
+              </div>
             </div>
 
             <Button

@@ -1,7 +1,7 @@
-import { Copy, Download, Eye } from "lucide-react";
+import { Download, Eye } from "lucide-react";
 import { useCallback, useMemo } from "react";
-import { toast } from "sonner";
 
+import { CopyButton } from "./copy-button";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 
@@ -25,13 +25,9 @@ export function JsonViewer({
   open,
   title = "JSON Viewer",
 }: JsonViewerProps) {
-  const handleCopy = useCallback(() => {
+  const handleCopy = useCallback(async () => {
     const jsonData = JSON.stringify(data, null, 2);
-    void navigator.clipboard.writeText(jsonData);
-    const bytes = new TextEncoder().encode(jsonData).length;
-    const size =
-      bytes < 1024 ? `${bytes} bytes` : `${(bytes / 1024).toFixed(1)} KB`;
-    toast.success(`JSON data copied to clipboard (${size})`);
+    await navigator.clipboard.writeText(jsonData);
   }, [data]);
 
   const handleDownload = useCallback(() => {
@@ -99,14 +95,10 @@ export function JsonViewer({
         </DialogHeader>
         <div className="relative min-w-0">
           <div className="absolute right-4 top-2 z-20 flex gap-2 pointer-events-auto">
-            <Button
-              onClick={handleCopy}
-              size="sm"
-              title="Copy to clipboard"
-              variant="ghost"
-            >
-              <Copy className="size-4" />
-            </Button>
+            <CopyButton
+              className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2"
+              onCopy={handleCopy}
+            />
             <Button
               onClick={handleDownload}
               size="sm"

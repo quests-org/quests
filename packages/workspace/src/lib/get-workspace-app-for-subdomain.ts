@@ -14,6 +14,7 @@ import {
 } from "../schemas/subdomains";
 import { type WorkspaceConfig } from "../types";
 import { createAppConfig } from "./app-config/create";
+import { isRunnable } from "./app-dir-utils";
 import { getAppDirTimestamps } from "./get-app-dir-timestamps";
 import { projectSubdomainForSubdomain } from "./project-subdomain-for-subdomain";
 import { urlsForSubdomain } from "./url-for-subdomain";
@@ -39,6 +40,7 @@ export async function getWorkspaceAppForSubdomain<T extends AppSubdomain>(
   const baseApp: Omit<WorkspaceApp, "project" | "subdomain"> = {
     createdAt: timestamps.createdAt,
     folderName: appConfig.folderName,
+    isRunnable: await isRunnable(appConfig.appDir),
     title: appConfig.folderName,
     type: appConfig.type,
     updatedAt: timestamps.updatedAt,

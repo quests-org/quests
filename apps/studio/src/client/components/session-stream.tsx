@@ -5,7 +5,7 @@ import {
   type WorkspaceAppProject,
 } from "@quests/workspace/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useNavigate, useSearch } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { AlertTriangle, Loader2 } from "lucide-react";
 import { useCallback, useMemo } from "react";
 import { toast } from "sonner";
@@ -34,6 +34,7 @@ interface SessionEventListProps {
   onContinue?: () => void;
   selectedVersion?: string;
   sessionId: StoreId.Session;
+  showMessageActions?: boolean;
 }
 
 export function SessionStream({
@@ -41,6 +42,7 @@ export function SessionStream({
   onContinue,
   selectedVersion,
   sessionId,
+  showMessageActions = true,
 }: SessionEventListProps) {
   const {
     data: messages = [],
@@ -54,9 +56,6 @@ export function SessionStream({
       },
     }),
   );
-  const { selectedSessionId } = useSearch({
-    from: "/_app/projects/$subdomain/",
-  });
   const { data: appState } = useAppState({ subdomain: app.subdomain });
   const navigate = useNavigate();
 
@@ -89,8 +88,7 @@ export function SessionStream({
   };
 
   const isAnyAgentRunning = (appState?.sessionActors ?? []).some(
-    (s) =>
-      s.sessionId === selectedSessionId && s.tags.includes("agent.running"),
+    (s) => s.sessionId === sessionId && s.tags.includes("agent.running"),
   );
   const isAnyActorActive =
     appState?.checkoutVersionRefActor.status === "active" ||
@@ -144,7 +142,13 @@ export function SessionStream({
 
         switch (message.role) {
           case "assistant": {
-            return <AssistantMessage key={part.metadata.id} part={part} />;
+            return (
+              <AssistantMessage
+                key={part.metadata.id}
+                part={part}
+                showActions={showMessageActions}
+              />
+            );
           }
           case "session-context": {
             return (
@@ -237,6 +241,7 @@ export function SessionStream({
       app.subdomain,
       isAnyAgentRunning,
       lastMessageId,
+      showMessageActions,
     ],
   );
 
