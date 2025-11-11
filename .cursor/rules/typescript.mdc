@@ -11,6 +11,7 @@ alwaysApply: false
 - Objects, interfaces, types, and other sortable structures are automatically sorted by the perfectionist ESLint plugin
 - DO NOT fix ESLint `perfectionist/*` issues, the editor will automatically fix them when the code is saved.
 - Prefer objects for functions with many parameters.
+- Don't run `tsc` to check for type errors, use your built-in diagnostics tool.
 
 ## Tailwind Rules
 
