@@ -26,7 +26,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 const projectsSearchSchema = z.object({
-  filter: z.enum(["active", "all"]).optional().default("all"),
+  filter: z.enum(["active", "all", "favorites"]).optional().default("all"),
 });
 
 export const Route = createFileRoute("/_app/projects/")({
@@ -87,6 +87,17 @@ function RouteComponent() {
     }),
   );
 
+  const { data: favoriteProjects } = useQuery(
+    rpcClient.favorites.live.listProjects.experimental_liveOptions(),
+  );
+
+  const favoriteProjectSubdomains = useMemo(() => {
+    if (!favoriteProjects) {
+      return new Set();
+    }
+    return new Set(favoriteProjects.map((p) => p.subdomain));
+  }, [favoriteProjects]);
+
   const activeProjectSubdomains = useMemo(() => {
     if (!appStates) {
       return new Set();
@@ -102,8 +113,11 @@ function RouteComponent() {
     if (filterTab === "all") {
       return projects;
     }
+    if (filterTab === "favorites") {
+      return projects.filter((p) => favoriteProjectSubdomains.has(p.subdomain));
+    }
     return projects.filter((p) => activeProjectSubdomains.has(p.subdomain));
-  }, [filterTab, projects, activeProjectSubdomains]);
+  }, [filterTab, projects, activeProjectSubdomains, favoriteProjectSubdomains]);
 
   const selectedProjects = useMemo(() => {
     return Object.keys(rowSelection)
@@ -262,7 +276,9 @@ function RouteComponent() {
           <div className="flex items-center justify-between">
             <Tabs
               onValueChange={(v) => {
-                void navigate({ search: { filter: v as "active" | "all" } });
+                void navigate({
+                  search: { filter: v as "active" | "all" | "favorites" },
+                });
               }}
               value={filterTab}
             >
@@ -277,6 +293,12 @@ function RouteComponent() {
                   Active
                   <Badge className="ml-2 px-1.5" variant="secondary">
                     {activeProjectSubdomains.size}
+                  </Badge>
+                </TabsTrigger>
+                <TabsTrigger value="favorites">
+                  Favorites
+                  <Badge className="ml-2 px-1.5" variant="secondary">
+                    {favoriteProjectSubdomains.size}
                   </Badge>
                 </TabsTrigger>
               </TabsList>
