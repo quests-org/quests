@@ -8,7 +8,11 @@ import { migrateProjectSubdomain } from "@/client/lib/migrate-project-subdomain"
 import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
 import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
 import { safe } from "@orpc/client";
-import { ProjectSubdomainSchema, StoreId } from "@quests/workspace/client";
+import {
+  ProjectSubdomainSchema,
+  StoreId,
+  type WorkspaceAppProject,
+} from "@quests/workspace/client";
 import {
   CancelledError,
   keepPreviousData,
@@ -29,8 +33,8 @@ const projectSearchSchema = z.object({
   showDelete: z.boolean().optional(),
 });
 
-function title(projectTitle?: string) {
-  return `${projectTitle ?? "Not Found"} · Project`;
+function title(project?: WorkspaceAppProject) {
+  return `${project?.title ?? "Not Found"} · ${project?.isRunnable ? "Project" : "Chat"}`;
 }
 
 /* eslint-disable perfectionist/sort-objects */
@@ -103,7 +107,7 @@ export const Route = createFileRoute("/_app/projects/$subdomain/")({
     return {
       meta: [
         {
-          title: title(project.data?.title),
+          title: title(project.data),
         },
         {
           content: project.data?.isRunnable
