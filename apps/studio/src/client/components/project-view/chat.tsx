@@ -71,9 +71,12 @@ export function ProjectViewChat({
 
   return (
     <div className="flex-1 flex flex-col border-t overflow-hidden">
-      <div className="flex-1 flex items-start justify-center overflow-hidden">
-        <div className="flex flex-col w-full max-w-3xl h-full bg-background">
-          <div className="flex-1 overflow-y-auto p-4" ref={scrollRef}>
+      <div
+        className="flex-1 flex items-start justify-center overflow-y-auto"
+        ref={scrollRef}
+      >
+        <div className="flex flex-col w-full max-w-3xl bg-background">
+          <div className="p-4">
             <div className="flex flex-col gap-4" ref={contentRef}>
               {selectedSessionId && (
                 <SessionStream
@@ -99,7 +102,10 @@ export function ProjectViewChat({
             </Button>
           )}
 
-          <div className="p-4" ref={bottomSectionRef}>
+          <div
+            className="sticky bottom-0 p-4 bg-background"
+            ref={bottomSectionRef}
+          >
             <PromptInput
               agentName="chat"
               atomKey={project.subdomain}
