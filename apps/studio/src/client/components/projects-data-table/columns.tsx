@@ -31,27 +31,47 @@ export function createColumns({
     {
       accessorKey: "select",
       cell: ({ row }) => (
-        <Checkbox
-          aria-label="Select row"
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => {
-            row.toggleSelected(!!value);
+        // Make checkboxes more clickable with a before pseudo-element
+        <label
+          className="relative flex items-center justify-center before:absolute before:inset-0 before:-m-2 before:content-['']"
+          onClick={(e) => {
+            e.preventDefault();
+            row.toggleSelected(!row.getIsSelected());
           }}
-        />
+        >
+          <Checkbox
+            aria-label="Select row"
+            checked={row.getIsSelected()}
+            className="pointer-events-none"
+            onCheckedChange={(value) => {
+              row.toggleSelected(!!value);
+            }}
+          />
+        </label>
       ),
       enableHiding: false,
       enableSorting: false,
       header: ({ table }) => (
-        <Checkbox
-          aria-label="Select all"
-          checked={
-            table.getIsAllPageRowsSelected() ||
-            (table.getIsSomePageRowsSelected() && "indeterminate")
-          }
-          onCheckedChange={(value) => {
-            table.toggleAllPageRowsSelected(!!value);
+        // Make checkboxes more clickable with a before pseudo-element
+        <label
+          className="relative flex items-center justify-center before:absolute before:inset-0 before:-m-2 before:content-['']"
+          onClick={(e) => {
+            e.preventDefault();
+            table.toggleAllPageRowsSelected(!table.getIsAllPageRowsSelected());
           }}
-        />
+        >
+          <Checkbox
+            aria-label="Select all"
+            checked={
+              table.getIsAllPageRowsSelected() ||
+              (table.getIsSomePageRowsSelected() && "indeterminate")
+            }
+            className="pointer-events-none"
+            onCheckedChange={(value) => {
+              table.toggleAllPageRowsSelected(!!value);
+            }}
+          />
+        </label>
       ),
       id: "select",
       size: 40,
