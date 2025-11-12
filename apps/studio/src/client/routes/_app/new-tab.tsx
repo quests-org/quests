@@ -194,7 +194,9 @@ function RouteComponent() {
         {hasProjects && (
           <div className="mt-16">
             <div className="flex items-center justify-between mb-2">
-              <h2 className="text-lg font-medium text-foreground">Projects</h2>
+              <h2 className="text-lg font-medium text-foreground">
+                Recent Projects
+              </h2>
               {(projectsData?.projects.length ?? 0) > 4 && (
                 <InternalLink
                   className="text-xs text-muted-foreground hover:text-foreground transition-colors"
@@ -215,14 +217,12 @@ function RouteComponent() {
                 >
                   <Card className="hover:shadow-md transition-shadow py-0">
                     <CardContent className="flex items-center gap-x-4 py-4">
-                      {project.icon && (
-                        <SmallAppIcon
-                          background={project.icon.background}
-                          icon={project.icon.lucide}
-                          mode={project.mode}
-                          size="xl"
-                        />
-                      )}
+                      <SmallAppIcon
+                        background={project.icon?.background}
+                        icon={project.icon?.lucide}
+                        mode={project.mode}
+                        size="xl"
+                      />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-x-2 mb-1.5">
                           <h3 className="text-base font-medium text-foreground truncate">

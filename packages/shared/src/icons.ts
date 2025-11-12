@@ -129,5 +129,3 @@ export const THEMES = Object.values(THEME_GRADIENTS);
 export const DEFAULT_THEME_GRADIENT = THEME_GRADIENTS.zinc;
 
 export const AppThemesSchema = z.enum(THEMES);
-
-export const ICON_DEFAULT: IconName = "box";

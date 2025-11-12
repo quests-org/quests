@@ -3,7 +3,6 @@ import { cn } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
 import {
   DEFAULT_THEME_GRADIENT,
-  ICON_DEFAULT,
   type IconName,
   SELECTABLE_APP_ICONS,
   THEMES,
@@ -11,7 +10,7 @@ import {
 import { type WorkspaceAppProject } from "@quests/workspace/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { ChevronDown } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { IconMap } from "./app-icons";
 import { Button } from "./ui/button";
@@ -49,9 +48,15 @@ export function ProjectSettingsDialog({
 }: ProjectSettingsDialogProps) {
   const [colorPickerOpen, setColorPickerOpen] = useState(false);
   const [iconPickerOpen, setIconPickerOpen] = useState(false);
+  const [editedTitle, setEditedTitle] = useState<string | undefined>(undefined);
+  const [editedTheme, setEditedTheme] = useState<string | undefined>(undefined);
+  const [editedIcon, setEditedIcon] = useState<IconName | undefined>(undefined);
 
-  const { isPending: isLoadingRandomTheme, mutateAsync: randomTheme } =
-    useMutation(rpcClient.icon.randomTheme.mutationOptions());
+  const { data: questConfig, isLoading: isLoadingQuestConfig } = useQuery(
+    rpcClient.workspace.project.questConfig.live.bySubdomain.experimental_liveOptions(
+      { enabled: open, input: { subdomain: project.subdomain } },
+    ),
+  );
 
   const {
     isPending: isLoadingUpdateQuestConfig,
@@ -60,63 +65,50 @@ export function ProjectSettingsDialog({
     rpcClient.workspace.project.questConfig.update.mutationOptions(),
   );
 
-  const { data: questConfig, isLoading: isLoadingQuestConfig } = useQuery(
-    rpcClient.workspace.project.questConfig.live.bySubdomain.experimental_liveOptions(
-      { input: { subdomain: project.subdomain } },
-    ),
-  );
-
-  const [title, setTitle] = useState("");
-  const [theme, setTheme] = useState<null | string>(null);
-  const [icon, setIcon] = useState<IconName>(ICON_DEFAULT);
-
   const serverTitle = questConfig?.name ?? "";
-  const serverTheme = questConfig?.icon?.background ?? null;
-  const serverIcon = questConfig?.icon?.lucide ?? ICON_DEFAULT;
+  const serverTheme = questConfig?.icon?.background;
+  const serverIcon = questConfig?.icon?.lucide;
 
-  useEffect(() => {
-    if (open) {
-      setTitle(serverTitle);
-      setTheme(serverTheme);
-      setIcon(serverIcon);
+  const title = editedTitle ?? serverTitle;
+  const theme = editedTheme ?? serverTheme;
+  const icon = editedIcon ?? serverIcon ?? SELECTABLE_APP_ICONS[0];
+
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen) {
+      setEditedTitle(undefined);
+      setEditedTheme(undefined);
+      setEditedIcon(undefined);
     }
-  }, [open, serverTitle, serverTheme, serverIcon]);
-
-  useEffect(() => {
-    if (open && !theme && !serverTheme && !isLoadingRandomTheme) {
-      void randomTheme({}).then((result) => {
-        setTheme(result.theme);
-      });
-    }
-  }, [open, theme, serverTheme, isLoadingRandomTheme, randomTheme]);
-
-  const displayTitle = title || serverTitle;
-  const displayTheme = theme ?? serverTheme;
-  const displayIcon = icon;
+    onOpenChange(newOpen);
+  };
 
   const handleSave = async () => {
+    const finalTitle = title.trim();
+    if (!finalTitle) {
+      return;
+    }
+
     await updateQuestConfig({
       description: questConfig?.description,
       icon:
-        project.mode === "app-builder" && displayTheme
+        project.mode === "app-builder" && theme
           ? {
-              background: displayTheme,
-              lucide: displayIcon,
+              background: theme,
+              lucide: icon,
             }
           : undefined,
-      name: displayTitle,
+      name: finalTitle,
       subdomain: project.subdomain,
     });
-    onOpenChange(false);
+    handleOpenChange(false);
   };
 
-  const IconComponent = IconMap[displayIcon];
-  const isLoading =
-    isLoadingRandomTheme || isLoadingUpdateQuestConfig || isLoadingQuestConfig;
+  const IconComponent = IconMap[icon];
+  const isLoading = isLoadingUpdateQuestConfig || isLoadingQuestConfig;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!displayTitle.trim() || isLoading) {
+    if (!title.trim() || isLoading) {
       return;
     }
 
@@ -124,7 +116,7 @@ export function ProjectSettingsDialog({
   };
 
   return (
-    <Dialog onOpenChange={onOpenChange} open={open}>
+    <Dialog onOpenChange={handleOpenChange} open={open}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{dialogTitle}</DialogTitle>
@@ -134,10 +126,7 @@ export function ProjectSettingsDialog({
             <div className="flex gap-6 items-center">
               {project.mode === "app-builder" && (
                 <div className="flex flex-col items-center gap-2 min-w-fit pt-2">
-                  <AppIcon
-                    background={displayTheme ?? undefined}
-                    icon={displayIcon}
-                  />
+                  <AppIcon background={theme} icon={icon} />
                 </div>
               )}
 
@@ -148,10 +137,10 @@ export function ProjectSettingsDialog({
                     disabled={isLoading}
                     id="title"
                     onChange={(e) => {
-                      setTitle(e.target.value);
+                      setEditedTitle(e.target.value);
                     }}
                     placeholder="Enter project title..."
-                    value={displayTitle}
+                    value={title}
                   />
                 </div>
 
@@ -202,13 +191,13 @@ export function ProjectSettingsDialog({
                                       <CommandItem
                                         className={cn(
                                           "w-10 h-10 rounded-lg border-2 transition-all hover:scale-105 flex items-center justify-center cursor-pointer p-0",
-                                          displayIcon === iconOption
+                                          icon === iconOption
                                             ? "border-foreground ring-2 ring-ring bg-accent"
                                             : "border-muted hover:border-foreground",
                                         )}
                                         key={iconOption}
                                         onSelect={() => {
-                                          setIcon(iconOption);
+                                          setEditedIcon(iconOption);
                                           setIconPickerOpen(false);
                                         }}
                                         value={iconOption}
@@ -244,8 +233,7 @@ export function ProjectSettingsDialog({
                               <div
                                 className="w-4 h-4 rounded-full"
                                 style={{
-                                  background:
-                                    displayTheme ?? DEFAULT_THEME_GRADIENT,
+                                  background: theme ?? DEFAULT_THEME_GRADIENT,
                                 }}
                               />
                             </div>
@@ -258,13 +246,13 @@ export function ProjectSettingsDialog({
                               <button
                                 className={cn(
                                   "w-8 h-8 rounded-lg border-2 transition-all hover:scale-105",
-                                  displayTheme === themeOption
+                                  theme === themeOption
                                     ? "border-foreground ring-2 ring-ring"
                                     : "border-muted hover:border-foreground",
                                 )}
                                 key={themeOption}
                                 onClick={() => {
-                                  setTheme(themeOption);
+                                  setEditedTheme(themeOption);
                                   setColorPickerOpen(false);
                                 }}
                                 style={{
@@ -285,14 +273,14 @@ export function ProjectSettingsDialog({
           <DialogFooter>
             <Button
               onClick={() => {
-                onOpenChange(false);
+                handleOpenChange(false);
               }}
               type="button"
               variant="outline"
             >
               Cancel
             </Button>
-            <Button disabled={isLoading || !displayTitle.trim()} type="submit">
+            <Button disabled={isLoading || !title.trim()} type="submit">
               Save
             </Button>
           </DialogFooter>
