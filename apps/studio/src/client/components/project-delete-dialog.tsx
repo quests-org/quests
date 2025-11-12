@@ -54,6 +54,7 @@ export function ProjectDeleteDialog({
           <SmallAppIcon
             background={project.icon?.background}
             icon={project.icon?.lucide}
+            mode={project.mode}
             size="lg"
           />
           <div className="flex flex-col gap-1">

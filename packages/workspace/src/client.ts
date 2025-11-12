@@ -9,6 +9,7 @@ export type {
   WorkspaceAppSandbox,
 } from "./schemas/app";
 export type { SessionTag } from "./schemas/app-state";
+export type { QuestManifestMode } from "./schemas/quest-manifest";
 export { SessionMessage } from "./schemas/session/message";
 export { SessionMessageDataPart } from "./schemas/session/message-data-part";
 export { SessionMessagePart } from "./schemas/session/message-part";

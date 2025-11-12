@@ -219,6 +219,7 @@ function RouteComponent() {
                         <SmallAppIcon
                           background={project.icon.background}
                           icon={project.icon.lucide}
+                          mode={project.mode}
                           size="xl"
                         />
                       )}

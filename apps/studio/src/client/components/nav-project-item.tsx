@@ -150,8 +150,8 @@ export function NavProjectItem({
           <SmallAppIcon
             background={project.icon?.background}
             icon={project.icon?.lucide}
+            mode={project.mode}
             size="sm"
-            variant={project.isRunnable ? "app" : "chat"}
           />
           <Input
             autoFocus
@@ -182,8 +182,8 @@ export function NavProjectItem({
             <SmallAppIcon
               background={project.icon?.background}
               icon={project.icon?.lucide}
+              mode={project.mode}
               size="sm"
-              variant={project.isRunnable ? "app" : "chat"}
             />
             <span onDoubleClick={handleStartEdit}>{project.title}</span>
           </InternalLink>

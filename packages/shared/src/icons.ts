@@ -127,7 +127,6 @@ const THEME_GRADIENTS = {
 export const THEMES = Object.values(THEME_GRADIENTS);
 
 export const DEFAULT_THEME_GRADIENT = THEME_GRADIENTS.zinc;
-export const DEFAULT_LUCIDE_APP_ICON = "square-dashed";
 
 export const AppThemesSchema = z.enum(THEMES);
 

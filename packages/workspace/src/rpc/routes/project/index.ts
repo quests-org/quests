@@ -1,7 +1,6 @@
 import { call, eventIterator } from "@orpc/server";
 import { AIGatewayModelURI } from "@quests/ai-gateway";
 import {
-  DEFAULT_LUCIDE_APP_ICON,
   DEFAULT_THEME_GRADIENT,
   SelectableAppIconsSchema,
   THEMES,
@@ -170,13 +169,7 @@ const create = base
       await updateQuestManifest(
         result.value.projectConfig.subdomain,
         context.workspaceConfig,
-        {
-          icon: {
-            background: DEFAULT_THEME_GRADIENT,
-            lucide: DEFAULT_LUCIDE_APP_ICON,
-          },
-          name: defaultProjectName(message),
-        },
+        { mode: "app-builder", name: defaultProjectName(message) },
       );
 
       publisher.publish("project.updated", {
@@ -570,7 +563,7 @@ const createChat = base
       await updateQuestManifest(
         result.value.projectConfig.subdomain,
         context.workspaceConfig,
-        { name: defaultProjectName(message) },
+        { mode: "chat", name: defaultProjectName(message) },
       );
 
       publisher.publish("project.updated", {

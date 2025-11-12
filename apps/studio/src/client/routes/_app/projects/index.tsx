@@ -399,7 +399,6 @@ function RouteComponent() {
       {projectToEdit && (
         <ProjectSettingsDialog
           dialogTitle="Project Settings"
-          isChat={!projectToEdit.isRunnable}
           onOpenChange={(open) => {
             setSettingsDialogOpen(open);
             if (!open) {
@@ -407,7 +406,7 @@ function RouteComponent() {
             }
           }}
           open={settingsDialogOpen}
-          subdomain={projectToEdit.subdomain}
+          project={projectToEdit}
         />
       )}
     </div>

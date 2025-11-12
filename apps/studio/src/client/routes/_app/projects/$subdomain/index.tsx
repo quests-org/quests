@@ -113,9 +113,10 @@ export const Route = createFileRoute("/_app/projects/$subdomain/")({
           title: title(project.data),
         },
         {
-          content: project.data?.isRunnable
-            ? "square-dashed"
-            : "message-circle",
+          content:
+            project.data?.mode === "app-builder"
+              ? "square-dashed"
+              : "message-circle",
           name: META_TAG_LUCIDE_ICON,
         },
       ],
@@ -202,7 +203,7 @@ function RouteComponent() {
       />
 
       <div className="flex flex-1 overflow-hidden">
-        {project.isRunnable ? (
+        {project.mode === "app-builder" ? (
           <ProjectViewApp
             project={project}
             selectedModelURI={projectState.selectedModelURI}

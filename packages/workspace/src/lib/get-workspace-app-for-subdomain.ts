@@ -14,9 +14,9 @@ import {
 } from "../schemas/subdomains";
 import { type WorkspaceConfig } from "../types";
 import { createAppConfig } from "./app-config/create";
-import { isRunnable } from "./app-dir-utils";
 import { getAppDirTimestamps } from "./get-app-dir-timestamps";
 import { projectSubdomainForSubdomain } from "./project-subdomain-for-subdomain";
+import { getQuestManifest } from "./quest-manifest";
 import { urlsForSubdomain } from "./url-for-subdomain";
 
 type GetWorkspaceAppResult<T extends AppSubdomain> = T extends PreviewSubdomain
@@ -40,7 +40,6 @@ export async function getWorkspaceAppForSubdomain<T extends AppSubdomain>(
   const baseApp: Omit<WorkspaceApp, "project" | "subdomain"> = {
     createdAt: timestamps.createdAt,
     folderName: appConfig.folderName,
-    isRunnable: await isRunnable(appConfig.appDir),
     title: appConfig.folderName,
     type: appConfig.type,
     updatedAt: timestamps.updatedAt,
@@ -78,8 +77,11 @@ export async function getWorkspaceAppForSubdomain<T extends AppSubdomain>(
     } satisfies WorkspaceAppPreview as unknown as GetWorkspaceAppResult<T>;
   }
 
+  const questsConfig = await getQuestManifest(appConfig.appDir);
   return {
     ...baseApp,
+    // Fallback to app-builder, which was the default mode before the mode field was added
+    mode: questsConfig?.mode ?? "app-builder",
     subdomain: appConfig.subdomain,
     title: appConfig.folderName,
     type: appConfig.type,

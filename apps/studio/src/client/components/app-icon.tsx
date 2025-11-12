@@ -1,19 +1,23 @@
 import { IconMap } from "@/client/components/app-icons";
 import { cn } from "@/client/lib/utils";
-import {
-  DEFAULT_LUCIDE_APP_ICON,
-  DEFAULT_THEME_GRADIENT,
-  type IconName,
-} from "@quests/shared/icons";
+import { DEFAULT_THEME_GRADIENT, type IconName } from "@quests/shared/icons";
+import { type QuestManifestMode } from "@quests/workspace/client";
+
+const DEFAULT_LUCIDE_ICON_MAP: Record<QuestManifestMode, IconName> = {
+  "app-builder": "square-dashed",
+  chat: "message-circle",
+};
 
 export function AppIcon({
   background = DEFAULT_THEME_GRADIENT,
-  icon = DEFAULT_LUCIDE_APP_ICON,
+  icon,
 }: {
   background?: string;
   icon?: IconName;
 }) {
-  const IconComponent = IconMap[icon];
+  const IconComponent = icon
+    ? IconMap[icon]
+    : IconMap[DEFAULT_LUCIDE_ICON_MAP["app-builder"]];
 
   return (
     <div
@@ -51,27 +55,20 @@ export function AppIcon({
 
 export function SmallAppIcon({
   background,
-  icon,
+  mode,
+  // eslint-disable-next-line perfectionist/sort-objects
+  icon = DEFAULT_LUCIDE_ICON_MAP[mode],
   size = "sm",
-  variant,
 }: {
   background?: string;
   icon?: IconName;
+  mode: QuestManifestMode;
   size?: "lg" | "md" | "sm" | "xl";
-  variant?: "app" | "chat";
 }) {
-  const shouldShowIcon = icon || variant;
-
-  if (!shouldShowIcon) {
-    return null;
-  }
-
-  const finalIcon =
-    icon || (variant === "chat" ? "message-circle" : DEFAULT_LUCIDE_APP_ICON);
   const finalBackground = background || DEFAULT_THEME_GRADIENT;
-  const IconComponent = IconMap[finalIcon];
+  const IconComponent = IconMap[icon];
 
-  if (variant === "chat") {
+  if (mode === "chat") {
     return (
       <IconComponent
         className={cn(

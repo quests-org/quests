@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { QuestManifestSchema } from "./quest-manifest";
+import { QuestManifestModeSchema, QuestManifestSchema } from "./quest-manifest";
 import {
   PreviewSubdomainSchema,
   ProjectSubdomainSchema,
@@ -13,7 +13,6 @@ const WorkspaceAppBaseSchema = z.object({
   description: QuestManifestSchema.shape.description.optional(),
   folderName: z.string(),
   icon: QuestManifestSchema.shape.icon.optional(),
-  isRunnable: z.boolean(),
   title: z.string(),
   updatedAt: z.date(),
   urls: z.object({
@@ -29,6 +28,7 @@ export const WorkspaceAppPreviewSchema = WorkspaceAppBaseSchema.extend({
 });
 
 export const WorkspaceAppProjectSchema = WorkspaceAppBaseSchema.extend({
+  mode: QuestManifestModeSchema,
   subdomain: ProjectSubdomainSchema,
   type: z.literal("project"),
 });

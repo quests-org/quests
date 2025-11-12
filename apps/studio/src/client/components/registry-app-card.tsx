@@ -64,6 +64,7 @@ export function RegistryAppCard({
             <SmallAppIcon
               background={icon?.background}
               icon={icon?.lucide}
+              mode="app-builder"
               size="lg"
             />
           )}

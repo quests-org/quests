@@ -8,7 +8,7 @@ import {
   SELECTABLE_APP_ICONS,
   THEMES,
 } from "@quests/shared/icons";
-import { type ProjectSubdomain } from "@quests/workspace/client";
+import { type WorkspaceAppProject } from "@quests/workspace/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -36,18 +36,16 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
 interface ProjectSettingsDialogProps {
   dialogTitle: string;
-  isChat: boolean;
   onOpenChange: (open: boolean) => void;
   open: boolean;
-  subdomain: ProjectSubdomain;
+  project: WorkspaceAppProject;
 }
 
 export function ProjectSettingsDialog({
   dialogTitle,
-  isChat,
   onOpenChange,
   open,
-  subdomain,
+  project,
 }: ProjectSettingsDialogProps) {
   const [colorPickerOpen, setColorPickerOpen] = useState(false);
   const [iconPickerOpen, setIconPickerOpen] = useState(false);
@@ -64,9 +62,7 @@ export function ProjectSettingsDialog({
 
   const { data: questConfig, isLoading: isLoadingQuestConfig } = useQuery(
     rpcClient.workspace.project.questConfig.live.bySubdomain.experimental_liveOptions(
-      {
-        input: { subdomain },
-      },
+      { input: { subdomain: project.subdomain } },
     ),
   );
 
@@ -102,14 +98,14 @@ export function ProjectSettingsDialog({
     await updateQuestConfig({
       description: questConfig?.description,
       icon:
-        !isChat && displayTheme
+        project.mode === "app-builder" && displayTheme
           ? {
               background: displayTheme,
               lucide: displayIcon,
             }
           : undefined,
       name: displayTitle,
-      subdomain,
+      subdomain: project.subdomain,
     });
     onOpenChange(false);
   };
@@ -136,7 +132,7 @@ export function ProjectSettingsDialog({
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 pt-4 pb-8">
             <div className="flex gap-6 items-center">
-              {!isChat && (
+              {project.mode === "app-builder" && (
                 <div className="flex flex-col items-center gap-2 min-w-fit pt-2">
                   <AppIcon
                     background={displayTheme ?? undefined}
@@ -159,7 +155,7 @@ export function ProjectSettingsDialog({
                   />
                 </div>
 
-                {!isChat && (
+                {project.mode === "app-builder" && (
                   <div className="grid grid-cols-2 gap-3">
                     <div className="grid gap-2">
                       <Label htmlFor="icon">Icon</Label>

@@ -90,8 +90,8 @@ export function createColumns({
             <SmallAppIcon
               background={project.icon?.background}
               icon={project.icon?.lucide}
+              mode={project.mode}
               size="sm"
-              variant={project.isRunnable ? "app" : "chat"}
             />
             <span className="font-medium truncate">{project.title}</span>
             <AppStatusIcon

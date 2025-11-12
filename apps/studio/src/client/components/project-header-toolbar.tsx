@@ -69,7 +69,7 @@ export function ProjectHeaderToolbar({
   selectedVersion,
   sidebarCollapsed,
 }: ProjectHeaderToolbarProps) {
-  const isChat = !project.isRunnable;
+  const isChat = project.mode === "chat";
   const iframeRef = useAtomValue(projectIframeRefAtom);
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
   const [restoreModalOpen, setRestoreModalOpen] = useState(false);
@@ -215,8 +215,8 @@ export function ProjectHeaderToolbar({
                   <SmallAppIcon
                     background={project.icon?.background}
                     icon={project.icon?.lucide}
+                    mode={project.mode}
                     size="md"
-                    variant={project.isRunnable ? "app" : "chat"}
                   />
                   <span className="truncate">{project.title}</span>
                   <ChevronDown className="h-3 w-3 shrink-0" />
@@ -420,10 +420,9 @@ export function ProjectHeaderToolbar({
 
       <ProjectSettingsDialog
         dialogTitle="Project Settings"
-        isChat={isChat}
         onOpenChange={setSettingsDialogOpen}
         open={settingsDialogOpen}
-        subdomain={project.subdomain}
+        project={project}
       />
 
       {selectedVersion && (
