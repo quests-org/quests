@@ -115,6 +115,10 @@ export function NavProjectItem({
         newName: editValue.trim(),
         subdomain: project.subdomain,
       });
+      // wait for the project to be renamed
+      await new Promise((resolve) => {
+        setTimeout(resolve, 100);
+      });
       setIsEditing(false);
     } catch {
       setEditValue(project.title);
@@ -151,7 +155,7 @@ export function NavProjectItem({
           />
           <Input
             autoFocus
-            className="h-7 text-sm"
+            className="h-7 text-sm -ml-1 pl-1"
             disabled={isRenameLoading}
             onBlur={() => {
               void handleSaveEdit();
