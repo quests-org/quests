@@ -4,3 +4,4 @@ alwaysApply: false
 ---
 
 - Declare component props inline instead of using a separate interface.
+- Avoid `useEffect` whenever possible in favor of making logic declarative.
