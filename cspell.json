@@ -1,7 +1,21 @@
 {
-  "files": ["**", ".github/**", ".vscode/**"],
-  "dictionaries": ["typescript", "bash", "css", "html", "node", "npm"],
-  "ignorePaths": ["pnpm-lock.yaml", "registry/"],
+  "files": [
+    "**",
+    ".github/**",
+    ".vscode/**"
+  ],
+  "dictionaries": [
+    "typescript",
+    "bash",
+    "css",
+    "html",
+    "node",
+    "npm"
+  ],
+  "ignorePaths": [
+    "pnpm-lock.yaml",
+    "registry/"
+  ],
   "useGitignore": true,
   "words": [
     "aisdk",
@@ -39,6 +53,7 @@
     "kmscng",
     "konsole",
     "kwallet",
+    "kwalletd",
     "libsecret",
     "listify",
     "lmstudio",
@@ -65,6 +80,7 @@
     "qwen",
     "qwik",
     "radashi",
+    "Recents",
     "retryable",
     "rharkor",
     "rmrf",
@@ -80,8 +96,7 @@
     "Vuedotjs",
     "waitlist",
     "worktree",
-    "zkochan",
-    "kwalletd"
+    "zkochan"
   ],
   "import": [
     "@cspell/dict-typescript/cspell-ext.json",

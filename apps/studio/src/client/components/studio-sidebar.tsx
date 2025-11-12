@@ -167,7 +167,7 @@ export function StudioSidebar({
           <NavProjects
             isFavorites={false}
             projects={filteredProjects}
-            title="Projects"
+            title="Recents"
           />
         )}
       </SidebarContent>
