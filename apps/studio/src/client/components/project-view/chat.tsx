@@ -75,8 +75,8 @@ export function ProjectViewChat({
         className="flex-1 flex items-start justify-center overflow-y-auto"
         ref={scrollRef}
       >
-        <div className="flex flex-col w-full max-w-3xl bg-background">
-          <div className="p-4">
+        <div className="flex flex-col min-h-full w-full max-w-3xl bg-background">
+          <div className="flex-1 p-4">
             <div className="flex flex-col gap-4" ref={contentRef}>
               {selectedSessionId && (
                 <SessionStream
