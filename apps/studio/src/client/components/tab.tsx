@@ -133,7 +133,7 @@ export const Tab = ({ isSelected, item, onClick, onRemove }: Props) => {
           <div className="group-hover:hidden">
             {parsedSubdomainResult?.data && !isSelected && (
               <AppStatusIcon
-                className="h-4 w-4 shrink-0"
+                className="size-4 shrink-0"
                 subdomain={parsedSubdomainResult.data}
               />
             )}

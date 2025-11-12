@@ -193,7 +193,7 @@ export function NavProjectItem({
       {!isMenuOpen && !isEditing && (
         <div className="absolute top-1.5 right-1 flex aspect-square w-5 items-center justify-center rounded-md group-hover:hidden pointer-events-none">
           <AppStatusIcon
-            className="h-4 w-4 shrink-0"
+            className="size-4 shrink-0 mt-1"
             subdomain={project.subdomain}
           />
         </div>
