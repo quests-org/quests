@@ -11,7 +11,7 @@ export const Route = createFileRoute("/_app/discover/templates/")({
         title: "Templates - Discover",
       },
       {
-        content: "layout-grid",
+        content: "square-dashed",
         name: META_TAG_LUCIDE_ICON,
       },
     ],

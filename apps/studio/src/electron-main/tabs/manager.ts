@@ -9,12 +9,14 @@ import {
 import {
   META_TAG_ICON_BACKGROUND,
   META_TAG_LUCIDE_ICON,
+  META_TAG_PROJECT_MODE,
   SingleTabOnlyRoutes,
   type Tab,
   type TabState,
 } from "@/shared/tabs";
 import { is } from "@electron-toolkit/utils";
 import { type IconName } from "@quests/shared/icons";
+import { type QuestManifestMode } from "@quests/workspace/client";
 import { type BaseWindow, Menu, shell, WebContentsView } from "electron";
 import { type LogFunctions } from "electron-log";
 import Store from "electron-store";
@@ -135,10 +137,12 @@ export class TabsManager {
     return {
       selectedTabId: this.selectedTabId,
       tabs: this.tabs.map((tab) => ({
+        background: tab.background,
         icon: tab.icon,
         id: tab.id,
         pathname: tab.pathname,
         pinned: tab.pinned,
+        projectMode: tab.projectMode,
         title: tab.title,
       })),
     };
@@ -434,19 +438,40 @@ export class TabsManager {
   }
 
   private async updateMetaTags(tab: TabWithView) {
-    const metaTags = (await tab.webView.webContents.executeJavaScript(`
-    (() => {
-      const icon = document.querySelector('meta[name="${META_TAG_LUCIDE_ICON}"]');
-      const background = document.querySelector('meta[name="${META_TAG_ICON_BACKGROUND}"]');
-      return {
-        icon: icon ? icon.getAttribute('content') : null,
-        background: background ? background.getAttribute('content') : null,
-      }
-    })()
-  `)) as { background: null | string; icon: IconName | null };
+    interface MetaTagsResult {
+      background: null | string;
+      icon: IconName | null;
+      projectMode: null | QuestManifestMode;
+    }
+
+    const META_TAGS = [
+      { key: "icon", name: META_TAG_LUCIDE_ICON },
+      { key: "background", name: META_TAG_ICON_BACKGROUND },
+      { key: "projectMode", name: META_TAG_PROJECT_MODE },
+    ] as const;
+
+    const queries = META_TAGS.map(
+      ({ key, name }) => `${key}: (() => {
+        const el = document.querySelector('meta[name="${name}"]');
+        return el ? el.getAttribute('content') : null;
+      })()`,
+    ).join(",\n        ");
+
+    const script = `
+      (() => {
+        return {
+          ${queries}
+        };
+      })()
+    `;
+
+    const metaTags = (await tab.webView.webContents.executeJavaScript(
+      script,
+    )) as MetaTagsResult;
 
     tab.icon = metaTags.icon ?? undefined;
     tab.background = metaTags.background ?? undefined;
+    tab.projectMode = metaTags.projectMode ?? undefined;
   }
 
   private updateTabBounds(tab: TabWithView) {

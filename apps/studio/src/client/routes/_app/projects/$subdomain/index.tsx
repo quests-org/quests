@@ -6,7 +6,11 @@ import { ProjectViewChat } from "@/client/components/project-view/chat";
 import { useProjectRouteSync } from "@/client/hooks/use-project-route-sync";
 import { migrateProjectSubdomain } from "@/client/lib/migrate-project-subdomain";
 import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
-import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
+import {
+  META_TAG_ICON_BACKGROUND,
+  META_TAG_LUCIDE_ICON,
+  META_TAG_PROJECT_MODE,
+} from "@/shared/tabs";
 import { safe } from "@orpc/client";
 import {
   ProjectSubdomainSchema,
@@ -113,11 +117,16 @@ export const Route = createFileRoute("/_app/projects/$subdomain/")({
           title: title(project.data),
         },
         {
-          content:
-            project.data?.mode === "app-builder"
-              ? "square-dashed"
-              : "message-circle",
+          content: project.data?.icon?.lucide,
           name: META_TAG_LUCIDE_ICON,
+        },
+        {
+          content: project.data?.icon?.background,
+          name: META_TAG_ICON_BACKGROUND,
+        },
+        {
+          content: project.data?.mode,
+          name: META_TAG_PROJECT_MODE,
         },
       ],
     };

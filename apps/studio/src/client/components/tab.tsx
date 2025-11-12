@@ -2,10 +2,8 @@ import { SmallAppIcon } from "@/client/components/app-icon";
 import { AppStatusIcon } from "@/client/components/app-status-icon";
 import { TabIcon } from "@/client/components/tab-icon";
 import { cn } from "@/client/lib/utils";
-import { rpcClient } from "@/client/rpc/client";
 import { type Tab as TabData } from "@/shared/tabs";
 import { ProjectSubdomainSchema } from "@quests/workspace/client";
-import { skipToken, useQuery } from "@tanstack/react-query";
 import { motion, Reorder } from "framer-motion";
 import { X } from "lucide-react";
 
@@ -48,15 +46,6 @@ export const Tab = ({ isSelected, item, onClick, onRemove }: Props) => {
     ? ProjectSubdomainSchema.safeParse(rawSubdomain)
     : undefined;
 
-  const { data: project } = useQuery(
-    rpcClient.workspace.project.live.bySubdomain.experimental_liveOptions({
-      enabled: !!subdomainResult?.success,
-      input: subdomainResult?.data
-        ? { subdomain: subdomainResult.data }
-        : skipToken,
-    }),
-  );
-
   return (
     <Reorder.Item
       animate={{
@@ -91,11 +80,11 @@ export const Tab = ({ isSelected, item, onClick, onRemove }: Props) => {
     >
       <motion.div className="flex items-center flex-1 min-w-0">
         <div className={item.pinned ? "" : "mr-2"}>
-          {project?.icon ? (
+          {item.projectMode ? (
             <SmallAppIcon
-              background={project.icon.background}
-              icon={project.icon.lucide}
-              mode={project.mode}
+              background={item.background}
+              icon={item.icon}
+              mode={item.projectMode}
               size="sm"
             />
           ) : item.icon ? (

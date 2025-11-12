@@ -11,7 +11,7 @@ export const Route = createFileRoute("/_app/discover/apps/")({
         title: "Apps - Discover",
       },
       {
-        content: "layout-grid",
+        content: "telescope",
         name: META_TAG_LUCIDE_ICON,
       },
     ],
