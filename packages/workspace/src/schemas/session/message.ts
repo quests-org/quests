@@ -7,7 +7,7 @@ import {
 } from "ai";
 import { z } from "zod";
 
-import { AgentNameSchema } from "../../agents/types";
+import { type AgentName } from "../../agents/types";
 import { StoreId } from "../store-id";
 import { SessionMessagePart } from "./message-part";
 
@@ -68,7 +68,12 @@ export namespace SessionMessage {
     sessionId: StoreId.SessionSchema,
   });
   const ContextMetadataSchema = BaseMetadataSchema.extend({
-    agentName: AgentNameSchema,
+    agentName: z
+      .custom<AgentName>()
+      // Migrate legacy "code" agent name to "app-builder"
+      .transform((value) =>
+        (value as string) === "code" ? "app-builder" : value,
+      ),
     realRole: z.enum(["system", "user", "assistant"]),
   });
   const SystemMetadataSchema = BaseMetadataSchema;
