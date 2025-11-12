@@ -54,7 +54,6 @@ export type WorkspaceEvent =
   | CreatePreviewParentEvent
   | SessionMachineParentEvent
   | WorkspaceServerParentEvent
-  | { type: "addAppBeingTrashed"; value: { subdomain: AppSubdomain } }
   | {
       type: "addMessage";
       value: {
@@ -97,6 +96,7 @@ export type WorkspaceEvent =
       type: "internal.updateHeartbeat";
       value: { createdAt: number; subdomain: AppSubdomain };
     }
+  | { type: "prepareToTrashApp"; value: { subdomain: AppSubdomain } }
   | { type: "removeAppBeingTrashed"; value: { subdomain: AppSubdomain } }
   | {
       type: "restartAllRuntimes";
@@ -254,28 +254,6 @@ export const workspaceMachine = setup({
           self,
         });
       },
-    },
-    addAppBeingTrashed: {
-      actions: [
-        assign({
-          appsBeingTrashed: ({ context, event }) => [
-            ...context.appsBeingTrashed,
-            event.value.subdomain,
-          ],
-        }),
-        raise(({ event }) => {
-          return {
-            type: "stopRuntime",
-            value: { includeChildren: true, subdomain: event.value.subdomain },
-          };
-        }),
-        raise(({ event }) => {
-          return {
-            type: "stopSessions",
-            value: { subdomain: event.value.subdomain },
-          };
-        }),
-      ],
     },
     addMessage: [
       {
@@ -513,6 +491,28 @@ export const workspaceMachine = setup({
           });
         }
       },
+    },
+    prepareToTrashApp: {
+      actions: [
+        assign({
+          appsBeingTrashed: ({ context, event }) => [
+            ...context.appsBeingTrashed,
+            event.value.subdomain,
+          ],
+        }),
+        raise(({ event }) => {
+          return {
+            type: "stopRuntime",
+            value: { includeChildren: true, subdomain: event.value.subdomain },
+          };
+        }),
+        raise(({ event }) => {
+          return {
+            type: "stopSessions",
+            value: { subdomain: event.value.subdomain },
+          };
+        }),
+      ],
     },
     removeAppBeingTrashed: {
       actions: assign(({ context, event }) => {

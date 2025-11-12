@@ -62,7 +62,7 @@ export const llmRequestLogic = fromPromise<
     role: "assistant",
   };
 
-  function abortMessage() {
+  function saveAbortMessage() {
     assistantMessage.metadata.error = {
       kind: "aborted",
       message: "Aborted",
@@ -109,14 +109,14 @@ export const llmRequestLogic = fromPromise<
   }
 
   if (signal.aborted) {
-    abortMessage();
+    saveAbortMessage();
     return { message: assistantMessage, parts: await getCurrentParts() };
   }
 
   await scopedStore.saveMessage(assistantMessage);
 
   const abortListener = () => {
-    abortMessage();
+    saveAbortMessage();
   };
 
   signal.addEventListener("abort", abortListener);
@@ -128,7 +128,7 @@ export const llmRequestLogic = fromPromise<
 
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (signal.aborted) {
-    abortMessage();
+    saveAbortMessage();
     return { message: assistantMessage, parts: await getCurrentParts() };
   }
 
