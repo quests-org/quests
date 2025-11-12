@@ -1,6 +1,6 @@
 import { type Connector, createDatabase, type Database } from "db0";
 import sqlite from "db0/connectors/node-sqlite";
-import { ok, ResultAsync } from "neverthrow";
+import { err, ok, ResultAsync } from "neverthrow";
 import fs from "node:fs/promises";
 import { type DatabaseSync } from "node:sqlite";
 import { createStorage } from "unstorage";
@@ -23,6 +23,9 @@ const STORAGE_TO_DATABASE = new WeakMap<
   ReturnType<typeof createStorage>,
   Database<Connector<DatabaseSync>>
 >();
+
+// Tracks storages that are currently being disposed to prevent recreation
+const DISPOSING_STORAGES = new Set<AppSubdomain>();
 
 export function disposeSessionsStoreStorage(subdomain: AppSubdomain) {
   return ResultAsync.fromPromise(
@@ -57,6 +60,14 @@ export function getSessionsStoreStorage(appConfig: AppConfig) {
       }),
   )
     .andThen(() => {
+      if (DISPOSING_STORAGES.has(appConfig.subdomain)) {
+        return err(
+          new TypedError.Storage(
+            `Cannot create storage for ${appConfig.subdomain} while it is being deleted`,
+          ),
+        );
+      }
+
       const existingStorage = STORAGE_CACHE.get(appConfig.subdomain);
       if (existingStorage) {
         return ok(existingStorage);
@@ -80,4 +91,12 @@ export function getSessionsStoreStorage(appConfig: AppConfig) {
     .orTee(() => {
       STORAGE_CACHE.delete(appConfig.subdomain);
     });
+}
+
+export function markStorageAsDisposing(subdomain: AppSubdomain) {
+  DISPOSING_STORAGES.add(subdomain);
+}
+
+export function unmarkStorageAsDisposing(subdomain: AppSubdomain) {
+  DISPOSING_STORAGES.delete(subdomain);
 }
