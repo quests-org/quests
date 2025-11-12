@@ -197,7 +197,7 @@ function RouteComponent() {
         {hasProjects && (
           <div className="mt-16">
             <div className="flex items-center justify-between mb-2">
-              <h2 className="text-lg font-medium text-foreground">Recents</h2>
+              <h2 className="text-lg font-medium text-foreground">Projects</h2>
               {(projectsData?.projects.length ?? 0) > 4 && (
                 <InternalLink
                   className="text-xs text-muted-foreground hover:text-foreground transition-colors"
