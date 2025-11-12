@@ -2,7 +2,7 @@ import { MockLanguageModelV2 } from "ai/test";
 import { describe, expect, it } from "vitest";
 
 import { StoreId } from "../schemas/store-id";
-import { generateAppTitle } from "./generate-app-title";
+import { generateAppTitle, generateChatTitle } from "./generate-project-title";
 
 function createMockMessage(text: string) {
   return {
@@ -141,5 +141,17 @@ describe("generateProjectTitle", () => {
 
     expect(title.split(" ")).toHaveLength(5);
     expect(title).toBe("Chat アプリ with ファイル upload");
+  });
+});
+
+describe("generateChatTitle", () => {
+  it("should generate a chat title in sentence case from user message", async () => {
+    const model = createMockModel("Weather inquiry");
+    const message = createMockMessage("What is the weather like today?");
+
+    const result = await generateChatTitle({ message, model });
+    const title = result._unsafeUnwrap();
+
+    expect(title).toBe("Weather inquiry");
   });
 });

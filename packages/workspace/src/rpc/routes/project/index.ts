@@ -1,6 +1,7 @@
 import { call, eventIterator } from "@orpc/server";
 import { AIGatewayModelURI } from "@quests/ai-gateway";
 import {
+  DEFAULT_LUCIDE_APP_ICON,
   DEFAULT_THEME_GRADIENT,
   SelectableAppIconsSchema,
   THEMES,
@@ -15,7 +16,7 @@ import { newChatConfig } from "../../../lib/app-config/new-chat";
 import { createProject } from "../../../lib/create-project";
 import { defaultProjectName } from "../../../lib/default-project-name";
 import { duplicateProject } from "../../../lib/duplicate-project";
-import { generateAppTitle } from "../../../lib/generate-app-title";
+import { generateChatTitle } from "../../../lib/generate-project-title";
 import { generateProjectTitleAndIcon } from "../../../lib/generate-project-title-and-icon";
 import { getApp, getProjects } from "../../../lib/get-apps";
 import { getWorkspaceAppForSubdomain } from "../../../lib/get-workspace-app-for-subdomain";
@@ -170,7 +171,11 @@ const create = base
         result.value.projectConfig.subdomain,
         context.workspaceConfig,
         {
-          name: defaultProjectName(message, "App"),
+          icon: {
+            background: DEFAULT_THEME_GRADIENT,
+            lucide: DEFAULT_LUCIDE_APP_ICON,
+          },
+          name: defaultProjectName(message),
         },
       );
 
@@ -565,9 +570,7 @@ const createChat = base
       await updateQuestManifest(
         result.value.projectConfig.subdomain,
         context.workspaceConfig,
-        {
-          name: defaultProjectName(message, "Chat"),
-        },
+        { name: defaultProjectName(message) },
       );
 
       publisher.publish("project.updated", {
@@ -575,10 +578,9 @@ const createChat = base
       });
 
       void (async () => {
-        const titleResult = await generateAppTitle({
+        const titleResult = await generateChatTitle({
           message,
           model,
-          templateTitle: "Chat",
         });
 
         if (titleResult.isOk()) {
