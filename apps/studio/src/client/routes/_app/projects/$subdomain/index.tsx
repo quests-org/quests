@@ -34,7 +34,7 @@ const projectSearchSchema = z.object({
 });
 
 function title(project?: WorkspaceAppProject) {
-  return `${project?.title ?? "Not Found"} · ${project?.isRunnable ? "Project" : "Chat"}`;
+  return project?.title ?? "Not Found";
 }
 
 /* eslint-disable perfectionist/sort-objects */
