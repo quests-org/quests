@@ -1,3 +1,4 @@
+import { agentNameAtomFamily } from "@/client/atoms/agent-name";
 import { AgentPicker } from "@/client/components/agent-picker";
 import { AIProviderGuardDialog } from "@/client/components/ai-provider-guard-dialog";
 import { ModelPicker } from "@/client/components/model-picker";
@@ -30,7 +31,7 @@ import {
 import { rpcClient } from "../rpc/client";
 
 interface PromptInputProps {
-  agentName: AgentName;
+  agentName?: AgentName;
   allowOpenInNewTab?: boolean;
   atomKey: PromptValueAtomKey;
   autoFocus?: boolean;
@@ -88,6 +89,10 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
     const textareaInnerRef = useRef<HTMLTextAreaElement>(null);
     const hasAIProvider = useAtomValue(hasAIProviderConfigAtom);
     const [value, setValue] = useAtom(promptValueAtomFamily(atomKey));
+    const [atomAgentName] = useAtom(agentNameAtomFamily(atomKey));
+
+    const effectiveAgentName: AgentName =
+      atomKey === "$$new-tab$$" ? atomAgentName : (agentName ?? "app-builder");
 
     useImperativeHandle(ref, () => ({
       focus: () => {
@@ -177,7 +182,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
         }
 
         onSubmit({
-          agentName,
+          agentName: effectiveAgentName,
           modelURI,
           openInNewTab,
           prompt: value.trim(),
@@ -188,7 +193,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
         }
       },
       [
-        agentName,
+        effectiveAgentName,
         allowOpenInNewTab,
         modelURI,
         onSubmit,
@@ -240,8 +245,9 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
 
           <div className="flex items-center gap-2 justify-end pt-2">
             <div className="flex items-center gap-2 flex-1 min-w-0">
-              {showAgentPicker && onAgentChange && (
+              {showAgentPicker && (
                 <AgentPicker
+                  atomKey={atomKey === "$$new-tab$$" ? atomKey : undefined}
                   disabled={disabled}
                   onValueChange={onAgentChange}
                   value={agentName}

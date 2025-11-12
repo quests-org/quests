@@ -18,7 +18,7 @@ import {
   NEW_ISSUE_URL,
   PRODUCT_NAME,
 } from "@quests/shared";
-import { type AgentName, StoreId } from "@quests/workspace/client";
+import { StoreId } from "@quests/workspace/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   createFileRoute,
@@ -28,7 +28,6 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import { useAtom } from "jotai";
 import { ArrowRight, FlaskConical } from "lucide-react";
-import { useState } from "react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/new-tab")({
@@ -44,7 +43,6 @@ export const Route = createFileRoute("/_app/new-tab")({
 
 function RouteComponent() {
   const [selectedModelURI, setSelectedModelURI] = useAtom(selectedModelURIAtom);
-  const [agentName, setAgentName] = useState<AgentName>("app-builder");
   const navigate = useNavigate({ from: "/new-tab" });
   const router = useRouter();
   const { addTab } = useTabs();
@@ -77,7 +75,6 @@ function RouteComponent() {
           </div>
           <div>
             <PromptInput
-              agentName={agentName}
               allowOpenInNewTab
               atomKey="$$new-tab$$"
               autoFocus
@@ -86,7 +83,6 @@ function RouteComponent() {
                 createProjectMutation.isPending || createChatMutation.isPending
               }
               modelURI={selectedModelURI}
-              onAgentChange={setAgentName}
               onModelChange={setSelectedModelURI}
               onSubmit={({
                 agentName: submitAgentName,
@@ -157,11 +153,6 @@ function RouteComponent() {
                   },
                 );
               }}
-              placeholder={
-                agentName === "chat"
-                  ? "Start a conversation…"
-                  : "Describe the app you want to create…"
-              }
               showAgentPicker
             />
             <p className="text-xs text-muted-foreground/50 mt-2 text-right">
