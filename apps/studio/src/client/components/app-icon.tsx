@@ -76,7 +76,7 @@ export function SmallAppIcon({
       <IconComponent
         className={cn(
           "text-muted-foreground shrink-0",
-          size === "sm" && "size-4",
+          size === "sm" && "size-4 mx-0.5", // Align with app icons
           size === "md" && "size-5",
           size === "lg" && "size-7",
           size === "xl" && "size-9",

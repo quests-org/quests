@@ -87,13 +87,12 @@ export function createColumns({
             params={{ subdomain: project.subdomain }}
             to="/projects/$subdomain"
           >
-            {project.icon && (
-              <SmallAppIcon
-                background={project.icon.background}
-                icon={project.icon.lucide}
-                size="sm"
-              />
-            )}
+            <SmallAppIcon
+              background={project.icon?.background}
+              icon={project.icon?.lucide}
+              size="sm"
+              variant={project.isRunnable ? "app" : "chat"}
+            />
             <span className="font-medium truncate">{project.title}</span>
             <AppStatusIcon
               className="h-4 w-4 shrink-0"
