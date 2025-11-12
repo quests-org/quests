@@ -30,6 +30,11 @@ import {
 } from "../atoms/prompt-value";
 import { rpcClient } from "../rpc/client";
 
+const AGENT_PLACEHOLDER_MAP: Record<AgentName, string> = {
+  "app-builder": "Describe the app you want to create…",
+  chat: "Start a conversation…",
+};
+
 interface PromptInputProps {
   agentName?: AgentName;
   allowOpenInNewTab?: boolean;
@@ -78,7 +83,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
       onModelChange,
       onStop,
       onSubmit,
-      placeholder = "Type a message",
+      placeholder,
       showAgentPicker = false,
       submitButtonContent,
     },
@@ -238,7 +243,9 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
             disabled={disabled}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
-            placeholder={placeholder}
+            placeholder={
+              placeholder ?? AGENT_PLACEHOLDER_MAP[effectiveAgentName]
+            }
             ref={textareaInnerRef}
             value={value}
           />

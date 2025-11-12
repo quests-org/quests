@@ -155,6 +155,7 @@ export function ProjectViewChat({
                   },
                 );
               }}
+              placeholder="Continue the conversation…"
               ref={promptInputRef}
             />
           </div>

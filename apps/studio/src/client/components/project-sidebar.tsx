@@ -361,6 +361,7 @@ export function ProjectSidebar({
                 );
               }
             }}
+            placeholder="Describe your changes…"
             ref={promptInputRef}
           />
         </div>
