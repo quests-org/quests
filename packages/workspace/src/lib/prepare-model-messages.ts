@@ -50,7 +50,6 @@ export async function prepareModelMessages({
   ): message is SessionMessage.ContextWithParts {
     return (
       message.role === "session-context" &&
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       message.metadata.agentName === agent.name
     );
   }
