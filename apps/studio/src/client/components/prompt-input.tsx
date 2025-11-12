@@ -30,7 +30,7 @@ import {
 import { rpcClient } from "../rpc/client";
 
 interface PromptInputProps {
-  agentName?: AgentName;
+  agentName: AgentName;
   allowOpenInNewTab?: boolean;
   atomKey: PromptValueAtomKey;
   autoFocus?: boolean;
@@ -62,7 +62,7 @@ interface PromptInputRef {
 export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
   (
     {
-      agentName = "code",
+      agentName,
       allowOpenInNewTab = false,
       atomKey,
       autoFocus = false,

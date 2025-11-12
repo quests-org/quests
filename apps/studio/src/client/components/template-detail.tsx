@@ -139,6 +139,7 @@ export function TemplateDetail({
 
       <div className="mb-6">
         <PromptInput
+          agentName="app-builder"
           atomKey={appDetails.preview.subdomain}
           autoFocus={false}
           autoResizeMaxHeight={200}

@@ -1,7 +1,8 @@
+import { appBuilderAgent } from "./app-builder";
 import { chatAgent } from "./chat";
-import { codeAgent } from "./code";
+import { type AgentName, type AnyAgent } from "./types";
 
 export const AGENTS = {
+  "app-builder": appBuilderAgent,
   chat: chatAgent,
-  code: codeAgent,
-} as const;
+} as const satisfies Record<AgentName, AnyAgent>;

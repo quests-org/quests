@@ -84,7 +84,7 @@ export function ProjectSidebar({
 
     createMessage.mutate(
       {
-        agentName: "code",
+        agentName: "app-builder",
         message: {
           id: messageId,
           metadata: {
@@ -242,6 +242,7 @@ export function ProjectSidebar({
       {filterMode === "chat" && (
         <div className="p-4" ref={bottomSectionRef}>
           <PromptInput
+            agentName="app-builder"
             atomKey={project.subdomain}
             autoFocus
             isLoading={
@@ -312,7 +313,7 @@ export function ProjectSidebar({
 
                 createSessionWithMessage.mutate(
                   {
-                    agentName: "code",
+                    agentName: "app-builder",
                     message: {
                       id: messageId,
                       metadata: {

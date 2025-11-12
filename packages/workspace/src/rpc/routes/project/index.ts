@@ -186,7 +186,7 @@ const create = base
       context.workspaceRef.send({
         type: "createSession",
         value: {
-          agentName: "code",
+          agentName: "app-builder",
           message,
           model,
           sessionId,
@@ -327,7 +327,7 @@ const createFromEval = base
       context.workspaceRef.send({
         type: "createSession",
         value: {
-          agentName: "code",
+          agentName: "app-builder",
           message,
           model,
           sessionId,

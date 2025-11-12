@@ -25,7 +25,7 @@ const AGENT_OPTIONS: AgentOption[] = [
   {
     displayName: "Create App",
     icon: AppWindowMac,
-    value: "code",
+    value: "app-builder",
   },
   {
     displayName: "Chat",
@@ -38,7 +38,7 @@ export function AgentPicker({
   className = "",
   disabled = false,
   onValueChange,
-  value = "code",
+  value,
 }: {
   className?: string;
   disabled?: boolean;

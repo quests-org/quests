@@ -49,7 +49,7 @@ describe("llmRequestLogic", () => {
     {
       id: mockMessageId,
       metadata: {
-        agentName: "code",
+        agentName: "app-builder",
         createdAt: mockDate,
         realRole: "assistant",
         sessionId,
@@ -147,7 +147,7 @@ describe("llmRequestLogic", () => {
                 agentTools: {},
                 getMessages,
                 getTools: () => Promise.resolve(Object.values(TOOLS)),
-                name: "code",
+                name: "app-builder",
                 onFinish: () => Promise.resolve(),
                 onStart: () => Promise.resolve(),
                 shouldContinue: () => Promise.resolve(true),
@@ -209,7 +209,7 @@ describe("llmRequestLogic", () => {
         {
           "id": "msg_00000000018888888888888889",
           "metadata": {
-            "agentName": "code",
+            "agentName": "app-builder",
             "createdAt": 2013-08-31T12:00:00.000Z,
             "realRole": "assistant",
             "sessionId": "ses_00000000018888888888888888",
@@ -305,7 +305,7 @@ describe("llmRequestLogic", () => {
         {
           "id": "msg_00000000018888888888888889",
           "metadata": {
-            "agentName": "code",
+            "agentName": "app-builder",
             "createdAt": 2013-08-31T12:00:00.000Z,
             "realRole": "assistant",
             "sessionId": "ses_00000000018888888888888888",
@@ -404,7 +404,7 @@ describe("llmRequestLogic", () => {
         {
           "id": "msg_00000000018888888888888889",
           "metadata": {
-            "agentName": "code",
+            "agentName": "app-builder",
             "createdAt": 2013-08-31T12:00:00.000Z,
             "realRole": "assistant",
             "sessionId": "ses_00000000018888888888888888",
@@ -504,7 +504,7 @@ describe("llmRequestLogic", () => {
         {
           "id": "msg_00000000018888888888888889",
           "metadata": {
-            "agentName": "code",
+            "agentName": "app-builder",
             "createdAt": 2013-08-31T12:00:00.000Z,
             "realRole": "assistant",
             "sessionId": "ses_00000000018888888888888888",
@@ -608,7 +608,7 @@ describe("llmRequestLogic", () => {
         {
           "id": "msg_00000000018888888888888889",
           "metadata": {
-            "agentName": "code",
+            "agentName": "app-builder",
             "createdAt": 2013-08-31T12:00:00.000Z,
             "realRole": "assistant",
             "sessionId": "ses_00000000018888888888888888",
@@ -715,7 +715,7 @@ describe("llmRequestLogic", () => {
         {
           "id": "msg_00000000018888888888888889",
           "metadata": {
-            "agentName": "code",
+            "agentName": "app-builder",
             "createdAt": 2013-08-31T12:00:00.000Z,
             "realRole": "assistant",
             "sessionId": "ses_00000000018888888888888888",
@@ -806,7 +806,7 @@ describe("llmRequestLogic", () => {
         {
           "id": "msg_00000000018888888888888889",
           "metadata": {
-            "agentName": "code",
+            "agentName": "app-builder",
             "createdAt": 2013-08-31T12:00:00.000Z,
             "realRole": "assistant",
             "sessionId": "ses_00000000018888888888888888",
@@ -908,7 +908,7 @@ describe("llmRequestLogic", () => {
         {
           "id": "msg_00000000018888888888888889",
           "metadata": {
-            "agentName": "code",
+            "agentName": "app-builder",
             "createdAt": 2013-08-31T12:00:00.000Z,
             "realRole": "assistant",
             "sessionId": "ses_00000000018888888888888888",
@@ -1000,7 +1000,7 @@ describe("llmRequestLogic", () => {
         {
           "id": "msg_00000000018888888888888889",
           "metadata": {
-            "agentName": "code",
+            "agentName": "app-builder",
             "createdAt": 2013-08-31T12:00:00.000Z,
             "realRole": "assistant",
             "sessionId": "ses_00000000018888888888888888",
@@ -1097,7 +1097,7 @@ describe("llmRequestLogic", () => {
         {
           "id": "msg_00000000018888888888888889",
           "metadata": {
-            "agentName": "code",
+            "agentName": "app-builder",
             "createdAt": 2013-08-31T12:00:00.000Z,
             "realRole": "assistant",
             "sessionId": "ses_00000000018888888888888888",
@@ -1189,7 +1189,7 @@ describe("llmRequestLogic", () => {
         {
           "id": "msg_00000000018888888888888889",
           "metadata": {
-            "agentName": "code",
+            "agentName": "app-builder",
             "createdAt": 2013-08-31T12:00:00.000Z,
             "realRole": "assistant",
             "sessionId": "ses_00000000018888888888888888",
@@ -1288,7 +1288,7 @@ describe("llmRequestLogic", () => {
           {
             "id": "msg_00000000018888888888888889",
             "metadata": {
-              "agentName": "code",
+              "agentName": "app-builder",
               "createdAt": 2013-08-31T12:00:00.000Z,
               "realRole": "assistant",
               "sessionId": "ses_00000000018888888888888888",
@@ -1366,7 +1366,7 @@ describe("llmRequestLogic", () => {
           {
             "id": "msg_00000000018888888888888889",
             "metadata": {
-              "agentName": "code",
+              "agentName": "app-builder",
               "createdAt": 2013-08-31T12:00:00.000Z,
               "realRole": "assistant",
               "sessionId": "ses_00000000018888888888888888",
@@ -1430,7 +1430,7 @@ describe("llmRequestLogic", () => {
           {
             "id": "msg_00000000018888888888888889",
             "metadata": {
-              "agentName": "code",
+              "agentName": "app-builder",
               "createdAt": 2013-08-31T12:00:00.000Z,
               "realRole": "assistant",
               "sessionId": "ses_00000000018888888888888888",
@@ -2043,7 +2043,7 @@ describe("llmRequestLogic", () => {
         {
           id: staleMessageId,
           metadata: {
-            agentName: "code",
+            agentName: "app-builder",
             createdAt: staleDate,
             realRole: "system",
             sessionId,
@@ -2083,7 +2083,7 @@ describe("llmRequestLogic", () => {
           {
             "id": "msg_00000000018888888888888889",
             "metadata": {
-              "agentName": "code",
+              "agentName": "app-builder",
               "createdAt": 2013-08-31T12:00:00.000Z,
               "realRole": "assistant",
               "sessionId": "ses_00000000018888888888888888",

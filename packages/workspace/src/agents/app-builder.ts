@@ -27,7 +27,7 @@ function formatCommitMessage(text: string): string {
   return text.slice(0, 4096);
 }
 
-export const codeAgent = setupAgent({
+export const appBuilderAgent = setupAgent({
   agentTools: pick(TOOLS, [
     "EditFile",
     // "FileTree", will be re-added as list / ls tool
@@ -39,7 +39,7 @@ export const codeAgent = setupAgent({
     "Think",
     "WriteFile",
   ]),
-  name: "code",
+  name: "app-builder",
 }).create(({ agentTools, name }) => ({
   getMessages: async ({ appConfig, envVariableNames, sessionId }) => {
     const now = getCurrentDate();

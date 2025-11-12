@@ -174,7 +174,7 @@ describe("sessionMachine", () => {
   });
 
   function createTestActor({
-    agent = AGENTS.code,
+    agent = AGENTS["app-builder"],
     appConfig = projectAppConfig,
     baseLLMRetryDelayMs = 1000,
     chunkDelayInMs = [],
@@ -388,8 +388,8 @@ describe("sessionMachine", () => {
             <text state="done">I'm done.</text>
             <data-gitCommit ref="rev-parse HEAD executed successfully in /tmp/workspace/projects/pj-test" />
           </assistant>
-          <session-context code realRole="system" />
-          <session-context code realRole="user" />
+          <session-context app-builder realRole="system" />
+          <session-context app-builder realRole="user" />
         </session>"
       `,
       );
@@ -470,8 +470,8 @@ describe("sessionMachine", () => {
             <step-start step="1" />
             <text state="done">First session</text>
           </assistant>
-          <session-context code realRole="system" />
-          <session-context code realRole="user" />
+          <session-context app-builder realRole="system" />
+          <session-context app-builder realRole="user" />
         </session>"
       `);
 
@@ -489,8 +489,8 @@ describe("sessionMachine", () => {
             <step-start step="1" />
             <text state="done">Second assistant message</text>
           </assistant>
-          <session-context code realRole="system" />
-          <session-context code realRole="user" />
+          <session-context app-builder realRole="system" />
+          <session-context app-builder realRole="user" />
         </session>"
       `,
       );
@@ -553,8 +553,8 @@ describe("sessionMachine", () => {
             <step-start step="3" />
             <text state="done">I'm done.</text>
           </assistant>
-          <session-context code realRole="system" />
-          <session-context code realRole="user" />
+          <session-context app-builder realRole="system" />
+          <session-context app-builder realRole="user" />
         </session>"
       `);
     });
@@ -625,8 +625,8 @@ describe("sessionMachine", () => {
             <step-start step="3" />
             <text state="done">I'm done.</text>
           </assistant>
-          <session-context code realRole="system" />
-          <session-context code realRole="user" />
+          <session-context app-builder realRole="system" />
+          <session-context app-builder realRole="user" />
         </session>"
       `);
     });
@@ -703,8 +703,8 @@ describe("sessionMachine", () => {
             <step-start step="3" />
             <text state="done">I'm done.</text>
           </assistant>
-          <session-context code realRole="system" />
-          <session-context code realRole="user" />
+          <session-context app-builder realRole="system" />
+          <session-context app-builder realRole="user" />
         </session>"
       `);
     });
@@ -724,8 +724,8 @@ describe("sessionMachine", () => {
             <step-start step="1" />
             <text state="done">I'm done.</text>
           </assistant>
-          <session-context code realRole="system" />
-          <session-context code realRole="user" />
+          <session-context app-builder realRole="system" />
+          <session-context app-builder realRole="user" />
         </session>"
       `);
     });
@@ -755,12 +755,12 @@ describe("sessionMachine", () => {
       const actor = createTestActor({
         agent: setupAgent({
           agentTools: pick(TOOLS, ["Choose"]),
-          name: "code",
+          name: "app-builder",
         }).create(() => ({
-          getMessages: AGENTS.code.getMessages,
-          onFinish: AGENTS.code.onFinish,
-          onStart: AGENTS.code.onStart,
-          shouldContinue: AGENTS.code.shouldContinue,
+          getMessages: AGENTS["app-builder"].getMessages,
+          onFinish: AGENTS["app-builder"].onFinish,
+          onStart: AGENTS["app-builder"].onStart,
+          shouldContinue: AGENTS["app-builder"].shouldContinue,
         })),
         chunkSets: [chooseChunks, finishChunks],
       });
@@ -818,8 +818,8 @@ describe("sessionMachine", () => {
             <step-start step="2" />
             <text state="done">I'm done.</text>
           </assistant>
-          <session-context code realRole="system" />
-          <session-context code realRole="user" />
+          <session-context app-builder realRole="system" />
+          <session-context app-builder realRole="user" />
         </session>"
       `);
     });
@@ -874,8 +874,8 @@ describe("sessionMachine", () => {
             <step-start step="2" />
             <text state="done">I'm done.</text>
           </assistant>
-          <session-context code realRole="system" />
-          <session-context code realRole="user" />
+          <session-context app-builder realRole="system" />
+          <session-context app-builder realRole="user" />
         </session>"
       `);
     });
@@ -929,8 +929,8 @@ describe("sessionMachine", () => {
             <step-start step="2" />
             <text state="done">I'm done.</text>
           </assistant>
-          <session-context code realRole="system" />
-          <session-context code realRole="user" />
+          <session-context app-builder realRole="system" />
+          <session-context app-builder realRole="user" />
         </session>"
       `);
     });
@@ -962,7 +962,8 @@ describe("sessionMachine", () => {
           actor,
           (state) =>
             state.matches({ Agent: "UsingReadOnlyTools" }) &&
-            state.context.agentRef?.getSnapshot().context.agent.name === "code",
+            state.context.agentRef?.getSnapshot().context.agent.name ===
+              "app-builder",
         ).then(async () => {
           const agentRef = actor.getSnapshot().context.agentRef;
           if (!agentRef) {
@@ -992,8 +993,8 @@ describe("sessionMachine", () => {
                 </input>
               </tool>
             </assistant>
-            <session-context code realRole="system" />
-            <session-context code realRole="user" />
+            <session-context app-builder realRole="system" />
+            <session-context app-builder realRole="user" />
           </session>"
         `);
       });
@@ -1058,8 +1059,8 @@ describe("sessionMachine", () => {
               </output>
             </tool>
           </assistant>
-          <session-context code realRole="system" />
-          <session-context code realRole="user" />
+          <session-context app-builder realRole="system" />
+          <session-context app-builder realRole="user" />
           <assistant finishReason="max-steps" model="quests-synthetic" provider="system">
             <text>Agent stopped due to maximum steps (2).</text>
           </assistant>

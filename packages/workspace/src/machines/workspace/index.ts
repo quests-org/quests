@@ -86,7 +86,7 @@ export type WorkspaceEvent =
   | {
       type: "internal.spawnSession";
       value: {
-        agentName: keyof typeof AGENTS;
+        agentName: AgentName;
         appConfig: AppConfig;
         message: SessionMessage.UserWithParts;
         model: LanguageModel;

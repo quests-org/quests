@@ -44,7 +44,7 @@ export const Route = createFileRoute("/_app/new-tab")({
 
 function RouteComponent() {
   const [selectedModelURI, setSelectedModelURI] = useAtom(selectedModelURIAtom);
-  const [agentName, setAgentName] = useState<AgentName>("code");
+  const [agentName, setAgentName] = useState<AgentName>("app-builder");
   const navigate = useNavigate({ from: "/new-tab" });
   const router = useRouter();
   const { addTab } = useTabs();
