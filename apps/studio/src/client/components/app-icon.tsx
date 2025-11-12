@@ -71,6 +71,20 @@ export function SmallAppIcon({
   const finalBackground = background || DEFAULT_THEME_GRADIENT;
   const IconComponent = IconMap[finalIcon];
 
+  if (variant === "chat") {
+    return (
+      <IconComponent
+        className={cn(
+          "text-muted-foreground shrink-0",
+          size === "sm" && "size-4",
+          size === "md" && "size-5",
+          size === "lg" && "size-7",
+          size === "xl" && "size-9",
+        )}
+      />
+    );
+  }
+
   return (
     <div
       className={cn(

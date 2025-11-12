@@ -143,13 +143,12 @@ export function NavProjectItem({
     <SidebarMenuItem className="group" key={project.subdomain}>
       {isEditing ? (
         <div className="flex items-center gap-2 h-9 px-2">
-          {project.icon && (
-            <SmallAppIcon
-              background={project.icon.background}
-              icon={project.icon.lucide}
-              size="sm"
-            />
-          )}
+          <SmallAppIcon
+            background={project.icon?.background}
+            icon={project.icon?.lucide}
+            size="sm"
+            variant={project.isRunnable ? "app" : "chat"}
+          />
           <Input
             autoFocus
             className="h-7 text-sm"
@@ -176,13 +175,12 @@ export function NavProjectItem({
             title={project.title}
             to="/projects/$subdomain"
           >
-            {project.icon && (
-              <SmallAppIcon
-                background={project.icon.background}
-                icon={project.icon.lucide}
-                size="sm"
-              />
-            )}
+            <SmallAppIcon
+              background={project.icon?.background}
+              icon={project.icon?.lucide}
+              size="sm"
+              variant={project.isRunnable ? "app" : "chat"}
+            />
             <span onDoubleClick={handleStartEdit}>{project.title}</span>
           </InternalLink>
         </SidebarMenuButton>
