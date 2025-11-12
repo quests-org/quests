@@ -216,6 +216,7 @@ function RouteComponent() {
       </div>
 
       <ProjectDeleteDialog
+        navigateOnDelete
         onOpenChange={setShowDeleteDialog}
         open={showDeleteDialog}
         project={project}

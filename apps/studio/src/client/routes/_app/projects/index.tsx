@@ -61,6 +61,7 @@ function RouteComponent() {
   const [projectToEdit, setProjectToEdit] =
     useState<null | WorkspaceAppProject>(null);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
   const filterTab = search.filter;
   const trashTerminology = getTrashTerminology();
 
@@ -203,31 +204,36 @@ function RouteComponent() {
   const confirmDeleteSelected = async (
     projectsToDelete: WorkspaceAppProject[],
   ) => {
+    setIsBulkDeleting(true);
     let successCount = 0;
     let hasError = false;
 
-    for (const project of projectsToDelete) {
-      try {
-        await trashApp(project.subdomain);
-        successCount++;
-      } catch {
-        toast.error(`Failed to delete project ${project.title}`);
-        hasError = true;
+    try {
+      for (const project of projectsToDelete) {
+        try {
+          await trashApp(project.subdomain);
+          successCount++;
+        } catch {
+          toast.error(`Failed to delete project ${project.title}`);
+          hasError = true;
+        }
       }
-    }
 
-    if (successCount > 0) {
-      toast.success(
-        `Moved ${successCount} ${successCount === 1 ? "project" : "projects"} to ${trashTerminology}`,
-      );
-      captureClientEvent("project.bulk_deleted", {
-        project_count: successCount,
-      });
-    }
-    setRowSelection({});
+      if (successCount > 0) {
+        toast.success(
+          `Moved ${successCount} ${successCount === 1 ? "project" : "projects"} to ${trashTerminology}`,
+        );
+        captureClientEvent("project.bulk_deleted", {
+          project_count: successCount,
+        });
+      }
+      setRowSelection({});
 
-    if (hasError) {
-      throw new Error("Some projects failed to delete");
+      if (hasError) {
+        throw new Error("Some projects failed to delete");
+      }
+    } finally {
+      setIsBulkDeleting(false);
     }
   };
 
@@ -323,6 +329,14 @@ function RouteComponent() {
             <div className="flex items-center justify-center py-12">
               <Loader2 className="size-6 animate-spin text-muted-foreground" />
             </div>
+          ) : isBulkDeleting ? (
+            <div className="flex flex-col items-center justify-center gap-y-4 py-12 rounded-md border bg-muted/20">
+              <Loader2 className="size-8 animate-spin text-muted-foreground" />
+              <div className="text-sm text-muted-foreground">
+                Deleting {selectedProjects.length}{" "}
+                {selectedProjects.length === 1 ? "project" : "projects"}...
+              </div>
+            </div>
           ) : (
             <ProjectsDataTable
               bulkActions={
@@ -370,6 +384,7 @@ function RouteComponent() {
 
       {projectToDelete && (
         <ProjectDeleteDialog
+          navigateOnDelete={false}
           onOpenChange={(open) => {
             setDeleteDialogOpen(open);
             if (!open) {

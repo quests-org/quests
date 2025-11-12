@@ -10,15 +10,17 @@ import { toast } from "sonner";
 import { rpcClient } from "../rpc/client";
 
 export function ProjectDeleteDialog({
+  navigateOnDelete,
   onOpenChange,
   open,
   project,
 }: {
+  navigateOnDelete: boolean;
   onOpenChange: (open: boolean) => void;
   open: boolean;
   project: WorkspaceAppProject;
 }) {
-  const { trashApp } = useTrashApp({ navigateOnDelete: true });
+  const { trashApp } = useTrashApp({ navigateOnDelete });
   const trashTerminology = getTrashTerminology();
 
   const { data: commitsData } = useQuery(
