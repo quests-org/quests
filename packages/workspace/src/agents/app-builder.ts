@@ -1,11 +1,11 @@
 import { err, ok, safeTry } from "neverthrow";
-import os from "node:os";
 import { dedent, pick } from "radashi";
 
 import { APP_NAME, WEBSITE_URL } from "../constants";
 import { TypedError } from "../lib/errors";
 import { fileTree } from "../lib/file-tree";
 import { getCurrentDate } from "../lib/get-current-date";
+import { getSystemInfo } from "../lib/get-system-info";
 import { git } from "../lib/git";
 import { GitCommands } from "../lib/git/commands";
 import { readFileWithAnyCase } from "../lib/read-file-with-any-case";
@@ -152,7 +152,7 @@ export const appBuilderAgent = setupAgent({
           state: "done",
           text: dedent`
             <system_info>
-            Operating system: ${os.platform()} ${os.release()}
+            Operating system: ${getSystemInfo()}
             </system_info>
 
             ${fileTreeResult.match(
