@@ -95,7 +95,7 @@ export function createColumns({
             />
             <span className="font-medium truncate">{project.title}</span>
             <AppStatusIcon
-              className="h-4 w-4 shrink-0"
+              className="h-4 w-4 shrink-0 ml-auto"
               subdomain={project.subdomain}
             />
           </InternalLink>
@@ -128,7 +128,7 @@ export function createColumns({
       minSize: 150,
     },
     {
-      accessorKey: "status",
+      accessorKey: "chatPreview",
       cell: ({ row }) => {
         const project = row.original;
         return <SessionStatusPreview subdomain={project.subdomain} />;
