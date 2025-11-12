@@ -8,7 +8,6 @@ import { ModelPreview } from "@/client/components/projects-data-table/model-prev
 import { PromptInput } from "@/client/components/prompt-input";
 import { Card, CardContent } from "@/client/components/ui/card";
 import { Kbd } from "@/client/components/ui/kbd";
-import { useReload } from "@/client/hooks/use-reload";
 import { useTabs } from "@/client/hooks/use-tabs";
 import { isMacOS } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
@@ -61,8 +60,6 @@ function RouteComponent() {
 
   const recentProjects = projectsData?.projects.slice(0, 4) ?? [];
   const hasProjects = (projectsData?.projects.length ?? 0) > 0;
-
-  useReload();
 
   return (
     <div className="w-full min-h-screen flex-1 flex flex-col items-center relative">

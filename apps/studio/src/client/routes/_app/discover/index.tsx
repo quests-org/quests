@@ -1,5 +1,4 @@
 import { DiscoverHorizontalSection } from "@/client/components/discover-horizontal-section";
-import { useReload } from "@/client/hooks/use-reload";
 import { vanillaRpcClient } from "@/client/rpc/client";
 import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
 import { createFileRoute } from "@tanstack/react-router";
@@ -30,7 +29,6 @@ export const Route = createFileRoute("/_app/discover/")({
 });
 
 function RouteComponent() {
-  useReload();
   const { apps, templates } = Route.useLoaderData();
 
   return (

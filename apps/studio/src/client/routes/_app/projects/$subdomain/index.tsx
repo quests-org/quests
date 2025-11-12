@@ -47,6 +47,9 @@ export const Route = createFileRoute("/_app/projects/$subdomain/")({
       };
     },
   },
+  context: () => ({
+    disableHotkeyReload: true,
+  }),
   onLeave: ({ params }) => {
     // Garbage collect project atoms
     promptValueAtomFamily.remove(params.subdomain);

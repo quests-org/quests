@@ -9,12 +9,15 @@ import {
   HeadContent,
   Outlet,
   useRouter,
+  useRouterState,
 } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
-import * as React from "react";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
+
+import { useReload } from "../hooks/use-reload";
 
 export const Route = createRootRouteWithContext<{
+  disableHotkeyReload?: boolean;
   queryClient: QueryClient;
 }>()({
   component: RootComponent,
@@ -47,6 +50,19 @@ function Root({ children }: Readonly<{ children: React.ReactNode }>) {
 
 function RootComponent() {
   const router = useRouter();
+  const matches = useRouterState({ select: (s) => s.matches });
+  const disableHotkeyReload = matches.some(
+    (match) => match.context.disableHotkeyReload,
+  );
+
+  useReload(
+    useCallback(() => {
+      if (disableHotkeyReload) {
+        return;
+      }
+      window.location.reload();
+    }, [disableHotkeyReload]),
+  );
 
   useEffect(() => {
     window.api.onNavigate((url) => {

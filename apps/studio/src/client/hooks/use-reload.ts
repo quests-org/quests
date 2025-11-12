@@ -1,7 +1,7 @@
 import { vanillaRpcClient } from "@/client/rpc/client";
 import { useEffect } from "react";
 
-export function useReload(onReload?: () => void) {
+export function useReload(onReload: () => void) {
   useEffect(() => {
     let isCancelled = false;
 
@@ -13,11 +13,7 @@ export function useReload(onReload?: () => void) {
           break;
         }
 
-        if (onReload) {
-          onReload();
-        } else {
-          window.location.reload();
-        }
+        onReload();
       }
     }
 

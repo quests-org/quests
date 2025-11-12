@@ -3,7 +3,6 @@ import {
   type BreadcrumbItem,
 } from "@/client/components/breadcrumb";
 import { DiscoverItemsGrid } from "@/client/components/discover-items-grid";
-import { useReload } from "@/client/hooks/use-reload";
 
 interface DiscoverPageLayoutProps {
   breadcrumbs?: BreadcrumbItem[];
@@ -23,8 +22,6 @@ export function DiscoverPageLayout({
   showIcon = true,
   title,
 }: DiscoverPageLayoutProps) {
-  useReload();
-
   return (
     <div className="flex-1 mx-auto max-w-4xl">
       {breadcrumbs && (
