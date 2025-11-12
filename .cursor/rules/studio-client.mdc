@@ -7,6 +7,7 @@ alwaysApply: false
 ## Project
 
 - The Studio is an Electron app.
+- Becuase we are trying to behave as a desktop app, we don't use `cursor: pointer` for links.
 - The src/client folder contains the TanStack Router app.
 - shadcn components are installed in `@/client/components/ui`.
 - Use shadcn Tailwind colors for styling, e.g. `bg-background` instead of `bg-white`.
