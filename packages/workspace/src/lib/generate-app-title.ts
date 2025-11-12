@@ -8,7 +8,7 @@ import { textForMessage } from "./text-for-message";
 
 const MAX_TITLE_WORDS = 5;
 
-export function generateProjectTitle({
+export function generateAppTitle({
   message,
   model,
   templateTitle,

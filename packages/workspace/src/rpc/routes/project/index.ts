@@ -13,8 +13,9 @@ import { DEFAULT_TEMPLATE_NAME } from "../../../constants";
 import { newProjectConfig } from "../../../lib/app-config/new";
 import { newChatConfig } from "../../../lib/app-config/new-chat";
 import { createProject } from "../../../lib/create-project";
+import { defaultProjectName } from "../../../lib/default-project-name";
 import { duplicateProject } from "../../../lib/duplicate-project";
-import { generateProjectTitle } from "../../../lib/generate-project-title";
+import { generateAppTitle } from "../../../lib/generate-app-title";
 import { generateProjectTitleAndIcon } from "../../../lib/generate-project-title-and-icon";
 import { getApp, getProjects } from "../../../lib/get-apps";
 import { getWorkspaceAppForSubdomain } from "../../../lib/get-workspace-app-for-subdomain";
@@ -163,6 +164,18 @@ const create = base
 
       await setProjectState(result.value.projectConfig.appDir, {
         selectedModelURI: modelURI,
+      });
+
+      await updateQuestManifest(
+        result.value.projectConfig.subdomain,
+        context.workspaceConfig,
+        {
+          name: defaultProjectName(message, "App"),
+        },
+      );
+
+      publisher.publish("project.updated", {
+        subdomain: result.value.projectConfig.subdomain,
       });
 
       // Not awaiting promise here because we want to return the project immediately
@@ -549,8 +562,20 @@ const createChat = base
         selectedModelURI: modelURI,
       });
 
+      await updateQuestManifest(
+        result.value.projectConfig.subdomain,
+        context.workspaceConfig,
+        {
+          name: defaultProjectName(message, "Chat"),
+        },
+      );
+
+      publisher.publish("project.updated", {
+        subdomain: result.value.projectConfig.subdomain,
+      });
+
       void (async () => {
-        const titleResult = await generateProjectTitle({
+        const titleResult = await generateAppTitle({
           message,
           model,
           templateTitle: "Chat",

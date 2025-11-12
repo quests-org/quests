@@ -7,8 +7,8 @@ import { type QuestManifest } from "../schemas/quest-manifest";
 import { type SessionMessage } from "../schemas/session/message";
 import { type ProjectSubdomainSchema } from "../schemas/subdomains";
 import { type WorkspaceConfig } from "../types";
+import { generateAppTitle } from "./generate-app-title";
 import { generateProjectIcon } from "./generate-project-icon";
-import { generateProjectTitle } from "./generate-project-title";
 import { getRegistryTemplateDetails } from "./get-registry-template-details";
 import { updateQuestManifest } from "./quest-manifest";
 
@@ -33,7 +33,7 @@ export async function generateProjectTitleAndIcon({
   );
   const templateTitle = templateDetails?.title;
   const [titleResult, iconResult] = await Promise.allSettled([
-    generateProjectTitle({
+    generateAppTitle({
       message,
       model,
       templateTitle,
