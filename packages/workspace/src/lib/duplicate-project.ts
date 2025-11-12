@@ -134,7 +134,7 @@ export async function duplicateProject(
     await updateQuestManifest(projectConfig.subdomain, workspaceConfig, {
       icon: {
         background: randomTheme,
-        lucide: existingManifest?.icon?.lucide || "box",
+        lucide: existingManifest?.icon?.lucide,
       },
       name: duplicateName,
     });
