@@ -1,6 +1,7 @@
 import { call, eventIterator } from "@orpc/server";
 import { AIGatewayModelURI } from "@quests/ai-gateway";
 import {
+  AppIconsSchema,
   DEFAULT_THEME_GRADIENT,
   SelectableAppIconsSchema,
   THEMES,
@@ -30,7 +31,6 @@ import { ProjectSubdomainSchema } from "../../../schemas/subdomains";
 import { base, toORPCError } from "../../base";
 import { publisher } from "../../publisher";
 import { projectGit } from "./git";
-import { projectQuestConfig } from "./quest-manifest";
 import { projectState } from "./state";
 import { projectVersion } from "./version";
 
@@ -426,84 +426,6 @@ const trash = base
     context.workspaceConfig.captureEvent("project.trashed");
   });
 
-const updateName = base
-  .input(z.object({ newName: z.string(), subdomain: ProjectSubdomainSchema }))
-  .output(z.void())
-  .handler(async ({ context, input }) => {
-    await updateQuestManifest(input.subdomain, context.workspaceConfig, {
-      name: input.newName,
-    });
-    publisher.publish("project.updated", {
-      subdomain: input.subdomain,
-    });
-
-    context.workspaceConfig.captureEvent("project.updated");
-  });
-
-const live = {
-  bySubdomain: base
-    .input(z.object({ subdomain: ProjectSubdomainSchema }))
-    .output(eventIterator(WorkspaceAppProjectSchema))
-    .handler(async function* ({ context, input, signal }) {
-      yield call(bySubdomain, input, { context, signal });
-
-      const projectUpdates = publisher.subscribe("project.updated", { signal });
-
-      for await (const payload of projectUpdates) {
-        if (payload.subdomain === input.subdomain) {
-          yield call(bySubdomain, input, { context, signal });
-        }
-      }
-    }),
-  bySubdomains: base
-    .input(z.object({ subdomains: ProjectSubdomainSchema.array() }))
-    .output(
-      eventIterator(
-        z
-          .discriminatedUnion("ok", [
-            z.object({
-              data: WorkspaceAppProjectSchema,
-              ok: z.literal(true),
-            }),
-            z.object({
-              error: z.object({ type: z.literal("not-found") }),
-              ok: z.literal(false),
-              subdomain: ProjectSubdomainSchema,
-            }),
-          ])
-          .array(),
-      ),
-    )
-    .handler(async function* ({ context, input, signal }) {
-      yield call(bySubdomains, input, { context, signal });
-
-      const projectUpdates = publisher.subscribe("project.updated", { signal });
-      const projectRemoved = publisher.subscribe("project.removed", { signal });
-
-      for await (const payload of mergeGenerators([
-        projectUpdates,
-        projectRemoved,
-      ])) {
-        if (input.subdomains.includes(payload.subdomain)) {
-          yield call(bySubdomains, input, { context, signal });
-        }
-      }
-    }),
-  list: base
-    .input(ListInputSchema)
-    .output(eventIterator(ProjectsWithTotalSchema))
-    .handler(async function* ({ context, input, signal }) {
-      yield call(list, input, { context, signal });
-
-      const projectUpdates = publisher.subscribe("project.updated", { signal });
-      const projectRemoved = publisher.subscribe("project.removed", { signal });
-
-      for await (const _ of mergeGenerators([projectUpdates, projectRemoved])) {
-        yield call(list, input, { context, signal });
-      }
-    }),
-};
-
 const createChat = base
   .input(
     z.object({
@@ -620,6 +542,97 @@ const createChat = base
     },
   );
 
+const update = base
+  .input(
+    z.object({
+      icon: z
+        .object({
+          background: z.string(),
+          lucide: AppIconsSchema,
+        })
+        .optional(),
+      name: z.string(),
+      subdomain: ProjectSubdomainSchema,
+    }),
+  )
+  .output(z.void())
+  .handler(async ({ context, input }) => {
+    await updateQuestManifest(input.subdomain, context.workspaceConfig, {
+      icon: input.icon,
+      name: input.name,
+    });
+
+    publisher.publish("project.updated", {
+      subdomain: input.subdomain,
+    });
+
+    context.workspaceConfig.captureEvent("project.updated");
+  });
+
+const live = {
+  bySubdomain: base
+    .input(z.object({ subdomain: ProjectSubdomainSchema }))
+    .output(eventIterator(WorkspaceAppProjectSchema))
+    .handler(async function* ({ context, input, signal }) {
+      yield call(bySubdomain, input, { context, signal });
+
+      const projectUpdates = publisher.subscribe("project.updated", { signal });
+
+      for await (const payload of projectUpdates) {
+        if (payload.subdomain === input.subdomain) {
+          yield call(bySubdomain, input, { context, signal });
+        }
+      }
+    }),
+  bySubdomains: base
+    .input(z.object({ subdomains: ProjectSubdomainSchema.array() }))
+    .output(
+      eventIterator(
+        z
+          .discriminatedUnion("ok", [
+            z.object({
+              data: WorkspaceAppProjectSchema,
+              ok: z.literal(true),
+            }),
+            z.object({
+              error: z.object({ type: z.literal("not-found") }),
+              ok: z.literal(false),
+              subdomain: ProjectSubdomainSchema,
+            }),
+          ])
+          .array(),
+      ),
+    )
+    .handler(async function* ({ context, input, signal }) {
+      yield call(bySubdomains, input, { context, signal });
+
+      const projectUpdates = publisher.subscribe("project.updated", { signal });
+      const projectRemoved = publisher.subscribe("project.removed", { signal });
+
+      for await (const payload of mergeGenerators([
+        projectUpdates,
+        projectRemoved,
+      ])) {
+        if (input.subdomains.includes(payload.subdomain)) {
+          yield call(bySubdomains, input, { context, signal });
+        }
+      }
+    }),
+  list: base
+    .input(ListInputSchema)
+    .output(eventIterator(ProjectsWithTotalSchema))
+    .handler(async function* ({ context, input, signal }) {
+      yield call(list, input, { context, signal });
+
+      const projectUpdates = publisher.subscribe("project.updated", { signal });
+      const projectRemoved = publisher.subscribe("project.removed", { signal });
+
+      for await (const _ of mergeGenerators([projectUpdates, projectRemoved])) {
+        yield call(list, input, { context, signal });
+      }
+    }),
+};
+
 export const project = {
   bySubdomain,
   bySubdomains,
@@ -630,9 +643,8 @@ export const project = {
   git: projectGit,
   list,
   live,
-  questConfig: projectQuestConfig,
   state: projectState,
   trash,
-  updateName,
+  update,
   version: projectVersion,
 };

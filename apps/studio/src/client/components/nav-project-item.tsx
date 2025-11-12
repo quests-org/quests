@@ -67,7 +67,7 @@ export function NavProjectItem({
   );
 
   const { isPending: isRenameLoading, mutateAsync: renameProject } =
-    useMutation(rpcClient.workspace.project.updateName.mutationOptions());
+    useMutation(rpcClient.workspace.project.update.mutationOptions());
 
   const openExternalLinkMutation = useMutation(
     rpcClient.utils.openExternalLink.mutationOptions(),
@@ -112,12 +112,12 @@ export function NavProjectItem({
 
     try {
       await renameProject({
-        newName: editValue.trim(),
+        name: editValue.trim(),
         subdomain: project.subdomain,
       });
-      // wait for the project to be renamed
+      // wait for client update to avoid flicker
       await new Promise((resolve) => {
-        setTimeout(resolve, 100);
+        setTimeout(resolve, 250);
       });
       setIsEditing(false);
     } catch {

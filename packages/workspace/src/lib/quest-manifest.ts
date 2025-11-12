@@ -12,18 +12,6 @@ import { type WorkspaceConfig } from "../types";
 import { absolutePathJoin } from "./absolute-path-join";
 import { createAppConfig } from "./app-config/create";
 
-export async function getProjectQuestManifest(
-  projectSubdomain: ProjectSubdomain,
-  workspaceConfig: WorkspaceConfig,
-): Promise<QuestManifest | undefined> {
-  const appConfig = createAppConfig({
-    subdomain: projectSubdomain,
-    workspaceConfig,
-  });
-
-  return getQuestManifest(appConfig.appDir);
-}
-
 export async function getQuestManifest(
   appDir: AppDir,
 ): Promise<QuestManifest | undefined> {
