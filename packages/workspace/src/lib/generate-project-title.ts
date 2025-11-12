@@ -82,7 +82,8 @@ function buildSystemPrompt(type: TitleType, templateTitle?: string): string {
     - Maximum ${MAX_TITLE_WORDS} words, single line
     - Do not use the word "app", "project", "chat", "conversation", or anything other than a descriptive title for the content
     - Return ONLY the title text in plain text format
-    - No markdown, no quotes, no formatting, no extra details
+    - No markdown, no quotes, no formatting, no extra details, no code fences, no ASCII art, no diagrams
+    - Do not include any prefixes, labels, or explanations
     - Just the plain title words, nothing else
     - Keep it concise and descriptive
     ${capitalizationRule}
@@ -121,10 +122,23 @@ function generateTitle({
       }
 
       let cleanedTitle = title.text.trim();
-      cleanedTitle = cleanedTitle.replace(/^#+\s*/, "");
-      cleanedTitle = cleanedTitle.trim();
 
-      const words = cleanedTitle.split(/\s+/);
+      cleanedTitle = cleanedTitle.replaceAll(/```[\s\S]*?```/g, "");
+      cleanedTitle = cleanedTitle.replaceAll(/```[^\n]*/g, "");
+      cleanedTitle = cleanedTitle.replaceAll(/^[#\-=*_]+\s*/gm, "");
+      cleanedTitle = cleanedTitle.replaceAll(
+        /[\u2500-\u257F\u2580-\u259F]/g,
+        "",
+      );
+      cleanedTitle = cleanedTitle.replaceAll(/^["'`]+|["'`]+$/g, "");
+      cleanedTitle = cleanedTitle.replace(
+        /^\s*(?:title|name|project|app):\s*/i,
+        "",
+      );
+      cleanedTitle = cleanedTitle.trim();
+      cleanedTitle = cleanedTitle.split("\n")[0]?.trim() ?? "";
+
+      const words = cleanedTitle.split(/\s+/).filter(Boolean);
       const limitedTitle = words.slice(0, MAX_TITLE_WORDS).join(" ");
 
       return limitedTitle;
