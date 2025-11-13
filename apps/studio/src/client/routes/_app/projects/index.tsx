@@ -26,7 +26,10 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 const projectsSearchSchema = z.object({
-  filter: z.enum(["active", "all", "favorites"]).optional().default("all"),
+  filter: z
+    .enum(["all", "apps", "chats", "active", "favorites"])
+    .optional()
+    .default("all"),
 });
 
 export const Route = createFileRoute("/_app/projects/")({
@@ -109,15 +112,37 @@ function RouteComponent() {
     );
   }, [appStates]);
 
+  const appsCount = useMemo(
+    () => projects.filter((p) => p.mode === "app-builder").length,
+    [projects],
+  );
+
+  const chatsCount = useMemo(
+    () => projects.filter((p) => p.mode === "chat").length,
+    [projects],
+  );
+
   const filteredProjects = useMemo(() => {
-    if (filterTab === "all") {
-      return projects;
+    switch (filterTab) {
+      case "active": {
+        return projects.filter((p) => activeProjectSubdomains.has(p.subdomain));
+      }
+      case "apps": {
+        return projects.filter((p) => p.mode === "app-builder");
+      }
+      case "chats": {
+        return projects.filter((p) => p.mode === "chat");
+      }
+      case "favorites": {
+        return projects.filter((p) =>
+          favoriteProjectSubdomains.has(p.subdomain),
+        );
+      }
+      default: {
+        return projects;
+      }
     }
-    if (filterTab === "favorites") {
-      return projects.filter((p) => favoriteProjectSubdomains.has(p.subdomain));
-    }
-    return projects.filter((p) => activeProjectSubdomains.has(p.subdomain));
-  }, [filterTab, projects, activeProjectSubdomains, favoriteProjectSubdomains]);
+  }, [activeProjectSubdomains, favoriteProjectSubdomains, filterTab, projects]);
 
   const selectedProjects = useMemo(() => {
     return Object.keys(rowSelection)
@@ -287,9 +312,8 @@ function RouteComponent() {
           <div className="flex items-center justify-between">
             <Tabs
               onValueChange={(v) => {
-                void navigate({
-                  search: { filter: v as "active" | "all" | "favorites" },
-                });
+                const filter = projectsSearchSchema.parse({ filter: v });
+                void navigate({ search: filter });
               }}
               value={filterTab}
             >
@@ -300,18 +324,38 @@ function RouteComponent() {
                     {projects.length}
                   </Badge>
                 </TabsTrigger>
-                <TabsTrigger value="active">
-                  Active
-                  <Badge className="ml-2 px-1.5" variant="secondary">
-                    {activeProjectSubdomains.size}
-                  </Badge>
-                </TabsTrigger>
-                <TabsTrigger value="favorites">
-                  Favorites
-                  <Badge className="ml-2 px-1.5" variant="secondary">
-                    {favoriteProjectSubdomains.size}
-                  </Badge>
-                </TabsTrigger>
+                {appsCount > 0 && chatsCount > 0 && (
+                  <TabsTrigger value="apps">
+                    Apps
+                    <Badge className="ml-2 px-1.5" variant="secondary">
+                      {appsCount}
+                    </Badge>
+                  </TabsTrigger>
+                )}
+                {appsCount > 0 && chatsCount > 0 && (
+                  <TabsTrigger value="chats">
+                    Chats
+                    <Badge className="ml-2 px-1.5" variant="secondary">
+                      {chatsCount}
+                    </Badge>
+                  </TabsTrigger>
+                )}
+                {activeProjectSubdomains.size > 0 && (
+                  <TabsTrigger value="active">
+                    Active
+                    <Badge className="ml-2 px-1.5" variant="secondary">
+                      {activeProjectSubdomains.size}
+                    </Badge>
+                  </TabsTrigger>
+                )}
+                {favoriteProjectSubdomains.size > 0 && (
+                  <TabsTrigger value="favorites">
+                    Favorites
+                    <Badge className="ml-2 px-1.5" variant="secondary">
+                      {favoriteProjectSubdomains.size}
+                    </Badge>
+                  </TabsTrigger>
+                )}
               </TabsList>
             </Tabs>
             <Button
