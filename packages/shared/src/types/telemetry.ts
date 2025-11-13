@@ -32,13 +32,24 @@ export interface AnalyticsEvents {
     ms_to_finish: number;
     ms_to_first_chunk: number;
     output_tokens: number | undefined;
+    project_mode: ProjectMode;
     reasoning_tokens?: number | undefined;
     step_count: number;
     total_tokens: number | undefined;
   }>;
-  "llm.tool_called": WithModelProperties<{ tool_name: string }>;
-  "llm.tool_executed": { success: boolean; tool_name: string };
-  "message.created": WithModelProperties<{ length: number }>;
+  "llm.tool_called": WithModelProperties<{
+    project_mode: ProjectMode;
+    tool_name: string;
+  }>;
+  "llm.tool_executed": {
+    project_mode: ProjectMode;
+    success: boolean;
+    tool_name: string;
+  };
+  "message.created": WithModelProperties<{
+    length: number;
+    project_mode: ProjectMode;
+  }>;
   "project.bulk_deleted": {
     project_count: number;
   };
@@ -47,7 +58,7 @@ export interface AnalyticsEvents {
   };
   "project.created": WithModelProperties<{
     eval_name?: string;
-    mode: ProjectMode;
+    project_mode: ProjectMode;
     template_name: string;
   }>;
   "project.forked": never;
@@ -59,10 +70,10 @@ export interface AnalyticsEvents {
   "project.share.opened": never;
   "project.share.saved_screenshot": never;
   "project.trashed": {
-    mode: ProjectMode;
+    project_mode: ProjectMode;
   };
   "project.updated": {
-    mode: ProjectMode;
+    project_mode: ProjectMode;
   };
   "provider.created": {
     provider_type: AIProviderType;

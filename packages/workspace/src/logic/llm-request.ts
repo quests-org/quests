@@ -15,6 +15,7 @@ import { type AnyAgent } from "../agents/types";
 import { type AppConfig } from "../lib/app-config/types";
 import { getCurrentDate } from "../lib/get-current-date";
 import { prepareModelMessages } from "../lib/prepare-model-messages";
+import { projectModeForSubdomain } from "../lib/project-mode-for-subdomain";
 import { Store } from "../lib/store";
 import { type SessionMessage } from "../schemas/session/message";
 import { SessionMessagePart } from "../schemas/session/message-part";
@@ -50,6 +51,7 @@ export const llmRequestLogic = fromPromise<
     typeof input.model === "string" ? "unknown" : input.model.provider;
   const modelId =
     typeof input.model === "string" ? input.model : input.model.modelId;
+  const projectMode = projectModeForSubdomain(input.appConfig.subdomain);
   const assistantMessage: SessionMessage.Assistant = {
     id: StoreId.newMessageId(),
     metadata: {
@@ -186,6 +188,7 @@ export const llmRequestLogic = fromPromise<
             ms_to_finish: msToFinish,
             ms_to_first_chunk: msToFirstChunk ?? 0,
             output_tokens: part.totalUsage.outputTokens,
+            project_mode: projectMode,
             providerId,
             reasoning_tokens: part.totalUsage.reasoningTokens,
             step_count: input.stepCount,
@@ -382,6 +385,7 @@ export const llmRequestLogic = fromPromise<
           }
           captureEvent("llm.tool_called", {
             modelId,
+            project_mode: projectMode,
             providerId,
             tool_name: part.toolName,
           });

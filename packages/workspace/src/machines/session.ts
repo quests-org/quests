@@ -17,7 +17,6 @@ import { createAssignEventError } from "../lib/assign-event-error";
 import { generateSessionTitle } from "../lib/generate-session-title";
 import { logUnhandledEvent } from "../lib/log-unhandled-event";
 import { Store } from "../lib/store";
-import { llmRequestLogic } from "../logic/llm-request";
 import { type SessionTag } from "../schemas/app-state";
 import { type SessionMessage } from "../schemas/session/message";
 import { type StoreId } from "../schemas/store-id";
@@ -68,8 +67,6 @@ export const sessionMachine = setup({
 
   actors: {
     agentMachine,
-
-    llmRequestLogic,
 
     saveQueuedMessage: fromPromise<
       SessionMessage.WithParts,

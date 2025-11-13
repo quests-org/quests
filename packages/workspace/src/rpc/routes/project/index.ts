@@ -232,8 +232,8 @@ const create = base
       );
 
       context.workspaceConfig.captureEvent("project.created", {
-        mode,
         modelId: model.modelId,
+        project_mode: mode,
         providerId: model.provider,
         template_name: templateName,
       });
@@ -323,7 +323,7 @@ const createFromEval = base
       });
 
       publisher.publish("project.updated", {
-        subdomain: result.value.projectConfig.subdomain,
+        subdomain: projectConfig.subdomain,
       });
 
       const messageId = StoreId.newMessageId();
@@ -361,19 +361,19 @@ const createFromEval = base
           message,
           model,
           sessionId,
-          subdomain: result.value.projectConfig.subdomain,
+          subdomain: projectConfig.subdomain,
         },
       });
 
       const workspaceApp = await getWorkspaceAppForSubdomain(
-        result.value.projectConfig.subdomain,
+        projectConfig.subdomain,
         context.workspaceConfig,
       );
 
       context.workspaceConfig.captureEvent("project.created", {
         eval_name: evalName,
-        mode: "app-builder",
         modelId: model.modelId,
+        project_mode: projectModeForSubdomain(projectConfig.subdomain),
         providerId: model.provider,
         template_name: DEFAULT_TEMPLATE_NAME,
       });
@@ -444,7 +444,7 @@ const trash = base
     });
 
     context.workspaceConfig.captureEvent("project.trashed", {
-      mode: projectModeForSubdomain(subdomain),
+      project_mode: projectModeForSubdomain(subdomain),
     });
   });
 
@@ -477,7 +477,7 @@ const update = base
     });
 
     context.workspaceConfig.captureEvent("project.updated", {
-      mode: projectModeForSubdomain(input.subdomain),
+      project_mode: projectModeForSubdomain(input.subdomain),
     });
   });
 

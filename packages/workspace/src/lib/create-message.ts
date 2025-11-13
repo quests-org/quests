@@ -5,6 +5,7 @@ import { type SessionMessage } from "../schemas/session/message";
 import { type AppSubdomain } from "../schemas/subdomains";
 import { type WorkspaceConfig } from "../types";
 import { createAppConfig } from "./app-config/create";
+import { projectModeForSubdomain } from "./project-mode-for-subdomain";
 import { setProjectState } from "./project-state-store";
 import { textForMessage } from "./text-for-message";
 
@@ -35,6 +36,7 @@ export async function createMessage({
   workspaceConfig.captureEvent("message.created", {
     length: messageText.length,
     modelId: model.modelId,
+    project_mode: projectModeForSubdomain(subdomain),
     providerId: model.provider,
   });
 
