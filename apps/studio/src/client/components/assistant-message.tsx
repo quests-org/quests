@@ -23,7 +23,7 @@ export const AssistantMessage = memo(function AssistantMessage({
 
   return (
     <div className="group flex flex-col items-start">
-      <div className="text-sm leading-relaxed prose prose-sm max-w-none dark:prose-invert break-words overflow-wrap-anywhere">
+      <div className="text-sm leading-relaxed prose prose-sm max-w-none dark:prose-invert break-words overflow-wrap-anywhere w-full">
         <Markdown markdown={messageText} />
       </div>
       {!isStreaming && showActions && (
