@@ -8,11 +8,10 @@ import {
   createRootRouteWithContext,
   HeadContent,
   Outlet,
-  useRouter,
   useRouterState,
 } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
 
 import { useReload } from "../hooks/use-reload";
 
@@ -49,7 +48,6 @@ function Root({ children }: Readonly<{ children: React.ReactNode }>) {
 }
 
 function RootComponent() {
-  const router = useRouter();
   const matches = useRouterState({ select: (s) => s.matches });
   const disableHotkeyReload = matches.some(
     (match) => match.context.disableHotkeyReload,
@@ -63,13 +61,6 @@ function RootComponent() {
       window.location.reload();
     }, [disableHotkeyReload]),
   );
-
-  useEffect(() => {
-    window.api.onNavigate((url) => {
-      void router.navigate({ to: url });
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   return (
     <Root>

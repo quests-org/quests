@@ -53,3 +53,7 @@ declare module "@tanstack/react-router" {
 const history = createHashHistory({});
 
 export const { queryClient, router } = createRouter({ history });
+
+window.api.onNavigate((url) => {
+  void router.navigate({ to: url });
+});
