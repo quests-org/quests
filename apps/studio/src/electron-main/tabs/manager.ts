@@ -15,8 +15,8 @@ import {
   type TabState,
 } from "@/shared/tabs";
 import { is } from "@electron-toolkit/utils";
+import { type ProjectMode } from "@quests/shared";
 import { type IconName } from "@quests/shared/icons";
-import { type QuestManifestMode } from "@quests/workspace/client";
 import { type BaseWindow, Menu, shell, WebContentsView } from "electron";
 import { type LogFunctions } from "electron-log";
 import Store from "electron-store";
@@ -441,7 +441,7 @@ export class TabsManager {
     interface MetaTagsResult {
       background: null | string;
       icon: IconName | null;
-      projectMode: null | QuestManifestMode;
+      projectMode: null | ProjectMode;
     }
 
     const META_TAGS = [

@@ -6,7 +6,7 @@ import { absolutePathJoin } from "./absolute-path-join";
 import { getCurrentDate } from "./get-current-date";
 import { pathExists } from "./path-exists";
 
-const ADJECTIVES = [
+export const ADJECTIVES = [
   "bold",
   "brave",
   "bright",

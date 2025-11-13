@@ -2,16 +2,16 @@ import { errAsync, ok, ResultAsync, safeTry } from "neverthrow";
 import fs from "node:fs/promises";
 
 import { REGISTRY_TEMPLATES_FOLDER } from "../constants";
-import { absolutePathJoin } from "../lib/absolute-path-join";
-import { type AppConfigProject } from "../lib/app-config/types";
-import { templateExists } from "../lib/app-dir-utils";
-import { copyTemplate } from "../lib/copy-template";
-import { TypedError } from "../lib/errors";
-import { git } from "../lib/git";
-import { GitCommands } from "../lib/git/commands";
 import { type WorkspaceConfig } from "../types";
+import { absolutePathJoin } from "./absolute-path-join";
+import { type AppConfigProject } from "./app-config/types";
+import { templateExists } from "./app-dir-utils";
+import { copyTemplate } from "./copy-template";
+import { TypedError } from "./errors";
+import { git } from "./git";
+import { GitCommands } from "./git/commands";
 
-export async function createProject(
+export async function createProjectApp(
   {
     projectConfig,
     templateName,

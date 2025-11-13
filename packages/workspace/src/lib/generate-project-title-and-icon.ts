@@ -1,12 +1,11 @@
 import { DEFAULT_THEME_GRADIENT, THEMES } from "@quests/shared/icons";
 import { type LanguageModel } from "ai";
 import { draw } from "radashi";
-import { type z } from "zod";
 
 import { type QuestManifest } from "../schemas/quest-manifest";
 import { type SessionMessage } from "../schemas/session/message";
-import { type ProjectSubdomainSchema } from "../schemas/subdomains";
 import { type WorkspaceConfig } from "../types";
+import { type AppConfigProject } from "./app-config/types";
 import { generateProjectIcon } from "./generate-project-icon";
 import { generateAppTitle } from "./generate-project-title";
 import { getRegistryTemplateDetails } from "./get-registry-template-details";
@@ -16,14 +15,14 @@ export async function generateProjectTitleAndIcon({
   message,
   model,
   onUpdate,
-  projectSubdomain,
+  projectConfig,
   templateName,
   workspaceConfig,
 }: {
   message: SessionMessage.UserWithParts;
   model: LanguageModel;
   onUpdate: () => void;
-  projectSubdomain: z.output<typeof ProjectSubdomainSchema>;
+  projectConfig: AppConfigProject;
   templateName: string;
   workspaceConfig: WorkspaceConfig;
 }) {
@@ -60,7 +59,7 @@ export async function generateProjectTitleAndIcon({
   }
 
   if (Object.keys(updates).length > 0) {
-    await updateQuestManifest(projectSubdomain, workspaceConfig, updates);
+    await updateQuestManifest(projectConfig.appDir, updates);
     onUpdate();
   }
 }

@@ -1,4 +1,5 @@
 import { type AIProviderType } from "../schemas/ai-gateway";
+import { type ProjectMode } from "../schemas/project-mode";
 
 export interface AnalyticsEvents {
   // Using snake_case for property names because they show with spaces in the UI
@@ -46,6 +47,7 @@ export interface AnalyticsEvents {
   };
   "project.created": WithModelProperties<{
     eval_name?: string;
+    mode: ProjectMode;
     template_name: string;
   }>;
   "project.forked": never;
@@ -56,8 +58,12 @@ export interface AnalyticsEvents {
   "project.share.copied_screenshot": never;
   "project.share.opened": never;
   "project.share.saved_screenshot": never;
-  "project.trashed": never;
-  "project.updated": never;
+  "project.trashed": {
+    mode: ProjectMode;
+  };
+  "project.updated": {
+    mode: ProjectMode;
+  };
   "provider.created": {
     provider_type: AIProviderType;
   };

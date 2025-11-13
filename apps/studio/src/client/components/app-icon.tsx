@@ -1,9 +1,9 @@
 import { IconMap } from "@/client/components/app-icons";
 import { cn } from "@/client/lib/utils";
+import { type ProjectMode } from "@quests/shared";
 import { DEFAULT_THEME_GRADIENT, type IconName } from "@quests/shared/icons";
-import { type QuestManifestMode } from "@quests/workspace/client";
 
-const DEFAULT_LUCIDE_ICON_MAP: Record<QuestManifestMode, IconName> = {
+const DEFAULT_LUCIDE_ICON_MAP: Record<ProjectMode, IconName> = {
   "app-builder": "square-dashed",
   chat: "message-circle",
 };
@@ -62,7 +62,7 @@ export function SmallAppIcon({
 }: {
   background?: string;
   icon?: IconName;
-  mode: QuestManifestMode;
+  mode: ProjectMode;
   size?: "lg" | "md" | "sm" | "xl";
 }) {
   const finalBackground = background || DEFAULT_THEME_GRADIENT;

@@ -1,5 +1,6 @@
 import { call, eventIterator } from "@orpc/server";
 import { AIGatewayModelURI } from "@quests/ai-gateway";
+import { ProjectModeSchema } from "@quests/shared";
 import {
   AppIconsSchema,
   DEFAULT_THEME_GRADIENT,
@@ -11,15 +12,16 @@ import { draw } from "radashi";
 import { z } from "zod";
 
 import { DEFAULT_TEMPLATE_NAME } from "../../../constants";
+import { createAppConfig } from "../../../lib/app-config/create";
 import { newProjectConfig } from "../../../lib/app-config/new";
-import { newChatConfig } from "../../../lib/app-config/new-chat";
-import { createProject } from "../../../lib/create-project";
+import { createProjectApp } from "../../../lib/create-project-app";
 import { defaultProjectName } from "../../../lib/default-project-name";
 import { duplicateProject } from "../../../lib/duplicate-project";
 import { generateChatTitle } from "../../../lib/generate-project-title";
 import { generateProjectTitleAndIcon } from "../../../lib/generate-project-title-and-icon";
 import { getApp, getProjects } from "../../../lib/get-apps";
 import { getWorkspaceAppForSubdomain } from "../../../lib/get-workspace-app-for-subdomain";
+import { projectModeForSubdomain } from "../../../lib/project-mode-for-subdomain";
 import { setProjectState } from "../../../lib/project-state-store";
 import { updateQuestManifest } from "../../../lib/quest-manifest";
 import { trashProject } from "../../../lib/trash-project";
@@ -113,6 +115,7 @@ const create = base
   .input(
     z.object({
       message: SessionMessage.UserSchemaWithParts,
+      mode: ProjectModeSchema,
       modelURI: AIGatewayModelURI.Schema,
       sessionId: StoreId.SessionSchema,
       templateName: z.string().optional().default(DEFAULT_TEMPLATE_NAME),
@@ -123,7 +126,7 @@ const create = base
     async ({
       context,
       errors,
-      input: { message, modelURI, sessionId, templateName },
+      input: { message, mode, modelURI, sessionId, templateName },
       signal,
     }) => {
       const [model, error] = (
@@ -145,72 +148,91 @@ const create = base
       }
 
       const projectConfig = await newProjectConfig({
+        mode,
         workspaceConfig: context.workspaceConfig,
       });
 
-      const result = await createProject(
-        {
-          projectConfig,
-          templateName,
-          workspaceConfig: context.workspaceConfig,
-        },
-        { signal },
-      );
+      if (mode === "app-builder") {
+        const result = await createProjectApp(
+          {
+            projectConfig,
+            templateName,
+            workspaceConfig: context.workspaceConfig,
+          },
+          { signal },
+        );
 
-      if (result.isErr()) {
-        context.workspaceConfig.captureException(result.error);
-        throw toORPCError(result.error, errors);
+        if (result.isErr()) {
+          context.workspaceConfig.captureException(result.error);
+          throw toORPCError(result.error, errors);
+        }
       }
 
-      await setProjectState(result.value.projectConfig.appDir, {
+      await setProjectState(projectConfig.appDir, {
         selectedModelURI: modelURI,
       });
 
-      await updateQuestManifest(
-        result.value.projectConfig.subdomain,
-        context.workspaceConfig,
-        { mode: "app-builder", name: defaultProjectName(message) },
-      );
-
-      publisher.publish("project.updated", {
-        subdomain: result.value.projectConfig.subdomain,
+      await updateQuestManifest(projectConfig.appDir, {
+        name: defaultProjectName(message),
       });
 
-      // Not awaiting promise here because we want to return the project immediately
-      generateProjectTitleAndIcon({
-        message,
-        model,
-        onUpdate: () => {
-          publisher.publish("project.updated", {
-            subdomain: result.value.projectConfig.subdomain,
+      publisher.publish("project.updated", {
+        subdomain: projectConfig.subdomain,
+      });
+
+      if (mode === "chat") {
+        void (async () => {
+          const titleResult = await generateChatTitle({
+            message,
+            model,
           });
-        },
-        projectSubdomain: result.value.projectConfig.subdomain,
-        templateName,
-        workspaceConfig: context.workspaceConfig,
-      }).catch(context.workspaceConfig.captureException);
+
+          if (titleResult.isOk()) {
+            await updateQuestManifest(projectConfig.appDir, {
+              name: titleResult.value,
+            });
+            publisher.publish("project.updated", {
+              subdomain: projectConfig.subdomain,
+            });
+          }
+        })().catch(context.workspaceConfig.captureException);
+      } else {
+        generateProjectTitleAndIcon({
+          message,
+          model,
+          onUpdate: () => {
+            publisher.publish("project.updated", {
+              subdomain: projectConfig.subdomain,
+            });
+          },
+          projectConfig,
+          templateName,
+          workspaceConfig: context.workspaceConfig,
+        }).catch(context.workspaceConfig.captureException);
+      }
 
       publisher.publish("project.updated", {
-        subdomain: result.value.projectConfig.subdomain,
+        subdomain: projectConfig.subdomain,
       });
 
       context.workspaceRef.send({
         type: "createSession",
         value: {
-          agentName: "app-builder",
+          agentName: mode === "chat" ? "chat" : "app-builder",
           message,
           model,
           sessionId,
-          subdomain: result.value.projectConfig.subdomain,
+          subdomain: projectConfig.subdomain,
         },
       });
 
       const workspaceApp = await getWorkspaceAppForSubdomain(
-        result.value.projectConfig.subdomain,
+        projectConfig.subdomain,
         context.workspaceConfig,
       );
 
       context.workspaceConfig.captureEvent("project.created", {
+        mode,
         modelId: model.modelId,
         providerId: model.provider,
         template_name: templateName,
@@ -265,10 +287,11 @@ const createFromEval = base
       }
 
       const projectConfig = await newProjectConfig({
+        mode: "app-builder",
         workspaceConfig: context.workspaceConfig,
       });
 
-      const result = await createProject(
+      const result = await createProjectApp(
         {
           projectConfig,
           templateName: DEFAULT_TEMPLATE_NAME,
@@ -291,17 +314,13 @@ const createFromEval = base
         .getOrDefault(model.modelId);
       const projectName = `${modelId} - ${evalName}`;
       const randomTheme = draw(THEMES) ?? DEFAULT_THEME_GRADIENT;
-      await updateQuestManifest(
-        projectConfig.subdomain,
-        context.workspaceConfig,
-        {
-          icon: {
-            background: randomTheme,
-            lucide: iconName,
-          },
-          name: projectName,
+      await updateQuestManifest(projectConfig.appDir, {
+        icon: {
+          background: randomTheme,
+          lucide: iconName,
         },
-      );
+        name: projectName,
+      });
 
       publisher.publish("project.updated", {
         subdomain: result.value.projectConfig.subdomain,
@@ -353,6 +372,7 @@ const createFromEval = base
 
       context.workspaceConfig.captureEvent("project.created", {
         eval_name: evalName,
+        mode: "app-builder",
         modelId: model.modelId,
         providerId: model.provider,
         template_name: DEFAULT_TEMPLATE_NAME,
@@ -423,124 +443,10 @@ const trash = base
       subdomain,
     });
 
-    context.workspaceConfig.captureEvent("project.trashed");
+    context.workspaceConfig.captureEvent("project.trashed", {
+      mode: projectModeForSubdomain(subdomain),
+    });
   });
-
-const createChat = base
-  .input(
-    z.object({
-      message: SessionMessage.UserSchemaWithParts,
-      modelURI: AIGatewayModelURI.Schema,
-      sessionId: StoreId.SessionSchema,
-    }),
-  )
-  .output(WorkspaceAppProjectSchema)
-  .handler(
-    async ({
-      context,
-      errors,
-      input: { message, modelURI, sessionId },
-      signal,
-    }) => {
-      const [model, error] = (
-        await context.modelRegistry.languageModel(
-          modelURI,
-          context.workspaceConfig.getAIProviderConfigs(),
-          {
-            captureException: context.workspaceConfig.captureException,
-            workspaceServerURL: getWorkspaceServerURL(),
-          },
-        )
-      )
-        // eslint-disable-next-line unicorn/no-await-expression-member
-        .toTuple();
-
-      if (error) {
-        context.workspaceConfig.captureException(error);
-        throw toORPCError(error, errors);
-      }
-
-      const projectConfig = newChatConfig({
-        workspaceConfig: context.workspaceConfig,
-      });
-
-      const result = await createProject(
-        {
-          projectConfig,
-          templateName: "empty",
-          workspaceConfig: context.workspaceConfig,
-        },
-        { signal },
-      );
-
-      if (result.isErr()) {
-        context.workspaceConfig.captureException(result.error);
-        throw toORPCError(result.error, errors);
-      }
-
-      await setProjectState(result.value.projectConfig.appDir, {
-        selectedModelURI: modelURI,
-      });
-
-      await updateQuestManifest(
-        result.value.projectConfig.subdomain,
-        context.workspaceConfig,
-        { mode: "chat", name: defaultProjectName(message) },
-      );
-
-      publisher.publish("project.updated", {
-        subdomain: result.value.projectConfig.subdomain,
-      });
-
-      void (async () => {
-        const titleResult = await generateChatTitle({
-          message,
-          model,
-        });
-
-        if (titleResult.isOk()) {
-          await updateQuestManifest(
-            result.value.projectConfig.subdomain,
-            context.workspaceConfig,
-            {
-              name: titleResult.value,
-            },
-          );
-          publisher.publish("project.updated", {
-            subdomain: result.value.projectConfig.subdomain,
-          });
-        }
-      })().catch(context.workspaceConfig.captureException);
-
-      publisher.publish("project.updated", {
-        subdomain: result.value.projectConfig.subdomain,
-      });
-
-      context.workspaceRef.send({
-        type: "createSession",
-        value: {
-          agentName: "chat",
-          message,
-          model,
-          sessionId,
-          subdomain: result.value.projectConfig.subdomain,
-        },
-      });
-
-      const workspaceApp = await getWorkspaceAppForSubdomain(
-        result.value.projectConfig.subdomain,
-        context.workspaceConfig,
-      );
-
-      context.workspaceConfig.captureEvent("project.created", {
-        modelId: model.modelId,
-        providerId: model.provider,
-        template_name: "chat",
-      });
-
-      return workspaceApp;
-    },
-  );
 
 const update = base
   .input(
@@ -557,7 +463,11 @@ const update = base
   )
   .output(z.void())
   .handler(async ({ context, input }) => {
-    await updateQuestManifest(input.subdomain, context.workspaceConfig, {
+    const projectConfig = createAppConfig({
+      subdomain: input.subdomain,
+      workspaceConfig: context.workspaceConfig,
+    });
+    await updateQuestManifest(projectConfig.appDir, {
       icon: input.icon,
       name: input.name,
     });
@@ -566,7 +476,9 @@ const update = base
       subdomain: input.subdomain,
     });
 
-    context.workspaceConfig.captureEvent("project.updated");
+    context.workspaceConfig.captureEvent("project.updated", {
+      mode: projectModeForSubdomain(input.subdomain),
+    });
   });
 
 const live = {
@@ -637,7 +549,6 @@ export const project = {
   bySubdomain,
   bySubdomains,
   create,
-  createChat,
   createFromEval,
   duplicate,
   git: projectGit,

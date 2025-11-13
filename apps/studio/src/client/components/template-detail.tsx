@@ -95,6 +95,7 @@ export function TemplateDetail({
             ],
             role: "user",
           },
+          mode: "app-builder",
           modelURI: selectedModelURI,
           sessionId,
           templateName: folderName,

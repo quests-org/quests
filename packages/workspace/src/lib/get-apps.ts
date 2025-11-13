@@ -37,6 +37,7 @@ import {
   isSandboxSubdomain,
   isVersionSubdomain,
 } from "./is-app";
+import { projectModeForSubdomain } from "./project-mode-for-subdomain";
 import { projectSubdomainForSubdomain } from "./project-subdomain-for-subdomain";
 import { getQuestManifest } from "./quest-manifest";
 import { urlsForSubdomain } from "./url-for-subdomain";
@@ -298,9 +299,9 @@ async function workspaceApp({
 
   if (parent === "projects") {
     const possibleSubdomain = folderNameResult.data;
-    const rawSubdomain = ProjectSubdomainSchema.safeParse(possibleSubdomain);
+    const subdomainResult = ProjectSubdomainSchema.safeParse(possibleSubdomain);
 
-    if (!rawSubdomain.success) {
+    if (!subdomainResult.success) {
       return err(new TypedError.Parse("Invalid folder name"));
     }
 
@@ -312,12 +313,11 @@ async function workspaceApp({
       description: questsConfig?.description,
       folderName: rawFolderName,
       icon: questsConfig?.icon,
-      // Fallback to app-builder, which was the default mode before the mode field was added
-      mode: questsConfig?.mode ?? "app-builder",
-      subdomain: rawSubdomain.data,
+      mode: projectModeForSubdomain(subdomainResult.data),
+      subdomain: subdomainResult.data,
       title,
       type: "project",
-      urls: urlsForSubdomain(rawSubdomain.data),
+      urls: urlsForSubdomain(subdomainResult.data),
     };
     return ok(projectApp);
   }

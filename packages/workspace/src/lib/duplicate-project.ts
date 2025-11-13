@@ -13,6 +13,7 @@ import { TypedError } from "./errors";
 import { git } from "./git";
 import { GitCommands } from "./git/commands";
 import { pathExists } from "./path-exists";
+import { projectModeForSubdomain } from "./project-mode-for-subdomain";
 import { getProjectState, setProjectState } from "./project-state-store";
 import { getQuestManifest, updateQuestManifest } from "./quest-manifest";
 
@@ -33,6 +34,7 @@ export async function duplicateProject(
     });
 
     const projectConfig = await newProjectConfig({
+      mode: projectModeForSubdomain(sourceSubdomain),
       workspaceConfig,
     });
 
@@ -131,7 +133,7 @@ export async function duplicateProject(
       : THEMES;
     const randomTheme = draw(availableThemes) ?? DEFAULT_THEME_GRADIENT;
 
-    await updateQuestManifest(projectConfig.subdomain, workspaceConfig, {
+    await updateQuestManifest(projectConfig.appDir, {
       icon: {
         background: randomTheme,
         lucide: existingManifest?.icon?.lucide,

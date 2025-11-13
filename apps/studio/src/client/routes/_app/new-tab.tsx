@@ -48,9 +48,6 @@ function RouteComponent() {
   const createProjectMutation = useMutation(
     rpcClient.workspace.project.create.mutationOptions(),
   );
-  const createChatMutation = useMutation(
-    rpcClient.workspace.project.createChat.mutationOptions(),
-  );
 
   const { data: projectsData } = useQuery(
     rpcClient.workspace.project.live.list.experimental_liveOptions({
@@ -76,9 +73,7 @@ function RouteComponent() {
               atomKey="$$new-tab$$"
               autoFocus
               autoResizeMaxHeight={300}
-              isLoading={
-                createProjectMutation.isPending || createChatMutation.isPending
-              }
+              isLoading={createProjectMutation.isPending}
               modelURI={selectedModelURI}
               onModelChange={setSelectedModelURI}
               onSubmit={({
@@ -113,14 +108,10 @@ function RouteComponent() {
                   role: "user" as const,
                 };
 
-                const mutation =
-                  submitAgentName === "chat"
-                    ? createChatMutation
-                    : createProjectMutation;
-
-                mutation.mutate(
+                createProjectMutation.mutate(
                   {
                     message,
+                    mode: submitAgentName === "chat" ? "chat" : "app-builder",
                     modelURI,
                     sessionId,
                   },

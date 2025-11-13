@@ -1,6 +1,7 @@
+import { ProjectModeSchema } from "@quests/shared";
 import { z } from "zod";
 
-import { QuestManifestModeSchema, QuestManifestSchema } from "./quest-manifest";
+import { QuestManifestSchema } from "./quest-manifest";
 import {
   PreviewSubdomainSchema,
   ProjectSubdomainSchema,
@@ -28,7 +29,7 @@ export const WorkspaceAppPreviewSchema = WorkspaceAppBaseSchema.extend({
 });
 
 export const WorkspaceAppProjectSchema = WorkspaceAppBaseSchema.extend({
-  mode: QuestManifestModeSchema,
+  mode: ProjectModeSchema,
   subdomain: ProjectSubdomainSchema,
   type: z.literal("project"),
 });

@@ -1,5 +1,5 @@
+import { type ProjectMode } from "@quests/shared";
 import { type IconName } from "@quests/shared/icons";
-import { type QuestManifestMode } from "@quests/workspace/client";
 
 export interface Tab {
   background?: string;
@@ -7,7 +7,7 @@ export interface Tab {
   id: string;
   pathname: string;
   pinned?: boolean;
-  projectMode?: QuestManifestMode;
+  projectMode?: ProjectMode;
   title?: string;
 }
 
