@@ -60,7 +60,7 @@ export function ProjectDeleteDialog({
           <div className="flex flex-col gap-1">
             <div className="font-medium text-foreground">{project.title}</div>
             <div className="flex items-center gap-3 text-xs text-muted-foreground">
-              {commitsData?.commits && (
+              {project.mode === "app-builder" && commitsData?.commits && (
                 <div className="flex items-center gap-1">
                   <GitCommitVertical className="size-3" />
                   <span>
@@ -78,18 +78,20 @@ export function ProjectDeleteDialog({
                 </div>
               )}
             </div>
-            <div className="text-xs text-muted-foreground/70">
-              {project.urls.localhost}
-            </div>
+            {project.mode === "app-builder" && (
+              <div className="text-xs text-muted-foreground/70">
+                {project.urls.localhost}
+              </div>
+            )}
           </div>
         </div>
       }
-      description={`This project will be moved to your system ${trashTerminology}. You can restore it from there if needed.`}
+      description={`This ${project.mode === "chat" ? "chat" : "project"} will be moved to your system ${trashTerminology}. You can restore it from there if needed.`}
       items={[project]}
       onDelete={handleDelete}
       onOpenChange={onOpenChange}
       open={open}
-      title={`Delete "${project.title}" project?`}
+      title={`Delete "${project.title}" ${project.mode === "chat" ? "chat" : "project"}?`}
     />
   );
 }
