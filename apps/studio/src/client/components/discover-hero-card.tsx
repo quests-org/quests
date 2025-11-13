@@ -2,6 +2,7 @@ import { InternalLink } from "@/client/components/internal-link";
 import { cn } from "@/client/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { type LinkProps } from "@tanstack/react-router";
+import { FlaskConical } from "lucide-react";
 
 import { rpcClient } from "../rpc/client";
 
@@ -25,7 +26,7 @@ export function NewTabDiscoverHeroCards() {
     }),
   );
   return (
-    <div className="grid gap-6 md:grid-cols-2">
+    <div className="grid gap-6 md:grid-cols-3">
       <NewTabDiscoverHeroCard
         heroImageDataUrl={templatesHeroImageDataUrl}
         href="/discover/templates"
@@ -37,6 +38,11 @@ export function NewTabDiscoverHeroCards() {
         href="/discover/apps"
         subtitle="Explore example apps"
         title="Apps"
+      />
+      <NewTabDiscoverHeroCard
+        href="/evals"
+        subtitle="Experiment with prompts and models"
+        title="Evals"
       />
     </div>
   );
@@ -50,6 +56,8 @@ function NewTabDiscoverHeroCard({
   title,
   ...props
 }: DiscoverHeroCardProps & React.HTMLAttributes<HTMLDivElement>) {
+  const isEvalsCard = href === "/evals";
+
   return (
     <div className={cn("group relative block", className)} {...props}>
       <div className="flex flex-col gap-2">
@@ -65,6 +73,10 @@ function NewTabDiscoverHeroCard({
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
                 </>
+              ) : isEvalsCard ? (
+                <div className="flex items-center justify-center w-full h-full bg-gradient-to-br from-brand/5 via-brand/8 to-brand/10">
+                  <FlaskConical className="size-12 text-brand" />
+                </div>
               ) : (
                 <div className="text-center">
                   <div className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />

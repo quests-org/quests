@@ -5,7 +5,6 @@ import { NavPrimary } from "@/client/components/nav-primary";
 import { NavProjects } from "@/client/components/nav-projects";
 import { NavSecondary } from "@/client/components/nav-secondary";
 import { NavUser } from "@/client/components/nav-user";
-import { Badge } from "@/client/components/ui/badge";
 import { Button } from "@/client/components/ui/button";
 import {
   Sidebar,
@@ -65,11 +64,6 @@ export function StudioSidebar({
         url: "/discover" as const,
       },
       {
-        badge: (
-          <Badge className="text-[10px] px-1 py-0 h-4" variant="brand-outline">
-            New
-          </Badge>
-        ),
         icon: FlaskConical,
         isActive: matches.some((match) =>
           match.routeId.startsWith("/_app/evals"),

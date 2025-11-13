@@ -1,3 +1,4 @@
+import { agentNameAtomFamily } from "@/client/atoms/agent-name";
 import { selectedModelURIAtom } from "@/client/atoms/selected-model";
 import { SmallAppIcon } from "@/client/components/app-icon";
 import { AppStatusIcon } from "@/client/components/app-status-icon";
@@ -6,6 +7,7 @@ import { ExternalLink } from "@/client/components/external-link";
 import { InternalLink } from "@/client/components/internal-link";
 import { ModelPreview } from "@/client/components/projects-data-table/model-preview";
 import { PromptInput } from "@/client/components/prompt-input";
+import { Badge } from "@/client/components/ui/badge";
 import { Card, CardContent } from "@/client/components/ui/card";
 import { Kbd } from "@/client/components/ui/kbd";
 import { useTabs } from "@/client/hooks/use-tabs";
@@ -26,7 +28,6 @@ import {
 } from "@tanstack/react-router";
 import { formatDistanceToNow } from "date-fns";
 import { useAtom } from "jotai";
-import { ArrowRight, FlaskConical } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/new-tab")({
@@ -42,6 +43,7 @@ export const Route = createFileRoute("/_app/new-tab")({
 
 function RouteComponent() {
   const [selectedModelURI, setSelectedModelURI] = useAtom(selectedModelURIAtom);
+  const [agentName, setAgentName] = useAtom(agentNameAtomFamily("$$new-tab$$"));
   const navigate = useNavigate({ from: "/new-tab" });
   const router = useRouter();
   const { addTab } = useTabs();
@@ -51,22 +53,17 @@ function RouteComponent() {
 
   const { data: projectsData } = useQuery(
     rpcClient.workspace.project.live.list.experimental_liveOptions({
-      input: { direction: "desc", sortBy: "updatedAt" },
+      input: { direction: "desc", limit: 6, sortBy: "updatedAt" },
     }),
   );
 
-  const recentProjects = projectsData?.projects.slice(0, 4) ?? [];
+  const recentProjects = projectsData?.projects ?? [];
   const hasProjects = (projectsData?.projects.length ?? 0) > 0;
 
   return (
     <div className="w-full min-h-screen flex-1 flex flex-col items-center relative">
       <div className="flex items-center justify-center w-full">
         <div className="w-full max-w-2xl space-y-8 px-8 pt-36">
-          <div className="text-center space-y-3">
-            <h1 className="text-4xl font-semibold text-foreground leading-tight">
-              Start your next quest
-            </h1>
-          </div>
           <div>
             <PromptInput
               allowOpenInNewTab
@@ -143,38 +140,34 @@ function RouteComponent() {
               }}
               showAgentPicker
             />
-            <p className="text-xs text-muted-foreground/50 mt-2 text-right">
-              Hold <Kbd>{isMacOS() ? "⌘" : "Ctrl"}</Kbd> to create in a new tab
-            </p>
-          </div>
-
-          <button
-            className="mt-8 w-full border border-brand/30 rounded-lg p-4 bg-gradient-to-br from-brand/5 via-brand/8 to-brand/10 hover:from-brand/8 hover:via-brand/12 hover:to-brand/15 hover:border-brand/40 transition-all group shadow-sm"
-            onClick={() => {
-              void navigate({ to: "/evals" });
-            }}
-            type="button"
-          >
-            <div className="flex items-start gap-3">
-              <FlaskConical className="size-5 text-brand shrink-0 mt-0.5" />
-              <div className="flex-1 text-left">
-                <h3 className="text-sm font-semibold mb-0.5">
-                  Experiment with Evals
-                </h3>
-                <p className="text-xs text-muted-foreground">
-                  Try built-in prompts across multiple models
-                </p>
-              </div>
-              <div className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-brand text-brand-foreground text-sm font-medium group-hover:bg-brand/90 transition-colors">
-                Run an eval
-                <ArrowRight className="size-4" />
-              </div>
+            <div className="flex items-center justify-between mt-2">
+              {agentName !== "chat" && (
+                <button
+                  className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  onClick={() => {
+                    setAgentName("chat");
+                  }}
+                  type="button"
+                >
+                  <Badge
+                    className="text-[10px] px-1.5 py-0 h-4"
+                    variant="brand-outline"
+                  >
+                    NEW
+                  </Badge>
+                  <span>Chat with models</span>
+                </button>
+              )}
+              <p className="text-xs text-muted-foreground ml-auto">
+                Hold <Kbd>{isMacOS() ? "⌘" : "Ctrl"}</Kbd> to create in a new
+                tab
+              </p>
             </div>
-          </button>
+          </div>
         </div>
       </div>
 
-      <div className="w-full max-w-4xl px-8 pb-8 flex-1 pt-16">
+      <div className="w-full max-w-6xl px-8 pb-8 flex-1 pt-16">
         <div className="flex items-center justify-between mb-2">
           <div>
             <h2 className="text-lg font-medium text-foreground">Discover</h2>
@@ -198,7 +191,7 @@ function RouteComponent() {
                 </InternalLink>
               )}
             </div>
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {recentProjects.map((project) => (
                 <InternalLink
                   key={project.subdomain}
