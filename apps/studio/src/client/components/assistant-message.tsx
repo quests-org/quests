@@ -1,25 +1,13 @@
 import { type SessionMessagePart } from "@quests/workspace/client";
-import { MoreVertical, TrashIcon } from "lucide-react";
 import { memo } from "react";
-import { toast } from "sonner";
 
 import { CopyButton } from "./copy-button";
 import { Markdown } from "./markdown";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 interface AssistantMessageProps {
   part: SessionMessagePart.TextPart;
   showActions?: boolean;
-}
-
-function handleDeleteMessage() {
-  toast.info("Ability to delete messages coming soon");
 }
 
 export const AssistantMessage = memo(function AssistantMessage({
@@ -49,30 +37,6 @@ export const AssistantMessage = memo(function AssistantMessage({
             </TooltipTrigger>
             <TooltipContent>Copy message</TooltipContent>
           </Tooltip>
-          <DropdownMenu>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    aria-label="More options"
-                    className="p-1 rounded hover:text-foreground hover:bg-muted/50 transition-colors text-muted-foreground"
-                  >
-                    <MoreVertical size={16} />
-                  </button>
-                </DropdownMenuTrigger>
-              </TooltipTrigger>
-              <TooltipContent>More options</TooltipContent>
-            </Tooltip>
-            <DropdownMenuContent align="start">
-              <DropdownMenuItem
-                onClick={handleDeleteMessage}
-                variant="destructive"
-              >
-                <TrashIcon />
-                <span>Delete message</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
       )}
     </div>
