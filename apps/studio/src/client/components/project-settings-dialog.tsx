@@ -26,7 +26,6 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -36,14 +35,12 @@ import { Input } from "./ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
 interface ProjectSettingsDialogProps {
-  dialogTitle: string;
   onOpenChange: (open: boolean) => void;
   open: boolean;
   project: WorkspaceAppProject;
 }
 
 export function ProjectSettingsDialog({
-  dialogTitle,
   onOpenChange,
   open,
   project,
@@ -52,7 +49,6 @@ export function ProjectSettingsDialog({
     <Dialog onOpenChange={onOpenChange} open={open}>
       <DialogContent>
         <ProjectSettingsForm
-          dialogTitle={dialogTitle}
           // Ensures the form is remounted when the project changes
           key={project.subdomain}
           onOpenChange={onOpenChange}
@@ -64,11 +60,9 @@ export function ProjectSettingsDialog({
 }
 
 function ProjectSettingsForm({
-  dialogTitle,
   onOpenChange,
   project,
 }: {
-  dialogTitle: string;
   onOpenChange: (open: boolean) => void;
   project: WorkspaceAppProject;
 }) {
@@ -108,11 +102,9 @@ function ProjectSettingsForm({
   return (
     <>
       <DialogHeader>
-        <DialogTitle>{dialogTitle}</DialogTitle>
-        <DialogDescription>
-          Update the project name
-          {project.mode === "app-builder" && ", icon, and color theme"}
-        </DialogDescription>
+        <DialogTitle>
+          {project.mode === "chat" ? "Chat Settings" : "Project Settings"}
+        </DialogTitle>
       </DialogHeader>
       <form
         onSubmit={(e) => {
@@ -166,7 +158,11 @@ function ProjectSettingsForm({
                         onChange={(e) => {
                           field.handleChange(e.target.value);
                         }}
-                        placeholder="Enter project title..."
+                        placeholder={
+                          project.mode === "chat"
+                            ? "Enter chat title..."
+                            : "Enter project title..."
+                        }
                         value={field.state.value}
                       />
                       {isInvalid && (

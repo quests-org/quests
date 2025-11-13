@@ -419,7 +419,6 @@ export function ProjectHeaderToolbar({
       </div>
 
       <ProjectSettingsDialog
-        dialogTitle="Project Settings"
         onOpenChange={setSettingsDialogOpen}
         open={settingsDialogOpen}
         project={project}

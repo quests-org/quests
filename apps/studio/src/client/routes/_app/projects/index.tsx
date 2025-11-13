@@ -442,7 +442,6 @@ function RouteComponent() {
 
       {projectToEdit && (
         <ProjectSettingsDialog
-          dialogTitle="Project Settings"
           onOpenChange={(open) => {
             setSettingsDialogOpen(open);
             if (!open) {
