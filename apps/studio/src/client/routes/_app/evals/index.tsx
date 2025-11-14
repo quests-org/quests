@@ -313,7 +313,7 @@ function RouteComponent() {
       </div>
 
       <div className="px-4 py-12 sm:px-6 lg:px-8 max-w-5xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1fr_350px] gap-6">
           <div className="space-y-6">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
