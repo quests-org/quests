@@ -5,6 +5,7 @@ import type {
 import type { RowSelectionState } from "@tanstack/react-table";
 
 import { DeleteWithProgressDialog } from "@/client/components/delete-with-progress-dialog";
+import { InternalLink } from "@/client/components/internal-link";
 import { ProjectDeleteDialog } from "@/client/components/project-delete-dialog";
 import { ProjectSettingsDialog } from "@/client/components/project-settings-dialog";
 import { ProjectsDataTable } from "@/client/components/projects-data-table";
@@ -358,14 +359,8 @@ function RouteComponent() {
                 )}
               </TabsList>
             </Tabs>
-            <Button
-              onClick={() => {
-                void navigate({ to: "/new-tab" });
-              }}
-              size="sm"
-              variant="secondary"
-            >
-              New project
+            <Button asChild size="sm">
+              <InternalLink to="/new-tab">New project</InternalLink>
             </Button>
           </div>
 
