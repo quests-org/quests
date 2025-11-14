@@ -18,6 +18,7 @@ import { ChatZeroState } from "./chat-zero-state";
 import { ContextMessages } from "./context-messages";
 import { DebugWrapper } from "./debug-wrapper";
 import { GitCommitCard } from "./git-commit-card";
+import { MessageActionsRow } from "./message-actions-row";
 import { MessageError } from "./message-error";
 import { ReasoningMessage } from "./reasoning-message";
 import { ContextMessage } from "./session-context-message";
@@ -142,13 +143,7 @@ export function SessionStream({
 
         switch (message.role) {
           case "assistant": {
-            return (
-              <AssistantMessage
-                key={part.metadata.id}
-                part={part}
-                showActions={showMessageActions}
-              />
-            );
+            return <AssistantMessage key={part.metadata.id} part={part} />;
           }
           case "session-context": {
             return (
@@ -221,12 +216,12 @@ export function SessionStream({
         );
       }
 
-      if (
-        part.type === "file" ||
-        part.type === "source-document" ||
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        part.type === "source-url"
-      ) {
+      if (part.type === "source-document" || part.type === "source-url") {
+        return null;
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (part.type === "file") {
         // eslint-disable-next-line no-console
         console.warn("File part not supported yet", part);
         return null;
@@ -241,7 +236,6 @@ export function SessionStream({
       app.subdomain,
       isAnyAgentRunning,
       lastMessageId,
-      showMessageActions,
     ],
   );
 
@@ -273,7 +267,30 @@ export function SessionStream({
       }
 
       const messageElements: React.ReactNode[] = [];
+      const seenSourceIds = new Set<string>();
+      const sources: (
+        | SessionMessagePart.SourceDocumentPart
+        | SessionMessagePart.SourceUrlPart
+      )[] = [];
+      let assistantTextContent = "";
+      let isAssistantMessageDone = false;
+
       for (const [partIndex, part] of message.parts.entries()) {
+        if (
+          (part.type === "source-document" || part.type === "source-url") &&
+          seenSourceIds.has(part.sourceId)
+        ) {
+          continue;
+        }
+        if (part.type === "source-document" || part.type === "source-url") {
+          seenSourceIds.add(part.sourceId);
+          sources.push(part);
+          continue;
+        }
+        if (part.type === "text" && message.role === "assistant") {
+          assistantTextContent += part.text;
+          isAssistantMessageDone = part.state === "done";
+        }
         const rendered = renderChatPart(part, message, partIndex);
         if (rendered) {
           messageElements.push(
@@ -282,6 +299,17 @@ export function SessionStream({
             </DebugWrapper>,
           );
         }
+      }
+
+      if (message.role === "assistant" && isAssistantMessageDone) {
+        messageElements.push(
+          <MessageActionsRow
+            key={`actions-${message.id}`}
+            messageText={assistantTextContent}
+            showActions={showMessageActions}
+            sources={sources}
+          />,
+        );
       }
 
       if (message.role === "assistant" && message.metadata.error) {
@@ -311,7 +339,7 @@ export function SessionStream({
     return {
       chatElements: newChatElements,
     };
-  }, [regularMessages, renderChatPart, isAnyAgentRunning]);
+  }, [regularMessages, renderChatPart, isAnyAgentRunning, showMessageActions]);
 
   const shouldShowErrorRecoveryPrompt = useMemo(() => {
     if (messages.length === 0 || isAnyAgentRunning) {
