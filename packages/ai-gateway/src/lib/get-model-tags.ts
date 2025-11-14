@@ -17,6 +17,10 @@ const MODEL_TAGS: Record<string, AIGatewayModel.ModelTag[]> = {
   "gpt-5-codex": ["coding", "recommended"],
   "gpt-5-mini": ["coding", "recommended"],
   "gpt-5-nano": ["recommended"],
+  "gpt-5.1": ["coding", "recommended"],
+  "gpt-5.1-codex": ["coding", "recommended"],
+  "gpt-5.1-codex-mini": ["coding", "recommended"],
+  "gpt-5.1-codex-nano": ["recommended"],
   "grok-4": ["coding"],
   "grok-code-fast-1": ["coding", "recommended"],
   "kimi-k2": ["coding"],
@@ -33,7 +37,7 @@ const DEFAULT_MODELS_BY_CONFIG_TYPE: Partial<
 > = {
   cerebras: ["glm-4.6"],
   google: ["gemini-2.5-pro"],
-  openai: ["gpt-5-codex"],
+  openai: ["gpt-5.1-codex-mini"],
   "z-ai": ["glm-4.6"],
 };
 
