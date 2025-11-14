@@ -48,11 +48,11 @@ export function InternalLink(
   );
 
   const performNavigation = React.useCallback(
-    (shouldOpenNewTab: boolean) => {
+    (shouldOpenNewTab: boolean, selectTab = true) => {
       const location = router.buildLocation({ params, search, to });
 
       if (shouldOpenNewTab && allowOpenNewTab) {
-        addTab({ urlPath: location.href });
+        addTab({ select: selectTab, urlPath: location.href });
       } else if (openInCurrentTab) {
         navigateInCurrentTab({ urlPath: location.href });
       } else {
@@ -77,7 +77,7 @@ export function InternalLink(
       // Handle middle click via auxclick event (more reliable for some browsers)
       if (e.button === 1) {
         e.preventDefault();
-        performNavigation(true);
+        performNavigation(true, false);
       }
       if (onAuxClick) {
         onAuxClick(e);
@@ -93,7 +93,7 @@ export function InternalLink(
       // Handle left clicks and ctrl/cmd + left click
       if (e.button === 0) {
         const shouldOpenNewTab = e.ctrlKey || e.metaKey;
-        performNavigation(shouldOpenNewTab);
+        performNavigation(shouldOpenNewTab, shouldOpenNewTab ? false : true);
       }
 
       if (onClick) {
