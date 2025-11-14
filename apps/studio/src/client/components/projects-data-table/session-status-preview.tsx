@@ -76,7 +76,10 @@ function SessionStatusText({
   }
 
   const relevantParts = latestMessage.parts.filter(
-    (part) => part.type !== "step-start",
+    (part) =>
+      part.type !== "step-start" &&
+      part.type !== "source-url" &&
+      part.type !== "source-document",
   );
   const latestPart = relevantParts.at(-1);
 
