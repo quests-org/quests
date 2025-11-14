@@ -68,6 +68,9 @@ export function ProjectsDataTable<TData, TValue>({
   });
   const titleColumn = table.getColumn("title");
   const titleFilterValue = titleColumn?.getFilterValue();
+  const rowModel = table.getRowModel();
+  const filteredRowModel = table.getFilteredRowModel();
+  const filteredSelectedRowModel = table.getFilteredSelectedRowModel();
 
   return (
     <div className="space-y-4">
@@ -109,8 +112,8 @@ export function ProjectsDataTable<TData, TValue>({
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows.length > 0 ? (
-              table.getRowModel().rows.map((row) => (
+            {rowModel.rows.length > 0 ? (
+              rowModel.rows.map((row) => (
                 <TableRow
                   data-state={row.getIsSelected() && "selected"}
                   key={row.id}
@@ -149,10 +152,13 @@ export function ProjectsDataTable<TData, TValue>({
 
       <div className="flex items-center justify-between">
         <div className="text-muted-foreground flex-1 text-sm">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length}{" "}
-          {table.getFilteredRowModel().rows.length === 1 ? "row" : "rows"}{" "}
-          selected
+          {filteredSelectedRowModel.rows.length > 0 && (
+            <>
+              {filteredSelectedRowModel.rows.length} of{" "}
+              {filteredRowModel.rows.length}{" "}
+              {filteredRowModel.rows.length === 1 ? "row" : "rows"} selected
+            </>
+          )}
         </div>
         <div className="flex items-center space-x-2">
           <Button
