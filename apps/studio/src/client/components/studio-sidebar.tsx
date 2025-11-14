@@ -12,7 +12,7 @@ import {
   SidebarFooter,
   SidebarHeader,
 } from "@/client/components/ui/sidebar";
-import { useTabs } from "@/client/hooks/use-tabs";
+import { useSelectedTab } from "@/client/hooks/tabs";
 import { useMatchesForPathname } from "@/client/lib/get-route-matches";
 import { logger } from "@/client/lib/logger";
 import { cn, isMacOS, isWindows } from "@/client/lib/utils";
@@ -41,11 +41,7 @@ export function StudioSidebar({
 
   const isSidebarVisible = sidebarVisibility?.visible ?? true;
 
-  const { data: tabsData } = useTabs();
-
-  const selectedTab = tabsData.selectedTabId
-    ? tabsData.tabs.find((tab) => tab.id === tabsData.selectedTabId)
-    : undefined;
+  const selectedTab = useSelectedTab();
 
   const matches = useMatchesForPathname(selectedTab?.pathname ?? "");
 
@@ -97,18 +93,20 @@ export function StudioSidebar({
     rpcClient.sidebar.close.mutationOptions(),
   );
 
-  // Filter out projects that are in favorites
+  const favoriteSubdomains = React.useMemo(
+    () => new Set(favorites?.map((r) => r.subdomain) ?? []),
+    [favorites],
+  );
+
   const filteredProjects = React.useMemo(() => {
     if (!projectsData?.projects || !favorites?.length) {
       return projectsData?.projects ?? [];
     }
 
-    const favoriteSubdomains = new Set(favorites.map((r) => r.subdomain));
-
     return projectsData.projects.filter(
       (project) => !favoriteSubdomains.has(project.subdomain),
     );
-  }, [projectsData?.projects, favorites]);
+  }, [projectsData?.projects, favorites, favoriteSubdomains]);
 
   const user = userResult.data;
   const isAccountsEnabled = features.questsAccounts;
@@ -155,11 +153,19 @@ export function StudioSidebar({
       <SidebarContent>
         <NavPrimary items={primaryNavItems} />
         {favorites && favorites.length > 0 && (
-          <NavProjects isFavorites projects={favorites} title="Favorites" />
+          <NavProjects
+            favoriteSubdomains={favoriteSubdomains}
+            isFavorites
+            matches={matches}
+            projects={favorites}
+            title="Favorites"
+          />
         )}
         {filteredProjects.length > 0 && (
           <NavProjects
+            favoriteSubdomains={favoriteSubdomains}
             isFavorites={false}
+            matches={matches}
             projects={filteredProjects}
             title="Projects"
           />

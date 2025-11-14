@@ -12,7 +12,7 @@ import { createColumns } from "@/client/components/projects-data-table/columns";
 import { Badge } from "@/client/components/ui/badge";
 import { Button } from "@/client/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/client/components/ui/tabs";
-import { useTabs } from "@/client/hooks/use-tabs";
+import { useTabActions } from "@/client/hooks/tabs";
 import { useTrashApp } from "@/client/hooks/use-trash-app";
 import { captureClientEvent } from "@/client/lib/capture-client-event";
 import { getTrashTerminology } from "@/client/lib/trash-terminology";
@@ -52,7 +52,7 @@ export const Route = createFileRoute("/_app/projects/")({
 
 function RouteComponent() {
   const router = useRouter();
-  const { addTab } = useTabs();
+  const { addTab } = useTabActions();
   const search = Route.useSearch();
   const navigate = Route.useNavigate();
   const [deleteSelectedDialogOpen, setDeleteSelectedDialogOpen] =

@@ -5,7 +5,7 @@ import { useCallback } from "react";
 
 import { getPromptValueStorageKey } from "../atoms/prompt-value";
 import { rpcClient } from "../rpc/client";
-import { useTabs } from "./use-tabs";
+import { useTabActions, useTabs } from "./tabs";
 
 export function useTrashApp({
   navigateOnDelete,
@@ -15,7 +15,8 @@ export function useTrashApp({
   const trashProjectMutation = useMutation(
     rpcClient.workspace.project.trash.mutationOptions(),
   );
-  const { addTab, closeTab, data: tabState, selectTab } = useTabs();
+  const { addTab, closeTab, selectTab } = useTabActions();
+  const tabs = useTabs();
   const router = useRouter();
 
   const trashApp = useCallback(
@@ -24,13 +25,13 @@ export function useTrashApp({
         subdomain: projectSubdomain,
       });
 
-      const projectTabs = tabState.tabs.filter((tab) =>
+      const projectTabs = tabs.filter((tab) =>
         tab.pathname.includes(`/projects/${projectSubdomain}`),
       );
 
       if (navigateOnDelete) {
         // Try to find an existing new tab and navigate to it
-        const newTab = tabState.tabs.find(
+        const newTab = tabs.find(
           (tab) => tab.pathname === "/new-tab" || tab.pathname === "/",
         );
 
@@ -55,7 +56,7 @@ export function useTrashApp({
     },
     [
       trashProjectMutation,
-      tabState.tabs,
+      tabs,
       closeTab,
       addTab,
       selectTab,

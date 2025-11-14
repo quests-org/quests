@@ -10,7 +10,7 @@ import { PromptInput } from "@/client/components/prompt-input";
 import { Badge } from "@/client/components/ui/badge";
 import { Card, CardContent } from "@/client/components/ui/card";
 import { Kbd } from "@/client/components/ui/kbd";
-import { useTabs } from "@/client/hooks/use-tabs";
+import { useTabActions } from "@/client/hooks/tabs";
 import { isMacOS } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
 import {
@@ -46,7 +46,7 @@ function RouteComponent() {
   const [agentName, setAgentName] = useAtom(agentNameAtomFamily("$$new-tab$$"));
   const navigate = useNavigate({ from: "/new-tab" });
   const router = useRouter();
-  const { addTab } = useTabs();
+  const { addTab } = useTabActions();
   const createProjectMutation = useMutation(
     rpcClient.workspace.project.create.mutationOptions(),
   );

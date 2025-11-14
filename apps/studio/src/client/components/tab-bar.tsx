@@ -1,17 +1,13 @@
 import { Tab } from "@/client/components/tab";
-import { useTabs } from "@/client/hooks/use-tabs";
+import { useSelectedTabId, useTabActions, useTabs } from "@/client/hooks/tabs";
 import { useRouter } from "@tanstack/react-router";
 import { motion, Reorder } from "framer-motion";
 import { Plus } from "lucide-react";
 
 export default function TabBar() {
-  const {
-    addTab,
-    closeTab,
-    data: { selectedTabId, tabs },
-    reorderTabs,
-    selectTab,
-  } = useTabs();
+  const { addTab, closeTab, reorderTabs, selectTab } = useTabActions();
+  const selectedTabId = useSelectedTabId();
+  const tabs = useTabs();
   const router = useRouter();
 
   return (

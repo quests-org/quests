@@ -13,14 +13,12 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/client/components/ui/sidebar";
-import { useTabs } from "@/client/hooks/use-tabs";
-import { useMatchesForPathname } from "@/client/lib/get-route-matches";
 import { rpcClient } from "@/client/rpc/client";
 import {
   type ProjectSubdomain,
   type WorkspaceAppProject,
 } from "@quests/workspace/client";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import {
   ArrowUpRight,
   Edit2,
@@ -30,18 +28,22 @@ import {
   StarOff,
   TrashIcon,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 
 import { AppStatusIcon } from "./app-status-icon";
 
 interface NavProjectItemProps {
+  isActive: boolean;
+  isFavorited: boolean;
   isFavorites: boolean;
   onOpenInNewTab: (subdomain: ProjectSubdomain) => void;
   onRemoveFavorite?: (subdomain: ProjectSubdomain) => void;
   project: WorkspaceAppProject;
 }
 
-export function NavProjectItem({
+export const NavProjectItem = memo(function NavProjectItem({
+  isActive,
+  isFavorited,
   isFavorites,
   onOpenInNewTab,
   onRemoveFavorite,
@@ -51,33 +53,11 @@ export function NavProjectItem({
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(project.title);
 
-  const { data: tabsData } = useTabs();
-
-  const selectedTab = tabsData.selectedTabId
-    ? tabsData.tabs.find((tab) => tab.id === tabsData.selectedTabId)
-    : undefined;
-
-  const matches = useMatchesForPathname(selectedTab?.pathname ?? "");
-
-  const isActive = matches.some(
-    (match) =>
-      match.routeId === "/_app/projects/$subdomain/" &&
-      // match subdomain mistakenly includes search params, so startsWith is used
-      match.params.subdomain.startsWith(project.subdomain),
-  );
-
   const { isPending: isRenameLoading, mutateAsync: renameProject } =
     useMutation(rpcClient.workspace.project.update.mutationOptions());
 
   const openExternalLinkMutation = useMutation(
     rpcClient.utils.openExternalLink.mutationOptions(),
-  );
-
-  const { data: favoriteProjects } = useQuery(
-    rpcClient.favorites.live.listProjects.experimental_liveOptions(),
-  );
-  const isFavorited = favoriteProjects?.some(
-    (favorite) => favorite.subdomain === project.subdomain,
   );
 
   const { mutateAsync: addFavorite } = useMutation(
@@ -265,4 +245,4 @@ export function NavProjectItem({
       )}
     </SidebarMenuItem>
   );
-}
+});
