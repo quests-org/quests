@@ -23,11 +23,12 @@ export function ProjectDeleteDialog({
   const { trashApp } = useTrashApp({ navigateOnDelete });
   const trashTerminology = getTrashTerminology();
 
-  const { data: commitsData } = useQuery(
-    rpcClient.workspace.project.git.commits.list.queryOptions({
+  const { data: commitsData } = useQuery({
+    ...rpcClient.workspace.project.git.commits.list.queryOptions({
       input: { projectSubdomain: project.subdomain },
     }),
-  );
+    enabled: project.mode === "app-builder",
+  });
 
   const { data: messageCount } = useQuery(
     rpcClient.workspace.message.count.queryOptions({
