@@ -45,9 +45,62 @@ function checkRegistrySubmodule() {
   }
 }
 
+function getNextBetaVersion(
+  baseVersion: string,
+  releaseType: "minor" | "patch",
+): string {
+  const nextVersion = semver.inc(baseVersion, releaseType);
+  if (!nextVersion) {
+    throw new Error(`Failed to increment version from ${baseVersion}`);
+  }
+
+  try {
+    const existingTags = execSync("git tag -l", { encoding: "utf8" })
+      .trim()
+      .split("\n")
+      .filter((tag) => tag.startsWith("v"))
+      .map((tag) => tag.slice(1));
+
+    const betaTags = existingTags
+      .map((tag) => semver.parse(tag))
+      .filter((parsed): parsed is semver.SemVer => {
+        if (!parsed) {
+          return false;
+        }
+        return (
+          parsed.prerelease.length > 0 &&
+          parsed.prerelease[0] === "beta" &&
+          parsed.major === semver.major(nextVersion) &&
+          parsed.minor === semver.minor(nextVersion) &&
+          parsed.patch === semver.patch(nextVersion)
+        );
+      })
+      .sort((a, b) => {
+        const aBeta = (a.prerelease[1] as number) || 0;
+        const bBeta = (b.prerelease[1] as number) || 0;
+        return bBeta - aBeta;
+      });
+
+    if (betaTags.length === 0) {
+      return `${nextVersion}-beta.0`;
+    }
+
+    const latestBeta = betaTags[0];
+    if (!latestBeta) {
+      return `${nextVersion}-beta.0`;
+    }
+
+    const latestBetaNumber = (latestBeta.prerelease[1] as number) || 0;
+    return `${nextVersion}-beta.${latestBetaNumber + 1}`;
+  } catch {
+    return `${nextVersion}-beta.0`;
+  }
+}
+
 async function main() {
   try {
     const versionType = process.argv[2] as "minor" | "patch" | undefined;
+    const isBeta = process.argv[3] === "beta";
     const releaseType = versionType || "patch";
 
     if (versionType && !["minor", "patch"].includes(versionType)) {
@@ -63,14 +116,17 @@ async function main() {
     const packageJson = await readPackage();
 
     const currentVersion = packageJson.version;
-    const newVersion = semver.inc(currentVersion, releaseType);
+    const newVersion = isBeta
+      ? getNextBetaVersion(currentVersion, releaseType)
+      : semver.inc(currentVersion, releaseType);
 
     if (!newVersion) {
       throw new Error(`Failed to increment version from ${currentVersion}`);
     }
 
+    const versionLabel = isBeta ? `${releaseType} beta` : releaseType;
     console.log(
-      `Updating ${releaseType} version from ${currentVersion} to ${newVersion}`,
+      `Updating ${versionLabel} version from ${currentVersion} to ${newVersion}`,
     );
 
     await updatePackage(packageJsonPath, { version: newVersion });
