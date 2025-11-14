@@ -16,7 +16,6 @@ import { AssistantMessage } from "./assistant-message";
 import { ChatErrorAlert } from "./chat-error-alert";
 import { ChatZeroState } from "./chat-zero-state";
 import { ContextMessages } from "./context-messages";
-import { DebugWrapper } from "./debug-wrapper";
 import { GitCommitCard } from "./git-commit-card";
 import { MessageActionsRow } from "./message-actions-row";
 import { MessageError } from "./message-error";
@@ -251,16 +250,10 @@ export function SessionStream({
         );
         if (messagesForSummary.length > 0) {
           newChatElements.push(
-            <DebugWrapper
-              data={messagesForSummary}
+            <UsageSummary
               key={`usage-before-${message.id}`}
-              label="usage-summary"
-            >
-              <UsageSummary
-                key={`usage-before-${message.id}`}
-                messages={messagesForSummary}
-              />
-            </DebugWrapper>,
+              messages={messagesForSummary}
+            />,
           );
           lastSummaryEndIndex = messageIndex;
         }
@@ -293,11 +286,7 @@ export function SessionStream({
         }
         const rendered = renderChatPart(part, message, partIndex);
         if (rendered) {
-          messageElements.push(
-            <DebugWrapper data={part} key={part.metadata.id} label={part.type}>
-              {rendered}
-            </DebugWrapper>,
-          );
+          messageElements.push(rendered);
         }
       }
 
@@ -315,21 +304,15 @@ export function SessionStream({
       if (message.role === "assistant" && message.metadata.error) {
         const isLastMessage = messageIndex === regularMessages.length - 1;
         messageElements.push(
-          <DebugWrapper
-            data={message.metadata.error}
+          <MessageError
+            defaultExpanded={
+              isLastMessage &&
+              !isAnyAgentRunning &&
+              message.metadata.error.kind !== "aborted"
+            }
+            error={message.metadata.error}
             key={`error-${message.id}`}
-            label="error"
-          >
-            <MessageError
-              defaultExpanded={
-                isLastMessage &&
-                !isAnyAgentRunning &&
-                message.metadata.error.kind !== "aborted"
-              }
-              error={message.metadata.error}
-              key={`error-${message.id}`}
-            />
-          </DebugWrapper>,
+          />,
         );
       }
 

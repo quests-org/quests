@@ -3,7 +3,6 @@ import { ChevronDown } from "lucide-react";
 import { memo, useMemo, useState } from "react";
 
 import { CopyButton } from "./copy-button";
-import { DebugWrapper } from "./debug-wrapper";
 import { ContextMessage } from "./session-context-message";
 import { Button } from "./ui/button";
 
@@ -23,18 +22,12 @@ export const ContextMessages = memo(function ContextMessages({
             continue;
           }
 
-          const rendered = (
+          elements.push(
             <ContextMessage
               key={part.metadata.id}
               message={message}
               part={part}
-            />
-          );
-
-          elements.push(
-            <DebugWrapper data={part} key={part.metadata.id} label={part.type}>
-              {rendered}
-            </DebugWrapper>,
+            />,
           );
         }
       }
