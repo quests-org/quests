@@ -137,6 +137,7 @@
     "@types/react-dom": "catalog:",
     "@types/semver": "^7.7.0",
     "@vitejs/plugin-react": "catalog:",
+    "babel-plugin-react-compiler": "^1.0.0",
     "electron": "^37.2.3",
     "electron-builder": "^26.0.20",
     "electron-vite": "^4.0.0",

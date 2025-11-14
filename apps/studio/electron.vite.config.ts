@@ -81,7 +81,11 @@ export default defineConfig({
         generatedRouteTree: "./src/client/routeTree.gen.ts",
         routesDirectory: "./src/client/routes",
       }),
-      react(),
+      react({
+        babel: {
+          plugins: ["babel-plugin-react-compiler"],
+        },
+      }),
       tailwindcss(),
       ValidateEnv({ configFile: "./src/client/validate-env" }),
     ],
