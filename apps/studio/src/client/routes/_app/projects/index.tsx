@@ -97,7 +97,7 @@ function RouteComponent() {
 
   const favoriteProjectSubdomains = useMemo(() => {
     if (!favoriteProjects) {
-      return new Set();
+      return new Set<string>();
     }
     return new Set(favoriteProjects.map((p) => p.subdomain));
   }, [favoriteProjects]);
@@ -288,12 +288,19 @@ function RouteComponent() {
   const columns = useMemo(
     () =>
       createColumns({
+        favoriteProjectSubdomains,
         onDelete: handleDelete,
         onOpenInNewTab: handleOpenInNewTab,
         onSettings: handleSettings,
         onStop: handleStop,
       }),
-    [handleDelete, handleOpenInNewTab, handleSettings, handleStop],
+    [
+      favoriteProjectSubdomains,
+      handleDelete,
+      handleOpenInNewTab,
+      handleSettings,
+      handleStop,
+    ],
   );
 
   return (

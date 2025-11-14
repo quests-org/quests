@@ -10,18 +10,20 @@ import { InternalLink } from "@/client/components/internal-link";
 import { Button } from "@/client/components/ui/button";
 import { Checkbox } from "@/client/components/ui/checkbox";
 import { format, formatDistanceToNow } from "date-fns";
-import { ArrowUpDown } from "lucide-react";
+import { ArrowUpDown, Star } from "lucide-react";
 
 import { ProjectActionsCell } from "./actions";
 import { ModelPreview } from "./model-preview";
 import { SessionStatusPreview } from "./session-status-preview";
 
 export function createColumns({
+  favoriteProjectSubdomains,
   onDelete,
   onOpenInNewTab,
   onSettings,
   onStop,
 }: {
+  favoriteProjectSubdomains: Set<string>;
   onDelete: (subdomain: ProjectSubdomain) => void;
   onOpenInNewTab: (subdomain: ProjectSubdomain) => void;
   onSettings: (subdomain: ProjectSubdomain) => void;
@@ -80,25 +82,31 @@ export function createColumns({
       accessorKey: "title",
       cell: ({ row }) => {
         const project = row.original;
+        const isFavorite = favoriteProjectSubdomains.has(project.subdomain);
         return (
-          <InternalLink
-            className="flex items-center gap-x-2 min-w-0"
-            openInCurrentTab
-            params={{ subdomain: project.subdomain }}
-            to="/projects/$subdomain"
-          >
-            <SmallAppIcon
-              background={project.icon?.background}
-              icon={project.icon?.lucide}
-              mode={project.mode}
-              size="sm"
-            />
-            <span className="font-medium truncate">{project.title}</span>
-            <AppStatusIcon
-              className="h-4 w-4 shrink-0 ml-auto"
-              subdomain={project.subdomain}
-            />
-          </InternalLink>
+          <div className="flex items-center gap-x-2 min-w-0">
+            {isFavorite && (
+              <Star className="h-4 w-4 fill-amber-500 text-amber-500 shrink-0" />
+            )}
+            <InternalLink
+              className="flex items-center gap-x-2 min-w-0 flex-1"
+              openInCurrentTab
+              params={{ subdomain: project.subdomain }}
+              to="/projects/$subdomain"
+            >
+              <SmallAppIcon
+                background={project.icon?.background}
+                icon={project.icon?.lucide}
+                mode={project.mode}
+                size="sm"
+              />
+              <span className="font-medium truncate">{project.title}</span>
+              <AppStatusIcon
+                className="h-4 w-4 shrink-0 ml-auto"
+                subdomain={project.subdomain}
+              />
+            </InternalLink>
+          </div>
         );
       },
       header: ({ column }) => {
