@@ -34,6 +34,7 @@ const config: KnipConfig = {
         "tw-animate-css",
         "tailwindcss",
         "@tailwindcss/typography",
+        "babel-plugin-react-compiler", // Used in electron.vite.config.ts as Babel plugin
       ],
       paths: {
         "@/*": ["src/*"],
