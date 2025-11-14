@@ -3,6 +3,7 @@ import {
   SidebarGroupLabel,
   SidebarMenu,
 } from "@/client/components/ui/sidebar";
+import { cn } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
 import {
   type ProjectSubdomain,
@@ -32,11 +33,11 @@ export function NavProjects({
   const router = useRouter();
 
   const handleOpenInNewTab = (subdomain: ProjectSubdomain) => {
-    const location = router.buildLocation({
+    const projectLocation = router.buildLocation({
       params: { subdomain },
       to: "/projects/$subdomain",
     });
-    addTab({ urlPath: location.href });
+    addTab({ urlPath: projectLocation.href });
   };
   const { mutate: removeFavorite } = useMutation(
     rpcClient.favorites.remove.mutationOptions(),
@@ -44,6 +45,20 @@ export function NavProjects({
   const handleRemoveFavorite = (subdomain: ProjectSubdomain) => {
     removeFavorite({ subdomain });
   };
+
+  const projectsMatch = matches.find(
+    (match) => match.routeId === "/_app/projects/",
+  );
+
+  const isProjectsPage = projectsMatch !== undefined;
+
+  const currentFilter = projectsMatch?.search.filter ?? "all";
+
+  const isActive = isProjectsPage
+    ? isFavorites
+      ? currentFilter === "favorites"
+      : currentFilter === "all"
+    : false;
 
   const projectStates = useMemo(
     () =>
@@ -61,11 +76,24 @@ export function NavProjects({
 
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-      <SidebarGroupLabel asChild={!isFavorites}>
+      <SidebarGroupLabel
+        asChild
+        className={cn(isActive && "text-sidebar-foreground/90")}
+      >
         {isFavorites ? (
-          title
+          <InternalLink
+            openInCurrentTab
+            search={{ filter: "favorites" }}
+            to="/projects"
+          >
+            {title}
+          </InternalLink>
         ) : (
-          <InternalLink openInCurrentTab to="/projects">
+          <InternalLink
+            openInCurrentTab
+            search={{ filter: "all" }}
+            to="/projects"
+          >
             {title}
           </InternalLink>
         )}
