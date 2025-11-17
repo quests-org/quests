@@ -233,7 +233,7 @@ function RouteComponent() {
         });
       } else if (createdProjects.length > 1) {
         void navigate({
-          search: { filter: "active" },
+          search: { filter: "evals" },
           to: "/projects",
         });
       }
