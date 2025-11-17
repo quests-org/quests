@@ -86,7 +86,7 @@ function ProjectSettingsForm({
     onSubmit: async ({ value }) => {
       await updateProject({
         icon:
-          project.mode === "app-builder" && value.theme
+          project.mode !== "chat" && value.theme
             ? {
                 background: value.theme,
                 lucide: value.icon,
@@ -122,7 +122,7 @@ function ProjectSettingsForm({
             >
               {({ icon, theme }) => (
                 <>
-                  {project.mode === "app-builder" && (
+                  {project.mode !== "chat" && (
                     <div className="flex flex-col items-center gap-2 min-w-fit pt-2">
                       <AppIcon background={theme} icon={icon} />
                     </div>
@@ -173,7 +173,7 @@ function ProjectSettingsForm({
                 }}
               </form.Field>
 
-              {project.mode === "app-builder" && (
+              {project.mode !== "chat" && (
                 <div className="grid grid-cols-2 gap-3">
                   <form.Field name="icon">
                     {(field) => {

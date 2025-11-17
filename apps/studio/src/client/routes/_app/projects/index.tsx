@@ -28,7 +28,7 @@ import { z } from "zod";
 
 const projectsSearchSchema = z.object({
   filter: z
-    .enum(["all", "apps", "chats", "active", "favorites"])
+    .enum(["all", "apps", "chats", "evals", "active", "favorites"])
     .optional()
     .default("all"),
 });
@@ -123,6 +123,11 @@ function RouteComponent() {
     [projects],
   );
 
+  const evalsCount = useMemo(
+    () => projects.filter((p) => p.mode === "eval").length,
+    [projects],
+  );
+
   const filteredProjects = useMemo(() => {
     switch (filterTab) {
       case "active": {
@@ -133,6 +138,9 @@ function RouteComponent() {
       }
       case "chats": {
         return projects.filter((p) => p.mode === "chat");
+      }
+      case "evals": {
+        return projects.filter((p) => p.mode === "eval");
       }
       case "favorites": {
         return projects.filter((p) =>
@@ -332,7 +340,7 @@ function RouteComponent() {
                     {projects.length}
                   </Badge>
                 </TabsTrigger>
-                {appsCount > 0 && chatsCount > 0 && (
+                {appsCount > 0 && (
                   <TabsTrigger value="apps">
                     Apps
                     <Badge className="ml-2 px-1.5" variant="secondary">
@@ -340,11 +348,19 @@ function RouteComponent() {
                     </Badge>
                   </TabsTrigger>
                 )}
-                {appsCount > 0 && chatsCount > 0 && (
+                {chatsCount > 0 && (
                   <TabsTrigger value="chats">
                     Chats
                     <Badge className="ml-2 px-1.5" variant="secondary">
                       {chatsCount}
+                    </Badge>
+                  </TabsTrigger>
+                )}
+                {evalsCount > 0 && (
+                  <TabsTrigger value="evals">
+                    Evals
+                    <Badge className="ml-2 px-1.5" variant="secondary">
+                      {evalsCount}
                     </Badge>
                   </TabsTrigger>
                 )}

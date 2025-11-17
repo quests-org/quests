@@ -27,7 +27,7 @@ export function ProjectDeleteDialog({
     ...rpcClient.workspace.project.git.commits.list.queryOptions({
       input: { projectSubdomain: project.subdomain },
     }),
-    enabled: project.mode === "app-builder",
+    enabled: project.mode !== "chat",
   });
 
   const { data: messageCount } = useQuery(
@@ -61,7 +61,7 @@ export function ProjectDeleteDialog({
           <div className="flex flex-col gap-1">
             <div className="font-medium text-foreground">{project.title}</div>
             <div className="flex items-center gap-3 text-xs text-muted-foreground">
-              {project.mode === "app-builder" && commitsData?.commits && (
+              {project.mode !== "chat" && commitsData?.commits && (
                 <div className="flex items-center gap-1">
                   <GitCommitVertical className="size-3" />
                   <span>
@@ -79,7 +79,7 @@ export function ProjectDeleteDialog({
                 </div>
               )}
             </div>
-            {project.mode === "app-builder" && (
+            {project.mode !== "chat" && (
               <div className="text-xs text-muted-foreground/70">
                 {project.urls.localhost}
               </div>
