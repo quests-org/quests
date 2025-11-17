@@ -111,7 +111,7 @@ export function SmallAppIcon({
       {mode === "eval" && (
         <FlaskIcon
           className={cn(
-            "text-white absolute bottom-0 right-0 drop-shadow-md z-20",
+            "text-white not-dark:fill-secondary not-dark:text-secondary-foreground absolute bottom-0 right-0 drop-shadow-md z-20",
             size === "sm" && "size-2.5",
             size === "md" && "size-3",
             size === "lg" && "size-4",
