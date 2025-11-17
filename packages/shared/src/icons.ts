@@ -96,6 +96,7 @@ export const SelectableAppIconsSchema = z.enum(SELECTABLE_APP_ICONS);
 
 export const APP_ICONS = [
   ...SELECTABLE_APP_ICONS,
+  "flask-conical",
   "scan", // Removed, but for backwards compatibility
   "x", // Removed, but for backwards compatibility
   "square-dashed", // The default, but not selectable

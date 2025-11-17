@@ -1,5 +1,6 @@
 import { type ProjectMode } from "@quests/shared";
 
+import { PROJECT_SUBDOMAIN_MODE_PREFIXES } from "../constants";
 import { type AppSubdomain } from "../schemas/subdomains";
 import { isProjectSubdomain } from "./is-app";
 
@@ -13,7 +14,10 @@ export function projectModeForSubdomain(subdomain: AppSubdomain): ProjectMode {
   if (!isProjectSubdomain(subdomain)) {
     return "app-builder";
   }
-  if (subdomain.startsWith("chat-")) {
+  if (subdomain.startsWith(`${PROJECT_SUBDOMAIN_MODE_PREFIXES.eval}-`)) {
+    return "eval";
+  }
+  if (subdomain.startsWith(`${PROJECT_SUBDOMAIN_MODE_PREFIXES.chat}-`)) {
     return "chat";
   }
   return "app-builder";

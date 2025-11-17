@@ -6,6 +6,7 @@ import { DEFAULT_THEME_GRADIENT, type IconName } from "@quests/shared/icons";
 const DEFAULT_LUCIDE_ICON_MAP: Record<ProjectMode, IconName> = {
   "app-builder": "square-dashed",
   chat: "message-circle",
+  eval: "flask-conical",
 };
 
 export function AppIcon({
@@ -66,9 +67,10 @@ export function SmallAppIcon({
   size?: "lg" | "md" | "sm" | "xl";
 }) {
   const finalBackground = background || DEFAULT_THEME_GRADIENT;
-  const IconComponent = IconMap[icon];
+  const FlaskIcon = IconMap["flask-conical"];
 
   if (mode === "chat") {
+    const IconComponent = IconMap[icon];
     return (
       <IconComponent
         className={cn(
@@ -82,10 +84,12 @@ export function SmallAppIcon({
     );
   }
 
+  const IconComponent = IconMap[icon];
   return (
     <div
       className={cn(
-        "rounded-full relative flex items-center justify-center shrink-0 shadow-md overflow-hidden",
+        "rounded-full relative flex items-center justify-center shrink-0 shadow-md",
+        mode === "eval" ? "overflow-visible" : "overflow-hidden",
         size === "sm" && "size-5",
         size === "md" && "size-6",
         size === "lg" && "size-7",
@@ -104,6 +108,20 @@ export function SmallAppIcon({
           size === "xl" && "size-5",
         )}
       />
+      {mode === "eval" && (
+        <FlaskIcon
+          className={cn(
+            "text-white absolute bottom-0 right-0 drop-shadow-md z-20",
+            size === "sm" && "size-2.5",
+            size === "md" && "size-3",
+            size === "lg" && "size-4",
+            size === "xl" && "size-5",
+          )}
+          style={{
+            transform: "translate(25%, 25%)",
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -152,7 +152,7 @@ const create = base
         workspaceConfig: context.workspaceConfig,
       });
 
-      if (mode === "app-builder") {
+      if (mode === "app-builder" || mode === "eval") {
         const result = await createProjectApp(
           {
             projectConfig,
@@ -287,7 +287,9 @@ const createFromEval = base
       }
 
       const projectConfig = await newProjectConfig({
-        mode: "app-builder",
+        evalName,
+        mode: "eval",
+        modelURI,
         workspaceConfig: context.workspaceConfig,
       });
 
@@ -312,7 +314,7 @@ const createFromEval = base
       const modelId = AIGatewayModelURI.parse(modelURI)
         .map((m) => m.canonicalId)
         .getOrDefault(model.modelId);
-      const projectName = `${modelId} - ${evalName}`;
+      const projectName = `${evalName} - ${modelId}`;
       const randomTheme = draw(THEMES) ?? DEFAULT_THEME_GRADIENT;
       await updateQuestManifest(projectConfig.appDir, {
         icon: {

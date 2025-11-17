@@ -1,3 +1,5 @@
+import { type ProjectMode } from "@quests/shared";
+
 export const APP_PRIVATE_FOLDER = ".quests";
 export const QUEST_MANIFEST_FILE_NAME = "quests.json";
 export const WORKSPACE_FOLDER = "workspace";
@@ -8,7 +10,11 @@ export const REGISTRY_TEMPLATES_FOLDER = "templates";
 export const SESSIONS_DB_FILE_NAME = "sessions.db";
 export const SESSIONS_TABLE_NAME = "sessions";
 export const DEFAULT_TEMPLATE_NAME = "basic";
-export const PROJECT_CHAT_MODE_PREFIX = "chat";
+export const PROJECT_SUBDOMAIN_MODE_PREFIXES: Record<ProjectMode, string> = {
+  "app-builder": "",
+  chat: "chat",
+  eval: "eval",
+};
 
 export const APP_STATUSES = [
   "error",

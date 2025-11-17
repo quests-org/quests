@@ -212,18 +212,18 @@ function RouteComponent() {
       />
 
       <div className="flex flex-1 overflow-hidden">
-        {project.mode === "app-builder" ? (
+        {project.mode === "chat" ? (
+          <ProjectViewChat
+            project={project}
+            selectedModelURI={projectState.selectedModelURI}
+            selectedSessionId={selectedSessionId}
+          />
+        ) : (
           <ProjectViewApp
             project={project}
             selectedModelURI={projectState.selectedModelURI}
             selectedVersion={selectedVersion}
             sidebarCollapsed={sidebarCollapsed}
-          />
-        ) : (
-          <ProjectViewChat
-            project={project}
-            selectedModelURI={projectState.selectedModelURI}
-            selectedSessionId={selectedSessionId}
           />
         )}
       </div>
