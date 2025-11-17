@@ -69,6 +69,14 @@ function About() {
 
   const getUpdateStatusContent = () => {
     switch (updateState?.type) {
+      case "available": {
+        return (
+          <div className="text-sm text-muted-foreground">
+            Version {updateState.updateInfo?.version ?? ""} is available.
+            Downloading...
+          </div>
+        );
+      }
       case "cancelled": {
         return (
           <div className="text-sm text-muted-foreground">

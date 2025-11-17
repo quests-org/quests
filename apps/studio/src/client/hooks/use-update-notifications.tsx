@@ -27,6 +27,14 @@ export function useUpdateNotifications() {
     }
 
     switch (updateState.type) {
+      case "available": {
+        toast.dismiss(CHECKING_FOR_UPDATES_TOAST_ID);
+        toast.info("New version available", {
+          closeButton: true,
+          description: `Version ${updateState.updateInfo?.version ?? ""} is available. Downloading...`,
+        });
+        break;
+      }
       case "cancelled": {
         toast.dismiss(CHECKING_FOR_UPDATES_TOAST_ID);
         toast.dismiss(DOWNLOAD_TOAST_ID);
