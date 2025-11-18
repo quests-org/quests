@@ -475,7 +475,9 @@ export class TabsManager {
   }
 
   private updateTabBounds(tab: TabWithView) {
-    const newBounds = this.baseWindow.getBounds();
+    // Using getContentBounds due to this being a frameless window. getBounds()
+    // returns the incorrect bounds on Windows when in maximized state.
+    const newBounds = this.baseWindow.getContentBounds();
     const sidebarWidth = getSidebarWidth();
     tab.webView.setBounds({
       height: newBounds.height - getToolbarHeight(),
