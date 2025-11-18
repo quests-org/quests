@@ -48,7 +48,7 @@ for (const { envKey, type } of providerConfigs) {
     PROVIDER_CONFIGS.push({
       apiKey,
       cacheIdentifier,
-      id: AIProviderConfigIdSchema.parse(ulid()),
+      id: AIProviderConfigIdSchema.parse(`${type}-config-id`),
       type,
     });
   }
@@ -130,6 +130,11 @@ const rl = readline.createInterface({
 console.log("Enter task prompt (press Enter to submit):");
 rl.on("line", (input) => {
   if (input.trim()) {
+    const trimmedInput = input.trim();
+    const isChatMode = trimmedInput.startsWith("chat:");
+    const mode = isChatMode ? "chat" : "app-builder";
+    const text = isChatMode ? trimmedInput.slice(5).trim() : trimmedInput;
+
     const sessionId = StoreId.newSessionId();
     const messageId = StoreId.newMessageId();
     void call(
@@ -149,18 +154,20 @@ rl.on("line", (input) => {
                 messageId,
                 sessionId,
               },
-              text: input,
+              text,
               type: "text",
             },
           ],
           role: "user",
         },
-        mode: "app-builder",
-        // modelURI: "anthropic/claude-sonnet-4?provider=anthropic",
-        // modelURI: "openai/gpt-5-mini?provider=openai",
-        // modelURI: "google/gemini-2.5-pro?provider=google",
-        // modelURI: "google/gemini-2.5-flash?provider=google",
-        modelURI: "x-ai/grok-code-fast-1?provider=openrouter",
+        mode,
+        // modelURI: "anthropic/claude-sonnet-4?provider=anthropic&providerConfigId=anthropic-config-id",
+        // modelURI: "openai/gpt-5-mini?provider=openai&providerConfigId=openai-config-id",
+        // modelURI: "google/gemini-2.5-pro?provider=google&providerConfigId=google-config-id",
+        // modelURI: "google/gemini-2.5-flash?provider=google&providerConfigId=google-config-id",
+        // modelURI: "x-ai/grok-code-fast-1?provider=openrouter&providerConfigId=openrouter-config-id",
+        modelURI:
+          "google/gemini-3-pro-preview?provider=openrouter&providerConfigId=openrouter-config-id",
         sessionId,
       },
       {
