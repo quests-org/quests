@@ -66,7 +66,7 @@ export function NavProjects({
         isActive: matches.some(
           (match) =>
             match.routeId === "/_app/projects/$subdomain/" &&
-            match.params.subdomain.startsWith(project.subdomain),
+            match.params.subdomain === project.subdomain,
         ),
         isFavorited: favoriteSubdomains.has(project.subdomain),
         subdomain: project.subdomain,
