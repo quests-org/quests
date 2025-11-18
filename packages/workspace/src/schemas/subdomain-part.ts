@@ -20,6 +20,15 @@ export function validateSubdomainPart(
     });
   }
 
+  if (subdomainPart.length > 63) {
+    ctx.addIssue({
+      code: "custom",
+      fatal: true,
+      input: subdomainPart,
+      message: "Subdomain part must not exceed 63 characters",
+    });
+  }
+
   const subdomainRegex = /^[a-z0-9-]+$/;
   if (!subdomainRegex.test(subdomainPart)) {
     ctx.addIssue({

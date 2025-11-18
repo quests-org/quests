@@ -58,7 +58,7 @@ export const ADJECTIVES = [
   "wise",
 ] as const;
 
-const NOUNS = [
+export const NOUNS = [
   "base",
   "bay",
   "beacon",
@@ -120,6 +120,16 @@ const NOUNS = [
   "zone",
 ] as const;
 
+export function buildFolderName(
+  firstAdjective: string,
+  secondAdjective: string,
+  noun: string,
+  suffix: number | string,
+): string {
+  const baseNameWithoutNumber = `${firstAdjective}-${secondAdjective}-${noun}`;
+  return `${baseNameWithoutNumber}-${suffix}`;
+}
+
 export async function generateNewFolderName(absolutePath: AbsolutePath) {
   const firstAdjective = draw(ADJECTIVES);
   const remainingAdjectives = ADJECTIVES.filter(
@@ -127,7 +137,6 @@ export async function generateNewFolderName(absolutePath: AbsolutePath) {
   );
   const secondAdjective = draw(remainingAdjectives) ?? "unknown";
   const noun = draw(NOUNS);
-  const baseNameWithoutNumber = `${firstAdjective}-${secondAdjective}-${noun}`;
 
   let folderName: string;
   let attempts = 0;
@@ -136,12 +145,22 @@ export async function generateNewFolderName(absolutePath: AbsolutePath) {
   do {
     if (attempts >= maxAttempts) {
       const timestamp = getCurrentDate().getTime();
-      folderName = `${baseNameWithoutNumber}-${timestamp}`;
+      folderName = buildFolderName(
+        firstAdjective,
+        secondAdjective,
+        noun,
+        timestamp,
+      );
       break;
     }
 
     const randomTwoDigit = Math.floor(Math.random() * 90) + 10;
-    folderName = `${baseNameWithoutNumber}-${randomTwoDigit}`;
+    folderName = buildFolderName(
+      firstAdjective,
+      secondAdjective,
+      noun,
+      randomTwoDigit,
+    );
     attempts++;
   } while (await pathExists(absolutePathJoin(absolutePath, folderName)));
 
