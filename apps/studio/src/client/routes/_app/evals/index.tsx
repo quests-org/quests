@@ -431,12 +431,13 @@ function RouteComponent() {
               </div>
 
               <Tabs
+                className="w-full"
                 onValueChange={(value) => {
                   setSelectedProvider(value as typeof selectedProvider);
                 }}
                 value={selectedProvider}
               >
-                <TabsList>
+                <TabsList className="flex-wrap w-full min-h-9 h-auto gap-1.5">
                   <TabsTrigger value="all">All</TabsTrigger>
                   {availableProviders.map((provider) => {
                     const metadata = providerMetadataMap.get(provider);
