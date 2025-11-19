@@ -167,20 +167,28 @@ function SubscribePage() {
         </div>
 
         {/* Billing Toggle */}
-        <div className="flex justify-center mb-4">
+        <div className="flex justify-center mb-6">
           <Tabs
             defaultValue="yearly"
             onValueChange={(value) => setBillingCycle(value as BillingCycle)}
             value={billingCycle}
           >
-            <TabsList className="bg-muted/50">
-              <TabsTrigger value="yearly">
+            <TabsList className="bg-muted dark:bg-muted text-primary-foreground/50">
+              <TabsTrigger
+                className="dark:data-[state=active]:bg-primary dark:data-[state=active]:text-primary-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                value="yearly"
+              >
                 Yearly
-                <span className="ml-2 text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">
+                <span className="text-xs bg-background/20 primary-foreground/10 px-2 py-0.5 rounded-full">
                   Save 20%
                 </span>
               </TabsTrigger>
-              <TabsTrigger value="monthly">Monthly</TabsTrigger>
+              <TabsTrigger
+                className="dark:data-[state=active]:bg-primary dark:data-[state=active]:text-background data-[state=active]:bg-primary data-[state=active]:text-background hover:text-primary-foreground"
+                value="monthly"
+              >
+                Monthly
+              </TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
@@ -192,11 +200,26 @@ function SubscribePage() {
               billingCycle === "monthly" ? plan.monthlyPrice : plan.yearlyPrice;
             const isCurrentPlan = currentPlan === plan.name;
 
+            let cardStyles =
+              "relative p-6 transition-all flex flex-col border border-border/50 shadow-none";
+            let titleStyles = "text-4xl font-bold";
+
+            if (plan.name === "Basic") {
+              cardStyles +=
+                " bg-gradient-to-br from-emerald-100 via-background to-background dark:from-emerald-900/20";
+              titleStyles +=
+                " bg-gradient-to-r from-emerald-600 to-emerald-800 dark:from-emerald-400 dark:to-emerald-600 bg-clip-text text-transparent";
+            } else if (plan.name === "Pro") {
+              cardStyles +=
+                " bg-gradient-to-br from-blue-100 via-background to-background dark:from-blue-950/40 dark:via-slate-900/20";
+              titleStyles +=
+                " bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent";
+            } else {
+              cardStyles += " bg-card";
+            }
+
             return (
-              <Card
-                className="relative p-6 transition-all hover:shadow-xl border-border flex flex-col"
-                key={plan.name}
-              >
+              <Card className={cardStyles} key={plan.name}>
                 {plan.popular && (
                   <div className="absolute -top-4 left-1/2 -translate-x-1/2">
                     <div className="bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-medium flex items-center gap-1">
@@ -207,7 +230,7 @@ function SubscribePage() {
                 )}
 
                 <div className="">
-                  <h3 className="text-4xl font-bold">{plan.name}</h3>
+                  <h3 className={titleStyles}>{plan.name}</h3>
 
                   <div className="flex items-baseline gap-1">
                     <span className="text-3xl font-medium">${price}</span>
@@ -245,10 +268,9 @@ function SubscribePage() {
                     {isCurrentPlan ? "Current Plan" : plan.cta}
                   </Button>
                 )}
-
                 {!plan.cta && (
                   <Button
-                    className="w-full"
+                    className="w-full disabled:opacity-100"
                     disabled
                     size="lg"
                     variant="outline"

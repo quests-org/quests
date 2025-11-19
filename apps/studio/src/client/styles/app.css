@@ -89,7 +89,7 @@ html:has(meta[name="transparent-background"]) body {
   --sidebar-border: oklch(88.8% 0.0093 277.7);
   --sidebar-ring: oklch(0.708 0 0);
   --warning-foreground: oklch(0.7653 0.175 62.49);
-  --brand: oklch(54.3% 0.1913 266.8);
+  --brand: oklch(54.6% 0.245 262.881);
   --brand-foreground: oklch(100% 0 0);
 }
 
@@ -129,7 +129,7 @@ html:has(meta[name="transparent-background"]) body {
   --sidebar-border: oklch(34.6% 0.01 255.6);
   --sidebar-ring: oklch(0.556 0 0);
   --warning-foreground: oklch(0.7824 0.1709 67.19);
-  --brand: oklch(58.1% 0.2414 261.8);
+  --brand: oklch(54.6% 0.245 262.881);
   --brand-foreground: oklch(100% 0 0);
 }
 
