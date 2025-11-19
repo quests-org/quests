@@ -129,6 +129,13 @@ export class TabsManager {
     });
   }
 
+  public focusCurrentTab() {
+    const tab = this.getCurrentTab();
+    if (tab) {
+      tab.webView.webContents.focus();
+    }
+  }
+
   public getCurrentTab(): null | TabWithView {
     return this.tabs.find((tab) => tab.id === this.selectedTabId) ?? null;
   }
@@ -149,16 +156,18 @@ export class TabsManager {
   }
 
   public goBack() {
-    const tab = this.tabs.find((t) => t.id === this.selectedTabId);
+    const tab = this.getCurrentTab();
     if (tab) {
       tab.webView.webContents.navigationHistory.goBack();
+      tab.webView.webContents.focus();
     }
   }
 
   public goForward() {
-    const tab = this.tabs.find((t) => t.id === this.selectedTabId);
+    const tab = this.getCurrentTab();
     if (tab) {
       tab.webView.webContents.navigationHistory.goForward();
+      tab.webView.webContents.focus();
     }
   }
 
@@ -434,6 +443,7 @@ export class TabsManager {
     });
 
     this.baseWindow.contentView.addChildView(tab.webView);
+    tab.webView.webContents.focus();
     this.selectedTabId = tab.id;
   }
 

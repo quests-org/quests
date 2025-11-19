@@ -33,6 +33,8 @@ const navigateCurrent = base
 
     // Use the IPC API on the current tab to navigate to the new URL
     currentTab.webView.webContents.send("navigate", input.urlPath);
+    // Ensure keyboard focus is on the current tab
+    currentTab.webView.webContents.focus();
 
     return true;
   });

@@ -18,6 +18,8 @@ const close = base.handler(({ context }) => {
 
   context.workspaceConfig.captureEvent("app.sidebar_closed");
 
+  context.tabsManager?.focusCurrentTab();
+
   return true;
 });
 
@@ -31,6 +33,8 @@ const open = base.handler(({ context }) => {
   publisher.publish("sidebar.visibility-updated", sidebarVisibilityPayload);
 
   context.workspaceConfig.captureEvent("app.sidebar_opened");
+
+  context.tabsManager?.focusCurrentTab();
 
   return true;
 });
