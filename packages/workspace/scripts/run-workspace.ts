@@ -165,9 +165,12 @@ rl.on("line", (input) => {
         // modelURI: "openai/gpt-5-mini?provider=openai&providerConfigId=openai-config-id",
         // modelURI: "google/gemini-2.5-pro?provider=google&providerConfigId=google-config-id",
         // modelURI: "google/gemini-2.5-flash?provider=google&providerConfigId=google-config-id",
-        // modelURI: "x-ai/grok-code-fast-1?provider=openrouter&providerConfigId=openrouter-config-id",
+        // modelURI:
+        //   "x-ai/grok-code-fast-1?provider=openrouter&providerConfigId=openrouter-config-id",
+        // modelURI:
+        //   "google/gemini-3-pro-preview?provider=openrouter&providerConfigId=openrouter-config-id",
         modelURI:
-          "google/gemini-3-pro-preview?provider=openrouter&providerConfigId=openrouter-config-id",
+          "openai/gpt-5.1-codex-mini?provider=openrouter&providerConfigId=openrouter-config-id",
         sessionId,
       },
       {
