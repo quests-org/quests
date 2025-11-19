@@ -4,8 +4,8 @@ import { Button } from "@/client/components/ui/button";
 import { cn, isLinux, isMacOS, isWindows } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
-import { SidebarIcon } from "lucide-react";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { GemIcon, SidebarIcon } from "lucide-react";
 
 export const Route = createFileRoute("/toolbar")({
   component: ToolbarPage,
@@ -20,7 +20,17 @@ function ToolbarPage() {
     rpcClient.sidebar.open.mutationOptions(),
   );
 
+  const { data: subscriptionData } = useQuery(
+    rpcClient.user.subscription.queryOptions({
+      input: {},
+    }),
+  );
+
+  const { mutate: addTab } = useMutation(rpcClient.tabs.add.mutationOptions());
+  const router = useRouter();
+
   const isSidebarVisible = sidebarVisibility?.visible ?? true;
+  const hasSubscription = !!subscriptionData?.data?.plan;
 
   return (
     <div className="h-svh w-full flex items-end inset-shadow-toolbar inset-shadow-(color:--border) bg-secondary [-webkit-app-region:drag] overflow-hidden">
@@ -55,6 +65,24 @@ function ToolbarPage() {
           )}
           <TabBar />
         </div>
+        {!hasSubscription && (
+          <div className="flex items-center [-webkit-app-region:no-drag]">
+            <Button
+              className="shrink-0 text-xs px-2 h-6 font-semibold gap-1"
+              onClick={() => {
+                const location = router.buildLocation({
+                  to: "/subscribe",
+                });
+                addTab({ urlPath: location.href });
+              }}
+              size="sm"
+              variant="brand"
+            >
+              <GemIcon className="size-3" />
+              Upgrade Now
+            </Button>
+          </div>
+        )}
       </header>
     </div>
   );

@@ -13,6 +13,7 @@ export const SELECTABLE_APP_ICONS = [
   "battery-full",
   "bell",
   "bookmark",
+  "gem",
   "box",
   "briefcase",
   "calculator",
