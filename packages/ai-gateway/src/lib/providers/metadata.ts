@@ -229,6 +229,15 @@ const PROVIDER_METADATA: Record<AIProviderType, ProviderMetadataInput> = {
     type: "perplexity",
     url: addRef("https://www.perplexity.ai"),
   },
+  quests: {
+    api: {
+      defaultBaseURL: `${import.meta.env.VITE_QUESTS_API_BASE_URL}/gateway/openrouter`,
+    },
+    description: "Quests AI Gateway",
+    name: "Quests",
+    type: "quests",
+    url: addRef("https://quests.dev"),
+  },
   together: {
     api: {
       defaultBaseURL: "https://api.together.xyz/v1",
