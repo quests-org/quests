@@ -468,6 +468,9 @@ export const llmRequestLogic = fromPromise<
               sessionId: input.sessionId,
             },
             providerExecuted: part.providerExecuted,
+            ...(part.providerMetadata !== undefined && {
+              callProviderMetadata: part.providerMetadata,
+            }),
             state: "input-streaming",
             toolCallId: StoreId.ToolCallSchema.parse(part.id),
             type: toolNameResult.success
