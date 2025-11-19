@@ -194,7 +194,7 @@ function SubscribePage() {
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
           {PLANS.map((plan) => {
             const price =
               billingCycle === "monthly" ? plan.monthlyPrice : plan.yearlyPrice;
@@ -281,6 +281,31 @@ function SubscribePage() {
               </Card>
             );
           })}
+        </div>
+
+        <div className="max-w-4xl mx-auto mt-12 text-center">
+          <div className="px-4 py-2">
+            <h2 className="text-lg font-semibold mb-2">
+              For Teams & Organizations
+            </h2>
+            <p className="text-muted-foreground mb-4 max-w-xl mx-auto text-sm">
+              Building an AI platform? The Quests team can help you ship
+              production-ready AI apps. Contact us for enterprise support, team
+              licenses, and consulting.
+            </p>
+            <Button
+              className="h-8 px-4 text-xs"
+              onClick={() =>
+                openExternalLink({
+                  url: "mailto:hello@quests.dev?subject=Quests%20-%20Enterprise%20%26%20Team%20Inquiry",
+                })
+              }
+              size="sm"
+              variant="outline"
+            >
+              Contact Us
+            </Button>
+          </div>
         </div>
       </div>
     </div>
