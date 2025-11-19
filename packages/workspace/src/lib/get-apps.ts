@@ -1,3 +1,4 @@
+import { glob } from "glob";
 import { err, ok, type Result } from "neverthrow";
 import fs from "node:fs/promises";
 import path from "node:path";
@@ -72,7 +73,11 @@ export async function getApp<T extends AppSubdomain>(
       subdomain.split(".");
     const projectSubdomain = AppSubdomainSchema.parse(rawProjectSubdomain);
     if (!isProjectSubdomain(projectSubdomain)) {
-      return err(new TypedError.Parse("Invalid folder name"));
+      return err(
+        new TypedError.Parse("Invalid folder name", {
+          cause: projectSubdomain,
+        }),
+      );
     }
 
     // First get the project app
@@ -82,7 +87,11 @@ export async function getApp<T extends AppSubdomain>(
     });
 
     if (projectConfig.type !== "project") {
-      return err(new TypedError.Parse("Invalid folder name"));
+      return err(
+        new TypedError.Parse("Invalid folder name", {
+          cause: projectConfig.type,
+        }),
+      );
     }
 
     const sandboxDir = AppDirSchema.parse(
@@ -206,6 +215,19 @@ export async function getProjects(
     });
     if (projectApp.isOk() && projectApp.value.type === "project") {
       projects.push(projectApp.value);
+    } else {
+      if (projectApp.isErr()) {
+        workspaceConfig.captureException(projectApp.error, {
+          scopes: ["workspace"],
+        });
+      } else {
+        workspaceConfig.captureException(
+          new TypedError.Parse(
+            `Invalid project app type ${projectApp.value.type}`,
+          ),
+          { scopes: ["workspace"] },
+        );
+      }
     }
   }
 
@@ -260,11 +282,11 @@ async function appDirsInRootDir(rootDir: AbsolutePath): Promise<AppDir[]> {
   }
 
   try {
-    const entries = await fs.readdir(rootDir, { withFileTypes: true });
-    return entries
-      .filter((entry) => entry.isDirectory())
-      .map((entry) => path.resolve(rootDir, entry.name))
-      .map((appDir) => AppDirSchema.parse(appDir));
+    const entries = await glob("*/", {
+      absolute: true,
+      cwd: rootDir,
+    });
+    return entries.map((appDir) => AppDirSchema.parse(appDir));
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error("Error reading apps folder", error);
@@ -294,7 +316,11 @@ async function workspaceApp({
   const folderNameResult = SubdomainPartSchema.safeParse(rawFolderName);
 
   if (!folderNameResult.success) {
-    return err(new TypedError.Parse("Invalid folder name"));
+    return err(
+      new TypedError.Parse("Invalid folder name", {
+        cause: folderNameResult.error,
+      }),
+    );
   }
 
   if (parent === "projects") {
@@ -302,7 +328,11 @@ async function workspaceApp({
     const subdomainResult = ProjectSubdomainSchema.safeParse(possibleSubdomain);
 
     if (!subdomainResult.success) {
-      return err(new TypedError.Parse("Invalid folder name"));
+      return err(
+        new TypedError.Parse("Invalid folder name", {
+          cause: subdomainResult.error,
+        }),
+      );
     }
 
     const title = await computeAppTitle(appDir, rawFolderName);
@@ -327,7 +357,11 @@ async function workspaceApp({
     const rawSubdomain = PreviewSubdomainSchema.safeParse(possibleSubdomain);
 
     if (!rawSubdomain.success) {
-      return err(new TypedError.Parse("Invalid folder name"));
+      return err(
+        new TypedError.Parse("Invalid folder name", {
+          cause: rawSubdomain.error,
+        }),
+      );
     }
 
     const title = await computeAppTitle(appDir, rawFolderName);
@@ -383,7 +417,11 @@ async function workspaceApp({
     return ok(versionApp);
   }
 
-  return err(new TypedError.Parse("Invalid folder name"));
+  return err(
+    new TypedError.Parse("Invalid folder name", {
+      cause: sandboxSubdomainResult.error,
+    }),
+  );
 }
 
 async function workspaceAppForVersion({
@@ -406,7 +444,11 @@ async function workspaceAppForVersion({
 
   const versionSubdomainResult = VersionSubdomainSchema.safeParse(subdomain);
   if (!versionSubdomainResult.success) {
-    return err(new TypedError.Parse("Invalid folder name"));
+    return err(
+      new TypedError.Parse("Invalid folder name", {
+        cause: versionSubdomainResult.error,
+      }),
+    );
   }
 
   const versionConfig = createAppConfig({
