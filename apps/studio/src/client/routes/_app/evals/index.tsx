@@ -224,7 +224,9 @@ function RouteComponent() {
         }
       }
 
-      toast.success(`Successfully created all ${totalProjects} projects`);
+      toast.success(
+        `Successfully created ${totalProjects} project${totalProjects === 1 ? "" : "s"}`,
+      );
 
       if (createdProjects.length === 1 && createdProjects[0]) {
         void navigate({
