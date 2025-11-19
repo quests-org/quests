@@ -28,6 +28,10 @@ export const captureServerException: CaptureExceptionFunction = function (
   if (import.meta.env.DEV) {
     // eslint-disable-next-line no-console
     console.error(error, finalProperties);
+    if (error instanceof Error && error.cause) {
+      // eslint-disable-next-line no-console
+      console.error("Cause:", error.cause);
+    }
 
     // Publish event for dev toast notifications
     const errorMessage = error instanceof Error ? error.message : String(error);
