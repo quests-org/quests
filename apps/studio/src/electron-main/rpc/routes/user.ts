@@ -89,9 +89,57 @@ const live = {
   }),
 };
 
+const subscription = base
+  .input(z.object({ cache: z.boolean().optional() }))
+  .handler(async ({ context, input }) => {
+    if (hasToken()) {
+      if (input.cache && context.cache.subscription) {
+        return {
+          data: context.cache.subscription,
+          error: null,
+        };
+      }
+
+      context.cache.subscription = null;
+      const [error, data] = await safe(apiClient.users.getSubscriptionStatus());
+
+      if (isNetworkConnectionError(error)) {
+        logger.error("Network error getting subscription status", {
+          cause: error?.cause,
+          error,
+        });
+        return {
+          data: null,
+          error: createError("SERVER_CONNECTION_ERROR"),
+        };
+      } else if (error) {
+        logger.error("Error getting subscription status", { error });
+        return {
+          data: null,
+          error: createError(
+            "UNKNOWN_IPC_ERROR",
+            "There was an error getting your subscription status.",
+          ),
+        };
+      } else {
+        context.cache.subscription = data;
+        return {
+          data,
+          error: null,
+        };
+      }
+    }
+
+    return {
+      data: null,
+      error: createError("NO_TOKEN"),
+    };
+  });
+
 export const user = {
   credits,
   hasAIProviderConfig,
   live,
   me,
+  subscription,
 };

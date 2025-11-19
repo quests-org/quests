@@ -36,7 +36,7 @@ function SettingsAccountPage() {
           <div>
             <h4 className="text-sm font-medium">Quests Account</h4>
             <p className="text-sm text-muted-foreground">
-              Your Quests account gives you access to AI models and credits.
+              Your Quests account gives you access to AI models.
             </p>
           </div>
           <UserInfoList />
@@ -48,9 +48,13 @@ function SettingsAccountPage() {
 
 function UserInfoList() {
   const [userResult] = useAtom(userAtom);
-  const { data: creditsData } = useQuery(rpcClient.user.credits.queryOptions());
+  const { data: subscriptionData } = useQuery(
+    rpcClient.user.subscription.queryOptions({
+      input: {},
+    }),
+  );
   const { mutateAsync: signOut } = useMutation(
-    rpcClient.auth.signOut.mutationOptions(),
+    rpcClient.auth.signOut.mutationOptions({}),
   );
   const { mutate: addTab } = useMutation(rpcClient.tabs.add.mutationOptions());
   const router = useRouter();
@@ -91,15 +95,39 @@ function UserInfoList() {
         <div className="min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <h4 className="font-medium text-sm truncate">{user.name}</h4>
-            <Badge className="text-xs px-2 py-0.5" variant="secondary">
-              Early Access
-            </Badge>
+            {subscriptionData?.data?.plan ? (
+              <Badge className="text-xs px-2 py-0.5" variant="secondary">
+                {subscriptionData.data.plan}
+              </Badge>
+            ) : (
+              <Badge className="text-xs px-2 py-0.5" variant="secondary">
+                Free
+              </Badge>
+            )}
           </div>
           <p className="text-sm text-muted-foreground truncate">{user.email}</p>
-          <p className="text-xs text-muted-foreground mt-1">
-            ${((creditsData?.credits ?? 0) / 100).toFixed(2)} free credits
-            remaining
-          </p>
+          {subscriptionData?.data?.plan && (
+            <div className="mt-2 text-xs text-muted-foreground">
+              <div className="flex justify-between mb-1">
+                <span>Monthly Usage</span>
+                <span>{subscriptionData.data.usagePercent.toFixed(0)}%</span>
+              </div>
+              <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-primary"
+                  style={{ width: `${subscriptionData.data.usagePercent}%` }}
+                />
+              </div>
+              {subscriptionData.data.nextAllocation && (
+                <p className="mt-1">
+                  Next allocation:{" "}
+                  {new Date(
+                    subscriptionData.data.nextAllocation,
+                  ).toLocaleDateString()}
+                </p>
+              )}
+            </div>
+          )}
         </div>
       </div>
       <div>

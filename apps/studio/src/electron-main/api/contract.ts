@@ -39,5 +39,14 @@ export const contract = {
         credits: z.number(),
       }),
     ),
+    getSubscriptionStatus: oc.input(z.void()).output(
+      z.object({
+        billingCycle: z.enum(["monthly", "yearly"]).nullable(),
+        freeUsagePercent: z.number(),
+        nextAllocation: z.date().nullable(),
+        plan: z.string().nullable(),
+        usagePercent: z.number(),
+      }),
+    ),
   },
 };
