@@ -24,7 +24,8 @@ export function fetchModels(
     case "openai": {
       return fetchAndParseOpenAIModels(config);
     }
-    case "openrouter": {
+    case "openrouter":
+    case "quests": {
       return fetchModelsForOpenRouter(config);
     }
     case "vercel": {
