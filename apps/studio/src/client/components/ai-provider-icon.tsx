@@ -27,6 +27,7 @@ import {
   SiOpenai,
   SiVercel,
 } from "react-icons/si";
+import { QuestsLogoSimpleIcon } from "@quests/components/logo-simple";
 
 export function AIProviderIcon({
   className = "size-5",
@@ -67,6 +68,7 @@ const PROVIDER_ICON_MAP: Record<
   vercel: SiVercel,
   "x-ai": XAI,
   "z-ai": ZAI,
+  quests: QuestsLogoSimpleIcon,
 };
 
 function getProviderIcon(

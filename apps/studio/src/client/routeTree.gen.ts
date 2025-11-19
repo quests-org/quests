@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ToolbarRouteImport } from './routes/toolbar'
+import { Route as SubscribeRouteImport } from './routes/subscribe'
 import { Route as SidebarRouteImport } from './routes/sidebar'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as BrowserRouteImport } from './routes/browser'
@@ -45,6 +46,11 @@ import { Route as AppDiscoverAppsFolderNameRouteImport } from './routes/_app/dis
 const ToolbarRoute = ToolbarRouteImport.update({
   id: '/toolbar',
   path: '/toolbar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SubscribeRoute = SubscribeRouteImport.update({
+  id: '/subscribe',
+  path: '/subscribe',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SidebarRoute = SidebarRouteImport.update({
@@ -210,6 +216,7 @@ export interface FileRoutesByFullPath {
   '/browser': typeof BrowserRoute
   '/settings': typeof SettingsRouteWithChildren
   '/sidebar': typeof SidebarRoute
+  '/subscribe': typeof SubscribeRoute
   '/toolbar': typeof ToolbarRoute
   '/debug': typeof AppDebugRouteRouteWithChildren
   '/new-tab': typeof AppNewTabRoute
@@ -241,6 +248,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/browser': typeof BrowserRoute
   '/sidebar': typeof SidebarRoute
+  '/subscribe': typeof SubscribeRoute
   '/toolbar': typeof ToolbarRoute
   '/new-tab': typeof AppNewTabRoute
   '/release-notes': typeof AppReleaseNotesRoute
@@ -275,6 +283,7 @@ export interface FileRoutesById {
   '/browser': typeof BrowserRoute
   '/settings': typeof SettingsRouteWithChildren
   '/sidebar': typeof SidebarRoute
+  '/subscribe': typeof SubscribeRoute
   '/toolbar': typeof ToolbarRoute
   '/_app/debug': typeof AppDebugRouteRouteWithChildren
   '/_app/new-tab': typeof AppNewTabRoute
@@ -309,6 +318,7 @@ export interface FileRouteTypes {
     | '/browser'
     | '/settings'
     | '/sidebar'
+    | '/subscribe'
     | '/toolbar'
     | '/debug'
     | '/new-tab'
@@ -340,6 +350,7 @@ export interface FileRouteTypes {
     | '/'
     | '/browser'
     | '/sidebar'
+    | '/subscribe'
     | '/toolbar'
     | '/new-tab'
     | '/release-notes'
@@ -373,6 +384,7 @@ export interface FileRouteTypes {
     | '/browser'
     | '/settings'
     | '/sidebar'
+    | '/subscribe'
     | '/toolbar'
     | '/_app/debug'
     | '/_app/new-tab'
@@ -408,6 +420,7 @@ export interface RootRouteChildren {
   BrowserRoute: typeof BrowserRoute
   SettingsRoute: typeof SettingsRouteWithChildren
   SidebarRoute: typeof SidebarRoute
+  SubscribeRoute: typeof SubscribeRoute
   ToolbarRoute: typeof ToolbarRoute
 }
 
@@ -418,6 +431,13 @@ declare module '@tanstack/react-router' {
       path: '/toolbar'
       fullPath: '/toolbar'
       preLoaderRoute: typeof ToolbarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/subscribe': {
+      id: '/subscribe'
+      path: '/subscribe'
+      fullPath: '/subscribe'
+      preLoaderRoute: typeof SubscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sidebar': {
@@ -737,6 +757,7 @@ const rootRouteChildren: RootRouteChildren = {
   BrowserRoute: BrowserRoute,
   SettingsRoute: SettingsRouteWithChildren,
   SidebarRoute: SidebarRoute,
+  SubscribeRoute: SubscribeRoute,
   ToolbarRoute: ToolbarRoute,
 }
 export const routeTree = rootRouteImport
