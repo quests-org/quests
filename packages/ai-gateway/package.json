@@ -35,7 +35,7 @@
     "@ai-sdk/perplexity": "^2.0.0",
     "@ai-sdk/togetherai": "^1.0.23",
     "@ai-sdk/xai": "^2.0.0",
-    "@openrouter/ai-sdk-provider": "^1.1.2",
+    "@openrouter/ai-sdk-provider": "^1.2.3",
     "@quests/shared": "workspace:*",
     "@types/ms": "^2.1.0",
     "ai": "catalog:",
