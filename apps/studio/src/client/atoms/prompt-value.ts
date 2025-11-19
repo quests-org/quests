@@ -1,15 +1,9 @@
 import { type AppSubdomain } from "@quests/workspace/client";
 import { atom } from "jotai";
-import { atomFamily, atomWithStorage } from "jotai/utils";
+import { atomFamily } from "jotai/utils";
 
 export type PromptValueAtomKey = "$$new-tab$$" | AppSubdomain;
 
-export function getPromptValueStorageKey(key: PromptValueAtomKey): string {
-  return `prompt-value-${key}`;
-}
-
-export const promptValueAtomFamily = atomFamily((key: PromptValueAtomKey) =>
-  key === "$$new-tab$$"
-    ? atom("")
-    : atomWithStorage(getPromptValueStorageKey(key), ""),
+export const promptValueAtomFamily = atomFamily((_key: PromptValueAtomKey) =>
+  atom(""),
 );

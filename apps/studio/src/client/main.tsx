@@ -1,10 +1,11 @@
 import { ThemeProvider } from "@/client/components/theme-provider";
+import { cleanupPromptValueStorage } from "@/client/lib/cleanup-local-storage";
 import { queryClient, router } from "@/client/router";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { RouterProvider } from "@tanstack/react-router";
 
 import "./styles/app.css";
 
+import { RouterProvider } from "@tanstack/react-router";
 import ReactDOM from "react-dom/client";
 
 import { TelemetryProvider } from "./providers/telemetry";
@@ -24,6 +25,7 @@ export function Main() {
 const rootElement = document.querySelector("#root");
 
 if (rootElement && rootElement.innerHTML === "") {
+  cleanupPromptValueStorage();
   const root = ReactDOM.createRoot(rootElement);
   root.render(<Main />);
 }

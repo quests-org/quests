@@ -3,7 +3,6 @@ import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import { useCallback } from "react";
 
-import { getPromptValueStorageKey } from "../atoms/prompt-value";
 import { rpcClient } from "../rpc/client";
 import { useTabActions, useTabs } from "./tabs";
 
@@ -30,12 +29,10 @@ export function useTrashApp({
       );
 
       if (navigateOnDelete) {
-        // Try to find an existing new tab and navigate to it
         const newTab = tabs.find(
           (tab) => tab.pathname === "/new-tab" || tab.pathname === "/",
         );
 
-        // Navigate to existing new tab or create a new one
         if (newTab) {
           await selectTab({ id: newTab.id });
         } else {
@@ -46,13 +43,9 @@ export function useTrashApp({
         }
       }
 
-      // Close all project-related tabs
       for (const tab of projectTabs) {
         await closeTab({ id: tab.id });
       }
-
-      // Clean up prompt value storage for the deleted project
-      localStorage.removeItem(getPromptValueStorageKey(projectSubdomain));
     },
     [
       trashProjectMutation,
