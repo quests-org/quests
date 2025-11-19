@@ -10,6 +10,8 @@ const MODEL_TAGS: Record<string, AIGatewayModel.ModelTag[]> = {
   "devstral-medium-2507": ["coding", "recommended"],
   "gemini-2.5-flash": ["recommended"],
   "gemini-2.5-pro": ["coding", "recommended"],
+  "gemini-3-pro": ["coding", "recommended"],
+  "gemini-3-pro-preview": ["coding", "recommended"],
   "glm-4.5": ["coding", "recommended"],
   "glm-4.5-air": ["coding", "recommended"],
   "glm-4.6": ["coding", "recommended"],
@@ -36,7 +38,7 @@ const DEFAULT_MODELS_BY_CONFIG_TYPE: Partial<
   Record<AIGatewayProviderConfig.Type["type"], string[]>
 > = {
   cerebras: ["glm-4.6"],
-  google: ["gemini-2.5-pro"],
+  google: ["gemini-3-pro-preview", "gemini-3-pro"],
   openai: ["gpt-5.1-codex-mini"],
   "z-ai": ["glm-4.6"],
 };
