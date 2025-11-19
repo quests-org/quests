@@ -2,18 +2,31 @@ import { type HeartbeatResponse } from "@quests/workspace/for-shim";
 import { FileX, Loader2 } from "lucide-react";
 
 import { ErrorOverlay } from "./error-overlay";
+import { RecoveryOverlay } from "./recovery-overlay";
 
 interface OverlayProps {
   isInsideStudio: boolean;
+  onDismissRecovery: () => void;
   onOpenConsole: () => void;
+  onReload: () => void;
   response: HeartbeatResponse | null;
+  showRecovery: boolean;
 }
 
 export function Overlay({
   isInsideStudio,
+  onDismissRecovery,
   onOpenConsole,
+  onReload,
   response,
+  showRecovery,
 }: OverlayProps) {
+  if (showRecovery) {
+    return (
+      <RecoveryOverlay onDismiss={onDismissRecovery} onReload={onReload} />
+    );
+  }
+
   if (!response || response.status === "ready") {
     return null;
   }

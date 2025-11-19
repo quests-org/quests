@@ -4,16 +4,43 @@ import { createRoot } from "react-dom/client";
 
 import { Overlay } from "./components/overlay";
 import "./styles.css";
-import { type IframeMessage } from "./types";
+import { type ClientToIframeMessage, type IframeMessage } from "./types";
 
 export function App() {
   useTheme();
   const [response, setResponse] = useState<HeartbeatResponse | null>(null);
+  const [showRecovery, setShowRecovery] = useState(false);
   const previousStatusRef = useRef(response?.status ?? null);
   const retryAttemptsRef = useRef(0);
   const urlParams = new URLSearchParams(window.location.search);
   const isFallbackPage = urlParams.has("fallback");
   const isInsideStudio = navigator.userAgent.includes("Electron");
+
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (
+        event.data &&
+        typeof event.data === "object" &&
+        "type" in event.data
+      ) {
+        const msg = event.data as ClientToIframeMessage;
+        switch (msg.type) {
+          case "hide-failed-to-render": {
+            setShowRecovery(false);
+            break;
+          }
+          case "show-failed-to-render": {
+            setShowRecovery(true);
+            break;
+          }
+        }
+      }
+    };
+    window.addEventListener("message", handleMessage);
+    return () => {
+      window.removeEventListener("message", handleMessage);
+    };
+  }, []);
 
   useEffect(() => {
     let eventSource: EventSource | null = null;
@@ -83,11 +110,31 @@ export function App() {
     };
   }, [isFallbackPage]);
 
+  useEffect(() => {
+    if (showRecovery) {
+      document.body.classList.add("transparent-bg");
+    } else {
+      document.body.classList.remove("transparent-bg");
+    }
+
+    return () => {
+      document.body.classList.remove("transparent-bg");
+    };
+  }, [showRecovery]);
+
   return (
     <Overlay
       isInsideStudio={isInsideStudio}
+      onDismissRecovery={() => {
+        setShowRecovery(false);
+        sendParentMessage({ type: "dismiss-recovery" });
+      }}
       onOpenConsole={handleOpenConsole}
+      onReload={() => {
+        sendParentMessage({ type: "reload-window" });
+      }}
       response={response}
+      showRecovery={showRecovery}
     />
   );
 }

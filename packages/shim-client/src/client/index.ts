@@ -8,11 +8,24 @@ import {
 import { SHIM_IFRAME_BASE_PATH } from "@quests/workspace/for-shim";
 import { sprintf } from "sprintf-js";
 
-import { type IframeMessage, type IframeMessageHandler } from "../iframe/types";
+import {
+  type ClientToIframeMessage,
+  type IframeMessage,
+  type IframeMessageHandler,
+} from "../iframe/types";
+
+const QUESTS_IFRAME_CLASSES = {
+  base: "quests-iframe",
+  visible: "quests-iframe--visible",
+} as const;
+
+const FALLBACK_URL_PARAM = "fallback";
+const WORKSPACE_FALLBACK_PAGE_META_NAME = "workspace-fallback-page";
+const REFRESH_KEY = "quests-refresh";
 
 const style = document.createElement("style");
 style.textContent = `
-  .quests-iframe {
+  .${QUESTS_IFRAME_CLASSES.base} {
     background-color: transparent;
     border: none;
     bottom: 0;
@@ -24,7 +37,7 @@ style.textContent = `
     display: none;
   }
   
-  .quests-iframe--visible {
+  .${QUESTS_IFRAME_CLASSES.visible} {
     display: block;
   }
 `;
@@ -167,14 +180,22 @@ window.addEventListener("message", (event) => {
 
     if (message.type === "app-status") {
       if (message.value === "ready") {
-        iframe.classList.remove("quests-iframe--visible");
+        iframe.classList.remove(QUESTS_IFRAME_CLASSES.visible);
       } else {
-        iframe.classList.add("quests-iframe--visible");
+        iframe.classList.add(QUESTS_IFRAME_CLASSES.visible);
       }
     }
 
     if (message.type === "reload-window") {
       window.location.reload();
+    }
+
+    if (message.type === "dismiss-recovery") {
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define
+      isShowingRecovery = false;
+      iframe.classList.remove(QUESTS_IFRAME_CLASSES.visible);
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define
+      stopRecoveryChecks?.();
     }
 
     if (message.type === "open-console") {
@@ -210,12 +231,166 @@ window.addEventListener("message", (event) => {
 });
 
 const isFallbackPage =
-  document.querySelector(`meta[name="workspace-fallback-page"]`) !== null;
+  document.querySelector(
+    `meta[name="${WORKSPACE_FALLBACK_PAGE_META_NAME}"]`,
+  ) !== null;
 const iframeUrl = new URL(`${SHIM_IFRAME_BASE_PATH}/`, window.location.origin);
 if (isFallbackPage) {
-  iframeUrl.searchParams.set("fallback", "true");
+  iframeUrl.searchParams.set(FALLBACK_URL_PARAM, "true");
 }
 
 iframe.src = iframeUrl.toString();
-iframe.className = "quests-iframe";
+iframe.className = QUESTS_IFRAME_CLASSES.base;
 document.body.append(iframe);
+
+let hasRendered = false;
+let isShowingRecovery = false;
+let stopRecoveryChecks: (() => void) | undefined;
+const initialCheckTime = Date.now();
+
+// Sometimes dev servers can become overloaded and never render the app. We try
+// to detect this and show a recovery overlay.
+function hasAppRendered() {
+  for (const node of document.body.childNodes) {
+    if (node.nodeType === Node.TEXT_NODE && node.textContent?.trim()) {
+      return true;
+    }
+  }
+
+  for (const element of document.body.children) {
+    if (element === iframe) {
+      continue;
+    }
+    if (element.classList.contains(QUESTS_IFRAME_CLASSES.base)) {
+      continue;
+    }
+
+    const tagName = element.tagName;
+    if (
+      ["LINK", "META", "NOSCRIPT", "SCRIPT", "STYLE", "TEMPLATE"].includes(
+        tagName,
+      )
+    ) {
+      continue;
+    }
+
+    // If it has children, we assume content
+    if (element.childElementCount > 0) {
+      return true;
+    }
+
+    // If it has text content
+    if (element.textContent && element.textContent.trim().length > 0) {
+      return true;
+    }
+
+    // If it's a standalone visual element
+    if (
+      [
+        "AUDIO",
+        "BUTTON",
+        "CANVAS",
+        "IFRAME",
+        "IMG",
+        "INPUT",
+        "METER",
+        "PROGRESS",
+        "SELECT",
+        "SVG",
+        "TEXTAREA",
+        "VIDEO",
+      ].includes(tagName)
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function hideRecovery() {
+  if (!isShowingRecovery) {
+    return;
+  }
+  isShowingRecovery = false;
+  iframe.classList.remove(QUESTS_IFRAME_CLASSES.visible);
+  const message: ClientToIframeMessage = {
+    type: "hide-failed-to-render",
+  };
+  iframe.contentWindow?.postMessage(message, "*");
+}
+
+function showRecovery() {
+  if (isShowingRecovery) {
+    return;
+  }
+
+  // Attempt auto-refresh once
+  const lastAutoRefresh = sessionStorage.getItem(REFRESH_KEY);
+  const now = Date.now();
+  const MIN_REFRESH_INTERVAL = 60 * 1000; // 1 minute
+
+  if (
+    !lastAutoRefresh ||
+    now - Number.parseInt(lastAutoRefresh, 10) > MIN_REFRESH_INTERVAL
+  ) {
+    sessionStorage.setItem(REFRESH_KEY, now.toString());
+    window.location.reload();
+    return;
+  }
+
+  isShowingRecovery = true;
+  iframe.classList.add(QUESTS_IFRAME_CLASSES.visible);
+
+  const message: ClientToIframeMessage = {
+    type: "show-failed-to-render",
+  };
+
+  iframe.contentWindow?.postMessage(message, "*");
+}
+
+if (hasAppRendered()) {
+  hasRendered = true;
+} else {
+  const observer = new MutationObserver(() => {
+    if (hasAppRendered()) {
+      hasRendered = true;
+      hideRecovery();
+      observer.disconnect();
+    }
+  });
+
+  observer.observe(document.body, {
+    characterData: true,
+    childList: true,
+    subtree: true,
+  });
+
+  // Fallback check in case mutation observer misses something or logic delays
+  // Also handles the initial timeout
+  const checkInterval = setInterval(() => {
+    if (hasRendered) {
+      clearInterval(checkInterval);
+      return;
+    }
+
+    if (hasAppRendered()) {
+      hasRendered = true;
+      hideRecovery();
+      clearInterval(checkInterval);
+      observer.disconnect();
+      return;
+    }
+
+    if (Date.now() - initialCheckTime >= 5000) {
+      showRecovery();
+      // We don't clear interval here, we keep checking in case it renders later
+      // to allow hiding the recovery screen.
+    }
+  }, 500);
+
+  stopRecoveryChecks = () => {
+    clearInterval(checkInterval);
+    observer.disconnect();
+  };
+}

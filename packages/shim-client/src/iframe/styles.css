@@ -103,4 +103,8 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
   }
+
+  body.transparent-bg {
+    @apply bg-transparent;
+  }
 }
