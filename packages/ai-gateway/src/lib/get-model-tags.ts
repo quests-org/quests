@@ -38,7 +38,7 @@ const DEFAULT_MODELS_BY_CONFIG_TYPE: Partial<
   Record<AIGatewayProviderConfig.Type["type"], string[]>
 > = {
   cerebras: ["glm-4.6"],
-  google: ["gemini-3-pro-preview", "gemini-3-pro"],
+  google: ["gemini-3-pro", "gemini-3-pro-preview"],
   openai: ["gpt-5.1-codex-mini"],
   "z-ai": ["glm-4.6"],
 };
