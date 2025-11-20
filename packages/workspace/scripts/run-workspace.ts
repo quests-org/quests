@@ -12,9 +12,11 @@ import readline from "node:readline";
 import { ulid } from "ulid";
 import { createActor } from "xstate";
 
+import { type WorkspaceAppProject } from "../src/client";
 import { workspaceMachine } from "../src/electron";
 import { getCurrentDate } from "../src/lib/get-current-date";
-import { project } from "../src/rpc/routes/project";
+import { message as messageRoute } from "../src/rpc/routes/message";
+import { project as projectRoute } from "../src/rpc/routes/project";
 import { StoreId } from "../src/schemas/store-id";
 import { env } from "./lib/env";
 
@@ -126,6 +128,9 @@ const rl = readline.createInterface({
   output: process.stdout,
 });
 
+let project: undefined | WorkspaceAppProject;
+const sessionId = StoreId.newSessionId();
+
 // eslint-disable-next-line no-console
 console.log("Enter task prompt (press Enter to submit):");
 rl.on("line", (input) => {
@@ -134,55 +139,70 @@ rl.on("line", (input) => {
     const isChatMode = trimmedInput.startsWith("chat:");
     const mode = isChatMode ? "chat" : "app-builder";
     const text = isChatMode ? trimmedInput.slice(5).trim() : trimmedInput;
-
-    const sessionId = StoreId.newSessionId();
     const messageId = StoreId.newMessageId();
-    void call(
-      project.create,
-      {
-        message: {
-          id: messageId,
-          metadata: {
-            createdAt: new Date(),
-            sessionId,
-          },
-          parts: [
-            {
-              metadata: {
-                createdAt: getCurrentDate(),
-                id: StoreId.newPartId(),
-                messageId,
-                sessionId,
-              },
-              text,
-              type: "text",
-            },
-          ],
-          role: "user",
-        },
-        mode,
-        // modelURI: "anthropic/claude-sonnet-4?provider=anthropic&providerConfigId=anthropic-config-id",
-        // modelURI: "openai/gpt-5-mini?provider=openai&providerConfigId=openai-config-id",
-        // modelURI: "google/gemini-2.5-pro?provider=google&providerConfigId=google-config-id",
-        // modelURI: "google/gemini-2.5-flash?provider=google&providerConfigId=google-config-id",
-        // modelURI:
-        //   "x-ai/grok-code-fast-1?provider=openrouter&providerConfigId=openrouter-config-id",
-        // modelURI:
-        //   "google/gemini-3-pro-preview?provider=openrouter&providerConfigId=openrouter-config-id",
-        modelURI:
-          "openai/gpt-5.1-codex-mini?provider=openrouter&providerConfigId=openrouter-config-id",
+    const message = {
+      id: messageId,
+      metadata: {
+        createdAt: new Date(),
         sessionId,
       },
-      {
-        context: {
-          modelRegistry: {
-            languageModel: fetchAISDKModel,
+      parts: [
+        {
+          metadata: {
+            createdAt: getCurrentDate(),
+            id: StoreId.newPartId(),
+            messageId,
+            sessionId,
           },
-          workspaceConfig: actor.getSnapshot().context.config,
-          workspaceRef: actor,
+          text,
+          type: "text" as const,
         },
+      ],
+      role: "user" as const,
+    };
+    const context = {
+      modelRegistry: {
+        languageModel: fetchAISDKModel,
       },
-    );
+      workspaceConfig: actor.getSnapshot().context.config,
+      workspaceRef: actor,
+    };
+
+    const modelURI =
+      // "anthropic/claude-sonnet-4?provider=anthropic&providerConfigId=anthropic-config-id";
+      // "openai/gpt-5-mini?provider=openai&providerConfigId=openai-config-id";
+      // "google/gemini-2.5-pro?provider=google&providerConfigId=google-config-id";
+      // "google/gemini-2.5-flash?provider=google&providerConfigId=google-config-id";
+      // "x-ai/grok-code-fast-1?provider=openrouter&providerConfigId=openrouter-config-id";
+      "google/gemini-3-pro-preview?provider=openrouter&providerConfigId=openrouter-config-id";
+    // "openai/gpt-5.1-codex-mini?provider=openrouter&providerConfigId=openrouter-config-id";
+
+    if (project) {
+      void call(
+        messageRoute.create,
+        {
+          agentName: project.mode === "chat" ? "chat" : "app-builder",
+          message,
+          modelURI,
+          sessionId,
+          subdomain: project.subdomain,
+        },
+        { context },
+      );
+    } else {
+      void call(
+        projectRoute.create,
+        {
+          message,
+          mode,
+          modelURI,
+          sessionId,
+        },
+        { context },
+      ).then((newProject) => {
+        project = newProject;
+      });
+    }
   }
   // eslint-disable-next-line no-console
   console.log("\nEnter another task prompt (press Enter to submit):");
