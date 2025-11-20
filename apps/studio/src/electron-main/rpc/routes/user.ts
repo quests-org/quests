@@ -12,15 +12,6 @@ import { publisher } from "../publisher";
 
 const logger = baseLogger.scope("rpc/user");
 
-const credits = base.handler(async () => {
-  if (hasToken()) {
-    const [error, data] = await safe(apiClient.users.getMyCredits());
-    return error ? null : data;
-  }
-
-  return null;
-});
-
 const hasAIProviderConfig = base.handler(() => {
   const providersStore = getProviderConfigsStore();
   const providerConfigs = providersStore.get("providers");
@@ -89,57 +80,75 @@ const live = {
   }),
 };
 
-const subscription = base
-  .input(z.object({ cache: z.boolean().optional() }))
-  .handler(async ({ context, input }) => {
-    if (hasToken()) {
-      if (input.cache && context.cache.subscription) {
-        return {
-          data: context.cache.subscription,
-          error: null,
-        };
-      }
+const subscription = base.handler(async () => {
+  if (hasToken()) {
+    const [error, data] = await safe(apiClient.users.getSubscriptionStatus());
 
-      context.cache.subscription = null;
-      const [error, data] = await safe(apiClient.users.getSubscriptionStatus());
-
-      if (isNetworkConnectionError(error)) {
-        logger.error("Network error getting subscription status", {
-          cause: error?.cause,
-          error,
-        });
-        return {
-          data: null,
-          error: createError("SERVER_CONNECTION_ERROR"),
-        };
-      } else if (error) {
-        logger.error("Error getting subscription status", { error });
-        return {
-          data: null,
-          error: createError(
-            "UNKNOWN_IPC_ERROR",
-            "There was an error getting your subscription status.",
-          ),
-        };
-      } else {
-        context.cache.subscription = data;
-        return {
-          data,
-          error: null,
-        };
-      }
+    if (isNetworkConnectionError(error)) {
+      logger.error("Network error getting subscription status", {
+        cause: error?.cause,
+        error,
+      });
+      return {
+        data: null,
+        error: createError("SERVER_CONNECTION_ERROR"),
+      };
+    } else if (error) {
+      logger.error("Error getting subscription status", { error });
+      return {
+        data: null,
+        error: createError(
+          "UNKNOWN_IPC_ERROR",
+          "There was an error getting your subscription status.",
+        ),
+      };
+    } else {
+      return {
+        data,
+        error: null,
+      };
     }
+  }
 
+  return {
+    data: null,
+    error: createError("NO_TOKEN"),
+  };
+});
+
+const plans = base.handler(async () => {
+  const [error, data] = await safe(apiClient.plans.get());
+
+  if (isNetworkConnectionError(error)) {
+    logger.error("Network error getting subscription plans", {
+      cause: error?.cause,
+      error,
+    });
     return {
       data: null,
-      error: createError("NO_TOKEN"),
+      error: createError("SERVER_CONNECTION_ERROR"),
     };
-  });
+  } else if (error) {
+    logger.error("Error getting subscription plans", { error });
+    return {
+      data: null,
+      error: createError(
+        "UNKNOWN_IPC_ERROR",
+        "There was an error getting subscription plans.",
+      ),
+    };
+  } else {
+    return {
+      data,
+      error: null,
+    };
+  }
+});
 
 export const user = {
-  credits,
   hasAIProviderConfig,
   live,
   me,
+  plans,
   subscription,
 };

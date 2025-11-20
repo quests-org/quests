@@ -23,6 +23,14 @@ export const contract = {
   root: {
     ping: oc.input(z.void()).output(z.string()),
   },
+  stripe: {
+    createCheckoutSession: oc
+      .input(z.object({ priceId: z.string() }))
+      .output(z.object({ url: z.string().nullable() })),
+    createPortalSession: oc
+      .input(z.void())
+      .output(z.object({ url: z.string() })),
+  },
   users: {
     getMe: oc.input(z.void()).output(
       z.object({
@@ -34,11 +42,6 @@ export const contract = {
         updatedAt: z.date(),
       }),
     ),
-    getMyCredits: oc.input(z.void()).output(
-      z.object({
-        credits: z.number(),
-      }),
-    ),
     getSubscriptionStatus: oc.input(z.void()).output(
       z.object({
         billingCycle: z.enum(["monthly", "yearly"]).nullable(),
@@ -47,6 +50,23 @@ export const contract = {
         plan: z.string().nullable(),
         usagePercent: z.number(),
       }),
+    ),
+  },
+  plans: {
+    get: oc.input(z.void()).output(
+      z.array(
+        z.object({
+          description: z.string(),
+          features: z.array(z.object({ text: z.string() })),
+          monthlyPrice: z.number(),
+          name: z.string(),
+          priceIds: z.object({
+            monthly: z.string().nullable(),
+            yearly: z.string().nullable(),
+          }),
+          yearlyPrice: z.number(),
+        }),
+      ),
     ),
   },
 };
