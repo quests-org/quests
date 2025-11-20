@@ -1,6 +1,6 @@
 export const AI_GATEWAY_API_PATH = "/ai-gateway";
 
-export const APP_PROTOCOL = "quests";
+export const APP_PROTOCOL = import.meta.env.VITE_APP_PROTOCOL || "quests";
 
 export const APP_REPO_NAME = "quests";
 export const GITHUB_ORG = "quests-org";
