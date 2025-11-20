@@ -51,7 +51,7 @@ export function UnknownPart({ part }: UnknownPartProps) {
         <div className="mt-2 text-xs">
           <div className="p-2 bg-muted/30 rounded-md border max-h-64 overflow-y-auto">
             <div className="mb-1 font-semibold">Unknown Part Data:</div>
-            <pre className="whitespace-pre-wrap break-words font-mono text-xs">
+            <pre className="whitespace-pre-wrap wrap-break-word font-mono text-xs">
               {JSON.stringify(part, null, 2)}
             </pre>
           </div>

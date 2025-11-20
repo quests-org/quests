@@ -165,13 +165,13 @@ export function ToolPart({ isLoading, part }: ToolPartProps) {
         <div className="mt-2 text-xs space-y-2">
           <div className="p-2 bg-muted/30 rounded-md border max-h-64 overflow-y-auto">
             <div className="mb-1 font-semibold">Error:</div>
-            <pre className="whitespace-pre-wrap break-words font-mono text-xs">
+            <pre className="whitespace-pre-wrap wrap-break-word font-mono text-xs">
               {part.errorText}
             </pre>
           </div>
           <div className="p-2 bg-muted/30 rounded-md border max-h-64 overflow-y-auto">
             <div className="mb-1 font-semibold">Input:</div>
-            <pre className="whitespace-pre-wrap break-words font-mono text-xs">
+            <pre className="whitespace-pre-wrap wrap-break-word font-mono text-xs">
               {JSON.stringify(part.input || part.rawInput, null, 2)}
             </pre>
           </div>

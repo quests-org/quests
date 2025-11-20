@@ -147,7 +147,7 @@ function StatusBadge({
       {Icon && <Icon className="size-3 shrink-0 text-muted-foreground/60" />}
       <span
         className={cn(
-          "text-xs text-muted-foreground truncate break-words min-w-0",
+          "text-xs text-muted-foreground truncate wrap-break-word min-w-0",
           animate && "shiny-text",
         )}
       >

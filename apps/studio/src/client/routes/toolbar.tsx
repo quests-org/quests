@@ -31,8 +31,8 @@ function ToolbarPage() {
             mr-2
             w-full flex-1 h-svh
           `,
-          isWindows() && "pr-[9rem]",
-          isLinux() && "pr-[6rem]",
+          isWindows() && "pr-36",
+          isLinux() && "pr-24",
         )}
       >
         <div className="flex items-center min-w-0 flex-1 h-full">

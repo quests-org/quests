@@ -184,7 +184,7 @@ export function DiscoverHorizontalSection({
           >
             {items.map((item) => (
               <div
-                className="flex-shrink-0 w-64 sm:w-72 lg:w-80"
+                className="shrink-0 w-64 sm:w-72 lg:w-80"
                 data-card
                 key={item.folderName}
               >

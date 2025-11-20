@@ -25,7 +25,7 @@ export function DiscoverPageLayout({
   return (
     <div className="flex-1 mx-auto max-w-4xl">
       {breadcrumbs && (
-        <div className="pt-8 pb-4 mb-4 px-8 sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="pt-8 pb-4 mb-4 px-8 sticky top-0 z-10 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
           <Breadcrumb items={breadcrumbs} />
         </div>
       )}

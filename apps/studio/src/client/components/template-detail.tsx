@@ -127,7 +127,7 @@ export function TemplateDetail({
 
   return (
     <div className="max-w-4xl mx-auto px-8">
-      <div className="sticky top-0 z-10 pt-8 pb-4 mb-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="sticky top-0 z-10 pt-8 pb-4 mb-4 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
         <Breadcrumb items={breadcrumbItems} />
       </div>
 
@@ -228,7 +228,7 @@ export function TemplateDetail({
           className="max-w-[80vw] sm:max-w-[80vw] w-full max-h-[75vh] p-0 h-full flex flex-col"
           portalContent={
             <Button
-              className="fixed right-[4%] top-[5%] z-[60] rounded-full size-10"
+              className="fixed right-[4%] top-[5%] z-60 rounded-full size-10"
               onClick={() => {
                 setShowPreviewDialog(false);
               }}

@@ -38,7 +38,7 @@ function FeatureCard({
 }) {
   return (
     <div className="flex gap-5 rounded-lg bg-muted/50 p-4">
-      <div className="flex-shrink-0">
+      <div className="shrink-0">
         <div className="text-6xl font-bold text-foreground/10 leading-none tabular-nums">
           {number}
         </div>

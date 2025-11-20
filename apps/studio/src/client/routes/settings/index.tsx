@@ -233,7 +233,7 @@ function About() {
                 Release Notes
               </Button>
             </div>
-            <div className="flex-shrink-0">{getActionButton()}</div>
+            <div className="shrink-0">{getActionButton()}</div>
           </div>
           <div className="mt-3">{getUpdateStatusContent()}</div>
         </div>
@@ -248,7 +248,7 @@ function About() {
             <div>
               <Button
                 asChild
-                className="!px-0 h-auto text-blue-600 dark:text-blue-400"
+                className="px-0! h-auto text-blue-600 dark:text-blue-400"
                 variant="link"
               >
                 <ExternalLink href={APP_REPO_URL}>
@@ -269,7 +269,7 @@ function About() {
             <div>
               <Button
                 asChild
-                className="!px-0 h-auto text-blue-600 dark:text-blue-400"
+                className="px-0! h-auto text-blue-600 dark:text-blue-400"
                 variant="link"
               >
                 <ExternalLink href={DISCORD_URL}>
