@@ -1,7 +1,3 @@
-import {
-  agentNameAtomFamily,
-  type AgentNameAtomKey,
-} from "@/client/atoms/agent-name";
 import { Button } from "@/client/components/ui/button";
 import {
   Popover,
@@ -10,7 +6,6 @@ import {
 } from "@/client/components/ui/popover";
 import { cn } from "@/client/lib/utils";
 import { type AgentName } from "@quests/workspace/client";
-import { useAtom } from "jotai";
 import {
   AppWindowMac,
   Check,
@@ -40,29 +35,18 @@ const AGENT_OPTIONS: AgentOption[] = [
 ];
 
 export function AgentPicker({
-  atomKey,
   className = "",
   disabled = false,
-  onValueChange,
+  onChange,
   value,
 }: {
-  atomKey?: AgentNameAtomKey;
   className?: string;
   disabled?: boolean;
-  onValueChange?: (value: AgentName) => void;
+  onChange?: (value: AgentName) => void;
   value?: AgentName;
 }) {
   const [open, setOpen] = useState(false);
-  const [atomValue, setAtomValue] = useAtom(
-    agentNameAtomFamily(atomKey ?? "$$new-tab$$"),
-  );
-
-  const effectiveValue = atomKey ? atomValue : value;
-  const effectiveOnValueChange = atomKey ? setAtomValue : onValueChange;
-
-  const selectedAgent = AGENT_OPTIONS.find(
-    (agent) => agent.value === effectiveValue,
-  );
+  const selectedAgent = AGENT_OPTIONS.find((agent) => agent.value === value);
 
   return (
     <Popover onOpenChange={setOpen} open={open}>
@@ -98,11 +82,11 @@ export function AgentPicker({
             <Button
               className={cn(
                 "flex items-center justify-between gap-2 h-auto py-2 px-2 font-normal",
-                effectiveValue === agent.value && "bg-accent",
+                value === agent.value && "bg-accent",
               )}
               key={agent.value}
               onClick={() => {
-                effectiveOnValueChange?.(agent.value);
+                onChange?.(agent.value);
                 setOpen(false);
               }}
               size="sm"
@@ -115,7 +99,7 @@ export function AgentPicker({
               <Check
                 className={cn(
                   "size-4 shrink-0",
-                  effectiveValue === agent.value ? "opacity-100" : "opacity-0",
+                  value === agent.value ? "opacity-100" : "opacity-0",
                 )}
               />
             </Button>

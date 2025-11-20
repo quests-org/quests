@@ -1,4 +1,4 @@
-import { agentNameAtomFamily } from "@/client/atoms/agent-name";
+import { agentNameAtom } from "@/client/atoms/agent-name";
 import { selectedModelURIAtom } from "@/client/atoms/selected-model";
 import { SmallAppIcon } from "@/client/components/app-icon";
 import { AppStatusIcon } from "@/client/components/app-status-icon";
@@ -43,7 +43,7 @@ export const Route = createFileRoute("/_app/new-tab")({
 
 function RouteComponent() {
   const [selectedModelURI, setSelectedModelURI] = useAtom(selectedModelURIAtom);
-  const [agentName, setAgentName] = useAtom(agentNameAtomFamily("$$new-tab$$"));
+  const [agentName, setAgentName] = useAtom(agentNameAtom);
   const navigate = useNavigate({ from: "/new-tab" });
   const router = useRouter();
   const { addTab } = useTabActions();
@@ -66,6 +66,7 @@ function RouteComponent() {
         <div className="w-full max-w-2xl space-y-8 px-8 pt-36">
           <div>
             <PromptInput
+              agentName={agentName}
               allowOpenInNewTab
               atomKey="$$new-tab$$"
               autoFocus
