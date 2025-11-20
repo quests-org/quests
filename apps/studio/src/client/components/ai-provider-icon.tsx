@@ -18,6 +18,7 @@ import { Together } from "@/client/components/icons/together";
 import { XAI } from "@/client/components/icons/x-ai";
 import { ZAI } from "@/client/components/icons/z-ai";
 import { OpenRouter } from "@/client/components/service-icons";
+import { QuestsLogoSimpleIcon } from "@quests/components/logo-simple";
 import { type AIProviderType } from "@quests/shared";
 import { GrNodes } from "react-icons/gr";
 import {
@@ -27,7 +28,6 @@ import {
   SiOpenai,
   SiVercel,
 } from "react-icons/si";
-import { QuestsLogoSimpleIcon } from "@quests/components/logo-simple";
 
 export function AIProviderIcon({
   className = "size-5",
@@ -64,11 +64,11 @@ const PROVIDER_ICON_MAP: Record<
   "openai-compatible": GrNodes,
   openrouter: OpenRouter,
   perplexity: Perplexity,
+  quests: QuestsLogoSimpleIcon,
   together: Together,
   vercel: SiVercel,
   "x-ai": XAI,
   "z-ai": ZAI,
-  quests: QuestsLogoSimpleIcon,
 };
 
 function getProviderIcon(

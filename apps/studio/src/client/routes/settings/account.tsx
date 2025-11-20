@@ -11,8 +11,8 @@ import { rpcClient } from "@/client/rpc/client";
 import { QuestsLogoIcon } from "@quests/components/logo";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { GemIcon } from "lucide-react";
 import { useAtom } from "jotai";
+import { GemIcon } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/settings/account")({
@@ -53,6 +53,12 @@ function UserInfoList() {
     rpcClient.auth.signOut.mutationOptions({}),
   );
   const { mutate: addTab } = useMutation(rpcClient.tabs.add.mutationOptions());
+  const { mutateAsync: createPortalSession } = useMutation(
+    rpcClient.stripe.createPortalSession.mutationOptions(),
+  );
+  const { mutateAsync: openExternalLink } = useMutation(
+    rpcClient.utils.openExternalLink.mutationOptions(),
+  );
   const router = useRouter();
   const user = userResult.data;
 
@@ -79,13 +85,6 @@ function UserInfoList() {
     );
   }
 
-  const { mutateAsync: createPortalSession } = useMutation(
-    rpcClient.stripe.createPortalSession.mutationOptions(),
-  );
-  const { mutateAsync: openExternalLink } = useMutation(
-    rpcClient.utils.openExternalLink.mutationOptions(),
-  );
-
   const handleManageSubscription = async () => {
     try {
       const { data } = await createPortalSession({});
@@ -94,8 +93,7 @@ function UserInfoList() {
       } else {
         toast.error("Failed to create portal session");
       }
-    } catch (error) {
-      console.error(error);
+    } catch {
       toast.error("Failed to create portal session");
     }
   };
@@ -103,7 +101,7 @@ function UserInfoList() {
   const data = subscriptionData?.data;
   const plan = data?.plan;
 
-  let badgeVariant: "secondary" | "default" | "outline" = "secondary";
+  const badgeVariant: "default" | "outline" | "secondary" = "secondary";
   let badgeClassName = "text-xs px-2 py-0.5";
 
   if (plan === "Basic") {
@@ -133,12 +131,12 @@ function UserInfoList() {
             </div>
           </div>
           <Button
+            className="font-medium"
             onClick={async () => {
               await signOut({});
             }}
-            variant="outline"
             size="sm"
-            className="font-medium"
+            variant="outline"
           >
             Sign out
           </Button>
@@ -178,7 +176,7 @@ function UserInfoList() {
             )}
           </div>
 
-          {plan && data && (
+          {plan && (
             <div className="space-y-4 pt-2">
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
@@ -202,10 +200,10 @@ function UserInfoList() {
               )}
               <div className="flex justify-end gap-2 pt-2">
                 <Button
-                  onClick={handleManageSubscription}
-                  variant="outline"
-                  size="sm"
                   className="font-medium"
+                  onClick={handleManageSubscription}
+                  size="sm"
+                  variant="outline"
                 >
                   Manage Subscription
                 </Button>
