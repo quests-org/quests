@@ -73,6 +73,7 @@ function RouteComponent() {
               autoResizeMaxHeight={300}
               isLoading={createProjectMutation.isPending}
               modelURI={selectedModelURI}
+              onAgentChange={setAgentName}
               onModelChange={setSelectedModelURI}
               onSubmit={({
                 agentName: submitAgentName,
