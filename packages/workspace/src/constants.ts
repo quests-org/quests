@@ -29,3 +29,6 @@ export const APP_STATUSES = [
 export const GIT_AUTHOR = { email: "agent@quests.dev", name: "Quests Agent" };
 export const WEBSITE_URL = "https://quests.dev";
 export const APP_NAME = "Quests";
+
+// Limit prompt storage to 50KB to avoid blowing up the JSON file
+export const MAX_PROMPT_STORAGE_LENGTH = 50_000;

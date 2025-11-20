@@ -36,7 +36,6 @@ export function ProjectViewApp({
             app={project}
             className="rounded-lg overflow-hidden"
             shouldReload={!selectedVersion}
-            showSendToChat
           />
 
           {selectedVersion && (

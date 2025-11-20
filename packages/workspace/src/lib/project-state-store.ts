@@ -16,12 +16,14 @@ const PROJECT_STATE_FILE_NAME = "project-state.json";
 const StoredProjectStateSchema = z
   // Relaxed schema for backwards compatibility
   .object({
+    promptDraft: z.string().optional(),
     selectedAgentName: AgentNameSchema.optional().default("app-builder"),
     selectedModelURI: z.string().optional(),
   })
   .default({ selectedAgentName: "app-builder" });
 
 export const ProjectStateSchema = z.object({
+  promptDraft: z.string().optional(),
   selectedAgentName: AgentNameSchema.optional().default("app-builder"),
   selectedModelURI: AIGatewayModelURI.Schema.optional(),
 });

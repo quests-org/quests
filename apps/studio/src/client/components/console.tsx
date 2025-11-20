@@ -1,7 +1,7 @@
 import { cn } from "@/client/lib/utils";
 import { type ConsoleLogType } from "@quests/shared/shim";
-import { type AppSubdomain } from "@quests/workspace/client";
-import { useSetAtom } from "jotai";
+import { type WorkspaceApp } from "@quests/workspace/client";
+import { getDefaultStore, type SetStateAction, type WritableAtom } from "jotai";
 import { ChevronDown, Copy, MessageSquare, Trash, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useStickToBottom } from "use-stick-to-bottom";
@@ -61,19 +61,17 @@ interface GroupedLogLine {
 }
 
 export function Console({
+  app,
   clientLogs,
   logs,
   onClearLogs,
   onCollapse,
-  showSendToChat = false,
-  subdomain,
 }: {
+  app: WorkspaceApp;
   clientLogs: ClientLogLine[];
   logs: ServerLogLine[];
   onClearLogs: () => void;
   onCollapse: () => void;
-  showSendToChat?: boolean;
-  subdomain: AppSubdomain;
 }) {
   const { contentRef, isNearBottom, scrollRef, scrollToBottom } =
     useStickToBottom({ initial: "instant", mass: 0.8 });
@@ -153,12 +151,11 @@ export function Console({
           {groupedLogs.map((group, index) => {
             return (
               <ConsoleRow
+                app={app}
                 count={group.count}
                 index={index}
                 key={group.line.id}
                 line={group.line}
-                showSendToChat={showSendToChat}
-                subdomain={subdomain}
               />
             );
           })}
@@ -179,31 +176,36 @@ export function Console({
 }
 
 function ConsoleRow({
+  app,
   count,
   index,
   line,
-  showSendToChat,
-  subdomain,
 }: {
+  app: WorkspaceApp;
   count: number;
   index: number;
   line: UnifiedLogLine;
-  showSendToChat?: boolean;
-  subdomain: AppSubdomain;
 }) {
-  const setPromptValue = useSetAtom(promptValueAtomFamily(subdomain));
-
   const message = line.message;
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(message);
   };
 
-  const handleSendToChat = () => {
+  const handleSendToChat = async () => {
+    if (app.type !== "project") {
+      return;
+    }
     const sourceLabel = line.source === "server" ? "Server" : "Browser";
     const contextualMessage = `[${sourceLabel}] ${message}`;
-    setPromptValue((prev) =>
-      prev ? `${prev}\n\n${contextualMessage}` : contextualMessage,
+    const defaultStore = getDefaultStore();
+    const atom = promptValueAtomFamily(app.subdomain);
+    const prevPromptValue = await Promise.resolve(defaultStore.get(atom));
+    defaultStore.set(
+      atom as WritableAtom<string, [SetStateAction<string>], void>,
+      prevPromptValue
+        ? `${prevPromptValue}\n\n${contextualMessage}`
+        : contextualMessage,
     );
   };
 
@@ -254,7 +256,7 @@ function ConsoleRow({
       </div>
 
       <div className="absolute right-2 top-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-        {showSendToChat && (
+        {app.type === "project" && (
           <ConfirmedIconButton
             className="size-5 bg-background hover:!bg-accent dark:hover:!bg-accent border border-border/50"
             icon={MessageSquare}

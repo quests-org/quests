@@ -25,14 +25,12 @@ export function AppView({
   className,
   rightActions,
   shouldReload = true,
-  showSendToChat = false,
 }: {
   app: WorkspaceApp;
   centerContent?: React.ReactNode;
   className?: string;
   rightActions?: React.ReactNode;
   shouldReload?: boolean;
-  showSendToChat?: boolean;
 }) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const shimIFrame = useShimIFrame(iframeRef);
@@ -112,7 +110,6 @@ export function AppView({
               onCollapse={() => {
                 setIsConsoleOpen(false);
               }}
-              showSendToChat={showSendToChat}
             />
           </div>
         )}
@@ -125,12 +122,10 @@ function ConsoleWithLogs({
   app,
   clientLogsAtom,
   onCollapse,
-  showSendToChat,
 }: {
   app: WorkspaceApp;
   clientLogsAtom: ReturnType<typeof atom<ClientLogLine[]>>;
   onCollapse: () => void;
-  showSendToChat: boolean;
 }) {
   const { data: runtimeLogs = [] } = useQuery(
     rpcClient.workspace.runtime.log.live.list.experimental_liveOptions({
@@ -149,12 +144,11 @@ function ConsoleWithLogs({
 
   return (
     <Console
+      app={app}
       clientLogs={clientLogs}
       logs={runtimeLogs}
       onClearLogs={handleClearLogs}
       onCollapse={onCollapse}
-      showSendToChat={showSendToChat}
-      subdomain={app.subdomain}
     />
   );
 }
