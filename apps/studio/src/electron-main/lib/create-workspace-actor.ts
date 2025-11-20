@@ -1,4 +1,4 @@
-import { getToken, hasToken } from "@/electron-main/api/utils";
+import { getToken } from "@/electron-main/api/utils";
 import {
   REGISTRY_DEV_DIR_PATH,
   REGISTRY_DIR_NAME,

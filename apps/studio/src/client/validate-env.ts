@@ -7,6 +7,7 @@ export default defineConfig({
     MAIN_VITE_GOOGLE_CLIENT_ID: z.string().optional(),
     MAIN_VITE_GOOGLE_CLIENT_SECRET: z.string().optional(),
     MAIN_VITE_QUESTS_OPEN_ROUTER_BASE_URL: z.string().optional(),
+    VITE_APP_PROTOCOL: z.string().optional(),
     VITE_DEBUG_TELEMETRY: z.enum(["true", "false"]).default("false"),
     VITE_POSTHOG_API_HOST: z.string().optional(),
     VITE_POSTHOG_API_KEY: z.string().optional(),
