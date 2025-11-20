@@ -25,8 +25,8 @@ catalogs:
       specifier: ^4.7.0
       version: 4.7.0
     ai:
-      specifier: ^5.0.92
-      version: 5.0.94
+      specifier: ^5.0.97
+      version: 5.0.97
     better-auth:
       specifier: ^1.2.12
       version: 1.3.7
@@ -464,8 +464,8 @@ importers:
         specifier: ^1.0.41
         version: 1.0.41(zod@4.1.3)
       '@ai-sdk/google':
-        specifier: ^2.0.38
-        version: 2.0.38(zod@4.1.3)
+        specifier: ^2.0.39
+        version: 2.0.39(zod@4.1.3)
       '@ai-sdk/groq':
         specifier: ^2.0.29
         version: 2.0.29(zod@4.1.3)
@@ -473,8 +473,8 @@ importers:
         specifier: ^2.0.24
         version: 2.0.24(zod@4.1.3)
       '@ai-sdk/openai':
-        specifier: ^2.0.68
-        version: 2.0.68(zod@4.1.3)
+        specifier: ^2.0.69
+        version: 2.0.69(zod@4.1.3)
       '@ai-sdk/openai-compatible':
         specifier: ^1.0.27
         version: 1.0.27(zod@4.1.3)
@@ -488,8 +488,8 @@ importers:
         specifier: ^2.0.33
         version: 2.0.33(zod@4.1.3)
       '@openrouter/ai-sdk-provider':
-        specifier: ^1.2.3
-        version: 1.2.3(@tanstack/react-query@5.85.5(react@19.1.0))(ai@5.0.94(zod@4.1.3))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(zod@4.1.3)
+        specifier: ^1.2.5
+        version: 1.2.5(ai@5.0.97(zod@4.1.3))(zod@4.1.3)
       '@quests/shared':
         specifier: workspace:*
         version: link:../shared
@@ -498,7 +498,7 @@ importers:
         version: 2.1.0
       ai:
         specifier: 'catalog:'
-        version: 5.0.94(zod@4.1.3)
+        version: 5.0.97(zod@4.1.3)
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
@@ -755,7 +755,7 @@ importers:
         version: 1.15.13
       ai:
         specifier: 'catalog:'
-        version: 5.0.94(zod@4.1.3)
+        version: 5.0.97(zod@4.1.3)
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
@@ -895,14 +895,14 @@ packages:
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
 
-  '@ai-sdk/gateway@2.0.10':
-    resolution: {integrity: sha512-c++qOKfjKokTPAJ+vP9UXXNuTQ819yEDCZVXBhpZbgRly1P4fHTJbIAwuh+Qxxe9Bmtu8PEta0JGYZxc+hm7/Q==}
+  '@ai-sdk/gateway@2.0.12':
+    resolution: {integrity: sha512-W+cB1sOWvPcz9qiIsNtD+HxUrBUva2vWv2K1EFukuImX+HA0uZx3EyyOjhYQ9gtf/teqEG80M6OvJ7xx/VLV2A==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
 
-  '@ai-sdk/google@2.0.38':
-    resolution: {integrity: sha512-z+RFCxRA/dSd3eCkGBlnk79nz3jv8vwaW42gVc+qDuMofNfvjRz19rjnkFNuYQ6cEUcPKCo0P1rD/JLeTN2Z5A==}
+  '@ai-sdk/google@2.0.39':
+    resolution: {integrity: sha512-uCqNNABzIvY6e4dutFO5P428HcaiwvgvBPUsqI2W7qB8ee+Oz5WtNGKPeR5gnf9736HaB3UrIUZFWGhr4/HwVQ==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
@@ -925,8 +925,8 @@ packages:
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
 
-  '@ai-sdk/openai@2.0.68':
-    resolution: {integrity: sha512-qUSLFkqgUoFArzBwttu0KWVAZYjbsdZGOklSJXpfZ2nDC61yseHxtcnuG8u6tqKnGXDh4eakEgREDWU2sRht7A==}
+  '@ai-sdk/openai@2.0.69':
+    resolution: {integrity: sha512-UF9qZ1qiVOpWdbj/FGf8jz+PciMI2zxt8ZNKjsvyFtUfk1E5PIG8GYR65maGblVhwKrRR5zAAJ5BumNyDt2v4Q==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
@@ -2087,26 +2087,15 @@ packages:
   '@open-draft/until@2.1.0':
     resolution: {integrity: sha512-U69T3ItWHvLwGg5eJ0n3I62nWuE6ilHlmz7zM0npLBRvPRd7e6NYmg54vvRtP5mZG7kZqZCFVdsTWo7BPtBujg==}
 
-  '@openrouter/ai-sdk-provider@1.2.3':
-    resolution: {integrity: sha512-a6Nc8dPRHakRH9966YJ/HZJhLOds7DuPTscNZDoAr+Aw+tEFUlacSJMvb/b3gukn74mgbuaJRji9YOn62ipfVg==}
+  '@openrouter/ai-sdk-provider@1.2.5':
+    resolution: {integrity: sha512-NrvJFPvdEUo6DYUQIVWPGfhafuZ2PAIX7+CUMKGknv8TcTNVo0TyP1y5SU7Bgjf/Wup9/74UFKUB07icOhVZjQ==}
     engines: {node: '>=18'}
     peerDependencies:
       ai: ^5.0.0
       zod: ^3.24.1 || ^v4
 
-  '@openrouter/sdk@0.1.13':
-    resolution: {integrity: sha512-OTHsblzLi0GZu9L0zSA/2bVrLcx8uj0aYs0nN85/+gtwZQdT5Vv2Wiwzz5FyWoD2RKuX5C+dSBHFEaVCmhTfQQ==}
-    peerDependencies:
-      '@tanstack/react-query': ^5
-      react: ^18 || ^19
-      react-dom: ^18 || ^19
-    peerDependenciesMeta:
-      '@tanstack/react-query':
-        optional: true
-      react:
-        optional: true
-      react-dom:
-        optional: true
+  '@openrouter/sdk@0.1.18':
+    resolution: {integrity: sha512-afLZ1D2BkeJsDHca+MluKg4kFu7ZqWFsvnRHohrOEC+3PpLuAvdju1eIdlge6x8GBSoAt8SCOH1Wud+CWQurmQ==}
 
   '@opentelemetry/api@1.9.0':
     resolution: {integrity: sha512-3giAOQvZiH5F9bMlMiv8+GSPMeqg0dbaeo58/0SlA9sxSqZhnUtxzX9/2FzyhS9sWQf5S0GJE0AKBrFqjpeYcg==}
@@ -3580,8 +3569,8 @@ packages:
     resolution: {integrity: sha512-JekxQ0RApo4gS4un/iMGsIL1/k4KUBe3HmnGcDvzHuFBdQdudEJgTqcsJC7y6Ul4Yw5CeykgvQbX2XeEJd0+DA==}
     engines: {node: '>= 20'}
 
-  '@vercel/oidc@3.0.3':
-    resolution: {integrity: sha512-yNEQvPcVrK9sIe637+I0jD6leluPxzwJKx/Haw6F4H77CdDsszUn5V3o96LPziXkSNE2B83+Z3mjqGKBK/R6Gg==}
+  '@vercel/oidc@3.0.5':
+    resolution: {integrity: sha512-fnYhv671l+eTTp48gB4zEsTW/YtRgRPnkI2nT7x6qw5rkI1Lq2hTmQIpHPgyThI0znLK+vX2n9XxKdXZ7BUbbw==}
     engines: {node: '>= 20'}
 
   '@vitejs/plugin-react@4.7.0':
@@ -3675,8 +3664,8 @@ packages:
     resolution: {integrity: sha512-4I7Td01quW/RpocfNayFdFVk1qSuoh0E7JrbRJ16nH01HhKFQ88INq9Sd+nd72zqRySlr9BmDA8xlEJ6vJMrYA==}
     engines: {node: '>=8'}
 
-  ai@5.0.94:
-    resolution: {integrity: sha512-PQs3H8xDhORG/L6eyR+SxAKUsa0ORO4ENvRovzGgPmPGCIlwle6UD5VIMQFtj1gvZk+BKBUVEFFwtkTeJTAURw==}
+  ai@5.0.97:
+    resolution: {integrity: sha512-8zBx0b/owis4eJI2tAlV8a1Rv0BANmLxontcAelkLNwEHhgfgXeKpDkhNB6OgV+BJSwboIUDkgd9312DdJnCOQ==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
@@ -8424,14 +8413,14 @@ snapshots:
       '@vercel/oidc': 3.0.2
       zod: 4.1.3
 
-  '@ai-sdk/gateway@2.0.10(zod@4.1.3)':
+  '@ai-sdk/gateway@2.0.12(zod@4.1.3)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
       '@ai-sdk/provider-utils': 3.0.17(zod@4.1.3)
-      '@vercel/oidc': 3.0.3
+      '@vercel/oidc': 3.0.5
       zod: 4.1.3
 
-  '@ai-sdk/google@2.0.38(zod@4.1.3)':
+  '@ai-sdk/google@2.0.39(zod@4.1.3)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
       '@ai-sdk/provider-utils': 3.0.17(zod@4.1.3)
@@ -8455,7 +8444,7 @@ snapshots:
       '@ai-sdk/provider-utils': 3.0.17(zod@4.1.3)
       zod: 4.1.3
 
-  '@ai-sdk/openai@2.0.68(zod@4.1.3)':
+  '@ai-sdk/openai@2.0.69(zod@4.1.3)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
       '@ai-sdk/provider-utils': 3.0.17(zod@4.1.3)
@@ -9763,23 +9752,15 @@ snapshots:
   '@open-draft/until@2.1.0':
     optional: true
 
-  '@openrouter/ai-sdk-provider@1.2.3(@tanstack/react-query@5.85.5(react@19.1.0))(ai@5.0.94(zod@4.1.3))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(zod@4.1.3)':
+  '@openrouter/ai-sdk-provider@1.2.5(ai@5.0.97(zod@4.1.3))(zod@4.1.3)':
     dependencies:
-      '@openrouter/sdk': 0.1.13(@tanstack/react-query@5.85.5(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      ai: 5.0.94(zod@4.1.3)
+      '@openrouter/sdk': 0.1.18
+      ai: 5.0.97(zod@4.1.3)
       zod: 4.1.3
-    transitivePeerDependencies:
-      - '@tanstack/react-query'
-      - react
-      - react-dom
 
-  '@openrouter/sdk@0.1.13(@tanstack/react-query@5.85.5(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
+  '@openrouter/sdk@0.1.18':
     dependencies:
       zod: 4.1.3
-    optionalDependencies:
-      '@tanstack/react-query': 5.85.5(react@19.1.0)
-      react: 19.1.0
-      react-dom: 19.1.0(react@19.1.0)
 
   '@opentelemetry/api@1.9.0': {}
 
@@ -11263,7 +11244,7 @@ snapshots:
 
   '@vercel/oidc@3.0.2': {}
 
-  '@vercel/oidc@3.0.3': {}
+  '@vercel/oidc@3.0.5': {}
 
   '@vitejs/plugin-react@4.7.0(vite@7.1.3(@types/node@22.16.0)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.39.0)(tsx@4.20.3)(yaml@2.8.1))':
     dependencies:
@@ -11404,9 +11385,9 @@ snapshots:
       clean-stack: 2.2.0
       indent-string: 4.0.0
 
-  ai@5.0.94(zod@4.1.3):
+  ai@5.0.97(zod@4.1.3):
     dependencies:
-      '@ai-sdk/gateway': 2.0.10(zod@4.1.3)
+      '@ai-sdk/gateway': 2.0.12(zod@4.1.3)
       '@ai-sdk/provider': 2.0.0
       '@ai-sdk/provider-utils': 3.0.17(zod@4.1.3)
       '@opentelemetry/api': 1.9.0
