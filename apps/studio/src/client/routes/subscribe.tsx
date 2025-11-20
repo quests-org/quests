@@ -35,17 +35,17 @@ interface PlanFeature {
 }
 
 interface PricingPlan {
-  name: string;
-  description: string;
-  monthlyPrice: number;
-  yearlyPrice: number;
-  features: PlanFeature[];
   cta?: string;
+  description: string;
+  features: PlanFeature[];
+  monthlyPrice: number;
+  name: string;
   popular?: boolean;
   priceIds: {
-    monthly: string | null;
-    yearly: string | null;
+    monthly: null | string;
+    yearly: null | string;
   };
+  yearlyPrice: number;
 }
 
 function SubscribePage() {
@@ -87,9 +87,8 @@ function SubscribePage() {
       }
 
       await openExternalLink({ url });
-    } catch (error) {
+    } catch {
       toast.error("Failed to start checkout process");
-      console.error(error);
     }
   };
 
@@ -113,7 +112,9 @@ function SubscribePage() {
         <div className="flex justify-center mb-6">
           <Tabs
             defaultValue="yearly"
-            onValueChange={(value) => setBillingCycle(value as BillingCycle)}
+            onValueChange={(value) => {
+              setBillingCycle(value as BillingCycle);
+            }}
             value={billingCycle}
           >
             <TabsList className="bg-muted dark:bg-muted text-primary-foreground/50">
@@ -168,38 +169,49 @@ function SubscribePage() {
             let isButtonDisabled = false;
             let showButton = true;
             let showCheckmark = false;
-            let variant: "default" | "secondary" | "outline" = "default";
+            let variant: "default" | "outline" | "secondary" = "default";
 
-            if (plan.name === "Free") {
-              if (isFreeUser) {
-                buttonText = "Current Plan";
-                isButtonDisabled = true;
-                variant = "secondary";
-              } else {
-                showButton = false;
+            switch (plan.name) {
+              case "Basic": {
+                if (isFreeUser) {
+                  buttonText = "Upgrade";
+                } else if (isBasicUser) {
+                  buttonText = "Current Plan";
+                  isButtonDisabled = true;
+                  showCheckmark = true;
+                  variant = "secondary";
+                } else if (isProUser) {
+                  buttonText = "Downgrade";
+                  isButtonDisabled = true;
+                  variant = "outline";
+                }
+
+                break;
               }
-            } else if (plan.name === "Basic") {
-              if (isFreeUser) {
-                buttonText = "Upgrade";
-              } else if (isBasicUser) {
-                buttonText = "Current Plan";
-                isButtonDisabled = true;
-                showCheckmark = true;
-                variant = "secondary";
-              } else if (isProUser) {
-                buttonText = "Downgrade";
-                isButtonDisabled = true;
-                variant = "outline";
+              case "Free": {
+                if (isFreeUser) {
+                  buttonText = "Current Plan";
+                  isButtonDisabled = true;
+                  variant = "secondary";
+                } else {
+                  showButton = false;
+                }
+
+                break;
               }
-            } else if (plan.name === "Pro") {
-              if (isProUser) {
-                buttonText = "Current Plan";
-                isButtonDisabled = true;
-                showCheckmark = true;
-                variant = "secondary";
-              } else {
-                buttonText = "Upgrade";
+              case "Pro": {
+                if (isProUser) {
+                  buttonText = "Current Plan";
+                  isButtonDisabled = true;
+                  showCheckmark = true;
+                  variant = "secondary";
+                } else {
+                  buttonText = "Upgrade";
+                }
+
+                break;
               }
+              // No default
             }
 
             return (

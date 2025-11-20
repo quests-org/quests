@@ -20,6 +20,23 @@ export const contract = {
         },
       }),
   },
+  plans: {
+    get: oc.input(z.void()).output(
+      z.array(
+        z.object({
+          description: z.string(),
+          features: z.array(z.object({ text: z.string() })),
+          monthlyPrice: z.number(),
+          name: z.string(),
+          priceIds: z.object({
+            monthly: z.string().nullable(),
+            yearly: z.string().nullable(),
+          }),
+          yearlyPrice: z.number(),
+        }),
+      ),
+    ),
+  },
   root: {
     ping: oc.input(z.void()).output(z.string()),
   },
@@ -50,23 +67,6 @@ export const contract = {
         plan: z.string().nullable(),
         usagePercent: z.number(),
       }),
-    ),
-  },
-  plans: {
-    get: oc.input(z.void()).output(
-      z.array(
-        z.object({
-          description: z.string(),
-          features: z.array(z.object({ text: z.string() })),
-          monthlyPrice: z.number(),
-          name: z.string(),
-          priceIds: z.object({
-            monthly: z.string().nullable(),
-            yearly: z.string().nullable(),
-          }),
-          yearlyPrice: z.number(),
-        }),
-      ),
     ),
   },
 };
