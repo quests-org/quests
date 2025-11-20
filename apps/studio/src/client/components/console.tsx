@@ -30,7 +30,7 @@ type UnifiedLogLine =
 
 const getLogLineStyles = (log: UnifiedLogLine) => {
   const baseStyles =
-    "shrink-1 overflow-x-auto whitespace-pre-wrap break-all py-0.5 rounded-sm";
+    "shrink overflow-x-auto whitespace-pre-wrap break-all py-0.5 rounded-sm";
 
   const type = log.type;
 
@@ -246,7 +246,7 @@ function ConsoleRow({
 
         <div className="flex-1 min-w-0">
           {line.source === "server" && line.type === "truncation" ? (
-            <div className="text-muted-foreground italic px-2 py-0.5 rounded-sm shrink-1 overflow-x-auto whitespace-pre-wrap break-all">
+            <div className="text-muted-foreground italic px-2 py-0.5 rounded-sm shrink overflow-x-auto whitespace-pre-wrap break-all">
               {message}
             </div>
           ) : (
@@ -258,7 +258,7 @@ function ConsoleRow({
       <div className="absolute right-2 top-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
         {app.type === "project" && (
           <ConfirmedIconButton
-            className="size-5 bg-background hover:!bg-accent dark:hover:!bg-accent border border-border/50"
+            className="size-5 bg-background hover:bg-accent! dark:hover:bg-accent! border border-border/50"
             icon={MessageSquare}
             onClick={handleSendToChat}
             successTooltip="Sent to chat!"
@@ -268,7 +268,7 @@ function ConsoleRow({
         )}
 
         <ConfirmedIconButton
-          className="size-5 bg-background hover:!bg-accent dark:hover:!bg-accent border border-border/50"
+          className="size-5 bg-background hover:bg-accent! dark:hover:bg-accent! border border-border/50"
           icon={Copy}
           onClick={handleCopy}
           successTooltip="Copied!"

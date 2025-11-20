@@ -55,8 +55,8 @@ export const Tab = ({ isSelected, item, onClick, onRemove }: Props) => {
       }}
       className={cn(
         "[-webkit-app-region:no-drag] border-r border-border/50 group",
-        isSelected ? "selected bg-background shadow-sm" : "hover:bg-muted/60",
-        "titlebar-button min-w-0",
+        isSelected ? "bg-background shadow-sm" : "hover:bg-muted/60",
+        "min-w-0",
         item.pinned ? "px-3" : "max-w-60 w-full pl-4 flex-1",
         "relative h-svh flex justify-between items-center select-none",
       )}

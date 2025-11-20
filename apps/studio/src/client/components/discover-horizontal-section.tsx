@@ -161,7 +161,7 @@ export function DiscoverHorizontalSection({
         {canScrollLeft && (
           <button
             aria-label="Scroll left"
-            className="absolute left-0 ml-[-1rem]  top-[36%] -translate-y-1/2 z-10 bg-background/90 backdrop-blur-sm rounded-full p-2 shadow-lg border border-border hover:bg-background transition-all duration-200"
+            className="absolute left-0 ml-[-1rem] top-[36%] -translate-y-1/2 z-10 bg-background/90 backdrop-blur-sm rounded-full p-2 shadow-lg border border-border hover:bg-background transition-all duration-200"
             onClick={() => {
               scroll("left");
             }}

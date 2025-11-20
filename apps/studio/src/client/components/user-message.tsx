@@ -38,7 +38,7 @@ export const UserMessage = memo(function UserMessage({
       <div className="bg-muted text-foreground rounded-xl px-4 py-2 border border-border/50 relative max-w-full">
         <div
           className={cn(
-            "text-sm leading-relaxed prose prose-sm max-w-none dark:prose-invert break-words overflow-wrap-anywhere",
+            "text-sm leading-relaxed prose prose-sm max-w-none dark:prose-invert wrap-break-word",
             shouldShowExpansion &&
               !isExpanded &&
               "max-h-32 overflow-hidden cursor-pointer",
@@ -53,7 +53,7 @@ export const UserMessage = memo(function UserMessage({
         </div>
 
         {shouldShowExpansion && !isExpanded && (
-          <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-muted to-transparent pointer-events-none rounded-b-xl" />
+          <div className="absolute bottom-0 left-0 right-0 h-8 bg-linear-to-t from-muted to-transparent pointer-events-none rounded-b-xl" />
         )}
 
         {shouldShowExpansion && isExpanded && (

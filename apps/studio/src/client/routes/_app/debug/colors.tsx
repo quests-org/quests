@@ -49,7 +49,7 @@ function RouteComponent() {
       <div className="w-full p-8">
         <div
           className={`
-            md:grids-col-2
+            md:grid-cols-2
             md:gap-4
             grid lg:grid-cols-10
             xl:grid-cols-11 xl:gap-4

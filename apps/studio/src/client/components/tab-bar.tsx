@@ -46,7 +46,7 @@ export default function TabBar() {
           />
         ))}
         <motion.button
-          className="titlebar-button flex items-center justify-center hover:bg-muted/60
+          className="flex items-center justify-center hover:bg-muted/60
             rounded-full h-6 w-6 ml-2 mr-2 shrink-0 [-webkit-app-region:no-drag]"
           onClick={() => {
             const location = router.buildLocation({

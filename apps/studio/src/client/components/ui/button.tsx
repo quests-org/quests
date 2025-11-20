@@ -32,8 +32,6 @@ const buttonVariants = cva(
           "border shadow-xs hover:bg-accent active:bg-accent data-[state=open]:bg-accent dark:border-input dark:hover:bg-input/50 dark:active:bg-input/50 dark:data-[state=open]:bg-input/50",
         secondary:
           "bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80",
-        warning:
-          "bg-yellow-100 text-yellow-700 border border-yellow-300 shadow-xs hover:bg-yellow-150 focus-visible:ring-yellow/20 dark:bg-yellow-950 dark:text-yellow-400 dark:border-yellow-700 dark:hover:bg-yellow-900 dark:focus-visible:ring-yellow/40",
       },
     },
   },

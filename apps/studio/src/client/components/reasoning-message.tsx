@@ -117,7 +117,7 @@ export const ReasoningMessage = memo(function ReasoningMessage({
           >
             <div
               className={cn(
-                "text-sm leading-relaxed prose prose-sm max-w-none dark:prose-invert break-words overflow-wrap-anywhere italic",
+                "text-sm leading-relaxed prose prose-sm max-w-none dark:prose-invert wrap-break-word italic",
                 !isLoading && "opacity-60",
               )}
               ref={contentRef}
@@ -135,11 +135,11 @@ export const ReasoningMessage = memo(function ReasoningMessage({
           </div>
 
           {scrollState.canScrollUp && (
-            <div className="absolute top-0 left-0 right-0 h-4 bg-gradient-to-b from-background to-transparent pointer-events-none z-10" />
+            <div className="absolute top-0 left-0 right-0 h-4 bg-linear-to-b from-background to-transparent pointer-events-none z-10" />
           )}
 
           {scrollState.canScrollDown && (
-            <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-background to-transparent pointer-events-none z-10" />
+            <div className="absolute bottom-0 left-0 right-0 h-4 bg-linear-to-t from-background to-transparent pointer-events-none z-10" />
           )}
         </div>
       )}

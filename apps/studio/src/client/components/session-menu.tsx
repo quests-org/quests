@@ -211,7 +211,7 @@ export function SessionMenu({ project }: SessionMenuProps) {
               disabled={!selectedSessionId}
               onClick={handleDebugChat}
             >
-              <Bug className="h-4 w-4 text-warning" />
+              <Bug className="h-4 w-4 text-warning-foreground" />
               Debug chat
             </DropdownMenuItem>
           )}

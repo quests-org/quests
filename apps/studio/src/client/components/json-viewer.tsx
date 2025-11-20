@@ -81,10 +81,10 @@ export function JsonViewer({
 
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent className="max-w-[90vw] border-warning/30 bg-background">
+      <DialogContent className="max-w-[90vw] bg-background">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-warning-foreground">
-            <Eye className="size-4 text-warning" />
+            <Eye className="size-4 text-warning-foreground" />
             {title}
             {isTruncated && (
               <span className="text-xs text-muted-foreground">

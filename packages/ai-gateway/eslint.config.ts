@@ -1,5 +1,6 @@
 import type { ConfigArray } from "@quests/eslint-config/base";
 
 import baseConfig from "@quests/eslint-config/base";
+import { globalIgnores } from "eslint/config";
 
-export default [...baseConfig, { ignores: ["dist"] }] satisfies ConfigArray;
+export default [globalIgnores(["dist"]), ...baseConfig] satisfies ConfigArray;

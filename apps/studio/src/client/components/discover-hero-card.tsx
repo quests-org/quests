@@ -71,10 +71,10 @@ function NewTabDiscoverHeroCard({
                     className="w-full h-full object-cover"
                     src={heroImageDataUrl}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
+                  <div className="absolute inset-0 bg-linear-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
                 </>
               ) : isEvalsCard ? (
-                <div className="flex items-center justify-center w-full h-full bg-gradient-to-br from-brand/5 via-brand/8 to-brand/10">
+                <div className="flex items-center justify-center w-full h-full bg-linear-to-br from-brand/5 via-brand/8 to-brand/10">
                   <FlaskConical className="size-12 text-brand" />
                 </div>
               ) : (

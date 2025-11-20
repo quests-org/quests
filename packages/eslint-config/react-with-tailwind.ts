@@ -7,16 +7,25 @@ const config: ReturnType<typeof tseslint.config> = tseslint.config(
   ...reactConfig,
   {
     files: ["**/*.{js,jsx,ts,tsx}"],
+    ignores: [".vite", "coverage", "out"],
     plugins: {
       "better-tailwindcss": eslintPluginBetterTailwindcss,
     },
     rules: {
-      // enable all recommended rules to warn
-      ...eslintPluginBetterTailwindcss.configs.warning?.rules,
-      // enable all recommended rules to error
-      ...eslintPluginBetterTailwindcss.configs.error?.rules,
-      // Could not fix infinite loop. Maybe enable someday.
-      "better-tailwindcss/multiline": "off",
+      // enable all recommended rules to report a warning
+      ...eslintPluginBetterTailwindcss.configs["recommended-warn"]?.rules,
+      // enable all recommended rules to report an error
+      ...eslintPluginBetterTailwindcss.configs["recommended-error"]?.rules,
+      // Causes formatting infinite loop due to Prettier conflicting
+      "better-tailwindcss/enforce-consistent-line-wrapping": "off",
+      // Will enable after Aaron's big PR is merged after 2025-11-20
+      "better-tailwindcss/enforce-consistent-class-order": "off",
+      "better-tailwindcss/no-unregistered-classes": [
+        "warn",
+        {
+          ignore: ["shiny-text", "toaster"],
+        },
+      ],
     },
   },
 );
