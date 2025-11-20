@@ -1,11 +1,13 @@
 import { Button } from "@/client/components/ui/button";
 import { Card } from "@/client/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/client/components/ui/tabs";
+import { cn } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
 import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
 import { QuestsAnimatedLogo } from "@quests/components/animated-logo";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
+import { CheckCircle2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -139,7 +141,10 @@ function SubscribePage() {
           {(plansData?.data ?? []).map((plan) => {
             const price =
               billingCycle === "monthly" ? plan.monthlyPrice : plan.yearlyPrice;
-            const isCurrentPlan = currentPlan === plan.name;
+
+            const isFreeUser = !currentPlan || currentPlan === "Free";
+            const isBasicUser = currentPlan === "Basic";
+            const isProUser = currentPlan === "Pro";
 
             let cardStyles =
               "relative p-6 transition-all flex flex-col border border-border/50 shadow-none";
@@ -159,9 +164,47 @@ function SubscribePage() {
               cardStyles += " bg-card";
             }
 
+            let buttonText = "Subscribe";
+            let isButtonDisabled = false;
+            let showButton = true;
+            let showCheckmark = false;
+            let variant: "default" | "secondary" | "outline" = "default";
+
+            if (plan.name === "Free") {
+              if (isFreeUser) {
+                buttonText = "Current Plan";
+                isButtonDisabled = true;
+                variant = "secondary";
+              } else {
+                showButton = false;
+              }
+            } else if (plan.name === "Basic") {
+              if (isFreeUser) {
+                buttonText = "Upgrade";
+              } else if (isBasicUser) {
+                buttonText = "Current Plan";
+                isButtonDisabled = true;
+                showCheckmark = true;
+                variant = "secondary";
+              } else if (isProUser) {
+                buttonText = "Downgrade";
+                isButtonDisabled = true;
+                variant = "outline";
+              }
+            } else if (plan.name === "Pro") {
+              if (isProUser) {
+                buttonText = "Current Plan";
+                isButtonDisabled = true;
+                showCheckmark = true;
+                variant = "secondary";
+              } else {
+                buttonText = "Upgrade";
+              }
+            }
+
             return (
               <Card className={cardStyles} key={plan.name}>
-                <div className="">
+                <div className="min-h-24">
                   <h3 className={titleStyles}>{plan.name}</h3>
 
                   <div className="flex items-baseline gap-1">
@@ -190,14 +233,20 @@ function SubscribePage() {
                   ))}
                 </ul>
 
-                <Button
-                  className="w-full"
-                  disabled={isCurrentPlan}
-                  onClick={() => handleSubscribe(plan)}
-                  size="lg"
-                >
-                  {isCurrentPlan ? "Current Plan" : "Subscribe"}
-                </Button>
+                {showButton && (
+                  <Button
+                    className="w-full gap-2 disabled:opacity-100"
+                    disabled={isButtonDisabled}
+                    onClick={() => handleSubscribe(plan)}
+                    size="lg"
+                    variant={variant}
+                  >
+                    {showCheckmark && (
+                      <CheckCircle2 className={cn("w-4 h-4")} />
+                    )}
+                    {buttonText}
+                  </Button>
+                )}
               </Card>
             );
           })}
