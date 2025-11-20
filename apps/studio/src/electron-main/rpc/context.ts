@@ -14,7 +14,6 @@ export interface InitialRPCContext extends WorkspaceRPCContext {
   appUpdater: StudioAppUpdater;
   cache: {
     user: Outputs["users"]["getMe"] | null;
-    subscription: Outputs["users"]["getSubscriptionStatus"] | null;
   };
   webContentsId: number;
   workspaceConfig: WorkspaceConfig;

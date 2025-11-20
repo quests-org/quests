@@ -6,7 +6,6 @@ import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
 import { QuestsAnimatedLogo } from "@quests/components/animated-logo";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { Sparkles } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -47,52 +46,6 @@ interface PricingPlan {
   };
 }
 
-const PLANS: PricingPlan[] = [
-  {
-    name: "Free",
-    description: "",
-    monthlyPrice: 0,
-    yearlyPrice: 0,
-    features: [{ text: "Try out Quests" }, { text: "Limited AI usage" }],
-    priceIds: {
-      monthly: null,
-      yearly: null,
-    },
-  },
-  {
-    name: "Basic",
-    description: "",
-    monthlyPrice: 10,
-    yearlyPrice: 8,
-    features: [
-      { text: "~250 Chats" },
-      { text: "~50 App Generations" },
-      { text: "~25 Evals" },
-    ],
-    cta: "Subscribe",
-    priceIds: {
-      monthly: "BASIC_MONTHLY",
-      yearly: "BASIC_YEARLY",
-    },
-  },
-  {
-    name: "Pro",
-    description: "",
-    monthlyPrice: 25,
-    yearlyPrice: 20,
-    features: [
-      { text: "~500 Chats" },
-      { text: "~100 App Generations" },
-      { text: "~50 Evals" },
-    ],
-    cta: "Subscribe",
-    priceIds: {
-      monthly: "PRO_MONTHLY",
-      yearly: "PRO_YEARLY",
-    },
-  },
-];
-
 function SubscribePage() {
   const [billingCycle, setBillingCycle] = useState<BillingCycle>("yearly");
   const { data: subscriptionData } = useQuery(
@@ -101,49 +54,37 @@ function SubscribePage() {
     }),
   );
 
+  const { data: plansData } = useQuery(rpcClient.user.plans.queryOptions());
+
   const { mutateAsync: openExternalLink } = useMutation(
     rpcClient.utils.openExternalLink.mutationOptions(),
+  );
+
+  const { mutateAsync: createCheckoutSession } = useMutation(
+    rpcClient.stripe.createCheckoutSession.mutationOptions(),
   );
 
   const currentPlan = subscriptionData?.data?.plan;
 
   const handleSubscribe = async (plan: PricingPlan) => {
-    const priceIdKey = plan.priceIds[billingCycle];
-    if (!priceIdKey) {
+    const priceId = plan.priceIds[billingCycle];
+    if (!priceId) {
+      toast.error("Failed to start checkout process");
       return;
     }
 
-    // Map our internal keys to the actual Stripe price IDs from env vars
-    // These will be resolved by the API server which has access to the env vars
-    const priceIdMap: Record<string, string> = {
-      BASIC_MONTHLY: "STRIPE_PRICE_ID_BASIC_MONTHLY",
-      BASIC_YEARLY: "STRIPE_PRICE_ID_BASIC_YEARLY",
-      PRO_MONTHLY: "STRIPE_PRICE_ID_PRO_MONTHLY",
-      PRO_YEARLY: "STRIPE_PRICE_ID_PRO_YEARLY",
-    };
-
     try {
-      const apiBaseUrl =
-        import.meta.env.VITE_QUESTS_API_BASE_URL || "http://localhost:8787";
-
-      // Call the Stripe checkout endpoint
-      const response = await fetch(`${apiBaseUrl}/stripe/checkout`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ priceId: priceIdMap[priceIdKey] }),
-        credentials: "include",
+      const { data } = await createCheckoutSession({
+        priceId,
       });
+      const url = data?.url;
 
-      if (!response.ok) {
-        throw new Error("Failed to create checkout session");
+      if (!url) {
+        toast.error("Failed to start checkout process");
+        return;
       }
 
-      const data = (await response.json()) as { url: string };
-
-      // Open the Stripe checkout URL in the default browser
-      await openExternalLink({ url: data.url });
+      await openExternalLink({ url });
     } catch (error) {
       toast.error("Failed to start checkout process");
       console.error(error);
@@ -195,7 +136,7 @@ function SubscribePage() {
 
         {/* Pricing Cards */}
         <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-          {PLANS.map((plan) => {
+          {(plansData?.data ?? []).map((plan) => {
             const price =
               billingCycle === "monthly" ? plan.monthlyPrice : plan.yearlyPrice;
             const isCurrentPlan = currentPlan === plan.name;
@@ -220,15 +161,6 @@ function SubscribePage() {
 
             return (
               <Card className={cardStyles} key={plan.name}>
-                {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                    <div className="bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-medium flex items-center gap-1">
-                      <Sparkles className="size-3" />
-                      Popular
-                    </div>
-                  </div>
-                )}
-
                 <div className="">
                   <h3 className={titleStyles}>{plan.name}</h3>
 
@@ -258,26 +190,14 @@ function SubscribePage() {
                   ))}
                 </ul>
 
-                {plan.cta && (
-                  <Button
-                    className="w-full"
-                    disabled={isCurrentPlan}
-                    onClick={() => handleSubscribe(plan)}
-                    size="lg"
-                  >
-                    {isCurrentPlan ? "Current Plan" : plan.cta}
-                  </Button>
-                )}
-                {!plan.cta && (
-                  <Button
-                    className="w-full disabled:opacity-100"
-                    disabled
-                    size="lg"
-                    variant="outline"
-                  >
-                    Current
-                  </Button>
-                )}
+                <Button
+                  className="w-full"
+                  disabled={isCurrentPlan}
+                  onClick={() => handleSubscribe(plan)}
+                  size="lg"
+                >
+                  {isCurrentPlan ? "Current Plan" : "Subscribe"}
+                </Button>
               </Card>
             );
           })}
