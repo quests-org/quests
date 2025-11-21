@@ -367,7 +367,9 @@ export const llmRequestLogic = fromPromise<
           if (existingPart && existingPart.state === "input-streaming") {
             const updatedPart: SessionMessagePart.ToolPart = {
               ...existingPart,
-              callProviderMetadata: part.providerMetadata,
+              ...(part.providerMetadata !== undefined && {
+                callProviderMetadata: part.providerMetadata,
+              }),
               input: part.input,
               providerExecuted: part.providerExecuted,
               state: "input-available",
