@@ -23,7 +23,12 @@ export function Overlay({
 }: OverlayProps) {
   if (showRecovery) {
     return (
-      <RecoveryOverlay onDismiss={onDismissRecovery} onReload={onReload} />
+      <RecoveryOverlay
+        isInsideStudio={isInsideStudio}
+        onDismiss={onDismissRecovery}
+        onOpenConsole={onOpenConsole}
+        onReload={onReload}
+      />
     );
   }
 
