@@ -1,12 +1,4 @@
-import { type MakeRouteMatchUnion, useRouter } from "@tanstack/react-router";
-
-interface NonDeprecatedMatchRoutesRouter {
-  matchRoutes: (
-    pathname: string,
-    locationSearch?: Record<string, unknown>,
-    opts?: { throwOnError?: boolean },
-  ) => MakeRouteMatchUnion[];
-}
+import { useRouter } from "@tanstack/react-router";
 
 export function useMatchesForPathname(pathname: string) {
   const router = useRouter();
@@ -14,9 +6,6 @@ export function useMatchesForPathname(pathname: string) {
   const searchParams = queryString
     ? Object.fromEntries(new URLSearchParams(queryString))
     : undefined;
-  const matches = (router as NonDeprecatedMatchRoutesRouter).matchRoutes(
-    pathnameWithoutQuery ?? "",
-    searchParams,
-  );
+  const matches = router.matchRoutes(pathnameWithoutQuery ?? "", searchParams);
   return matches;
 }
