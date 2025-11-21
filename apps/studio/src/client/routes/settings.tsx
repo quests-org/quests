@@ -11,7 +11,7 @@ import {
 } from "@/client/components/ui/sidebar";
 import { Toaster } from "@/client/components/ui/sonner";
 import { type MainAppPath } from "@/electron-main/lib/urls";
-import { createFileRoute, Outlet, useMatchRoute } from "@tanstack/react-router";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
 import {
   BotIcon,
@@ -31,7 +31,6 @@ export const Route = createFileRoute("/settings")({
 const isDev = import.meta.env.DEV;
 
 function SettingsLayout() {
-  const matchRoute = useMatchRoute();
   const features = useAtomValue(featuresAtom);
 
   const sidebarNavItems: {
@@ -96,11 +95,13 @@ function SettingsLayout() {
               <SidebarMenu>
                 {sidebarNavItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={Boolean(matchRoute({ to: item.path }))}
-                    >
-                      <InternalLink allowOpenNewTab={false} to={item.path}>
+                    <SidebarMenuButton asChild>
+                      <InternalLink
+                        activeOptions={{ exact: true }}
+                        activeProps={{ "data-active": true }}
+                        allowOpenNewTab={false}
+                        to={item.path}
+                      >
                         <item.icon />
                         <span>{item.title}</span>
                       </InternalLink>
