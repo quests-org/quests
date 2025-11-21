@@ -411,14 +411,19 @@ export const llmRequestLogic = fromPromise<
                 ...toolCall.metadata,
                 endedAt: getCurrentDate(),
               },
+              ...(part.providerMetadata !== undefined && {
+                callProviderMetadata: part.providerMetadata,
+              }),
               providerExecuted: part.providerExecuted,
               rawInput: part.input as never,
               state: "output-error",
             };
             await scopedStore.savePart(updatedPart);
           } else {
-            // Create a new part to represent the invalid tool call
             await scopedStore.savePart({
+              ...(part.providerMetadata !== undefined && {
+                callProviderMetadata: part.providerMetadata,
+              }),
               errorText:
                 typeof part.error === "string"
                   ? part.error
