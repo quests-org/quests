@@ -356,7 +356,6 @@ describe("llmRequestLogic", () => {
               "type": "step-start",
             },
             {
-              "callProviderMetadata": undefined,
               "input": {
                 "filePath": "test-file.txt",
               },
