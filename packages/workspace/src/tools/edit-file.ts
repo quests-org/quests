@@ -419,6 +419,117 @@ const EscapeNormalizedReplacer: Replacer = function* (content, find) {
   }
 };
 
+const TrimmedBoundaryReplacer: Replacer = function* (content, find) {
+  const trimmedFind = find.trim();
+
+  if (trimmedFind === find) {
+    // Already trimmed, no point in trying
+    return;
+  }
+
+  // Try to find the trimmed version
+  if (content.includes(trimmedFind)) {
+    yield trimmedFind;
+  }
+
+  // Also try finding blocks where trimmed content matches
+  const lines = content.split("\n");
+  const findLines = find.split("\n");
+
+  for (let i = 0; i <= lines.length - findLines.length; i++) {
+    const block = lines.slice(i, i + findLines.length).join("\n");
+
+    if (block.trim() === trimmedFind) {
+      yield block;
+    }
+  }
+};
+
+const ContextAwareReplacer: Replacer = function* (content, find) {
+  const findLines = find.split("\n");
+  if (findLines.length < 3) {
+    // Need at least 3 lines to have meaningful context
+    return;
+  }
+
+  // Remove trailing empty line if present
+  if (findLines.at(-1) === "") {
+    findLines.pop();
+  }
+
+  const contentLines = content.split("\n");
+
+  // Extract first and last lines as context anchors
+  const firstLine = findLines[0]?.trim();
+  const lastLine = findLines.at(-1)?.trim();
+
+  if (!firstLine || !lastLine) {
+    return;
+  }
+
+  // Find blocks that start and end with the context anchors
+  for (let i = 0; i < contentLines.length; i++) {
+    const currentLine = contentLines[i];
+    if (!currentLine || currentLine.trim() !== firstLine) {
+      continue;
+    }
+
+    // Look for the matching last line
+    for (let j = i + 2; j < contentLines.length; j++) {
+      const endLine = contentLines[j];
+      if (endLine && endLine.trim() === lastLine) {
+        // Found a potential context block
+        const blockLines = contentLines.slice(i, j + 1);
+        const block = blockLines.join("\n");
+
+        // Check if the middle content has reasonable similarity
+        // (simple heuristic: at least 50% of non-empty lines should match when trimmed)
+        if (blockLines.length === findLines.length) {
+          let matchingLines = 0;
+          let totalNonEmptyLines = 0;
+
+          for (let k = 1; k < blockLines.length - 1; k++) {
+            const blockLine = blockLines[k]?.trim() ?? "";
+            const findLine = findLines[k]?.trim() ?? "";
+
+            if (blockLine.length > 0 || findLine.length > 0) {
+              totalNonEmptyLines++;
+              if (blockLine === findLine) {
+                matchingLines++;
+              }
+            }
+          }
+
+          if (
+            totalNonEmptyLines === 0 ||
+            matchingLines / totalNonEmptyLines >= 0.5
+          ) {
+            yield block;
+            break; // Only match the first occurrence
+          }
+        }
+        break;
+      }
+    }
+  }
+};
+
+const MultiOccurrenceReplacer: Replacer = function* (content, find) {
+  // This replacer yields all exact matches, allowing the replace function
+  // to handle multiple occurrences based on replaceAll parameter
+  let startIndex = 0;
+
+  while (true) {
+    const index = content.indexOf(find, startIndex);
+    if (index === -1) {
+      break;
+    }
+
+    yield find;
+    startIndex = index + find.length;
+  }
+};
+
 function replace(
   content: string,
   oldString: string,
@@ -438,6 +549,9 @@ function replace(
     WhitespaceNormalizedReplacer,
     IndentationFlexibleReplacer,
     EscapeNormalizedReplacer,
+    TrimmedBoundaryReplacer,
+    ContextAwareReplacer,
+    MultiOccurrenceReplacer,
   ]) {
     for (const search of replacer(content, oldString)) {
       const index = content.indexOf(search);
