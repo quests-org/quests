@@ -24,6 +24,7 @@ const MODEL_TAGS: Record<string, AIGatewayModel.ModelTag[]> = {
   "gpt-5.1-codex-mini": ["coding", "recommended"],
   "gpt-5.1-codex-nano": ["recommended"],
   "grok-4": ["coding"],
+  "grok-4.1-fast": ["coding", "recommended"],
   "grok-code-fast-1": ["coding", "recommended"],
   "kimi-k2": ["coding"],
   "kimi-k2-0905": ["coding", "recommended"],
