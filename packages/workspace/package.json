@@ -21,6 +21,7 @@
   "scripts": {
     "check:lint": "eslint . --max-warnings 0 --cache",
     "check:types": "tsc --noEmit",
+    "script:dump-sessions": "tsx scripts/dump-sessions.ts",
     "script:run-workspace": "NODE_ENV=development tsx scripts/run-workspace.ts",
     "test": "vitest",
     "test:ci": "cross-env CI=true vitest",
