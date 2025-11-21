@@ -41,9 +41,25 @@ export const llmRequestLogic = fromPromise<
 >(async ({ input, signal }) => {
   const scopedStore = {
     saveMessage: (message: Parameters<typeof Store.saveMessage>[0]) =>
-      Store.saveMessage(message, input.appConfig, { signal }),
+      Store.saveMessage(message, input.appConfig, { signal }).then((result) => {
+        if (result.isErr()) {
+          input.appConfig.workspaceConfig.captureException(result.error, {
+            scopes: ["workspace", "llm-request"],
+          });
+          return;
+        }
+        return result.value;
+      }),
     savePart: (part: Parameters<typeof Store.savePart>[0]) =>
-      Store.savePart(part, input.appConfig, { signal }),
+      Store.savePart(part, input.appConfig, { signal }).then((result) => {
+        if (result.isErr()) {
+          input.appConfig.workspaceConfig.captureException(result.error, {
+            scopes: ["workspace", "llm-request"],
+          });
+          return;
+        }
+        return result.value;
+      }),
   };
 
   const captureEvent = input.appConfig.workspaceConfig.captureEvent;
