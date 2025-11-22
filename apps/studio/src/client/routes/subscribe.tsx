@@ -2,7 +2,7 @@ import { Button } from "@/client/components/ui/button";
 import { Card } from "@/client/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/client/components/ui/tabs";
 import { cn } from "@/client/lib/utils";
-import { rpcClient } from "@/client/rpc/client";
+import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
 import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
 import { QuestsAnimatedLogo } from "@quests/components/animated-logo";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -49,32 +49,35 @@ interface PricingPlan {
 }
 
 function SubscribePage() {
-  const [billingCycle, setBillingCycle] = useState<BillingCycle>("yearly");
-  const { data: subscriptionData } = useQuery(
-    rpcClient.user.subscription.queryOptions({
-      input: {},
-    }),
-  );
-
   const { data: plansData } = useQuery(rpcClient.user.plans.queryOptions());
-
+  const { data: subscriptionData } = useQuery(
+    rpcClient.user.subscription.queryOptions(),
+  );
+  const { mutateAsync: createCheckoutSession } = useMutation(
+    rpcClient.stripe.createCheckoutSession.mutationOptions(),
+  );
   const { mutateAsync: openExternalLink } = useMutation(
     rpcClient.utils.openExternalLink.mutationOptions(),
   );
 
-  const { mutateAsync: createCheckoutSession } = useMutation(
-    rpcClient.stripe.createCheckoutSession.mutationOptions(),
-  );
+  const [billingCycle, setBillingCycle] = useState<BillingCycle>("yearly");
 
   const currentPlan = subscriptionData?.data?.plan;
 
-  const handleSubscribe = async (plan: PricingPlan) => {
-    const priceId = plan.priceIds[billingCycle];
-    if (!priceId) {
-      toast.error("Failed to start checkout process");
-      return;
-    }
+  const [showPlanChangePreview, setShowPlanChangePreview] = useState(false);
+  const [selectedPlanForChange, setSelectedPlanForChange] =
+    useState<null | PricingPlan>(null);
+  const isUpgrade =
+    currentPlan === "Basic" && selectedPlanForChange?.name === "Pro";
 
+  const { mutateAsync: getInvoicePreview } = useMutation(
+    rpcClient.stripe.getInvoicePreview.mutationOptions(),
+  );
+  const [invoicePreviewData, setInvoicePreviewData] = useState<Awaited<
+    ReturnType<typeof getInvoicePreview>
+  > | null>(null);
+
+  const processCheckout = async (priceId: string) => {
     try {
       const { data } = await createCheckoutSession({
         priceId,
@@ -92,15 +95,54 @@ function SubscribePage() {
     }
   };
 
+  const handleSubscribe = async (plan: PricingPlan) => {
+    const priceId = plan.priceIds[billingCycle];
+    if (!priceId) {
+      toast.error("Failed to start checkout process");
+      return;
+    }
+
+    const isUpgrade2 = currentPlan === "Basic" && plan.name === "Pro";
+    const isDowngrade = currentPlan === "Pro" && plan.name === "Basic";
+
+    if (isUpgrade2 || isDowngrade) {
+      try {
+        const preview = await getInvoicePreview({ priceId });
+        setInvoicePreviewData(preview);
+        setSelectedPlanForChange(plan);
+        setShowPlanChangePreview(true);
+        return;
+      } catch {
+        toast.error("Failed to load upgrade preview");
+        return;
+      }
+    }
+
+    await processCheckout(priceId);
+  };
+
+  const confirmUpgrade = async () => {
+    if (!selectedPlanForChange) {
+      return;
+    }
+    const priceId = selectedPlanForChange.priceIds[billingCycle];
+    if (!priceId) {
+      return;
+    }
+
+    await processCheckout(priceId);
+    setShowPlanChangePreview(false);
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/20 p-8">
+    <div className="min-h-screen bg-linear-to-br from-background via-background to-accent/20 p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex justify-center mb-6 mt-6">
             <QuestsAnimatedLogo size={64} />
           </div>
-          <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+          <h1 className="text-4xl font-bold mb-2 bg-linear-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
             Purchase a subscription
           </h1>
           <p className="text-muted-foreground max-w-2xl mx-auto text-sm">
@@ -174,15 +216,13 @@ function SubscribePage() {
             switch (plan.name) {
               case "Basic": {
                 if (isFreeUser) {
-                  buttonText = "Upgrade";
+                  buttonText = "Subscribe";
                 } else if (isBasicUser) {
                   buttonText = "Current Plan";
-                  isButtonDisabled = true;
                   showCheckmark = true;
                   variant = "secondary";
                 } else if (isProUser) {
                   buttonText = "Downgrade";
-                  isButtonDisabled = true;
                   variant = "outline";
                 }
 
@@ -202,11 +242,12 @@ function SubscribePage() {
               case "Pro": {
                 if (isProUser) {
                   buttonText = "Current Plan";
-                  isButtonDisabled = true;
                   showCheckmark = true;
                   variant = "secondary";
-                } else {
+                } else if (isBasicUser) {
                   buttonText = "Upgrade";
+                } else {
+                  buttonText = "Subscribe";
                 }
 
                 break;
@@ -249,7 +290,15 @@ function SubscribePage() {
                   <Button
                     className="w-full gap-2 disabled:opacity-100"
                     disabled={isButtonDisabled}
-                    onClick={() => handleSubscribe(plan)}
+                    onClick={async () => {
+                      if (buttonText === "Current Plan") {
+                        void vanillaRpcClient.preferences.openSettingsWindow({
+                          tab: "Account",
+                        });
+                      } else {
+                        await handleSubscribe(plan);
+                      }
+                    }}
                     size="lg"
                     variant={variant}
                   >
@@ -289,6 +338,55 @@ function SubscribePage() {
           </div>
         </div>
       </div>
+
+      {showPlanChangePreview && invoicePreviewData?.data && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+          <div className="bg-card border border-border p-6 rounded-lg shadow-lg max-w-md w-full">
+            <h2 className="text-xl font-bold mb-4">
+              {isUpgrade ? "Confirm Upgrade" : "Confirm Downgrade"}
+            </h2>
+            <p className="text-muted-foreground mb-4">
+              You are {isUpgrade ? "upgrading" : "downgrading"} to the{" "}
+              {selectedPlanForChange?.name} plan.
+            </p>
+
+            <div className="space-y-2 mb-6">
+              <div className="flex justify-between">
+                <span>Amount Due Today:</span>
+                <span className="font-bold">
+                  $
+                  {Math.max(
+                    0,
+                    invoicePreviewData.data.amountDue / 100,
+                  ).toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                  })}
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {invoicePreviewData.data.endingBalance <= 0
+                  ? "The remaining value of your current subscription will be credited to your account and applied to future invoices."
+                  : "This includes a prorated charge for the remainder of the current billing period."}
+              </p>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button
+                onClick={() => {
+                  setShowPlanChangePreview(false);
+                }}
+                variant="outline"
+              >
+                Cancel
+              </Button>
+              <Button onClick={confirmUpgrade}>
+                {invoicePreviewData.data.amountDue > 0
+                  ? "Confirm & Pay"
+                  : "Confirm"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

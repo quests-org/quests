@@ -47,6 +47,15 @@ export const contract = {
     createPortalSession: oc
       .input(z.void())
       .output(z.object({ url: z.string() })),
+    getInvoicePreview: oc.input(z.object({ priceId: z.string() })).output(
+      z.object({
+        amountDue: z.number(),
+        currency: z.string(),
+        endingBalance: z.number(),
+        prorationDate: z.number(),
+        subtotal: z.number(),
+      }),
+    ),
   },
   users: {
     getMe: oc.input(z.void()).output(
