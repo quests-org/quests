@@ -18,6 +18,7 @@ import { logger } from "@/client/lib/logger";
 import { cn, isMacOS, isWindows } from "@/client/lib/utils";
 import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
 import { useAtom, useAtomValue } from "jotai";
 import {
   FlaskConical,
@@ -93,6 +94,10 @@ export function StudioSidebar({
     rpcClient.sidebar.close.mutationOptions(),
   );
 
+  const { data: subscriptionData } = useQuery(
+    rpcClient.user.subscription.queryOptions(),
+  );
+
   const favoriteSubdomains = React.useMemo(
     () => new Set(favorites?.map((r) => r.subdomain) ?? []),
     [favorites],
@@ -110,6 +115,9 @@ export function StudioSidebar({
 
   const user = userResult.data;
   const isAccountsEnabled = features.questsAccounts;
+  const isFreePlan = subscriptionData?.data?.plan === null;
+  const router = useRouter();
+  const { mutate: addTab } = useMutation(rpcClient.tabs.add.mutationOptions());
 
   const settingsItems = [
     {
@@ -173,7 +181,16 @@ export function StudioSidebar({
       </SidebarContent>
       <SidebarFooter>
         {isAccountsEnabled && user ? (
-          <NavUser user={user} />
+          <NavUser
+            isFreePlan={isFreePlan}
+            onUpgrade={() => {
+              const location = router.buildLocation({
+                to: "/subscribe",
+              });
+              addTab({ urlPath: location.href });
+            }}
+            user={user}
+          />
         ) : (
           <NavSecondary asGroup={false} items={settingsItems} />
         )}

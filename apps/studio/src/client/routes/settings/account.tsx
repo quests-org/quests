@@ -7,6 +7,7 @@ import {
 import { Badge } from "@/client/components/ui/badge";
 import { Button } from "@/client/components/ui/button";
 import { Card } from "@/client/components/ui/card";
+import { getInitials } from "@/client/lib/get-initials";
 import { rpcClient } from "@/client/rpc/client";
 import { QuestsLogoIcon } from "@quests/components/logo";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -18,15 +19,6 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/settings/account")({
   component: SettingsAccountPage,
 });
-
-function getInitials(name: string) {
-  return name
-    .split(" ")
-    .map((word) => word[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
-}
 
 function SettingsAccountPage() {
   return (

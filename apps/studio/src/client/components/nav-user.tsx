@@ -3,6 +3,7 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@/client/components/ui/avatar";
+import { Button } from "@/client/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,17 +19,27 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/client/components/ui/sidebar";
+import { getInitials } from "@/client/lib/get-initials";
 import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
 import { type User } from "@/electron-main/api/types";
 import { useQuery } from "@tanstack/react-query";
 import {
   ChevronsUpDown,
+  GemIcon,
   KeyIcon,
   LogOutIcon,
   SettingsIcon,
 } from "lucide-react";
 
-export function NavUser({ user }: { user: User }) {
+export function NavUser({
+  isFreePlan,
+  onUpgrade,
+  user,
+}: {
+  isFreePlan?: boolean;
+  onUpgrade?: () => void;
+  user: User;
+}) {
   const { isMobile } = useSidebar();
 
   const { data: providerConfigs } = useQuery(
@@ -47,7 +58,7 @@ export function NavUser({ user }: { user: User }) {
               <Avatar className="h-8 w-8 rounded-lg">
                 <AvatarImage alt={user.name} src={user.image ?? undefined} />
                 <AvatarFallback className="rounded-lg">
-                  {user.name.slice(0, 2).toUpperCase()}
+                  {getInitials(user.name)}
                 </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
@@ -68,7 +79,7 @@ export function NavUser({ user }: { user: User }) {
                 <Avatar className="h-8 w-8 rounded-lg">
                   <AvatarImage alt={user.name} src={user.image ?? undefined} />
                   <AvatarFallback className="rounded-lg">
-                    {user.name.slice(0, 2).toUpperCase()}
+                    {getInitials(user.name)}
                   </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
@@ -77,6 +88,19 @@ export function NavUser({ user }: { user: User }) {
                 </div>
               </div>
             </DropdownMenuLabel>
+            {isFreePlan && onUpgrade && (
+              <div className="px-2 py-1.5">
+                <Button
+                  className="w-full text-xs h-7 font-semibold"
+                  onClick={onUpgrade}
+                  size="sm"
+                  variant="brand"
+                >
+                  <GemIcon className="size-3" />
+                  Upgrade for more credits
+                </Button>
+              </div>
+            )}
             <DropdownMenuSeparator />
 
             <DropdownMenuGroup>
