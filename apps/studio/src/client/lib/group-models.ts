@@ -47,13 +47,27 @@ export function groupAndFilterModels(
 
   /* eslint-disable perfectionist/sort-objects */
   const result: GroupedModels = {
-    Recommended: [...defaultRecommended, ...nonDefaultRecommended],
-    New: newModels,
-    Other: notLegacy,
-    Legacy: legacy,
-    "May not support tools": doesNotSupportTools,
+    Recommended: prioritizeQuestsModels([
+      ...defaultRecommended,
+      ...nonDefaultRecommended,
+    ]),
+    New: prioritizeQuestsModels(newModels),
+    Other: prioritizeQuestsModels(notLegacy),
+    Legacy: prioritizeQuestsModels(legacy),
+    "May not support tools": prioritizeQuestsModels(doesNotSupportTools),
   };
   /* eslint-enable perfectionist/sort-objects */
 
   return result;
+}
+
+function prioritizeQuestsModels(
+  models: AIGatewayModel.Type[],
+): AIGatewayModel.Type[] {
+  const [questsModels, otherModels] = fork(
+    models,
+    (model) => model.params.provider === "quests",
+  );
+
+  return [...questsModels, ...otherModels];
 }
