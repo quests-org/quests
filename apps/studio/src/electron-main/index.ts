@@ -10,10 +10,12 @@ import { setupDBusEnvironment } from "@/electron-main/lib/setup-dbus-env";
 import { StudioAppUpdater } from "@/electron-main/lib/update";
 import { createApplicationMenu } from "@/electron-main/menus/application";
 import { isFeatureEnabled } from "@/electron-main/stores/features";
+import { getTabsManager } from "@/electron-main/tabs";
 import {
   createMainWindow,
   updateTitleBarOverlay,
 } from "@/electron-main/windows/main";
+import { getMainWindow } from "@/electron-main/windows/main/instance";
 import { is, optimizer, platform } from "@electron-toolkit/utils";
 import { APP_PROTOCOL } from "@quests/shared";
 import { app, BrowserWindow, dialog, nativeTheme, protocol } from "electron";
@@ -157,7 +159,37 @@ void app.whenReady().then(async () => {
       void createMainWindow();
     }
   });
+  app.on("open-url", (event, url) => {
+    event.preventDefault();
+    handleDeepLink(url);
+  });
+
+  app.on("second-instance", (_event, commandLine) => {
+    const url = commandLine.find((arg) => arg.startsWith(`${APP_PROTOCOL}://`));
+    if (url) {
+      handleDeepLink(url);
+    }
+  });
 });
+
+function handleDeepLink(url: string) {
+  const mainWindow = getMainWindow();
+  if (mainWindow) {
+    if (mainWindow.isMinimized()) {
+      mainWindow.restore();
+    }
+    mainWindow.focus();
+
+    const tabsManager = getTabsManager();
+    if (tabsManager) {
+      if (url.includes("checkout?success=true")) {
+        void tabsManager.addTab({ urlPath: "/checkout?success=true" });
+      } else if (url.includes("checkout?canceled=true")) {
+        void tabsManager.addTab({ urlPath: "/checkout?canceled=true" });
+      }
+    }
+  }
+}
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits

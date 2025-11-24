@@ -13,6 +13,7 @@ import { Route as ToolbarRouteImport } from './routes/toolbar'
 import { Route as SubscribeRouteImport } from './routes/subscribe'
 import { Route as SidebarRouteImport } from './routes/sidebar'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as BrowserRouteImport } from './routes/browser'
 import { Route as AuthRouteRouteImport } from './routes/_auth/route'
 import { Route as AppRouteRouteImport } from './routes/_app/route'
@@ -60,6 +61,11 @@ const SidebarRoute = SidebarRouteImport.update({
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckoutRoute = CheckoutRouteImport.update({
+  id: '/checkout',
+  path: '/checkout',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BrowserRoute = BrowserRouteImport.update({
@@ -208,6 +214,7 @@ const AppDiscoverAppsFolderNameRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/browser': typeof BrowserRoute
+  '/checkout': typeof CheckoutRoute
   '/settings': typeof SettingsRouteWithChildren
   '/sidebar': typeof SidebarRoute
   '/subscribe': typeof SubscribeRoute
@@ -240,6 +247,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/browser': typeof BrowserRoute
+  '/checkout': typeof CheckoutRoute
   '/sidebar': typeof SidebarRoute
   '/subscribe': typeof SubscribeRoute
   '/toolbar': typeof ToolbarRoute
@@ -273,6 +281,7 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteRouteWithChildren
   '/_auth': typeof AuthRouteRouteWithChildren
   '/browser': typeof BrowserRoute
+  '/checkout': typeof CheckoutRoute
   '/settings': typeof SettingsRouteWithChildren
   '/sidebar': typeof SidebarRoute
   '/subscribe': typeof SubscribeRoute
@@ -307,6 +316,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/browser'
+    | '/checkout'
     | '/settings'
     | '/sidebar'
     | '/subscribe'
@@ -339,6 +349,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/browser'
+    | '/checkout'
     | '/sidebar'
     | '/subscribe'
     | '/toolbar'
@@ -371,6 +382,7 @@ export interface FileRouteTypes {
     | '/_app'
     | '/_auth'
     | '/browser'
+    | '/checkout'
     | '/settings'
     | '/sidebar'
     | '/subscribe'
@@ -406,6 +418,7 @@ export interface RootRouteChildren {
   AppRouteRoute: typeof AppRouteRouteWithChildren
   AuthRouteRoute: typeof AuthRouteRouteWithChildren
   BrowserRoute: typeof BrowserRoute
+  CheckoutRoute: typeof CheckoutRoute
   SettingsRoute: typeof SettingsRouteWithChildren
   SidebarRoute: typeof SidebarRoute
   SubscribeRoute: typeof SubscribeRoute
@@ -440,6 +453,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/checkout': {
+      id: '/checkout'
+      path: '/checkout'
+      fullPath: '/checkout'
+      preLoaderRoute: typeof CheckoutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/browser': {
@@ -734,6 +754,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppRouteRoute: AppRouteRouteWithChildren,
   AuthRouteRoute: AuthRouteRouteWithChildren,
   BrowserRoute: BrowserRoute,
+  CheckoutRoute: CheckoutRoute,
   SettingsRoute: SettingsRouteWithChildren,
   SidebarRoute: SidebarRoute,
   SubscribeRoute: SubscribeRoute,
