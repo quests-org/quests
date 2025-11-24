@@ -4,7 +4,7 @@ import { type AIGatewayProviderConfig } from "../schemas/provider-config";
 // cspell:ignore devstral
 const MODEL_TAGS: Record<string, AIGatewayModel.ModelTag[]> = {
   "claude-haiku-4.5": ["coding", "recommended"],
-  "claude-opus-4.1": ["coding"],
+  "claude-opus-4.5": ["coding", "recommended"],
   "claude-sonnet-4": ["coding"],
   "claude-sonnet-4.5": ["coding", "recommended", "default"], // Main default across all providers
   "devstral-medium-2507": ["coding", "recommended"],
