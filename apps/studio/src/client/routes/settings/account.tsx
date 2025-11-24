@@ -36,7 +36,7 @@ function SettingsAccountPage() {
 
 function UserInfoList() {
   const [userResult] = useAtom(userAtom);
-  const { data: subscriptionData, error: subscriptionError } = useQuery(
+  const { data: subscriptionData } = useQuery(
     rpcClient.user.subscription.queryOptions(),
   );
   const { mutateAsync: signOut } = useMutation(
