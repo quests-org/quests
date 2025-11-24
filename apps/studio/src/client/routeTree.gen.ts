@@ -23,7 +23,6 @@ import { Route as SettingsFeaturesRouteImport } from './routes/settings/features
 import { Route as SettingsDebugRouteImport } from './routes/settings/debug'
 import { Route as SettingsAdvancedRouteImport } from './routes/settings/advanced'
 import { Route as SettingsAccountRouteImport } from './routes/settings/account'
-import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AppWelcomeRouteImport } from './routes/_app/welcome'
 import { Route as AppSetupRouteImport } from './routes/_app/setup'
@@ -110,11 +109,6 @@ const SettingsAccountRoute = SettingsAccountRouteImport.update({
   id: '/account',
   path: '/account',
   getParentRoute: () => SettingsRoute,
-} as any)
-const AuthRegisterRoute = AuthRegisterRouteImport.update({
-  id: '/register',
-  path: '/register',
-  getParentRoute: () => AuthRouteRoute,
 } as any)
 const AuthLoginRoute = AuthLoginRouteImport.update({
   id: '/login',
@@ -224,7 +218,6 @@ export interface FileRoutesByFullPath {
   '/setup': typeof AppSetupRoute
   '/welcome': typeof AppWelcomeRoute
   '/login': typeof AuthLoginRoute
-  '/register': typeof AuthRegisterRoute
   '/settings/account': typeof SettingsAccountRoute
   '/settings/advanced': typeof SettingsAdvancedRoute
   '/settings/debug': typeof SettingsDebugRoute
@@ -255,7 +248,6 @@ export interface FileRoutesByTo {
   '/setup': typeof AppSetupRoute
   '/welcome': typeof AppWelcomeRoute
   '/login': typeof AuthLoginRoute
-  '/register': typeof AuthRegisterRoute
   '/settings/account': typeof SettingsAccountRoute
   '/settings/advanced': typeof SettingsAdvancedRoute
   '/settings/debug': typeof SettingsDebugRoute
@@ -291,7 +283,6 @@ export interface FileRoutesById {
   '/_app/setup': typeof AppSetupRoute
   '/_app/welcome': typeof AppWelcomeRoute
   '/_auth/login': typeof AuthLoginRoute
-  '/_auth/register': typeof AuthRegisterRoute
   '/settings/account': typeof SettingsAccountRoute
   '/settings/advanced': typeof SettingsAdvancedRoute
   '/settings/debug': typeof SettingsDebugRoute
@@ -326,7 +317,6 @@ export interface FileRouteTypes {
     | '/setup'
     | '/welcome'
     | '/login'
-    | '/register'
     | '/settings/account'
     | '/settings/advanced'
     | '/settings/debug'
@@ -357,7 +347,6 @@ export interface FileRouteTypes {
     | '/setup'
     | '/welcome'
     | '/login'
-    | '/register'
     | '/settings/account'
     | '/settings/advanced'
     | '/settings/debug'
@@ -392,7 +381,6 @@ export interface FileRouteTypes {
     | '/_app/setup'
     | '/_app/welcome'
     | '/_auth/login'
-    | '/_auth/register'
     | '/settings/account'
     | '/settings/advanced'
     | '/settings/debug'
@@ -523,13 +511,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/settings/account'
       preLoaderRoute: typeof SettingsAccountRouteImport
       parentRoute: typeof SettingsRoute
-    }
-    '/_auth/register': {
-      id: '/_auth/register'
-      path: '/register'
-      fullPath: '/register'
-      preLoaderRoute: typeof AuthRegisterRouteImport
-      parentRoute: typeof AuthRouteRoute
     }
     '/_auth/login': {
       id: '/_auth/login'
@@ -716,12 +697,10 @@ const AppRouteRouteWithChildren = AppRouteRoute._addFileChildren(
 
 interface AuthRouteRouteChildren {
   AuthLoginRoute: typeof AuthLoginRoute
-  AuthRegisterRoute: typeof AuthRegisterRoute
 }
 
 const AuthRouteRouteChildren: AuthRouteRouteChildren = {
   AuthLoginRoute: AuthLoginRoute,
-  AuthRegisterRoute: AuthRegisterRoute,
 }
 
 const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(
