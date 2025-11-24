@@ -36,10 +36,8 @@ function SettingsAccountPage() {
 
 function UserInfoList() {
   const [userResult] = useAtom(userAtom);
-  const { data: subscriptionData } = useQuery(
-    rpcClient.user.subscription.queryOptions({
-      input: {},
-    }),
+  const { data: subscriptionData, error: subscriptionError } = useQuery(
+    rpcClient.user.subscription.queryOptions(),
   );
   const { mutateAsync: signOut } = useMutation(
     rpcClient.auth.signOut.mutationOptions({}),
@@ -92,6 +90,9 @@ function UserInfoList() {
 
   const data = subscriptionData?.data;
   const plan = data?.plan;
+  const usagePercent = data?.usagePercent;
+  const freeUsagePercent = data?.freeUsagePercent;
+  const displayUsagePercent = plan ? usagePercent : freeUsagePercent;
 
   const badgeVariant: "default" | "outline" | "secondary" = "secondary";
   let badgeClassName = "text-xs px-2 py-0.5";
@@ -168,28 +169,34 @@ function UserInfoList() {
             )}
           </div>
 
-          {plan && (
-            <div className="space-y-4 pt-2">
+          <div className="space-y-4 pt-2">
+            {displayUsagePercent === undefined ? null : (
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="font-medium">Monthly Usage</span>
+                  <span className="font-medium">
+                    {plan ? "Monthly Usage" : "Free Usage"}
+                  </span>
                   <span className="text-muted-foreground">
-                    {data.usagePercent.toFixed(0)}% used
+                    {displayUsagePercent.toFixed(0)}% used
                   </span>
                 </div>
                 <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
                   <div
                     className="h-full bg-primary transition-all duration-500 ease-in-out"
-                    style={{ width: `${data.usagePercent}%` }}
+                    style={{
+                      width: `${displayUsagePercent}%`,
+                    }}
                   />
                 </div>
               </div>
-              {data.nextAllocation && (
-                <p className="text-xs text-muted-foreground">
-                  Next credit allocation on{" "}
-                  {new Date(data.nextAllocation).toLocaleDateString()}
-                </p>
-              )}
+            )}
+            {data?.nextAllocation && (
+              <p className="text-xs text-muted-foreground">
+                Next credit allocation on{" "}
+                {new Date(data.nextAllocation).toLocaleDateString()}
+              </p>
+            )}
+            {plan && (
               <div className="flex justify-end gap-2 pt-2">
                 <Button
                   className="font-medium"
@@ -199,26 +206,24 @@ function UserInfoList() {
                 >
                   Manage Subscription
                 </Button>
-                {plan === "Basic" && (
-                  <Button
-                    className="shrink-0 font-semibold gap-1.5"
-                    onClick={() => {
-                      const location = router.buildLocation({
-                        to: "/subscribe",
-                      });
-                      addTab({ urlPath: location.href });
-                      window.close();
-                    }}
-                    size="sm"
-                    variant="brand"
-                  >
-                    <GemIcon className="size-3.5" />
-                    Upgrade to Pro
-                  </Button>
-                )}
+                <Button
+                  className="shrink-0 font-semibold gap-1.5"
+                  onClick={() => {
+                    const location = router.buildLocation({
+                      to: "/subscribe",
+                    });
+                    addTab({ urlPath: location.href });
+                    window.close();
+                  }}
+                  size="sm"
+                  variant="brand"
+                >
+                  <GemIcon className="size-3.5" />
+                  {plan ? "Upgrade to Pro" : "Upgrade Now"}
+                </Button>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </Card>
     </div>
