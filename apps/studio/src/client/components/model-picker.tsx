@@ -190,7 +190,7 @@ export function ModelPicker({
               >
                 {errors.map((error, index) => (
                   <CommandItem
-                    className="flex items-center py-2 cursor-default data-[disabled]:opacity-80!"
+                    className="flex items-center py-2 cursor-default data-disabled:opacity-80!"
                     disabled
                     key={index}
                   >
@@ -198,14 +198,14 @@ export function ModelPicker({
                     <div className="flex flex-col gap-1 flex-1 min-w-0">
                       <div className="flex items-center gap-1 text-xs">
                         <AIProviderIcon
-                          className="size-3 flex-shrink-0"
+                          className="size-3 shrink-0"
                           type={error.config.type}
                         />
                         <span className="text-muted-foreground">
                           {error.config.displayName}
                         </span>
                       </div>
-                      <span className="text-xs line-clamp-2 break-words">
+                      <span className="text-xs line-clamp-2 wrap-break-word">
                         {error.message}
                       </span>
                     </div>
@@ -252,7 +252,7 @@ export function ModelPicker({
                               <span className="text-sm">{model.name}</span>
                               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                                 <AIProviderIcon
-                                  className="size-3 flex-shrink-0"
+                                  className="size-3 shrink-0"
                                   type={model.params.provider}
                                 />
                                 <span>{model.providerName}</span>

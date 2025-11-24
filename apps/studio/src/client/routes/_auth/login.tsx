@@ -28,5 +28,5 @@ export const Route = createFileRoute("/_auth/login")({
 });
 
 function RouteComponent() {
-  return <LoginForm mode="signin" />;
+  return <LoginForm />;
 }
