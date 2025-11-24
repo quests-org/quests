@@ -26,6 +26,18 @@ export function createMainWindowMenu(): MenuItemConstructorOptions[] {
         label: "New Tab",
       },
       {
+        accelerator: "CmdOrCtrl+N",
+        click: () => {
+          const tabsManager = getTabsManager();
+          const currentTab = tabsManager?.getCurrentTab();
+          if (currentTab) {
+            currentTab.webView.webContents.send("navigate", "/new-tab");
+            currentTab.webView.webContents.focus();
+          }
+        },
+        label: "New Project",
+      },
+      {
         accelerator: "CmdOrCtrl+W",
         click: () => {
           const tabsManager = getTabsManager();
