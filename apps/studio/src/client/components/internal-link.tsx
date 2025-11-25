@@ -13,6 +13,7 @@ export function InternalLink(
     React.ComponentProps<"a"> & {
       allowOpenNewTab?: boolean;
       openInCurrentTab?: boolean;
+      openInNewTab?: boolean;
     },
 ) {
   const { mutate: navigateInCurrentTab } = useMutation(
@@ -25,6 +26,7 @@ export function InternalLink(
     onClick,
     onMouseDown,
     openInCurrentTab = false,
+    openInNewTab = false,
     params,
     search,
     target,
@@ -92,15 +94,16 @@ export function InternalLink(
 
       // Handle left clicks and ctrl/cmd + left click
       if (e.button === 0) {
-        const shouldOpenNewTab = e.ctrlKey || e.metaKey;
-        performNavigation(shouldOpenNewTab, shouldOpenNewTab ? false : true);
+        const shouldOpenNewTab = e.ctrlKey || e.metaKey || openInNewTab;
+        const selectTab = openInNewTab || !shouldOpenNewTab;
+        performNavigation(shouldOpenNewTab, selectTab);
       }
 
       if (onClick) {
         onClick(e);
       }
     },
-    [onClick, performNavigation],
+    [onClick, performNavigation, openInNewTab],
   );
 
   return (

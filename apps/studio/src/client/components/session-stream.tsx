@@ -25,6 +25,7 @@ import { ToolPart } from "./tool-part";
 import { Alert, AlertDescription } from "./ui/alert";
 import { Button } from "./ui/button";
 import { UnknownPart } from "./unknown-part";
+import { UpgradeSubscriptionAlert } from "./upgrade-subscription-alert";
 import { UsageSummary } from "./usage-summary";
 import { UserMessage } from "./user-message";
 export type FilterMode = "chat" | "versions";
@@ -96,6 +97,22 @@ export function SessionStream({
   const isActive = isAnyAgentRunning || isAnyActorActive;
   const isAnyAgentAlive = (appState?.sessionActors ?? []).some((s) =>
     s.tags.includes("agent.alive"),
+  );
+
+  const isInsufficientCreditsError = useCallback(
+    (error: SessionMessage.Assistant["metadata"]["error"]) => {
+      if (!error) {
+        return false;
+      }
+
+      return (
+        error.kind === "api-call" &&
+        error.statusCode === 403 &&
+        error.url.includes("/providers/quests/") &&
+        (error.responseBody?.includes("Insufficient credits") ?? false)
+      );
+    },
+    [],
   );
 
   const gitCommitParts = useMemo(() => {
@@ -303,17 +320,19 @@ export function SessionStream({
 
       if (message.role === "assistant" && message.metadata.error) {
         const isLastMessage = messageIndex === regularMessages.length - 1;
-        messageElements.push(
-          <MessageError
-            defaultExpanded={
-              isLastMessage &&
-              !isAnyAgentRunning &&
-              message.metadata.error.kind !== "aborted"
-            }
-            error={message.metadata.error}
-            key={`error-${message.id}`}
-          />,
-        );
+        if (!isInsufficientCreditsError(message.metadata.error)) {
+          messageElements.push(
+            <MessageError
+              defaultExpanded={
+                isLastMessage &&
+                !isAnyAgentRunning &&
+                message.metadata.error.kind !== "aborted"
+              }
+              error={message.metadata.error}
+              key={`error-${message.id}`}
+            />,
+          );
+        }
       }
 
       newChatElements.push(...messageElements);
@@ -347,9 +366,22 @@ export function SessionStream({
         message.metadata.error &&
         message.metadata.error.kind !== "aborted" &&
         message.metadata.error.kind !== "invalid-tool-input" &&
-        message.metadata.error.kind !== "no-such-tool",
+        message.metadata.error.kind !== "no-such-tool" &&
+        !isInsufficientCreditsError(message.metadata.error),
     );
-  }, [messages, isAnyAgentRunning]);
+  }, [messages, isAnyAgentRunning, isInsufficientCreditsError]);
+
+  const shouldShowUpgradeSubscriptionAlert = useMemo(() => {
+    if (messages.length === 0 || isAnyAgentRunning) {
+      return false;
+    }
+
+    const lastMessage = messages.at(-1);
+    return (
+      lastMessage?.role === "assistant" &&
+      isInsufficientCreditsError(lastMessage.metadata.error)
+    );
+  }, [messages, isAnyAgentRunning, isInsufficientCreditsError]);
 
   const shouldShowContinueButton = useMemo(() => {
     if (messages.length === 0 || isAnyAgentRunning || !onContinue) {
@@ -397,6 +429,8 @@ export function SessionStream({
         {shouldShowErrorRecoveryPrompt && (
           <ChatErrorAlert onStartNewChat={handleNewSession} />
         )}
+
+        {shouldShowUpgradeSubscriptionAlert && <UpgradeSubscriptionAlert />}
 
         {shouldShowContinueButton && (
           <Alert className="mt-4" variant="warning">
