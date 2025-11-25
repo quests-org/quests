@@ -10,9 +10,15 @@ import {
   setAuthServerPort,
 } from "@/electron-main/auth/state";
 import { logger } from "@/electron-main/lib/electron-logger";
+import { createError } from "@/electron-main/lib/errors";
 import { publisher } from "@/electron-main/rpc/publisher";
 import { getSessionStore } from "@/electron-main/stores/session";
 import { serve } from "@hono/node-server";
+import {
+  COMMON_ORPC_ERROR_DEFS,
+  type CommonORPCErrorCode,
+  ORPCError,
+} from "@orpc/client";
 import { APP_PROTOCOL } from "@quests/shared";
 import { detect } from "detect-port";
 import { app as electronApp } from "electron";
@@ -20,6 +26,14 @@ import { Hono } from "hono";
 import { html } from "hono/html";
 import fs from "node:fs";
 import path from "node:path";
+
+const STATUS_TO_ORPC_ERROR_CODE: Record<number, CommonORPCErrorCode> =
+  Object.fromEntries(
+    Object.entries(COMMON_ORPC_ERROR_DEFS).map(([_, value]) => [
+      value.status,
+      _ as CommonORPCErrorCode,
+    ]),
+  );
 
 const scopedLogger = logger.scope("auth");
 
@@ -116,11 +130,14 @@ export async function startAuthCallbackServer() {
 
       if (res.error) {
         scopedLogger.error(res.error.statusText, res.error);
+        const orpcErrorCode = STATUS_TO_ORPC_ERROR_CODE[res.error.status];
         publisher.publish("auth.updated", {
-          error: {
-            code: res.error.status,
-          },
+          error: createError(
+            orpcErrorCode ?? "INTERNAL_SERVER_ERROR",
+            res.error.message,
+          ),
         });
+        publisher.publish("subscription.refetch", null);
 
         return await c.html(
           renderAuthPage({
@@ -141,6 +158,7 @@ export async function startAuthCallbackServer() {
     }
 
     publisher.publish("auth.updated", {});
+    publisher.publish("subscription.refetch", null);
     return c.html(renderAuthPage({}));
   });
 

@@ -3,35 +3,15 @@ import { hasToken, isNetworkConnectionError } from "@/electron-main/api/utils";
 import { logger as baseLogger } from "@/electron-main/lib/electron-logger";
 import { createError } from "@/electron-main/lib/errors";
 import { base } from "@/electron-main/rpc/base";
-import { type Outputs } from "@/electron-main/rpc/context";
 import { isFeatureEnabled } from "@/electron-main/stores/features";
 import { getProviderConfigsStore } from "@/electron-main/stores/provider-configs";
 import { safe } from "@orpc/server";
+import { mergeGenerators } from "@quests/shared/merge-generators";
 import { z } from "zod";
 
 import { publisher } from "../publisher";
 
 const logger = baseLogger.scope("rpc/user");
-
-let subscriptionCache: null | {
-  data: Outputs["users"]["getSubscriptionStatus"];
-  error: null;
-} = null;
-
-// eslint-disable-next-line unicorn/prefer-top-level-await
-void (async function subscribeToAuthUpdates() {
-  for await (const _payload of publisher.subscribe("auth.updated", {})) {
-    logger.info("Auth updated, refetching subscription status");
-    subscriptionCache = null;
-    const updatedSubscription = await getSubscription(true);
-    if (updatedSubscription.data) {
-      subscriptionCache = updatedSubscription;
-    }
-    publisher.publish("subscription.updated", {
-      subscription: updatedSubscription.data,
-    });
-  }
-})();
 
 const hasAIProviderConfig = base.handler(() => {
   const providersStore = getProviderConfigsStore();
@@ -99,22 +79,32 @@ const live = {
       yield payload;
     }
   }),
-  subscription: base.handler(async function* ({ signal }) {
-    const subscription = await getSubscription();
-    if (subscription.data) {
-      subscriptionCache = subscription;
-    }
-    yield subscription;
+  subscription: base
+    .input(z.void().or(z.object({ noCache: z.boolean().optional() })))
+    .handler(async function* ({ signal }) {
+      const subscription = await getSubscription();
+      yield subscription;
 
-    for await (const payload of publisher.subscribe("subscription.updated", {
-      signal,
-    })) {
-      yield {
-        data: payload.subscription,
-        error: null,
-      };
-    }
-  }),
+      const refetchSubscription = publisher.subscribe("subscription.refetch", {
+        signal,
+      });
+
+      const updatedSubscription = publisher.subscribe("subscription.updated", {
+        signal,
+      });
+
+      for await (const payload of mergeGenerators([
+        updatedSubscription,
+        refetchSubscription,
+      ])) {
+        if (payload) {
+          yield payload;
+        } else {
+          const refetchedPayload = await getSubscription();
+          yield refetchedPayload;
+        }
+      }
+    }),
 };
 
 const subscription = base.handler(async () => {
@@ -150,12 +140,9 @@ const plans = base.handler(async () => {
   }
 });
 
-async function getSubscription(noCache = false) {
+export async function getSubscription() {
   if (hasToken()) {
-    if (subscriptionCache && !noCache) {
-      return subscriptionCache;
-    }
-
+    logger.info("Getting subscription status");
     const [error, data] = await safe(apiClient.users.getSubscriptionStatus());
 
     if (isNetworkConnectionError(error)) {

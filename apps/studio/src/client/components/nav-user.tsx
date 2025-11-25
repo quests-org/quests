@@ -52,13 +52,14 @@ export function NavUser({
 
   const plan = subscriptionData?.data?.plan;
   const badgeVariant: "default" | "outline" | "secondary" = "secondary";
-  let badgeClassName = "text-xs px-1 py-0.5";
+  let badgeClassName = "text-xs px-1 py-0.5 ";
 
   if (plan === "Basic") {
     badgeClassName +=
-      "bg-emerald-200 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-500";
+      " bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/30";
   } else if (plan === "Pro") {
-    badgeClassName += "bg-gradient-to-r from-blue-600 to-black text-white";
+    badgeClassName +=
+      "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30";
   }
 
   return (

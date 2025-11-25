@@ -96,6 +96,7 @@ export async function signOut() {
     const sessionStore = getSessionStore();
     sessionStore.set("apiBearerToken", null);
     publisher.publish("auth.updated", {});
+    publisher.publish("subscription.refetch", null);
     return response;
   } catch {
     return { error: { message: "Unexpected error signing out" } };

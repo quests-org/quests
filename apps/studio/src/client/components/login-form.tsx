@@ -1,6 +1,7 @@
 import { Button } from "@/client/components/ui/button";
 import { cn } from "@/client/lib/utils";
 import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
+import { type RPCError } from "@/electron-main/lib/errors";
 import { QuestsAnimatedLogo } from "@quests/components/animated-logo";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
@@ -15,7 +16,7 @@ export function LoginForm({
   modal?: boolean;
   onClose?: () => void;
 }) {
-  const [errorCode, setErrorCode] = useState<null | number>(null);
+  const [error, setError] = useState<null | RPCError>(null);
   const { mutateAsync: signInSocial } = useMutation(
     rpcClient.auth.signInSocial.mutationOptions(),
   );
@@ -29,7 +30,7 @@ export function LoginForm({
 
   useEffect(() => {
     if (authSessionChanged?.error) {
-      setErrorCode(authSessionChanged.error.code);
+      setError(authSessionChanged.error);
     } else if (authSessionChanged && isFetched) {
       onClose?.();
       // TODO: fan this out, show signed in temp in all tabs
@@ -46,8 +47,8 @@ export function LoginForm({
 
     try {
       await signInSocial({});
-    } catch (error) {
-      telemetry?.captureException(error);
+    } catch (error_) {
+      telemetry?.captureException(error_);
     }
   };
 
@@ -62,24 +63,24 @@ export function LoginForm({
             <span className="sr-only">Quests</span>
           </a>
           <h1 className="text-3xl font-bold mb-2">Sign in to Quests</h1>
-          {errorCode && (
+          {error && (
             <p className="text-sm text-muted-foreground text-center max-w-md">
               There was an error signing in.
             </p>
           )}
-          {!errorCode && (
+          {!error && (
             <p className="text-sm text-muted-foreground text-center max-w-md">
               Continue with Google to sign in or create an account.
             </p>
           )}
-          {modal && !errorCode && (
+          {modal && !error && (
             <p className="text-sm text-muted-foreground text-center max-w-md">
               You need to be signed in to use Quests AI features.
             </p>
           )}
         </div>
 
-        {!errorCode && (
+        {!error && (
           <div className="flex flex-col items-center justify-center gap-3">
             <form
               className="flex items-center justify-center gap-3 relative"

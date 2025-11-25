@@ -1,14 +1,13 @@
+import { type RPCError } from "@/electron-main/lib/errors";
 import { type AppUpdaterStatus } from "@/electron-main/lib/update";
-import { type Outputs } from "@/electron-main/rpc/context";
+import { type getSubscription } from "@/electron-main/rpc/routes/user";
 import { type TabState } from "@/shared/tabs";
 import { EventPublisher } from "@orpc/server";
 
 export const publisher = new EventPublisher<{
   "app.reload": { webContentsId: number };
   "auth.updated": {
-    error?: {
-      code: number;
-    };
+    error?: null | RPCError;
   };
   "debug.open-analytics-toolbar": null;
   "debug.open-debug-page": null;
@@ -25,9 +24,8 @@ export const publisher = new EventPublisher<{
   "sidebar.visibility-updated": Partial<{
     visible: boolean;
   }>;
-  "subscription.updated": {
-    subscription: null | Outputs["users"]["getSubscriptionStatus"];
-  };
+  "subscription.refetch": null;
+  "subscription.updated": Awaited<ReturnType<typeof getSubscription>>;
   "tabs.updated": null | TabState;
   "test-notification": null;
   "updates.status": { status: AppUpdaterStatus };

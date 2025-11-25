@@ -10,7 +10,9 @@ import { toast } from "sonner";
 export function SubscriptionCard() {
   const { mutate: addTab } = useMutation(rpcClient.tabs.add.mutationOptions());
   const { data: subscriptionData } = useQuery(
-    rpcClient.user.live.subscription.experimental_liveOptions(),
+    rpcClient.user.live.subscription.experimental_liveOptions({
+      input: { noCache: true },
+    }),
   );
   const { mutateAsync: createPortalSession } = useMutation(
     rpcClient.stripe.createPortalSession.mutationOptions(),
@@ -47,7 +49,7 @@ export function SubscriptionCard() {
       " bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/30";
   } else if (plan === "Pro") {
     badgeClassName +=
-      " bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30";
+      "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30";
   }
 
   return (
@@ -111,8 +113,8 @@ export function SubscriptionCard() {
               {new Date(data.nextAllocation).toLocaleDateString()}
             </p>
           )}
-          {plan && (
-            <div className="flex justify-end gap-2 pt-2">
+          <div className="flex justify-end gap-2 pt-2">
+            {plan && plan !== "Free" && (
               <Button
                 className="font-medium"
                 onClick={handleManageSubscription}
@@ -121,6 +123,8 @@ export function SubscriptionCard() {
               >
                 Manage Subscription
               </Button>
+            )}
+            {plan && plan !== "Free" && (
               <Button
                 className="shrink-0 font-semibold gap-1.5"
                 onClick={() => {
@@ -134,10 +138,10 @@ export function SubscriptionCard() {
                 variant="brand"
               >
                 <GemIcon className="size-3.5" />
-                {plan ? "Upgrade to Pro" : "Upgrade Now"}
+                {plan === "Basic" ? "Upgrade to Pro" : "Upgrade Now"}
               </Button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </Card>

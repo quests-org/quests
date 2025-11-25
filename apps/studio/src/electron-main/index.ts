@@ -184,7 +184,7 @@ function handleDeepLink(url: string) {
     const tabsManager = getTabsManager();
     if (tabsManager) {
       if (url.includes("checkout?success=true")) {
-        publisher.publish("auth.updated", {});
+        publisher.publish("subscription.refetch", null);
         void tabsManager.addTab({ urlPath: "/checkout?success=true" });
       } else if (url.includes("checkout?canceled=true")) {
         void tabsManager.addTab({ urlPath: "/checkout?canceled=true" });

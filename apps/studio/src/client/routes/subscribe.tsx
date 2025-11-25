@@ -51,7 +51,9 @@ interface PricingPlan {
 function SubscribePage() {
   const { data: plansData } = useQuery(rpcClient.user.plans.queryOptions());
   const { data: subscriptionData } = useQuery(
-    rpcClient.user.live.subscription.experimental_liveOptions(),
+    rpcClient.user.live.subscription.experimental_liveOptions({
+      refetchOnWindowFocus: true,
+    }),
   );
   const { mutateAsync: createCheckoutSession } = useMutation(
     rpcClient.stripe.createCheckoutSession.mutationOptions(),

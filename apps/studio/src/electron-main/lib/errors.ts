@@ -26,3 +26,5 @@ export const createError = (code: ErrorCode, message?: string) => {
     message: message ?? ERROR_DEFS[code].message,
   };
 };
+
+export type RPCError = ReturnType<typeof createError>;
