@@ -51,7 +51,7 @@ interface PricingPlan {
 function SubscribePage() {
   const { data: plansData } = useQuery(rpcClient.user.plans.queryOptions());
   const { data: subscriptionData } = useQuery(
-    rpcClient.user.subscription.queryOptions(),
+    rpcClient.user.live.subscription.experimental_liveOptions(),
   );
   const { mutateAsync: createCheckoutSession } = useMutation(
     rpcClient.stripe.createCheckoutSession.mutationOptions(),
@@ -293,7 +293,7 @@ function SubscribePage() {
                     onClick={async () => {
                       if (buttonText === "Current Plan") {
                         void vanillaRpcClient.preferences.openSettingsWindow({
-                          tab: "Account",
+                          tab: "General",
                         });
                       } else {
                         await handleSubscribe(plan);

@@ -1,4 +1,5 @@
 import { type AppUpdaterStatus } from "@/electron-main/lib/update";
+import { type Outputs } from "@/electron-main/rpc/context";
 import { type TabState } from "@/shared/tabs";
 import { EventPublisher } from "@orpc/server";
 
@@ -24,6 +25,9 @@ export const publisher = new EventPublisher<{
   "sidebar.visibility-updated": Partial<{
     visible: boolean;
   }>;
+  "subscription.updated": {
+    subscription: null | Outputs["users"]["getSubscriptionStatus"];
+  };
   "tabs.updated": null | TabState;
   "test-notification": null;
   "updates.status": { status: AppUpdaterStatus };

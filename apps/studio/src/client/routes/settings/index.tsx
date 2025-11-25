@@ -10,6 +10,8 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { Download, ExternalLink as ExternalLinkIcon } from "lucide-react";
 
+import { AccountInfo } from "./components/account-info";
+
 export const Route = createFileRoute("/settings/")({
   component: SettingsGeneralPage,
 });
@@ -241,9 +243,8 @@ function About() {
           <div className="space-y-2">
             <div className="text-sm font-medium">Open Source</div>
             <p className="text-sm text-muted-foreground">
-              You can look at the source code and see how this whole thingamajig
-              works. You could even contribute a feature or bug fix! No
-              pressure.
+              Quests is open source and free to use. You can view the source
+              code on GitHub.
             </p>
             <div>
               <Button
@@ -263,8 +264,8 @@ function About() {
           <div className="space-y-2">
             <div className="text-sm font-medium">Community</div>
             <p className="text-sm text-muted-foreground">
-              We&lsquo;ve got a Discord server so you can tell us how much you
-              like Quests. Definitely not to yell at us about bugs. Definitely.
+              Join us on Discord so you can tell us how much you like Quests.
+              Definitely not to yell at us about bugs. Definitely.
             </p>
             <div>
               <Button
@@ -311,6 +312,7 @@ function InterfaceAndTheme() {
 function SettingsGeneralPage() {
   return (
     <div className="space-y-4">
+      <AccountInfo />
       <InterfaceAndTheme />
       <About />
     </div>

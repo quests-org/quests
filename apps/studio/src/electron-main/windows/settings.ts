@@ -13,7 +13,7 @@ export function getSettingsWindow(): BrowserWindow | null {
 }
 
 export function openSettingsWindow(
-  tab?: "Account" | "Advanced" | "Features" | "General" | "Providers",
+  tab?: "Advanced" | "Features" | "General" | "Providers",
   options?: { showNewProviderDialog?: boolean },
 ) {
   // If settings window already exists, focus it
@@ -67,10 +67,6 @@ export function openSettingsWindow(
   const searchParams = new URLSearchParams();
 
   switch (tab) {
-    case "Account": {
-      settingsPath = "/settings/account";
-      break;
-    }
     case "Advanced": {
       settingsPath = "/settings/advanced";
       break;

@@ -3,6 +3,7 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@/client/components/ui/avatar";
+import { Badge } from "@/client/components/ui/badge";
 import { Button } from "@/client/components/ui/button";
 import {
   DropdownMenu,
@@ -45,6 +46,20 @@ export function NavUser({
   const { data: providerConfigs } = useQuery(
     rpcClient.providerConfig.live.list.experimental_liveOptions(),
   );
+  const { data: subscriptionData } = useQuery(
+    rpcClient.user.live.subscription.experimental_liveOptions(),
+  );
+
+  const plan = subscriptionData?.data?.plan;
+  const badgeVariant: "default" | "outline" | "secondary" = "secondary";
+  let badgeClassName = "text-xs px-1 py-0.5";
+
+  if (plan === "Basic") {
+    badgeClassName +=
+      "bg-emerald-200 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-500";
+  } else if (plan === "Pro") {
+    badgeClassName += "bg-gradient-to-r from-blue-600 to-black text-white";
+  }
 
   return (
     <SidebarMenu>
@@ -62,7 +77,12 @@ export function NavUser({
                 </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{user.name}</span>
+                <div className="flex items-center gap-2">
+                  <span className="truncate font-medium">{user.name}</span>
+                  <Badge className={badgeClassName} variant={badgeVariant}>
+                    {plan ?? "Free"}
+                  </Badge>
+                </div>
                 <span className="truncate text-xs">{user.email}</span>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
@@ -83,7 +103,12 @@ export function NavUser({
                   </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{user.name}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="truncate font-medium">{user.name}</span>
+                    <Badge className={badgeClassName} variant={badgeVariant}>
+                      {plan ?? "Free"}
+                    </Badge>
+                  </div>
                   <span className="truncate text-xs">{user.email}</span>
                 </div>
               </div>

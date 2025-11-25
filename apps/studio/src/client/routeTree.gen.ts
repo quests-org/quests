@@ -23,7 +23,6 @@ import { Route as SettingsProvidersRouteImport } from './routes/settings/provide
 import { Route as SettingsFeaturesRouteImport } from './routes/settings/features'
 import { Route as SettingsDebugRouteImport } from './routes/settings/debug'
 import { Route as SettingsAdvancedRouteImport } from './routes/settings/advanced'
-import { Route as SettingsAccountRouteImport } from './routes/settings/account'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AppWelcomeRouteImport } from './routes/_app/welcome'
 import { Route as AppSetupRouteImport } from './routes/_app/setup'
@@ -109,11 +108,6 @@ const SettingsDebugRoute = SettingsDebugRouteImport.update({
 const SettingsAdvancedRoute = SettingsAdvancedRouteImport.update({
   id: '/advanced',
   path: '/advanced',
-  getParentRoute: () => SettingsRoute,
-} as any)
-const SettingsAccountRoute = SettingsAccountRouteImport.update({
-  id: '/account',
-  path: '/account',
   getParentRoute: () => SettingsRoute,
 } as any)
 const AuthLoginRoute = AuthLoginRouteImport.update({
@@ -225,7 +219,6 @@ export interface FileRoutesByFullPath {
   '/setup': typeof AppSetupRoute
   '/welcome': typeof AppWelcomeRoute
   '/login': typeof AuthLoginRoute
-  '/settings/account': typeof SettingsAccountRoute
   '/settings/advanced': typeof SettingsAdvancedRoute
   '/settings/debug': typeof SettingsDebugRoute
   '/settings/features': typeof SettingsFeaturesRoute
@@ -256,7 +249,6 @@ export interface FileRoutesByTo {
   '/setup': typeof AppSetupRoute
   '/welcome': typeof AppWelcomeRoute
   '/login': typeof AuthLoginRoute
-  '/settings/account': typeof SettingsAccountRoute
   '/settings/advanced': typeof SettingsAdvancedRoute
   '/settings/debug': typeof SettingsDebugRoute
   '/settings/features': typeof SettingsFeaturesRoute
@@ -292,7 +284,6 @@ export interface FileRoutesById {
   '/_app/setup': typeof AppSetupRoute
   '/_app/welcome': typeof AppWelcomeRoute
   '/_auth/login': typeof AuthLoginRoute
-  '/settings/account': typeof SettingsAccountRoute
   '/settings/advanced': typeof SettingsAdvancedRoute
   '/settings/debug': typeof SettingsDebugRoute
   '/settings/features': typeof SettingsFeaturesRoute
@@ -327,7 +318,6 @@ export interface FileRouteTypes {
     | '/setup'
     | '/welcome'
     | '/login'
-    | '/settings/account'
     | '/settings/advanced'
     | '/settings/debug'
     | '/settings/features'
@@ -358,7 +348,6 @@ export interface FileRouteTypes {
     | '/setup'
     | '/welcome'
     | '/login'
-    | '/settings/account'
     | '/settings/advanced'
     | '/settings/debug'
     | '/settings/features'
@@ -393,7 +382,6 @@ export interface FileRouteTypes {
     | '/_app/setup'
     | '/_app/welcome'
     | '/_auth/login'
-    | '/settings/account'
     | '/settings/advanced'
     | '/settings/debug'
     | '/settings/features'
@@ -523,13 +511,6 @@ declare module '@tanstack/react-router' {
       path: '/advanced'
       fullPath: '/settings/advanced'
       preLoaderRoute: typeof SettingsAdvancedRouteImport
-      parentRoute: typeof SettingsRoute
-    }
-    '/settings/account': {
-      id: '/settings/account'
-      path: '/account'
-      fullPath: '/settings/account'
-      preLoaderRoute: typeof SettingsAccountRouteImport
       parentRoute: typeof SettingsRoute
     }
     '/_auth/login': {
@@ -728,7 +709,6 @@ const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(
 )
 
 interface SettingsRouteChildren {
-  SettingsAccountRoute: typeof SettingsAccountRoute
   SettingsAdvancedRoute: typeof SettingsAdvancedRoute
   SettingsDebugRoute: typeof SettingsDebugRoute
   SettingsFeaturesRoute: typeof SettingsFeaturesRoute
@@ -737,7 +717,6 @@ interface SettingsRouteChildren {
 }
 
 const SettingsRouteChildren: SettingsRouteChildren = {
-  SettingsAccountRoute: SettingsAccountRoute,
   SettingsAdvancedRoute: SettingsAdvancedRoute,
   SettingsDebugRoute: SettingsDebugRoute,
   SettingsFeaturesRoute: SettingsFeaturesRoute,

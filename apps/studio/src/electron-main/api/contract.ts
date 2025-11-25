@@ -2,24 +2,6 @@ import { oc } from "@orpc/contract";
 import z from "zod";
 
 export const contract = {
-  invites: {
-    validateBetaInvite: oc
-      .input(z.object({ code: z.string() }))
-      .output(
-        z.object({
-          invitedEmail: z.string(),
-          valid: z.boolean(),
-        }),
-      )
-      .errors({
-        CONFLICT: {
-          message: "This invite code has already been used",
-        },
-        NOT_FOUND: {
-          message: "Invalid invite code",
-        },
-      }),
-  },
   plans: {
     get: oc.input(z.void()).output(
       z.array(

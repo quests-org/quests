@@ -95,7 +95,7 @@ export function StudioSidebar({
   );
 
   const { data: subscriptionData } = useQuery(
-    rpcClient.user.subscription.queryOptions(),
+    rpcClient.user.live.subscription.experimental_liveOptions(),
   );
 
   const favoriteSubdomains = React.useMemo(

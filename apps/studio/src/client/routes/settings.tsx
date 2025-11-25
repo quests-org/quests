@@ -19,7 +19,6 @@ import {
   FlagIcon,
   SettingsIcon,
   SlidersHorizontalIcon,
-  UserIcon,
 } from "lucide-react";
 
 import { isLinux } from "../lib/utils";
@@ -40,7 +39,6 @@ function SettingsLayout() {
       | Extract<
           MainAppPath,
           | "/settings"
-          | "/settings/account"
           | "/settings/advanced"
           | "/settings/features"
           | "/settings/providers"
@@ -48,15 +46,6 @@ function SettingsLayout() {
     title: string;
   }[] = [
     { icon: SettingsIcon, path: "/settings", title: "General" },
-    ...(features.questsAccounts
-      ? [
-          {
-            icon: UserIcon,
-            path: "/settings/account" as const,
-            title: "Account",
-          },
-        ]
-      : []),
     { icon: BotIcon, path: "/settings/providers", title: "Providers" },
     {
       icon: SlidersHorizontalIcon,

@@ -21,15 +21,14 @@ function ToolbarPage() {
   );
 
   const { data: subscriptionData } = useQuery(
-    rpcClient.user.subscription.queryOptions({
-      input: {},
-    }),
+    rpcClient.user.live.subscription.experimental_liveOptions(),
   );
 
   const { mutate: addTab } = useMutation(rpcClient.tabs.add.mutationOptions());
   const router = useRouter();
 
   const isSidebarVisible = sidebarVisibility?.visible ?? true;
+  const subscriptionDataExists = !!subscriptionData?.data;
   const hasSubscription = !!subscriptionData?.data?.plan;
 
   return (
@@ -65,7 +64,7 @@ function ToolbarPage() {
           )}
           <TabBar />
         </div>
-        {!hasSubscription && (
+        {subscriptionDataExists && !hasSubscription && (
           <div className="flex items-center [-webkit-app-region:no-drag]">
             <Button
               className="shrink-0 text-xs px-2 h-6 font-semibold gap-1"

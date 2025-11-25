@@ -45,7 +45,7 @@ const openSettingsWindow = base
     z.object({
       showNewProviderDialog: z.boolean().optional(),
       tab: z
-        .enum(["Advanced", "Features", "General", "Providers", "Account"])
+        .enum(["Advanced", "Features", "General", "Providers"])
         .optional(),
     }),
   )

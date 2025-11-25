@@ -9,6 +9,7 @@ import {
 import { setupDBusEnvironment } from "@/electron-main/lib/setup-dbus-env";
 import { StudioAppUpdater } from "@/electron-main/lib/update";
 import { createApplicationMenu } from "@/electron-main/menus/application";
+import { publisher } from "@/electron-main/rpc/publisher";
 import { isFeatureEnabled } from "@/electron-main/stores/features";
 import { getTabsManager } from "@/electron-main/tabs";
 import {
@@ -183,6 +184,7 @@ function handleDeepLink(url: string) {
     const tabsManager = getTabsManager();
     if (tabsManager) {
       if (url.includes("checkout?success=true")) {
+        publisher.publish("auth.updated", {});
         void tabsManager.addTab({ urlPath: "/checkout?success=true" });
       } else if (url.includes("checkout?canceled=true")) {
         void tabsManager.addTab({ urlPath: "/checkout?canceled=true" });
