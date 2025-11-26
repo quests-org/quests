@@ -14,19 +14,24 @@
 
 ## Features
 
-- 🔗 Bring your own key (BYOK) - Use the best models from OpenAI, Anthropic, Google, OpenRouter, and more
+- 🔗 Bring your own key (BYOK) - OpenAI, Anthropic, Google, OpenRouter, Mistral, Groq, xAI, DeepSeek, Ollama, and 20+ more
 - 💻 Desktop app - Apps are built and run locally on your machine
 - 🌟 Open source - Apache 2.0 licensed, high quality, and tested
 - 🤖 Coding agent - State-of-the-art performance with targeted edits and real-time linting
 - 🏗️ Multiple projects - Build and run multiple full-stack applications simultaneously
 - 📂 Version control - Built-in versioning with restoration
-- 📤 Exportable apps - Full-stack React apps that can run anywhere
+- 📤 Exportable apps - Full-stack apps that can run anywhere
+- 🧬 Evals - Compare outputs from multiple models and apps with built-in and custom prompts
+- 📑 Templates - Discover page with open source templates for React, Angular, Astro, Svelte, and more
+- 🔌 Custom providers - Support for custom OpenAI-compatible providers and multiple instances of the same provider
 
 ## [Download Quests](https://quests.dev)
 
 Download the desktop app at [quests.dev](https://quests.dev).
 
 All you need is an AI provider API key - everything runs locally on your computer.
+
+Quests supports macOS, Windows, and Linux.
 
 ---
 
