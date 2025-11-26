@@ -142,7 +142,6 @@ const plans = base.handler(async () => {
 
 export async function getSubscription() {
   if (hasToken()) {
-    logger.info("Getting subscription status");
     const [error, data] = await safe(apiClient.users.getSubscriptionStatus());
 
     if (isNetworkConnectionError(error)) {

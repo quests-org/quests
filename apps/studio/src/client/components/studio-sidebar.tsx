@@ -1,9 +1,7 @@
 import { featuresAtom } from "@/client/atoms/features";
-import { userAtom } from "@/client/atoms/user";
 import { NavControls } from "@/client/components/nav-controls";
 import { NavPrimary } from "@/client/components/nav-primary";
 import { NavProjects } from "@/client/components/nav-projects";
-import { NavSecondary } from "@/client/components/nav-secondary";
 import { NavUser } from "@/client/components/nav-user";
 import { Button } from "@/client/components/ui/button";
 import {
@@ -16,15 +14,13 @@ import { useSelectedTab } from "@/client/hooks/tabs";
 import { useMatchesForPathname } from "@/client/lib/get-route-matches";
 import { logger } from "@/client/lib/logger";
 import { cn, isMacOS, isWindows } from "@/client/lib/utils";
-import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
+import { rpcClient } from "@/client/rpc/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useRouter } from "@tanstack/react-router";
-import { useAtom, useAtomValue } from "jotai";
+import { useAtomValue } from "jotai";
 import {
   FlaskConical,
   Globe,
   PlusIcon,
-  SettingsIcon,
   SidebarIcon,
   Telescope,
 } from "lucide-react";
@@ -33,7 +29,6 @@ import * as React from "react";
 export function StudioSidebar({
   ...props
 }: React.ComponentProps<typeof Sidebar>) {
-  const [userResult] = useAtom(userAtom);
   const features = useAtomValue(featuresAtom);
 
   const { data: sidebarVisibility } = useQuery(
@@ -94,10 +89,6 @@ export function StudioSidebar({
     rpcClient.sidebar.close.mutationOptions(),
   );
 
-  const { data: subscriptionData } = useQuery(
-    rpcClient.user.live.subscription.experimental_liveOptions(),
-  );
-
   const favoriteSubdomains = React.useMemo(
     () => new Set(favorites?.map((r) => r.subdomain) ?? []),
     [favorites],
@@ -112,24 +103,6 @@ export function StudioSidebar({
       (project) => !favoriteSubdomains.has(project.subdomain),
     );
   }, [projectsData?.projects, favorites, favoriteSubdomains]);
-
-  const user = userResult.data;
-  const isAccountsEnabled = features.questsAccounts;
-  const isFreePlan = subscriptionData?.data?.plan === null;
-  const router = useRouter();
-  const { mutate: addTab } = useMutation(rpcClient.tabs.add.mutationOptions());
-
-  const settingsItems = [
-    {
-      icon: SettingsIcon,
-      onClick: () => {
-        void vanillaRpcClient.preferences.openSettingsWindow({
-          tab: "General",
-        });
-      },
-      title: "Settings",
-    },
-  ];
 
   return (
     <Sidebar collapsible="none" side="left" {...props}>
@@ -180,20 +153,7 @@ export function StudioSidebar({
         )}
       </SidebarContent>
       <SidebarFooter>
-        {isAccountsEnabled && user ? (
-          <NavUser
-            isFreePlan={isFreePlan}
-            onUpgrade={() => {
-              const location = router.buildLocation({
-                to: "/subscribe",
-              });
-              addTab({ urlPath: location.href });
-            }}
-            user={user}
-          />
-        ) : (
-          <NavSecondary asGroup={false} items={settingsItems} />
-        )}
+        <NavUser />
       </SidebarFooter>
     </Sidebar>
   );

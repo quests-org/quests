@@ -2,7 +2,6 @@
 .husky/
 coverage/
 pnpm-lock.yaml
-cspell.json
 llm-cache.local/
 worker-configuration.d.ts
 routeTree.gen.ts
