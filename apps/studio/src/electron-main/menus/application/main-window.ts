@@ -162,9 +162,39 @@ export function createMainWindowMenu(): MenuItemConstructorOptions[] {
         label: "Reload App",
       },
       { type: "separator" as const },
-      { role: "resetZoom" as const },
-      { role: "zoomIn" as const },
-      { role: "zoomOut" as const },
+      {
+        accelerator: "CmdOrCtrl+0",
+        click: () => {
+          const tabsManager = getTabsManager();
+          const currentTab = tabsManager?.getCurrentTab();
+          currentTab?.webView.webContents.setZoomLevel(0);
+        },
+        label: "Actual Size",
+      },
+      {
+        accelerator: "CmdOrCtrl+Plus",
+        click: () => {
+          const tabsManager = getTabsManager();
+          const currentTab = tabsManager?.getCurrentTab();
+          if (currentTab) {
+            const zoomLevel = currentTab.webView.webContents.getZoomLevel();
+            currentTab.webView.webContents.setZoomLevel(zoomLevel + 0.5);
+          }
+        },
+        label: "Zoom In",
+      },
+      {
+        accelerator: "CmdOrCtrl+-",
+        click: () => {
+          const tabsManager = getTabsManager();
+          const currentTab = tabsManager?.getCurrentTab();
+          if (currentTab) {
+            const zoomLevel = currentTab.webView.webContents.getZoomLevel();
+            currentTab.webView.webContents.setZoomLevel(zoomLevel - 0.5);
+          }
+        },
+        label: "Zoom Out",
+      },
       { type: "separator" as const },
       { role: "togglefullscreen" as const },
     ],
