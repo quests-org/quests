@@ -165,33 +165,23 @@ export function createMainWindowMenu(): MenuItemConstructorOptions[] {
       {
         accelerator: "CmdOrCtrl+0",
         click: () => {
-          const tabsManager = getTabsManager();
-          const currentTab = tabsManager?.getCurrentTab();
-          currentTab?.webView.webContents.setZoomLevel(0);
+          // Zoom is applied to the tab view only. The sidebar and tab bar use
+          // fixed pixel sizes and break if zoomed.
+          getTabsManager()?.resetZoom();
         },
         label: "Actual Size",
       },
       {
         accelerator: "CmdOrCtrl+Plus",
         click: () => {
-          const tabsManager = getTabsManager();
-          const currentTab = tabsManager?.getCurrentTab();
-          if (currentTab) {
-            const zoomLevel = currentTab.webView.webContents.getZoomLevel();
-            currentTab.webView.webContents.setZoomLevel(zoomLevel + 0.5);
-          }
+          getTabsManager()?.zoomIn();
         },
         label: "Zoom In",
       },
       {
         accelerator: "CmdOrCtrl+-",
         click: () => {
-          const tabsManager = getTabsManager();
-          const currentTab = tabsManager?.getCurrentTab();
-          if (currentTab) {
-            const zoomLevel = currentTab.webView.webContents.getZoomLevel();
-            currentTab.webView.webContents.setZoomLevel(zoomLevel - 0.5);
-          }
+          getTabsManager()?.zoomOut();
         },
         label: "Zoom Out",
       },

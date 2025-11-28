@@ -230,6 +230,11 @@ export class TabsManager {
     this.afterUpdate();
   }
 
+  public resetZoom() {
+    const tab = this.getCurrentTab();
+    tab?.webView.webContents.setZoomLevel(0);
+  }
+
   public selectTab({ id }: { id: string }) {
     const tab = this.tabs.find((t) => t.id === id);
     if (tab) {
@@ -262,6 +267,22 @@ export class TabsManager {
   public updateTabsForSidebarChange() {
     for (const tab of this.tabs) {
       this.updateTabBounds(tab);
+    }
+  }
+
+  public zoomIn() {
+    const tab = this.getCurrentTab();
+    if (tab) {
+      const zoomLevel = tab.webView.webContents.getZoomLevel();
+      tab.webView.webContents.setZoomLevel(zoomLevel + 0.5);
+    }
+  }
+
+  public zoomOut() {
+    const tab = this.getCurrentTab();
+    if (tab) {
+      const zoomLevel = tab.webView.webContents.getZoomLevel();
+      tab.webView.webContents.setZoomLevel(zoomLevel - 0.5);
     }
   }
 
