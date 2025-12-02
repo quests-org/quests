@@ -110,7 +110,7 @@ export function MessageError({
                 <div>
                   <strong>API:</strong> {error.name}
                 </div>
-                <div>
+                <div className="break-all">
                   <strong>URL:</strong> {error.url}
                 </div>
                 {error.statusCode && (
