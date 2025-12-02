@@ -231,7 +231,10 @@ const PROVIDER_METADATA: Record<AIProviderType, ProviderMetadataInput> = {
   },
   quests: {
     api: {
-      defaultBaseURL: `${import.meta.env.VITE_QUESTS_API_BASE_URL}/gateway/openrouter`,
+      // TODO: remove need for vite env in this package
+      // This package is sometimes used outside the Vite environment
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      defaultBaseURL: `${import.meta?.env?.VITE_QUESTS_API_BASE_URL}/gateway/openrouter`,
     },
     description: "Quests AI Gateway",
     name: "Quests",
