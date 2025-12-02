@@ -31,7 +31,8 @@ export function apiURL({
       return `${baseURL}/api${path}`;
     }
     case "openai":
-    case "openrouter": {
+    case "openrouter":
+    case "quests": {
       return `${baseURL}/v1${path}`;
     }
 

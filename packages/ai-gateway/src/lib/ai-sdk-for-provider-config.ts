@@ -110,6 +110,16 @@ export function aiSDKForProviderConfig(
         baseURL: internalURL({ config, workspaceServerURL }),
       });
     }
+    case "quests": {
+      return createOpenRouter({
+        apiKey: internalAPIKey(),
+        baseURL: internalURL({ config, workspaceServerURL }),
+        headers: {
+          "HTTP-Referer": ATTRIBUTION_URL,
+          "X-Title": ATTRIBUTION_NAME,
+        },
+      });
+    }
     case "together": {
       return createTogetherAI({
         apiKey: internalAPIKey(),
