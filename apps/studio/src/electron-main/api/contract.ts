@@ -1,5 +1,5 @@
 import { oc } from "@orpc/contract";
-import z from "zod";
+import { z } from "zod";
 
 export const contract = {
   plans: {
