@@ -1,6 +1,7 @@
 import { Button } from "@/client/components/ui/button";
 import { Card } from "@/client/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/client/components/ui/tabs";
+import { captureClientEvent } from "@/client/lib/capture-client-event";
 import { cn } from "@/client/lib/utils";
 import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
 import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
@@ -104,6 +105,11 @@ function SubscribePage() {
       return;
     }
 
+    captureClientEvent("subscribe.subscribe_clicked", {
+      billing_cycle: billingCycle,
+      plan_name: plan.name,
+    });
+
     const isUpgrade2 = currentPlan === "Basic" && plan.name === "Pro";
     const isDowngrade = currentPlan === "Pro" && plan.name === "Basic";
 
@@ -157,7 +163,11 @@ function SubscribePage() {
           <Tabs
             defaultValue="yearly"
             onValueChange={(value) => {
-              setBillingCycle(value as BillingCycle);
+              const newBillingCycle = value as BillingCycle;
+              setBillingCycle(newBillingCycle);
+              captureClientEvent("subscribe.billing_cycle_changed", {
+                billing_cycle: newBillingCycle,
+              });
             }}
             value={billingCycle}
           >
@@ -334,11 +344,12 @@ function SubscribePage() {
             </p>
             <Button
               className="h-8 px-4 text-xs"
-              onClick={() =>
-                openExternalLink({
+              onClick={() => {
+                captureClientEvent("subscribe.contact_us_clicked");
+                void openExternalLink({
                   url: "mailto:hello@quests.dev?subject=Quests%20-%20Enterprise%20%26%20Team%20Inquiry",
-                })
-              }
+                });
+              }}
               size="sm"
               variant="outline"
             >

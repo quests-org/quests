@@ -22,6 +22,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/client/components/ui/sidebar";
+import { captureClientEvent } from "@/client/lib/capture-client-event";
 import { getInitials } from "@/client/lib/get-initials";
 import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -66,6 +67,9 @@ export function NavUser() {
   }
 
   const onUpgrade = () => {
+    captureClientEvent("upgrade.clicked", {
+      source: "nav_user",
+    });
     const location = router.buildLocation({
       to: "/subscribe",
     });

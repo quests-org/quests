@@ -1,6 +1,7 @@
 import { NavControls } from "@/client/components/nav-controls";
 import TabBar from "@/client/components/tab-bar";
 import { Button } from "@/client/components/ui/button";
+import { captureClientEvent } from "@/client/lib/capture-client-event";
 import { cn, isLinux, isMacOS, isWindows } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -69,6 +70,9 @@ function ToolbarPage() {
             <Button
               className="shrink-0 text-xs px-2 h-6 font-semibold gap-1"
               onClick={() => {
+                captureClientEvent("upgrade.clicked", {
+                  source: "toolbar",
+                });
                 const location = router.buildLocation({
                   to: "/subscribe",
                 });

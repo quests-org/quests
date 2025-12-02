@@ -46,6 +46,9 @@ export interface AnalyticsEvents {
     success: boolean;
     tool_name: string;
   };
+  "login.button_clicked": {
+    button_type: "add_api_key" | "google_sign_in";
+  };
   "message.created": WithModelProperties<{
     length: number;
     project_mode: ProjectMode;
@@ -91,6 +94,17 @@ export interface AnalyticsEvents {
   "session.created": never;
   "session.removed": never;
   "session.stopped": never;
+  "subscribe.billing_cycle_changed": {
+    billing_cycle: "monthly" | "yearly";
+  };
+  "subscribe.contact_us_clicked": never;
+  "subscribe.subscribe_clicked": {
+    billing_cycle: "monthly" | "yearly";
+    plan_name: string;
+  };
+  "upgrade.clicked": {
+    source: "nav_user" | "toolbar";
+  };
   "workspace.non_default_port": {
     apps_server_port: number;
   };

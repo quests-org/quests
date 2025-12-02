@@ -1,4 +1,5 @@
 import { Button } from "@/client/components/ui/button";
+import { captureClientEvent } from "@/client/lib/capture-client-event";
 import { cn } from "@/client/lib/utils";
 import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
 import { type RPCError } from "@/electron-main/lib/errors";
@@ -44,6 +45,10 @@ export function LoginForm({
 
   const handleContinueClick = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    captureClientEvent("login.button_clicked", {
+      button_type: "google_sign_in",
+    });
 
     try {
       await signInSocial({});
@@ -109,6 +114,9 @@ export function LoginForm({
               <Button
                 className="w-full min-w-80"
                 onClick={() => {
+                  captureClientEvent("login.button_clicked", {
+                    button_type: "add_api_key",
+                  });
                   void vanillaRpcClient.preferences.openSettingsWindow({
                     showNewProviderDialog: true,
                     tab: "Providers",
