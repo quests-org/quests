@@ -136,8 +136,12 @@ export async function prepareModelMessages({
     ALL_AI_SDK_TOOLS,
   );
 
+  const nonEmptyModelMessages = modelMessages.filter(
+    (message) => message.content.length > 0 || Boolean(message.providerOptions),
+  );
+
   // AI SDK requires system messages to be first for some providers
-  const modelMessagesWithSystemFirst = modelMessages.sort((a, b) =>
+  const modelMessagesWithSystemFirst = nonEmptyModelMessages.sort((a, b) =>
     a.role === "system" ? -1 : b.role === "system" ? 1 : 0,
   );
 
