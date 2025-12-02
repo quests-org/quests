@@ -135,7 +135,7 @@ export function ModelPicker({
           size="sm"
           variant="ghost"
         >
-          <div className="flex items-center w-full min-w-0">
+          <div className="flex items-center w-full min-w-0 text-xs">
             {getModelDisplayValue()}
           </div>
           <ChevronDown className="size-4 shrink-0 opacity-70" />
