@@ -109,6 +109,23 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
 
     const selectedModel = models?.find((model) => model.uri === modelURI);
 
+    useEffect(() => {
+      if (
+        !modelURI &&
+        !selectedModel &&
+        models &&
+        models.length > 0 &&
+        !isLoading
+      ) {
+        const defaultModel = models.find((model) =>
+          model.tags.includes("default"),
+        );
+        if (defaultModel) {
+          onModelChange(defaultModel.uri);
+        }
+      }
+    }, [modelURI, selectedModel, models, isLoading, onModelChange]);
+
     const resetTextareaHeight = useCallback(() => {
       if (textareaInnerRef.current) {
         textareaInnerRef.current.style.height = "auto";
