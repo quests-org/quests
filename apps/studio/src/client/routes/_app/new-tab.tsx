@@ -7,12 +7,13 @@ import { ExternalLink } from "@/client/components/external-link";
 import { InternalLink } from "@/client/components/internal-link";
 import { ModelPreview } from "@/client/components/projects-data-table/model-preview";
 import { PromptInput } from "@/client/components/prompt-input";
-import { Badge } from "@/client/components/ui/badge";
+import { Button } from "@/client/components/ui/button";
 import { Card, CardContent } from "@/client/components/ui/card";
 import { Kbd } from "@/client/components/ui/kbd";
 import { useTabActions } from "@/client/hooks/tabs";
 import { isMacOS } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
+import { QuestsAnimatedLogo } from "@quests/components/animated-logo";
 import {
   APP_REPO_URL,
   DISCORD_URL,
@@ -28,6 +29,7 @@ import {
 } from "@tanstack/react-router";
 import { formatDistanceToNow } from "date-fns";
 import { useAtom } from "jotai";
+import { useState } from "react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/new-tab")({
@@ -41,9 +43,15 @@ export const Route = createFileRoute("/_app/new-tab")({
   }),
 });
 
+const WHATS_NEW_DISMISSED_KEY = "whats-new-dismissed-2025-12-02";
+
 function RouteComponent() {
   const [selectedModelURI, setSelectedModelURI] = useAtom(selectedModelURIAtom);
   const [agentName, setAgentName] = useAtom(agentNameAtom);
+  const [isDismissed, setIsDismissed] = useState(() => {
+    const stored = localStorage.getItem(WHATS_NEW_DISMISSED_KEY);
+    return stored === "true";
+  });
   const navigate = useNavigate({ from: "/new-tab" });
   const router = useRouter();
   const { addTab } = useTabActions();
@@ -59,6 +67,11 @@ function RouteComponent() {
 
   const recentProjects = projectsData?.projects ?? [];
   const hasProjects = (projectsData?.projects.length ?? 0) > 0;
+
+  const handleDismiss = () => {
+    setIsDismissed(true);
+    localStorage.setItem(WHATS_NEW_DISMISSED_KEY, "true");
+  };
 
   return (
     <div className="w-full min-h-screen flex-1 flex flex-col items-center relative">
@@ -142,25 +155,8 @@ function RouteComponent() {
               }}
               showAgentPicker
             />
-            <div className="flex items-center justify-between mt-2">
-              {agentName !== "chat" && (
-                <button
-                  className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
-                  onClick={() => {
-                    setAgentName("chat");
-                  }}
-                  type="button"
-                >
-                  <Badge
-                    className="text-[10px] px-1.5 py-0 h-4"
-                    variant="brand-outline"
-                  >
-                    NEW
-                  </Badge>
-                  <span>Chat with models</span>
-                </button>
-              )}
-              <p className="text-xs text-muted-foreground ml-auto">
+            <div className="flex items-center justify-end mt-2">
+              <p className="text-xs text-muted-foreground">
                 Hold <Kbd>{isMacOS() ? "⌘" : "Ctrl"}</Kbd> to create in a new
                 tab
               </p>
@@ -170,6 +166,49 @@ function RouteComponent() {
       </div>
 
       <div className="w-full max-w-6xl px-8 pb-8 flex-1 pt-16">
+        {!isDismissed && (
+          <div className="mb-16">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-lg font-medium text-foreground">
+                What&apos;s New
+              </h2>
+              <Button
+                className="text-xs text-muted-foreground hover:text-foreground"
+                onClick={handleDismiss}
+                variant="ghost"
+              >
+                Dismiss
+              </Button>
+            </div>
+            <Card className="bg-linear-to-br from-blue-50/50 to-blue-100/30 dark:from-blue-950/20 dark:to-blue-900/10 border-blue-200/50 dark:border-blue-800/30 py-2">
+              <CardContent className="flex gap-x-3 px-3 items-center">
+                <div className="size-10 rounded-full bg-black/80 dark:bg-black/30 flex items-center justify-center shrink-0 p-1.5">
+                  <QuestsAnimatedLogo size={32} />
+                </div>
+                <p className="text-sm text-foreground/90">
+                  <strong>Easier AI access is here!</strong>{" "}
+                  <InternalLink
+                    className="underline hover:text-foreground"
+                    openInCurrentTab
+                    to="/login"
+                  >
+                    Create an account
+                  </InternalLink>{" "}
+                  to get started with free AI credits or{" "}
+                  <InternalLink
+                    className="underline hover:text-foreground"
+                    openInCurrentTab
+                    to="/release-notes"
+                  >
+                    read the announcement
+                  </InternalLink>
+                  .
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
         <div className="flex items-center justify-between mb-2">
           <div>
             <h2 className="text-lg font-medium text-foreground">Discover</h2>
