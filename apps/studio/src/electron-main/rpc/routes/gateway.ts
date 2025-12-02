@@ -5,6 +5,7 @@ import {
   AIGatewayProviderConfig,
   fetchModelResultsForProviders,
 } from "@quests/ai-gateway";
+import { mergeGenerators } from "@quests/shared/merge-generators";
 import { z } from "zod";
 
 import { publisher } from "../publisher";
@@ -60,9 +61,18 @@ const live = {
   }) {
     yield call(list, {}, { context, signal });
 
-    for await (const _ of publisher.subscribe("provider-config.updated", {
-      signal,
-    })) {
+    const providerConfigUpdates = publisher.subscribe(
+      "provider-config.updated",
+      {
+        signal,
+      },
+    );
+    const authUpdates = publisher.subscribe("auth.updated", { signal });
+
+    for await (const _ of mergeGenerators([
+      providerConfigUpdates,
+      authUpdates,
+    ])) {
       yield call(list, {}, { context, signal });
     }
   }),
