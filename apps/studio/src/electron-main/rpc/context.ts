@@ -18,4 +18,4 @@ export interface InitialRPCContext extends WorkspaceRPCContext {
   workspaceRef: WorkspaceActorRef;
 }
 
-export type Outputs = InferContractRouterOutputs<typeof contract>;
+type Outputs = InferContractRouterOutputs<typeof contract>;

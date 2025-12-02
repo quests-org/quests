@@ -100,16 +100,16 @@ export function SessionStream({
   );
 
   const isInsufficientCreditsError = useCallback(
-    (error: SessionMessage.Assistant["metadata"]["error"]) => {
-      if (!error) {
+    (err: SessionMessage.Assistant["metadata"]["error"]) => {
+      if (!err) {
         return false;
       }
 
       return (
-        error.kind === "api-call" &&
-        error.statusCode === 403 &&
-        error.url.includes("/providers/quests/") &&
-        (error.responseBody?.includes("Insufficient credits") ?? false)
+        err.kind === "api-call" &&
+        err.statusCode === 403 &&
+        err.url.includes("/providers/quests/") &&
+        (err.responseBody?.includes("Insufficient credits") ?? false)
       );
     },
     [],
@@ -341,7 +341,13 @@ export function SessionStream({
     return {
       chatElements: newChatElements,
     };
-  }, [regularMessages, renderChatPart, isAnyAgentRunning, showMessageActions]);
+  }, [
+    regularMessages,
+    renderChatPart,
+    isAnyAgentRunning,
+    showMessageActions,
+    isInsufficientCreditsError,
+  ]);
 
   const shouldShowErrorRecoveryPrompt = useMemo(() => {
     if (messages.length === 0 || isAnyAgentRunning) {

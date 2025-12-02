@@ -167,7 +167,14 @@ function SubscribePage() {
                 value="yearly"
               >
                 Yearly
-                <span className="text-xs bg-background/20 primary-foreground/10 px-2 py-0.5 rounded-full">
+                <span
+                  className={cn(
+                    "text-xs px-2 py-0.5 rounded-full",
+                    billingCycle === "yearly"
+                      ? "dark:bg-background/20 bg-background/20"
+                      : "bg-border",
+                  )}
+                >
                   Save 20%
                 </span>
               </TabsTrigger>

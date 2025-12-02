@@ -14,11 +14,7 @@ import { createError } from "@/electron-main/lib/errors";
 import { publisher } from "@/electron-main/rpc/publisher";
 import { getSessionStore } from "@/electron-main/stores/session";
 import { serve } from "@hono/node-server";
-import {
-  COMMON_ORPC_ERROR_DEFS,
-  type CommonORPCErrorCode,
-  ORPCError,
-} from "@orpc/client";
+import { COMMON_ORPC_ERROR_DEFS, type CommonORPCErrorCode } from "@orpc/client";
 import { APP_PROTOCOL } from "@quests/shared";
 import { detect } from "detect-port";
 import { app as electronApp } from "electron";

@@ -1,21 +1,7 @@
 {
-  "files": [
-    "**",
-    ".github/**",
-    ".vscode/**"
-  ],
-  "dictionaries": [
-    "typescript",
-    "bash",
-    "css",
-    "html",
-    "node",
-    "npm"
-  ],
-  "ignorePaths": [
-    "pnpm-lock.yaml",
-    "registry/"
-  ],
+  "files": ["**", ".github/**", ".vscode/**"],
+  "dictionaries": ["typescript", "bash", "css", "html", "node", "npm"],
+  "ignorePaths": ["pnpm-lock.yaml", "registry/"],
   "useGitignore": true,
   "words": [
     "aisdk",
@@ -81,6 +67,7 @@
     "qwen",
     "qwik",
     "radashi",
+    "refetched",
     "retryable",
     "rharkor",
     "rmrf",

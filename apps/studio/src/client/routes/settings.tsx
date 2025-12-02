@@ -1,4 +1,3 @@
-import { featuresAtom } from "@/client/atoms/features";
 import { InternalLink } from "@/client/components/internal-link";
 import {
   Sidebar,
@@ -12,7 +11,6 @@ import {
 import { Toaster } from "@/client/components/ui/sonner";
 import { type MainAppPath } from "@/electron-main/lib/urls";
 import { createFileRoute, Outlet } from "@tanstack/react-router";
-import { useAtomValue } from "jotai";
 import {
   BotIcon,
   BugIcon,
@@ -30,8 +28,6 @@ export const Route = createFileRoute("/settings")({
 const isDev = import.meta.env.DEV;
 
 function SettingsLayout() {
-  const features = useAtomValue(featuresAtom);
-
   const sidebarNavItems: {
     icon: React.ElementType;
     path:
