@@ -1,6 +1,6 @@
 import { logger } from "@/electron-main/lib/electron-logger";
 import { publisher } from "@/electron-main/rpc/publisher";
-import { type FeatureName, FeatureNameSchema } from "@/shared/features";
+import { FeatureNameSchema } from "@/shared/features";
 import Store from "electron-store";
 import { z } from "zod";
 
@@ -62,7 +62,7 @@ export const getFeaturesStore = (): Store<FeaturesStore> => {
   return FEATURES_STORE;
 };
 
-export const isFeatureEnabled = (feature: FeatureName): boolean => {
-  const store = getFeaturesStore();
-  return store.get(feature);
-};
+// export const isFeatureEnabled = (feature: FeatureName): boolean => {
+//   const store = getFeaturesStore();
+//   return store.get(feature);
+// };

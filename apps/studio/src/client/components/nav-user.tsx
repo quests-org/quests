@@ -1,4 +1,3 @@
-import { featuresAtom } from "@/client/atoms/features";
 import { userAtom } from "@/client/atoms/user";
 import {
   Avatar,
@@ -22,26 +21,29 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/client/components/ui/sidebar";
+import { useUserConnectionError } from "@/client/hooks/use-user-connection-error";
 import { captureClientEvent } from "@/client/lib/capture-client-event";
 import { getInitials } from "@/client/lib/get-initials";
 import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
-import { useAtom, useAtomValue } from "jotai";
+import { useAtom } from "jotai";
 import {
+  AlertCircle,
   ChevronsUpDown,
   GemIcon,
   KeyIcon,
   LogOutIcon,
   SettingsIcon,
 } from "lucide-react";
+import { startTransition } from "react";
 
 export function NavUser() {
   const { isMobile } = useSidebar();
-  const [userResult] = useAtom(userAtom);
-  const features = useAtomValue(featuresAtom);
+  const [userResult, refreshUser] = useAtom(userAtom);
   const router = useRouter();
   const { mutate: addTab } = useMutation(rpcClient.tabs.add.mutationOptions());
+  const { error, hasError } = useUserConnectionError();
 
   const user = userResult.data;
   const { data: providerConfigs } = useQuery(
@@ -77,7 +79,15 @@ export function NavUser() {
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-        <DropdownMenu>
+        <DropdownMenu
+          onOpenChange={(open) => {
+            if (open) {
+              startTransition(() => {
+                refreshUser();
+              });
+            }
+          }}
+        >
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
@@ -119,7 +129,7 @@ export function NavUser() {
           </DropdownMenuTrigger>
           <DropdownMenuContent
             align="end"
-            className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+            className="w-58 rounded-lg"
             side={isMobile ? "bottom" : "top"}
             sideOffset={4}
           >
@@ -152,6 +162,22 @@ export function NavUser() {
                     </div>
                   </div>
                 </DropdownMenuLabel>
+                {hasError && error && (
+                  <div className="px-2 py-1.5">
+                    <Button
+                      className="w-full text-xs h-7 font-semibold bg-destructive/10 text-destructive hover:bg-destructive/20"
+                      onClick={() => {
+                        void vanillaRpcClient.preferences.openSettingsWindow({
+                          tab: "General",
+                        });
+                      }}
+                      size="sm"
+                    >
+                      <AlertCircle className="size-3 shrink-0" />
+                      <span className="truncate">{error.message}</span>
+                    </Button>
+                  </div>
+                )}
                 {isFreePlan && (
                   <div className="px-2 py-1.5">
                     <Button
@@ -206,6 +232,22 @@ export function NavUser() {
               </>
             ) : (
               <>
+                {hasError && error && (
+                  <div className="px-2 py-1.5">
+                    <Button
+                      className="w-full text-xs h-7 font-semibold bg-destructive/10 text-destructive hover:bg-destructive/20"
+                      onClick={() => {
+                        void vanillaRpcClient.preferences.openSettingsWindow({
+                          tab: "General",
+                        });
+                      }}
+                      size="sm"
+                    >
+                      <AlertCircle className="size-3 shrink-0" />
+                      <span className="truncate">{error.message}</span>
+                    </Button>
+                  </div>
+                )}
                 <DropdownMenuGroup>
                   <DropdownMenuItem
                     onClick={() => {
