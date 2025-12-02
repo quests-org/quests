@@ -33,60 +33,73 @@ export function generateChatTitle({
 }
 
 function buildSystemPrompt(type: TitleType, templateTitle?: string): string {
+  const timeContext = getTimeContext();
+
   const contextSection =
     type === "project" && templateTitle
-      ? `<context>
-    You are generating a title for an app.
-    The app is based on the "${templateTitle}" template.
-    </context>`
-      : type === "project"
-        ? `<context>
-    You are generating a title for an app.
-    </context>`
-        : `<context>
-    You are generating a title for a chat conversation.
-    </context>`;
+      ? `The app is based on the "${templateTitle}" template.`
+      : "";
 
   const taskDescription =
     type === "project"
-      ? "Generate a project title from the user message."
-      : "Generate a concise chat title from the user message.";
-
-  const examples =
-    type === "project"
-      ? `<examples>
-    Build a todo app → Todos
-    Create a chat application with file uploads → Chat with Files
-    Make a kanban board for project management → Kanban Board
-    Build a complex inventory management system → Inventory Management System
-    </examples>`
-      : `<examples>
-    What is the weather like today? → Weather inquiry
-    Help me debug this Python code → Python debugging help
-    Explain quantum computing → Quantum computing explanation
-    How do I make lasagna? → Lasagna recipe
-    </examples>`;
+      ? "Generate a short project title from the user's message."
+      : "Generate a short chat title from the user's message.";
 
   const capitalizationRule =
     type === "project"
-      ? "- Use Title Case for project names"
-      : "- Use sentence case (capitalize only the first word)";
+      ? "Use Title Case for project titles."
+      : "Use sentence case (capitalize only the first word).";
 
-  return dedent`<task>
+  const fallbackInstruction =
+    type === "project"
+      ? `If you cannot determine a meaningful title from the content, create a friendly fallback using the current time (${timeContext}), e.g. "${timeContext} Project" or "Late Night Build".`
+      : `If you cannot determine a meaningful title from the content, create a friendly fallback using the current time (${timeContext}), e.g. "${timeContext} chat" or "Late night help".`;
+
+  const examples =
+    type === "project"
+      ? dedent`
+        <examples>
+        "Build me a todo app with drag and drop" → Todos
+        "Create a chat application with file uploads and markdown support" → Chat with Files
+        "Make a kanban board for project management" → Kanban Board
+        "I want to build a complex inventory management system with reports" → Inventory Management System
+        "What did I upload?" → Uploaded Files
+        "Can you help me with something?" → ${timeContext} Project
+        </examples>`
+      : dedent`
+        <examples>
+        "What is the weather like today in San Francisco?" → Weather inquiry
+        "Help me debug this Python code that's throwing an error" → Python debugging help
+        "Explain quantum computing and its applications" → Quantum computing explanation
+        "How do I make lasagna from scratch?" → Lasagna recipe
+        "What did I upload?" → File upload inquiry
+        "Can you help me with something?" → ${timeContext} chat
+        </examples>`;
+
+  return dedent`
+    <task>
     ${taskDescription}
+    ${contextSection}
     </task>
 
-    ${contextSection}
+    <context>
+    Current time: ${timeContext}
+    </context>
+
+    <important>
+    You are ONLY extracting a title from the user's message. Do NOT answer questions, perform tasks, or provide information.
+    The user's message is input to summarize - not a request for you to respond to.
+    ${fallbackInstruction}
+    </important>
 
     <rules>
-    - Maximum ${MAX_TITLE_WORDS} words, single line
-    - Do not use the word "app", "project", "chat", "conversation", or anything other than a descriptive title for the content
+    - Maximum ${MAX_TITLE_WORDS} words
+    - Single line only
+    - ${capitalizationRule}
+    - Do not use words like "app", "project", "chat", or "conversation" in the title
     - Return ONLY the title text in plain text format
-    - No markdown, no quotes, no formatting, no extra details, no code fences, no ASCII art, no diagrams
-    - Do not include any prefixes, labels, or explanations
-    - Just the plain title words, nothing else
-    - Keep it concise and descriptive
-    ${capitalizationRule}
+    - No markdown, quotes, code fences, or formatting
+    - No prefixes or labels like "Title:" or "Name:"
     </rules>
 
     ${examples}
@@ -141,10 +154,32 @@ function generateTitle({
       const words = cleanedTitle.split(/\s+/).filter(Boolean);
       const limitedTitle = words.slice(0, MAX_TITLE_WORDS).join(" ");
 
-      return limitedTitle;
+      return (
+        limitedTitle ||
+        `${getTimeContext()} ${type === "project" ? "Project" : "chat"}`
+      );
     })(),
     (error: unknown) => ({
       message: `Failed to generate ${type} title: ${error instanceof Error ? error.message : String(error)}`,
     }),
   );
+}
+
+function getTimeContext(): string {
+  const now = new Date();
+  const dayName = now.toLocaleDateString("en-US", { weekday: "long" });
+  const hour = now.getHours();
+
+  let timeOfDay: string;
+  if (hour < 12) {
+    timeOfDay = "morning";
+  } else if (hour < 17) {
+    timeOfDay = "afternoon";
+  } else if (hour < 21) {
+    timeOfDay = "evening";
+  } else {
+    timeOfDay = "night";
+  }
+
+  return `${dayName} ${timeOfDay}`;
 }

@@ -10,9 +10,9 @@ import { dedent } from "radashi";
 import { type SessionMessage } from "../schemas/session/message";
 import { textForMessage } from "./text-for-message";
 
-const IconNameSchema = SelectableAppIconsSchema.default(
-  SELECTABLE_APP_ICONS[0],
-);
+const DEFAULT_ICON = SELECTABLE_APP_ICONS[0];
+
+const IconNameSchema = SelectableAppIconsSchema.default(DEFAULT_ICON);
 
 export function generateProjectIcon({
   message,
@@ -27,7 +27,7 @@ export function generateProjectIcon({
     (async () => {
       const userMessage = textForMessage(message);
       if (!userMessage.trim()) {
-        throw new Error("No user message");
+        return DEFAULT_ICON;
       }
 
       const result = await generateText({
@@ -35,43 +35,47 @@ export function generateProjectIcon({
         prompt: userMessage,
         system: buildSystemPrompt(templateTitle),
       });
-      const iconName = result.text.trim();
-      const icon = IconNameSchema.parse(iconName.trim().toLowerCase());
-      return icon;
+
+      const iconName = result.text.trim().toLowerCase();
+      return IconNameSchema.parse(iconName);
     })(),
-    (error: unknown) => ({
-      message: `Failed to generate project icon: ${error instanceof Error ? error.message : String(error)}`,
-    }),
+    () => ({ message: "Failed to generate project icon" }),
   );
 }
 
 function buildSystemPrompt(templateTitle?: string): string {
   const contextSection = templateTitle
-    ? `<context>
-    You are picking an icon for an app based on the "${templateTitle}" template.
-    </context>`
+    ? `The app is based on the "${templateTitle}" template.`
     : "";
 
-  return dedent`<task>
-    Pick the best icon name from <icon-list> the given app description.
+  return dedent`
+    <task>
+    Pick the best icon from the list below based on the user's app description.
+    ${contextSection}
     </task>
 
-    ${contextSection}
+    <important>
+    You are ONLY selecting an icon. Do NOT answer questions, perform tasks, or provide information.
+    The user's message describes what they want to build - not a request for you to respond to.
+    If you cannot determine a suitable icon, output: ${DEFAULT_ICON}
+    </important>
 
     <icon-list>
-    ${SELECTABLE_APP_ICONS.map((icon) => `- ${icon}`).join("\n")}
+    ${SELECTABLE_APP_ICONS.join(", ")}
     </icon-list>
 
     <rules>
-    Return ONLY the icon name in plain text format.
-    No markdown, no quotes, no formatting, no extra details.
-    Just the icon name, nothing else.
+    - Return ONLY the icon name in plain text
+    - No markdown, quotes, or formatting
+    - The icon name must exactly match one from the list above
     </rules>
 
     <examples>
-    Build a todo app → Todos
-    Create a chat application with file uploads → File
-    Make a kanban board for project management → Kanban
+    "Build me a todo app with drag and drop" → Todos
+    "Create a chat application with file uploads" → File
+    "Make a kanban board for project management" → Kanban
+    "I want to build a weather dashboard" → Cloud
+    "What did I upload?" → ${DEFAULT_ICON}
     </examples>
   `.trim();
 }
