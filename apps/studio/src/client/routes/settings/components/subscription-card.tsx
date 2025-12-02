@@ -113,35 +113,37 @@ export function SubscriptionCard() {
               {new Date(data.nextAllocation).toLocaleDateString()}
             </p>
           )}
-          <div className="flex justify-end gap-2 pt-2">
-            {plan && plan !== "Free" && (
-              <Button
-                className="font-medium"
-                onClick={handleManageSubscription}
-                size="sm"
-                variant="outline"
-              >
-                Manage Subscription
-              </Button>
-            )}
-            {plan && plan !== "Free" && (
-              <Button
-                className="shrink-0 font-semibold gap-1.5"
-                onClick={() => {
-                  const location = router.buildLocation({
-                    to: "/subscribe",
-                  });
-                  addTab({ urlPath: location.href });
-                  window.close();
-                }}
-                size="sm"
-                variant="brand"
-              >
-                <GemIcon className="size-3.5" />
-                {plan === "Basic" ? "Upgrade to Pro" : "Upgrade Now"}
-              </Button>
-            )}
-          </div>
+          {plan && (
+            <div className="flex justify-end gap-2 pt-2">
+              {plan !== "Free" && (
+                <Button
+                  className="font-medium"
+                  onClick={handleManageSubscription}
+                  size="sm"
+                  variant="outline"
+                >
+                  Manage Subscription
+                </Button>
+              )}
+              {plan === "Basic" && (
+                <Button
+                  className="shrink-0 font-semibold gap-1.5"
+                  onClick={() => {
+                    const location = router.buildLocation({
+                      to: "/subscribe",
+                    });
+                    addTab({ urlPath: location.href });
+                    window.close();
+                  }}
+                  size="sm"
+                  variant="brand"
+                >
+                  <GemIcon className="size-3.5" />
+                  Upgrade to Pro
+                </Button>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </Card>
