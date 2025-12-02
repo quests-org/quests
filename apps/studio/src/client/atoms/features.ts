@@ -7,7 +7,6 @@ import { atomWithRefresh } from "jotai/utils";
 
 const defaultFeatures: Features = {
   browser: false,
-  questsAccounts: false,
 };
 
 async function listen(setAtom: () => void) {

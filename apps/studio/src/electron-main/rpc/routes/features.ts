@@ -1,5 +1,3 @@
-import { startAuthCallbackServer } from "@/electron-main/auth/server";
-import { stopAuthServer } from "@/electron-main/auth/state";
 import { getFeaturesStore } from "@/electron-main/stores/features";
 import { FeatureNameSchema, FeaturesSchema } from "@/shared/features";
 import { call, eventIterator } from "@orpc/server";
@@ -18,14 +16,6 @@ const setEnabled = base
   .handler(({ input }) => {
     const store = getFeaturesStore();
     store.set(input.feature, input.enabled);
-
-    if (input.feature === "questsAccounts") {
-      if (input.enabled) {
-        void startAuthCallbackServer();
-      } else {
-        stopAuthServer();
-      }
-    }
   });
 
 const live = {

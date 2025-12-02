@@ -50,6 +50,9 @@ if (!platform.isWindows) {
 
 if (is.dev) {
   let suffix = "";
+  if (process.env.ELECTRON_DEV_USER_FOLDER_SUFFIX) {
+    suffix = ` (${process.env.ELECTRON_DEV_USER_FOLDER_SUFFIX})`;
+  }
   if (process.env.ELECTRON_USE_NEW_USER_FOLDER === "true") {
     suffix = ` (${Date.now().toString()})`;
   }
@@ -149,9 +152,7 @@ void app.whenReady().then(async () => {
 
   await createMainWindow();
 
-  if (isFeatureEnabled("questsAccounts")) {
-    void startAuthCallbackServer();
-  }
+  void startAuthCallbackServer();
 
   app.on("activate", function () {
     // On macOS it's common to re-create a window in the app when the

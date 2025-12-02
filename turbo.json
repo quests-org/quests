@@ -10,6 +10,7 @@
         "CI",
         "DEV",
         "ELECTRON_RENDERER_URL",
+        "ELECTRON_DEV_USER_FOLDER_SUFFIX",
         "ELECTRON_USE_NEW_USER_FOLDER",
         "FORCE_DEV_AUTO_UPDATE",
         "NODE_ENV",

@@ -37,7 +37,7 @@ function RouteComponent() {
   return (
     <div className="flex min-h-svh flex-col bg-background">
       <div className="flex flex-1 w-full justify-center">
-        <div className="max-w-sm pt-32">
+        <div className="max-w-sm">
           <Outlet />
         </div>
       </div>

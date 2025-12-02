@@ -1,3 +1,4 @@
+import { userAtom } from "@/client/atoms/user";
 import { ExternalLink } from "@/client/components/external-link";
 import Particles from "@/client/components/particles";
 import { Button } from "@/client/components/ui/button";
@@ -5,10 +6,19 @@ import { vanillaRpcClient } from "@/client/rpc/client";
 import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
 import { QuestsAnimatedLogo } from "@quests/components/animated-logo";
 import { APP_REPO_URL, DISCORD_URL } from "@quests/shared";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import { getDefaultStore } from "jotai";
 
 export const Route = createFileRoute("/_app/welcome")({
   beforeLoad: async () => {
+    const store = getDefaultStore();
+    const userResult = await store.get(userAtom);
+    if (userResult.data?.id) {
+      redirect({
+        throw: true,
+        to: "/",
+      });
+    }
     await vanillaRpcClient.sidebar.close();
   },
   component: RouteComponent,
@@ -70,26 +80,26 @@ function RouteComponent() {
 
             <div className="flex flex-col gap-3 w-full">
               <FeatureCard
-                description="Private and secure, all apps run on your local computer. API keys are encrypted and stored locally."
+                description="Use a Quests account to access AI features or bring your own API keys. API keys are encrypted and stored locally."
                 number="1"
-                title="Everything runs locally"
+                title="Get started for free"
+              />
+              <FeatureCard
+                description="Private and secure, all apps and chats are stored on your local computer."
+                number="2"
+                title="Apps are private and local"
               />
               <FeatureCard
                 description="All the apps you create can use AI, powered by the AI providers you add."
-                number="2"
-                title="Use AI in your apps"
-              />
-              <FeatureCard
-                description="The Discover page includes AI-powered starter apps you can use as a starting point for your own projects."
                 number="3"
-                title="Built-in apps"
+                title="Use AI in your apps"
               />
             </div>
 
             <div className="flex flex-col gap-5 w-full max-w-md mt-4">
               <Button
                 className="w-full"
-                onClick={() => void navigate({ to: "/setup" })}
+                onClick={() => void navigate({ to: "/login" })}
                 size="lg"
                 variant="default"
               >

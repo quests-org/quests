@@ -44,8 +44,6 @@ export function NavUser() {
   const { mutate: addTab } = useMutation(rpcClient.tabs.add.mutationOptions());
 
   const user = userResult.data;
-  const isAccountsEnabled = features.questsAccounts;
-
   const { data: providerConfigs } = useQuery(
     rpcClient.providerConfig.live.list.experimental_liveOptions(),
   );
@@ -85,7 +83,7 @@ export function NavUser() {
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
               size="lg"
             >
-              {isAccountsEnabled && user ? (
+              {user ? (
                 <>
                   <Avatar className="h-8 w-8 rounded-lg">
                     <AvatarImage
@@ -125,7 +123,7 @@ export function NavUser() {
             side={isMobile ? "bottom" : "top"}
             sideOffset={4}
           >
-            {isAccountsEnabled && user ? (
+            {user ? (
               <>
                 <DropdownMenuLabel className="p-0 font-normal">
                   <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">

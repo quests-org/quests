@@ -19,10 +19,6 @@ export function useUserSessionNotifications() {
   const router = useRouter();
 
   useEffect(() => {
-    if (!features.questsAccounts) {
-      return;
-    }
-
     if (
       userResult.error?.code === "SERVER_CONNECTION_ERROR" &&
       !shownErrorMessages.has(userResult.error.code)
@@ -51,7 +47,6 @@ export function useUserSessionNotifications() {
     userResult.error?.code,
     userResult.error?.message,
     addTab,
-    features.questsAccounts,
     hasAIProvider,
     router,
   ]);

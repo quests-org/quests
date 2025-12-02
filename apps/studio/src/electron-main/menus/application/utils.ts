@@ -101,9 +101,9 @@ export function createDevToolsMenu(): MenuItemConstructorOptions[] {
             {
               click: () => {
                 const tabsManager = getTabsManager();
-                void tabsManager?.addTab({ urlPath: "/setup" });
+                void tabsManager?.addTab({ urlPath: "/login" });
               },
-              label: "/setup",
+              label: "/login",
             },
             {
               click: () => {

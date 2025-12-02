@@ -3,7 +3,6 @@ import { hasToken, isNetworkConnectionError } from "@/electron-main/api/utils";
 import { logger as baseLogger } from "@/electron-main/lib/electron-logger";
 import { createError } from "@/electron-main/lib/errors";
 import { base } from "@/electron-main/rpc/base";
-import { isFeatureEnabled } from "@/electron-main/stores/features";
 import { getProviderConfigsStore } from "@/electron-main/stores/provider-configs";
 import { safe } from "@orpc/server";
 import { mergeGenerators } from "@quests/shared/merge-generators";
@@ -17,10 +16,7 @@ const hasAIProviderConfig = base.handler(() => {
   const providersStore = getProviderConfigsStore();
   const providerConfigs = providersStore.get("providers");
   const hasConfig = providerConfigs.length > 0;
-  if (isFeatureEnabled("questsAccounts")) {
-    return hasToken() || hasConfig;
-  }
-  return hasConfig;
+  return hasToken() || hasConfig;
 });
 
 const me = base
