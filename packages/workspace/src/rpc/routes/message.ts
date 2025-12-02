@@ -9,6 +9,11 @@ import { createAppConfig } from "../../lib/app-config/create";
 import { createMessage } from "../../lib/create-message";
 import { resolveModel } from "../../lib/resolve-model";
 import { Store } from "../../lib/store";
+import {
+  appendFilesToMessage,
+  UploadedFileSchema,
+  writeUploadedFiles,
+} from "../../lib/write-uploaded-files";
 import { StoreId } from "../../schemas/store-id";
 import { AppSubdomainSchema } from "../../schemas/subdomains";
 import { base, toORPCError } from "../base";
@@ -45,6 +50,7 @@ const create = base
   .input(
     z.object({
       agentName: AgentNameSchema,
+      files: z.array(UploadedFileSchema).optional(),
       message: SessionMessage.UserSchemaWithParts,
       modelURI: AIGatewayModelURI.Schema,
       sessionId: StoreId.SessionSchema,
@@ -56,7 +62,7 @@ const create = base
     async ({
       context,
       errors,
-      input: { agentName, message, modelURI, sessionId, subdomain },
+      input: { agentName, files, message, modelURI, sessionId, subdomain },
     }) => {
       const model = await resolveModel(modelURI, context, errors);
 
@@ -68,9 +74,21 @@ const create = base
         workspaceConfig: context.workspaceConfig,
       });
 
+      let messageWithFiles = message;
+      if (files && files.length > 0) {
+        const uploadResult = await writeUploadedFiles(appConfig.appDir, files);
+        messageWithFiles = appendFilesToMessage(message, uploadResult.paths);
+      }
+
       context.workspaceRef.send({
         type: "addMessage",
-        value: { agentName, message, model, sessionId, subdomain },
+        value: {
+          agentName,
+          message: messageWithFiles,
+          model,
+          sessionId,
+          subdomain,
+        },
       });
 
       if (appConfig.type === "project") {

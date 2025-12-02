@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { useStickToBottom } from "use-stick-to-bottom";
 
 import { useAppState } from "../hooks/use-app-state";
+import { createUserMessage } from "../lib/create-user-message";
 import { rpcClient } from "../rpc/client";
 import { ChatZeroState } from "./chat-zero-state";
 import { PromptInput } from "./prompt-input";
@@ -255,35 +256,29 @@ export function ProjectSidebar({
             onStop={() => {
               stopSessions.mutate({ subdomain: project.subdomain });
             }}
-            onSubmit={({ agentName, modelURI, prompt }) => {
-              const promptText = prompt.trim();
-              const messageId = StoreId.newMessageId();
-              const createdAt = new Date();
+            onSubmit={({ agentName, files, modelURI, prompt }) => {
+              const targetSessionId =
+                selectedSessionId ?? StoreId.newSessionId();
+
+              const { files: mappedFiles, message } = createUserMessage({
+                files,
+                prompt,
+                sessionId: targetSessionId,
+              });
+
+              if (
+                message.parts.length === 0 &&
+                (!mappedFiles || mappedFiles.length === 0)
+              ) {
+                return;
+              }
 
               if (selectedSessionId) {
                 createMessage.mutate(
                   {
                     agentName,
-                    message: {
-                      id: messageId,
-                      metadata: {
-                        createdAt,
-                        sessionId: selectedSessionId,
-                      },
-                      parts: [
-                        {
-                          metadata: {
-                            createdAt,
-                            id: StoreId.newPartId(),
-                            messageId,
-                            sessionId: selectedSessionId,
-                          },
-                          text: promptText,
-                          type: "text",
-                        },
-                      ],
-                      role: "user",
-                    },
+                    files: mappedFiles,
+                    message,
                     modelURI,
                     sessionId: selectedSessionId,
                     subdomain: project.subdomain,
@@ -309,33 +304,13 @@ export function ProjectSidebar({
                   },
                 );
               } else {
-                const sessionId = StoreId.newSessionId();
-
                 createSessionWithMessage.mutate(
                   {
                     agentName: "app-builder",
-                    message: {
-                      id: messageId,
-                      metadata: {
-                        createdAt,
-                        sessionId,
-                      },
-                      parts: [
-                        {
-                          metadata: {
-                            createdAt,
-                            id: StoreId.newPartId(),
-                            messageId,
-                            sessionId,
-                          },
-                          text: promptText,
-                          type: "text",
-                        },
-                      ],
-                      role: "user",
-                    },
+                    files: mappedFiles,
+                    message,
                     modelURI,
-                    sessionId,
+                    sessionId: targetSessionId,
                     subdomain: project.subdomain,
                   },
                   {
@@ -349,7 +324,7 @@ export function ProjectSidebar({
                         replace: true,
                         search: (prev) => ({
                           ...prev,
-                          selectedSessionId: sessionId,
+                          selectedSessionId: targetSessionId,
                           selectedVersion: selectedVersion
                             ? undefined
                             : prev.selectedVersion,

@@ -1,0 +1,127 @@
+import type { ComponentType } from "react";
+
+import { File } from "lucide-react";
+import {
+  BsFileEarmarkExcel,
+  BsFileEarmarkMusic,
+  BsFileEarmarkPlay,
+  BsFileEarmarkPpt,
+  BsFileEarmarkRichtext,
+  BsFileEarmarkSpreadsheet,
+  BsFileEarmarkWord,
+} from "react-icons/bs";
+import {
+  SiCss3,
+  SiDocker,
+  SiGit,
+  SiGnubash,
+  SiGraphql,
+  SiHtml5,
+  SiJavascript,
+  SiJson,
+  SiMarkdown,
+  SiPython,
+  SiReact,
+  SiRust,
+  SiSass,
+  SiSvelte,
+  SiSvg,
+  SiTypescript,
+  SiVuedotjs,
+  SiYaml,
+} from "react-icons/si";
+import { VscFilePdf, VscFileZip } from "react-icons/vsc";
+
+type IconComponent = ComponentType<{ className?: string }>;
+
+const EXTENSION_ICON_MAP: Record<string, IconComponent> = {
+  // cspell:ignore gnubash, flac
+  "7z": VscFileZip,
+  aac: BsFileEarmarkMusic,
+  avi: BsFileEarmarkPlay,
+  bash: SiGnubash,
+  css: SiCss3,
+  csv: BsFileEarmarkSpreadsheet,
+  doc: BsFileEarmarkWord,
+  dockerfile: SiDocker,
+  docx: BsFileEarmarkWord,
+  epub: BsFileEarmarkRichtext,
+  flac: BsFileEarmarkMusic,
+  gitignore: SiGit,
+  gql: SiGraphql,
+  graphql: SiGraphql,
+  gz: VscFileZip,
+  htm: SiHtml5,
+  html: SiHtml5,
+  js: SiJavascript,
+  json: SiJson,
+  jsx: SiReact,
+  key: BsFileEarmarkPpt,
+  m4a: BsFileEarmarkMusic,
+  md: SiMarkdown,
+  mdx: SiMarkdown,
+  mjs: SiJavascript,
+  mkv: BsFileEarmarkPlay,
+  mov: BsFileEarmarkPlay,
+  mp3: BsFileEarmarkMusic,
+  mp4: BsFileEarmarkPlay,
+  numbers: BsFileEarmarkSpreadsheet,
+  odf: BsFileEarmarkRichtext,
+  odp: BsFileEarmarkPpt,
+  ods: BsFileEarmarkSpreadsheet,
+  odt: BsFileEarmarkWord,
+  ogg: BsFileEarmarkMusic,
+  pages: BsFileEarmarkWord,
+  pdf: VscFilePdf,
+  ppt: BsFileEarmarkPpt,
+  pptx: BsFileEarmarkPpt,
+  py: SiPython,
+  rar: VscFileZip,
+  rs: SiRust,
+  rtf: BsFileEarmarkRichtext,
+  sass: SiSass,
+  scss: SiSass,
+  sh: SiGnubash,
+  svelte: SiSvelte,
+  svg: SiSvg,
+  tar: VscFileZip,
+  ts: SiTypescript,
+  tsv: BsFileEarmarkSpreadsheet,
+  tsx: SiReact,
+  txt: BsFileEarmarkRichtext,
+  vue: SiVuedotjs,
+  wav: BsFileEarmarkMusic,
+  webm: BsFileEarmarkPlay,
+  xls: BsFileEarmarkExcel,
+  xlsx: BsFileEarmarkExcel,
+  yaml: SiYaml,
+  yml: SiYaml,
+  zip: VscFileZip,
+};
+
+const FILENAME_ICON_MAP: Record<string, IconComponent> = {
+  ".gitignore": SiGit,
+  dockerfile: SiDocker,
+};
+
+export function FileIcon({
+  className = "size-5",
+  filename,
+}: {
+  className?: string;
+  filename: string;
+}) {
+  const Icon = getFileIcon(filename);
+  return <Icon className={className} />;
+}
+
+function getFileIcon(filename: string): IconComponent {
+  const lowerName = filename.toLowerCase();
+
+  if (FILENAME_ICON_MAP[lowerName]) {
+    return FILENAME_ICON_MAP[lowerName];
+  }
+
+  const ext = lowerName.split(".").pop() ?? "";
+  return EXTENSION_ICON_MAP[ext] ?? File;
+}

@@ -11,6 +11,7 @@ import { Button } from "@/client/components/ui/button";
 import { Card, CardContent } from "@/client/components/ui/card";
 import { Kbd } from "@/client/components/ui/kbd";
 import { useTabActions } from "@/client/hooks/tabs";
+import { createUserMessage } from "@/client/lib/create-user-message";
 import { isMacOS } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
 import { QuestsAnimatedLogo } from "@quests/components/animated-logo";
@@ -90,38 +91,21 @@ function RouteComponent() {
               onModelChange={setSelectedModelURI}
               onSubmit={({
                 agentName: submitAgentName,
+                files,
                 modelURI,
                 openInNewTab,
                 prompt,
               }) => {
-                const promptText = prompt.trim();
-                const messageId = StoreId.newMessageId();
                 const sessionId = StoreId.newSessionId();
-                const createdAt = new Date();
-
-                const message = {
-                  id: messageId,
-                  metadata: {
-                    createdAt,
-                    sessionId,
-                  },
-                  parts: [
-                    {
-                      metadata: {
-                        createdAt,
-                        id: StoreId.newPartId(),
-                        messageId,
-                        sessionId,
-                      },
-                      text: promptText,
-                      type: "text" as const,
-                    },
-                  ],
-                  role: "user" as const,
-                };
+                const { files: mappedFiles, message } = createUserMessage({
+                  files,
+                  prompt,
+                  sessionId,
+                });
 
                 createProjectMutation.mutate(
                   {
+                    files: mappedFiles,
                     message,
                     mode: submitAgentName === "chat" ? "chat" : "app-builder",
                     modelURI,

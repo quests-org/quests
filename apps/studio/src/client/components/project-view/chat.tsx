@@ -2,9 +2,13 @@ import { PromptInput } from "@/client/components/prompt-input";
 import { SessionStream } from "@/client/components/session-stream";
 import { Button } from "@/client/components/ui/button";
 import { useAppState } from "@/client/hooks/use-app-state";
+import { createUserMessage } from "@/client/lib/create-user-message";
 import { rpcClient } from "@/client/rpc/client";
 import { type AIGatewayModelURI } from "@quests/ai-gateway/client";
-import { StoreId, type WorkspaceAppProject } from "@quests/workspace/client";
+import {
+  type StoreId,
+  type WorkspaceAppProject,
+} from "@quests/workspace/client";
 import { useMutation } from "@tanstack/react-query";
 import { ChevronDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -118,38 +122,29 @@ export function ProjectViewChat({
               onStop={() => {
                 stopSessions.mutate({ subdomain: project.subdomain });
               }}
-              onSubmit={({ agentName, modelURI, prompt }) => {
+              onSubmit={({ agentName, files, modelURI, prompt }) => {
                 if (!selectedSessionId) {
                   return;
                 }
 
-                const promptText = prompt.trim();
-                const messageId = StoreId.newMessageId();
-                const createdAt = new Date();
+                const { files: mappedFiles, message } = createUserMessage({
+                  files,
+                  prompt,
+                  sessionId: selectedSessionId,
+                });
+
+                if (
+                  message.parts.length === 0 &&
+                  (!mappedFiles || mappedFiles.length === 0)
+                ) {
+                  return;
+                }
 
                 createMessage.mutate(
                   {
                     agentName,
-                    message: {
-                      id: messageId,
-                      metadata: {
-                        createdAt,
-                        sessionId: selectedSessionId,
-                      },
-                      parts: [
-                        {
-                          metadata: {
-                            createdAt,
-                            id: StoreId.newPartId(),
-                            messageId,
-                            sessionId: selectedSessionId,
-                          },
-                          text: promptText,
-                          type: "text",
-                        },
-                      ],
-                      role: "user",
-                    },
+                    files: mappedFiles,
+                    message,
                     modelURI,
                     sessionId: selectedSessionId,
                     subdomain: project.subdomain,

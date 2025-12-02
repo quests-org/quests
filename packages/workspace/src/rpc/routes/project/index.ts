@@ -25,6 +25,11 @@ import { projectModeForSubdomain } from "../../../lib/project-mode-for-subdomain
 import { setProjectState } from "../../../lib/project-state-store";
 import { updateQuestManifest } from "../../../lib/quest-manifest";
 import { trashProject } from "../../../lib/trash-project";
+import {
+  appendFilesToMessage,
+  UploadedFileSchema,
+  writeUploadedFiles,
+} from "../../../lib/write-uploaded-files";
 import { getWorkspaceServerURL } from "../../../logic/server/url";
 import { WorkspaceAppProjectSchema } from "../../../schemas/app";
 import { SessionMessage } from "../../../schemas/session/message";
@@ -114,6 +119,7 @@ const list = base
 const create = base
   .input(
     z.object({
+      files: z.array(UploadedFileSchema).optional(),
       message: SessionMessage.UserSchemaWithParts,
       mode: ProjectModeSchema,
       modelURI: AIGatewayModelURI.Schema,
@@ -126,7 +132,7 @@ const create = base
     async ({
       context,
       errors,
-      input: { message, mode, modelURI, sessionId, templateName },
+      input: { files, message, mode, modelURI, sessionId, templateName },
       signal,
     }) => {
       const [model, error] = (
@@ -215,11 +221,20 @@ const create = base
         subdomain: projectConfig.subdomain,
       });
 
+      let messageWithFiles = message;
+      if (files && files.length > 0) {
+        const uploadResult = await writeUploadedFiles(
+          projectConfig.appDir,
+          files,
+        );
+        messageWithFiles = appendFilesToMessage(message, uploadResult.paths);
+      }
+
       context.workspaceRef.send({
         type: "createSession",
         value: {
           agentName: mode === "chat" ? "chat" : "app-builder",
-          message,
+          message: messageWithFiles,
           model,
           sessionId,
           subdomain: projectConfig.subdomain,

@@ -9,6 +9,11 @@ import { createMessage } from "../../lib/create-message";
 import { generateSessionTitle } from "../../lib/generate-session-title";
 import { resolveModel } from "../../lib/resolve-model";
 import { Store } from "../../lib/store";
+import {
+  appendFilesToMessage,
+  UploadedFileSchema,
+  writeUploadedFiles,
+} from "../../lib/write-uploaded-files";
 import { Session } from "../../schemas/session";
 import { SessionMessage } from "../../schemas/session/message";
 import { StoreId } from "../../schemas/store-id";
@@ -144,6 +149,7 @@ const createWithMessage = base
   .input(
     z.object({
       agentName: AgentNameSchema,
+      files: z.array(UploadedFileSchema).optional(),
       message: SessionMessage.UserSchemaWithParts,
       modelURI: AIGatewayModelURI.Schema,
       sessionId: StoreId.SessionSchema,
@@ -153,6 +159,11 @@ const createWithMessage = base
   .handler(async ({ context, errors, input }) => {
     const model = await resolveModel(input.modelURI, context, errors);
 
+    const appConfig = createAppConfig({
+      subdomain: input.subdomain,
+      workspaceConfig: context.workspaceConfig,
+    });
+
     await createMessage({
       message: input.message,
       model,
@@ -161,11 +172,23 @@ const createWithMessage = base
       workspaceConfig: context.workspaceConfig,
     });
 
+    let messageWithFiles = input.message;
+    if (input.files && input.files.length > 0) {
+      const uploadResult = await writeUploadedFiles(
+        appConfig.appDir,
+        input.files,
+      );
+      messageWithFiles = appendFilesToMessage(
+        input.message,
+        uploadResult.paths,
+      );
+    }
+
     context.workspaceRef.send({
       type: "createSession",
       value: {
         agentName: input.agentName,
-        message: input.message,
+        message: messageWithFiles,
         model,
         sessionId: input.sessionId,
         subdomain: input.subdomain,
