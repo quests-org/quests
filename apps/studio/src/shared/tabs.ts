@@ -16,7 +16,7 @@ export interface TabState {
   tabs: Tab[];
 }
 
-export const SingleTabOnlyRoutes = /\/projects\/[^/]+|\/login/;
+export const SingleTabOnlyRoutes = /\/projects\/[^/]+|\/sign-in/;
 
 export const META_TAG_LUCIDE_ICON = "lucide-icon";
 export const META_TAG_ICON_BACKGROUND = "icon-background";

@@ -1,0 +1,24 @@
+import { AISetupView } from "@/client/components/ai-setup-view";
+import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
+import { createFileRoute } from "@tanstack/react-router";
+
+export const Route = createFileRoute("/_app/setup")({
+  component: RouteComponent,
+  head: () => {
+    return {
+      meta: [
+        {
+          title: "Setup",
+        },
+        {
+          content: "quests",
+          name: META_TAG_LUCIDE_ICON,
+        },
+      ],
+    };
+  },
+});
+
+function RouteComponent() {
+  return <AISetupView mode="setup" />;
+}

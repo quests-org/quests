@@ -101,9 +101,9 @@ export function createDevToolsMenu(): MenuItemConstructorOptions[] {
             {
               click: () => {
                 const tabsManager = getTabsManager();
-                void tabsManager?.addTab({ urlPath: "/login" });
+                void tabsManager?.addTab({ urlPath: "/sign-in" });
               },
-              label: "/login",
+              label: "/sign-in",
             },
             {
               click: () => {
@@ -111,6 +111,13 @@ export function createDevToolsMenu(): MenuItemConstructorOptions[] {
                 void tabsManager?.addTab({ urlPath: "/welcome" });
               },
               label: "/welcome",
+            },
+            {
+              click: () => {
+                const tabsManager = getTabsManager();
+                void tabsManager?.addTab({ urlPath: "/setup" });
+              },
+              label: "/setup",
             },
             {
               click: () => {

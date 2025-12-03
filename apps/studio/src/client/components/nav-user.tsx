@@ -253,7 +253,7 @@ export function NavUser() {
                   <DropdownMenuItem
                     onClick={() => {
                       const location = router.buildLocation({
-                        to: "/login",
+                        to: "/sign-in",
                       });
                       addTab({ urlPath: location.href });
                     }}

@@ -1,17 +1,17 @@
-import { LoginForm } from "@/client/components/login-form";
+import { SignInForm } from "@/client/components/sign-in-form";
 import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
 import { createFileRoute } from "@tanstack/react-router";
 
-export const Route = createFileRoute("/_auth/login")({
+export const Route = createFileRoute("/_auth/sign-in")({
   component: RouteComponent,
   head: () => {
     return {
       meta: [
         {
-          title: "Login",
+          title: "Sign in",
         },
         {
-          content: "log-in",
+          content: "quests",
           name: META_TAG_LUCIDE_ICON,
         },
       ],
@@ -20,5 +20,5 @@ export const Route = createFileRoute("/_auth/login")({
 });
 
 function RouteComponent() {
-  return <LoginForm />;
+  return <SignInForm />;
 }

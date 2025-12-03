@@ -21,9 +21,10 @@ import { Route as SettingsProvidersRouteImport } from './routes/settings/provide
 import { Route as SettingsFeaturesRouteImport } from './routes/settings/features'
 import { Route as SettingsDebugRouteImport } from './routes/settings/debug'
 import { Route as SettingsAdvancedRouteImport } from './routes/settings/advanced'
-import { Route as AuthLoginRouteImport } from './routes/_auth/login'
+import { Route as AuthSignInRouteImport } from './routes/_auth/sign-in'
 import { Route as AppWelcomeRouteImport } from './routes/_app/welcome'
 import { Route as AppSubscribeRouteImport } from './routes/_app/subscribe'
+import { Route as AppSetupRouteImport } from './routes/_app/setup'
 import { Route as AppReleaseNotesRouteImport } from './routes/_app/release-notes'
 import { Route as AppNewTabRouteImport } from './routes/_app/new-tab'
 import { Route as AppCheckoutRouteImport } from './routes/_app/checkout'
@@ -99,9 +100,9 @@ const SettingsAdvancedRoute = SettingsAdvancedRouteImport.update({
   path: '/advanced',
   getParentRoute: () => SettingsRoute,
 } as any)
-const AuthLoginRoute = AuthLoginRouteImport.update({
-  id: '/login',
-  path: '/login',
+const AuthSignInRoute = AuthSignInRouteImport.update({
+  id: '/sign-in',
+  path: '/sign-in',
   getParentRoute: () => AuthRouteRoute,
 } as any)
 const AppWelcomeRoute = AppWelcomeRouteImport.update({
@@ -112,6 +113,11 @@ const AppWelcomeRoute = AppWelcomeRouteImport.update({
 const AppSubscribeRoute = AppSubscribeRouteImport.update({
   id: '/subscribe',
   path: '/subscribe',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const AppSetupRoute = AppSetupRouteImport.update({
+  id: '/setup',
+  path: '/setup',
   getParentRoute: () => AppRouteRoute,
 } as any)
 const AppReleaseNotesRoute = AppReleaseNotesRouteImport.update({
@@ -209,9 +215,10 @@ export interface FileRoutesByFullPath {
   '/checkout': typeof AppCheckoutRoute
   '/new-tab': typeof AppNewTabRoute
   '/release-notes': typeof AppReleaseNotesRoute
+  '/setup': typeof AppSetupRoute
   '/subscribe': typeof AppSubscribeRoute
   '/welcome': typeof AppWelcomeRoute
-  '/login': typeof AuthLoginRoute
+  '/sign-in': typeof AuthSignInRoute
   '/settings/advanced': typeof SettingsAdvancedRoute
   '/settings/debug': typeof SettingsDebugRoute
   '/settings/features': typeof SettingsFeaturesRoute
@@ -238,9 +245,10 @@ export interface FileRoutesByTo {
   '/checkout': typeof AppCheckoutRoute
   '/new-tab': typeof AppNewTabRoute
   '/release-notes': typeof AppReleaseNotesRoute
+  '/setup': typeof AppSetupRoute
   '/subscribe': typeof AppSubscribeRoute
   '/welcome': typeof AppWelcomeRoute
-  '/login': typeof AuthLoginRoute
+  '/sign-in': typeof AuthSignInRoute
   '/settings/advanced': typeof SettingsAdvancedRoute
   '/settings/debug': typeof SettingsDebugRoute
   '/settings/features': typeof SettingsFeaturesRoute
@@ -272,9 +280,10 @@ export interface FileRoutesById {
   '/_app/checkout': typeof AppCheckoutRoute
   '/_app/new-tab': typeof AppNewTabRoute
   '/_app/release-notes': typeof AppReleaseNotesRoute
+  '/_app/setup': typeof AppSetupRoute
   '/_app/subscribe': typeof AppSubscribeRoute
   '/_app/welcome': typeof AppWelcomeRoute
-  '/_auth/login': typeof AuthLoginRoute
+  '/_auth/sign-in': typeof AuthSignInRoute
   '/settings/advanced': typeof SettingsAdvancedRoute
   '/settings/debug': typeof SettingsDebugRoute
   '/settings/features': typeof SettingsFeaturesRoute
@@ -305,9 +314,10 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/new-tab'
     | '/release-notes'
+    | '/setup'
     | '/subscribe'
     | '/welcome'
-    | '/login'
+    | '/sign-in'
     | '/settings/advanced'
     | '/settings/debug'
     | '/settings/features'
@@ -334,9 +344,10 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/new-tab'
     | '/release-notes'
+    | '/setup'
     | '/subscribe'
     | '/welcome'
-    | '/login'
+    | '/sign-in'
     | '/settings/advanced'
     | '/settings/debug'
     | '/settings/features'
@@ -367,9 +378,10 @@ export interface FileRouteTypes {
     | '/_app/checkout'
     | '/_app/new-tab'
     | '/_app/release-notes'
+    | '/_app/setup'
     | '/_app/subscribe'
     | '/_app/welcome'
-    | '/_auth/login'
+    | '/_auth/sign-in'
     | '/settings/advanced'
     | '/settings/debug'
     | '/settings/features'
@@ -485,11 +497,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsAdvancedRouteImport
       parentRoute: typeof SettingsRoute
     }
-    '/_auth/login': {
-      id: '/_auth/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof AuthLoginRouteImport
+    '/_auth/sign-in': {
+      id: '/_auth/sign-in'
+      path: '/sign-in'
+      fullPath: '/sign-in'
+      preLoaderRoute: typeof AuthSignInRouteImport
       parentRoute: typeof AuthRouteRoute
     }
     '/_app/welcome': {
@@ -504,6 +516,13 @@ declare module '@tanstack/react-router' {
       path: '/subscribe'
       fullPath: '/subscribe'
       preLoaderRoute: typeof AppSubscribeRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/setup': {
+      id: '/_app/setup'
+      path: '/setup'
+      fullPath: '/setup'
+      preLoaderRoute: typeof AppSetupRouteImport
       parentRoute: typeof AppRouteRoute
     }
     '/_app/release-notes': {
@@ -642,6 +661,7 @@ interface AppRouteRouteChildren {
   AppCheckoutRoute: typeof AppCheckoutRoute
   AppNewTabRoute: typeof AppNewTabRoute
   AppReleaseNotesRoute: typeof AppReleaseNotesRoute
+  AppSetupRoute: typeof AppSetupRoute
   AppSubscribeRoute: typeof AppSubscribeRoute
   AppWelcomeRoute: typeof AppWelcomeRoute
   AppEvalsRunRoute: typeof AppEvalsRunRoute
@@ -660,6 +680,7 @@ const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppCheckoutRoute: AppCheckoutRoute,
   AppNewTabRoute: AppNewTabRoute,
   AppReleaseNotesRoute: AppReleaseNotesRoute,
+  AppSetupRoute: AppSetupRoute,
   AppSubscribeRoute: AppSubscribeRoute,
   AppWelcomeRoute: AppWelcomeRoute,
   AppEvalsRunRoute: AppEvalsRunRoute,
@@ -678,11 +699,11 @@ const AppRouteRouteWithChildren = AppRouteRoute._addFileChildren(
 )
 
 interface AuthRouteRouteChildren {
-  AuthLoginRoute: typeof AuthLoginRoute
+  AuthSignInRoute: typeof AuthSignInRoute
 }
 
 const AuthRouteRouteChildren: AuthRouteRouteChildren = {
-  AuthLoginRoute: AuthLoginRoute,
+  AuthSignInRoute: AuthSignInRoute,
 }
 
 const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(

@@ -48,7 +48,7 @@ export function AccountInfo() {
                   className="h-10 [&_svg]:size-6"
                   onClick={() => {
                     const location = router.buildLocation({
-                      to: "/login",
+                      to: "/sign-in",
                     });
                     addTab({ urlPath: location.href });
                     window.close();

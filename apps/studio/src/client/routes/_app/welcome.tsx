@@ -99,7 +99,7 @@ function RouteComponent() {
             <div className="flex flex-col gap-5 w-full max-w-md mt-4">
               <Button
                 className="w-full"
-                onClick={() => void navigate({ to: "/login" })}
+                onClick={() => void navigate({ to: "/setup" })}
                 size="lg"
                 variant="default"
               >
