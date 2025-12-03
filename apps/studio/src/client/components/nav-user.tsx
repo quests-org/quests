@@ -77,6 +77,29 @@ export function NavUser() {
     addTab({ urlPath: location.href });
   };
 
+  if (!user) {
+    return (
+      <SidebarMenu>
+        <SidebarMenuItem className="group">
+          <SidebarMenuButton
+            className="group-hover:bg-black/10 dark:group-hover:bg-white/10"
+            onClick={() => {
+              void vanillaRpcClient.preferences.openSettingsWindow({
+                tab: "General",
+              });
+            }}
+            size="lg"
+          >
+            <SettingsIcon className="h-5 w-5" />
+            <div className="grid flex-1 text-left text-sm leading-tight">
+              <span className="truncate font-medium">Settings</span>
+            </div>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </SidebarMenu>
+    );
+  }
+
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -94,38 +117,22 @@ export function NavUser() {
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
               size="lg"
             >
-              {user ? (
-                <>
-                  <Avatar className="h-8 w-8 rounded-lg">
-                    <AvatarImage
-                      alt={user.name}
-                      src={user.image ?? undefined}
-                    />
-                    <AvatarFallback className="rounded-lg">
-                      {getInitials(user.name)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="grid flex-1 text-left text-sm leading-tight">
-                    <div className="flex items-center gap-2">
-                      <span className="truncate font-medium">{user.name}</span>
-                      <Badge className={badgeClassName} variant={badgeVariant}>
-                        {plan ?? "Free"}
-                      </Badge>
-                    </div>
-                    <span className="truncate text-xs">{user.email}</span>
-                  </div>
-                  <ChevronsUpDown className="ml-auto size-4" />
-                </>
-              ) : (
-                <>
-                  <SettingsIcon className="h-5 w-5" />
-                  <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-medium">
-                      Settings & Account
-                    </span>
-                  </div>
-                </>
-              )}
+              <Avatar className="h-8 w-8 rounded-lg">
+                <AvatarImage alt={user.name} src={user.image ?? undefined} />
+                <AvatarFallback className="rounded-lg">
+                  {getInitials(user.name)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="grid flex-1 text-left text-sm leading-tight">
+                <div className="flex items-center gap-2">
+                  <span className="truncate font-medium">{user.name}</span>
+                  <Badge className={badgeClassName} variant={badgeVariant}>
+                    {plan ?? "Free"}
+                  </Badge>
+                </div>
+                <span className="truncate text-xs">{user.email}</span>
+              </div>
+              <ChevronsUpDown className="ml-auto size-4" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
@@ -134,146 +141,92 @@ export function NavUser() {
             side={isMobile ? "bottom" : "top"}
             sideOffset={4}
           >
-            {user ? (
-              <>
-                <DropdownMenuLabel className="p-0 font-normal">
-                  <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                    <Avatar className="h-8 w-8 rounded-lg">
-                      <AvatarImage
-                        alt={user.name}
-                        src={user.image ?? undefined}
-                      />
-                      <AvatarFallback className="rounded-lg">
-                        {getInitials(user.name)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="grid flex-1 text-left text-sm leading-tight">
-                      <div className="flex items-center gap-2">
-                        <span className="truncate font-medium">
-                          {user.name}
-                        </span>
-                        <Badge
-                          className={badgeClassName}
-                          variant={badgeVariant}
-                        >
-                          {plan ?? "Free"}
-                        </Badge>
-                      </div>
-                      <span className="truncate text-xs">{user.email}</span>
-                    </div>
+            <DropdownMenuLabel className="p-0 font-normal">
+              <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+                <Avatar className="h-8 w-8 rounded-lg">
+                  <AvatarImage alt={user.name} src={user.image ?? undefined} />
+                  <AvatarFallback className="rounded-lg">
+                    {getInitials(user.name)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="grid flex-1 text-left text-sm leading-tight">
+                  <div className="flex items-center gap-2">
+                    <span className="truncate font-medium">{user.name}</span>
+                    <Badge className={badgeClassName} variant={badgeVariant}>
+                      {plan ?? "Free"}
+                    </Badge>
                   </div>
-                </DropdownMenuLabel>
-                {hasError && error && (
-                  <div className="px-2 py-1.5">
-                    <Button
-                      className="w-full text-xs h-7 font-semibold bg-destructive/10 text-destructive hover:bg-destructive/20"
-                      onClick={() => {
-                        void vanillaRpcClient.preferences.openSettingsWindow({
-                          tab: "General",
-                        });
-                      }}
-                      size="sm"
-                    >
-                      <AlertCircle className="size-3 shrink-0" />
-                      <span className="truncate">{error.message}</span>
-                    </Button>
-                  </div>
-                )}
-                {isFreePlan && (
-                  <div className="px-2 py-1.5">
-                    <Button
-                      className="w-full text-xs h-7 font-semibold"
-                      onClick={onUpgrade}
-                      size="sm"
-                      variant="brand"
-                    >
-                      <GemIcon className="size-3" />
-                      Upgrade for more credits
-                    </Button>
-                  </div>
-                )}
-                <DropdownMenuSeparator />
+                  <span className="truncate text-xs">{user.email}</span>
+                </div>
+              </div>
+            </DropdownMenuLabel>
+            {hasError && error && (
+              <div className="px-2 py-1.5">
+                <Button
+                  className="w-full text-xs h-7 font-semibold bg-destructive/10 text-destructive hover:bg-destructive/20"
+                  onClick={() => {
+                    void vanillaRpcClient.preferences.openSettingsWindow({
+                      tab: "General",
+                    });
+                  }}
+                  size="sm"
+                >
+                  <AlertCircle className="size-3 shrink-0" />
+                  <span className="truncate">{error.message}</span>
+                </Button>
+              </div>
+            )}
+            {isFreePlan && (
+              <div className="px-2 py-1.5">
+                <Button
+                  className="w-full text-xs h-7 font-semibold"
+                  onClick={onUpgrade}
+                  size="sm"
+                  variant="brand"
+                >
+                  <GemIcon className="size-3" />
+                  Upgrade for more credits
+                </Button>
+              </div>
+            )}
+            <DropdownMenuSeparator />
 
-                <DropdownMenuGroup>
-                  <DropdownMenuItem
-                    onClick={() => {
-                      void vanillaRpcClient.preferences.openSettingsWindow({
-                        tab: "General",
-                      });
-                    }}
-                  >
-                    <SettingsIcon className="h-4 w-4" />
-                    <span>Settings</span>
-                  </DropdownMenuItem>
+            <DropdownMenuGroup>
+              <DropdownMenuItem
+                onClick={() => {
+                  void vanillaRpcClient.preferences.openSettingsWindow({
+                    tab: "General",
+                  });
+                }}
+              >
+                <SettingsIcon className="h-4 w-4" />
+                <span>Settings</span>
+              </DropdownMenuItem>
 
-                  {providerConfigs?.length === 0 && (
-                    <DropdownMenuItem
-                      onClick={() => {
-                        void vanillaRpcClient.preferences.openSettingsWindow({
-                          showNewProviderDialog: true,
-                          tab: "Providers",
-                        });
-                      }}
-                    >
-                      <KeyIcon className="h-4 w-4" />
-                      <span>Configure a provider</span>
-                    </DropdownMenuItem>
-                  )}
-                </DropdownMenuGroup>
-
-                <DropdownMenuSeparator />
+              {providerConfigs?.length === 0 && (
                 <DropdownMenuItem
                   onClick={() => {
-                    void signOut();
+                    void vanillaRpcClient.preferences.openSettingsWindow({
+                      showNewProviderDialog: true,
+                      tab: "Providers",
+                    });
                   }}
                 >
-                  <LogOutIcon className="h-4 w-4" />
-                  <span>Sign out</span>
+                  <KeyIcon className="h-4 w-4" />
+                  <span>Configure a provider</span>
                 </DropdownMenuItem>
-              </>
-            ) : (
-              <>
-                {hasError && error && (
-                  <div className="px-2 py-1.5">
-                    <Button
-                      className="w-full text-xs h-7 font-semibold bg-destructive/10 text-destructive hover:bg-destructive/20"
-                      onClick={() => {
-                        void vanillaRpcClient.preferences.openSettingsWindow({
-                          tab: "General",
-                        });
-                      }}
-                      size="sm"
-                    >
-                      <AlertCircle className="size-3 shrink-0" />
-                      <span className="truncate">{error.message}</span>
-                    </Button>
-                  </div>
-                )}
-                <DropdownMenuGroup>
-                  <DropdownMenuItem
-                    onClick={() => {
-                      const location = router.buildLocation({
-                        to: "/sign-in",
-                      });
-                      addTab({ urlPath: location.href });
-                    }}
-                  >
-                    <LogOutIcon className="h-4 w-4" />
-                    <span>Sign in</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => {
-                      void vanillaRpcClient.preferences.openSettingsWindow({
-                        tab: "General",
-                      });
-                    }}
-                  >
-                    <SettingsIcon className="h-4 w-4" />
-                    <span>Settings</span>
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-              </>
-            )}
+              )}
+            </DropdownMenuGroup>
+
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => {
+                void signOut();
+              }}
+            >
+              <LogOutIcon className="h-4 w-4" />
+              <span>Sign out</span>
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
