@@ -21,7 +21,7 @@ export const Route = createFileRoute("/subscribe")({
           title: "Subscribe",
         },
         {
-          content: "gem",
+          content: "quests",
           name: META_TAG_LUCIDE_ICON,
         },
       ],
@@ -353,7 +353,7 @@ function SubscribePage() {
               size="sm"
               variant="outline"
             >
-              Contact Us
+              Contact us
             </Button>
           </div>
         </div>
