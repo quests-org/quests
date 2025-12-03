@@ -1,6 +1,6 @@
 import { client as apiClient } from "@/electron-main/api/client";
 import { hasToken, isNetworkConnectionError } from "@/electron-main/api/utils";
-import { logger as baseLogger } from "@/electron-main/lib/electron-logger";
+import { captureServerException } from "@/electron-main/lib/capture-server-exception";
 import { createError } from "@/electron-main/lib/errors";
 import { base } from "@/electron-main/rpc/base";
 import { getProviderConfigsStore } from "@/electron-main/stores/provider-configs";
@@ -9,8 +9,6 @@ import { mergeGenerators } from "@quests/shared/merge-generators";
 import { z } from "zod";
 
 import { publisher } from "../publisher";
-
-const logger = baseLogger.scope("rpc/user");
 
 const hasAIProviderConfig = base.handler(() => {
   const providersStore = getProviderConfigsStore();
@@ -34,16 +32,19 @@ const me = base
       const [error, data] = await safe(apiClient.users.getMe());
 
       if (isNetworkConnectionError(error)) {
-        logger.error("Network error getting authenticated user", {
-          cause: error?.cause,
-          error,
-        });
+        captureServerException(
+          new Error("Network error getting authenticated user", {
+            cause: error,
+          }),
+        );
         return {
           data: null,
           error: createError("SERVER_CONNECTION_ERROR"),
         };
       } else if (error) {
-        logger.error("Error getting authenticated user", { error });
+        captureServerException(
+          new Error("Error getting authenticated user", { cause: error }),
+        );
         return {
           data: null,
           error: createError(
@@ -111,16 +112,17 @@ const plans = base.handler(async () => {
   const [error, data] = await safe(apiClient.plans.get());
 
   if (isNetworkConnectionError(error)) {
-    logger.error("Network error getting subscription plans", {
-      cause: error?.cause,
-      error,
-    });
+    captureServerException(
+      new Error("Network error getting subscription plans", { cause: error }),
+    );
     return {
       data: null,
       error: createError("SERVER_CONNECTION_ERROR"),
     };
   } else if (error) {
-    logger.error("Error getting subscription plans", { error });
+    captureServerException(
+      new Error("Error getting subscription plans", { cause: error }),
+    );
     return {
       data: null,
       error: createError(
@@ -141,16 +143,19 @@ export async function getSubscription() {
     const [error, data] = await safe(apiClient.users.getSubscriptionStatus());
 
     if (isNetworkConnectionError(error)) {
-      logger.error("Network error getting subscription status", {
-        cause: error?.cause,
-        error,
-      });
+      captureServerException(
+        new Error("Network error getting subscription status", {
+          cause: error,
+        }),
+      );
       return {
         data: null,
         error: createError("SERVER_CONNECTION_ERROR"),
       };
     } else if (error) {
-      logger.error("Error getting subscription status", { error });
+      captureServerException(
+        new Error("Error getting subscription status", { cause: error }),
+      );
       return {
         data: null,
         error: createError(
