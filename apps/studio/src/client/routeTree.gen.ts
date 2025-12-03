@@ -10,10 +10,8 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ToolbarRouteImport } from './routes/toolbar'
-import { Route as SubscribeRouteImport } from './routes/subscribe'
 import { Route as SidebarRouteImport } from './routes/sidebar'
 import { Route as SettingsRouteImport } from './routes/settings'
-import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as BrowserRouteImport } from './routes/browser'
 import { Route as AuthRouteRouteImport } from './routes/_auth/route'
 import { Route as AppRouteRouteImport } from './routes/_app/route'
@@ -25,8 +23,10 @@ import { Route as SettingsDebugRouteImport } from './routes/settings/debug'
 import { Route as SettingsAdvancedRouteImport } from './routes/settings/advanced'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AppWelcomeRouteImport } from './routes/_app/welcome'
+import { Route as AppSubscribeRouteImport } from './routes/_app/subscribe'
 import { Route as AppReleaseNotesRouteImport } from './routes/_app/release-notes'
 import { Route as AppNewTabRouteImport } from './routes/_app/new-tab'
+import { Route as AppCheckoutRouteImport } from './routes/_app/checkout'
 import { Route as AppDebugRouteRouteImport } from './routes/_app/debug/route'
 import { Route as AppProjectsIndexRouteImport } from './routes/_app/projects/index'
 import { Route as AppEvalsIndexRouteImport } from './routes/_app/evals/index'
@@ -46,11 +46,6 @@ const ToolbarRoute = ToolbarRouteImport.update({
   path: '/toolbar',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SubscribeRoute = SubscribeRouteImport.update({
-  id: '/subscribe',
-  path: '/subscribe',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const SidebarRoute = SidebarRouteImport.update({
   id: '/sidebar',
   path: '/sidebar',
@@ -59,11 +54,6 @@ const SidebarRoute = SidebarRouteImport.update({
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CheckoutRoute = CheckoutRouteImport.update({
-  id: '/checkout',
-  path: '/checkout',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BrowserRoute = BrowserRouteImport.update({
@@ -119,6 +109,11 @@ const AppWelcomeRoute = AppWelcomeRouteImport.update({
   path: '/welcome',
   getParentRoute: () => AppRouteRoute,
 } as any)
+const AppSubscribeRoute = AppSubscribeRouteImport.update({
+  id: '/subscribe',
+  path: '/subscribe',
+  getParentRoute: () => AppRouteRoute,
+} as any)
 const AppReleaseNotesRoute = AppReleaseNotesRouteImport.update({
   id: '/release-notes',
   path: '/release-notes',
@@ -127,6 +122,11 @@ const AppReleaseNotesRoute = AppReleaseNotesRouteImport.update({
 const AppNewTabRoute = AppNewTabRouteImport.update({
   id: '/new-tab',
   path: '/new-tab',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const AppCheckoutRoute = AppCheckoutRouteImport.update({
+  id: '/checkout',
+  path: '/checkout',
   getParentRoute: () => AppRouteRoute,
 } as any)
 const AppDebugRouteRoute = AppDebugRouteRouteImport.update({
@@ -202,14 +202,14 @@ const AppDiscoverAppsFolderNameRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/browser': typeof BrowserRoute
-  '/checkout': typeof CheckoutRoute
   '/settings': typeof SettingsRouteWithChildren
   '/sidebar': typeof SidebarRoute
-  '/subscribe': typeof SubscribeRoute
   '/toolbar': typeof ToolbarRoute
   '/debug': typeof AppDebugRouteRouteWithChildren
+  '/checkout': typeof AppCheckoutRoute
   '/new-tab': typeof AppNewTabRoute
   '/release-notes': typeof AppReleaseNotesRoute
+  '/subscribe': typeof AppSubscribeRoute
   '/welcome': typeof AppWelcomeRoute
   '/login': typeof AuthLoginRoute
   '/settings/advanced': typeof SettingsAdvancedRoute
@@ -233,12 +233,12 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/browser': typeof BrowserRoute
-  '/checkout': typeof CheckoutRoute
   '/sidebar': typeof SidebarRoute
-  '/subscribe': typeof SubscribeRoute
   '/toolbar': typeof ToolbarRoute
+  '/checkout': typeof AppCheckoutRoute
   '/new-tab': typeof AppNewTabRoute
   '/release-notes': typeof AppReleaseNotesRoute
+  '/subscribe': typeof AppSubscribeRoute
   '/welcome': typeof AppWelcomeRoute
   '/login': typeof AuthLoginRoute
   '/settings/advanced': typeof SettingsAdvancedRoute
@@ -265,14 +265,14 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteRouteWithChildren
   '/_auth': typeof AuthRouteRouteWithChildren
   '/browser': typeof BrowserRoute
-  '/checkout': typeof CheckoutRoute
   '/settings': typeof SettingsRouteWithChildren
   '/sidebar': typeof SidebarRoute
-  '/subscribe': typeof SubscribeRoute
   '/toolbar': typeof ToolbarRoute
   '/_app/debug': typeof AppDebugRouteRouteWithChildren
+  '/_app/checkout': typeof AppCheckoutRoute
   '/_app/new-tab': typeof AppNewTabRoute
   '/_app/release-notes': typeof AppReleaseNotesRoute
+  '/_app/subscribe': typeof AppSubscribeRoute
   '/_app/welcome': typeof AppWelcomeRoute
   '/_auth/login': typeof AuthLoginRoute
   '/settings/advanced': typeof SettingsAdvancedRoute
@@ -298,14 +298,14 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/browser'
-    | '/checkout'
     | '/settings'
     | '/sidebar'
-    | '/subscribe'
     | '/toolbar'
     | '/debug'
+    | '/checkout'
     | '/new-tab'
     | '/release-notes'
+    | '/subscribe'
     | '/welcome'
     | '/login'
     | '/settings/advanced'
@@ -329,12 +329,12 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/browser'
-    | '/checkout'
     | '/sidebar'
-    | '/subscribe'
     | '/toolbar'
+    | '/checkout'
     | '/new-tab'
     | '/release-notes'
+    | '/subscribe'
     | '/welcome'
     | '/login'
     | '/settings/advanced'
@@ -360,14 +360,14 @@ export interface FileRouteTypes {
     | '/_app'
     | '/_auth'
     | '/browser'
-    | '/checkout'
     | '/settings'
     | '/sidebar'
-    | '/subscribe'
     | '/toolbar'
     | '/_app/debug'
+    | '/_app/checkout'
     | '/_app/new-tab'
     | '/_app/release-notes'
+    | '/_app/subscribe'
     | '/_app/welcome'
     | '/_auth/login'
     | '/settings/advanced'
@@ -394,10 +394,8 @@ export interface RootRouteChildren {
   AppRouteRoute: typeof AppRouteRouteWithChildren
   AuthRouteRoute: typeof AuthRouteRouteWithChildren
   BrowserRoute: typeof BrowserRoute
-  CheckoutRoute: typeof CheckoutRoute
   SettingsRoute: typeof SettingsRouteWithChildren
   SidebarRoute: typeof SidebarRoute
-  SubscribeRoute: typeof SubscribeRoute
   ToolbarRoute: typeof ToolbarRoute
 }
 
@@ -408,13 +406,6 @@ declare module '@tanstack/react-router' {
       path: '/toolbar'
       fullPath: '/toolbar'
       preLoaderRoute: typeof ToolbarRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/subscribe': {
-      id: '/subscribe'
-      path: '/subscribe'
-      fullPath: '/subscribe'
-      preLoaderRoute: typeof SubscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sidebar': {
@@ -429,13 +420,6 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/checkout': {
-      id: '/checkout'
-      path: '/checkout'
-      fullPath: '/checkout'
-      preLoaderRoute: typeof CheckoutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/browser': {
@@ -515,6 +499,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppWelcomeRouteImport
       parentRoute: typeof AppRouteRoute
     }
+    '/_app/subscribe': {
+      id: '/_app/subscribe'
+      path: '/subscribe'
+      fullPath: '/subscribe'
+      preLoaderRoute: typeof AppSubscribeRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
     '/_app/release-notes': {
       id: '/_app/release-notes'
       path: '/release-notes'
@@ -527,6 +518,13 @@ declare module '@tanstack/react-router' {
       path: '/new-tab'
       fullPath: '/new-tab'
       preLoaderRoute: typeof AppNewTabRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/checkout': {
+      id: '/_app/checkout'
+      path: '/checkout'
+      fullPath: '/checkout'
+      preLoaderRoute: typeof AppCheckoutRouteImport
       parentRoute: typeof AppRouteRoute
     }
     '/_app/debug': {
@@ -641,8 +639,10 @@ const AppDebugRouteRouteWithChildren = AppDebugRouteRoute._addFileChildren(
 
 interface AppRouteRouteChildren {
   AppDebugRouteRoute: typeof AppDebugRouteRouteWithChildren
+  AppCheckoutRoute: typeof AppCheckoutRoute
   AppNewTabRoute: typeof AppNewTabRoute
   AppReleaseNotesRoute: typeof AppReleaseNotesRoute
+  AppSubscribeRoute: typeof AppSubscribeRoute
   AppWelcomeRoute: typeof AppWelcomeRoute
   AppEvalsRunRoute: typeof AppEvalsRunRoute
   AppDiscoverIndexRoute: typeof AppDiscoverIndexRoute
@@ -657,8 +657,10 @@ interface AppRouteRouteChildren {
 
 const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppDebugRouteRoute: AppDebugRouteRouteWithChildren,
+  AppCheckoutRoute: AppCheckoutRoute,
   AppNewTabRoute: AppNewTabRoute,
   AppReleaseNotesRoute: AppReleaseNotesRoute,
+  AppSubscribeRoute: AppSubscribeRoute,
   AppWelcomeRoute: AppWelcomeRoute,
   AppEvalsRunRoute: AppEvalsRunRoute,
   AppDiscoverIndexRoute: AppDiscoverIndexRoute,
@@ -712,10 +714,8 @@ const rootRouteChildren: RootRouteChildren = {
   AppRouteRoute: AppRouteRouteWithChildren,
   AuthRouteRoute: AuthRouteRouteWithChildren,
   BrowserRoute: BrowserRoute,
-  CheckoutRoute: CheckoutRoute,
   SettingsRoute: SettingsRouteWithChildren,
   SidebarRoute: SidebarRoute,
-  SubscribeRoute: SubscribeRoute,
   ToolbarRoute: ToolbarRoute,
 }
 export const routeTree = rootRouteImport

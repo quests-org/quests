@@ -17,7 +17,7 @@ const checkoutSearchSchema = z.object({
   success: z.boolean().optional(),
 });
 
-export const Route = createFileRoute("/checkout")({
+export const Route = createFileRoute("/_app/checkout")({
   component: CheckoutPage,
   head: () => {
     return {
