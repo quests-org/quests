@@ -1,14 +1,15 @@
-import { dedent } from "radashi";
+import { dedent, pick } from "radashi";
 
 import { APP_NAME } from "../constants";
 import { getCurrentDate } from "../lib/get-current-date";
 import { getSystemInfo } from "../lib/get-system-info";
 import { type SessionMessage } from "../schemas/session/message";
 import { StoreId } from "../schemas/store-id";
+import { TOOLS } from "../tools/all";
 import { setupAgent } from "./create-agent";
 
 export const chatAgent = setupAgent({
-  agentTools: {},
+  agentTools: pick(TOOLS, ["ReadFile", "Glob", "Grep"]),
   name: "chat",
 }).create(({ name }) => ({
   getMessages: ({ sessionId }) => {
