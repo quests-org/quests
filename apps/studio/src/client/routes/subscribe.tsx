@@ -156,10 +156,10 @@ function SubscribePage() {
             <QuestsAnimatedLogo size={64} />
           </div>
           <h1 className="text-4xl font-bold mb-2 bg-linear-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-            Purchase a subscription
+            Choose your plan
           </h1>
           <p className="text-muted-foreground max-w-2xl mx-auto text-sm">
-            Upgrade to access hundreds of AI models and more AI credits
+            Unlock access to hundreds of the most popular AI models
           </p>
         </div>
 
