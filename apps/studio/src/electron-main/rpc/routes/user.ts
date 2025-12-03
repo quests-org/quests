@@ -104,10 +104,6 @@ const live = {
     }),
 };
 
-const subscription = base.handler(async () => {
-  return await getSubscription();
-});
-
 const plans = base
   .errors({
     SERVER_CONNECTION_ERROR: {
@@ -180,5 +176,4 @@ export const user = {
   live,
   me,
   plans,
-  subscription,
 };
