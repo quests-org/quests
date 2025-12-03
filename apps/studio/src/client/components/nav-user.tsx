@@ -102,7 +102,7 @@ export function NavUser() {
 
   return (
     <SidebarMenu>
-      <SidebarMenuItem>
+      <SidebarMenuItem className="group">
         <DropdownMenu
           onOpenChange={(open) => {
             if (open) {
@@ -114,7 +114,7 @@ export function NavUser() {
         >
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+              className="group-hover:bg-black/10 dark:group-hover:bg-white/10 data-[state=open]:bg-black/10 dark:data-[state=open]:bg-white/10"
               size="lg"
             >
               <Avatar className="h-8 w-8 rounded-lg">
