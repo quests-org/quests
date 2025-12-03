@@ -26,16 +26,19 @@ export const captureServerException: CaptureExceptionFunction = function (
   const telemetryId = appStateStore.get("telemetryId");
   telemetry?.captureException(error, telemetryId, finalProperties);
   if (import.meta.env.DEV) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorStack = error instanceof Error ? error.stack : undefined;
+
+    // eslint-disable-next-line no-console
+    console.groupCollapsed(`%c[Exception] ${errorMessage}`, "color: #b71c1c");
     // eslint-disable-next-line no-console
     console.error(error, finalProperties);
     if (error instanceof Error && error.cause) {
       // eslint-disable-next-line no-console
       console.error("Cause:", error.cause);
     }
-
-    // Publish event for dev toast notifications
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    const errorStack = error instanceof Error ? error.stack : undefined;
+    // eslint-disable-next-line no-console
+    console.groupEnd();
 
     publisher.publish("server-exception", {
       message: errorMessage,

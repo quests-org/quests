@@ -26,9 +26,11 @@ telemetry?.on("capture", (payload) => {
   }
   const { event } = parsed.data;
   if (event === "$exception") {
-    // Logging to the logger so they are also in the app's logs
-    // Stringified to ensure full object is logged
+    // eslint-disable-next-line no-console
+    console.groupCollapsed("[Telemetry] Exception captured");
     logger.error(JSON.stringify(payload, null, 2));
+    // eslint-disable-next-line no-console
+    console.groupEnd();
   }
 });
 
