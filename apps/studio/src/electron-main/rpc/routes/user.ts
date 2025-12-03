@@ -108,35 +108,33 @@ const subscription = base.handler(async () => {
   return await getSubscription();
 });
 
-const plans = base.handler(async () => {
-  const [error, data] = await safe(apiClient.plans.get());
+const plans = base
+  .errors({
+    SERVER_CONNECTION_ERROR: {
+      message:
+        "Unable to connect to the server. Please check your connection and try again.",
+    },
+    UNKNOWN_ERROR: {
+      message: "There was an error getting subscription plans.",
+    },
+  })
+  .handler(async ({ errors }) => {
+    const [error, data] = await safe(apiClient.plans.get());
 
-  if (isNetworkConnectionError(error)) {
-    captureServerException(
-      new Error("Network error getting subscription plans", { cause: error }),
-    );
-    return {
-      data: null,
-      error: createError("SERVER_CONNECTION_ERROR"),
-    };
-  } else if (error) {
-    captureServerException(
-      new Error("Error getting subscription plans", { cause: error }),
-    );
-    return {
-      data: null,
-      error: createError(
-        "UNKNOWN_IPC_ERROR",
-        "There was an error getting subscription plans.",
-      ),
-    };
-  } else {
-    return {
-      data,
-      error: null,
-    };
-  }
-});
+    if (isNetworkConnectionError(error)) {
+      captureServerException(
+        new Error("Network error getting subscription plans", { cause: error }),
+      );
+      throw errors.SERVER_CONNECTION_ERROR();
+    } else if (error) {
+      captureServerException(
+        new Error("Error getting subscription plans", { cause: error }),
+      );
+      throw errors.UNKNOWN_ERROR();
+    }
+
+    return data;
+  });
 
 export async function getSubscription() {
   if (hasToken()) {
