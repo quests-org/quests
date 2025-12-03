@@ -1,3 +1,4 @@
+import { AccountInfo } from "@/client/components/account-info";
 import { ExternalLink } from "@/client/components/external-link";
 import { ThemeToggle } from "@/client/components/theme-toggle";
 import { Button } from "@/client/components/ui/button";
@@ -9,8 +10,6 @@ import { APP_REPO_URL, DISCORD_URL } from "@quests/shared";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { Download, ExternalLink as ExternalLinkIcon } from "lucide-react";
-
-import { AccountInfo } from "./components/account-info";
 
 export const Route = createFileRoute("/settings/")({
   component: SettingsGeneralPage,
