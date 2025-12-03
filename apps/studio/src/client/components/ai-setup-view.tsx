@@ -1,4 +1,3 @@
-import { selectedModelURIAtom } from "@/client/atoms/selected-model";
 import { AddProviderDialog } from "@/client/components/add-provider/dialog";
 import { StarryLayout } from "@/client/components/starry-layout";
 import {
@@ -8,15 +7,13 @@ import {
 } from "@/client/components/ui/alert";
 import { Button } from "@/client/components/ui/button";
 import { useSignInSocial } from "@/client/hooks/use-sign-in-social";
-import { setDefaultModel } from "@/client/lib/set-default-model";
 import { rpcClient } from "@/client/rpc/client";
 import { type RPCError } from "@/electron-main/lib/errors";
 import { QuestsAnimatedLogo } from "@quests/components/animated-logo";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { useSetAtom } from "jotai";
 import { AlertCircle, Check } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { SiGoogle } from "react-icons/si";
 import { toast } from "sonner";
 
@@ -25,7 +22,6 @@ export function AISetupView({ mode }: { mode: "setup" | "sign-in" }) {
   const [showAddProviderDialog, setShowAddProviderDialog] = useState(false);
   const { signIn } = useSignInSocial();
   const navigate = useNavigate();
-  const setSelectedModelURI = useSetAtom(selectedModelURIAtom);
 
   const { data: authSessionChanged, isFetched } = useQuery(
     rpcClient.user.live.me.experimental_liveOptions({}),
@@ -36,7 +32,6 @@ export function AISetupView({ mode }: { mode: "setup" | "sign-in" }) {
   );
 
   const isSignedIn = authSessionChanged && !authSessionChanged.error;
-  const wasSignedInRef = useRef(isSignedIn);
   const hasProvider = (providerConfigs?.length ?? 0) > 0;
   const isReady = mode === "setup" ? isSignedIn || hasProvider : isSignedIn;
 
@@ -47,14 +42,6 @@ export function AISetupView({ mode }: { mode: "setup" | "sign-in" }) {
       toast.dismiss();
     }
   }, [authSessionChanged, isFetched]);
-
-  useEffect(() => {
-    // Update the default model when the user signs in.
-    if (isSignedIn && !wasSignedInRef.current) {
-      wasSignedInRef.current = true;
-      void setDefaultModel(setSelectedModelURI);
-    }
-  }, [isSignedIn, setSelectedModelURI]);
 
   const handleContinueClick = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
