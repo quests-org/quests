@@ -24,6 +24,7 @@ import {
 import { useUserConnectionError } from "@/client/hooks/use-user-connection-error";
 import { captureClientEvent } from "@/client/lib/capture-client-event";
 import { getInitials } from "@/client/lib/get-initials";
+import { signOut } from "@/client/lib/sign-out";
 import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
@@ -223,7 +224,7 @@ export function NavUser() {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={() => {
-                    void vanillaRpcClient.auth.signOut();
+                    void signOut();
                   }}
                 >
                   <LogOutIcon className="h-4 w-4" />

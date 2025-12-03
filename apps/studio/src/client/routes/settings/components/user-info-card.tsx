@@ -7,15 +7,11 @@ import {
 import { Button } from "@/client/components/ui/button";
 import { Card } from "@/client/components/ui/card";
 import { getInitials } from "@/client/lib/get-initials";
-import { rpcClient } from "@/client/rpc/client";
-import { useMutation } from "@tanstack/react-query";
+import { signOut } from "@/client/lib/sign-out";
 import { useAtom } from "jotai";
 
 export function UserInfoCard() {
   const [userResult] = useAtom(userAtom);
-  const { mutateAsync: signOut } = useMutation(
-    rpcClient.auth.signOut.mutationOptions({}),
-  );
   const user = userResult.data;
 
   if (!user?.id) {
@@ -41,8 +37,8 @@ export function UserInfoCard() {
         </div>
         <Button
           className="font-medium"
-          onClick={async () => {
-            await signOut({});
+          onClick={() => {
+            void signOut();
           }}
           size="sm"
           variant="outline"
