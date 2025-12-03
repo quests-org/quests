@@ -67,7 +67,7 @@ export function AISetupView({ mode }: { mode: "setup" | "sign-in" }) {
 
   const title = mode === "setup" ? "Sign in to Quests" : "Sign in to Quests";
   const readyTitle = mode === "setup" ? "You're all set!" : "You're signed in!";
-  const subtitle = "Sign in for free credits to start building with AI.";
+  const subtitle = "Get free credits to start building with AI.";
   const readySubtitle = "You're now ready to start building!";
 
   return (
