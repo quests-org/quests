@@ -7,6 +7,7 @@ import { cn } from "@/client/lib/utils";
 import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
 import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
 import { QuestsAnimatedLogo } from "@quests/components/animated-logo";
+import { SALES_EMAIL } from "@quests/shared";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { CheckCircle2, Loader2 } from "lucide-react";
@@ -371,7 +372,7 @@ function SubscribePage() {
                   onClick={() => {
                     captureClientEvent("subscribe.contact_us_clicked");
                     void openExternalLink({
-                      url: "mailto:hello@quests.dev?subject=Quests%20-%20Enterprise%20%26%20Team%20Inquiry",
+                      url: `mailto:${SALES_EMAIL}?subject=Quests%20-%20Enterprise%20%26%20Team%20Inquiry`,
                     });
                   }}
                   size="sm"
