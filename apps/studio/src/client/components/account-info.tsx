@@ -1,11 +1,7 @@
 import { userAtom } from "@/client/atoms/user";
 import { Button } from "@/client/components/ui/button";
-import { Card } from "@/client/components/ui/card";
+import { useSignInSocial } from "@/client/hooks/use-sign-in-social";
 import { useUserConnectionError } from "@/client/hooks/use-user-connection-error";
-import { rpcClient } from "@/client/rpc/client";
-import { QuestsLogoIcon } from "@quests/components/logo";
-import { useMutation } from "@tanstack/react-query";
-import { useRouter } from "@tanstack/react-router";
 import { useAtom } from "jotai";
 import { AlertCircle } from "lucide-react";
 
@@ -14,10 +10,9 @@ import { UserInfoCard } from "./user-info-card";
 
 export function AccountInfo() {
   const [userResult] = useAtom(userAtom);
-  const { mutate: addTab } = useMutation(rpcClient.tabs.add.mutationOptions());
-  const router = useRouter();
   const user = userResult.data;
   const { error, hasError } = useUserConnectionError();
+  const { signIn } = useSignInSocial();
 
   return (
     <div className="space-y-3">
@@ -30,7 +25,7 @@ export function AccountInfo() {
           <SubscriptionCard />
         </>
       ) : (
-        <Card className="p-4 bg-accent/30 shadow-sm">
+        <div className="rounded-lg border bg-accent/30 p-4 shadow-sm">
           <div className="space-y-3">
             {hasError && error && (
               <div className="flex items-start gap-2 rounded-md bg-destructive/10 p-3 text-sm text-destructive">
@@ -38,32 +33,21 @@ export function AccountInfo() {
                 <div>{error.message}</div>
               </div>
             )}
-            <div className="space-y-2">
-              <div className="text-sm font-medium">Sign in to your account</div>
-              <p className="text-sm text-muted-foreground">
-                Manage your account settings and subscription.
-              </p>
-              <div className="pt-2">
-                <Button
-                  className="h-10 [&_svg]:size-6"
-                  onClick={() => {
-                    const location = router.buildLocation({
-                      to: "/sign-in",
-                    });
-                    addTab({ urlPath: location.href });
-                    window.close();
-                  }}
-                  variant="secondary"
-                >
-                  <div>
-                    <QuestsLogoIcon />
-                  </div>
-                  Sign in to your Quests account
-                </Button>
+            <div className="flex items-start justify-between gap-4">
+              <div className="space-y-0.5">
+                <div className="text-sm font-medium">
+                  Try all the latest models for free
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Claim your free credits by signing up for an account.
+                </p>
               </div>
+              <Button onClick={() => void signIn()} variant="brand">
+                Sign in
+              </Button>
             </div>
           </div>
-        </Card>
+        </div>
       )}
     </div>
   );

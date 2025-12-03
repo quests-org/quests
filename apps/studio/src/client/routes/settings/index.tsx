@@ -195,10 +195,11 @@ function About() {
           <Button
             disabled={checkForUpdatesMutation.isPending}
             onClick={handleCheckForUpdates}
+            variant="secondary"
           >
             {checkForUpdatesMutation.isPending
               ? "Checking..."
-              : "Check for Updates"}
+              : "Check for updates"}
           </Button>
         );
       }
