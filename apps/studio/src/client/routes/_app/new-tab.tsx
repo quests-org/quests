@@ -77,7 +77,7 @@ function RouteComponent() {
                 type="button"
               >
                 <p className="text-sm text-foreground">
-                  Try all the latest models for free
+                  Unlock access to hundreds of AI models for free.
                 </p>
                 <span className="text-sm font-semibold text-brand">
                   Claim your credits →
