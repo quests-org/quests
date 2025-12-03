@@ -47,7 +47,7 @@ export function LoginForm({
 
   return (
     <div className="flex min-h-svh flex-col bg-background overflow-y-auto">
-      <div className="relative z-10 min-h-full w-full flex flex-1 justify-center items-center">
+      <div className="relative z-10 w-full flex flex-1 justify-center items-center">
         <div className={cn("flex flex-col gap-6")}>
           <div className="flex flex-col gap-6">
             <div className="flex flex-col items-center gap-2">
@@ -99,11 +99,11 @@ export function LoginForm({
                   </Button>
                 </form>
 
-                <div className="text-sm text-muted-foreground">or</div>
+                <div className="text-sm text-muted-foreground/70">or</div>
 
                 <div className="flex items-center justify-center gap-3 relative">
                   <Button
-                    className="w-full min-w-80"
+                    className="w-full min-w-80 text-foreground/70"
                     onClick={() => {
                       void vanillaRpcClient.preferences.openSettingsWindow({
                         showNewProviderDialog: true,
@@ -112,35 +112,34 @@ export function LoginForm({
                       onClose?.();
                     }}
                     type="button"
-                    variant="outline"
+                    variant="ghost"
                   >
-                    Add an AI Provider API key
+                    Add an AI provider manually
                   </Button>
                 </div>
               </div>
             )}
           </div>
-
-          <div className="text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 hover:[&_a]:text-primary border-t border-border/50 pt-6">
-            By clicking continue, you agree to our{" "}
-            <a
-              href="https://quests.dev/terms"
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              Terms of Service
-            </a>{" "}
-            and{" "}
-            <a
-              href="https://quests.dev/privacy"
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              Privacy Policy
-            </a>
-            .
-          </div>
         </div>
+      </div>
+      <div className="relative z-10 pb-6 text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 hover:[&_a]:text-primary">
+        By clicking continue, you agree to our{" "}
+        <a
+          href="https://quests.dev/terms"
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          Terms of Service
+        </a>{" "}
+        and{" "}
+        <a
+          href="https://quests.dev/privacy"
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          Privacy Policy
+        </a>
+        .
       </div>
       <Particles
         color="#155ADE"
