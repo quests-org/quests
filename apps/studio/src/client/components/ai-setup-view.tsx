@@ -1,6 +1,6 @@
 import { selectedModelURIAtom } from "@/client/atoms/selected-model";
 import { AddProviderDialog } from "@/client/components/add-provider/dialog";
-import Particles from "@/client/components/particles";
+import { StarryLayout } from "@/client/components/starry-layout";
 import {
   Alert,
   AlertDescription,
@@ -71,127 +71,119 @@ export function AISetupView({ mode }: { mode: "setup" | "sign-in" }) {
   const readySubtitle = "You're now ready to start building!";
 
   return (
-    <div className="flex min-h-svh flex-col bg-background overflow-y-auto">
-      <div className="relative z-10 w-full flex flex-1 justify-center items-center py-8">
-        <div className="max-w-sm">
-          <div className="flex flex-col gap-6 pb-12">
-            <div className="flex flex-col items-center gap-6">
-              <div className="flex flex-col items-center gap-4">
-                <div className="flex size-16 items-center justify-center rounded-md">
-                  {isReady ? (
-                    <div className="flex size-12 items-center justify-center rounded-full bg-brand">
-                      <Check className="size-6 text-brand-foreground" />
-                    </div>
-                  ) : (
-                    <QuestsAnimatedLogo size={64} />
-                  )}
-                </div>
-                <span className="sr-only">Quests</span>
-                <h1 className="text-3xl font-bold">
-                  {isReady ? readyTitle : title}
-                </h1>
-                {!error && (
-                  <p className="text-sm text-muted-foreground text-center max-w-md text-balance">
-                    {isReady ? readySubtitle : subtitle}
-                  </p>
+    <StarryLayout
+      footer={
+        !isReady && (
+          <>
+            By clicking continue, you agree to our{" "}
+            <a
+              href="https://quests.dev/terms"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              Terms of Service
+            </a>{" "}
+            and{" "}
+            <a
+              href="https://quests.dev/privacy"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              Privacy Policy
+            </a>
+            .
+          </>
+        )
+      }
+    >
+      <div className="max-w-sm">
+        <div className="flex flex-col gap-6 pb-12">
+          <div className="flex flex-col items-center gap-6">
+            <div className="flex flex-col items-center gap-4">
+              <div className="flex size-16 items-center justify-center rounded-md">
+                {isReady ? (
+                  <div className="flex size-12 items-center justify-center rounded-full bg-brand">
+                    <Check className="size-6 text-brand-foreground" />
+                  </div>
+                ) : (
+                  <QuestsAnimatedLogo size={64} />
                 )}
               </div>
-
-              {isReady ? (
-                <Button
-                  className="w-full min-w-80"
-                  onClick={handleGetStarted}
-                  variant="default"
-                >
-                  Get started
-                </Button>
-              ) : (
-                <>
-                  {error && (
-                    <Alert className="w-full min-w-80" variant="destructive">
-                      <AlertCircle className="size-4" />
-                      <AlertTitle>Sign in failed</AlertTitle>
-                      <AlertDescription>
-                        There was an error signing in. Please try again.
-                      </AlertDescription>
-                    </Alert>
-                  )}
-
-                  <form
-                    className="flex items-center justify-center w-full"
-                    onSubmit={handleContinueClick}
-                  >
-                    <Button
-                      className="w-full min-w-80"
-                      type="submit"
-                      variant="default"
-                    >
-                      <SiGoogle />
-                      Continue with Google
-                    </Button>
-                  </form>
-
-                  {mode === "setup" && (
-                    <div className="flex flex-col items-center justify-center">
-                      <div className="text-sm text-muted-foreground/50">or</div>
-                      <Button
-                        className="text-muted-foreground/80"
-                        onClick={() => {
-                          setShowAddProviderDialog(true);
-                        }}
-                        type="button"
-                        variant="ghost"
-                      >
-                        Add an AI provider manually
-                      </Button>
-                    </div>
-                  )}
-                </>
+              <span className="sr-only">Quests</span>
+              <h1 className="text-3xl font-bold">
+                {isReady ? readyTitle : title}
+              </h1>
+              {!error && (
+                <p className="text-sm text-muted-foreground text-center max-w-md text-balance">
+                  {isReady ? readySubtitle : subtitle}
+                </p>
               )}
             </div>
 
-            <AddProviderDialog
-              onOpenChange={setShowAddProviderDialog}
-              onSuccess={() => {
-                setShowAddProviderDialog(false);
-                toast.success("Provider added successfully");
-              }}
-              open={showAddProviderDialog}
-              providers={providerConfigs ?? []}
-            />
+            {isReady ? (
+              <Button
+                className="w-full min-w-80"
+                onClick={handleGetStarted}
+                variant="default"
+              >
+                Get started
+              </Button>
+            ) : (
+              <>
+                {error && (
+                  <Alert className="w-full min-w-80" variant="destructive">
+                    <AlertCircle className="size-4" />
+                    <AlertTitle>Sign in failed</AlertTitle>
+                    <AlertDescription>
+                      There was an error signing in. Please try again.
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                <form
+                  className="flex items-center justify-center w-full"
+                  onSubmit={handleContinueClick}
+                >
+                  <Button
+                    className="w-full min-w-80"
+                    type="submit"
+                    variant="default"
+                  >
+                    <SiGoogle />
+                    Continue with Google
+                  </Button>
+                </form>
+
+                {mode === "setup" && (
+                  <div className="flex flex-col items-center justify-center">
+                    <div className="text-sm text-muted-foreground/50">or</div>
+                    <Button
+                      className="text-muted-foreground/80"
+                      onClick={() => {
+                        setShowAddProviderDialog(true);
+                      }}
+                      type="button"
+                      variant="ghost"
+                    >
+                      Add an AI provider manually
+                    </Button>
+                  </div>
+                )}
+              </>
+            )}
           </div>
+
+          <AddProviderDialog
+            onOpenChange={setShowAddProviderDialog}
+            onSuccess={() => {
+              setShowAddProviderDialog(false);
+              toast.success("Provider added successfully");
+            }}
+            open={showAddProviderDialog}
+            providers={providerConfigs ?? []}
+          />
         </div>
       </div>
-      {!isReady && (
-        <div className="relative z-10 pb-6 text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 hover:[&_a]:text-primary">
-          By clicking continue, you agree to our{" "}
-          <a
-            href="https://quests.dev/terms"
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            Terms of Service
-          </a>{" "}
-          and{" "}
-          <a
-            href="https://quests.dev/privacy"
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            Privacy Policy
-          </a>
-          .
-        </div>
-      )}
-      <Particles
-        color="#155ADE"
-        color2="#F7FF9B"
-        disableMouseMovement
-        ease={80}
-        quantityDesktop={350}
-        quantityMobile={100}
-        refresh
-      />
-    </div>
+    </StarryLayout>
   );
 }
