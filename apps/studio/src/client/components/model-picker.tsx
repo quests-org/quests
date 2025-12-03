@@ -36,6 +36,7 @@ interface ModelPickerProps {
   isError?: boolean;
   isLoading?: boolean;
   models?: AIGatewayModel.Type[];
+  onAddProvider?: () => void;
   onValueChange: (value: AIGatewayModelURI.Type) => void;
   placeholder?: string;
   selectedModel?: AIGatewayModel.Type;
@@ -48,6 +49,7 @@ export function ModelPicker({
   isError = false,
   isLoading = false,
   models,
+  onAddProvider,
   onValueChange,
   placeholder = "Select a model",
   selectedModel,
@@ -105,12 +107,7 @@ export function ModelPicker({
     return (
       <Button
         disabled={disabled}
-        onClick={() => {
-          void vanillaRpcClient.preferences.openSettingsWindow({
-            showNewProviderDialog: true,
-            tab: "Providers",
-          });
-        }}
+        onClick={onAddProvider}
         size="sm"
         variant="outline"
       >
@@ -150,10 +147,8 @@ export function ModelPicker({
                 <p className="text-sm text-muted-foreground">No models found</p>
                 <Button
                   onClick={() => {
-                    void vanillaRpcClient.preferences.openSettingsWindow({
-                      showNewProviderDialog: true,
-                      tab: "Providers",
-                    });
+                    setOpen(false);
+                    onAddProvider?.();
                   }}
                   size="sm"
                   variant="outline"

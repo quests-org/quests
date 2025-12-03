@@ -11,7 +11,7 @@ import { cn, isMacOS } from "@/client/lib/utils";
 import { type AIGatewayModelURI } from "@quests/ai-gateway/client";
 import { type AgentName } from "@quests/workspace/client";
 import { useQuery } from "@tanstack/react-query";
-import { useAtom, useAtomValue } from "jotai";
+import { useAtom } from "jotai";
 import { ArrowUp, Loader2, Paperclip, Square, Upload, X } from "lucide-react";
 import {
   forwardRef,
@@ -23,7 +23,6 @@ import {
 } from "react";
 import { toast } from "sonner";
 
-import { hasAIProviderConfigAtom } from "../atoms/has-ai-provider-config";
 import {
   promptValueAtomFamily,
   type PromptValueAtomKey,
@@ -110,7 +109,6 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
     const textareaInnerRef = useRef<HTMLTextAreaElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const dragCounterRef = useRef(0);
-    const hasAIProvider = useAtomValue(hasAIProviderConfigAtom);
     const [value, setValue] = useAtom(promptValueAtomFamily(atomKey));
 
     useImperativeHandle(ref, () => ({
@@ -144,12 +142,6 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
         textareaInnerRef.current.style.height = `${newHeight}px`;
       }
     }, [autoResizeMaxHeight, resetTextareaHeight]);
-
-    useEffect(() => {
-      if (hasAIProvider) {
-        setShowAIProviderGuard(false);
-      }
-    }, [hasAIProvider]);
 
     useEffect(() => {
       adjustHeight();
@@ -259,11 +251,6 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
     };
 
     const validateSubmission = useCallback(() => {
-      if (!hasAIProvider) {
-        setShowAIProviderGuard(true);
-        return false;
-      }
-
       if (!value.trim() && uploadedFiles.length === 0) {
         return false;
       }
@@ -281,15 +268,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
       }
 
       return true;
-    }, [
-      hasAIProvider,
-      value,
-      uploadedFiles.length,
-      modelURI,
-      selectedModel,
-      isSubmittable,
-      setShowAIProviderGuard,
-    ]);
+    }, [value, uploadedFiles.length, modelURI, selectedModel, isSubmittable]);
 
     const handleSubmit = useCallback(
       (openInNewTab = false) => {
@@ -464,6 +443,9 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
                   isError={modelsIsError}
                   isLoading={modelsIsLoading}
                   models={models}
+                  onAddProvider={() => {
+                    setShowAIProviderGuard(true);
+                  }}
                   onValueChange={onModelChange}
                   selectedModel={selectedModel}
                 />
