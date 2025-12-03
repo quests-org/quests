@@ -79,8 +79,11 @@ function SettingsLayout() {
             <SidebarContent>
               <SidebarMenu>
                 {sidebarNavItems.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild>
+                  <SidebarMenuItem className="group" key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      className="group-hover:bg-black/10 dark:group-hover:bg-white/10"
+                    >
                       <InternalLink
                         activeOptions={{ exact: true }}
                         activeProps={{ "data-active": true }}
