@@ -89,7 +89,7 @@ function RouteComponent() {
 
           <div className="flex flex-col gap-2 w-full">
             <FeatureCard
-              description="Use a Quests account to access AI features or bring your own API keys. API keys are encrypted and stored locally."
+              description="Sign in to unlock access to hundreds of AI models for free."
               number="1"
               title="Get started for free"
             />
@@ -99,9 +99,9 @@ function RouteComponent() {
               title="Apps are private and local"
             />
             <FeatureCard
-              description="All the apps you create can use AI, powered by the AI providers you add."
+              description="Explore built-in templates and example apps to start building in seconds."
               number="3"
-              title="Use AI in your apps"
+              title="Discover templates and apps"
             />
           </div>
 
