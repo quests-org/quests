@@ -118,6 +118,13 @@ export function createDevToolsMenu(): MenuItemConstructorOptions[] {
               },
               label: "/debug",
             },
+            {
+              click: () => {
+                const tabsManager = getTabsManager();
+                void tabsManager?.addTab({ urlPath: "/subscribe" });
+              },
+              label: "/subscribe",
+            },
           ],
         },
         { type: "separator" },
