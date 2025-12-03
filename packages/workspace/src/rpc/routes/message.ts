@@ -67,6 +67,7 @@ const create = base
       const model = await resolveModel(modelURI, context, errors);
 
       const { appConfig } = await createMessage({
+        filesCount: files?.length ?? 0,
         message,
         model,
         modelURI,

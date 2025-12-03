@@ -247,6 +247,7 @@ const create = base
       );
 
       context.workspaceConfig.captureEvent("project.created", {
+        files_count: files?.length ?? 0,
         modelId: model.modelId,
         project_mode: mode,
         providerId: model.provider,
@@ -389,6 +390,7 @@ const createFromEval = base
 
       context.workspaceConfig.captureEvent("project.created", {
         eval_name: evalName,
+        files_count: 0,
         modelId: model.modelId,
         project_mode: projectModeForSubdomain(projectConfig.subdomain),
         providerId: model.provider,

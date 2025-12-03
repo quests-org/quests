@@ -165,6 +165,7 @@ const createWithMessage = base
     });
 
     await createMessage({
+      filesCount: input.files?.length ?? 0,
       message: input.message,
       model,
       modelURI: input.modelURI,

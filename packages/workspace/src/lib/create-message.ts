@@ -10,6 +10,7 @@ import { setProjectState } from "./project-state-store";
 import { textForMessage } from "./text-for-message";
 
 interface CreateMessageParams {
+  filesCount: number;
   message: SessionMessage.WithParts;
   model: LanguageModelV2;
   modelURI: AIGatewayModelURI.Type;
@@ -18,6 +19,7 @@ interface CreateMessageParams {
 }
 
 export async function createMessage({
+  filesCount,
   message,
   model,
   modelURI,
@@ -34,6 +36,7 @@ export async function createMessage({
   const messageText = textForMessage(message);
 
   workspaceConfig.captureEvent("message.created", {
+    files_count: filesCount,
     length: messageText.length,
     modelId: model.modelId,
     project_mode: projectModeForSubdomain(subdomain),

@@ -50,6 +50,7 @@ export interface AnalyticsEvents {
     tool_name: string;
   };
   "message.created": WithModelProperties<{
+    files_count: number;
     length: number;
     project_mode: ProjectMode;
   }>;
@@ -61,6 +62,7 @@ export interface AnalyticsEvents {
   };
   "project.created": WithModelProperties<{
     eval_name?: string;
+    files_count: number;
     project_mode: ProjectMode;
     template_name: string;
   }>;
