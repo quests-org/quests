@@ -1,6 +1,6 @@
 import Particles from "@/client/components/particles";
 import { Button } from "@/client/components/ui/button";
-import { captureClientEvent } from "@/client/lib/capture-client-event";
+import { useSignInSocial } from "@/client/hooks/use-sign-in-social";
 import { cn } from "@/client/lib/utils";
 import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
 import { type RPCError } from "@/electron-main/lib/errors";
@@ -8,8 +8,6 @@ import { QuestsAnimatedLogo } from "@quests/components/animated-logo";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-
-import { telemetry } from "../lib/telemetry";
 
 export function LoginForm({
   modal = false,
@@ -19,9 +17,7 @@ export function LoginForm({
   onClose?: () => void;
 }) {
   const [error, setError] = useState<null | RPCError>(null);
-  const { mutateAsync: signInSocial } = useMutation(
-    rpcClient.auth.signInSocial.mutationOptions(),
-  );
+  const { signIn } = useSignInSocial();
   const { mutate: removeTab } = useMutation(
     rpcClient.tabs.close.mutationOptions(),
   );
@@ -44,18 +40,9 @@ export function LoginForm({
     }
   }, [authSessionChanged, isFetched, modal, onClose, removeTab]);
 
-  const handleContinueClick = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleContinueClick = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    captureClientEvent("login.button_clicked", {
-      button_type: "google_sign_in",
-    });
-
-    try {
-      await signInSocial({});
-    } catch (error_) {
-      telemetry?.captureException(error_);
-    }
+    void signIn();
   };
 
   return (
@@ -95,9 +82,7 @@ export function LoginForm({
               <div className="flex flex-col items-center justify-center gap-3">
                 <form
                   className="flex items-center justify-center gap-3 relative"
-                  onSubmit={(e) => {
-                    void handleContinueClick(e);
-                  }}
+                  onSubmit={handleContinueClick}
                 >
                   <Button
                     className="w-full min-w-80"
@@ -120,9 +105,6 @@ export function LoginForm({
                   <Button
                     className="w-full min-w-80"
                     onClick={() => {
-                      captureClientEvent("login.button_clicked", {
-                        button_type: "add_api_key",
-                      });
                       void vanillaRpcClient.preferences.openSettingsWindow({
                         showNewProviderDialog: true,
                         tab: "Providers",

@@ -14,6 +14,7 @@ export interface AnalyticsEvents {
   };
   "app.sidebar_closed": never;
   "app.sidebar_opened": never;
+  "auth.sign_up_started": never;
   "eval.created": {
     eval_names: string[];
     model_ids: string[];
@@ -45,9 +46,6 @@ export interface AnalyticsEvents {
     project_mode: ProjectMode;
     success: boolean;
     tool_name: string;
-  };
-  "login.button_clicked": {
-    button_type: "add_api_key" | "google_sign_in";
   };
   "message.created": WithModelProperties<{
     length: number;

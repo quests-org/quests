@@ -1,5 +1,6 @@
 import { agentNameAtom } from "@/client/atoms/agent-name";
 import { selectedModelURIAtom } from "@/client/atoms/selected-model";
+import { userAtom } from "@/client/atoms/user";
 import { SmallAppIcon } from "@/client/components/app-icon";
 import { AppStatusIcon } from "@/client/components/app-status-icon";
 import { NewTabDiscoverHeroCards } from "@/client/components/discover-hero-card";
@@ -7,14 +8,13 @@ import { ExternalLink } from "@/client/components/external-link";
 import { InternalLink } from "@/client/components/internal-link";
 import { ModelPreview } from "@/client/components/projects-data-table/model-preview";
 import { PromptInput } from "@/client/components/prompt-input";
-import { Button } from "@/client/components/ui/button";
 import { Card, CardContent } from "@/client/components/ui/card";
 import { Kbd } from "@/client/components/ui/kbd";
 import { useTabActions } from "@/client/hooks/tabs";
+import { useSignInSocial } from "@/client/hooks/use-sign-in-social";
 import { createUserMessage } from "@/client/lib/create-user-message";
 import { isMacOS } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
-import { QuestsAnimatedLogo } from "@quests/components/animated-logo";
 import {
   APP_REPO_URL,
   DISCORD_URL,
@@ -29,8 +29,7 @@ import {
   useRouter,
 } from "@tanstack/react-router";
 import { formatDistanceToNow } from "date-fns";
-import { useAtom } from "jotai";
-import { useState } from "react";
+import { useAtom, useAtomValue } from "jotai";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/new-tab")({
@@ -44,18 +43,15 @@ export const Route = createFileRoute("/_app/new-tab")({
   }),
 });
 
-const WHATS_NEW_DISMISSED_KEY = "whats-new-dismissed-2025-12-02";
-
 function RouteComponent() {
   const [selectedModelURI, setSelectedModelURI] = useAtom(selectedModelURIAtom);
   const [agentName, setAgentName] = useAtom(agentNameAtom);
-  const [isDismissed, setIsDismissed] = useState(() => {
-    const stored = localStorage.getItem(WHATS_NEW_DISMISSED_KEY);
-    return stored === "true";
-  });
+  const userResult = useAtomValue(userAtom);
+  const isLoggedIn = Boolean(userResult.data?.id);
   const navigate = useNavigate({ from: "/new-tab" });
   const router = useRouter();
   const { addTab } = useTabActions();
+  const { signIn } = useSignInSocial();
   const createProjectMutation = useMutation(
     rpcClient.workspace.project.create.mutationOptions(),
   );
@@ -69,15 +65,26 @@ function RouteComponent() {
   const recentProjects = projectsData?.projects ?? [];
   const hasProjects = (projectsData?.projects.length ?? 0) > 0;
 
-  const handleDismiss = () => {
-    setIsDismissed(true);
-    localStorage.setItem(WHATS_NEW_DISMISSED_KEY, "true");
-  };
-
   return (
     <div className="w-full min-h-screen flex-1 flex flex-col items-center relative">
       <div className="flex items-center justify-center w-full">
         <div className="w-full max-w-2xl space-y-8 px-8 pt-36">
+          {!isLoggedIn && (
+            <div className="flex flex-col items-center gap-y-4 mb-8">
+              <button
+                className="group flex items-center gap-x-3 border-2 border-brand/40 hover:border-brand rounded-full px-4 py-2 transition-colors"
+                onClick={() => void signIn()}
+                type="button"
+              >
+                <p className="text-sm text-foreground">
+                  Try all the latest models for free
+                </p>
+                <span className="text-sm font-semibold text-brand">
+                  Claim your credits →
+                </span>
+              </button>
+            </div>
+          )}
           <div>
             <PromptInput
               agentName={agentName}
@@ -150,49 +157,6 @@ function RouteComponent() {
       </div>
 
       <div className="w-full max-w-6xl px-8 pb-8 flex-1 pt-16">
-        {!isDismissed && (
-          <div className="mb-16">
-            <div className="flex items-center justify-between mb-2">
-              <h2 className="text-lg font-medium text-foreground">
-                What&apos;s New
-              </h2>
-              <Button
-                className="text-xs text-muted-foreground hover:text-foreground"
-                onClick={handleDismiss}
-                variant="ghost"
-              >
-                Dismiss
-              </Button>
-            </div>
-            <Card className="bg-linear-to-br from-blue-50/50 to-blue-100/30 dark:from-blue-950/20 dark:to-blue-900/10 border-blue-200/50 dark:border-blue-800/30 py-2">
-              <CardContent className="flex gap-x-3 px-3 items-center">
-                <div className="size-10 rounded-full bg-black/80 dark:bg-black/30 flex items-center justify-center shrink-0 p-1.5">
-                  <QuestsAnimatedLogo size={32} />
-                </div>
-                <p className="text-sm text-foreground/90">
-                  <strong>Easier AI access is here!</strong>{" "}
-                  <InternalLink
-                    className="underline hover:text-foreground"
-                    openInCurrentTab
-                    to="/login"
-                  >
-                    Create an account
-                  </InternalLink>{" "}
-                  to get started with free AI credits or{" "}
-                  <InternalLink
-                    className="underline hover:text-foreground"
-                    openInCurrentTab
-                    to="/release-notes"
-                  >
-                    read the announcement
-                  </InternalLink>
-                  .
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
         <div className="flex items-center justify-between mb-2">
           <div>
             <h2 className="text-lg font-medium text-foreground">Discover</h2>
