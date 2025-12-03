@@ -5,14 +5,14 @@ import Store from "electron-store";
 import { z } from "zod";
 
 const SessionStateSchema = z.object({
-  apiBearerToken: z.string().optional().nullable(),
-  inviteCode: z.string().optional().nullable(),
-  provider: z.enum(["google"]).optional().nullable(),
-  providerAccessToken: z.string().optional().nullable(),
-  providerIdToken: z.string().optional().nullable(),
-  providerRefreshToken: z.string().optional().nullable(),
-  providerScopes: z.array(z.string()).optional().nullable(),
-  providerTokenType: z.string().optional().nullable(),
+  apiBearerToken: z.string().nullish(),
+  inviteCode: z.string().nullish(),
+  provider: z.enum(["google"]).nullish(),
+  providerAccessToken: z.string().nullish(),
+  providerIdToken: z.string().nullish(),
+  providerRefreshToken: z.string().nullish(),
+  providerScopes: z.array(z.string()).nullish(),
+  providerTokenType: z.string().nullish(),
 });
 
 type SessionState = z.output<typeof SessionStateSchema>;
