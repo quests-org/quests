@@ -1,4 +1,4 @@
-import { SignInForm } from "@/client/components/sign-in-form";
+import { AISetupView } from "@/client/components/ai-setup-view";
 import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
 import { createFileRoute } from "@tanstack/react-router";
 
@@ -20,5 +20,5 @@ export const Route = createFileRoute("/_auth/sign-in")({
 });
 
 function RouteComponent() {
-  return <SignInForm />;
+  return <AISetupView mode="sign-in" />;
 }
