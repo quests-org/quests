@@ -16,7 +16,6 @@
         "NODE_ENV",
         "PATH",
         "SIGNTOOL_PATH",
-        "VITE_APP_PROTOCOL",
         "VITE_QUESTS_API_BASE_URL",
         "WIN_CERT_PATH",
         "WIN_GCP_KMS_KEY_VERSION",
