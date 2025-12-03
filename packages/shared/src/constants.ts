@@ -1,11 +1,7 @@
 export const AI_GATEWAY_API_PATH = "/ai-gateway";
 
-// TODO: remove need for vite env in this package
-// This package is sometimes used outside the Vite environment
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-export const APP_PROTOCOL = import.meta?.env?.VITE_APP_PROTOCOL
-  ? import.meta.env.VITE_APP_PROTOCOL
-  : "quests";
+export const APP_PROTOCOL =
+  process.env.NODE_ENV === "development" ? "quests-local" : "quests";
 
 export const APP_REPO_NAME = "quests";
 export const GITHUB_ORG = "quests-org";
