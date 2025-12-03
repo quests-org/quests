@@ -1,6 +1,7 @@
-import { NEW_ISSUE_URL } from "@quests/shared";
+import { SUPPORT_EMAIL } from "@quests/shared";
 import { rootRouteId, useMatch, useRouter } from "@tanstack/react-router";
 import { AlertCircle } from "lucide-react";
+import { toast } from "sonner";
 
 import { ExternalLink } from "./external-link";
 import { InternalLink } from "./internal-link";
@@ -42,17 +43,8 @@ export function ErrorCard({
   return (
     <Card className="w-full max-w-2xl">
       <CardHeader>
-        <div className="flex items-start justify-between gap-x-4">
-          <div className="flex-1">
-            <CardTitle className="text-xl">{title}</CardTitle>
-            <p className="text-muted-foreground mt-1.5 text-sm">
-              {description}
-            </p>
-          </div>
-          <Button asChild size="sm" variant="outline">
-            <ExternalLink href={NEW_ISSUE_URL}>Report issue</ExternalLink>
-          </Button>
-        </div>
+        <CardTitle className="text-xl">{title}</CardTitle>
+        <p className="text-muted-foreground mt-1.5 text-sm">{description}</p>
       </CardHeader>
       <CardContent className="space-y-4">
         <Alert variant="destructive">
@@ -73,7 +65,18 @@ export function ErrorCard({
           </details>
         )}
       </CardContent>
-      <CardFooter className="justify-end gap-2">
+      <CardFooter className="justify-end gap-x-2">
+        <Button asChild variant="ghost">
+          <ExternalLink
+            href={`mailto:${SUPPORT_EMAIL}`}
+            onClick={() => {
+              void navigator.clipboard.writeText(SUPPORT_EMAIL);
+              toast.info(`Copied ${SUPPORT_EMAIL} to clipboard`);
+            }}
+          >
+            Contact us
+          </ExternalLink>
+        </Button>
         {isRoot ? (
           <Button asChild variant="outline">
             <InternalLink to="/">Home</InternalLink>
