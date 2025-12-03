@@ -9,6 +9,7 @@ import {
   setAuthServer,
   setAuthServerPort,
 } from "@/electron-main/auth/state";
+import { captureServerEvent } from "@/electron-main/lib/capture-server-event";
 import { logger } from "@/electron-main/lib/electron-logger";
 import { createError } from "@/electron-main/lib/errors";
 import { publisher } from "@/electron-main/rpc/publisher";
@@ -153,6 +154,7 @@ export async function startAuthCallbackServer() {
       );
     }
 
+    captureServerEvent("auth.signed_in");
     publisher.publish("auth.updated", {});
     publisher.publish("subscription.refetch", null);
     return c.html(renderAuthPage({}));
