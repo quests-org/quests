@@ -24,7 +24,7 @@ export function fetchAndParseOpenAICompatibleModels(
 
 export function fetchOpenAICompatibleModels(
   config: MinimalProviderConfig,
-  { cache = false }: { cache?: boolean } = {},
+  { cache = true }: { cache?: boolean } = {},
 ) {
   const metadata = getProviderMetadata(config.type);
   const headers = new Headers({ "Content-Type": "application/json" });
