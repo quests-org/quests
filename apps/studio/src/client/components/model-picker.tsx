@@ -22,7 +22,7 @@ import {
   type AIGatewayModel,
   type AIGatewayModelURI,
 } from "@quests/ai-gateway/client";
-import { AlertCircle, Check, ChevronDown, Loader2, Plus } from "lucide-react";
+import { AlertCircle, Check, ChevronDown, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { AIProviderIcon } from "./ai-provider-icon";

@@ -1,5 +1,3 @@
-import { hasAIProviderConfigAtom } from "@/client/atoms/has-ai-provider-config";
-import { AIProviderGuard } from "@/client/components/ai-provider-guard";
 import { AIProviderGuardDialog } from "@/client/components/ai-provider-guard-dialog";
 import { AppView } from "@/client/components/app-view";
 import {
@@ -23,7 +21,6 @@ import {
 import { StoreId } from "@quests/workspace/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { useAtomValue } from "jotai";
 import { ArrowUp, Eye, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -56,18 +53,12 @@ export function TemplateDetail({
   const createProjectMutation = useMutation(
     rpcClient.workspace.project.create.mutationOptions(),
   );
-  const hasAIProvider = useAtomValue(hasAIProviderConfigAtom);
   const [selectedModelURI, setSelectedModelURI, saveSelectedModelURI] =
     useDefaultModelURI();
   const [showAIProviderGuard, setShowAIProviderGuard] = useState(false);
   const [showPreviewDialog, setShowPreviewDialog] = useState(false);
 
   const handleCreateProject = (prompt?: string) => {
-    if (!hasAIProvider) {
-      setShowAIProviderGuard(true);
-      return;
-    }
-
     if (appDetails && selectedModelURI) {
       const sessionId = StoreId.newSessionId();
       const messageId = StoreId.newMessageId();
@@ -174,7 +165,6 @@ export function TemplateDetail({
           />
           <div className="absolute bottom-4 left-4">
             <Button
-              disabled={!hasAIProvider}
               onClick={() => {
                 setShowPreviewDialog(true);
               }}
@@ -244,16 +234,10 @@ export function TemplateDetail({
           showCloseButton={false}
         >
           <div className="flex-1 min-h-0 relative">
-            {hasAIProvider ? (
-              <AppView
-                app={appDetails.preview}
-                className="w-full h-full overflow-hidden flex flex-col"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-background">
-                <AIProviderGuard description="You need to add an AI provider to view previews." />
-              </div>
-            )}
+            <AppView
+              app={appDetails.preview}
+              className="w-full h-full overflow-hidden flex flex-col"
+            />
           </div>
         </DialogContent>
       </Dialog>
