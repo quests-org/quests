@@ -390,7 +390,7 @@ if (isFallbackPage) {
 
     const elapsed = Date.now() - initialCheckTime;
 
-    if (elapsed >= 5000) {
+    if (elapsed >= 5000 && !isShowingRecovery) {
       tryAutoRefresh();
     }
 
