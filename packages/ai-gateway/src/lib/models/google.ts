@@ -91,12 +91,16 @@ export function fetchAndParseGoogleModels(
   });
 }
 
-export function fetchGoogleModels(config: MinimalProviderConfig) {
+export function fetchGoogleModels(
+  config: MinimalProviderConfig,
+  { cache = true }: { cache?: boolean } = {},
+) {
   const headers = new Headers({ "Content-Type": "application/json" });
   setProviderAuthHeaders(headers, config);
 
   const url = new URL(apiURL({ config, path: "/models" }));
   return fetchJson({
+    cache,
     headers,
     url: url.toString(),
   });

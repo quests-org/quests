@@ -128,7 +128,10 @@ export function fetchAndParseAnthropicModels(
   });
 }
 
-export function fetchAnthropicModels(config: MinimalProviderConfig) {
+export function fetchAnthropicModels(
+  config: MinimalProviderConfig,
+  { cache = true }: { cache?: boolean } = {},
+) {
   const headers = new Headers({ "Content-Type": "application/json" });
   setProviderAuthHeaders(headers, config);
 
@@ -136,6 +139,7 @@ export function fetchAnthropicModels(config: MinimalProviderConfig) {
   url.searchParams.set("limit", "1000");
 
   return fetchJson({
+    cache,
     headers,
     url: url.toString(),
   });

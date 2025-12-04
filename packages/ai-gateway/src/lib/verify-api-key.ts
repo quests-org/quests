@@ -79,19 +79,19 @@ function verifyWithModelsEndpoint({
     let result;
     switch (config.type) {
       case "anthropic": {
-        result = await fetchAnthropicModels(config);
+        result = await fetchAnthropicModels(config, { cache: false });
         break;
       }
       case "google": {
-        result = await fetchGoogleModels(config);
+        result = await fetchGoogleModels(config, { cache: false });
         break;
       }
       case "openai": {
-        result = await fetchOpenAIModels(config);
+        result = await fetchOpenAIModels(config, { cache: false });
         break;
       }
       default: {
-        result = await fetchOpenAICompatibleModels(config);
+        result = await fetchOpenAICompatibleModels(config, { cache: false });
         break;
       }
     }

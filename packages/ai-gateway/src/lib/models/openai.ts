@@ -51,12 +51,15 @@ export function fetchAndParseOpenAIModels(
   });
 }
 
-export function fetchOpenAIModels(config: MinimalProviderConfig) {
+export function fetchOpenAIModels(
+  config: MinimalProviderConfig,
+  { cache = true }: { cache?: boolean } = {},
+) {
   const headers = new Headers({ "Content-Type": "application/json" });
   setProviderAuthHeaders(headers, config);
 
   return fetchJson({
-    cache: true,
+    cache,
     headers,
     url: apiURL({ config, path: "/models" }),
   });
