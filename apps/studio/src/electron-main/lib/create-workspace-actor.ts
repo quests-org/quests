@@ -1,12 +1,11 @@
-import { getToken } from "@/electron-main/api/utils";
 import {
   REGISTRY_DEV_DIR_PATH,
   REGISTRY_DIR_NAME,
 } from "@/electron-main/constants";
 import { logger } from "@/electron-main/lib/electron-logger";
+import { getAIProviderConfigs } from "@/electron-main/lib/get-ai-provider-configs";
 import { is } from "@electron-toolkit/utils";
 import { aiGatewayApp } from "@quests/ai-gateway";
-import { type AIProviderConfigId } from "@quests/shared";
 import {
   WORKSPACE_FOLDER,
   workspaceMachine,
@@ -17,7 +16,6 @@ import ms from "ms";
 import path from "node:path";
 import { createActor } from "xstate";
 
-import { getProviderConfigsStore } from "../stores/provider-configs";
 import { captureServerEvent } from "./capture-server-event";
 import { captureServerException } from "./capture-server-exception";
 import { getPNPMBinPath } from "./setup-bin-directory";
@@ -31,22 +29,7 @@ export function createWorkspaceActor() {
       aiGatewayApp,
       captureEvent: captureServerEvent,
       captureException: captureServerException,
-      getAIProviderConfigs: () => {
-        const providerConfigsStore = getProviderConfigsStore();
-        const keyBasedProviderConfigs = providerConfigsStore.get("providers");
-        const token = getToken();
-
-        if (token) {
-          keyBasedProviderConfigs.push({
-            apiKey: token,
-            cacheIdentifier: "quests",
-            id: "quests" as AIProviderConfigId,
-            type: "quests",
-          });
-        }
-
-        return keyBasedProviderConfigs;
-      },
+      getAIProviderConfigs,
       nodeExecEnv: {
         // Required to allow Electron to operate as a node process
         // See https://www.electronjs.org/docs/latest/api/environment-variables

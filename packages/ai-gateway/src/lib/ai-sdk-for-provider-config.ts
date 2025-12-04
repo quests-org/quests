@@ -111,6 +111,7 @@ export function aiSDKForProviderConfig(
       });
     }
     case "quests": {
+      // Main difference is the lack of a cache identifier, which will be set by the server.
       return createOpenRouter({
         apiKey: internalAPIKey(),
         baseURL: internalURL({ config, workspaceServerURL }),

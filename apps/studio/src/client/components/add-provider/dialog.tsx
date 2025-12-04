@@ -1,13 +1,11 @@
-import { selectedModelURIAtom } from "@/client/atoms/selected-model";
 import { Dialog, DialogContent } from "@/client/components/ui/dialog";
 import { fixURL } from "@/client/lib/fix-url";
-import { setDefaultModel } from "@/client/lib/set-default-model";
 import { rpcClient } from "@/client/rpc/client";
 import { type ClientAIProviderConfig } from "@/shared/schemas/provider";
 import { isDefinedError } from "@orpc/client";
 import { AI_GATEWAY_API_KEY_NOT_NEEDED } from "@quests/shared";
 import { useMutation } from "@tanstack/react-query";
-import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 import { useEffect } from "react";
 
 import { addProviderDialogAtom } from "../../atoms/add-provider";
@@ -25,8 +23,6 @@ export function AddProviderDialog({
   open: boolean;
   providers?: ClientAIProviderConfig[];
 }) {
-  const selectedModelURI = useAtomValue(selectedModelURIAtom);
-  const setSelectedModelURI = useSetAtom(selectedModelURIAtom);
   const [state, dispatch] = useAtom(addProviderDialogAtom);
   const { providerMetadataMap } = useAtomValue(providerMetadataAtom);
 
@@ -103,10 +99,6 @@ export function AddProviderDialog({
           },
         },
       );
-      if (providers.length === 0 || !selectedModelURI) {
-        // First provider and no default? Set it.
-        await setDefaultModel(setSelectedModelURI);
-      }
       onSuccess();
     } catch {
       // Handled in onError

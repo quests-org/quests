@@ -1,5 +1,4 @@
 import { hasAIProviderConfigAtom } from "@/client/atoms/has-ai-provider-config";
-import { selectedModelURIAtom } from "@/client/atoms/selected-model";
 import { AIProviderGuard } from "@/client/components/ai-provider-guard";
 import { AIProviderGuardDialog } from "@/client/components/ai-provider-guard-dialog";
 import { AppView } from "@/client/components/app-view";
@@ -14,6 +13,7 @@ import { GithubLogo } from "@/client/components/service-icons";
 import { TechStack } from "@/client/components/tech-stack";
 import { Button } from "@/client/components/ui/button";
 import { Dialog, DialogContent } from "@/client/components/ui/dialog";
+import { useDefaultModelURI } from "@/client/hooks/use-default-model-uri";
 import { rpcClient } from "@/client/rpc/client";
 import {
   GITHUB_ORG,
@@ -23,7 +23,7 @@ import {
 import { StoreId } from "@quests/workspace/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { useAtom, useAtomValue } from "jotai";
+import { useAtomValue } from "jotai";
 import { ArrowUp, Eye, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -57,7 +57,8 @@ export function TemplateDetail({
     rpcClient.workspace.project.create.mutationOptions(),
   );
   const hasAIProvider = useAtomValue(hasAIProviderConfigAtom);
-  const [selectedModelURI, setSelectedModelURI] = useAtom(selectedModelURIAtom);
+  const [selectedModelURI, setSelectedModelURI, saveSelectedModelURI] =
+    useDefaultModelURI();
   const [showAIProviderGuard, setShowAIProviderGuard] = useState(false);
   const [showPreviewDialog, setShowPreviewDialog] = useState(false);
 
@@ -72,6 +73,8 @@ export function TemplateDetail({
       const messageId = StoreId.newMessageId();
       const createdAt = new Date();
       const promptText = prompt?.trim() || "";
+
+      saveSelectedModelURI(selectedModelURI);
 
       createProjectMutation.mutate(
         {

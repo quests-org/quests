@@ -1,10 +1,12 @@
 import { logger } from "@/electron-main/lib/electron-logger";
 import { publisher } from "@/electron-main/rpc/publisher";
+import { AIGatewayModelURI } from "@quests/ai-gateway";
 import Store from "electron-store";
 import { z } from "zod";
 
 /* eslint-disable unicorn/prefer-top-level-await */
 const PreferencesStoreSchema = z.object({
+  defaultModelURI: AIGatewayModelURI.Schema.optional().catch(undefined),
   enableUsageMetrics: z.boolean().catch(true),
   lastUpdateCheck: z.number().optional(),
   preferApiKeyOverAccount: z.boolean().catch(false),
@@ -51,4 +53,14 @@ export const getPreferencesStore = (): Store<PreferencesStore> => {
 export const setLastUpdateCheck = (): void => {
   const store = getPreferencesStore();
   store.set("lastUpdateCheck", Date.now());
+};
+
+export const getDefaultModelURI = (): AIGatewayModelURI.Type | undefined => {
+  const store = getPreferencesStore();
+  return store.get("defaultModelURI");
+};
+
+export const setDefaultModelURI = (modelURI: AIGatewayModelURI.Type): void => {
+  const store = getPreferencesStore();
+  store.set("defaultModelURI", modelURI);
 };

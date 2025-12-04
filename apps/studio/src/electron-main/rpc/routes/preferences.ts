@@ -1,10 +1,13 @@
 import { base } from "@/electron-main/rpc/base";
 import { publisher } from "@/electron-main/rpc/publisher";
 import {
+  getDefaultModelURI,
   getPreferencesStore,
   setLastUpdateCheck,
 } from "@/electron-main/stores/preferences";
 import { openSettingsWindow as openSettingsWindowFn } from "@/electron-main/windows/settings";
+import { eventIterator } from "@orpc/server";
+import { AIGatewayModelURI } from "@quests/ai-gateway";
 import { app } from "electron";
 import { z } from "zod";
 
@@ -74,7 +77,25 @@ const getAppVersion = base.handler(() => {
   return { version: app.getVersion() };
 });
 
+const setDefaultModelURI = base
+  .input(z.object({ modelURI: AIGatewayModelURI.Schema }))
+  .handler(({ input }) => {
+    const preferencesStore = getPreferencesStore();
+    preferencesStore.set("defaultModelURI", input.modelURI);
+  });
+
 const live = {
+  defaultModelURI: base
+    .output(eventIterator(AIGatewayModelURI.Schema.optional()))
+    .handler(async function* ({ signal }) {
+      yield getDefaultModelURI();
+
+      for await (const _payload of publisher.subscribe("preferences.updated", {
+        signal,
+      })) {
+        yield getDefaultModelURI();
+      }
+    }),
   get: base.handler(async function* ({ signal }) {
     yield getPreferencesData();
 
@@ -92,6 +113,7 @@ export const preferences = {
   live,
   openSettingsWindow,
   quitAndInstall,
+  setDefaultModelURI,
   setEnableUsageMetrics,
   setPreferApiKeyOverAccount,
   setTheme,

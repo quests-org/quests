@@ -1,5 +1,4 @@
 import { agentNameAtom } from "@/client/atoms/agent-name";
-import { selectedModelURIAtom } from "@/client/atoms/selected-model";
 import { userAtom } from "@/client/atoms/user";
 import { SmallAppIcon } from "@/client/components/app-icon";
 import { AppStatusIcon } from "@/client/components/app-status-icon";
@@ -11,6 +10,7 @@ import { PromptInput } from "@/client/components/prompt-input";
 import { Card, CardContent } from "@/client/components/ui/card";
 import { Kbd } from "@/client/components/ui/kbd";
 import { useTabActions } from "@/client/hooks/tabs";
+import { useDefaultModelURI } from "@/client/hooks/use-default-model-uri";
 import { useSignInSocial } from "@/client/hooks/use-sign-in-social";
 import { createUserMessage } from "@/client/lib/create-user-message";
 import { isMacOS } from "@/client/lib/utils";
@@ -44,7 +44,8 @@ export const Route = createFileRoute("/_app/new-tab")({
 });
 
 function RouteComponent() {
-  const [selectedModelURI, setSelectedModelURI] = useAtom(selectedModelURIAtom);
+  const [selectedModelURI, setSelectedModelURI, saveSelectedModelURI] =
+    useDefaultModelURI();
   const [agentName, setAgentName] = useAtom(agentNameAtom);
   const userResult = useAtomValue(userAtom);
   const isLoggedIn = Boolean(userResult.data?.id);
@@ -109,6 +110,8 @@ function RouteComponent() {
                   prompt,
                   sessionId,
                 });
+
+                saveSelectedModelURI(modelURI);
 
                 createProjectMutation.mutate(
                   {

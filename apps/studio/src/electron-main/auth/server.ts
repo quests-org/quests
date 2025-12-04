@@ -12,6 +12,7 @@ import {
 import { captureServerEvent } from "@/electron-main/lib/capture-server-event";
 import { logger } from "@/electron-main/lib/electron-logger";
 import { createError } from "@/electron-main/lib/errors";
+import { setDefaultModelIfNeeded } from "@/electron-main/lib/set-default-model";
 import { publisher } from "@/electron-main/rpc/publisher";
 import { getSessionStore } from "@/electron-main/stores/session";
 import { serve } from "@hono/node-server";
@@ -155,6 +156,7 @@ export async function startAuthCallbackServer() {
     }
 
     captureServerEvent("auth.signed_in");
+    void setDefaultModelIfNeeded({ forceUpdateForNewLogin: true });
     publisher.publish("auth.updated", {});
     publisher.publish("subscription.refetch", null);
     return c.html(renderAuthPage({}));

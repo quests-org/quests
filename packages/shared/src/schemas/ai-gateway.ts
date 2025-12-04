@@ -29,5 +29,7 @@ export const AIProviderTypeSchema = z.enum([
 ]);
 export type AIProviderType = z.infer<typeof AIProviderTypeSchema>;
 
-export const AIProviderConfigIdSchema = z.string().brand("AIProviderConfigId");
+export const AIProviderConfigIdSchema = z
+  .custom<"quests" | (string & {})>((val) => typeof val === "string")
+  .brand("AIProviderConfigId");
 export type AIProviderConfigId = z.output<typeof AIProviderConfigIdSchema>;

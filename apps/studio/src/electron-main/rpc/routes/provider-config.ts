@@ -1,3 +1,4 @@
+import { setDefaultModelIfNeeded } from "@/electron-main/lib/set-default-model";
 import { base } from "@/electron-main/rpc/base";
 import { ClientAIProviderConfigSchema } from "@/shared/schemas/provider";
 import { call, eventIterator } from "@orpc/server";
@@ -163,6 +164,7 @@ const create = base
       const appStateStore = getAppStateStore();
       appStateStore.set("hasCompletedProviderSetup", true);
 
+      void setDefaultModelIfNeeded();
       // Ensures environment variables inside the apps themselves are updated
       context.workspaceRef.send({ type: "restartAllRuntimes" });
 
