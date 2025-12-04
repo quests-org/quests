@@ -15,6 +15,7 @@ import { type AnyAgent } from "../agents/types";
 import { type AppConfig } from "../lib/app-config/types";
 import { createAssignEventError } from "../lib/assign-event-error";
 import { getCurrentDate } from "../lib/get-current-date";
+import { isInsufficientCreditsError } from "../lib/is-insufficient-credits-error";
 import { isInteractiveTool } from "../lib/is-interactive-tool";
 import { isToolPart } from "../lib/is-tool-part";
 import { logUnhandledEvent } from "../lib/log-unhandled-event";
@@ -407,6 +408,10 @@ export const agentMachine = setup({
                   error: new Error(message.metadata.error.message),
                   type: "error",
                 };
+              }
+
+              if (isInsufficientCreditsError(message)) {
+                return { type: "stop" };
               }
 
               const hasRetryableError =

@@ -1,4 +1,7 @@
-import { type SessionMessage } from "@quests/workspace/client";
+import {
+  isInsufficientCreditsError,
+  type SessionMessage,
+} from "@quests/workspace/client";
 import { AlertTriangle, ChevronUp } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -159,21 +162,5 @@ export function MessageError({
         </div>
       )}
     </div>
-  );
-}
-
-function isInsufficientCreditsError(
-  message: SessionMessage.Assistant,
-): boolean {
-  const error = message.metadata.error;
-  if (!error) {
-    return false;
-  }
-
-  return (
-    error.kind === "api-call" &&
-    error.statusCode === 403 &&
-    message.metadata.aiGatewayModel?.params.provider === "quests" &&
-    (error.responseBody?.includes("Insufficient credits") ?? false)
   );
 }

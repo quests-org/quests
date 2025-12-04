@@ -1,6 +1,7 @@
 export type { AgentName } from "./agents/types";
 export { GIT_AUTHOR, MAX_PROMPT_STORAGE_LENGTH } from "./constants";
 export { getToolNameByType } from "./lib/get-tool-name-by-type";
+export { isInsufficientCreditsError } from "./lib/is-insufficient-credits-error";
 export { isInteractiveTool } from "./lib/is-interactive-tool";
 export { isToolPart } from "./lib/is-tool-part";
 export type {
