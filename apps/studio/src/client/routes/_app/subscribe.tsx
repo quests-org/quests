@@ -1,3 +1,4 @@
+import { EmailLink } from "@/client/components/email-link";
 import { ErrorCard } from "@/client/components/error-card";
 import { Button } from "@/client/components/ui/button";
 import { Card } from "@/client/components/ui/card";
@@ -361,11 +362,11 @@ function SubscribePage() {
               <Card className="relative p-8 bg-linear-to-br from-violet-100 via-background to-background dark:from-violet-950/30 dark:via-slate-900/20 border border-border/50">
                 <div className="text-center">
                   <h2 className="text-2xl font-bold mb-2 bg-linear-to-r from-violet-600 to-purple-600 dark:from-violet-400 dark:to-purple-400 bg-clip-text text-transparent">
-                    Enterprise
+                    Custom Plans
                   </h2>
                   <p className="text-muted-foreground mb-6 max-w-xl mx-auto text-sm">
-                    Custom solutions for teams that need dedicated support, SSO,
-                    advanced security, and flexible billing options.
+                    Whether you&apos;re a team, agency, or enterprise,
+                    we&apos;ll build a plan that fits your needs.
                   </p>
                   <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground mb-6">
                     <span>Custom pricing</span>
@@ -374,16 +375,16 @@ function SubscribePage() {
                     <span>•</span>
                     <span>SSO & SAML</span>
                   </div>
-                  <Button
-                    onClick={() => {
-                      captureClientEvent("subscribe.contact_us_clicked");
-                      void openExternalLink({
-                        url: `mailto:${SALES_EMAIL}?subject=Quests%20-%20Enterprise%20Inquiry`,
-                      });
-                    }}
-                    size="lg"
-                  >
-                    Contact us
+                  <Button asChild size="lg">
+                    <EmailLink
+                      email={SALES_EMAIL}
+                      onClick={() => {
+                        captureClientEvent("subscribe.contact_us_clicked");
+                      }}
+                      subject="Quests - Custom Plan Inquiry"
+                    >
+                      Contact us
+                    </EmailLink>
                   </Button>
                 </div>
               </Card>
