@@ -497,7 +497,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
         </TextareaContainer>
 
         <AIProviderGuardDialog
-          description="You need to add an AI provider to submit prompts."
+          description="You need to add an AI provider to use Quests."
           onOpenChange={setShowAIProviderGuard}
           open={showAIProviderGuard}
         />

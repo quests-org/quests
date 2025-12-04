@@ -22,7 +22,7 @@ import {
   type AIGatewayModel,
   type AIGatewayModelURI,
 } from "@quests/ai-gateway/client";
-import { AlertCircle, Check, ChevronDown, Plus } from "lucide-react";
+import { AlertCircle, Check, ChevronDown, Loader2, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { AIProviderIcon } from "./ai-provider-icon";
@@ -55,6 +55,7 @@ export function ModelPicker({
   selectedModel,
 }: ModelPickerProps) {
   const [open, setOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const groupedModels = useMemo(
     () => groupAndFilterModels(models ?? []),
@@ -103,19 +104,6 @@ export function ModelPicker({
     );
   };
 
-  if (errors?.length === 0 && models && models.length === 0) {
-    return (
-      <Button
-        disabled={disabled}
-        onClick={onAddProvider}
-        size="sm"
-        variant="outline"
-      >
-        Add an AI provider
-      </Button>
-    );
-  }
-
   return (
     <Popover onOpenChange={setOpen} open={open}>
       <PopoverTrigger asChild>
@@ -140,11 +128,18 @@ export function ModelPicker({
       </PopoverTrigger>
       <PopoverContent align="start" className="w-80 p-0">
         <Command>
-          <CommandInput className="h-9" placeholder="Search models..." />
+          <CommandInput
+            className="h-9"
+            onValueChange={setSearchQuery}
+            placeholder="Search models..."
+            value={searchQuery}
+          />
           <CommandList className="max-h-82">
-            <CommandEmpty>
+            {!models || models.length === 0 ? (
               <div className="flex flex-col items-center gap-3 py-6">
-                <p className="text-sm text-muted-foreground">No models found</p>
+                <p className="text-sm text-muted-foreground">
+                  Connect a provider to use Quests
+                </p>
                 <Button
                   onClick={() => {
                     setOpen(false);
@@ -154,14 +149,33 @@ export function ModelPicker({
                   variant="outline"
                 >
                   <Plus className="mr-2 size-4" />
-                  Add AI provider
+                  Add an AI provider
                 </Button>
-                <p className="text-xs text-muted-foreground text-center max-w-64">
-                  The model you&apos;re looking for might be available from a
-                  different provider
-                </p>
               </div>
-            </CommandEmpty>
+            ) : (
+              <CommandEmpty>
+                <div className="flex flex-col items-center gap-3 py-6">
+                  <p className="text-sm text-muted-foreground">
+                    No matching models
+                  </p>
+                  <Button
+                    onClick={() => {
+                      setOpen(false);
+                      onAddProvider?.();
+                    }}
+                    size="sm"
+                    variant="outline"
+                  >
+                    <Plus className="mr-2 size-4" />
+                    Add an AI provider
+                  </Button>
+                  <p className="text-xs text-muted-foreground text-center max-w-64">
+                    The model you&apos;re looking for might be available from a
+                    different provider
+                  </p>
+                </div>
+              </CommandEmpty>
+            )}
             {errors && errors.length > 0 && (
               <CommandGroup
                 heading={
@@ -206,11 +220,6 @@ export function ModelPicker({
                     </div>
                   </CommandItem>
                 ))}
-              </CommandGroup>
-            )}
-            {isLoading && (
-              <CommandGroup>
-                <CommandItem disabled>Loading models...</CommandItem>
               </CommandGroup>
             )}
             {isError && (
