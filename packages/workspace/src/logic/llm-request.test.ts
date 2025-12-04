@@ -3,6 +3,7 @@ import {
   type LanguageModelV2Prompt,
   type LanguageModelV2StreamPart,
 } from "@ai-sdk/provider";
+import { type AIGatewayLanguageModel } from "@quests/ai-gateway";
 import { simulateReadableStream } from "ai";
 import { MockLanguageModelV2 } from "ai/test";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -157,7 +158,7 @@ describe("llmRequestLogic", () => {
                 // no-op
               },
               emitDeltas: true,
-              model,
+              model: model as unknown as AIGatewayLanguageModel,
               self: { send: vi.fn() } as unknown as AnyActorRef,
               sessionId,
               stepCount: 1,
@@ -231,6 +232,7 @@ describe("llmRequestLogic", () => {
         {
           "id": "msg_00000000Z88888888888888888",
           "metadata": {
+            "aiGatewayModel": undefined,
             "completionTokensPerSecond": 2,
             "createdAt": 2013-08-31T12:00:00.000Z,
             "finishReason": "stop",
@@ -327,6 +329,7 @@ describe("llmRequestLogic", () => {
         {
           "id": "msg_00000000Z98888888888888888",
           "metadata": {
+            "aiGatewayModel": undefined,
             "completionTokensPerSecond": 2.5,
             "createdAt": 2013-08-31T12:00:00.000Z,
             "finishReason": "stop",
@@ -425,6 +428,7 @@ describe("llmRequestLogic", () => {
         {
           "id": "msg_00000000ZA8888888888888888",
           "metadata": {
+            "aiGatewayModel": undefined,
             "completionTokensPerSecond": 2,
             "createdAt": 2013-08-31T12:00:00.000Z,
             "finishReason": "stop",
@@ -525,6 +529,7 @@ describe("llmRequestLogic", () => {
         {
           "id": "msg_00000000ZB8888888888888888",
           "metadata": {
+            "aiGatewayModel": undefined,
             "completionTokensPerSecond": 2,
             "createdAt": 2013-08-31T12:00:00.000Z,
             "finishReason": "stop",
@@ -629,6 +634,7 @@ describe("llmRequestLogic", () => {
         {
           "id": "msg_00000000ZC8888888888888888",
           "metadata": {
+            "aiGatewayModel": undefined,
             "completionTokensPerSecond": 2,
             "createdAt": 2013-08-31T12:00:00.000Z,
             "finishReason": "stop",
@@ -736,6 +742,7 @@ describe("llmRequestLogic", () => {
         {
           "id": "msg_00000000ZD8888888888888888",
           "metadata": {
+            "aiGatewayModel": undefined,
             "completionTokensPerSecond": 2,
             "createdAt": 2013-08-31T12:00:00.000Z,
             "finishReason": "stop",
@@ -827,6 +834,7 @@ describe("llmRequestLogic", () => {
         {
           "id": "msg_00000000ZE8888888888888888",
           "metadata": {
+            "aiGatewayModel": undefined,
             "completionTokensPerSecond": 2,
             "createdAt": 2013-08-31T12:00:00.000Z,
             "finishReason": "stop",
@@ -929,6 +937,7 @@ describe("llmRequestLogic", () => {
         {
           "id": "msg_00000000ZF8888888888888888",
           "metadata": {
+            "aiGatewayModel": undefined,
             "completionTokensPerSecond": 2.5,
             "createdAt": 2013-08-31T12:00:00.000Z,
             "finishReason": "stop",
@@ -1021,6 +1030,7 @@ describe("llmRequestLogic", () => {
         {
           "id": "msg_00000000ZG8888888888888888",
           "metadata": {
+            "aiGatewayModel": undefined,
             "completionTokensPerSecond": 2,
             "createdAt": 2013-08-31T12:00:00.000Z,
             "finishReason": "stop",
@@ -1118,6 +1128,7 @@ describe("llmRequestLogic", () => {
         {
           "id": "msg_00000000ZH8888888888888888",
           "metadata": {
+            "aiGatewayModel": undefined,
             "completionTokensPerSecond": 2,
             "createdAt": 2013-08-31T12:00:00.000Z,
             "finishReason": "stop",
@@ -1210,6 +1221,7 @@ describe("llmRequestLogic", () => {
         {
           "id": "msg_00000000ZJ8888888888888888",
           "metadata": {
+            "aiGatewayModel": undefined,
             "completionTokensPerSecond": 2,
             "createdAt": 2013-08-31T12:00:00.000Z,
             "finishReason": "stop",
@@ -1309,6 +1321,7 @@ describe("llmRequestLogic", () => {
           {
             "id": "msg_00000000ZK8888888888888888",
             "metadata": {
+              "aiGatewayModel": undefined,
               "createdAt": 2013-08-31T12:00:00.000Z,
               "error": {
                 "kind": "api-call",
@@ -1387,6 +1400,7 @@ describe("llmRequestLogic", () => {
           {
             "id": "msg_00000000ZM8888888888888888",
             "metadata": {
+              "aiGatewayModel": undefined,
               "createdAt": 2013-08-31T12:00:00.000Z,
               "error": {
                 "kind": "aborted",
@@ -1451,6 +1465,7 @@ describe("llmRequestLogic", () => {
           {
             "id": "msg_00000000ZN8888888888888888",
             "metadata": {
+              "aiGatewayModel": undefined,
               "createdAt": 2013-08-31T12:00:00.000Z,
               "error": {
                 "kind": "unknown",
@@ -2144,6 +2159,7 @@ describe("llmRequestLogic", () => {
           {
             "id": "msg_00000000ZS888888888888888B",
             "metadata": {
+              "aiGatewayModel": undefined,
               "completionTokensPerSecond": 2,
               "createdAt": 2013-08-31T12:00:00.000Z,
               "finishReason": "stop",

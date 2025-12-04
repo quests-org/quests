@@ -1,6 +1,6 @@
 import { capitalize } from "radashi";
 
-import { type AIGatewayModel } from "../client";
+import { type AIGatewayModel } from "../schemas/model";
 
 export function generateModelName(modelId: AIGatewayModel.CanonicalId): string {
   const replacements: Record<string, string> = {

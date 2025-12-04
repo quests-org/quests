@@ -1,6 +1,7 @@
 import {
+  isToolPart,
   type SessionMessage,
-  SessionMessagePart,
+  type SessionMessagePart,
   type StoreId,
   type WorkspaceAppProject,
 } from "@quests/workspace/client";
@@ -25,7 +26,6 @@ import { ToolPart } from "./tool-part";
 import { Alert, AlertDescription } from "./ui/alert";
 import { Button } from "./ui/button";
 import { UnknownPart } from "./unknown-part";
-import { UpgradeSubscriptionAlert } from "./upgrade-subscription-alert";
 import { UsageSummary } from "./usage-summary";
 import { UserMessage } from "./user-message";
 export type FilterMode = "chat" | "versions";
@@ -97,22 +97,6 @@ export function SessionStream({
   const isActive = isAnyAgentRunning || isAnyActorActive;
   const isAnyAgentAlive = (appState?.sessionActors ?? []).some((s) =>
     s.tags.includes("agent.alive"),
-  );
-
-  const isInsufficientCreditsError = useCallback(
-    (err: SessionMessage.Assistant["metadata"]["error"]) => {
-      if (!err) {
-        return false;
-      }
-
-      return (
-        err.kind === "api-call" &&
-        err.statusCode === 403 &&
-        err.url.includes("/providers/quests/") &&
-        (err.responseBody?.includes("Insufficient credits") ?? false)
-      );
-    },
-    [],
   );
 
   const gitCommitParts = useMemo(() => {
@@ -201,7 +185,7 @@ export function SessionStream({
         );
       }
 
-      if (SessionMessagePart.isToolPart(part)) {
+      if (isToolPart(part)) {
         return (
           <ToolPart
             isLoading={
@@ -320,19 +304,18 @@ export function SessionStream({
 
       if (message.role === "assistant" && message.metadata.error) {
         const isLastMessage = messageIndex === regularMessages.length - 1;
-        if (!isInsufficientCreditsError(message.metadata.error)) {
-          messageElements.push(
-            <MessageError
-              defaultExpanded={
-                isLastMessage &&
-                !isAnyAgentRunning &&
-                message.metadata.error.kind !== "aborted"
-              }
-              error={message.metadata.error}
-              key={`error-${message.id}`}
-            />,
-          );
-        }
+        messageElements.push(
+          <MessageError
+            defaultExpanded={
+              isLastMessage &&
+              !isAnyAgentRunning &&
+              message.metadata.error.kind !== "aborted"
+            }
+            key={`error-${message.id}`}
+            message={message}
+            showUpgradeAlertIfApplicable={isLastMessage && !isAnyAgentRunning}
+          />,
+        );
       }
 
       newChatElements.push(...messageElements);
@@ -341,13 +324,7 @@ export function SessionStream({
     return {
       chatElements: newChatElements,
     };
-  }, [
-    regularMessages,
-    renderChatPart,
-    isAnyAgentRunning,
-    showMessageActions,
-    isInsufficientCreditsError,
-  ]);
+  }, [regularMessages, renderChatPart, isAnyAgentRunning, showMessageActions]);
 
   const shouldShowErrorRecoveryPrompt = useMemo(() => {
     if (messages.length === 0 || isAnyAgentRunning) {
@@ -372,22 +349,9 @@ export function SessionStream({
         message.metadata.error &&
         message.metadata.error.kind !== "aborted" &&
         message.metadata.error.kind !== "invalid-tool-input" &&
-        message.metadata.error.kind !== "no-such-tool" &&
-        !isInsufficientCreditsError(message.metadata.error),
+        message.metadata.error.kind !== "no-such-tool",
     );
-  }, [messages, isAnyAgentRunning, isInsufficientCreditsError]);
-
-  const shouldShowUpgradeSubscriptionAlert = useMemo(() => {
-    if (messages.length === 0 || isAnyAgentRunning) {
-      return false;
-    }
-
-    const lastMessage = messages.at(-1);
-    return (
-      lastMessage?.role === "assistant" &&
-      isInsufficientCreditsError(lastMessage.metadata.error)
-    );
-  }, [messages, isAnyAgentRunning, isInsufficientCreditsError]);
+  }, [messages, isAnyAgentRunning]);
 
   const shouldShowContinueButton = useMemo(() => {
     if (messages.length === 0 || isAnyAgentRunning || !onContinue) {
@@ -435,8 +399,6 @@ export function SessionStream({
         {shouldShowErrorRecoveryPrompt && (
           <ChatErrorAlert onStartNewChat={handleNewSession} />
         )}
-
-        {shouldShowUpgradeSubscriptionAlert && <UpgradeSubscriptionAlert />}
 
         {shouldShowContinueButton && (
           <Alert className="mt-4" variant="warning">

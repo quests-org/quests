@@ -1,4 +1,5 @@
 import { type LanguageModelV2StreamPart } from "@ai-sdk/provider";
+import { type AIGatewayLanguageModel } from "@quests/ai-gateway";
 import { simulateReadableStream } from "ai";
 import { MockLanguageModelV2 } from "ai/test";
 import mockFs from "mock-fs";
@@ -240,7 +241,7 @@ describe("sessionMachine", () => {
         baseLLMRetryDelayMs,
         llmRequestChunkTimeoutMs,
         maxStepCount,
-        model,
+        model: model as unknown as AIGatewayLanguageModel,
         parentRef: {
           send: vi
             .fn()

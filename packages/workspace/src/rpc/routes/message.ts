@@ -4,7 +4,6 @@ import { mergeGenerators } from "@quests/shared/merge-generators";
 import { z } from "zod";
 
 import { AgentNameSchema } from "../../agents/types";
-import { SessionMessage } from "../../client";
 import { createAppConfig } from "../../lib/app-config/create";
 import { createMessage } from "../../lib/create-message";
 import { resolveModel } from "../../lib/resolve-model";
@@ -14,6 +13,7 @@ import {
   UploadedFileSchema,
   writeUploadedFiles,
 } from "../../lib/write-uploaded-files";
+import { SessionMessage } from "../../schemas/session/message";
 import { StoreId } from "../../schemas/store-id";
 import { AppSubdomainSchema } from "../../schemas/subdomains";
 import { base, toORPCError } from "../base";

@@ -8,12 +8,12 @@ import { getCurrentDate } from "../lib/get-current-date";
 import { getSystemInfo } from "../lib/get-system-info";
 import { git } from "../lib/git";
 import { GitCommands } from "../lib/git/commands";
+import { isToolPart } from "../lib/is-tool-part";
 import { readFileWithAnyCase } from "../lib/read-file-with-any-case";
 import { Store } from "../lib/store";
 import { textForMessage } from "../lib/text-for-message";
 import { type SessionMessage } from "../schemas/session/message";
 import { type SessionMessageDataPart } from "../schemas/session/message-data-part";
-import { SessionMessagePart } from "../schemas/session/message-part";
 import { StoreId } from "../schemas/store-id";
 import { getToolByType, TOOLS } from "../tools/all";
 import { TOOL_EXPLANATION_PARAM_NAME } from "../tools/base";
@@ -228,9 +228,7 @@ export const appBuilderAgent = setupAgent({
 
       const usedNonReadOnlyTools = messages.some((message) =>
         message.parts.some(
-          (part) =>
-            SessionMessagePart.isToolPart(part) &&
-            !getToolByType(part.type).readOnly,
+          (part) => isToolPart(part) && !getToolByType(part.type).readOnly,
         ),
       );
 
@@ -310,9 +308,7 @@ export const appBuilderAgent = setupAgent({
 
     // Continue if last assistant message has tool calls
     return Promise.resolve(
-      lastAssistantMessage.parts.some((part) =>
-        SessionMessagePart.isToolPart(part),
-      ),
+      lastAssistantMessage.parts.some((part) => isToolPart(part)),
     );
   },
 }));

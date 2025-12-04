@@ -3,21 +3,33 @@ import { AlertTriangle, ChevronUp } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Button } from "./ui/button";
+import { UpgradeSubscriptionAlert } from "./upgrade-subscription-alert";
 
 interface MessageErrorProps {
   defaultExpanded?: boolean;
-  error: NonNullable<SessionMessage.Assistant["metadata"]["error"]>;
+  message: SessionMessage.Assistant;
+  showUpgradeAlertIfApplicable?: boolean;
 }
 
 export function MessageError({
   defaultExpanded = false,
-  error,
+  message,
+  showUpgradeAlertIfApplicable = false,
 }: MessageErrorProps) {
+  const error = message.metadata.error;
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
   useEffect(() => {
     setIsExpanded(defaultExpanded);
   }, [defaultExpanded]);
+
+  if (!error) {
+    return null;
+  }
+
+  if (showUpgradeAlertIfApplicable && isInsufficientCreditsError(message)) {
+    return <UpgradeSubscriptionAlert />;
+  }
 
   const handleToggle = () => {
     setIsExpanded(!isExpanded);
@@ -147,5 +159,21 @@ export function MessageError({
         </div>
       )}
     </div>
+  );
+}
+
+function isInsufficientCreditsError(
+  message: SessionMessage.Assistant,
+): boolean {
+  const error = message.metadata.error;
+  if (!error) {
+    return false;
+  }
+
+  return (
+    error.kind === "api-call" &&
+    error.statusCode === 403 &&
+    message.metadata.aiGatewayModel?.params.provider === "quests" &&
+    (error.responseBody?.includes("Insufficient credits") ?? false)
   );
 }

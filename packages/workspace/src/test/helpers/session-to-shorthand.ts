@@ -3,7 +3,8 @@ import type { Result } from "neverthrow";
 import type { Session } from "../../schemas/session";
 import type { SessionMessage } from "../../schemas/session/message";
 
-import { SessionMessagePart } from "../../schemas/session/message-part";
+import { isToolPart } from "../../lib/is-tool-part";
+import { type SessionMessagePart } from "../../schemas/session/message-part";
 
 export function sessionToShorthand(
   sessionResult: Result<Session.WithMessagesAndParts, unknown>,
@@ -29,7 +30,7 @@ function indent(text: string, level = 1): string {
 }
 
 function messagePartToShorthand(part: SessionMessagePart.Type): string {
-  if (SessionMessagePart.isToolPart(part)) {
+  if (isToolPart(part)) {
     const toolName = ` tool="${part.type.replace("tool-", "")}"`;
     const state = ` state="${part.state}"`;
     const callId = ` callId="${part.toolCallId}"`;

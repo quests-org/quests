@@ -1,3 +1,4 @@
+import { AIGatewayModel } from "@quests/ai-gateway";
 import { type SyntheticModelId } from "@quests/shared";
 import {
   convertToModelMessages,
@@ -8,6 +9,7 @@ import {
 import { z } from "zod";
 
 import { type AgentName } from "../../agents/types";
+import { isToolPart } from "../../lib/is-tool-part";
 import { StoreId } from "../store-id";
 import { SessionMessagePart } from "./message-part";
 
@@ -79,6 +81,7 @@ export namespace SessionMessage {
   const SystemMetadataSchema = BaseMetadataSchema;
   const UserMetadataSchema = BaseMetadataSchema;
   const AssistantMetadataSchema = BaseMetadataSchema.extend({
+    aiGatewayModel: AIGatewayModel.Schema.optional(),
     completionTokensPerSecond: z.number().optional(),
     endedAt: z.date().optional(),
     error: ErrorSchema.optional(),
@@ -101,9 +104,8 @@ export namespace SessionMessage {
     ),
     msToFinish: z.number().optional(),
     msToFirstChunk: z.number().optional(),
+    providerId: z.string(),
     synthetic: z.boolean().optional(), // When created by the workspace
-    // Default just for compatibility on 2025-08-08, will remove later
-    providerId: z.string().default("unknown"),
     usage: UsageSchema.partial().optional(),
   });
 
@@ -193,7 +195,7 @@ export namespace SessionMessage {
         .filter(
           (part) =>
             // Must filter or the AI SDK will throw an error in toModelMessages
-            !SessionMessagePart.isToolPart(part) ||
+            !isToolPart(part) ||
             // If the state is input-*, AI SDK errors in converting to model messages
             part.state === "output-available" ||
             part.state === "output-error",

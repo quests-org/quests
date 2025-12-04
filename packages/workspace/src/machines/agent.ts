@@ -1,5 +1,4 @@
-import type { LanguageModel } from "ai";
-
+import { type AIGatewayLanguageModel } from "@quests/ai-gateway";
 import { type Result } from "neverthrow";
 import invariant from "tiny-invariant";
 import {
@@ -17,10 +16,11 @@ import { type AppConfig } from "../lib/app-config/types";
 import { createAssignEventError } from "../lib/assign-event-error";
 import { getCurrentDate } from "../lib/get-current-date";
 import { isInteractiveTool } from "../lib/is-interactive-tool";
+import { isToolPart } from "../lib/is-tool-part";
 import { logUnhandledEvent } from "../lib/log-unhandled-event";
 import { Store } from "../lib/store";
 import { llmRequestLogic } from "../logic/llm-request";
-import { SessionMessagePart } from "../schemas/session/message-part";
+import { type SessionMessagePart } from "../schemas/session/message-part";
 import { StoreId } from "../schemas/store-id";
 import { getToolByType, type ToolOutputByName } from "../tools/all";
 import { type AnyAgentTool } from "../tools/types";
@@ -80,7 +80,7 @@ export const agentMachine = setup({
       {
         agent: AnyAgent;
         appConfig: AppConfig;
-        model: LanguageModel;
+        model: AIGatewayLanguageModel;
         parentMessageId: StoreId.Message;
         sessionId: StoreId.Session;
       }
@@ -203,7 +203,7 @@ export const agentMachine = setup({
       llmRequestChunkTimeoutMs: number;
       maxRetryCount: number;
       maxStepCount: number;
-      model: LanguageModel;
+      model: AIGatewayLanguageModel;
       parentMessageId: StoreId.Message;
       parentRef: ParentActorRef;
       pendingToolCalls: SessionMessagePart.ToolPartInputAvailable[];
@@ -221,7 +221,7 @@ export const agentMachine = setup({
       baseLLMRetryDelayMs: number;
       llmRequestChunkTimeoutMs: number;
       maxStepCount: number;
-      model: LanguageModel;
+      model: AIGatewayLanguageModel;
       parentMessageId: StoreId.Message;
       parentRef: ParentActorRef;
       sessionId: StoreId.Session;
@@ -436,7 +436,7 @@ export const agentMachine = setup({
                 [];
 
               for (const part of parts) {
-                if (!SessionMessagePart.isToolPart(part)) {
+                if (!isToolPart(part)) {
                   continue;
                 }
 

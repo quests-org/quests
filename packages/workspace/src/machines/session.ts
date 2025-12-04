@@ -1,5 +1,4 @@
-import type { LanguageModel } from "ai";
-
+import { type AIGatewayLanguageModel } from "@quests/ai-gateway";
 import invariant from "tiny-invariant";
 import {
   type ActorRef,
@@ -159,7 +158,7 @@ export const sessionMachine = setup({
       error?: unknown;
       llmRequestChunkTimeoutMs: number;
       maxStepCount: number;
-      model: LanguageModel;
+      model: AIGatewayLanguageModel;
       parentRef: ParentActorRef;
       queuedMessages: SessionMessage.UserWithParts[];
       sessionId: StoreId.Session;
@@ -172,7 +171,7 @@ export const sessionMachine = setup({
       baseLLMRetryDelayMs: number;
       llmRequestChunkTimeoutMs: number;
       maxStepCount?: number;
-      model: LanguageModel;
+      model: AIGatewayLanguageModel;
       parentRef: ParentActorRef;
       queuedMessages: SessionMessage.UserWithParts[];
       sessionId: StoreId.Session;

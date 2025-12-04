@@ -1,5 +1,4 @@
-import type { LanguageModel } from "ai";
-
+import { type AIGatewayLanguageModel } from "@quests/ai-gateway";
 import { z } from "zod";
 
 import type { InternalToolName } from "../tools/all";
@@ -26,7 +25,7 @@ export interface Agent<T extends AgentTools> {
   name: AgentName;
   onFinish: (options: {
     appConfig: AppConfig;
-    model: LanguageModel;
+    model: AIGatewayLanguageModel;
     parentMessageId: StoreId.Message;
     sessionId: StoreId.Session;
     signal: AbortSignal;

@@ -1,7 +1,10 @@
-import type { LanguageModel, ToolSet } from "ai";
+import type { ToolSet } from "ai";
 import type { ActorRef, AnyMachineSnapshot } from "xstate";
 
-import { providerOptionsForModel } from "@quests/ai-gateway";
+import {
+  type AIGatewayLanguageModel,
+  providerOptionsForModel,
+} from "@quests/ai-gateway";
 import {
   APICallError,
   InvalidToolInputError,
@@ -14,18 +17,19 @@ import { fromPromise } from "xstate";
 import { type AnyAgent } from "../agents/types";
 import { type AppConfig } from "../lib/app-config/types";
 import { getCurrentDate } from "../lib/get-current-date";
+import { isToolPart } from "../lib/is-tool-part";
 import { prepareModelMessages } from "../lib/prepare-model-messages";
 import { projectModeForSubdomain } from "../lib/project-mode-for-subdomain";
 import { Store } from "../lib/store";
 import { type SessionMessage } from "../schemas/session/message";
-import { SessionMessagePart } from "../schemas/session/message-part";
+import { type SessionMessagePart } from "../schemas/session/message-part";
 import { StoreId } from "../schemas/store-id";
 import { ToolNameSchema } from "../tools/name";
 
 interface LLMRequestInput {
   agent: AnyAgent;
   appConfig: AppConfig;
-  model: LanguageModel;
+  model: AIGatewayLanguageModel;
   self: ActorRef<AnyMachineSnapshot, { type: "llmRequest.chunkReceived" }>;
   sessionId: StoreId.Session;
   stepCount: number;
@@ -71,6 +75,7 @@ export const llmRequestLogic = fromPromise<
   const assistantMessage: SessionMessage.Assistant = {
     id: StoreId.newMessageId(),
     metadata: {
+      aiGatewayModel: input.model.__aiGatewayModel,
       createdAt: getCurrentDate(),
       finishReason: "unknown",
       modelId,
@@ -603,10 +608,7 @@ export const llmRequestLogic = fromPromise<
 
     const parts = await getCurrentParts();
     for (const part of parts) {
-      if (
-        SessionMessagePart.isToolPart(part) &&
-        part.state === "input-streaming"
-      ) {
+      if (isToolPart(part) && part.state === "input-streaming") {
         // eslint-disable-next-line no-console
         console.error("Unhandled tool input streaming part", part);
       }

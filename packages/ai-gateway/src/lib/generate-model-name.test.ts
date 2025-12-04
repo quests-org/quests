@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { type AIGatewayModel } from "../client";
+import { type AIGatewayModel } from "../schemas/model";
 import { generateModelName } from "./generate-model-name";
 
 describe("generateModelName", () => {

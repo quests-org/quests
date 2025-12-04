@@ -119,10 +119,6 @@ export namespace SessionMessagePart {
     return CoercedSchema.parse(part);
   }
 
-  export function isToolPart(part: Type): part is ToolPart {
-    return part.type.startsWith("tool-");
-  }
-
   export function toUIPart({
     metadata: _metadata,
     ...part

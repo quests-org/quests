@@ -1,9 +1,12 @@
-import { type AIGatewayApp, type GetProviderConfigs } from "@quests/ai-gateway";
+import {
+  type AIGatewayApp,
+  type AIGatewayLanguageModel,
+  type GetProviderConfigs,
+} from "@quests/ai-gateway";
 import {
   type CaptureEventFunction,
   type CaptureExceptionFunction,
 } from "@quests/shared";
-import { type LanguageModel } from "ai";
 import ms from "ms";
 import path from "node:path";
 import invariant from "tiny-invariant";
@@ -59,7 +62,7 @@ export type WorkspaceEvent =
       value: {
         agentName: AgentName;
         message: SessionMessage.UserWithParts;
-        model: LanguageModel;
+        model: AIGatewayLanguageModel;
         sessionId: StoreId.Session;
         subdomain: AppSubdomain;
       };
@@ -69,7 +72,7 @@ export type WorkspaceEvent =
       value: {
         agentName: AgentName;
         message: SessionMessage.UserWithParts;
-        model: LanguageModel;
+        model: AIGatewayLanguageModel;
         sessionId: StoreId.Session;
         subdomain: AppSubdomain;
       };
@@ -88,7 +91,7 @@ export type WorkspaceEvent =
         agentName: AgentName;
         appConfig: AppConfig;
         message: SessionMessage.UserWithParts;
-        model: LanguageModel;
+        model: AIGatewayLanguageModel;
         sessionId: StoreId.Session;
       };
     }
