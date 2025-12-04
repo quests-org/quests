@@ -18,6 +18,7 @@ export const RELEASE_NOTES_URL = `${APP_REPO_URL}/releases`;
 export const X_HANDLE = "@quests_dev";
 export const X_URL = "https://x.com/quests_dev";
 export const DISCORD_URL = "https://quests.dev/discord";
+export const SUPPORT_URL = "https://quests.dev/support";
 export const AI_GATEWAY_API_KEY_NOT_NEEDED = "NOT_NEEDED";
 export const SALES_EMAIL = "hello@quests.dev";
 export const SUPPORT_EMAIL = "support@quests.dev";

@@ -8,6 +8,7 @@ import {
   CardTitle,
 } from "@/client/components/ui/card";
 import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
+import { SUPPORT_URL } from "@quests/shared";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { CheckCircle2, XCircle } from "lucide-react";
 import { z } from "zod";
@@ -87,7 +88,7 @@ function CheckoutPage() {
               If you encountered an issue, please try again or{" "}
               <a
                 className="underline cursor-pointer"
-                href="https://quests.dev/support"
+                href={SUPPORT_URL}
                 rel="noopener noreferrer"
                 target="_blank"
               >
