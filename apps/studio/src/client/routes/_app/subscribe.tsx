@@ -357,30 +357,36 @@ function SubscribePage() {
               })}
             </div>
 
-            <div className="max-w-4xl mx-auto mt-12 text-center">
-              <div className="px-4 py-2">
-                <h2 className="text-lg font-semibold mb-2">
-                  For Teams & Organizations
-                </h2>
-                <p className="text-muted-foreground mb-4 max-w-xl mx-auto text-sm">
-                  Building an AI platform? The Quests team can help you ship
-                  production-ready AI apps. Contact us for enterprise support,
-                  team licenses, and consulting.
-                </p>
-                <Button
-                  className="h-8 px-4 text-xs"
-                  onClick={() => {
-                    captureClientEvent("subscribe.contact_us_clicked");
-                    void openExternalLink({
-                      url: `mailto:${SALES_EMAIL}?subject=Quests%20-%20Enterprise%20%26%20Team%20Inquiry`,
-                    });
-                  }}
-                  size="sm"
-                  variant="outline"
-                >
-                  Contact us
-                </Button>
-              </div>
+            <div className="max-w-4xl mx-auto mt-12">
+              <Card className="relative p-8 bg-linear-to-br from-violet-100 via-background to-background dark:from-violet-950/30 dark:via-slate-900/20 border border-border/50">
+                <div className="text-center">
+                  <h2 className="text-2xl font-bold mb-2 bg-linear-to-r from-violet-600 to-purple-600 dark:from-violet-400 dark:to-purple-400 bg-clip-text text-transparent">
+                    Enterprise
+                  </h2>
+                  <p className="text-muted-foreground mb-6 max-w-xl mx-auto text-sm">
+                    Custom solutions for teams that need dedicated support, SSO,
+                    advanced security, and flexible billing options.
+                  </p>
+                  <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground mb-6">
+                    <span>Custom pricing</span>
+                    <span>•</span>
+                    <span>Priority support SLA</span>
+                    <span>•</span>
+                    <span>SSO & SAML</span>
+                  </div>
+                  <Button
+                    onClick={() => {
+                      captureClientEvent("subscribe.contact_us_clicked");
+                      void openExternalLink({
+                        url: `mailto:${SALES_EMAIL}?subject=Quests%20-%20Enterprise%20Inquiry`,
+                      });
+                    }}
+                    size="lg"
+                  >
+                    Contact us
+                  </Button>
+                </div>
+              </Card>
             </div>
           </>
         )}
