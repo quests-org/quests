@@ -4,6 +4,7 @@ node_modules/
 
 .env*
 !.env.development.example
+!.env.local.example
 
 .DS_Store
 
