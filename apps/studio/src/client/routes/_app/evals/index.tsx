@@ -167,8 +167,6 @@ function RouteComponent() {
     setShowConfirmDialog(false);
     setIsCreating(true);
 
-    const totalProjects = selectedEvalTemplates.size * selectedModels.size;
-
     const evalNames = [...selectedEvalTemplates];
     const modelIds = sift(
       [...selectedModels].map((modelURI) => {
@@ -223,10 +221,6 @@ function RouteComponent() {
           }
         }
       }
-
-      toast.success(
-        `Successfully created ${totalProjects} project${totalProjects === 1 ? "" : "s"}`,
-      );
 
       if (createdProjects.length === 1 && createdProjects[0]) {
         void navigate({
