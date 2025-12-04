@@ -325,20 +325,6 @@ function showRecovery() {
     return;
   }
 
-  // Attempt auto-refresh once
-  const lastAutoRefresh = sessionStorage.getItem(REFRESH_KEY);
-  const now = Date.now();
-  const MIN_REFRESH_INTERVAL = 60 * 1000; // 1 minute
-
-  if (
-    !lastAutoRefresh ||
-    now - Number.parseInt(lastAutoRefresh, 10) > MIN_REFRESH_INTERVAL
-  ) {
-    sessionStorage.setItem(REFRESH_KEY, now.toString());
-    window.location.reload();
-    return;
-  }
-
   isShowingRecovery = true;
   iframe.classList.add(QUESTS_IFRAME_CLASSES.visible);
 
@@ -349,7 +335,27 @@ function showRecovery() {
   iframe.contentWindow?.postMessage(message, "*");
 }
 
-if (hasAppRendered()) {
+function tryAutoRefresh(): boolean {
+  const lastAutoRefresh = sessionStorage.getItem(REFRESH_KEY);
+  const now = Date.now();
+  const MIN_REFRESH_INTERVAL = 60 * 1000; // 1 minute
+
+  if (
+    !lastAutoRefresh ||
+    now - Number.parseInt(lastAutoRefresh, 10) > MIN_REFRESH_INTERVAL
+  ) {
+    sessionStorage.setItem(REFRESH_KEY, now.toString());
+    window.location.reload();
+    return true;
+  }
+  return false;
+}
+
+if (isFallbackPage) {
+  // Fallback page is intentionally blank. The iframe will handle transitioning
+  // to the app.
+  hasRendered = true;
+} else if (hasAppRendered()) {
   hasRendered = true;
 } else {
   const observer = new MutationObserver(() => {
@@ -382,7 +388,13 @@ if (hasAppRendered()) {
       return;
     }
 
-    if (Date.now() - initialCheckTime >= 5000) {
+    const elapsed = Date.now() - initialCheckTime;
+
+    if (elapsed >= 5000) {
+      tryAutoRefresh();
+    }
+
+    if (elapsed >= 10_000) {
       showRecovery();
       // We don't clear interval here, we keep checking in case it renders later
       // to allow hiding the recovery screen.
