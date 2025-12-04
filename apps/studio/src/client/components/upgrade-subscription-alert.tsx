@@ -1,13 +1,17 @@
-import { InternalLink } from "@/client/components/internal-link";
 import { cn } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
 import { useQuery } from "@tanstack/react-query";
-import { CheckCircle2, Gem } from "lucide-react";
+import { CheckCircle2, Gem, Play } from "lucide-react";
 
+import { InternalLink } from "./internal-link";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { Button } from "./ui/button";
 
-export function UpgradeSubscriptionAlert() {
+export function UpgradeSubscriptionAlert({
+  onContinue,
+}: {
+  onContinue: () => void;
+}) {
   const { data: subscriptionData } = useQuery(
     rpcClient.user.live.subscription.experimental_liveOptions({
       refetchOnWindowFocus: true,
@@ -36,8 +40,14 @@ export function UpgradeSubscriptionAlert() {
           <AlertTitle className="text-emerald-900 dark:text-emerald-100">
             You&apos;re all set with more credits!
           </AlertTitle>
-          <AlertDescription className="text-emerald-800 dark:text-emerald-200">
-            You can now continue.
+          <AlertDescription className="flex flex-col gap-3 text-emerald-800 dark:text-emerald-200">
+            <span>You can now continue.</span>
+            <div className="flex">
+              <Button onClick={onContinue} size="sm" variant="secondary">
+                <Play className="size-3" />
+                Continue
+              </Button>
+            </div>
           </AlertDescription>
         </>
       ) : (
@@ -46,9 +56,9 @@ export function UpgradeSubscriptionAlert() {
           <AlertDescription className="flex flex-col gap-3">
             <p>You don&apos;t have enough credits to continue.</p>
             <div className="flex">
-              <Button size="sm" variant="brand">
-                <Gem className="size-3" />
+              <Button asChild size="sm" variant="brand">
                 <InternalLink openInNewTab to="/subscribe">
+                  <Gem className="size-3" />
                   Get more credits
                 </InternalLink>
               </Button>

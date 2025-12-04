@@ -2,6 +2,7 @@ import { PromptInput } from "@/client/components/prompt-input";
 import { SessionStream } from "@/client/components/session-stream";
 import { Button } from "@/client/components/ui/button";
 import { useAppState } from "@/client/hooks/use-app-state";
+import { useContinueSession } from "@/client/hooks/use-continue-session";
 import { createUserMessage } from "@/client/lib/create-user-message";
 import { rpcClient } from "@/client/rpc/client";
 import { type AIGatewayModelURI } from "@quests/ai-gateway/client";
@@ -55,6 +56,13 @@ export function ProjectViewChat({
     session.tags.includes("agent.alive"),
   );
 
+  const { handleContinue } = useContinueSession({
+    agentName: "chat",
+    modelURI: selectedModelURI,
+    sessionId: selectedSessionId,
+    subdomain: project.subdomain,
+  });
+
   useEffect(() => {
     if (!bottomSectionRef.current) {
       return;
@@ -85,6 +93,7 @@ export function ProjectViewChat({
               {selectedSessionId && (
                 <SessionStream
                   app={project}
+                  onContinue={handleContinue}
                   sessionId={selectedSessionId}
                   showMessageActions
                 />

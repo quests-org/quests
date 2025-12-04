@@ -32,7 +32,7 @@ export type FilterMode = "chat" | "versions";
 
 interface SessionEventListProps {
   app: WorkspaceAppProject;
-  onContinue?: () => void;
+  onContinue: () => void;
   selectedVersion?: string;
   sessionId: StoreId.Session;
   showMessageActions?: boolean;
@@ -313,6 +313,7 @@ export function SessionStream({
             }
             key={`error-${message.id}`}
             message={message}
+            onContinue={onContinue}
             showUpgradeAlertIfApplicable={isLastMessage && !isAnyAgentRunning}
           />,
         );
@@ -324,7 +325,13 @@ export function SessionStream({
     return {
       chatElements: newChatElements,
     };
-  }, [regularMessages, renderChatPart, isAnyAgentRunning, showMessageActions]);
+  }, [
+    regularMessages,
+    renderChatPart,
+    isAnyAgentRunning,
+    showMessageActions,
+    onContinue,
+  ]);
 
   const shouldShowErrorRecoveryPrompt = useMemo(() => {
     if (messages.length === 0 || isAnyAgentRunning) {
@@ -354,7 +361,7 @@ export function SessionStream({
   }, [messages, isAnyAgentRunning]);
 
   const shouldShowContinueButton = useMemo(() => {
-    if (messages.length === 0 || isAnyAgentRunning || !onContinue) {
+    if (messages.length === 0 || isAnyAgentRunning) {
       return false;
     }
 
@@ -364,7 +371,7 @@ export function SessionStream({
       lastMessage.role === "assistant" &&
       lastMessage.metadata.finishReason === "max-steps"
     );
-  }, [messages, isAnyAgentRunning, onContinue]);
+  }, [messages, isAnyAgentRunning]);
 
   return (
     <>

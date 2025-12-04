@@ -11,12 +11,14 @@ import { UpgradeSubscriptionAlert } from "./upgrade-subscription-alert";
 interface MessageErrorProps {
   defaultExpanded?: boolean;
   message: SessionMessage.Assistant;
+  onContinue: () => void;
   showUpgradeAlertIfApplicable?: boolean;
 }
 
 export function MessageError({
   defaultExpanded = false,
   message,
+  onContinue,
   showUpgradeAlertIfApplicable = false,
 }: MessageErrorProps) {
   const error = message.metadata.error;
@@ -31,7 +33,7 @@ export function MessageError({
   }
 
   if (showUpgradeAlertIfApplicable && isInsufficientCreditsError(message)) {
-    return <UpgradeSubscriptionAlert />;
+    return <UpgradeSubscriptionAlert onContinue={onContinue} />;
   }
 
   const handleToggle = () => {

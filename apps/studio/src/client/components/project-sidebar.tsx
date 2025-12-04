@@ -1,6 +1,5 @@
 import { type AIGatewayModelURI } from "@quests/ai-gateway/client";
-import { type WorkspaceAppProject } from "@quests/workspace/client";
-import { StoreId } from "@quests/workspace/client";
+import { StoreId, type WorkspaceAppProject } from "@quests/workspace/client";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { ChevronDown, Plus } from "lucide-react";
@@ -9,6 +8,7 @@ import { toast } from "sonner";
 import { useStickToBottom } from "use-stick-to-bottom";
 
 import { useAppState } from "../hooks/use-app-state";
+import { useContinueSession } from "../hooks/use-continue-session";
 import { createUserMessage } from "../lib/create-user-message";
 import { rpcClient } from "../rpc/client";
 import { ChatZeroState } from "./chat-zero-state";
@@ -75,48 +75,15 @@ export function ProjectSidebar({
     session.tags.includes("agent.alive"),
   );
 
-  const handleContinue = () => {
-    if (!selectedSessionId || !selectedModelURI) {
-      return;
-    }
-
-    const messageId = StoreId.newMessageId();
-    const createdAt = new Date();
-
-    createMessage.mutate(
-      {
-        agentName: "app-builder",
-        message: {
-          id: messageId,
-          metadata: {
-            createdAt,
-            sessionId: selectedSessionId,
-          },
-          parts: [
-            {
-              metadata: {
-                createdAt,
-                id: StoreId.newPartId(),
-                messageId,
-                sessionId: selectedSessionId,
-              },
-              text: "Continue",
-              type: "text",
-            },
-          ],
-          role: "user",
-        },
-        modelURI: selectedModelURI,
-        sessionId: selectedSessionId,
-        subdomain: project.subdomain,
-      },
-      {
-        onSuccess: () => {
-          setFilterMode("chat");
-        },
-      },
-    );
-  };
+  const { handleContinue } = useContinueSession({
+    agentName: "app-builder",
+    modelURI: selectedModelURI,
+    onSuccess: () => {
+      setFilterMode("chat");
+    },
+    sessionId: selectedSessionId,
+    subdomain: project.subdomain,
+  });
 
   const handleNewSession = () => {
     createEmptySession.mutate(
