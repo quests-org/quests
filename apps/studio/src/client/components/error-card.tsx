@@ -1,9 +1,8 @@
 import { SUPPORT_EMAIL } from "@quests/shared";
 import { rootRouteId, useMatch, useRouter } from "@tanstack/react-router";
 import { AlertCircle } from "lucide-react";
-import { toast } from "sonner";
 
-import { ExternalLink } from "./external-link";
+import { EmailLink } from "./email-link";
 import { InternalLink } from "./internal-link";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { Button } from "./ui/button";
@@ -67,15 +66,7 @@ export function ErrorCard({
       </CardContent>
       <CardFooter className="justify-end gap-x-2">
         <Button asChild variant="ghost">
-          <ExternalLink
-            href={`mailto:${SUPPORT_EMAIL}`}
-            onClick={() => {
-              void navigator.clipboard.writeText(SUPPORT_EMAIL);
-              toast.info(`Copied ${SUPPORT_EMAIL} to clipboard`);
-            }}
-          >
-            Contact us
-          </ExternalLink>
+          <EmailLink email={SUPPORT_EMAIL}>Contact us</EmailLink>
         </Button>
         {isRoot ? (
           <Button asChild variant="outline">
