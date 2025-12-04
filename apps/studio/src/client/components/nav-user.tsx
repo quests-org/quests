@@ -32,7 +32,6 @@ import { useAtom } from "jotai";
 import {
   AlertCircle,
   ChevronsUpDown,
-  GemIcon,
   KeyIcon,
   LogOutIcon,
   SettingsIcon,
@@ -184,8 +183,7 @@ export function NavUser() {
                   size="sm"
                   variant="brand"
                 >
-                  <GemIcon className="size-3" />
-                  Upgrade for more credits
+                  Get more credits
                 </Button>
               </div>
             )}

@@ -4,7 +4,6 @@ import { Card } from "@/client/components/ui/card";
 import { rpcClient } from "@/client/rpc/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
-import { GemIcon } from "lucide-react";
 import { toast } from "sonner";
 
 export function SubscriptionCard() {
@@ -80,8 +79,7 @@ export function SubscriptionCard() {
               size="sm"
               variant="brand"
             >
-              <GemIcon className="size-3.5" />
-              Upgrade Now
+              Get more credits
             </Button>
           )}
         </div>
@@ -138,7 +136,6 @@ export function SubscriptionCard() {
                   size="sm"
                   variant="brand"
                 >
-                  <GemIcon className="size-3.5" />
                   Upgrade to Pro
                 </Button>
               )}

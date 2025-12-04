@@ -6,7 +6,7 @@ import { cn, isLinux, isMacOS, isWindows } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { GemIcon, SidebarIcon } from "lucide-react";
+import { SidebarIcon } from "lucide-react";
 
 export const Route = createFileRoute("/toolbar")({
   component: ToolbarPage,
@@ -81,8 +81,7 @@ function ToolbarPage() {
               size="sm"
               variant="brand"
             >
-              <GemIcon className="size-3" />
-              Upgrade Now
+              Get more credits
             </Button>
           </div>
         )}
