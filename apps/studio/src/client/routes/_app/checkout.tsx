@@ -84,7 +84,16 @@ function CheckoutPage() {
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              If you encountered an issue, please try again or contact support.
+              If you encountered an issue, please try again or{" "}
+              <a
+                className="underline cursor-pointer"
+                href="https://quests.dev/support"
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                contact support
+              </a>
+              .
             </p>
           </CardContent>
           <CardFooter className="flex flex-col gap-2">
