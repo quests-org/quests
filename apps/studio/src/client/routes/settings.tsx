@@ -65,17 +65,20 @@ function SettingsLayout() {
   ];
 
   return (
-    <div className="bg-background min-h-svh w-full flex flex-col overflow-hidden">
+    <div className="bg-background h-svh w-full flex flex-col overflow-hidden">
       {isLinux() ? (
         <div className="pt-4"></div>
       ) : (
-        <div className="px-6 pt-2 pb-4 [-webkit-app-region:drag] text-center font-semibold">
+        <div className="px-6 pt-2 pb-4 [-webkit-app-region:drag] text-center font-semibold shrink-0">
           Settings
         </div>
       )}
-      <div className="flex-1 px-3 overflow-y-auto">
-        <SidebarProvider className="min-h-0" defaultOpen>
-          <Sidebar className="bg-transparent" collapsible="none">
+      <div className="flex-1 flex px-3 min-h-0">
+        <SidebarProvider className="min-h-0 h-full" defaultOpen>
+          <Sidebar
+            className="bg-transparent h-full shrink-0"
+            collapsible="none"
+          >
             <SidebarContent>
               <SidebarMenu>
                 {sidebarNavItems.map((item) => (
@@ -99,7 +102,7 @@ function SettingsLayout() {
               </SidebarMenu>
             </SidebarContent>
           </Sidebar>
-          <SidebarInset>
+          <SidebarInset className="overflow-y-auto">
             <div className="flex flex-1 flex-col gap-4 p-6">
               <Outlet />
             </div>
