@@ -1,4 +1,5 @@
 import {
+  isInsufficientCreditsError,
   isToolPart,
   type SessionMessage,
   type SessionMessagePart,
@@ -8,6 +9,7 @@ import {
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { AlertTriangle, Loader2 } from "lucide-react";
+import { selectFirst } from "radashi";
 import { useCallback, useMemo } from "react";
 import { toast } from "sonner";
 
@@ -338,25 +340,23 @@ export function SessionStream({
       return false;
     }
 
-    let lastUserMessageIndex = -1;
-    for (let i = messages.length - 1; i >= 0; i--) {
-      if (messages[i]?.role === "user") {
-        lastUserMessageIndex = i;
-        break;
-      }
-    }
-    if (lastUserMessageIndex === -1) {
+    const lastUserIndex = messages.findLastIndex((m) => m.role === "user");
+    const messagesSinceLastUser = messages.slice(lastUserIndex + 1);
+
+    const lastError = selectFirst(messagesSinceLastUser.toReversed(), (m) =>
+      m.role === "assistant" && m.metadata.error ? m : undefined,
+    );
+    if (!lastError || isInsufficientCreditsError(lastError)) {
       return false;
     }
 
-    const messagesSinceLastUser = messages.slice(lastUserMessageIndex + 1);
     return messagesSinceLastUser.some(
-      (message) =>
-        message.role === "assistant" &&
-        message.metadata.error &&
-        message.metadata.error.kind !== "aborted" &&
-        message.metadata.error.kind !== "invalid-tool-input" &&
-        message.metadata.error.kind !== "no-such-tool",
+      (m) =>
+        m.role === "assistant" &&
+        m.metadata.error &&
+        m.metadata.error.kind !== "aborted" &&
+        m.metadata.error.kind !== "invalid-tool-input" &&
+        m.metadata.error.kind !== "no-such-tool",
     );
   }, [messages, isAnyAgentRunning]);
 
