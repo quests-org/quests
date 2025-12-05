@@ -1,11 +1,10 @@
 import { NavControls } from "@/client/components/nav-controls";
 import TabBar from "@/client/components/tab-bar";
 import { Button } from "@/client/components/ui/button";
-import { captureClientEvent } from "@/client/lib/capture-client-event";
 import { cn, isLinux, isMacOS, isWindows } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { SidebarIcon } from "lucide-react";
 
 export const Route = createFileRoute("/toolbar")({
@@ -21,16 +20,7 @@ function ToolbarPage() {
     rpcClient.sidebar.open.mutationOptions(),
   );
 
-  const { data: subscriptionData } = useQuery(
-    rpcClient.user.live.subscription.experimental_liveOptions(),
-  );
-
-  const { mutate: addTab } = useMutation(rpcClient.tabs.add.mutationOptions());
-  const router = useRouter();
-
   const isSidebarVisible = sidebarVisibility?.visible ?? true;
-  const subscriptionDataExists = !!subscriptionData?.data;
-  const hasSubscription = !!subscriptionData?.data?.plan;
 
   return (
     <div className="h-svh w-full flex items-end inset-shadow-toolbar inset-shadow-(color:--border) bg-secondary [-webkit-app-region:drag] overflow-hidden">
@@ -65,26 +55,6 @@ function ToolbarPage() {
           )}
           <TabBar />
         </div>
-        {subscriptionDataExists && !hasSubscription && (
-          <div className="flex items-center [-webkit-app-region:no-drag]">
-            <Button
-              className="shrink-0 text-xs px-2 h-6 font-semibold gap-1"
-              onClick={() => {
-                captureClientEvent("upgrade.clicked", {
-                  source: "toolbar",
-                });
-                const location = router.buildLocation({
-                  to: "/subscribe",
-                });
-                addTab({ urlPath: location.href });
-              }}
-              size="sm"
-              variant="brand"
-            >
-              Get more credits
-            </Button>
-          </div>
-        )}
       </header>
     </div>
   );
