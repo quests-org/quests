@@ -11,7 +11,6 @@ import { Card, CardContent } from "@/client/components/ui/card";
 import { Kbd } from "@/client/components/ui/kbd";
 import { useTabActions } from "@/client/hooks/tabs";
 import { useDefaultModelURI } from "@/client/hooks/use-default-model-uri";
-import { useSignInSocial } from "@/client/hooks/use-sign-in-social";
 import { createUserMessage } from "@/client/lib/create-user-message";
 import { isMacOS } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
@@ -52,7 +51,6 @@ function RouteComponent() {
   const navigate = useNavigate({ from: "/new-tab" });
   const router = useRouter();
   const { addTab } = useTabActions();
-  const { signIn } = useSignInSocial();
   const createProjectMutation = useMutation(
     rpcClient.workspace.project.create.mutationOptions(),
   );
@@ -74,7 +72,7 @@ function RouteComponent() {
             <div className="flex flex-col items-center gap-y-4 mb-8">
               <button
                 className="group flex items-center gap-x-3 border-2 border-brand/40 hover:border-brand rounded-full px-4 py-2 transition-colors"
-                onClick={() => void signIn()}
+                onClick={() => void navigate({ to: "/sign-in" })}
                 type="button"
               >
                 <p className="text-sm text-foreground">

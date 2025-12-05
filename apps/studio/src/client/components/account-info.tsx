@@ -1,7 +1,9 @@
 import { userAtom } from "@/client/atoms/user";
 import { Button } from "@/client/components/ui/button";
-import { useSignInSocial } from "@/client/hooks/use-sign-in-social";
 import { useUserConnectionError } from "@/client/hooks/use-user-connection-error";
+import { rpcClient } from "@/client/rpc/client";
+import { useMutation } from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
 import { useAtom } from "jotai";
 import { AlertCircle } from "lucide-react";
 
@@ -12,7 +14,8 @@ export function AccountInfo() {
   const [userResult] = useAtom(userAtom);
   const user = userResult.data;
   const { error, hasError } = useUserConnectionError();
-  const { signIn } = useSignInSocial();
+  const { mutate: addTab } = useMutation(rpcClient.tabs.add.mutationOptions());
+  const router = useRouter();
 
   return (
     <div className="space-y-3">
@@ -42,7 +45,14 @@ export function AccountInfo() {
                   Claim your free credits by signing up for an account.
                 </p>
               </div>
-              <Button onClick={() => void signIn()} variant="brand">
+              <Button
+                onClick={() => {
+                  const location = router.buildLocation({ to: "/sign-in" });
+                  addTab({ urlPath: location.href });
+                  window.close();
+                }}
+                variant="brand"
+              >
                 Sign in
               </Button>
             </div>
