@@ -10,7 +10,10 @@ export default defineConfig({
     VITE_DEBUG_TELEMETRY: z.enum(["true", "false"]).default("false"),
     VITE_POSTHOG_API_HOST: z.string().optional(),
     VITE_POSTHOG_API_KEY: z.string().optional(),
-    VITE_QUESTS_API_BASE_URL: z.string().optional(),
+    VITE_QUESTS_API_BASE_URL: z
+      .string()
+      .optional()
+      .default("http://localhost:4176"),
   },
   validator: "standard",
 });
