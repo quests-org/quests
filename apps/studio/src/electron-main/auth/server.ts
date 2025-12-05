@@ -47,7 +47,7 @@ const resourcesPath = electronApp.isPackaged
   ? path.join(process.resourcesPath, "app.asar.unpacked", "resources")
   : path.join(process.cwd(), "resources");
 
-const DEFAULT_PORT = 5705;
+const DEFAULT_PORT = process.env.NODE_ENV === "development" ? 5605 : 5705;
 
 const appIconPath = path.join(resourcesPath, "icon.png");
 const appIconBase64 = fs.readFileSync(appIconPath, { encoding: "base64" });
