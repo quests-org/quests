@@ -10,11 +10,12 @@ import {
   setAuthServerPort,
 } from "@/electron-main/auth/state";
 import { captureServerEvent } from "@/electron-main/lib/capture-server-event";
-import { logger } from "@/electron-main/lib/electron-logger";
+import { captureServerException } from "@/electron-main/lib/capture-server-exception";
 import { createError } from "@/electron-main/lib/errors";
 import { setDefaultModelIfNeeded } from "@/electron-main/lib/set-default-model";
 import { publisher } from "@/electron-main/rpc/publisher";
 import { getSessionStore } from "@/electron-main/stores/session";
+import { getMainWindow } from "@/electron-main/windows/main/instance";
 import { serve } from "@hono/node-server";
 import { COMMON_ORPC_ERROR_DEFS, type CommonORPCErrorCode } from "@orpc/client";
 import { APP_PROTOCOL, SUPPORT_EMAIL } from "@quests/shared";
@@ -34,7 +35,13 @@ const STATUS_TO_ORPC_ERROR_CODE: Record<number, CommonORPCErrorCode> =
     ]),
   );
 
-const scopedLogger = logger.scope("auth");
+function focusMainWindow() {
+  const mainWindow = getMainWindow();
+  if (mainWindow) {
+    mainWindow.show();
+    mainWindow.focus();
+  }
+}
 
 const resourcesPath = electronApp.isPackaged
   ? path.join(process.resourcesPath, "app.asar.unpacked", "resources")
@@ -48,7 +55,6 @@ const appIconBase64 = fs.readFileSync(appIconPath, { encoding: "base64" });
 export async function startAuthCallbackServer() {
   const existingServer = getAuthServer();
   if (existingServer !== null) {
-    scopedLogger.info("Auth callback server is already running");
     return;
   }
 
@@ -66,23 +72,18 @@ export async function startAuthCallbackServer() {
       state !== store.state ||
       store.codeVerifier === null
     ) {
-      return c.html(
-        renderAuthPage({
-          isError: true,
-        }),
-        400,
+      captureServerException(
+        new Error("OAuth callback received with invalid state or missing code"),
+        { scopes: ["auth"] },
       );
+      focusMainWindow();
+      return c.html(renderAuthPage({ isError: true }), 400);
     }
 
     const decodedState = decodeOAuthState(state);
     if (!decodedState) {
-      scopedLogger.error("Failed to decode OAuth state");
-      return c.html(
-        renderAuthPage({
-          isError: true,
-        }),
-        400,
-      );
+      focusMainWindow();
+      return c.html(renderAuthPage({ isError: true }), 400);
     }
 
     const google = createGoogleProvider({ port });
@@ -103,7 +104,6 @@ export async function startAuthCallbackServer() {
 
     if (decodedState.inviteCode) {
       sessionStore.set("inviteCode", decodedState.inviteCode);
-      scopedLogger.info("Invite code received:", decodedState.inviteCode);
       headers.set("x-invite-code", decodedState.inviteCode);
     }
 
@@ -120,7 +120,6 @@ export async function startAuthCallbackServer() {
         {
           headers,
           onSuccess(ctx) {
-            scopedLogger.info("auth/callback/google onSuccess");
             const authToken = ctx.response.headers.get("set-auth-token");
             sessionStore.set("apiBearerToken", authToken);
           },
@@ -128,7 +127,10 @@ export async function startAuthCallbackServer() {
       );
 
       if (res.error) {
-        scopedLogger.error(res.error.statusText, res.error);
+        captureServerException(
+          new Error("Sign in failed", { cause: res.error }),
+          { scopes: ["auth"] },
+        );
         const orpcErrorCode = STATUS_TO_ORPC_ERROR_CODE[res.error.status];
         publisher.publish("auth.updated", {
           error: createError(
@@ -137,7 +139,7 @@ export async function startAuthCallbackServer() {
           ),
         });
         publisher.publish("subscription.refetch", null);
-
+        focusMainWindow();
         return await c.html(
           renderAuthPage({
             isError: true,
@@ -147,29 +149,24 @@ export async function startAuthCallbackServer() {
         );
       }
     } catch (error) {
-      scopedLogger.error("error signing in", error);
-      return c.html(
-        renderAuthPage({
-          isError: true,
-        }),
-        400,
-      );
+      captureServerException(new Error("Error signing in", { cause: error }), {
+        scopes: ["auth"],
+      });
+      focusMainWindow();
+      return c.html(renderAuthPage({ isError: true }), 400);
     }
 
     captureServerEvent("auth.signed_in");
     void setDefaultModelIfNeeded({ forceUpdateForNewLogin: true });
     publisher.publish("auth.updated", {});
     publisher.publish("subscription.refetch", null);
+    focusMainWindow();
     return c.html(renderAuthPage({}));
   });
 
   app.get("/test", async (c) => {
     return c.html(renderAuthPage({}));
   });
-
-  scopedLogger.info(
-    `Auth callback server running at http://localhost:${port}/`,
-  );
   const server = serve({ fetch: app.fetch, port });
   setAuthServer(server);
 
