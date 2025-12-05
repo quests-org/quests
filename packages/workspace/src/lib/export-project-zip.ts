@@ -1,6 +1,10 @@
 import { okAsync, safeTry } from "neverthrow";
 
-import { APP_PRIVATE_FOLDER, GIT_AUTHOR } from "../constants";
+import {
+  APP_PRIVATE_FOLDER,
+  GIT_AUTHOR,
+  SESSIONS_DB_FILE_NAME,
+} from "../constants";
 import { type AppDir } from "../schemas/paths";
 import { absolutePathJoin } from "./absolute-path-join";
 import { git } from "./git";
@@ -44,12 +48,16 @@ export function exportProjectZip({
     }
 
     if (includeChat) {
-      const privateDir = absolutePathJoin(appDir, APP_PRIVATE_FOLDER);
-      const privateDirExists = await pathExists(privateDir);
+      const sessionsDbPath = absolutePathJoin(
+        appDir,
+        APP_PRIVATE_FOLDER,
+        SESSIONS_DB_FILE_NAME,
+      );
+      const sessionsDbExists = await pathExists(sessionsDbPath);
 
-      if (privateDirExists) {
+      if (sessionsDbExists) {
         yield* git(
-          ["add", "-f", "--all", `${APP_PRIVATE_FOLDER}/`],
+          ["add", "-f", `${APP_PRIVATE_FOLDER}/${SESSIONS_DB_FILE_NAME}`],
           appDir,
           {},
         );
@@ -66,7 +74,11 @@ export function exportProjectZip({
         );
         yield* git(GitCommands.archiveZip(outputPath), appDir, {});
         yield* git(["reset", "--soft", "HEAD~1"], appDir, {});
-        yield* git(["reset", "HEAD", `${APP_PRIVATE_FOLDER}/`], appDir, {});
+        yield* git(
+          ["reset", "HEAD", `${APP_PRIVATE_FOLDER}/${SESSIONS_DB_FILE_NAME}`],
+          appDir,
+          {},
+        );
       } else {
         yield* git(GitCommands.archiveZip(outputPath), appDir, {});
       }

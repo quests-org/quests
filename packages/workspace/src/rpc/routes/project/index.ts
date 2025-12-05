@@ -17,13 +17,17 @@ import { newProjectConfig } from "../../../lib/app-config/new";
 import { createProjectApp } from "../../../lib/create-project-app";
 import { defaultProjectName } from "../../../lib/default-project-name";
 import { duplicateProject } from "../../../lib/duplicate-project";
+import { exportProjectZip } from "../../../lib/export-project-zip";
 import { generateChatTitle } from "../../../lib/generate-project-title";
 import { generateProjectTitleAndIcon } from "../../../lib/generate-project-title-and-icon";
 import { getApp, getProjects } from "../../../lib/get-apps";
 import { getWorkspaceAppForSubdomain } from "../../../lib/get-workspace-app-for-subdomain";
 import { projectModeForSubdomain } from "../../../lib/project-mode-for-subdomain";
 import { setProjectState } from "../../../lib/project-state-store";
-import { updateQuestManifest } from "../../../lib/quest-manifest";
+import {
+  getQuestManifest,
+  updateQuestManifest,
+} from "../../../lib/quest-manifest";
 import { trashProject } from "../../../lib/trash-project";
 import {
   appendFilesToMessage,
@@ -500,6 +504,68 @@ const update = base
     });
   });
 
+const exportZip = base
+  .errors({
+    EXPORT_FAILED: {
+      message: "Failed to export project",
+    },
+  })
+  .input(
+    z.object({
+      includeChat: z.boolean().default(false),
+      outputPath: z.string(),
+      subdomain: ProjectSubdomainSchema,
+    }),
+  )
+  .output(
+    z.object({
+      filename: z.string(),
+      filepath: z.string(),
+    }),
+  )
+  .handler(async ({ context, errors, input }) => {
+    try {
+      const appConfig = createAppConfig({
+        subdomain: input.subdomain,
+        workspaceConfig: context.workspaceConfig,
+      });
+
+      const manifest = await getQuestManifest(appConfig.appDir);
+      const projectName = manifest?.name ?? input.subdomain;
+
+      const safeName = projectName
+        .toLowerCase()
+        .replaceAll(/[^a-z0-9-]/g, "-")
+        .replaceAll(/-+/g, "-")
+        .replaceAll(/^-|-$/g, "")
+        .slice(0, 50);
+
+      const timestamp = new Date().toISOString().replaceAll(/[:.]/g, "-");
+      const filename = `${safeName}-${timestamp}.zip`;
+      const filepath = `${input.outputPath}/${filename}`;
+
+      const result = await exportProjectZip({
+        appDir: appConfig.appDir,
+        includeChat: input.includeChat,
+        outputPath: filepath,
+      });
+
+      if (result.isErr()) {
+        throw errors.EXPORT_FAILED({ message: result.error.message });
+      }
+
+      context.workspaceConfig.captureEvent("project.shared", {
+        share_type: "exported_zip",
+      });
+
+      return { filename, filepath };
+    } catch (error) {
+      throw errors.EXPORT_FAILED({
+        message: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
+  });
+
 const live = {
   bySubdomain: base
     .input(z.object({ subdomain: ProjectSubdomainSchema }))
@@ -570,6 +636,7 @@ export const project = {
   create,
   createFromEval,
   duplicate,
+  exportZip,
   git: projectGit,
   list,
   live,

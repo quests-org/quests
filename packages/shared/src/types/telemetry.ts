@@ -66,18 +66,15 @@ export interface AnalyticsEvents {
     project_mode: ProjectMode;
     template_name: string;
   }>;
-  "project.exported_zip": {
-    include_chat: boolean;
-    project_mode: ProjectMode;
-  };
   "project.forked": never;
   "project.opened_in": {
     app_name: string;
   };
   "project.restored_version": never;
-  "project.share.copied_screenshot": never;
-  "project.share.opened": never;
-  "project.share.saved_screenshot": never;
+  "project.share_menu_opened": never;
+  "project.shared": {
+    share_type: "copied_screenshot" | "exported_zip" | "saved_screenshot";
+  };
   "project.trashed": {
     project_mode: ProjectMode;
   };
