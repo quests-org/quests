@@ -13,7 +13,6 @@ import { Route as ToolbarRouteImport } from './routes/toolbar'
 import { Route as SidebarRouteImport } from './routes/sidebar'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as BrowserRouteImport } from './routes/browser'
-import { Route as AuthRouteRouteImport } from './routes/_auth/route'
 import { Route as AppRouteRouteImport } from './routes/_app/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SettingsIndexRouteImport } from './routes/settings/index'
@@ -21,14 +20,13 @@ import { Route as SettingsProvidersRouteImport } from './routes/settings/provide
 import { Route as SettingsFeaturesRouteImport } from './routes/settings/features'
 import { Route as SettingsDebugRouteImport } from './routes/settings/debug'
 import { Route as SettingsAdvancedRouteImport } from './routes/settings/advanced'
-import { Route as AuthSignInRouteImport } from './routes/_auth/sign-in'
-import { Route as AppWelcomeRouteImport } from './routes/_app/welcome'
-import { Route as AppSubscribeRouteImport } from './routes/_app/subscribe'
 import { Route as AppSetupRouteImport } from './routes/_app/setup'
 import { Route as AppReleaseNotesRouteImport } from './routes/_app/release-notes'
 import { Route as AppNewTabRouteImport } from './routes/_app/new-tab'
 import { Route as AppCheckoutRouteImport } from './routes/_app/checkout'
 import { Route as AppDebugRouteRouteImport } from './routes/_app/debug/route'
+import { Route as AppNot_authenticatedRouteRouteImport } from './routes/_app/_not_authenticated/route'
+import { Route as AppAuthenticatedRouteRouteImport } from './routes/_app/_authenticated/route'
 import { Route as AppProjectsIndexRouteImport } from './routes/_app/projects/index'
 import { Route as AppEvalsIndexRouteImport } from './routes/_app/evals/index'
 import { Route as AppDiscoverIndexRouteImport } from './routes/_app/discover/index'
@@ -36,6 +34,9 @@ import { Route as AppDebugIndexRouteImport } from './routes/_app/debug/index'
 import { Route as AppEvalsRunRouteImport } from './routes/_app/evals/run'
 import { Route as AppDebugComponentsRouteImport } from './routes/_app/debug/components'
 import { Route as AppDebugColorsRouteImport } from './routes/_app/debug/colors'
+import { Route as AppNot_authenticatedWelcomeRouteImport } from './routes/_app/_not_authenticated/welcome'
+import { Route as AppNot_authenticatedSignInRouteImport } from './routes/_app/_not_authenticated/sign-in'
+import { Route as AppAuthenticatedSubscribeRouteImport } from './routes/_app/_authenticated/subscribe'
 import { Route as AppProjectsSubdomainIndexRouteImport } from './routes/_app/projects/$subdomain/index'
 import { Route as AppDiscoverTemplatesIndexRouteImport } from './routes/_app/discover/templates/index'
 import { Route as AppDiscoverAppsIndexRouteImport } from './routes/_app/discover/apps/index'
@@ -60,10 +61,6 @@ const SettingsRoute = SettingsRouteImport.update({
 const BrowserRoute = BrowserRouteImport.update({
   id: '/browser',
   path: '/browser',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthRouteRoute = AuthRouteRouteImport.update({
-  id: '/_auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppRouteRoute = AppRouteRouteImport.update({
@@ -100,21 +97,6 @@ const SettingsAdvancedRoute = SettingsAdvancedRouteImport.update({
   path: '/advanced',
   getParentRoute: () => SettingsRoute,
 } as any)
-const AuthSignInRoute = AuthSignInRouteImport.update({
-  id: '/sign-in',
-  path: '/sign-in',
-  getParentRoute: () => AuthRouteRoute,
-} as any)
-const AppWelcomeRoute = AppWelcomeRouteImport.update({
-  id: '/welcome',
-  path: '/welcome',
-  getParentRoute: () => AppRouteRoute,
-} as any)
-const AppSubscribeRoute = AppSubscribeRouteImport.update({
-  id: '/subscribe',
-  path: '/subscribe',
-  getParentRoute: () => AppRouteRoute,
-} as any)
 const AppSetupRoute = AppSetupRouteImport.update({
   id: '/setup',
   path: '/setup',
@@ -138,6 +120,15 @@ const AppCheckoutRoute = AppCheckoutRouteImport.update({
 const AppDebugRouteRoute = AppDebugRouteRouteImport.update({
   id: '/debug',
   path: '/debug',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const AppNot_authenticatedRouteRoute =
+  AppNot_authenticatedRouteRouteImport.update({
+    id: '/_not_authenticated',
+    getParentRoute: () => AppRouteRoute,
+  } as any)
+const AppAuthenticatedRouteRoute = AppAuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => AppRouteRoute,
 } as any)
 const AppProjectsIndexRoute = AppProjectsIndexRouteImport.update({
@@ -175,6 +166,24 @@ const AppDebugColorsRoute = AppDebugColorsRouteImport.update({
   path: '/colors',
   getParentRoute: () => AppDebugRouteRoute,
 } as any)
+const AppNot_authenticatedWelcomeRoute =
+  AppNot_authenticatedWelcomeRouteImport.update({
+    id: '/welcome',
+    path: '/welcome',
+    getParentRoute: () => AppNot_authenticatedRouteRoute,
+  } as any)
+const AppNot_authenticatedSignInRoute =
+  AppNot_authenticatedSignInRouteImport.update({
+    id: '/sign-in',
+    path: '/sign-in',
+    getParentRoute: () => AppNot_authenticatedRouteRoute,
+  } as any)
+const AppAuthenticatedSubscribeRoute =
+  AppAuthenticatedSubscribeRouteImport.update({
+    id: '/subscribe',
+    path: '/subscribe',
+    getParentRoute: () => AppAuthenticatedRouteRoute,
+  } as any)
 const AppProjectsSubdomainIndexRoute =
   AppProjectsSubdomainIndexRouteImport.update({
     id: '/projects/$subdomain/',
@@ -216,14 +225,14 @@ export interface FileRoutesByFullPath {
   '/new-tab': typeof AppNewTabRoute
   '/release-notes': typeof AppReleaseNotesRoute
   '/setup': typeof AppSetupRoute
-  '/subscribe': typeof AppSubscribeRoute
-  '/welcome': typeof AppWelcomeRoute
-  '/sign-in': typeof AuthSignInRoute
   '/settings/advanced': typeof SettingsAdvancedRoute
   '/settings/debug': typeof SettingsDebugRoute
   '/settings/features': typeof SettingsFeaturesRoute
   '/settings/providers': typeof SettingsProvidersRoute
   '/settings/': typeof SettingsIndexRoute
+  '/subscribe': typeof AppAuthenticatedSubscribeRoute
+  '/sign-in': typeof AppNot_authenticatedSignInRoute
+  '/welcome': typeof AppNot_authenticatedWelcomeRoute
   '/debug/colors': typeof AppDebugColorsRoute
   '/debug/components': typeof AppDebugComponentsRoute
   '/evals/run': typeof AppEvalsRunRoute
@@ -246,14 +255,14 @@ export interface FileRoutesByTo {
   '/new-tab': typeof AppNewTabRoute
   '/release-notes': typeof AppReleaseNotesRoute
   '/setup': typeof AppSetupRoute
-  '/subscribe': typeof AppSubscribeRoute
-  '/welcome': typeof AppWelcomeRoute
-  '/sign-in': typeof AuthSignInRoute
   '/settings/advanced': typeof SettingsAdvancedRoute
   '/settings/debug': typeof SettingsDebugRoute
   '/settings/features': typeof SettingsFeaturesRoute
   '/settings/providers': typeof SettingsProvidersRoute
   '/settings': typeof SettingsIndexRoute
+  '/subscribe': typeof AppAuthenticatedSubscribeRoute
+  '/sign-in': typeof AppNot_authenticatedSignInRoute
+  '/welcome': typeof AppNot_authenticatedWelcomeRoute
   '/debug/colors': typeof AppDebugColorsRoute
   '/debug/components': typeof AppDebugComponentsRoute
   '/evals/run': typeof AppEvalsRunRoute
@@ -271,24 +280,25 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_app': typeof AppRouteRouteWithChildren
-  '/_auth': typeof AuthRouteRouteWithChildren
   '/browser': typeof BrowserRoute
   '/settings': typeof SettingsRouteWithChildren
   '/sidebar': typeof SidebarRoute
   '/toolbar': typeof ToolbarRoute
+  '/_app/_authenticated': typeof AppAuthenticatedRouteRouteWithChildren
+  '/_app/_not_authenticated': typeof AppNot_authenticatedRouteRouteWithChildren
   '/_app/debug': typeof AppDebugRouteRouteWithChildren
   '/_app/checkout': typeof AppCheckoutRoute
   '/_app/new-tab': typeof AppNewTabRoute
   '/_app/release-notes': typeof AppReleaseNotesRoute
   '/_app/setup': typeof AppSetupRoute
-  '/_app/subscribe': typeof AppSubscribeRoute
-  '/_app/welcome': typeof AppWelcomeRoute
-  '/_auth/sign-in': typeof AuthSignInRoute
   '/settings/advanced': typeof SettingsAdvancedRoute
   '/settings/debug': typeof SettingsDebugRoute
   '/settings/features': typeof SettingsFeaturesRoute
   '/settings/providers': typeof SettingsProvidersRoute
   '/settings/': typeof SettingsIndexRoute
+  '/_app/_authenticated/subscribe': typeof AppAuthenticatedSubscribeRoute
+  '/_app/_not_authenticated/sign-in': typeof AppNot_authenticatedSignInRoute
+  '/_app/_not_authenticated/welcome': typeof AppNot_authenticatedWelcomeRoute
   '/_app/debug/colors': typeof AppDebugColorsRoute
   '/_app/debug/components': typeof AppDebugComponentsRoute
   '/_app/evals/run': typeof AppEvalsRunRoute
@@ -315,14 +325,14 @@ export interface FileRouteTypes {
     | '/new-tab'
     | '/release-notes'
     | '/setup'
-    | '/subscribe'
-    | '/welcome'
-    | '/sign-in'
     | '/settings/advanced'
     | '/settings/debug'
     | '/settings/features'
     | '/settings/providers'
     | '/settings/'
+    | '/subscribe'
+    | '/sign-in'
+    | '/welcome'
     | '/debug/colors'
     | '/debug/components'
     | '/evals/run'
@@ -345,14 +355,14 @@ export interface FileRouteTypes {
     | '/new-tab'
     | '/release-notes'
     | '/setup'
-    | '/subscribe'
-    | '/welcome'
-    | '/sign-in'
     | '/settings/advanced'
     | '/settings/debug'
     | '/settings/features'
     | '/settings/providers'
     | '/settings'
+    | '/subscribe'
+    | '/sign-in'
+    | '/welcome'
     | '/debug/colors'
     | '/debug/components'
     | '/evals/run'
@@ -369,24 +379,25 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_app'
-    | '/_auth'
     | '/browser'
     | '/settings'
     | '/sidebar'
     | '/toolbar'
+    | '/_app/_authenticated'
+    | '/_app/_not_authenticated'
     | '/_app/debug'
     | '/_app/checkout'
     | '/_app/new-tab'
     | '/_app/release-notes'
     | '/_app/setup'
-    | '/_app/subscribe'
-    | '/_app/welcome'
-    | '/_auth/sign-in'
     | '/settings/advanced'
     | '/settings/debug'
     | '/settings/features'
     | '/settings/providers'
     | '/settings/'
+    | '/_app/_authenticated/subscribe'
+    | '/_app/_not_authenticated/sign-in'
+    | '/_app/_not_authenticated/welcome'
     | '/_app/debug/colors'
     | '/_app/debug/components'
     | '/_app/evals/run'
@@ -404,7 +415,6 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRouteRoute: typeof AppRouteRouteWithChildren
-  AuthRouteRoute: typeof AuthRouteRouteWithChildren
   BrowserRoute: typeof BrowserRoute
   SettingsRoute: typeof SettingsRouteWithChildren
   SidebarRoute: typeof SidebarRoute
@@ -439,13 +449,6 @@ declare module '@tanstack/react-router' {
       path: '/browser'
       fullPath: '/browser'
       preLoaderRoute: typeof BrowserRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_auth': {
-      id: '/_auth'
-      path: ''
-      fullPath: ''
-      preLoaderRoute: typeof AuthRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app': {
@@ -497,27 +500,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsAdvancedRouteImport
       parentRoute: typeof SettingsRoute
     }
-    '/_auth/sign-in': {
-      id: '/_auth/sign-in'
-      path: '/sign-in'
-      fullPath: '/sign-in'
-      preLoaderRoute: typeof AuthSignInRouteImport
-      parentRoute: typeof AuthRouteRoute
-    }
-    '/_app/welcome': {
-      id: '/_app/welcome'
-      path: '/welcome'
-      fullPath: '/welcome'
-      preLoaderRoute: typeof AppWelcomeRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
-    '/_app/subscribe': {
-      id: '/_app/subscribe'
-      path: '/subscribe'
-      fullPath: '/subscribe'
-      preLoaderRoute: typeof AppSubscribeRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
     '/_app/setup': {
       id: '/_app/setup'
       path: '/setup'
@@ -551,6 +533,20 @@ declare module '@tanstack/react-router' {
       path: '/debug'
       fullPath: '/debug'
       preLoaderRoute: typeof AppDebugRouteRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/_not_authenticated': {
+      id: '/_app/_not_authenticated'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof AppNot_authenticatedRouteRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/_authenticated': {
+      id: '/_app/_authenticated'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof AppAuthenticatedRouteRouteImport
       parentRoute: typeof AppRouteRoute
     }
     '/_app/projects/': {
@@ -602,6 +598,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDebugColorsRouteImport
       parentRoute: typeof AppDebugRouteRoute
     }
+    '/_app/_not_authenticated/welcome': {
+      id: '/_app/_not_authenticated/welcome'
+      path: '/welcome'
+      fullPath: '/welcome'
+      preLoaderRoute: typeof AppNot_authenticatedWelcomeRouteImport
+      parentRoute: typeof AppNot_authenticatedRouteRoute
+    }
+    '/_app/_not_authenticated/sign-in': {
+      id: '/_app/_not_authenticated/sign-in'
+      path: '/sign-in'
+      fullPath: '/sign-in'
+      preLoaderRoute: typeof AppNot_authenticatedSignInRouteImport
+      parentRoute: typeof AppNot_authenticatedRouteRoute
+    }
+    '/_app/_authenticated/subscribe': {
+      id: '/_app/_authenticated/subscribe'
+      path: '/subscribe'
+      fullPath: '/subscribe'
+      preLoaderRoute: typeof AppAuthenticatedSubscribeRouteImport
+      parentRoute: typeof AppAuthenticatedRouteRoute
+    }
     '/_app/projects/$subdomain/': {
       id: '/_app/projects/$subdomain/'
       path: '/projects/$subdomain'
@@ -640,6 +657,35 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AppAuthenticatedRouteRouteChildren {
+  AppAuthenticatedSubscribeRoute: typeof AppAuthenticatedSubscribeRoute
+}
+
+const AppAuthenticatedRouteRouteChildren: AppAuthenticatedRouteRouteChildren = {
+  AppAuthenticatedSubscribeRoute: AppAuthenticatedSubscribeRoute,
+}
+
+const AppAuthenticatedRouteRouteWithChildren =
+  AppAuthenticatedRouteRoute._addFileChildren(
+    AppAuthenticatedRouteRouteChildren,
+  )
+
+interface AppNot_authenticatedRouteRouteChildren {
+  AppNot_authenticatedSignInRoute: typeof AppNot_authenticatedSignInRoute
+  AppNot_authenticatedWelcomeRoute: typeof AppNot_authenticatedWelcomeRoute
+}
+
+const AppNot_authenticatedRouteRouteChildren: AppNot_authenticatedRouteRouteChildren =
+  {
+    AppNot_authenticatedSignInRoute: AppNot_authenticatedSignInRoute,
+    AppNot_authenticatedWelcomeRoute: AppNot_authenticatedWelcomeRoute,
+  }
+
+const AppNot_authenticatedRouteRouteWithChildren =
+  AppNot_authenticatedRouteRoute._addFileChildren(
+    AppNot_authenticatedRouteRouteChildren,
+  )
+
 interface AppDebugRouteRouteChildren {
   AppDebugColorsRoute: typeof AppDebugColorsRoute
   AppDebugComponentsRoute: typeof AppDebugComponentsRoute
@@ -657,13 +703,13 @@ const AppDebugRouteRouteWithChildren = AppDebugRouteRoute._addFileChildren(
 )
 
 interface AppRouteRouteChildren {
+  AppAuthenticatedRouteRoute: typeof AppAuthenticatedRouteRouteWithChildren
+  AppNot_authenticatedRouteRoute: typeof AppNot_authenticatedRouteRouteWithChildren
   AppDebugRouteRoute: typeof AppDebugRouteRouteWithChildren
   AppCheckoutRoute: typeof AppCheckoutRoute
   AppNewTabRoute: typeof AppNewTabRoute
   AppReleaseNotesRoute: typeof AppReleaseNotesRoute
   AppSetupRoute: typeof AppSetupRoute
-  AppSubscribeRoute: typeof AppSubscribeRoute
-  AppWelcomeRoute: typeof AppWelcomeRoute
   AppEvalsRunRoute: typeof AppEvalsRunRoute
   AppDiscoverIndexRoute: typeof AppDiscoverIndexRoute
   AppEvalsIndexRoute: typeof AppEvalsIndexRoute
@@ -676,13 +722,13 @@ interface AppRouteRouteChildren {
 }
 
 const AppRouteRouteChildren: AppRouteRouteChildren = {
+  AppAuthenticatedRouteRoute: AppAuthenticatedRouteRouteWithChildren,
+  AppNot_authenticatedRouteRoute: AppNot_authenticatedRouteRouteWithChildren,
   AppDebugRouteRoute: AppDebugRouteRouteWithChildren,
   AppCheckoutRoute: AppCheckoutRoute,
   AppNewTabRoute: AppNewTabRoute,
   AppReleaseNotesRoute: AppReleaseNotesRoute,
   AppSetupRoute: AppSetupRoute,
-  AppSubscribeRoute: AppSubscribeRoute,
-  AppWelcomeRoute: AppWelcomeRoute,
   AppEvalsRunRoute: AppEvalsRunRoute,
   AppDiscoverIndexRoute: AppDiscoverIndexRoute,
   AppEvalsIndexRoute: AppEvalsIndexRoute,
@@ -696,18 +742,6 @@ const AppRouteRouteChildren: AppRouteRouteChildren = {
 
 const AppRouteRouteWithChildren = AppRouteRoute._addFileChildren(
   AppRouteRouteChildren,
-)
-
-interface AuthRouteRouteChildren {
-  AuthSignInRoute: typeof AuthSignInRoute
-}
-
-const AuthRouteRouteChildren: AuthRouteRouteChildren = {
-  AuthSignInRoute: AuthSignInRoute,
-}
-
-const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(
-  AuthRouteRouteChildren,
 )
 
 interface SettingsRouteChildren {
@@ -733,7 +767,6 @@ const SettingsRouteWithChildren = SettingsRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRouteRoute: AppRouteRouteWithChildren,
-  AuthRouteRoute: AuthRouteRouteWithChildren,
   BrowserRoute: BrowserRoute,
   SettingsRoute: SettingsRouteWithChildren,
   SidebarRoute: SidebarRoute,

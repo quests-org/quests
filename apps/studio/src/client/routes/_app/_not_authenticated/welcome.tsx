@@ -1,4 +1,3 @@
-import { userAtom } from "@/client/atoms/user";
 import { ExternalLink } from "@/client/components/external-link";
 import { StarryLayout } from "@/client/components/starry-layout";
 import { Button } from "@/client/components/ui/button";
@@ -6,19 +5,10 @@ import { vanillaRpcClient } from "@/client/rpc/client";
 import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
 import { QuestsAnimatedLogo } from "@quests/components/animated-logo";
 import { APP_REPO_URL, DISCORD_URL } from "@quests/shared";
-import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
-import { getDefaultStore } from "jotai";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 
-export const Route = createFileRoute("/_app/welcome")({
+export const Route = createFileRoute("/_app/_not_authenticated/welcome")({
   beforeLoad: async () => {
-    const store = getDefaultStore();
-    const userResult = await store.get(userAtom);
-    if (userResult.data?.id) {
-      redirect({
-        throw: true,
-        to: "/",
-      });
-    }
     await vanillaRpcClient.sidebar.close();
   },
   component: RouteComponent,

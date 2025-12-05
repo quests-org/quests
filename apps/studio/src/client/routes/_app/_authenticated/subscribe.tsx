@@ -15,7 +15,7 @@ import { CheckCircle2, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_app/subscribe")({
+export const Route = createFileRoute("/_app/_authenticated/subscribe")({
   component: SubscribePage,
   head: () => {
     return {

@@ -2,7 +2,7 @@ import { AISetupView } from "@/client/components/ai-setup-view";
 import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
 import { createFileRoute } from "@tanstack/react-router";
 
-export const Route = createFileRoute("/_auth/sign-in")({
+export const Route = createFileRoute("/_app/_not_authenticated/sign-in")({
   component: RouteComponent,
   head: () => {
     return {
