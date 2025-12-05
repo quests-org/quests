@@ -1,10 +1,6 @@
 import { AddProviderDialog } from "@/client/components/add-provider/dialog";
+import { ErrorAlert } from "@/client/components/error-alert";
 import { StarryLayout } from "@/client/components/starry-layout";
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "@/client/components/ui/alert";
 import { Button } from "@/client/components/ui/button";
 import { useSignInSocial } from "@/client/hooks/use-sign-in-social";
 import { rpcClient } from "@/client/rpc/client";
@@ -12,7 +8,7 @@ import { type RPCError } from "@/electron-main/lib/errors";
 import { QuestsAnimatedLogo } from "@quests/components/animated-logo";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { AlertCircle, Check } from "lucide-react";
+import { Check } from "lucide-react";
 import { useEffect, useState } from "react";
 import { SiGoogle } from "react-icons/si";
 import { toast } from "sonner";
@@ -100,11 +96,9 @@ export function AISetupView({ mode }: { mode: "setup" | "sign-in" }) {
               <h1 className="text-3xl font-bold">
                 {isReady ? readyTitle : title}
               </h1>
-              {!error && (
-                <p className="text-sm text-muted-foreground text-center max-w-md text-balance">
-                  {isReady ? readySubtitle : subtitle}
-                </p>
-              )}
+              <p className="text-sm text-muted-foreground text-center max-w-md text-balance">
+                {isReady ? readySubtitle : subtitle}
+              </p>
             </div>
 
             {isReady ? (
@@ -118,13 +112,13 @@ export function AISetupView({ mode }: { mode: "setup" | "sign-in" }) {
             ) : (
               <>
                 {error && (
-                  <Alert className="w-full min-w-80" variant="destructive">
-                    <AlertCircle className="size-4" />
-                    <AlertTitle>Sign in failed</AlertTitle>
-                    <AlertDescription>
-                      There was an error signing in. Please try again.
-                    </AlertDescription>
-                  </Alert>
+                  <ErrorAlert
+                    className="w-full min-w-80"
+                    subject="Sign In Error"
+                    title="Sign in failed"
+                  >
+                    There was an error signing in. Please try again.
+                  </ErrorAlert>
                 )}
 
                 <form

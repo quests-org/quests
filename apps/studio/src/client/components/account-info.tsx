@@ -5,8 +5,8 @@ import { rpcClient } from "@/client/rpc/client";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import { useAtom } from "jotai";
-import { AlertCircle } from "lucide-react";
 
+import { ErrorAlert } from "./error-alert";
 import { SubscriptionCard } from "./subscription-card";
 import { UserInfoCard } from "./user-info-card";
 
@@ -31,10 +31,12 @@ export function AccountInfo() {
         <div className="rounded-lg border bg-accent/30 p-4 shadow-sm">
           <div className="space-y-3">
             {hasError && error && (
-              <div className="flex items-start gap-2 rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-                <AlertCircle className="size-4 shrink-0 translate-y-0.5" />
-                <div>{error.message}</div>
-              </div>
+              <ErrorAlert
+                subject="Account Connection Error"
+                title="Connection error"
+              >
+                {error.message}
+              </ErrorAlert>
             )}
             <div className="flex items-start justify-between gap-4">
               <div className="space-y-0.5">
