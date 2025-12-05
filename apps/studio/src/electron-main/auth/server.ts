@@ -17,7 +17,8 @@ import { publisher } from "@/electron-main/rpc/publisher";
 import { getSessionStore } from "@/electron-main/stores/session";
 import { serve } from "@hono/node-server";
 import { COMMON_ORPC_ERROR_DEFS, type CommonORPCErrorCode } from "@orpc/client";
-import { APP_PROTOCOL } from "@quests/shared";
+import { APP_PROTOCOL, SUPPORT_EMAIL } from "@quests/shared";
+import { cva } from "class-variance-authority";
 import { detect } from "detect-port";
 import { app as electronApp } from "electron";
 import { Hono } from "hono";
@@ -178,6 +179,30 @@ export async function startAuthCallbackServer() {
   };
 }
 
+const buttonVariants = cva(
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-white/20 h-9 px-4 py-2",
+  {
+    defaultVariants: {
+      variant: "default",
+    },
+    variants: {
+      variant: {
+        default: "bg-white text-black shadow hover:bg-white/90",
+        outline: "border border-stone-700 text-white hover:bg-stone-800",
+      },
+    },
+  },
+);
+
+const button = (variant: "default" | "outline", href: string, label: string) =>
+  html`<a class="${buttonVariants({ variant })}" href="${href}">${label}</a>`;
+
+const contactUsButton = button(
+  "outline",
+  `mailto:${SUPPORT_EMAIL}`,
+  "Contact us",
+);
+
 function renderAuthPage({
   isError = false,
   isUnauthorized = false,
@@ -185,6 +210,36 @@ function renderAuthPage({
   isError?: boolean;
   isUnauthorized?: boolean;
 }) {
+  const renderContent = () => {
+    if (isUnauthorized) {
+      return html`<h1 class="text-xl text-center font-bold">
+          You don't have access to Quests yet.
+        </h1>
+        <p class="text-center text-stone-400">
+          Please join the
+          <a class="underline" href="https://quests.dev">waitlist</a>.
+        </p>
+        <p class="flex gap-2">
+          ${contactUsButton}
+          ${button("default", `${APP_PROTOCOL}://`, "View error in Quests")}
+        </p>`;
+    }
+    if (isError) {
+      return html`<h1 class="text-xl text-center font-bold">
+          There was an error signing in.
+        </h1>
+        <p class="flex gap-2">
+          ${contactUsButton}
+          ${button("default", `${APP_PROTOCOL}://`, "View error in Quests")}
+        </p>`;
+    }
+    return html`<h2 class="text-xl text-center font-bold">
+        You have successfully signed in to Quests. <br />You may now close this
+        window.
+      </h2>
+      <p>${button("default", `${APP_PROTOCOL}://home`, "Open Quests")}</p>`;
+  };
+
   return html`<!DOCTYPE html>
     <html lang="en" class="dark">
       <head>
@@ -204,24 +259,7 @@ function renderAuthPage({
               </div>
             </div>
           </div>
-          ${isUnauthorized
-            ? html`<h1>
-                You don't have access to Quests yet. Please join the
-                <a class="underline" href="https://quests.dev">waitlist</a>.
-              </h1>`
-            : isError
-              ? html`<h1>There was an error signing in.</h1>`
-              : html`<h2 class="text-xl text-center font-bold">
-                    You have successfully signed in to Quests. <br />You may now
-                    close this window.
-                  </h2>
-                  <p>
-                    <a
-                      class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-9 px-4 py-2 bg-white text-black shadow hover:bg-white/90 mr-2"
-                      href="${APP_PROTOCOL}://home"
-                      >Open Quests</a
-                    >
-                  </p>`}
+          ${renderContent()}
         </div>
       </body>
     </html>`;
