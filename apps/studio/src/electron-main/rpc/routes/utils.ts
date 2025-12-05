@@ -13,7 +13,12 @@ import {
 } from "@/shared/schemas/editors";
 import { eventIterator } from "@orpc/server";
 import { ProjectSubdomainSchema } from "@quests/workspace/client";
-import { createAppConfig } from "@quests/workspace/electron";
+import {
+  createAppConfig,
+  exportProjectZip,
+  getQuestManifest,
+  projectModeForSubdomain,
+} from "@quests/workspace/electron";
 import { app, clipboard, shell, webContents } from "electron";
 import { exec } from "node:child_process";
 import fs from "node:fs/promises";
@@ -392,6 +397,70 @@ const showFileInFolder = base
     }
   });
 
+const exportZip = base
+  .errors({
+    EXPORT_FAILED: {
+      message: "Failed to export project",
+    },
+  })
+  .input(
+    z.object({
+      includeChat: z.boolean().default(false),
+      subdomain: ProjectSubdomainSchema,
+    }),
+  )
+  .output(
+    z.object({
+      filename: z.string(),
+      filepath: z.string(),
+    }),
+  )
+  .handler(async ({ context, errors, input }) => {
+    try {
+      const snapshot = context.workspaceRef.getSnapshot();
+      const appConfig = createAppConfig({
+        subdomain: input.subdomain,
+        workspaceConfig: snapshot.context.config,
+      });
+
+      const manifest = await getQuestManifest(appConfig.appDir);
+      const projectName = manifest?.name ?? input.subdomain;
+
+      const safeName = projectName
+        .toLowerCase()
+        .replaceAll(/[^a-z0-9-]/g, "-")
+        .replaceAll(/-+/g, "-")
+        .replaceAll(/^-|-$/g, "")
+        .slice(0, 50);
+
+      const timestamp = new Date().toISOString().replaceAll(/[:.]/g, "-");
+      const filename = `${safeName}-${timestamp}.zip`;
+      const downloadsPath = app.getPath("downloads");
+      const filepath = path.join(downloadsPath, filename);
+
+      const result = await exportProjectZip({
+        appDir: appConfig.appDir,
+        includeChat: input.includeChat,
+        outputPath: filepath,
+      });
+
+      if (result.isErr()) {
+        throw errors.EXPORT_FAILED({ message: result.error.message });
+      }
+
+      captureServerEvent("project.exported_zip", {
+        include_chat: input.includeChat,
+        project_mode: projectModeForSubdomain(input.subdomain),
+      });
+
+      return { filename, filepath };
+    } catch (error) {
+      throw errors.EXPORT_FAILED({
+        message: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
+  });
+
 const getSupportedEditors = base
   .output(z.array(SupportedEditorSchema))
   .handler(async () => {
@@ -429,6 +498,7 @@ const live = {
 
 export const utils = {
   copyScreenshotToClipboard,
+  exportZip,
   getSupportedEditors,
   imageDataURI,
   live,

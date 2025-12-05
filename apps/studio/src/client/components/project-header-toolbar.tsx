@@ -19,6 +19,7 @@ import {
   ChevronDown,
   Clipboard,
   Copy,
+  FileArchive,
   FolderOpenIcon,
   MessageCircle,
   PanelLeftClose,
@@ -32,6 +33,7 @@ import { toast } from "sonner";
 
 import { projectIframeRefAtom } from "../atoms/project";
 import { DuplicateProjectModal } from "./duplicate-project-modal";
+import { ExportZipModal } from "./export-zip-modal";
 import { RestoreVersionModal } from "./restore-version-modal";
 import { CMD, Cursor, ITerm, MacOSTerminal, VSCode } from "./service-icons";
 import {
@@ -74,6 +76,7 @@ export function ProjectHeaderToolbar({
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
   const [restoreModalOpen, setRestoreModalOpen] = useState(false);
   const [duplicateModalOpen, setDuplicateModalOpen] = useState(false);
+  const [exportZipModalOpen, setExportZipModalOpen] = useState(false);
   const navigate = useNavigate();
 
   const showFileInFolderMutation = useMutation(
@@ -409,6 +412,15 @@ export function ProjectHeaderToolbar({
                         <Save className="h-4 w-4" />
                         Save screenshot
                       </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => {
+                          setExportZipModalOpen(true);
+                        }}
+                      >
+                        <FileArchive className="h-4 w-4" />
+                        Export as zip
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 )}
@@ -444,6 +456,15 @@ export function ProjectHeaderToolbar({
         isOpen={duplicateModalOpen}
         onClose={() => {
           setDuplicateModalOpen(false);
+        }}
+        projectName={project.title}
+        projectSubdomain={project.subdomain}
+      />
+
+      <ExportZipModal
+        isOpen={exportZipModalOpen}
+        onClose={() => {
+          setExportZipModalOpen(false);
         }}
         projectName={project.title}
         projectSubdomain={project.subdomain}

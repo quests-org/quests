@@ -66,6 +66,10 @@ export interface AnalyticsEvents {
     project_mode: ProjectMode;
     template_name: string;
   }>;
+  "project.exported_zip": {
+    include_chat: boolean;
+    project_mode: ProjectMode;
+  };
   "project.forked": never;
   "project.opened_in": {
     app_name: string;

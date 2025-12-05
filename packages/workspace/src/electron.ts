@@ -1,5 +1,8 @@
 export { WORKSPACE_FOLDER } from "./constants";
 export { createAppConfig } from "./lib/app-config/create";
+export { exportProjectZip } from "./lib/export-project-zip";
+export { projectModeForSubdomain } from "./lib/project-mode-for-subdomain";
+export { getQuestManifest } from "./lib/quest-manifest";
 export { getWorkspaceServerURL } from "./logic/server/url";
 export {
   type WorkspaceActorRef,
