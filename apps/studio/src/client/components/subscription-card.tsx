@@ -1,10 +1,26 @@
 import { Badge } from "@/client/components/ui/badge";
 import { Button } from "@/client/components/ui/button";
 import { Card } from "@/client/components/ui/card";
+import { cn } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
+import { cva } from "class-variance-authority";
 import { toast } from "sonner";
+
+const planBadgeVariants = cva("text-xs px-2 py-0.5", {
+  defaultVariants: {
+    plan: "free",
+  },
+  variants: {
+    plan: {
+      basic:
+        "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/30",
+      free: "",
+      pro: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30",
+    },
+  },
+});
 
 export function SubscriptionCard() {
   const { mutate: addTab } = useMutation(rpcClient.tabs.add.mutationOptions());
@@ -40,16 +56,8 @@ export function SubscriptionCard() {
   const freeUsagePercent = data?.freeUsagePercent;
   const displayUsagePercent = plan ? usagePercent : freeUsagePercent;
 
-  const badgeVariant: "default" | "outline" | "secondary" = "secondary";
-  let badgeClassName = "text-xs px-2 py-0.5";
-
-  if (plan === "Basic") {
-    badgeClassName +=
-      " bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/30";
-  } else if (plan === "Pro") {
-    badgeClassName +=
-      "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30";
-  }
+  const planVariant =
+    plan === "Basic" ? "basic" : plan === "Pro" ? "pro" : "free";
 
   return (
     <Card className="p-4 bg-accent/30 shadow-sm">
@@ -58,7 +66,10 @@ export function SubscriptionCard() {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <h4 className="font-medium">Subscription & Usage</h4>
-              <Badge className={badgeClassName} variant={badgeVariant}>
+              <Badge
+                className={cn(planBadgeVariants({ plan: planVariant }))}
+                variant="secondary"
+              >
                 {plan ? `${plan} Plan` : "Free Plan"}
               </Badge>
             </div>
