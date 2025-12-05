@@ -1,4 +1,5 @@
 import { providerMetadataAtom } from "@/client/atoms/provider-metadata";
+import { userAtom } from "@/client/atoms/user";
 import { AddProviderDialog } from "@/client/components/add-provider/dialog";
 import { AIProviderIcon } from "@/client/components/ai-provider-icon";
 import { ErrorAlert } from "@/client/components/error-alert";
@@ -11,27 +12,25 @@ import {
 } from "@/client/components/ui/tooltip";
 import { useSignInSocial } from "@/client/hooks/use-sign-in-social";
 import { rpcClient } from "@/client/rpc/client";
-import { type RPCError } from "@/electron-main/lib/errors";
 import { QuestsAnimatedLogo } from "@quests/components/animated-logo";
 import { type AIProviderType } from "@quests/shared";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
 import { Check, CreditCard } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { SiGoogle } from "react-icons/si";
-import { toast } from "sonner";
 
 const FEATURED_PROVIDERS: AIProviderType[] = ["anthropic", "openai", "google"];
 
 export function AISetupView({ mode }: { mode: "setup" | "sign-in" }) {
-  const [error, setError] = useState<null | RPCError>(null);
   const [showAddProviderDialog, setShowAddProviderDialog] = useState(false);
   const { signIn } = useSignInSocial();
   const navigate = useNavigate();
   const { providerMetadataMap } = useAtomValue(providerMetadataAtom);
+  const userResult = useAtomValue(userAtom);
 
-  const { data: authSessionChanged, isFetched } = useQuery(
+  const { data: userLive } = useQuery(
     rpcClient.user.live.me.experimental_liveOptions({}),
   );
 
@@ -39,17 +38,10 @@ export function AISetupView({ mode }: { mode: "setup" | "sign-in" }) {
     rpcClient.providerConfig.live.list.experimental_liveOptions(),
   );
 
-  const isSignedIn = authSessionChanged && !authSessionChanged.error;
+  const isSignedIn = Boolean(userResult.data?.id);
   const hasProvider = (providerConfigs?.length ?? 0) > 0;
   const isReady = mode === "setup" ? isSignedIn || hasProvider : isSignedIn;
-
-  useEffect(() => {
-    if (authSessionChanged?.error) {
-      setError(authSessionChanged.error);
-    } else if (authSessionChanged && isFetched) {
-      toast.dismiss();
-    }
-  }, [authSessionChanged, isFetched]);
+  const signInError = userLive?.error;
 
   const handleContinueClick = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -153,7 +145,7 @@ export function AISetupView({ mode }: { mode: "setup" | "sign-in" }) {
               </Button>
             ) : (
               <>
-                {error && (
+                {signInError && (
                   <ErrorAlert
                     className="w-full min-w-80"
                     subject="Sign In Error"
