@@ -1,7 +1,6 @@
-import { NEW_ISSUE_URL } from "@quests/shared";
-import { ExternalLink as ExternalLinkIcon } from "lucide-react";
+import { SUPPORT_EMAIL } from "@quests/shared";
 
-import { ExternalLink } from "./external-link";
+import { EmailLink } from "./email-link";
 import { Alert, AlertDescription } from "./ui/alert";
 import { Button } from "./ui/button";
 
@@ -25,13 +24,13 @@ export function ChatErrorAlert({
         </Button>
         <div className="text-xs text-center text-muted-foreground">
           Think this is a bug?{" "}
-          <ExternalLink
+          <EmailLink
             className="underline hover:no-underline inline"
-            href={NEW_ISSUE_URL}
+            email={SUPPORT_EMAIL}
+            subject="Chat Error"
           >
-            Report an issue
-          </ExternalLink>{" "}
-          <ExternalLinkIcon className="size-3 inline" />
+            Contact us
+          </EmailLink>
         </div>
       </AlertDescription>
     </Alert>
