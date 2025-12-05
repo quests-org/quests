@@ -1,23 +1,35 @@
+import { providerMetadataAtom } from "@/client/atoms/provider-metadata";
 import { AddProviderDialog } from "@/client/components/add-provider/dialog";
+import { AIProviderIcon } from "@/client/components/ai-provider-icon";
 import { ErrorAlert } from "@/client/components/error-alert";
 import { StarryLayout } from "@/client/components/starry-layout";
 import { Button } from "@/client/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/client/components/ui/tooltip";
 import { useSignInSocial } from "@/client/hooks/use-sign-in-social";
 import { rpcClient } from "@/client/rpc/client";
 import { type RPCError } from "@/electron-main/lib/errors";
 import { QuestsAnimatedLogo } from "@quests/components/animated-logo";
+import { type AIProviderType } from "@quests/shared";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { Check } from "lucide-react";
+import { useAtomValue } from "jotai";
+import { Check, CreditCard } from "lucide-react";
 import { useEffect, useState } from "react";
 import { SiGoogle } from "react-icons/si";
 import { toast } from "sonner";
+
+const FEATURED_PROVIDERS: AIProviderType[] = ["anthropic", "openai", "google"];
 
 export function AISetupView({ mode }: { mode: "setup" | "sign-in" }) {
   const [error, setError] = useState<null | RPCError>(null);
   const [showAddProviderDialog, setShowAddProviderDialog] = useState(false);
   const { signIn } = useSignInSocial();
   const navigate = useNavigate();
+  const { providerMetadataMap } = useAtomValue(providerMetadataAtom);
 
   const { data: authSessionChanged, isFetched } = useQuery(
     rpcClient.user.live.me.experimental_liveOptions({}),
@@ -50,7 +62,7 @@ export function AISetupView({ mode }: { mode: "setup" | "sign-in" }) {
 
   const title = mode === "setup" ? "Sign in to Quests" : "Sign in to Quests";
   const readyTitle = mode === "setup" ? "You're all set!" : "You're signed in!";
-  const subtitle = "Get free credits to start building with AI.";
+  const subtitle = "Claim your free AI credits";
   const readySubtitle = "You're now ready to start building!";
 
   return (
@@ -99,6 +111,36 @@ export function AISetupView({ mode }: { mode: "setup" | "sign-in" }) {
               <p className="text-sm text-muted-foreground text-center max-w-md text-balance">
                 {isReady ? readySubtitle : subtitle}
               </p>
+              {!isReady && (
+                <div className="flex items-center gap-2.5 rounded-full bg-muted/30 px-4 py-2">
+                  <span className="text-xs text-muted-foreground/80">
+                    Use top models from
+                  </span>
+                  <div className="flex items-center gap-3">
+                    {FEATURED_PROVIDERS.map((providerType) => {
+                      const metadata = providerMetadataMap.get(providerType);
+                      return (
+                        <Tooltip key={providerType}>
+                          <TooltipTrigger asChild>
+                            <div className="text-foreground/60 hover:text-foreground transition-colors">
+                              <AIProviderIcon
+                                className="size-4"
+                                type={providerType}
+                              />
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            {metadata?.name ?? providerType}
+                          </TooltipContent>
+                        </Tooltip>
+                      );
+                    })}
+                  </div>
+                  <span className="text-xs text-muted-foreground/80">
+                    & more
+                  </span>
+                </div>
+              )}
             </div>
 
             {isReady ? (
@@ -121,19 +163,25 @@ export function AISetupView({ mode }: { mode: "setup" | "sign-in" }) {
                   </ErrorAlert>
                 )}
 
-                <form
-                  className="flex items-center justify-center w-full"
-                  onSubmit={handleContinueClick}
-                >
-                  <Button
-                    className="w-full min-w-80"
-                    type="submit"
-                    variant="default"
+                <div className="flex flex-col items-center gap-3 w-full">
+                  <form
+                    className="flex items-center justify-center w-full"
+                    onSubmit={handleContinueClick}
                   >
-                    <SiGoogle />
-                    Continue with Google
-                  </Button>
-                </form>
+                    <Button
+                      className="w-full min-w-80"
+                      type="submit"
+                      variant="default"
+                    >
+                      <SiGoogle />
+                      Continue with Google
+                    </Button>
+                  </form>
+                  <p className="flex items-center gap-1.5 text-xs text-muted-foreground/60">
+                    <CreditCard className="size-3" />
+                    <span>No card required</span>
+                  </p>
+                </div>
 
                 {mode === "setup" && (
                   <div className="flex flex-col items-center justify-center">
