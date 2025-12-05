@@ -164,7 +164,6 @@ export function AISetupView({ mode }: { mode: "setup" | "sign-in" }) {
             onOpenChange={setShowAddProviderDialog}
             onSuccess={() => {
               setShowAddProviderDialog(false);
-              toast.success("Provider added successfully");
             }}
             open={showAddProviderDialog}
             providers={providerConfigs ?? []}

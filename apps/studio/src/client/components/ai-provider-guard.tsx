@@ -6,7 +6,6 @@ import { QuestsAnimatedLogo } from "@quests/components/animated-logo";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { SiGoogle } from "react-icons/si";
-import { toast } from "sonner";
 
 export function AIProviderGuard({
   description,
@@ -69,7 +68,6 @@ export function AIProviderGuard({
         onOpenChange={setShowAddProviderDialog}
         onSuccess={() => {
           setShowAddProviderDialog(false);
-          toast.success("Provider added successfully");
           onClose?.();
         }}
         open={showAddProviderDialog}
