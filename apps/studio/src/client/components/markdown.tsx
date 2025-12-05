@@ -1,6 +1,7 @@
 import { memo, useCallback, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import remend from "remend";
 
 import { cn } from "../lib/utils";
 import { CopyButton } from "./copy-button";
@@ -105,7 +106,7 @@ export const Markdown = memo(({ markdown, rehypePlugins }: MarkdownProps) => {
       rehypePlugins={rehypePlugins}
       remarkPlugins={[remarkGfm]}
     >
-      {markdown}
+      {remend(markdown)}
     </ReactMarkdown>
   );
 });
