@@ -14,14 +14,14 @@ export function EmailLink({
   email: string;
   subject?: string;
 }) {
-  const params = new URLSearchParams();
+  const params: string[] = [];
   if (subject) {
-    params.set("subject", subject);
+    params.push(`subject=${encodeURIComponent(subject)}`);
   }
   if (body) {
-    params.set("body", body);
+    params.push(`body=${encodeURIComponent(body)}`);
   }
-  const query = params.toString();
+  const query = params.join("&");
   const href = `mailto:${email}${query ? `?${query}` : ""}`;
 
   const handleClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
