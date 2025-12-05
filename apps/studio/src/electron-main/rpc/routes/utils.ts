@@ -11,14 +11,9 @@ import {
   OpenAppInTypeSchema,
   SupportedEditorSchema,
 } from "@/shared/schemas/editors";
-import { eventIterator } from "@orpc/server";
+import { call, eventIterator } from "@orpc/server";
 import { ProjectSubdomainSchema } from "@quests/workspace/client";
-import {
-  createAppConfig,
-  exportProjectZip,
-  getQuestManifest,
-  projectModeForSubdomain,
-} from "@quests/workspace/electron";
+import { createAppConfig, workspaceRouter } from "@quests/workspace/electron";
 import { app, clipboard, shell, webContents } from "electron";
 import { exec } from "node:child_process";
 import fs from "node:fs/promises";
@@ -259,8 +254,8 @@ const openAppIn = base
         await execAsync(command);
       }
 
-      captureServerEvent("app.opened_in", {
-        app_id: input.type,
+      captureServerEvent("project.opened_in", {
+        app_name: input.type,
       });
     } catch (error) {
       throw errors.ERROR_OPENING_APP({
@@ -327,6 +322,10 @@ const takeScreenshot = base
 
       await fs.writeFile(filepath, buffer);
 
+      captureServerEvent("project.shared", {
+        share_type: "saved_screenshot",
+      });
+
       return { filename, filepath };
     } catch (error) {
       throw errors.SCREENSHOT_FAILED({
@@ -370,6 +369,10 @@ const copyScreenshotToClipboard = base
         : await webContent.capturePage();
 
       clipboard.writeImage(image);
+
+      captureServerEvent("project.shared", {
+        share_type: "copied_screenshot",
+      });
     } catch (error) {
       throw errors.SCREENSHOT_FAILED({
         message: error instanceof Error ? error.message : "Unknown error",
@@ -398,11 +401,6 @@ const showFileInFolder = base
   });
 
 const exportZip = base
-  .errors({
-    EXPORT_FAILED: {
-      message: "Failed to export project",
-    },
-  })
   .input(
     z.object({
       includeChat: z.boolean().default(false),
@@ -415,50 +413,13 @@ const exportZip = base
       filepath: z.string(),
     }),
   )
-  .handler(async ({ context, errors, input }) => {
-    try {
-      const snapshot = context.workspaceRef.getSnapshot();
-      const appConfig = createAppConfig({
-        subdomain: input.subdomain,
-        workspaceConfig: snapshot.context.config,
-      });
-
-      const manifest = await getQuestManifest(appConfig.appDir);
-      const projectName = manifest?.name ?? input.subdomain;
-
-      const safeName = projectName
-        .toLowerCase()
-        .replaceAll(/[^a-z0-9-]/g, "-")
-        .replaceAll(/-+/g, "-")
-        .replaceAll(/^-|-$/g, "")
-        .slice(0, 50);
-
-      const timestamp = new Date().toISOString().replaceAll(/[:.]/g, "-");
-      const filename = `${safeName}-${timestamp}.zip`;
-      const downloadsPath = app.getPath("downloads");
-      const filepath = path.join(downloadsPath, filename);
-
-      const result = await exportProjectZip({
-        appDir: appConfig.appDir,
-        includeChat: input.includeChat,
-        outputPath: filepath,
-      });
-
-      if (result.isErr()) {
-        throw errors.EXPORT_FAILED({ message: result.error.message });
-      }
-
-      captureServerEvent("project.exported_zip", {
-        include_chat: input.includeChat,
-        project_mode: projectModeForSubdomain(input.subdomain),
-      });
-
-      return { filename, filepath };
-    } catch (error) {
-      throw errors.EXPORT_FAILED({
-        message: error instanceof Error ? error.message : "Unknown error",
-      });
-    }
+  .handler(async ({ context, input, signal }) => {
+    const outputPath = app.getPath("downloads");
+    return call(
+      workspaceRouter.project.exportZip,
+      { ...input, outputPath },
+      { context, signal },
+    );
   });
 
 const getSupportedEditors = base

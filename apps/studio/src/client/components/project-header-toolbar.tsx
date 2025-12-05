@@ -94,11 +94,6 @@ export function ProjectHeaderToolbar({
           description: error.message,
         });
       },
-      onSuccess: (_, variables) => {
-        captureClientEvent("project.opened_in", {
-          app_name: variables.type,
-        });
-      },
     }),
   );
 
@@ -110,7 +105,6 @@ export function ProjectHeaderToolbar({
         });
       },
       onSuccess: (result) => {
-        captureClientEvent("project.share.saved_screenshot");
         toast.success(`Screenshot saved to your Downloads folder`, {
           action: {
             label: isMacOS() ? "Reveal in Finder" : "Open in File Explorer",
@@ -135,7 +129,6 @@ export function ProjectHeaderToolbar({
         });
       },
       onSuccess: () => {
-        captureClientEvent("project.share.copied_screenshot");
         toast.success("Screenshot copied to clipboard");
       },
     }),
@@ -390,7 +383,7 @@ export function ProjectHeaderToolbar({
                   <DropdownMenu
                     onOpenChange={(open) => {
                       if (open) {
-                        captureClientEvent("project.share.opened");
+                        captureClientEvent("project.share_menu_opened");
                       }
                     }}
                   >
