@@ -62,6 +62,8 @@ export function ModelPicker({
     [models],
   );
 
+  const hasModels = !!models?.length;
+  const hasErrors = !!errors?.length;
   const isSelectDisabled = disabled || isLoading || isError;
 
   const getPlaceholderText = () => {
@@ -71,7 +73,7 @@ export function ModelPicker({
     if (isError) {
       return "Failed to load models";
     }
-    if (!models || models.length === 0) {
+    if (!hasModels) {
       return "No models available";
     }
     return placeholder;
@@ -135,7 +137,7 @@ export function ModelPicker({
             value={searchQuery}
           />
           <CommandList className="max-h-82">
-            {!models || models.length === 0 ? (
+            {!hasModels && !hasErrors ? (
               <div className="flex flex-col items-center gap-3 py-6">
                 <p className="text-sm text-muted-foreground">
                   Connect a provider to use Quests
@@ -176,7 +178,7 @@ export function ModelPicker({
                 </div>
               </CommandEmpty>
             )}
-            {errors && errors.length > 0 && (
+            {hasErrors && (
               <CommandGroup
                 heading={
                   <div className="flex items-center justify-between w-full">
@@ -227,8 +229,7 @@ export function ModelPicker({
                 <CommandItem disabled>Failed to load models</CommandItem>
               </CommandGroup>
             )}
-            {models &&
-              models.length > 0 &&
+            {hasModels &&
               getGroupedModelsEntries(groupedModels).map(
                 ([groupName, modelGroup]) =>
                   modelGroup.length > 0 && (
