@@ -191,7 +191,7 @@ function renderAuthPage({
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-        <title>Quests Sign-in</title>
+        <title>Sign in to Quests</title>
       </head>
       <body class="dark:bg-stone-950 dark:text-white">
         <div
@@ -219,7 +219,7 @@ function renderAuthPage({
                     <a
                       class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-9 px-4 py-2 bg-white text-black shadow hover:bg-white/90 mr-2"
                       href="${APP_PROTOCOL}://home"
-                      >Open App</a
+                      >Open Quests</a
                     >
                   </p>`}
         </div>
