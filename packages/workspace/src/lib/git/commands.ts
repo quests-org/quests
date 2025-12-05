@@ -5,6 +5,10 @@ export namespace GitCommands {
     return ["add", "."];
   }
 
+  export function archiveZip(outputPath: string) {
+    return ["archive", "--format=zip", "--output", outputPath, "HEAD"];
+  }
+
   export function checkoutFiles(ref: string) {
     return ["checkout", ref, "--", "."];
   }
