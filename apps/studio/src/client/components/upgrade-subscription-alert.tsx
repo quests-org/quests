@@ -1,7 +1,5 @@
-import { cn } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
 import { useQuery } from "@tanstack/react-query";
-import { CheckCircle2, Gem, Play } from "lucide-react";
 
 import { InternalLink } from "./internal-link";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
@@ -28,23 +26,17 @@ export function UpgradeSubscriptionAlert({
     displayUsagePercent !== undefined && displayUsagePercent < 100;
 
   return (
-    <Alert
-      className={cn(
-        hasCredits &&
-          "border-emerald-200 bg-linear-to-br from-emerald-50 to-background dark:border-emerald-800/50 dark:from-emerald-950/30 dark:to-background",
-      )}
-    >
+    <Alert>
       {hasCredits ? (
         <>
-          <CheckCircle2 className="size-4 text-emerald-600 dark:text-emerald-400" />
-          <AlertTitle className="text-emerald-900 dark:text-emerald-100">
-            You&apos;re all set with more credits!
-          </AlertTitle>
-          <AlertDescription className="flex flex-col gap-3 text-emerald-800 dark:text-emerald-200">
-            <span>You can now continue.</span>
+          <AlertTitle>Ready to continue</AlertTitle>
+          <AlertDescription className="flex flex-col gap-3">
+            <span>
+              You now have credits available. Click continue or send a new
+              message to resume the agent.
+            </span>
             <div className="flex">
-              <Button onClick={onContinue} size="sm" variant="secondary">
-                <Play className="size-3" />
+              <Button onClick={onContinue} size="sm">
                 Continue
               </Button>
             </div>
@@ -58,7 +50,6 @@ export function UpgradeSubscriptionAlert({
             <div className="flex">
               <Button asChild size="sm" variant="brand">
                 <InternalLink openInNewTab to="/subscribe">
-                  <Gem className="size-3" />
                   Get more credits
                 </InternalLink>
               </Button>
