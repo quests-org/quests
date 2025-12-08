@@ -21,6 +21,9 @@ export interface AnalyticsEvents {
     eval_names: string[];
     model_ids: string[];
   };
+  "external_link.clicked": {
+    url: string;
+  };
   "favorite.added": never;
   "favorite.removed": never;
   "framework.not_supported": {

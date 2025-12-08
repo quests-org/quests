@@ -1,3 +1,4 @@
+import { captureClientEvent } from "@/client/lib/capture-client-event";
 import { cn } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
 import { isDefinedError } from "@orpc/client";
@@ -36,6 +37,7 @@ export function ExternalLink(
       const url = event.currentTarget.href;
       if (url) {
         const finalUrl = addReferral ? addRef(url) : url;
+        captureClientEvent("external_link.clicked", { url: finalUrl });
         await openExternalLinkMutation.mutateAsync({ url: finalUrl });
       }
       onClick?.(event);
