@@ -98,6 +98,30 @@ function DeleteWithProgressDialogBody<T>({
     }
   };
 
+  if (isPending) {
+    return (
+      <>
+        <AlertDialogHeader>
+          <AlertDialogTitle className="flex items-center gap-2">
+            <Loader2 className="size-5 animate-spin" />
+            Moving to {trashTerminology}
+          </AlertDialogTitle>
+          <AlertDialogDescription>
+            This may take a moment...
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        {showWarning && (
+          <Alert variant="default">
+            <Timer />
+            <AlertDescription>
+              {PROGRESS_MESSAGES[messageIndex]}
+            </AlertDescription>
+          </Alert>
+        )}
+      </>
+    );
+  }
+
   return (
     <>
       <AlertDialogHeader>
@@ -106,37 +130,18 @@ function DeleteWithProgressDialogBody<T>({
         {content}
       </AlertDialogHeader>
       <AlertDialogFooter>
-        <div className="flex flex-col gap-3 w-full">
-          {showWarning && (
-            <Alert variant="default">
-              <Timer />
-              <AlertDescription>
-                {PROGRESS_MESSAGES[messageIndex]}
-              </AlertDescription>
-            </Alert>
-          )}
-          <div className="flex justify-end gap-2">
-            <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              asChild
-              className="text-white"
-              disabled={isPending}
-            >
-              <Button
-                onClick={async (e) => {
-                  e.preventDefault();
-                  await handleDelete();
-                }}
-                variant="destructive"
-              >
-                {isPending && <Loader2 className="animate-spin" />}
-                {isPending
-                  ? `Moving to ${trashTerminology}...`
-                  : `Move to ${trashTerminology}`}
-              </Button>
-            </AlertDialogAction>
-          </div>
-        </div>
+        <AlertDialogCancel>Cancel</AlertDialogCancel>
+        <AlertDialogAction asChild className="text-white">
+          <Button
+            onClick={async (e) => {
+              e.preventDefault();
+              await handleDelete();
+            }}
+            variant="destructive"
+          >
+            Move to {trashTerminology}
+          </Button>
+        </AlertDialogAction>
       </AlertDialogFooter>
     </>
   );
