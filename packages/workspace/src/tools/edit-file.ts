@@ -14,8 +14,8 @@ import { writeFileWithDir } from "../lib/write-file-with-dir";
 import { RelativePathSchema } from "../schemas/paths";
 import { BaseInputSchema } from "./base";
 import { createTool } from "./create-tool";
-import { DIAGNOSTICS_HELPER_MESSAGE } from "./diagnostics-helper";
 import { ReadFile } from "./read-file";
+import { diagnosticsReminder } from "./run-diagnostics";
 
 const MAX_FILE_SIZE = 250 * 1024; // 250KB
 
@@ -698,7 +698,7 @@ export const EditFile = createTool({
       type: "text",
       value: sift([
         `Successfully edited file ${result.filePath}`,
-        DIAGNOSTICS_HELPER_MESSAGE,
+        diagnosticsReminder(result.filePath),
       ]).join("\n\n"),
     };
   },

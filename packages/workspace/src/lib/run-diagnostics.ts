@@ -1,9 +1,21 @@
 import { ExecaError } from "execa";
+import path from "node:path";
 
 import type { AppConfig } from "./app-config/types";
 
 import { cancelableTimeout } from "./cancelable-timeout";
 import { runNodeModulesBin } from "./run-node-modules-bin";
+
+const SUPPORTED_EXTENSIONS = new Set([
+  ".cjs",
+  ".cts",
+  ".js",
+  ".jsx",
+  ".mjs",
+  ".mts",
+  ".ts",
+  ".tsx",
+]);
 
 export async function runDiagnostics(
   appConfig: AppConfig,
@@ -50,4 +62,9 @@ export async function runDiagnostics(
   }
 
   return undefined;
+}
+
+export function supportsDiagnostics(filePath: string): boolean {
+  const ext = path.extname(filePath).toLowerCase();
+  return SUPPORTED_EXTENSIONS.has(ext);
 }

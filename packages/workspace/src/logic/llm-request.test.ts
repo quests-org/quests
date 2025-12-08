@@ -1782,7 +1782,102 @@ describe("llmRequestLogic", () => {
                 {
                   "output": {
                     "type": "text",
-                    "value": "Successfully wrote new file ./output.txt
+                    "value": "Successfully wrote new file ./output.txt",
+                  },
+                  "providerOptions": undefined,
+                  "toolCallId": "2",
+                  "toolName": "write_file",
+                  "type": "tool-result",
+                },
+              ],
+              "providerOptions": undefined,
+              "role": "tool",
+            },
+          ],
+        ]
+      `);
+    });
+
+    it("handles tool call with diagnostics reminder", async () => {
+      await Store.saveParts(
+        [
+          {
+            input: {
+              content: "console.log('hi');",
+              filePath: "./foo.ts",
+            },
+            metadata: {
+              createdAt: mockDate,
+              endedAt: mockDate,
+              id: StoreId.newPartId(),
+              messageId: assistantMessageId,
+              sessionId,
+            },
+            output: {
+              content: "console.log('hi');",
+              filePath: RelativePathSchema.parse("./foo.ts"),
+              isNewFile: true,
+            },
+            state: "output-available",
+            toolCallId: StoreId.ToolCallSchema.parse("2"),
+            type: "tool-write_file",
+          },
+        ],
+        projectAppConfig,
+      );
+
+      const machine = createTestMachine({
+        chunks: [],
+      });
+      await runTestMachine(machine);
+      expect(prompts).toMatchInlineSnapshot(`
+        [
+          [
+            {
+              "content": [
+                {
+                  "providerOptions": undefined,
+                  "text": "You are a helpful assistant.",
+                  "type": "text",
+                },
+              ],
+              "providerOptions": undefined,
+              "role": "assistant",
+            },
+            {
+              "content": [
+                {
+                  "providerOptions": undefined,
+                  "text": "Do something",
+                  "type": "text",
+                },
+              ],
+              "providerOptions": undefined,
+              "role": "user",
+            },
+            {
+              "content": [
+                {
+                  "input": {
+                    "content": "console.log('hi');",
+                    "filePath": "./foo.ts",
+                  },
+                  "providerExecuted": undefined,
+                  "providerOptions": undefined,
+                  "toolCallId": "2",
+                  "toolName": "write_file",
+                  "type": "tool-call",
+                },
+              ],
+              "providerOptions": undefined,
+              "role": "assistant",
+            },
+            {
+              "content": [
+                {
+                  "output": {
+                    "type": "text",
+                    "value": "Successfully wrote new file ./foo.ts
 
         When you're done with your current set of changes to this file, you should call the run_diagnostics tool to check for any new errors.",
                   },
@@ -2126,7 +2221,7 @@ describe("llmRequestLogic", () => {
               {
                 "metadata": {
                   "createdAt": 2013-08-31T12:00:00.000Z,
-                  "id": "prt_00000000ZS8888888888888888",
+                  "id": "prt_00000000ZT8888888888888888",
                   "messageId": "msg_0000000001888888888888888B",
                   "sessionId": "ses_00000000018888888888888888",
                 },
@@ -2157,7 +2252,7 @@ describe("llmRequestLogic", () => {
             "role": "assistant",
           },
           {
-            "id": "msg_00000000ZS888888888888888B",
+            "id": "msg_00000000ZT888888888888888B",
             "metadata": {
               "aiGatewayModel": undefined,
               "completionTokensPerSecond": 2,
@@ -2181,8 +2276,8 @@ describe("llmRequestLogic", () => {
               {
                 "metadata": {
                   "createdAt": 2013-08-31T12:00:02.000Z,
-                  "id": "prt_00000000ZS888888888888888C",
-                  "messageId": "msg_00000000ZS888888888888888B",
+                  "id": "prt_00000000ZT888888888888888C",
+                  "messageId": "msg_00000000ZT888888888888888B",
                   "sessionId": "ses_00000000018888888888888888",
                   "stepCount": 1,
                 },
@@ -2192,8 +2287,8 @@ describe("llmRequestLogic", () => {
                 "metadata": {
                   "createdAt": 2013-08-31T12:00:04.000Z,
                   "endedAt": 2013-08-31T12:00:05.000Z,
-                  "id": "prt_00000000ZS888888888888888D",
-                  "messageId": "msg_00000000ZS888888888888888B",
+                  "id": "prt_00000000ZT888888888888888D",
+                  "messageId": "msg_00000000ZT888888888888888B",
                   "sessionId": "ses_00000000018888888888888888",
                 },
                 "state": "done",

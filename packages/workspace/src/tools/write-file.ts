@@ -12,8 +12,8 @@ import { writeFileWithDir } from "../lib/write-file-with-dir";
 import { RelativePathSchema } from "../schemas/paths";
 import { BaseInputSchema } from "./base";
 import { createTool } from "./create-tool";
-import { DIAGNOSTICS_HELPER_MESSAGE } from "./diagnostics-helper";
 import { ReadFile } from "./read-file";
+import { diagnosticsReminder } from "./run-diagnostics";
 
 const INPUT_PARAMS = {
   content: "content",
@@ -84,7 +84,7 @@ export const WriteFile = createTool({
       type: "text",
       value: sift([
         `${baseContent} ${output.filePath}`,
-        DIAGNOSTICS_HELPER_MESSAGE,
+        diagnosticsReminder(output.filePath),
       ]).join("\n\n"),
     };
   },
