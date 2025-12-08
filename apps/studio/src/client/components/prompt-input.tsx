@@ -278,12 +278,18 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
           return;
         }
 
+        const trimmedPrompt = value.trim();
+        const prompt =
+          !trimmedPrompt && uploadedFiles.length > 0
+            ? "Please review the following files and use their content to help with this request:"
+            : trimmedPrompt;
+
         onSubmit({
           agentName,
           files: uploadedFiles.length > 0 ? uploadedFiles : undefined,
           modelURI,
           openInNewTab,
-          prompt: value.trim(),
+          prompt,
         });
         if (!(allowOpenInNewTab && openInNewTab)) {
           setValue("");
