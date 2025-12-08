@@ -320,6 +320,43 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
       adjustHeight();
     };
 
+    const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+      const items = e.clipboardData.items;
+      const files: File[] = [];
+
+      for (const item of items) {
+        if (item.kind === "file") {
+          const file = item.getAsFile();
+          if (file) {
+            files.push(file);
+          }
+        }
+      }
+
+      if (files.length > 0) {
+        e.preventDefault();
+
+        for (const file of files) {
+          const reader = new FileReader();
+          reader.addEventListener("load", () => {
+            const dataUrl = reader.result as string;
+            const base64 = dataUrl.split(",")[1] ?? "";
+            setUploadedFiles((prev) => [
+              ...prev,
+              {
+                content: base64,
+                name: file.name,
+                previewUrl: isImageFile(file.type) ? dataUrl : undefined,
+                size: file.size,
+                type: file.type,
+              },
+            ]);
+          });
+          reader.readAsDataURL(file);
+        }
+      }
+    };
+
     const canSubmit =
       !disabled &&
       !isLoading &&
@@ -414,6 +451,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
             disabled={disabled}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
+            onPaste={handlePaste}
             placeholder={placeholder ?? AGENT_PLACEHOLDER_MAP[agentName]}
             ref={textareaInnerRef}
             value={value}
