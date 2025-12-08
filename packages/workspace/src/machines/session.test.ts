@@ -1,5 +1,4 @@
 import { type LanguageModelV2StreamPart } from "@ai-sdk/provider";
-import { type AIGatewayLanguageModel } from "@quests/ai-gateway";
 import { simulateReadableStream } from "ai";
 import { MockLanguageModelV2 } from "ai/test";
 import mockFs from "mock-fs";
@@ -31,6 +30,7 @@ import { type RelativePath } from "../schemas/paths";
 import { type SessionMessage } from "../schemas/session/message";
 import { StoreId } from "../schemas/store-id";
 import { ProjectSubdomainSchema } from "../schemas/subdomains";
+import { createMockAIGatewayModel } from "../test/helpers/mock-ai-gateway-model";
 import {
   createMockAppConfig,
   MOCK_WORKSPACE_DIRS,
@@ -198,7 +198,7 @@ describe("sessionMachine", () => {
     sessionId?: StoreId.Session;
   }) {
     let currentChunkIndex = 0;
-    const model = new MockLanguageModelV2({
+    const mockLanguageModel = new MockLanguageModelV2({
       // eslint-disable-next-line @typescript-eslint/require-await
       doStream: async () => {
         const currentChunks = chunkSets[currentChunkIndex];
@@ -234,6 +234,8 @@ describe("sessionMachine", () => {
       },
     });
 
+    const model = createMockAIGatewayModel(mockLanguageModel);
+
     const actor = createActor(sessionMachine, {
       input: {
         agent,
@@ -241,7 +243,7 @@ describe("sessionMachine", () => {
         baseLLMRetryDelayMs,
         llmRequestChunkTimeoutMs,
         maxStepCount,
-        model: model as unknown as AIGatewayLanguageModel,
+        model,
         parentRef: {
           send: vi
             .fn()
@@ -318,6 +320,8 @@ describe("sessionMachine", () => {
         [MOCK_WORKSPACE_DIRS.previews]: {},
         [MOCK_WORKSPACE_DIRS.projects]: {
           [projectAppConfig.folderName]: {
+            "image.png":
+              "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAQMAAAAlPW0iAAAABlBMVEUAAAD/",
             "package.json": "{}",
             "test.txt": "Hello, world!",
           },
@@ -394,6 +398,62 @@ describe("sessionMachine", () => {
         </session>"
       `,
       );
+    });
+
+    it("should read an image file", async () => {
+      const actor = createTestActor({
+        chunkSets: [
+          [
+            {
+              id: "test-call-image",
+              toolName: "read_file",
+              type: "tool-input-start",
+            },
+            {
+              input: JSON.stringify({
+                filePath: "image.png",
+              }),
+              toolCallId: "test-call-image",
+              toolName: "read_file",
+              type: "tool-call",
+            },
+          ],
+          finishChunks,
+        ],
+      });
+
+      const session = await runTestMachine(actor);
+      expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
+        "<session title="Test session" count="5">
+          <user>
+            <text>Hello, I need help with something.</text>
+          </user>
+          <assistant finishReason="stop" tokens="0" model="mock-model-id" provider="mock-provider">
+            <step-start step="1" />
+            <tool tool="read_file" state="output-available" callId="test-call-image">
+              <input>
+                {
+                  "filePath": "image.png"
+                }
+              </input>
+              <output>
+                {
+                  "base64Data": "aVZCT1J3MEtHZ29BQUFBTlNVaEVVZ0FBQUJBQUFBQVFBUU1BQUFBbFBXMGlBQUFBQmxCTVZFVUFBQUQv",
+                  "filePath": "./image.png",
+                  "mimeType": "image/png",
+                  "state": "image"
+                }
+              </output>
+            </tool>
+          </assistant>
+          <assistant finishReason="stop" tokens="0" model="mock-model-id" provider="mock-provider">
+            <step-start step="2" />
+            <text state="done">I'm done.</text>
+          </assistant>
+          <session-context app-builder realRole="system" />
+          <session-context app-builder realRole="user" />
+        </session>"
+      `);
     });
 
     it("should handle multiple actors running in parallel", async () => {

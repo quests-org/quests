@@ -119,8 +119,7 @@ export const llmRequestLogic = fromPromise<
   const messagesResult = await prepareModelMessages({
     agent: input.agent,
     appConfig: input.appConfig,
-    modelId,
-    providerId,
+    model: input.model.__aiGatewayModel,
     sessionId: input.sessionId,
     signal,
   });

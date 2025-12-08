@@ -1,5 +1,6 @@
 // Adapted from
 // https://github.com/sst/opencode/blob/dev/packages/opencode/src/tool/read.ts
+import mime from "mime";
 import ms from "ms";
 import { err, ok } from "neverthrow";
 import fs from "node:fs/promises";
@@ -10,43 +11,17 @@ import { z } from "zod";
 import { absolutePathJoin } from "../lib/absolute-path-join";
 import { addLineNumbers } from "../lib/add-line-numbers";
 import { fixRelativePath } from "../lib/fix-relative-path";
+import { formatBytes } from "../lib/format-bytes";
+import { isBinaryFile } from "../lib/is-binary-file";
 import { pathExists } from "../lib/path-exists";
 import { RelativePathSchema } from "../schemas/paths";
 import { BaseInputSchema } from "./base";
 import { createTool } from "./create-tool";
 
-const MAX_READ_SIZE = 250 * 1024; // 250KB
 const DEFAULT_READ_LIMIT = 2000;
-const MAX_LINE_LIMIT = 5000;
 const MAX_LINE_LENGTH = 2000;
-
-function isImageFile(filePath: string): false | string {
-  const ext = path.extname(filePath).toLowerCase();
-  switch (ext) {
-    case ".bmp": {
-      return "BMP";
-    }
-    case ".gif": {
-      return "GIF";
-    }
-    case ".jpeg":
-    case ".jpg": {
-      return "JPEG";
-    }
-    case ".png": {
-      return "PNG";
-    }
-    case ".svg": {
-      return "SVG";
-    }
-    case ".webp": {
-      return "WebP";
-    }
-    default: {
-      return false;
-    }
-  }
-}
+const MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024;
+const MAX_PDF_SIZE_BYTES = 10 * 1024 * 1024;
 
 const INPUT_PARAMS = {
   filePath: "filePath",
@@ -67,7 +42,7 @@ export const ReadFile = createTool({
     - Results are returned using cat -n format, with line numbers starting at the ${INPUT_PARAMS.offset} or 1.
     - You have the capability to call multiple tools in a single response. It is always better to speculatively read multiple files as a batch that are potentially useful. 
     - If you read a file that exists but has empty contents you will receive a system reminder warning in place of file contents.
-    - Images are not supported by this tool.
+    - You can read images and PDFs by using this tool.
   `,
   execute: async ({ appConfig, input, signal }) => {
     const fixedPath = fixRelativePath(input.filePath);
@@ -116,20 +91,65 @@ export const ReadFile = createTool({
       }
     }
 
-    // Check file size
-    const stats = await fs.stat(absolutePath);
-    if (stats.size > MAX_READ_SIZE) {
-      return err({
-        message: `File is too large (${stats.size} bytes). Maximum size is ${MAX_READ_SIZE} bytes`,
-        type: "execute-error",
+    const mimeType = mime.getType(absolutePath);
+    const isImage = mimeType?.startsWith("image/");
+    const isPdf = mimeType === "application/pdf";
+
+    if (isImage) {
+      const stats = await fs.stat(absolutePath);
+      if (stats.size > MAX_IMAGE_SIZE_BYTES) {
+        return err({
+          message: [
+            `Image file too large: ${fixedPath}`,
+            `(${formatBytes(stats.size)}, max ${formatBytes(MAX_IMAGE_SIZE_BYTES)}).`,
+            "Consider using command-line tools or scripts to reduce the image size before reading it.",
+          ].join(" "),
+          type: "execute-error",
+        });
+      }
+
+      const imageData = await fs.readFile(absolutePath, { signal });
+      const base64Data = imageData.toString("base64");
+
+      return ok({
+        base64Data,
+        filePath: fixedPath,
+        mimeType: mimeType ?? "application/octet-stream",
+        state: "image" as const,
       });
     }
 
-    // Check if it's an image file
-    const imageType = isImageFile(absolutePath);
-    if (imageType) {
+    if (isPdf) {
+      const stats = await fs.stat(absolutePath);
+      if (stats.size > MAX_PDF_SIZE_BYTES) {
+        return err({
+          message: [
+            `PDF file too large: ${fixedPath}`,
+            `(${formatBytes(stats.size)}, max ${formatBytes(MAX_PDF_SIZE_BYTES)}).`,
+            "Consider extracting text from the PDF using command-line tools or scripts to process it locally.",
+          ].join(" "),
+          type: "execute-error",
+        });
+      }
+
+      const pdfData = await fs.readFile(absolutePath, { signal });
+      const base64Data = pdfData.toString("base64");
+
+      return ok({
+        base64Data,
+        filePath: fixedPath,
+        mimeType: "application/pdf",
+        state: "pdf" as const,
+      });
+    }
+
+    const isBinary = await isBinaryFile(absolutePath);
+    if (isBinary) {
       return err({
-        message: `This is an image file of type: ${imageType}\nUse a different tool to process images`,
+        message: [
+          `Cannot read binary file: ${fixedPath}.`,
+          "Consider using command-line tools or scripts to extract or convert the file contents if needed.",
+        ].join(" "),
         type: "execute-error",
       });
     }
@@ -144,9 +164,6 @@ export const ReadFile = createTool({
     let limit = input.limit ?? DEFAULT_READ_LIMIT;
     if (limit <= 0) {
       limit = DEFAULT_READ_LIMIT;
-    }
-    if (limit > MAX_LINE_LIMIT) {
-      limit = MAX_LINE_LIMIT;
     }
 
     // Handle offset validation and defaults
@@ -188,7 +205,7 @@ export const ReadFile = createTool({
       .number()
       .optional()
       .meta({
-        description: `The number of lines to read (defaults to ${DEFAULT_READ_LIMIT}, max ${MAX_READ_SIZE})`,
+        description: `The number of lines to read (defaults to ${DEFAULT_READ_LIMIT})`,
       }),
     [INPUT_PARAMS.offset]: z
       .number()
@@ -205,6 +222,18 @@ export const ReadFile = createTool({
       offset: z.number(),
       state: z.literal("exists"),
       totalLines: z.number(),
+    }),
+    z.object({
+      base64Data: z.string(),
+      filePath: RelativePathSchema,
+      mimeType: z.string(),
+      state: z.literal("image"),
+    }),
+    z.object({
+      base64Data: z.string(),
+      filePath: RelativePathSchema,
+      mimeType: z.string(),
+      state: z.literal("pdf"),
     }),
     z.object({
       filePath: RelativePathSchema,
@@ -224,6 +253,40 @@ export const ReadFile = createTool({
       return {
         type: "error-text",
         value: `File ${output.filePath} does not exist${suggestionText}`,
+      };
+    }
+
+    if (output.state === "image") {
+      return {
+        type: "content",
+        value: [
+          {
+            text: `Image file: ${output.filePath}`,
+            type: "text",
+          },
+          {
+            data: output.base64Data,
+            mediaType: output.mimeType,
+            type: "media",
+          },
+        ],
+      };
+    }
+
+    if (output.state === "pdf") {
+      return {
+        type: "content",
+        value: [
+          {
+            text: `PDF file: ${output.filePath}`,
+            type: "text",
+          },
+          {
+            data: output.base64Data,
+            mediaType: output.mimeType,
+            type: "media",
+          },
+        ],
       };
     }
 

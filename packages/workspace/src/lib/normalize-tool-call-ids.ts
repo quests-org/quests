@@ -1,17 +1,16 @@
+import type { AIGatewayModel } from "@quests/ai-gateway";
 import type { ModelMessage } from "ai";
 
 import { isAnthropic } from "./is-anthropic";
 
 export function normalizeToolCallIds({
   messages,
-  modelId,
-  providerId,
+  model,
 }: {
   messages: ModelMessage[];
-  modelId: string;
-  providerId: string;
+  model: AIGatewayModel.Type;
 }): ModelMessage[] {
-  if (!isAnthropic({ modelId, providerId })) {
+  if (!isAnthropic(model)) {
     return messages;
   }
 

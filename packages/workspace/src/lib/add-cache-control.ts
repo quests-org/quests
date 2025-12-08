@@ -1,3 +1,4 @@
+import type { AIGatewayModel } from "@quests/ai-gateway";
 import type { ModelMessage } from "ai";
 
 import { unique } from "radashi";
@@ -11,14 +12,12 @@ import { isAnthropic } from "./is-anthropic";
 // https://github.com/sst/opencode/blob/dev/packages/opencode/src/provider/transform.ts
 export function addCacheControlToMessages({
   messages,
-  modelId,
-  providerId,
+  model,
 }: {
   messages: ModelMessage[];
-  modelId: string;
-  providerId: string;
+  model: AIGatewayModel.Type;
 }) {
-  if (isAnthropic({ modelId, providerId })) {
+  if (isAnthropic(model)) {
     const system = messages
       .filter((message) => message.role === "system")
       .slice(0, 2);
@@ -43,7 +42,7 @@ export function addCacheControlToMessages({
 
     for (const message of unique([...system, ...final])) {
       const shouldUseContentOptions =
-        providerId !== "anthropic" &&
+        model.params.provider !== "anthropic" &&
         Array.isArray(message.content) &&
         message.content.length > 0;
 

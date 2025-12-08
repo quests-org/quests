@@ -198,31 +198,68 @@ function ToolContent({
       );
     }
     case "tool-read_file": {
-      return part.output.state === "exists" ? (
-        <div>
-          <SectionHeader>
-            File: {cleanFilePath(part.output.filePath)}
-          </SectionHeader>
-          {part.input.offset !== undefined && part.input.offset > 0 && (
-            <div className="text-muted-foreground text-xs mb-1">
-              Starting from line {part.input.offset + 1}
+      if (part.output.state === "exists") {
+        return (
+          <div>
+            <SectionHeader>
+              File: {cleanFilePath(part.output.filePath)}
+            </SectionHeader>
+            {part.input.offset !== undefined && part.input.offset > 0 && (
+              <div className="text-muted-foreground text-xs mb-1">
+                Starting from line {part.input.offset + 1}
+              </div>
+            )}
+            {part.input.limit !== undefined && (
+              <div className="text-muted-foreground text-xs mb-1">
+                Reading {part.input.limit} lines
+              </div>
+            )}
+            {part.output.content && (
+              <ScrollableCodeBlock>{part.output.content}</ScrollableCodeBlock>
+            )}
+            <div className="text-muted-foreground text-xs mt-1">
+              Showing {part.output.displayedLines} lines
+              {part.output.hasMoreLines && " (truncated)"}
+              {part.output.offset > 0 && ` (offset: ${part.output.offset})`}
             </div>
-          )}
-          {part.input.limit !== undefined && (
-            <div className="text-muted-foreground text-xs mb-1">
-              Reading {part.input.limit} lines
-            </div>
-          )}
-          {part.output.content && (
-            <ScrollableCodeBlock>{part.output.content}</ScrollableCodeBlock>
-          )}
-          <div className="text-muted-foreground text-xs mt-1">
-            Showing {part.output.displayedLines} lines
-            {part.output.hasMoreLines && " (truncated)"}
-            {part.output.offset > 0 && ` (offset: ${part.output.offset})`}
           </div>
-        </div>
-      ) : (
+        );
+      }
+      if (part.output.state === "image") {
+        return (
+          <div>
+            <SectionHeader>
+              Image: {cleanFilePath(part.output.filePath)}
+            </SectionHeader>
+            <div className="text-muted-foreground text-xs mb-2">
+              {part.output.mimeType}
+            </div>
+            <img
+              alt={part.output.filePath}
+              className="max-w-full rounded border"
+              src={`data:${part.output.mimeType};base64,${part.output.base64Data}`}
+            />
+          </div>
+        );
+      }
+      if (part.output.state === "pdf") {
+        return (
+          <div>
+            <SectionHeader>
+              PDF: {cleanFilePath(part.output.filePath)}
+            </SectionHeader>
+            <div className="text-muted-foreground text-xs mb-2">
+              {part.output.mimeType}
+            </div>
+            <iframe
+              className="w-full h-96 rounded border"
+              src={`data:${part.output.mimeType};base64,${part.output.base64Data}`}
+              title={part.output.filePath}
+            />
+          </div>
+        );
+      }
+      return (
         <div>
           <FileDisplay
             filePath={part.output.filePath}

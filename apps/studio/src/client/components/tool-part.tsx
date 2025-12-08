@@ -273,13 +273,24 @@ function getToolOutputDescription(
         : `${matches.length} matches found`;
     }
     case "tool-read_file": {
-      return part.output.state === "exists"
-        ? part.output.filePath
+      if (part.output.state === "exists") {
+        return part.output.filePath
           ? cleanFilePath(part.output.filePath)
-          : "file read"
-        : part.output.filePath
-          ? `${cleanFilePath(part.output.filePath)}: not found`
-          : "file not found";
+          : "file";
+      }
+      if (part.output.state === "image") {
+        return part.output.filePath
+          ? cleanFilePath(part.output.filePath)
+          : "image";
+      }
+      if (part.output.state === "pdf") {
+        return part.output.filePath
+          ? cleanFilePath(part.output.filePath)
+          : "pdf";
+      }
+      return part.output.filePath
+        ? `${cleanFilePath(part.output.filePath)}: not found`
+        : "file not found";
     }
     case "tool-run_diagnostics": {
       const errorCount = part.output.errors.length;

@@ -1,13 +1,10 @@
-export function isAnthropic({
-  modelId,
-  providerId,
-}: {
-  modelId: string;
-  providerId: string;
-}): boolean {
+import type { AIGatewayModel } from "@quests/ai-gateway";
+
+export function isAnthropic(model: AIGatewayModel.Type): boolean {
   return (
-    providerId === "anthropic" ||
-    modelId.includes("anthropic") ||
-    modelId.includes("claude")
+    model.author === "anthropic" ||
+    model.params.provider === "anthropic" ||
+    model.canonicalId.includes("anthropic") ||
+    model.canonicalId.includes("claude")
   );
 }

@@ -3,6 +3,7 @@ import { dedent, pick } from "radashi";
 import { APP_NAME } from "../constants";
 import { getCurrentDate } from "../lib/get-current-date";
 import { getSystemInfo } from "../lib/get-system-info";
+import { isToolPart } from "../lib/is-tool-part";
 import { type SessionMessage } from "../schemas/session/message";
 import { StoreId } from "../schemas/store-id";
 import { TOOLS } from "../tools/all";
@@ -73,7 +74,19 @@ export const chatAgent = setupAgent({
   onStart: async () => {
     // no-op
   },
-  shouldContinue: () => {
-    return Promise.resolve(false);
+  shouldContinue: ({ messages }) => {
+    const lastAssistantMessage = [...messages]
+      .reverse()
+      .find((message) => message.role === "assistant");
+
+    // Continue if no assistant message was found
+    if (!lastAssistantMessage) {
+      return Promise.resolve(true);
+    }
+
+    // Continue if last assistant message has tool calls
+    return Promise.resolve(
+      lastAssistantMessage.parts.some((part) => isToolPart(part)),
+    );
   },
 }));

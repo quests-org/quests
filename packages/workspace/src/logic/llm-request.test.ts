@@ -3,7 +3,6 @@ import {
   type LanguageModelV2Prompt,
   type LanguageModelV2StreamPart,
 } from "@ai-sdk/provider";
-import { type AIGatewayLanguageModel } from "@quests/ai-gateway";
 import { simulateReadableStream } from "ai";
 import { MockLanguageModelV2 } from "ai/test";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -21,6 +20,7 @@ import { type SessionMessage } from "../schemas/session/message";
 import { SessionMessagePart } from "../schemas/session/message-part";
 import { StoreId } from "../schemas/store-id";
 import { ProjectSubdomainSchema } from "../schemas/subdomains";
+import { createMockAIGatewayModel } from "../test/helpers/mock-ai-gateway-model";
 import { createMockAppConfig } from "../test/helpers/mock-app-config";
 import { TOOLS } from "../tools/all";
 import { llmRequestLogic } from "./llm-request";
@@ -94,7 +94,7 @@ describe("llmRequestLogic", () => {
     getMessages?: () => Promise<SessionMessage.ContextWithParts[]>;
     provider?: string;
   }) {
-    const model = new MockLanguageModelV2({
+    const mockLanguageModel = new MockLanguageModelV2({
       doStream: async ({ prompt }) => {
         if (beforeStream) {
           await beforeStream();
@@ -122,6 +122,9 @@ describe("llmRequestLogic", () => {
       },
       provider,
     });
+
+    const model = createMockAIGatewayModel(mockLanguageModel);
+
     return setup({
       actors: { llmRequest: llmRequestLogic },
       types: {
@@ -158,7 +161,7 @@ describe("llmRequestLogic", () => {
                 // no-op
               },
               emitDeltas: true,
-              model: model as unknown as AIGatewayLanguageModel,
+              model,
               self: { send: vi.fn() } as unknown as AnyActorRef,
               sessionId,
               stepCount: 1,
@@ -190,6 +193,29 @@ describe("llmRequestLogic", () => {
     return sessionResult._unsafeUnwrap();
   }
 
+  function messagesToSnapshot(messages: SessionMessage.Type[]) {
+    return messages.map((message) => {
+      if ("metadata" in message && "aiGatewayModel" in message.metadata) {
+        const {
+          aiGatewayModel: _aiGatewayModel,
+          createdAt: _createdAt,
+          finishedAt: _finishedAt,
+          modelId: _modelId,
+          msToFinish: _msToFinish,
+          msToFirstChunk: _msToFirstChunk,
+          providerId: _providerId,
+          usage: _usage,
+          ...metadata
+        } = message.metadata;
+        return {
+          ...message,
+          metadata,
+        };
+      }
+      return message;
+    });
+  }
+
   it("should handle text streaming", async () => {
     const machine = createTestMachine({
       chunks: [
@@ -205,7 +231,7 @@ describe("llmRequestLogic", () => {
       ],
     });
     const { messages } = await runTestMachine(machine);
-    expect(messages).toMatchInlineSnapshot(`
+    expect(messagesToSnapshot(messages)).toMatchInlineSnapshot(`
       [
         {
           "id": "msg_00000000018888888888888889",
@@ -232,23 +258,9 @@ describe("llmRequestLogic", () => {
         {
           "id": "msg_00000000Z88888888888888888",
           "metadata": {
-            "aiGatewayModel": undefined,
             "completionTokensPerSecond": 2,
-            "createdAt": 2013-08-31T12:00:00.000Z,
             "finishReason": "stop",
-            "finishedAt": 2013-08-31T12:00:07.000Z,
-            "modelId": "mock-model-id",
-            "msToFinish": 5000,
-            "msToFirstChunk": 2000,
-            "providerId": "mock-provider",
             "sessionId": "ses_00000000018888888888888888",
-            "usage": {
-              "cachedInputTokens": 0,
-              "inputTokens": 3,
-              "outputTokens": 10,
-              "reasoningTokens": 0,
-              "totalTokens": 13,
-            },
           },
           "parts": [
             {
@@ -302,7 +314,7 @@ describe("llmRequestLogic", () => {
       ],
     });
     const { messages } = await runTestMachine(machine);
-    expect(messages).toMatchInlineSnapshot(`
+    expect(messagesToSnapshot(messages)).toMatchInlineSnapshot(`
       [
         {
           "id": "msg_00000000018888888888888889",
@@ -329,23 +341,9 @@ describe("llmRequestLogic", () => {
         {
           "id": "msg_00000000Z98888888888888888",
           "metadata": {
-            "aiGatewayModel": undefined,
             "completionTokensPerSecond": 2.5,
-            "createdAt": 2013-08-31T12:00:00.000Z,
             "finishReason": "stop",
-            "finishedAt": 2013-08-31T12:00:06.000Z,
-            "modelId": "mock-model-id",
-            "msToFinish": 4000,
-            "msToFirstChunk": 2000,
-            "providerId": "mock-provider",
             "sessionId": "ses_00000000018888888888888888",
-            "usage": {
-              "cachedInputTokens": 0,
-              "inputTokens": 3,
-              "outputTokens": 10,
-              "reasoningTokens": 0,
-              "totalTokens": 13,
-            },
           },
           "parts": [
             {
@@ -401,7 +399,7 @@ describe("llmRequestLogic", () => {
       ],
     });
     const { messages } = await runTestMachine(machine);
-    expect(messages).toMatchInlineSnapshot(`
+    expect(messagesToSnapshot(messages)).toMatchInlineSnapshot(`
       [
         {
           "id": "msg_00000000018888888888888889",
@@ -428,23 +426,9 @@ describe("llmRequestLogic", () => {
         {
           "id": "msg_00000000ZA8888888888888888",
           "metadata": {
-            "aiGatewayModel": undefined,
             "completionTokensPerSecond": 2,
-            "createdAt": 2013-08-31T12:00:00.000Z,
             "finishReason": "stop",
-            "finishedAt": 2013-08-31T12:00:07.000Z,
-            "modelId": "mock-model-id",
-            "msToFinish": 5000,
-            "msToFirstChunk": 2000,
-            "providerId": "mock-provider",
             "sessionId": "ses_00000000018888888888888888",
-            "usage": {
-              "cachedInputTokens": 0,
-              "inputTokens": 3,
-              "outputTokens": 10,
-              "reasoningTokens": 0,
-              "totalTokens": 13,
-            },
           },
           "parts": [
             {
@@ -502,7 +486,7 @@ describe("llmRequestLogic", () => {
       ],
     });
     const { messages } = await runTestMachine(machine);
-    expect(messages).toMatchInlineSnapshot(`
+    expect(messagesToSnapshot(messages)).toMatchInlineSnapshot(`
       [
         {
           "id": "msg_00000000018888888888888889",
@@ -529,23 +513,9 @@ describe("llmRequestLogic", () => {
         {
           "id": "msg_00000000ZB8888888888888888",
           "metadata": {
-            "aiGatewayModel": undefined,
             "completionTokensPerSecond": 2,
-            "createdAt": 2013-08-31T12:00:00.000Z,
             "finishReason": "stop",
-            "finishedAt": 2013-08-31T12:00:07.000Z,
-            "modelId": "mock-model-id",
-            "msToFinish": 5000,
-            "msToFirstChunk": 2000,
-            "providerId": "mock-provider",
             "sessionId": "ses_00000000018888888888888888",
-            "usage": {
-              "cachedInputTokens": 0,
-              "inputTokens": 3,
-              "outputTokens": 10,
-              "reasoningTokens": 0,
-              "totalTokens": 13,
-            },
           },
           "parts": [
             {
@@ -607,7 +577,7 @@ describe("llmRequestLogic", () => {
       ],
     });
     const { messages } = await runTestMachine(machine);
-    expect(messages).toMatchInlineSnapshot(`
+    expect(messagesToSnapshot(messages)).toMatchInlineSnapshot(`
       [
         {
           "id": "msg_00000000018888888888888889",
@@ -634,23 +604,9 @@ describe("llmRequestLogic", () => {
         {
           "id": "msg_00000000ZC8888888888888888",
           "metadata": {
-            "aiGatewayModel": undefined,
             "completionTokensPerSecond": 2,
-            "createdAt": 2013-08-31T12:00:00.000Z,
             "finishReason": "stop",
-            "finishedAt": 2013-08-31T12:00:07.000Z,
-            "modelId": "mock-model-id",
-            "msToFinish": 5000,
-            "msToFirstChunk": 2000,
-            "providerId": "mock-provider",
             "sessionId": "ses_00000000018888888888888888",
-            "usage": {
-              "cachedInputTokens": 0,
-              "inputTokens": 3,
-              "outputTokens": 10,
-              "reasoningTokens": 0,
-              "totalTokens": 13,
-            },
           },
           "parts": [
             {
@@ -715,7 +671,7 @@ describe("llmRequestLogic", () => {
       ],
     });
     const { messages } = await runTestMachine(machine);
-    expect(messages).toMatchInlineSnapshot(`
+    expect(messagesToSnapshot(messages)).toMatchInlineSnapshot(`
       [
         {
           "id": "msg_00000000018888888888888889",
@@ -742,23 +698,9 @@ describe("llmRequestLogic", () => {
         {
           "id": "msg_00000000ZD8888888888888888",
           "metadata": {
-            "aiGatewayModel": undefined,
             "completionTokensPerSecond": 2,
-            "createdAt": 2013-08-31T12:00:00.000Z,
             "finishReason": "stop",
-            "finishedAt": 2013-08-31T12:00:07.000Z,
-            "modelId": "mock-model-id",
-            "msToFinish": 5000,
-            "msToFirstChunk": 2000,
-            "providerId": "mock-provider",
             "sessionId": "ses_00000000018888888888888888",
-            "usage": {
-              "cachedInputTokens": 0,
-              "inputTokens": 3,
-              "outputTokens": 10,
-              "reasoningTokens": 0,
-              "totalTokens": 13,
-            },
           },
           "parts": [
             {
@@ -807,7 +749,7 @@ describe("llmRequestLogic", () => {
       ],
     });
     const { messages } = await runTestMachine(machine);
-    expect(messages).toMatchInlineSnapshot(`
+    expect(messagesToSnapshot(messages)).toMatchInlineSnapshot(`
       [
         {
           "id": "msg_00000000018888888888888889",
@@ -834,23 +776,9 @@ describe("llmRequestLogic", () => {
         {
           "id": "msg_00000000ZE8888888888888888",
           "metadata": {
-            "aiGatewayModel": undefined,
             "completionTokensPerSecond": 2,
-            "createdAt": 2013-08-31T12:00:00.000Z,
             "finishReason": "stop",
-            "finishedAt": 2013-08-31T12:00:07.000Z,
-            "modelId": "mock-model-id",
-            "msToFinish": 5000,
-            "msToFirstChunk": 2000,
-            "providerId": "mock-provider",
             "sessionId": "ses_00000000018888888888888888",
-            "usage": {
-              "cachedInputTokens": 0,
-              "inputTokens": 3,
-              "outputTokens": 10,
-              "reasoningTokens": 0,
-              "totalTokens": 13,
-            },
           },
           "parts": [
             {
@@ -910,7 +838,7 @@ describe("llmRequestLogic", () => {
       ],
     });
     const { messages } = await runTestMachine(machine);
-    expect(messages).toMatchInlineSnapshot(`
+    expect(messagesToSnapshot(messages)).toMatchInlineSnapshot(`
       [
         {
           "id": "msg_00000000018888888888888889",
@@ -937,23 +865,9 @@ describe("llmRequestLogic", () => {
         {
           "id": "msg_00000000ZF8888888888888888",
           "metadata": {
-            "aiGatewayModel": undefined,
             "completionTokensPerSecond": 2.5,
-            "createdAt": 2013-08-31T12:00:00.000Z,
             "finishReason": "stop",
-            "finishedAt": 2013-08-31T12:00:06.000Z,
-            "modelId": "mock-model-id",
-            "msToFinish": 4000,
-            "msToFirstChunk": 2000,
-            "providerId": "mock-provider",
             "sessionId": "ses_00000000018888888888888888",
-            "usage": {
-              "cachedInputTokens": 0,
-              "inputTokens": 3,
-              "outputTokens": 10,
-              "reasoningTokens": 0,
-              "totalTokens": 13,
-            },
           },
           "parts": [
             {
@@ -1003,7 +917,7 @@ describe("llmRequestLogic", () => {
       ],
     });
     const { messages } = await runTestMachine(machine);
-    expect(messages).toMatchInlineSnapshot(`
+    expect(messagesToSnapshot(messages)).toMatchInlineSnapshot(`
       [
         {
           "id": "msg_00000000018888888888888889",
@@ -1030,23 +944,9 @@ describe("llmRequestLogic", () => {
         {
           "id": "msg_00000000ZG8888888888888888",
           "metadata": {
-            "aiGatewayModel": undefined,
             "completionTokensPerSecond": 2,
-            "createdAt": 2013-08-31T12:00:00.000Z,
             "finishReason": "stop",
-            "finishedAt": 2013-08-31T12:00:07.000Z,
-            "modelId": "mock-model-id",
-            "msToFinish": 5000,
-            "msToFirstChunk": 2000,
-            "providerId": "mock-provider",
             "sessionId": "ses_00000000018888888888888888",
-            "usage": {
-              "cachedInputTokens": 0,
-              "inputTokens": 3,
-              "outputTokens": 10,
-              "reasoningTokens": 0,
-              "totalTokens": 13,
-            },
           },
           "parts": [
             {
@@ -1101,7 +1001,7 @@ describe("llmRequestLogic", () => {
       ],
     });
     const { messages } = await runTestMachine(machine);
-    expect(messages).toMatchInlineSnapshot(`
+    expect(messagesToSnapshot(messages)).toMatchInlineSnapshot(`
       [
         {
           "id": "msg_00000000018888888888888889",
@@ -1128,23 +1028,9 @@ describe("llmRequestLogic", () => {
         {
           "id": "msg_00000000ZH8888888888888888",
           "metadata": {
-            "aiGatewayModel": undefined,
             "completionTokensPerSecond": 2,
-            "createdAt": 2013-08-31T12:00:00.000Z,
             "finishReason": "stop",
-            "finishedAt": 2013-08-31T12:00:07.000Z,
-            "modelId": "mock-model-id",
-            "msToFinish": 5000,
-            "msToFirstChunk": 2000,
-            "providerId": "mock-provider",
             "sessionId": "ses_00000000018888888888888888",
-            "usage": {
-              "cachedInputTokens": 0,
-              "inputTokens": 3,
-              "outputTokens": 10,
-              "reasoningTokens": 0,
-              "totalTokens": 13,
-            },
           },
           "parts": [
             {
@@ -1194,7 +1080,7 @@ describe("llmRequestLogic", () => {
       ],
     });
     const { messages } = await runTestMachine(machine);
-    expect(messages).toMatchInlineSnapshot(`
+    expect(messagesToSnapshot(messages)).toMatchInlineSnapshot(`
       [
         {
           "id": "msg_00000000018888888888888889",
@@ -1221,23 +1107,9 @@ describe("llmRequestLogic", () => {
         {
           "id": "msg_00000000ZJ8888888888888888",
           "metadata": {
-            "aiGatewayModel": undefined,
             "completionTokensPerSecond": 2,
-            "createdAt": 2013-08-31T12:00:00.000Z,
             "finishReason": "stop",
-            "finishedAt": 2013-08-31T12:00:07.000Z,
-            "modelId": "mock-model-id",
-            "msToFinish": 5000,
-            "msToFirstChunk": 2000,
-            "providerId": "mock-provider",
             "sessionId": "ses_00000000018888888888888888",
-            "usage": {
-              "cachedInputTokens": 0,
-              "inputTokens": 3,
-              "outputTokens": 10,
-              "reasoningTokens": 0,
-              "totalTokens": 13,
-            },
           },
           "parts": [
             {
@@ -1294,7 +1166,7 @@ describe("llmRequestLogic", () => {
         chunks: [],
       });
       const { messages } = await runTestMachine(machine);
-      expect(messages).toMatchInlineSnapshot(`
+      expect(messagesToSnapshot(messages)).toMatchInlineSnapshot(`
         [
           {
             "id": "msg_00000000018888888888888889",
@@ -1321,8 +1193,6 @@ describe("llmRequestLogic", () => {
           {
             "id": "msg_00000000ZK8888888888888888",
             "metadata": {
-              "aiGatewayModel": undefined,
-              "createdAt": 2013-08-31T12:00:00.000Z,
               "error": {
                 "kind": "api-call",
                 "message": "Failed to process error response",
@@ -1332,9 +1202,6 @@ describe("llmRequestLogic", () => {
                 "url": "https://api.openai.com/v1/chat/completions",
               },
               "finishReason": "unknown",
-              "finishedAt": 2013-08-31T12:00:03.000Z,
-              "modelId": "mock-model-id",
-              "providerId": "mock-provider",
               "sessionId": "ses_00000000018888888888888888",
             },
             "parts": [
@@ -1373,7 +1240,7 @@ describe("llmRequestLogic", () => {
         projectAppConfig,
       );
       const messages = sessionResult._unsafeUnwrap().messages;
-      expect(messages).toMatchInlineSnapshot(`
+      expect(messagesToSnapshot(messages)).toMatchInlineSnapshot(`
         [
           {
             "id": "msg_00000000018888888888888889",
@@ -1400,16 +1267,11 @@ describe("llmRequestLogic", () => {
           {
             "id": "msg_00000000ZM8888888888888888",
             "metadata": {
-              "aiGatewayModel": undefined,
-              "createdAt": 2013-08-31T12:00:00.000Z,
               "error": {
                 "kind": "aborted",
                 "message": "Aborted",
               },
               "finishReason": "aborted",
-              "finishedAt": 2013-08-31T12:00:03.000Z,
-              "modelId": "mock-model-id",
-              "providerId": "mock-provider",
               "sessionId": "ses_00000000018888888888888888",
             },
             "parts": [
@@ -1438,7 +1300,7 @@ describe("llmRequestLogic", () => {
         chunks: [],
       });
       const { messages } = await runTestMachine(machine);
-      expect(messages).toMatchInlineSnapshot(`
+      expect(messagesToSnapshot(messages)).toMatchInlineSnapshot(`
         [
           {
             "id": "msg_00000000018888888888888889",
@@ -1465,16 +1327,11 @@ describe("llmRequestLogic", () => {
           {
             "id": "msg_00000000ZN8888888888888888",
             "metadata": {
-              "aiGatewayModel": undefined,
-              "createdAt": 2013-08-31T12:00:00.000Z,
               "error": {
                 "kind": "unknown",
                 "message": "Unknown error",
               },
               "finishReason": "unknown",
-              "finishedAt": 2013-08-31T12:00:03.000Z,
-              "modelId": "mock-model-id",
-              "providerId": "mock-provider",
               "sessionId": "ses_00000000018888888888888888",
             },
             "parts": [
@@ -2082,28 +1939,7 @@ describe("llmRequestLogic", () => {
                   "type": "text",
                 },
               ],
-              "providerOptions": {
-                "anthropic": {
-                  "cacheControl": {
-                    "type": "ephemeral",
-                  },
-                },
-                "bedrock": {
-                  "cachePoint": {
-                    "type": "ephemeral",
-                  },
-                },
-                "openaiCompatible": {
-                  "cache_control": {
-                    "type": "ephemeral",
-                  },
-                },
-                "openrouter": {
-                  "cache_control": {
-                    "type": "ephemeral",
-                  },
-                },
-              },
+              "providerOptions": undefined,
               "role": "assistant",
             },
             {
@@ -2114,28 +1950,7 @@ describe("llmRequestLogic", () => {
                   "type": "text",
                 },
               ],
-              "providerOptions": {
-                "anthropic": {
-                  "cacheControl": {
-                    "type": "ephemeral",
-                  },
-                },
-                "bedrock": {
-                  "cachePoint": {
-                    "type": "ephemeral",
-                  },
-                },
-                "openaiCompatible": {
-                  "cache_control": {
-                    "type": "ephemeral",
-                  },
-                },
-                "openrouter": {
-                  "cache_control": {
-                    "type": "ephemeral",
-                  },
-                },
-              },
+              "providerOptions": undefined,
               "role": "assistant",
             },
           ],
@@ -2187,7 +2002,7 @@ describe("llmRequestLogic", () => {
         JSON.stringify(messages),
         "Old message should be replaced",
       ).not.toContain(oldText);
-      expect(messages).toMatchInlineSnapshot(`
+      expect(messagesToSnapshot(messages)).toMatchInlineSnapshot(`
         [
           {
             "id": "msg_00000000018888888888888889",
@@ -2254,23 +2069,9 @@ describe("llmRequestLogic", () => {
           {
             "id": "msg_00000000ZT888888888888888B",
             "metadata": {
-              "aiGatewayModel": undefined,
               "completionTokensPerSecond": 2,
-              "createdAt": 2013-08-31T12:00:00.000Z,
               "finishReason": "stop",
-              "finishedAt": 2013-08-31T12:00:07.000Z,
-              "modelId": "mock-model-id",
-              "msToFinish": 5000,
-              "msToFirstChunk": 2000,
-              "providerId": "mock-provider",
               "sessionId": "ses_00000000018888888888888888",
-              "usage": {
-                "cachedInputTokens": 0,
-                "inputTokens": 3,
-                "outputTokens": 10,
-                "reasoningTokens": 0,
-                "totalTokens": 13,
-              },
             },
             "parts": [
               {

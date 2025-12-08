@@ -1,4 +1,4 @@
-import { envForProviders } from "@quests/ai-gateway";
+import { type AIGatewayModel, envForProviders } from "@quests/ai-gateway";
 import { differenceInMinutes } from "date-fns";
 import { ok, Result } from "neverthrow";
 import { alphabetical } from "radashi";
@@ -11,6 +11,7 @@ import { ALL_AI_SDK_TOOLS } from "../tools/all";
 import { addCacheControlToMessages } from "./add-cache-control";
 import { type AppConfig } from "./app-config/types";
 import { normalizeToolCallIds } from "./normalize-tool-call-ids";
+import { splitMultipartToolResults } from "./split-multipart-tool-results";
 import { Store } from "./store";
 
 const STALE_MESSAGE_THRESHOLD_MINUTES = 60;
@@ -18,15 +19,13 @@ const STALE_MESSAGE_THRESHOLD_MINUTES = 60;
 export async function prepareModelMessages({
   agent,
   appConfig,
-  modelId,
-  providerId,
+  model,
   sessionId,
   signal,
 }: {
   agent: AnyAgent;
   appConfig: AppConfig;
-  modelId: string;
-  providerId: string;
+  model: AIGatewayModel.Type;
   sessionId: StoreId.Session;
   signal: AbortSignal;
 }) {
@@ -145,17 +144,20 @@ export async function prepareModelMessages({
     a.role === "system" ? -1 : b.role === "system" ? 1 : 0,
   );
 
-  const cachedModelMessages = addCacheControlToMessages({
+  const splitMessages = splitMultipartToolResults({
     messages: modelMessagesWithSystemFirst,
-    modelId,
-    providerId,
+    provider: model.params.provider,
+  });
+
+  const cachedModelMessages = addCacheControlToMessages({
+    messages: splitMessages,
+    model,
   });
 
   return ok(
     normalizeToolCallIds({
       messages: cachedModelMessages,
-      modelId,
-      providerId,
+      model,
     }),
   );
 }
