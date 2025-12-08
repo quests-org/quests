@@ -3,7 +3,7 @@ import {
   getTrashTerminology,
   PROGRESS_MESSAGES,
 } from "@/client/lib/trash-terminology";
-import { Timer } from "lucide-react";
+import { Loader2, Timer } from "lucide-react";
 import { type ReactNode, useEffect, useState } from "react";
 
 import { Alert, AlertDescription } from "./ui/alert";
@@ -129,6 +129,7 @@ function DeleteWithProgressDialogBody<T>({
                 }}
                 variant="destructive"
               >
+                {isPending && <Loader2 className="animate-spin" />}
                 {isPending
                   ? `Moving to ${trashTerminology}...`
                   : `Move to ${trashTerminology}`}
