@@ -42,6 +42,8 @@ function isImageFile(type: string) {
   return type.startsWith("image/");
 }
 
+const MAX_PASTE_TEXT_LENGTH = 5000;
+
 const AGENT_PLACEHOLDER_MAP: Record<AgentName, string> = {
   "app-builder": "Describe the app you want to create…",
   chat: "Start a conversation…",
@@ -354,6 +356,39 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
           });
           reader.readAsDataURL(file);
         }
+        return;
+      }
+
+      const text = e.clipboardData.getData("text/plain");
+      if (text && text.length > MAX_PASTE_TEXT_LENGTH) {
+        e.preventDefault();
+
+        const blob = new Blob([text], { type: "text/plain" });
+        const timestamp = new Date()
+          .toISOString()
+          .replaceAll(":", "-")
+          .replaceAll(".", "-");
+        const filename = `pasted-text-${timestamp}.txt`;
+
+        const reader = new FileReader();
+        reader.addEventListener("load", () => {
+          const dataUrl = reader.result as string;
+          const base64 = dataUrl.split(",")[1] ?? "";
+          setUploadedFiles((prev) => [
+            ...prev,
+            {
+              content: base64,
+              name: filename,
+              size: blob.size,
+              type: "text/plain",
+            },
+          ]);
+        });
+        reader.readAsDataURL(blob);
+
+        toast.info(
+          `Large text (${text.length.toLocaleString()} characters) converted to file attachment`,
+        );
       }
     };
 
