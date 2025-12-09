@@ -26,23 +26,39 @@ export const captureServerException: CaptureExceptionFunction = function (
   const telemetryId = appStateStore.get("telemetryId");
   telemetry?.captureException(error, telemetryId, finalProperties);
   if (import.meta.env.DEV) {
+    /* eslint-disable no-console */
     const errorMessage = error instanceof Error ? error.message : String(error);
     const errorStack = error instanceof Error ? error.stack : undefined;
 
-    // eslint-disable-next-line no-console
     console.groupCollapsed(`%c[Exception] ${errorMessage}`, "color: #b71c1c");
-    // eslint-disable-next-line no-console
-    console.error(error);
-    if (error instanceof Error && error.cause) {
-      // eslint-disable-next-line no-console
-      console.error("Cause:", error.cause);
+
+    if (error instanceof Error) {
+      if (errorStack) {
+        console.error(errorStack);
+      }
+
+      if (error.cause) {
+        const causeMessage =
+          error.cause instanceof Error
+            ? error.cause.message
+            : JSON.stringify(error.cause);
+        console.groupCollapsed(
+          "%c▶︎ Cause: " + causeMessage,
+          "color: #f44336",
+        );
+        console.error(error.cause);
+        console.groupEnd();
+      }
+    } else {
+      console.error(error);
     }
-    // eslint-disable-next-line no-console
+
     console.groupEnd();
 
     publisher.publish("server-exception", {
       message: errorMessage,
       stack: errorStack,
     });
+    /* eslint-enable no-console */
   }
 };
