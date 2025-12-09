@@ -52,15 +52,20 @@
   "configurations": [
     {
       "cwd": "${workspaceRoot}/apps/studio",
+      "env": {
+        "ELECTRON_ENABLE_LOGGING": "1",
+        "NODE_OPTIONS": "--enable-source-maps"
+      },
       "name": "Dev Studio Main Process",
       "request": "launch",
-      "runtimeArgs": ["run", "dev"],
-      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--sourcemap"],
+      "runtimeExecutable": "${workspaceRoot}/apps/studio/node_modules/.bin/electron-vite",
       "type": "node"
     },
     {
       "cwd": "${workspaceRoot}/apps/studio",
       "env": {
+        "NODE_OPTIONS": "--enable-source-maps",
         "REMOTE_DEBUGGING_PORT": "9160"
       },
       "internalConsoleOptions": "openOnFirstSessionStart",
@@ -77,6 +82,7 @@
       "cwd": "${workspaceRoot}/apps/studio",
       "env": {
         "ELECTRON_USE_NEW_USER_FOLDER": "true",
+        "NODE_OPTIONS": "--enable-source-maps",
         "REMOTE_DEBUGGING_PORT": "9160"
       },
       "internalConsoleOptions": "openOnFirstSessionStart",
