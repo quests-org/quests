@@ -253,7 +253,7 @@ function ToolContent({
             </div>
             <iframe
               className="w-full h-96 rounded border"
-              src={`data:${part.output.mimeType};base64,${part.output.base64Data}`}
+              src={`data:application/pdf;base64,${part.output.base64Data}`}
               title={part.output.filePath}
             />
           </div>
