@@ -20,14 +20,84 @@ import { createTool } from "./create-tool";
 
 const DEFAULT_READ_LIMIT = 2000;
 const MAX_LINE_LENGTH = 2000;
-const MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024;
-const MAX_PDF_SIZE_BYTES = 10 * 1024 * 1024;
 
 const INPUT_PARAMS = {
   filePath: "filePath",
   limit: "limit",
   offset: "offset",
 } as const;
+
+type MediaFileState = "audio" | "image" | "pdf" | "video";
+
+const MEDIA_CONFIG: Record<MediaFileState, { label: string; maxSize: number }> =
+  {
+    audio: {
+      label: "Audio",
+      maxSize: 10 * 1024 * 1024,
+    },
+    image: {
+      label: "Image",
+      maxSize: 10 * 1024 * 1024,
+    },
+    pdf: {
+      label: "PDF",
+      maxSize: 10 * 1024 * 1024,
+    },
+    video: {
+      label: "Video",
+      maxSize: 10 * 1024 * 1024,
+    },
+  };
+
+// Some models support more formats, but this should be safe across most.
+const SUPPORTED_IMAGE_FORMATS = ["image/jpeg", "image/png", "image/webp"];
+
+async function handleMediaFile({
+  absolutePath,
+  fixedPath,
+  mimeType,
+  signal,
+  state,
+}: {
+  absolutePath: string;
+  fixedPath: z.output<typeof RelativePathSchema>;
+  mimeType: string;
+  signal: AbortSignal;
+  state: MediaFileState;
+}) {
+  const config = MEDIA_CONFIG[state];
+
+  if (state === "image" && !SUPPORTED_IMAGE_FORMATS.includes(mimeType)) {
+    return ok({
+      filePath: fixedPath,
+      mimeType,
+      reason: "unsupported-image-format" as const,
+      state: "unsupported-format" as const,
+    });
+  }
+
+  const stats = await fs.stat(absolutePath);
+  if (stats.size > config.maxSize) {
+    return err({
+      message: [
+        `${config.label} file too large: ${fixedPath}`,
+        `(${formatBytes(stats.size)}, max ${formatBytes(config.maxSize)}).`,
+        "You can use command-line tools or scripts to compress or convert the file to reduce its size.",
+      ].join(" "),
+      type: "execute-error" as const,
+    });
+  }
+
+  const fileData = await fs.readFile(absolutePath, { signal });
+  const base64Data = fileData.toString("base64");
+
+  return ok({
+    base64Data,
+    filePath: fixedPath,
+    mimeType,
+    state,
+  });
+}
 
 export const ReadFile = createTool({
   description: dedent`
@@ -42,7 +112,7 @@ export const ReadFile = createTool({
     - Results are returned using cat -n format, with line numbers starting at the ${INPUT_PARAMS.offset} or 1.
     - You have the capability to call multiple tools in a single response. It is always better to speculatively read multiple files as a batch that are potentially useful. 
     - If you read a file that exists but has empty contents you will receive a system reminder warning in place of file contents.
-    - You can read images and PDFs by using this tool.
+    - You can read images, PDFs, audio files, and video files by using this tool.
   `,
   execute: async ({ appConfig, input, signal }) => {
     const fixedPath = fixRelativePath(input.filePath);
@@ -92,65 +162,54 @@ export const ReadFile = createTool({
     }
 
     const mimeType = mime.getType(absolutePath);
-    const isImage = mimeType?.startsWith("image/");
-    const isPdf = mimeType === "application/pdf";
 
-    if (isImage) {
-      const stats = await fs.stat(absolutePath);
-      if (stats.size > MAX_IMAGE_SIZE_BYTES) {
-        return err({
-          message: [
-            `Image file too large: ${fixedPath}`,
-            `(${formatBytes(stats.size)}, max ${formatBytes(MAX_IMAGE_SIZE_BYTES)}).`,
-            "Consider using command-line tools or scripts to reduce the image size before reading it.",
-          ].join(" "),
-          type: "execute-error",
-        });
-      }
-
-      const imageData = await fs.readFile(absolutePath, { signal });
-      const base64Data = imageData.toString("base64");
-
-      return ok({
-        base64Data,
-        filePath: fixedPath,
-        mimeType: mimeType ?? "application/octet-stream",
-        state: "image" as const,
+    if (mimeType?.startsWith("image/")) {
+      return handleMediaFile({
+        absolutePath,
+        fixedPath,
+        mimeType,
+        signal,
+        state: "image",
       });
     }
 
-    if (isPdf) {
-      const stats = await fs.stat(absolutePath);
-      if (stats.size > MAX_PDF_SIZE_BYTES) {
-        return err({
-          message: [
-            `PDF file too large: ${fixedPath}`,
-            `(${formatBytes(stats.size)}, max ${formatBytes(MAX_PDF_SIZE_BYTES)}).`,
-            "Consider extracting text from the PDF using command-line tools or scripts to process it locally.",
-          ].join(" "),
-          type: "execute-error",
-        });
-      }
+    if (mimeType === "application/pdf") {
+      return handleMediaFile({
+        absolutePath,
+        fixedPath,
+        mimeType,
+        signal,
+        state: "pdf",
+      });
+    }
 
-      const pdfData = await fs.readFile(absolutePath, { signal });
-      const base64Data = pdfData.toString("base64");
+    if (mimeType?.startsWith("audio/")) {
+      return handleMediaFile({
+        absolutePath,
+        fixedPath,
+        mimeType,
+        signal,
+        state: "audio",
+      });
+    }
 
-      return ok({
-        base64Data,
-        filePath: fixedPath,
-        mimeType: "application/pdf",
-        state: "pdf" as const,
+    if (mimeType?.startsWith("video/")) {
+      return handleMediaFile({
+        absolutePath,
+        fixedPath,
+        mimeType,
+        signal,
+        state: "video",
       });
     }
 
     const isBinary = await isBinaryFile(absolutePath);
     if (isBinary) {
-      return err({
-        message: [
-          `Cannot read binary file: ${fixedPath}.`,
-          "Consider using command-line tools or scripts to extract or convert the file contents if needed.",
-        ].join(" "),
-        type: "execute-error",
+      return ok({
+        filePath: fixedPath,
+        mimeType: mimeType ?? undefined,
+        reason: "binary-file" as const,
+        state: "unsupported-format" as const,
       });
     }
 
@@ -236,9 +295,27 @@ export const ReadFile = createTool({
       state: z.literal("pdf"),
     }),
     z.object({
+      base64Data: z.string(),
+      filePath: RelativePathSchema,
+      mimeType: z.string(),
+      state: z.literal("audio"),
+    }),
+    z.object({
+      base64Data: z.string(),
+      filePath: RelativePathSchema,
+      mimeType: z.string(),
+      state: z.literal("video"),
+    }),
+    z.object({
       filePath: RelativePathSchema,
       state: z.literal("does-not-exist"),
       suggestions: z.array(z.string()),
+    }),
+    z.object({
+      filePath: RelativePathSchema,
+      mimeType: z.string().optional(),
+      reason: z.enum(["binary-file", "unsupported-image-format"]),
+      state: z.literal("unsupported-format"),
     }),
   ]),
   readOnly: true,
@@ -256,38 +333,56 @@ export const ReadFile = createTool({
       };
     }
 
-    if (output.state === "image") {
+    if (output.state === "unsupported-format") {
+      if (output.reason === "unsupported-image-format") {
+        const supportedFormatsText = SUPPORTED_IMAGE_FORMATS.map(
+          (format) => `'${format}'`,
+        ).join(", ");
+        const mimeInfo = output.mimeType ? ` (${output.mimeType})` : "";
+        return {
+          type: "error-text",
+          value: [
+            `Unsupported image format: ${output.filePath}${mimeInfo}.`,
+            `Input should be ${supportedFormatsText}.`,
+            "Please convert the image to a supported format before reading.",
+          ].join(" "),
+        };
+      }
+
+      const mimeTypeInfo = output.mimeType
+        ? ` (${output.mimeType})`
+        : " with unknown MIME type";
       return {
-        type: "content",
+        type: "error-text",
         value: [
-          {
-            text: `Image file: ${output.filePath}`,
-            type: "text",
-          },
-          {
-            data: output.base64Data,
-            mediaType: output.mimeType,
-            type: "media",
-          },
-        ],
+          `Cannot read binary file${mimeTypeInfo}: ${output.filePath}.`,
+          "Consider using command-line tools or scripts to extract or convert the file contents if needed.",
+        ].join(" "),
       };
     }
 
-    if (output.state === "pdf") {
-      return {
-        type: "content",
-        value: [
-          {
-            text: `PDF file: ${output.filePath}`,
-            type: "text",
-          },
-          {
-            data: output.base64Data,
-            mediaType: output.mimeType,
-            type: "media",
-          },
-        ],
-      };
+    switch (output.state) {
+      case "audio":
+      case "image":
+      case "pdf":
+      case "video": {
+        const config = MEDIA_CONFIG[output.state];
+
+        return {
+          type: "content",
+          value: [
+            {
+              text: `${config.label} file: ${output.filePath}.`,
+              type: "text",
+            },
+            {
+              data: output.base64Data,
+              mediaType: output.mimeType,
+              type: "media",
+            },
+          ],
+        };
+      }
     }
 
     const content = addLineNumbers(output.content, output.offset);

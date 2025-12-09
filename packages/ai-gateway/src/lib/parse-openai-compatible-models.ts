@@ -6,6 +6,7 @@ import { AIGatewayModelURI } from "../schemas/model-uri";
 import { type AIGatewayProviderConfig } from "../schemas/provider-config";
 import { TypedError } from "./errors";
 import { generateModelName } from "./generate-model-name";
+import { getModelFeatures } from "./get-model-features";
 import { getModelTags } from "./get-model-tags";
 import { isModelNew } from "./is-model-new";
 import { getProviderMetadata } from "./providers/metadata";
@@ -95,6 +96,11 @@ export function parseOpenAICompatibleModels(
 
       modelName ||= generateModelName(canonicalId);
 
+      const features = getModelFeatures(canonicalId);
+      if (features.length === 0) {
+        // Unknown model, assume it supports text input, output, and tools
+        features.push("inputText", "outputText", "tools");
+      }
       const tags = getModelTags(canonicalId, config);
       const isNew = isModelNew(model.created);
       if (isNew) {
@@ -107,7 +113,7 @@ export function parseOpenAICompatibleModels(
       return {
         author: modelAuthor,
         canonicalId,
-        features: ["inputText", "outputText", "tools"],
+        features,
         name: modelName,
         params,
         providerId,

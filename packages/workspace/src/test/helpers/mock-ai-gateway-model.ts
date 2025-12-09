@@ -9,15 +9,32 @@ import { AIProviderConfigIdSchema, type AIProviderType } from "@quests/shared";
 export function createMockAIGatewayModel(
   baseModel: LanguageModelV2,
   options: {
+    features?: AIGatewayModel.ModelFeatures[];
     provider?: AIProviderType;
   } = {},
 ): AIGatewayLanguageModel {
-  const { provider = "openai" } = options;
+  const mockAIGatewayModel = createMockAIGatewayModelType(options);
 
-  const mockAIGatewayModel = AIGatewayModel.Schema.parse({
+  return Object.assign(baseModel, {
+    __aiGatewayModel: mockAIGatewayModel,
+  }) satisfies AIGatewayLanguageModel;
+}
+
+export function createMockAIGatewayModelType(
+  options: {
+    features?: AIGatewayModel.ModelFeatures[];
+    provider?: AIProviderType;
+  } = {},
+): AIGatewayModel.Type {
+  const {
+    features = ["inputText", "outputText", "tools"],
+    provider = "openai",
+  } = options;
+
+  return AIGatewayModel.Schema.parse({
     author: "test",
     canonicalId: AIGatewayModel.CanonicalIdSchema.parse("test-model"),
-    features: ["inputText", "outputText", "tools"],
+    features,
     name: "Test Model",
     params: {
       provider,
@@ -28,8 +45,4 @@ export function createMockAIGatewayModel(
     tags: ["default"],
     uri: `test/test-model?provider=${provider}&providerConfigId=test-config`,
   });
-
-  return Object.assign(baseModel, {
-    __aiGatewayModel: mockAIGatewayModel,
-  }) satisfies AIGatewayLanguageModel;
 }

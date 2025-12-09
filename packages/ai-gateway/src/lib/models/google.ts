@@ -6,6 +6,7 @@ import { AIGatewayModelURI } from "../../schemas/model-uri";
 import { type AIGatewayProviderConfig } from "../../schemas/provider-config";
 import { TypedError } from "../errors";
 import { fetchJson } from "../fetch-json";
+import { getModelFeatures } from "../get-model-features";
 import { getModelTags } from "../get-model-tags";
 import { apiURL } from "../providers/api-url";
 import { getProviderMetadata } from "../providers/metadata";
@@ -61,15 +62,7 @@ export function fetchAndParseGoogleModels(
       }
 
       const tags = getModelTags(canonicalModelId, config);
-      const features: AIGatewayModel.ModelFeatures[] = ["inputText"];
-
-      if (model.supportedGenerationMethods.includes("generateContent")) {
-        features.push("outputText");
-      }
-
-      if (canonicalModelId.startsWith("gemini-")) {
-        features.push("tools");
-      }
+      const features = getModelFeatures(canonicalModelId);
 
       const params = { provider: config.type, providerConfigId: config.id };
       return {

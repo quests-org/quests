@@ -9,6 +9,7 @@ import { canonicalizeAnthropicModelId } from "../canonicalize-model-id";
 import { TypedError } from "../errors";
 import { fetchJson } from "../fetch-json";
 import { generateModelName } from "../generate-model-name";
+import { getModelFeatures } from "../get-model-features";
 import { getModelTags } from "../get-model-tags";
 import { isModelNew } from "../is-model-new";
 import { parseModelDate } from "../parse-model-date";
@@ -67,7 +68,6 @@ export function fetchAndParseAnthropicModels(
       {
         canonicalModelId: AIGatewayModel.CanonicalId;
         model: Model;
-        normalizedModelId: string;
       }
     >();
 
@@ -86,45 +86,37 @@ export function fetchAndParseAnthropicModels(
         modelMap.set(canonicalModelId, {
           canonicalModelId,
           model,
-          normalizedModelId,
         });
       }
     }
 
-    return [...modelMap.values()].map(
-      ({ canonicalModelId, model, normalizedModelId }) => {
-        const providerId = AIGatewayModel.ProviderIdSchema.parse(model.id);
+    return [...modelMap.values()].map(({ canonicalModelId, model }) => {
+      const providerId = AIGatewayModel.ProviderIdSchema.parse(model.id);
 
-        const tags = getModelTags(canonicalModelId, config);
-        if (isModelNew(model.created_at)) {
-          tags.push("new");
-        }
+      const tags = getModelTags(canonicalModelId, config);
+      if (isModelNew(model.created_at)) {
+        tags.push("new");
+      }
 
-        const features: AIGatewayModel.ModelFeatures[] = [];
+      const features = getModelFeatures(canonicalModelId);
 
-        // All claude models support inputText, outputText, and tools
-        if (normalizedModelId.startsWith("claude-")) {
-          features.push("inputText", "outputText", "tools");
-        }
-
-        const params = { provider: config.type, providerConfigId: config.id };
-        return {
+      const params = { provider: config.type, providerConfigId: config.id };
+      return {
+        author,
+        canonicalId: canonicalModelId,
+        features,
+        name: model.display_name ?? generateModelName(canonicalModelId),
+        params,
+        providerId,
+        providerName: config.displayName ?? metadata.name,
+        tags,
+        uri: AIGatewayModelURI.fromModel({
           author,
           canonicalId: canonicalModelId,
-          features,
-          name: model.display_name ?? generateModelName(canonicalModelId),
           params,
-          providerId,
-          providerName: config.displayName ?? metadata.name,
-          tags,
-          uri: AIGatewayModelURI.fromModel({
-            author,
-            canonicalId: canonicalModelId,
-            params,
-          }),
-        } satisfies AIGatewayModel.Type;
-      },
-    );
+        }),
+      } satisfies AIGatewayModel.Type;
+    });
   });
 }
 

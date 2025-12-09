@@ -18,7 +18,11 @@ export namespace AIGatewayModel {
   ]);
   export type ModelTag = z.output<typeof ModelTagSchema>;
   export const ModelFeaturesSchema = z.enum([
+    "inputAudio",
+    "inputFile",
+    "inputImage",
     "inputText",
+    "inputVideo",
     "outputText",
     "tools",
   ]);

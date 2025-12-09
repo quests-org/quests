@@ -88,7 +88,14 @@ export function fetchModelsForOpenRouter(config: AIGatewayProviderConfig.Type) {
       const features: AIGatewayModel.ModelFeatures[] = [];
 
       if (model.architecture.input_modalities.includes("text")) {
-        features.push("inputText");
+        // OpenRouter automatically converts PDFs to text for all models
+        features.push("inputText", "inputFile");
+      }
+      if (model.architecture.input_modalities.includes("audio")) {
+        features.push("inputAudio");
+      }
+      if (model.architecture.input_modalities.includes("image")) {
+        features.push("inputImage");
       }
       if (model.architecture.output_modalities.includes("text")) {
         features.push("outputText");

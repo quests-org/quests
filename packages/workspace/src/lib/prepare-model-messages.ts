@@ -10,6 +10,7 @@ import { type StoreId } from "../schemas/store-id";
 import { ALL_AI_SDK_TOOLS } from "../tools/all";
 import { addCacheControlToMessages } from "./add-cache-control";
 import { type AppConfig } from "./app-config/types";
+import { filterUnsupportedMedia } from "./filter-unsupported-media";
 import { normalizeToolCallIds } from "./normalize-tool-call-ids";
 import { splitMultipartToolResults } from "./split-multipart-tool-results";
 import { Store } from "./store";
@@ -149,8 +150,13 @@ export async function prepareModelMessages({
     provider: model.params.provider,
   });
 
-  const cachedModelMessages = addCacheControlToMessages({
+  const filteredMessages = filterUnsupportedMedia({
     messages: splitMessages,
+    model,
+  });
+
+  const cachedModelMessages = addCacheControlToMessages({
+    messages: filteredMessages,
     model,
   });
 

@@ -9,25 +9,30 @@ import {
   getToolDisplayName,
   getToolIcon,
   getToolStreamingDisplayName,
-} from "../lib/tool-display";
-import { cn } from "../lib/utils";
-import { ReasoningMessage } from "./reasoning-message";
-import { ToolDetailedOutput } from "./tool-part-detail";
-import { Button } from "./ui/button";
+} from "../../lib/tool-display";
+import { cn } from "../../lib/utils";
+import { ReasoningMessage } from "../reasoning-message";
+import { Button } from "../ui/button";
+import { ToolPartExpanded } from "./expanded";
 
-interface ToolPartProps {
+export function ToolPart({
+  isLoading,
+  part,
+}: {
   isLoading: boolean;
   part: SessionMessagePart.ToolPart;
-}
-
-export function ToolPart({ isLoading, part }: ToolPartProps) {
+}) {
   const [isExpanded, setIsExpanded] = useState(false);
   const toolName = getToolNameByType(part.type);
   const ToolIcon = getToolIcon(toolName);
 
-  const isError = part.state === "output-error";
-  const isSuccess = part.state === "output-available";
-  const isExpandable = isSuccess || isError; // Allow expansion for both success and error outputs
+  const isFileNotFound =
+    part.state === "output-available" &&
+    part.type === "tool-read_file" &&
+    part.output.state === "does-not-exist";
+  const isError = part.state === "output-error" || isFileNotFound;
+  const isSuccess = part.state === "output-available" && !isFileNotFound;
+  const isExpandable = isSuccess || isError;
 
   let label: string;
   let value: string | undefined;
@@ -45,11 +50,10 @@ export function ToolPart({ isLoading, part }: ToolPartProps) {
     }
     case "output-available": {
       if (part.type === "tool-think") {
-        // Will be handled below
         label = getToolDisplayName(toolName);
         value = truncateText(part.output.thought, 80);
       } else {
-        label = getToolDisplayName(toolName);
+        label = isFileNotFound ? "Read failed" : getToolDisplayName(toolName);
         value = getToolOutputDescription(part);
       }
       break;
@@ -85,7 +89,6 @@ export function ToolPart({ isLoading, part }: ToolPartProps) {
     );
   }
 
-  // Choose the appropriate icon
   const DisplayIcon = isError ? TriangleAlert : ToolIcon;
 
   const handleToggle = () => {
@@ -156,7 +159,7 @@ export function ToolPart({ isLoading, part }: ToolPartProps) {
       {isExpanded && isSuccess && (
         <div className="mt-2 text-xs">
           <div className="p-2 bg-muted/30 rounded-md border max-h-64 overflow-y-auto">
-            <ToolDetailedOutput part={part} />
+            <ToolPartExpanded part={part} />
           </div>
         </div>
       )}
@@ -166,13 +169,17 @@ export function ToolPart({ isLoading, part }: ToolPartProps) {
           <div className="p-2 bg-muted/30 rounded-md border max-h-64 overflow-y-auto">
             <div className="mb-1 font-semibold">Error:</div>
             <pre className="whitespace-pre-wrap wrap-break-word font-mono text-xs">
-              {part.errorText}
+              {isFileNotFound &&
+                `File not found: ${part.output.filePath || ""}`}
+              {!isFileNotFound &&
+                part.state === "output-error" &&
+                part.errorText}
             </pre>
           </div>
           <div className="p-2 bg-muted/30 rounded-md border max-h-64 overflow-y-auto">
             <div className="mb-1 font-semibold">Input:</div>
             <pre className="whitespace-pre-wrap wrap-break-word font-mono text-xs">
-              {JSON.stringify(part.input || part.rawInput, null, 2)}
+              {JSON.stringify(part.input, null, 2)}
             </pre>
           </div>
         </div>
@@ -273,24 +280,30 @@ function getToolOutputDescription(
         : `${matches.length} matches found`;
     }
     case "tool-read_file": {
-      if (part.output.state === "exists") {
-        return part.output.filePath
-          ? cleanFilePath(part.output.filePath)
-          : "file";
+      const filePath = part.output.filePath
+        ? cleanFilePath(part.output.filePath)
+        : undefined;
+
+      switch (part.output.state) {
+        case "audio": {
+          return filePath || "audio read";
+        }
+        case "does-not-exist": {
+          return filePath ?? "file missing";
+        }
+        case "exists": {
+          return filePath || "file read";
+        }
+        case "image": {
+          return filePath || "image read";
+        }
+        case "pdf": {
+          return filePath || "PDF read";
+        }
+        default: {
+          return filePath || "file read";
+        }
       }
-      if (part.output.state === "image") {
-        return part.output.filePath
-          ? cleanFilePath(part.output.filePath)
-          : "image";
-      }
-      if (part.output.state === "pdf") {
-        return part.output.filePath
-          ? cleanFilePath(part.output.filePath)
-          : "pdf";
-      }
-      return part.output.filePath
-        ? `${cleanFilePath(part.output.filePath)}: not found`
-        : "file not found";
     }
     case "tool-run_diagnostics": {
       const errorCount = part.output.errors.length;
@@ -320,7 +333,7 @@ function getToolOutputDescription(
       const _exhaustiveCheck: never = part;
       // eslint-disable-next-line no-console
       console.warn("Unknown tool", _exhaustiveCheck);
-      return "completed";
+      return (part as { type: string }).type;
     }
   }
 }

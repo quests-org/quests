@@ -1,77 +1,14 @@
 import { type SessionMessagePart } from "@quests/workspace/client";
 
-import { cleanFilePath } from "../lib/file-utils";
-import { Badge } from "./ui/badge";
+import { Badge } from "../ui/badge";
+import { CodeBlock } from "./code-block";
+import { ToolPartFilePath } from "./file-path";
+import { MonoText } from "./mono-text";
+import { ToolPartReadFile } from "./read-file";
+import { ScrollableCodeBlock } from "./scrollable-code-block";
+import { SectionHeader } from "./section-header";
 
-export function ToolDetailedOutput({
-  part,
-}: {
-  part: Extract<SessionMessagePart.ToolPart, { state: "output-available" }>;
-}) {
-  const explanationObject =
-    typeof part.input === "object"
-      ? (part.input as { explanation?: string })
-      : undefined;
-  const explanation = explanationObject?.explanation;
-
-  return (
-    <div>
-      {explanation && (
-        <div className="mb-3 pb-2 border-b border-muted-foreground/20">
-          <SectionHeader>Explanation:</SectionHeader>
-          <div className="text-sm italic text-muted-foreground">
-            {explanation}
-          </div>
-        </div>
-      )}
-      <ToolContent part={part} />
-    </div>
-  );
-}
-
-function CodeBlock({
-  children,
-  className = "text-xs whitespace-pre-wrap",
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return <pre className={`font-mono ${className}`}>{children}</pre>;
-}
-
-function FileDisplay({ filePath, label }: { filePath: string; label: string }) {
-  return (
-    <div>
-      <SectionHeader>{label}</SectionHeader>
-      <MonoText>{cleanFilePath(filePath)}</MonoText>
-    </div>
-  );
-}
-
-function MonoText({
-  children,
-  className = "",
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return <div className={`font-mono ${className}`}>{children}</div>;
-}
-
-function ScrollableCodeBlock({ children }: { children: React.ReactNode }) {
-  return (
-    <CodeBlock className="text-xs whitespace-pre-wrap max-h-32 overflow-y-auto bg-background/50 p-2 rounded border">
-      {children}
-    </CodeBlock>
-  );
-}
-
-// Shared components to reduce repetition
-function SectionHeader({ children }: { children: React.ReactNode }) {
-  return <div className="text-muted-foreground mb-1">{children}</div>;
-}
-
-function ToolContent({
+export function ToolContent({
   part,
 }: {
   part: Extract<SessionMessagePart.ToolPart, { state: "output-available" }>;
@@ -100,7 +37,10 @@ function ToolContent({
     case "tool-edit_file": {
       return (
         <div>
-          <FileDisplay filePath={part.output.filePath} label="File edited:" />
+          <ToolPartFilePath
+            filePath={part.output.filePath}
+            label="File edited:"
+          />
           {part.input.oldString && (
             <div className="mt-2">
               <SectionHeader>Search pattern:</SectionHeader>
@@ -198,90 +138,7 @@ function ToolContent({
       );
     }
     case "tool-read_file": {
-      if (part.output.state === "exists") {
-        return (
-          <div>
-            <SectionHeader>
-              File: {cleanFilePath(part.output.filePath)}
-            </SectionHeader>
-            {part.input.offset !== undefined && part.input.offset > 0 && (
-              <div className="text-muted-foreground text-xs mb-1">
-                Starting from line {part.input.offset + 1}
-              </div>
-            )}
-            {part.input.limit !== undefined && (
-              <div className="text-muted-foreground text-xs mb-1">
-                Reading {part.input.limit} lines
-              </div>
-            )}
-            {part.output.content && (
-              <ScrollableCodeBlock>{part.output.content}</ScrollableCodeBlock>
-            )}
-            <div className="text-muted-foreground text-xs mt-1">
-              Showing {part.output.displayedLines} lines
-              {part.output.hasMoreLines && " (truncated)"}
-              {part.output.offset > 0 && ` (offset: ${part.output.offset})`}
-            </div>
-          </div>
-        );
-      }
-      if (part.output.state === "image") {
-        return (
-          <div>
-            <SectionHeader>
-              Image: {cleanFilePath(part.output.filePath)}
-            </SectionHeader>
-            <div className="text-muted-foreground text-xs mb-2">
-              {part.output.mimeType}
-            </div>
-            <img
-              alt={part.output.filePath}
-              className="max-w-full rounded border"
-              src={`data:${part.output.mimeType};base64,${part.output.base64Data}`}
-            />
-          </div>
-        );
-      }
-      if (part.output.state === "pdf") {
-        return (
-          <div>
-            <SectionHeader>
-              PDF: {cleanFilePath(part.output.filePath)}
-            </SectionHeader>
-            <div className="text-muted-foreground text-xs mb-2">
-              {part.output.mimeType}
-            </div>
-            <iframe
-              className="w-full h-96 rounded border"
-              src={`data:application/pdf;base64,${part.output.base64Data}`}
-              title={part.output.filePath}
-            />
-          </div>
-        );
-      }
-      return (
-        <div>
-          <FileDisplay
-            filePath={part.output.filePath}
-            label="File not found:"
-          />
-          {part.output.suggestions.length > 0 && (
-            <div className="mt-2">
-              <SectionHeader>Suggestions:</SectionHeader>
-              <div className="space-y-1">
-                {part.output.suggestions.map((suggestion, index) => (
-                  <MonoText
-                    className="text-xs text-muted-foreground"
-                    key={index}
-                  >
-                    {suggestion}
-                  </MonoText>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      );
+      return <ToolPartReadFile input={part.input} output={part.output} />;
     }
     case "tool-run_diagnostics": {
       const errors = part.output.errors;
@@ -399,7 +256,7 @@ function ToolContent({
       return (
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <FileDisplay
+            <ToolPartFilePath
               filePath={part.output.filePath}
               label="File written:"
             />
@@ -421,7 +278,6 @@ function ToolContent({
       );
     }
     default: {
-      // TypeScript exhaustiveness check - this should never be reached
       const _exhaustiveCheck: never = part;
       return (
         <div>
