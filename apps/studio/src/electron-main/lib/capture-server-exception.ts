@@ -32,7 +32,7 @@ export const captureServerException: CaptureExceptionFunction = function (
     // eslint-disable-next-line no-console
     console.groupCollapsed(`%c[Exception] ${errorMessage}`, "color: #b71c1c");
     // eslint-disable-next-line no-console
-    console.error(error, finalProperties);
+    console.error(error);
     if (error instanceof Error && error.cause) {
       // eslint-disable-next-line no-console
       console.error("Cause:", error.cause);
