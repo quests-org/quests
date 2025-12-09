@@ -17,10 +17,7 @@ export const publisher = new EventPublisher<{
   "features.updated": null;
   "preferences.updated": null;
   "provider-config.updated": null;
-  "server-exception": {
-    message: string;
-    stack?: string;
-  };
+  "server-exceptions.updated": null;
   "sidebar.visibility-updated": Partial<{
     visible: boolean;
   }>;

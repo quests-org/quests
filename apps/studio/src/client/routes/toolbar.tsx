@@ -1,4 +1,3 @@
-import { serverExceptionsAtom } from "@/client/atoms/server-exceptions";
 import { NavControls } from "@/client/components/nav-controls";
 import TabBar from "@/client/components/tab-bar";
 import { Button } from "@/client/components/ui/button";
@@ -6,7 +5,6 @@ import { cn, isLinux, isMacOS, isWindows } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { useAtomValue } from "jotai";
 import { SidebarIcon } from "lucide-react";
 
 export const Route = createFileRoute("/toolbar")({
@@ -22,9 +20,11 @@ function ToolbarPage() {
     rpcClient.sidebar.open.mutationOptions(),
   );
 
-  const exceptions = useAtomValue(serverExceptionsAtom);
-  const hasExceptions = exceptions.length > 0;
+  const { data: exceptions } = useQuery(
+    rpcClient.utils.live.serverExceptions.experimental_liveOptions({}),
+  );
 
+  const hasExceptions = (exceptions?.length ?? 0) > 0;
   const isSidebarVisible = sidebarVisibility?.visible ?? true;
 
   return (

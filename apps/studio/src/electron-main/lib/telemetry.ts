@@ -1,8 +1,8 @@
 import { PostHog } from "posthog-node";
 import { z } from "zod";
 
-import { publisher } from "../rpc/publisher";
 import { logger } from "./electron-logger";
+import { addServerException } from "./server-exceptions";
 
 const API_KEY = import.meta.env.VITE_POSTHOG_API_KEY;
 const API_HOST = import.meta.env.VITE_POSTHOG_API_HOST;
@@ -47,10 +47,7 @@ if (!API_KEY || !API_HOST) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
       const errorStack = error instanceof Error ? error.stack : undefined;
-      publisher.publish("server-exception", {
-        message: errorMessage,
-        stack: errorStack,
-      });
+      addServerException({ message: errorMessage, stack: errorStack });
     };
 
     process.on("uncaughtException", handleError);

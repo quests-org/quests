@@ -4,8 +4,8 @@ import {
 } from "@quests/shared";
 import { app } from "electron";
 
-import { publisher } from "../rpc/publisher";
 import { getAppStateStore } from "../stores/app-state";
+import { addServerException } from "./server-exceptions";
 import { getSystemProperties } from "./system-properties";
 import { telemetry } from "./telemetry";
 
@@ -55,7 +55,7 @@ export const captureServerException: CaptureExceptionFunction = function (
 
     console.groupEnd();
 
-    publisher.publish("server-exception", {
+    addServerException({
       message: errorMessage,
       stack: errorStack,
     });

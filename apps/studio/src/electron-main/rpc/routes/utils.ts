@@ -5,6 +5,10 @@ import type {
 } from "@/shared/schemas/editors";
 
 import { captureServerEvent } from "@/electron-main/lib/capture-server-event";
+import {
+  clearServerExceptions,
+  getServerExceptions,
+} from "@/electron-main/lib/server-exceptions";
 import { base } from "@/electron-main/rpc/base";
 import { publisher } from "@/electron-main/rpc/publisher";
 import {
@@ -432,6 +436,10 @@ const getSupportedEditors = base
     return await initializeSupportedEditorsCache();
   });
 
+const clearExceptions = base.input(z.void()).handler(() => {
+  clearServerExceptions();
+});
+
 const live = {
   reload: base.handler(async function* ({ context, signal }) {
     for await (const payload of publisher.subscribe("app.reload", {
@@ -445,19 +453,29 @@ const live = {
   serverExceptions: base
     .output(
       eventIterator(
-        z.object({ message: z.string(), stack: z.string().optional() }),
+        z.array(
+          z.object({
+            id: z.string(),
+            message: z.string(),
+            stack: z.string().optional(),
+            timestamp: z.number(),
+          }),
+        ),
       ),
     )
     .handler(async function* ({ signal }) {
-      for await (const payload of publisher.subscribe("server-exception", {
+      yield getServerExceptions();
+
+      for await (const _ of publisher.subscribe("server-exceptions.updated", {
         signal,
       })) {
-        yield payload;
+        yield getServerExceptions();
       }
     }),
 };
 
 export const utils = {
+  clearExceptions,
   copyScreenshotToClipboard,
   exportZip,
   getSupportedEditors,
