@@ -22,11 +22,7 @@ export function fetchModelsForProvider(
 ) {
   return Result.fromAsyncCatching(
     async () => {
-      const result = await fetchModels(config, { captureException });
-      if (!result.ok) {
-        throw result.error;
-      }
-      return result.value;
+      return await fetchModels(config, { captureException });
     },
     (error) => {
       captureException(error);
