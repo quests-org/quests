@@ -12,7 +12,7 @@ import { SALES_EMAIL } from "@quests/shared";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { CheckCircle2, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/_authenticated/subscribe")({
@@ -58,9 +58,11 @@ function SubscribePage() {
     error: plansError,
     isLoading: isPlansLoading,
   } = useQuery(rpcClient.plans.get.queryOptions());
-  const { data: subscription } = useQuery(
+  const { data: subscription, refetch: refetchSubscription } = useQuery(
     rpcClient.user.subscriptionStatus.queryOptions({
-      input: { watchFocusChanges: true },
+      input: {
+        staleTime: 0,
+      },
     }),
   );
   const { mutateAsync: createCheckoutSession } = useMutation(
@@ -69,6 +71,13 @@ function SubscribePage() {
   const { mutateAsync: openExternalLink } = useMutation(
     rpcClient.utils.openExternalLink.mutationOptions(),
   );
+  const { data: onWindowFocus } = useQuery(
+    rpcClient.utils.live.onWindowFocus.experimental_liveOptions(),
+  );
+
+  useEffect(() => {
+    void refetchSubscription();
+  }, [onWindowFocus, refetchSubscription]);
 
   const [billingCycle, setBillingCycle] = useState<BillingCycle>("yearly");
 

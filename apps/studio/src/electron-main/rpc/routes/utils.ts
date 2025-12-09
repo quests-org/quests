@@ -441,6 +441,15 @@ const clearExceptions = base.input(z.void()).handler(() => {
 });
 
 const live = {
+  onWindowFocus: base.handler(async function* ({ signal }) {
+    for await (const _ of publisher.subscribe("window.focus-changed", {
+      signal,
+    })) {
+      yield {
+        focused: Date.now(),
+      };
+    }
+  }),
   reload: base.handler(async function* ({ context, signal }) {
     for await (const payload of publisher.subscribe("app.reload", {
       signal,

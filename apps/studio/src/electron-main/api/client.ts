@@ -63,7 +63,7 @@ const QUERY_KEYS = {
   ]),
 };
 
-const ACTION_DEPENDENT_QUERY_KEYS = {
+const DEPENDENT_QUERY_KEYS = {
   signIn: [
     QUERY_KEYS["auth.hasToken"],
     QUERY_KEYS["user.me"],
@@ -79,10 +79,15 @@ const ACTION_DEPENDENT_QUERY_KEYS = {
 export type QueryKey = QueryKeys[keyof QueryKeys];
 type QueryKeys = typeof QUERY_KEYS;
 
-export async function fetchSubscriptionStatus() {
+export async function fetchSubscriptionStatus({
+  staleTime = 30_000,
+}: {
+  staleTime?: number;
+}) {
   return queryClient.fetchQuery({
     queryFn: () => client.users.getSubscriptionStatus(),
     queryKey: QUERY_KEYS["user.subscriptionStatus"],
+    staleTime,
   });
 }
 
@@ -95,11 +100,11 @@ export async function getMe() {
 }
 
 export async function onSignIn() {
-  await invalidateCacheKeys(ACTION_DEPENDENT_QUERY_KEYS.signIn);
+  await invalidateCacheKeys(DEPENDENT_QUERY_KEYS.signIn);
 }
 
 export async function onSignOut() {
-  await invalidateCacheKeys(ACTION_DEPENDENT_QUERY_KEYS.signOut);
+  await invalidateCacheKeys(DEPENDENT_QUERY_KEYS.signOut);
 }
 
 async function invalidateCacheKeys(cacheKeys: QueryKey[]) {

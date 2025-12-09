@@ -42,10 +42,10 @@ export function NavUser() {
   const { data: providerConfigs } = useQuery(
     rpcClient.providerConfig.live.list.experimental_liveOptions(),
   );
-  const { data: user, refetch: refreshUser } = useQuery(
+  const { data: user, refetch: refetchUser } = useQuery(
     rpcClient.user.me.queryOptions(),
   );
-  const { data: subscription } = useQuery(
+  const { data: subscription, refetch: refetchSubscription } = useQuery(
     rpcClient.user.subscriptionStatus.queryOptions(),
   );
 
@@ -101,7 +101,8 @@ export function NavUser() {
           onOpenChange={(open) => {
             if (open) {
               startTransition(() => {
-                void refreshUser();
+                void refetchUser();
+                void refetchSubscription();
               });
             }
           }}
