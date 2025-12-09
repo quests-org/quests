@@ -1,3 +1,4 @@
+import { serverExceptionsAtom } from "@/client/atoms/server-exceptions";
 import { NavControls } from "@/client/components/nav-controls";
 import TabBar from "@/client/components/tab-bar";
 import { Button } from "@/client/components/ui/button";
@@ -5,6 +6,7 @@ import { cn, isLinux, isMacOS, isWindows } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
+import { useAtomValue } from "jotai";
 import { SidebarIcon } from "lucide-react";
 
 export const Route = createFileRoute("/toolbar")({
@@ -19,6 +21,9 @@ function ToolbarPage() {
   const { mutate: openSidebar } = useMutation(
     rpcClient.sidebar.open.mutationOptions(),
   );
+
+  const exceptions = useAtomValue(serverExceptionsAtom);
+  const hasExceptions = exceptions.length > 0;
 
   const isSidebarVisible = sidebarVisibility?.visible ?? true;
 
@@ -40,7 +45,7 @@ function ToolbarPage() {
             <div className="flex items-center [-webkit-app-region:no-drag]">
               <div className={cn(isMacOS() ? "ml-20" : "ml-4")} />
               <Button
-                className="shrink-0 size-6 pr-1 text-muted-foreground"
+                className="shrink-0 size-6 pr-1 text-muted-foreground relative"
                 onClick={() => {
                   openSidebar({});
                 }}
@@ -49,6 +54,9 @@ function ToolbarPage() {
                 variant="ghost"
               >
                 <SidebarIcon />
+                {hasExceptions && (
+                  <span className="absolute top-0.5 right-0.5 size-2 bg-destructive rounded-full" />
+                )}
               </Button>
               <NavControls />
             </div>

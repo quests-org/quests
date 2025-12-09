@@ -3,6 +3,7 @@ import { NavControls } from "@/client/components/nav-controls";
 import { NavPrimary } from "@/client/components/nav-primary";
 import { NavProjects } from "@/client/components/nav-projects";
 import { NavUser } from "@/client/components/nav-user";
+import { ServerExceptionsAlert } from "@/client/components/server-exceptions-alert";
 import { Button } from "@/client/components/ui/button";
 import {
   Sidebar,
@@ -131,6 +132,7 @@ export function StudioSidebar({
           </div>
         </div>
       </SidebarHeader>
+      <ServerExceptionsAlert />
       <SidebarContent>
         <NavPrimary items={primaryNavItems} />
         {favorites && favorites.length > 0 && (
