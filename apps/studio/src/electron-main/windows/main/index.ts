@@ -64,7 +64,6 @@ export async function createMainWindow() {
   mainWindow.on("move", saveState);
   mainWindow.on("focus", () => {
     publisher.publish("window.focus-changed", null);
-    publisher.publish("subscription.refetch", null);
   });
   mainWindow.on("ready-to-show", () => {
     const window = getMainWindow();

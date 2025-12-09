@@ -1,5 +1,4 @@
 import { providerMetadataAtom } from "@/client/atoms/provider-metadata";
-import { userAtom } from "@/client/atoms/user";
 import { AddProviderDialog } from "@/client/components/add-provider/dialog";
 import { AIProviderIcon } from "@/client/components/ai-provider-icon";
 import { ErrorAlert } from "@/client/components/error-alert";
@@ -25,23 +24,17 @@ const FEATURED_PROVIDERS: AIProviderType[] = ["anthropic", "openai", "google"];
 
 export function AISetupView({ mode }: { mode: "setup" | "sign-in" }) {
   const [showAddProviderDialog, setShowAddProviderDialog] = useState(false);
-  const { signIn } = useSignInSocial();
+  const { error, signIn } = useSignInSocial();
   const navigate = useNavigate();
   const { providerMetadataMap } = useAtomValue(providerMetadataAtom);
-  const userResult = useAtomValue(userAtom);
-
-  const { data: userLive } = useQuery(
-    rpcClient.user.live.me.experimental_liveOptions({}),
-  );
+  const { data: hasToken } = useQuery(rpcClient.auth.hasToken.queryOptions());
 
   const { data: providerConfigs } = useQuery(
     rpcClient.providerConfig.live.list.experimental_liveOptions(),
   );
 
-  const isSignedIn = Boolean(userResult.data?.id);
   const hasProvider = (providerConfigs?.length ?? 0) > 0;
-  const isReady = mode === "setup" ? isSignedIn || hasProvider : isSignedIn;
-  const signInError = userLive?.error;
+  const isReady = mode === "setup" ? hasToken || hasProvider : hasToken;
 
   const handleContinueClick = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -145,7 +138,7 @@ export function AISetupView({ mode }: { mode: "setup" | "sign-in" }) {
               </Button>
             ) : (
               <>
-                {signInError && (
+                {error && (
                   <ErrorAlert
                     className="w-full min-w-80"
                     subject="Sign In Error"

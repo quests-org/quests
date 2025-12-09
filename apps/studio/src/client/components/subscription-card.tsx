@@ -24,9 +24,9 @@ const planBadgeVariants = cva("text-xs px-2 py-0.5", {
 
 export function SubscriptionCard() {
   const { mutate: addTab } = useMutation(rpcClient.tabs.add.mutationOptions());
-  const { data: subscriptionData } = useQuery(
-    rpcClient.user.live.subscription.experimental_liveOptions({
-      input: { noCache: true },
+  const { data: subscription } = useQuery(
+    rpcClient.user.subscriptionStatus.queryOptions({
+      input: { watchFocusChanges: true },
     }),
   );
   const { mutateAsync: createPortalSession } = useMutation(
@@ -39,9 +39,9 @@ export function SubscriptionCard() {
 
   const handleManageSubscription = async () => {
     try {
-      const { data } = await createPortalSession({});
-      if (data?.url) {
-        await openExternalLink({ url: data.url });
+      const { url } = await createPortalSession({});
+      if (url) {
+        await openExternalLink({ url });
       } else {
         toast.error("Failed to create portal session");
       }
@@ -50,10 +50,9 @@ export function SubscriptionCard() {
     }
   };
 
-  const data = subscriptionData?.data;
-  const plan = data?.plan;
-  const usagePercent = data?.usagePercent;
-  const freeUsagePercent = data?.freeUsagePercent;
+  const plan = subscription?.plan;
+  const usagePercent = subscription?.usagePercent;
+  const freeUsagePercent = subscription?.freeUsagePercent;
   const displayUsagePercent = plan ? usagePercent : freeUsagePercent;
 
   const planVariant =
@@ -116,10 +115,10 @@ export function SubscriptionCard() {
               </div>
             </div>
           )}
-          {data?.nextAllocation && (
+          {subscription?.nextAllocation && (
             <p className="text-xs text-muted-foreground">
               Next credit allocation on{" "}
-              {new Date(data.nextAllocation).toLocaleDateString()}
+              {new Date(subscription.nextAllocation).toLocaleDateString()}
             </p>
           )}
           {plan && (

@@ -10,16 +10,15 @@ export function UpgradeSubscriptionAlert({
 }: {
   onContinue: () => void;
 }) {
-  const { data: subscriptionData } = useQuery(
-    rpcClient.user.live.subscription.experimental_liveOptions({
+  const { data: subscription } = useQuery(
+    rpcClient.user.subscriptionStatus.queryOptions({
       refetchOnWindowFocus: true,
     }),
   );
 
-  const data = subscriptionData?.data;
-  const plan = data?.plan;
-  const usagePercent = data?.usagePercent;
-  const freeUsagePercent = data?.freeUsagePercent;
+  const plan = subscription?.plan;
+  const usagePercent = subscription?.usagePercent;
+  const freeUsagePercent = subscription?.freeUsagePercent;
   const displayUsagePercent = plan ? usagePercent : freeUsagePercent;
 
   const hasCredits =

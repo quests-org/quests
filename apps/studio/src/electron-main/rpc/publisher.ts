@@ -1,13 +1,21 @@
-import { type RPCError } from "@/electron-main/lib/errors";
+import { type QueryKey } from "@/electron-main/api/client";
 import { type AppUpdaterStatus } from "@/electron-main/lib/update";
-import { type getSubscription } from "@/electron-main/rpc/routes/user";
 import { type TabState } from "@/shared/tabs";
 import { EventPublisher } from "@orpc/server";
 
 export const publisher = new EventPublisher<{
   "app.reload": { webContentsId: number };
-  "auth.updated": {
-    error?: null | RPCError;
+  "auth.sign-in-error": {
+    error: {
+      code?: string | undefined;
+      message?: string | undefined;
+      status: number;
+      statusText: string;
+    };
+  };
+  "auth.updated": null;
+  "cache.invalidated": {
+    invalidatedQueryKeys?: QueryKey[];
   };
   "debug.open-analytics-toolbar": null;
   "debug.open-debug-page": null;
@@ -22,7 +30,6 @@ export const publisher = new EventPublisher<{
     visible: boolean;
   }>;
   "subscription.refetch": null;
-  "subscription.updated": Awaited<ReturnType<typeof getSubscription>>;
   "tabs.updated": null | TabState;
   "test-notification": null;
   "updates.status": { status: AppUpdaterStatus };

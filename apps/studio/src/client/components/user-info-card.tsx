@@ -1,4 +1,3 @@
-import { userAtom } from "@/client/atoms/user";
 import {
   Avatar,
   AvatarFallback,
@@ -8,11 +7,11 @@ import { Button } from "@/client/components/ui/button";
 import { Card } from "@/client/components/ui/card";
 import { getInitials } from "@/client/lib/get-initials";
 import { signOut } from "@/client/lib/sign-out";
-import { useAtom } from "jotai";
+import { rpcClient } from "@/client/rpc/client";
+import { useQuery } from "@tanstack/react-query";
 
 export function UserInfoCard() {
-  const [userResult] = useAtom(userAtom);
-  const user = userResult.data;
+  const { data: user } = useQuery(rpcClient.user.me.queryOptions());
 
   if (!user?.id) {
     return null;

@@ -1,3 +1,4 @@
+import { onSignIn } from "@/electron-main/api/client";
 import {
   auth,
   createGoogleProvider,
@@ -11,13 +12,11 @@ import {
 } from "@/electron-main/auth/state";
 import { captureServerEvent } from "@/electron-main/lib/capture-server-event";
 import { captureServerException } from "@/electron-main/lib/capture-server-exception";
-import { createError } from "@/electron-main/lib/errors";
 import { setDefaultModelIfNeeded } from "@/electron-main/lib/set-default-model";
 import { publisher } from "@/electron-main/rpc/publisher";
 import { getSessionStore } from "@/electron-main/stores/session";
 import { getMainWindow } from "@/electron-main/windows/main/instance";
 import { serve } from "@hono/node-server";
-import { COMMON_ORPC_ERROR_DEFS, type CommonORPCErrorCode } from "@orpc/client";
 import { APP_PROTOCOL, SUPPORT_EMAIL } from "@quests/shared";
 import { cva } from "class-variance-authority";
 import { detect } from "detect-port";
@@ -26,14 +25,6 @@ import { Hono } from "hono";
 import { html } from "hono/html";
 import fs from "node:fs";
 import path from "node:path";
-
-const STATUS_TO_ORPC_ERROR_CODE: Record<number, CommonORPCErrorCode> =
-  Object.fromEntries(
-    Object.entries(COMMON_ORPC_ERROR_DEFS).map(([_, value]) => [
-      value.status,
-      _ as CommonORPCErrorCode,
-    ]),
-  );
 
 function focusMainWindow() {
   const mainWindow = getMainWindow();
@@ -131,14 +122,10 @@ export async function startAuthCallbackServer() {
           new Error("Sign in failed", { cause: res.error }),
           { scopes: ["auth"] },
         );
-        const orpcErrorCode = STATUS_TO_ORPC_ERROR_CODE[res.error.status];
-        publisher.publish("auth.updated", {
-          error: createError(
-            orpcErrorCode ?? "INTERNAL_SERVER_ERROR",
-            res.error.message,
-          ),
+        publisher.publish("auth.sign-in-error", {
+          error: res.error,
         });
-        publisher.publish("subscription.refetch", null);
+        publisher.publish("auth.updated", null);
         focusMainWindow();
         return await c.html(
           renderAuthPage({
@@ -158,8 +145,8 @@ export async function startAuthCallbackServer() {
 
     captureServerEvent("auth.signed_in");
     void setDefaultModelIfNeeded({ forceUpdateForNewLogin: true });
-    publisher.publish("auth.updated", {});
-    publisher.publish("subscription.refetch", null);
+    void onSignIn();
+    publisher.publish("auth.updated", null);
     focusMainWindow();
     return c.html(renderAuthPage({}));
   });

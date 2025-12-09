@@ -1,3 +1,4 @@
+import { hasToken as hasTokenUtil } from "@/electron-main/api/utils";
 import {
   signInSocial as signInSocialFn,
   signOut as signOutFn,
@@ -7,6 +8,10 @@ import { z } from "zod";
 
 const signOut = base.handler(async () => {
   await signOutFn();
+});
+
+const hasToken = base.handler(() => {
+  return hasTokenUtil();
 });
 
 const signInSocial = base
@@ -20,6 +25,7 @@ const signInSocial = base
   });
 
 export const auth = {
+  hasToken,
   signInSocial,
   signOut,
 };

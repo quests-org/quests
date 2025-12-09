@@ -1,4 +1,3 @@
-import { userAtom } from "@/client/atoms/user";
 import {
   Avatar,
   AvatarFallback,
@@ -21,7 +20,6 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/client/components/ui/sidebar";
-import { useUserConnectionError } from "@/client/hooks/use-user-connection-error";
 import { captureClientEvent } from "@/client/lib/capture-client-event";
 import { getInitials } from "@/client/lib/get-initials";
 import { isLowOnCredits } from "@/client/lib/is-low-on-credits";
@@ -29,9 +27,7 @@ import { signOut } from "@/client/lib/sign-out";
 import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
-import { useAtom } from "jotai";
 import {
-  AlertCircle,
   ChevronsUpDown,
   KeyIcon,
   LogOutIcon,
@@ -41,20 +37,19 @@ import { startTransition } from "react";
 
 export function NavUser() {
   const { isMobile } = useSidebar();
-  const [userResult, refreshUser] = useAtom(userAtom);
   const router = useRouter();
   const { mutate: addTab } = useMutation(rpcClient.tabs.add.mutationOptions());
-  const { error, hasError } = useUserConnectionError();
-
-  const user = userResult.data;
   const { data: providerConfigs } = useQuery(
     rpcClient.providerConfig.live.list.experimental_liveOptions(),
   );
-  const { data: subscriptionData } = useQuery(
-    rpcClient.user.live.subscription.experimental_liveOptions(),
+  const { data: user, refetch: refreshUser } = useQuery(
+    rpcClient.user.me.queryOptions(),
+  );
+  const { data: subscription } = useQuery(
+    rpcClient.user.subscriptionStatus.queryOptions(),
   );
 
-  const plan = subscriptionData?.data?.plan;
+  const plan = subscription?.plan;
   const badgeVariant: "default" | "outline" | "secondary" = "secondary";
   let badgeClassName = "text-xs px-1 py-0.5 ";
 
@@ -106,7 +101,7 @@ export function NavUser() {
           onOpenChange={(open) => {
             if (open) {
               startTransition(() => {
-                refreshUser();
+                void refreshUser();
               });
             }
           }}
@@ -159,23 +154,7 @@ export function NavUser() {
                 </div>
               </div>
             </DropdownMenuLabel>
-            {hasError && error && (
-              <div className="px-2 py-1.5">
-                <Button
-                  className="w-full text-xs h-7 font-semibold bg-destructive/10 text-destructive hover:bg-destructive/20"
-                  onClick={() => {
-                    void vanillaRpcClient.preferences.openSettingsWindow({
-                      tab: "General",
-                    });
-                  }}
-                  size="sm"
-                >
-                  <AlertCircle className="size-3 shrink-0" />
-                  <span className="truncate">{error.message}</span>
-                </Button>
-              </div>
-            )}
-            {isLowOnCredits(subscriptionData?.data) && (
+            {isLowOnCredits(subscription) && (
               <div className="px-2 py-1.5">
                 <Button
                   className="w-full text-xs h-7 font-semibold"

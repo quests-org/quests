@@ -54,13 +54,13 @@ interface PricingPlan {
 
 function SubscribePage() {
   const {
-    data: plansData,
+    data: plans,
     error: plansError,
     isLoading: isPlansLoading,
-  } = useQuery(rpcClient.user.plans.queryOptions());
-  const { data: subscriptionData } = useQuery(
-    rpcClient.user.live.subscription.experimental_liveOptions({
-      refetchOnWindowFocus: true,
+  } = useQuery(rpcClient.plans.get.queryOptions());
+  const { data: subscription } = useQuery(
+    rpcClient.user.subscriptionStatus.queryOptions({
+      input: { watchFocusChanges: true },
     }),
   );
   const { mutateAsync: createCheckoutSession } = useMutation(
@@ -72,7 +72,7 @@ function SubscribePage() {
 
   const [billingCycle, setBillingCycle] = useState<BillingCycle>("yearly");
 
-  const currentPlan = subscriptionData?.data?.plan;
+  const currentPlan = subscription?.plan;
 
   const [showPlanChangePreview, setShowPlanChangePreview] = useState(false);
   const [selectedPlanForChange, setSelectedPlanForChange] =
@@ -89,10 +89,9 @@ function SubscribePage() {
 
   const processCheckout = async (priceId: string) => {
     try {
-      const { data } = await createCheckoutSession({
+      const { url } = await createCheckoutSession({
         priceId,
       });
-      const url = data?.url;
 
       if (!url) {
         toast.error("Failed to start checkout process");
@@ -180,7 +179,7 @@ function SubscribePage() {
           </div>
         )}
 
-        {plansData && (
+        {plans && (
           <>
             <div className="flex justify-center mb-6">
               <Tabs
@@ -222,7 +221,7 @@ function SubscribePage() {
             </div>
 
             <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-              {plansData.map((plan) => {
+              {plans.map((plan) => {
                 const price =
                   billingCycle === "monthly"
                     ? plan.monthlyPrice
@@ -393,7 +392,7 @@ function SubscribePage() {
         )}
       </div>
 
-      {showPlanChangePreview && invoicePreviewData?.data && (
+      {showPlanChangePreview && invoicePreviewData && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
           <div className="bg-card border border-border p-6 rounded-lg shadow-lg max-w-md w-full">
             <h2 className="text-xl font-bold mb-4">
@@ -411,14 +410,14 @@ function SubscribePage() {
                   $
                   {Math.max(
                     0,
-                    invoicePreviewData.data.amountDue / 100,
+                    invoicePreviewData.amountDue / 100,
                   ).toLocaleString(undefined, {
                     minimumFractionDigits: 2,
                   })}
                 </span>
               </div>
               <p className="text-xs text-muted-foreground">
-                {invoicePreviewData.data.endingBalance <= 0
+                {invoicePreviewData.endingBalance <= 0
                   ? "The remaining value of your current subscription will be credited to your account and applied to future invoices."
                   : "This includes a prorated charge for the remainder of the current billing period."}
               </p>
@@ -433,9 +432,7 @@ function SubscribePage() {
                 Cancel
               </Button>
               <Button onClick={confirmUpgrade}>
-                {invoicePreviewData.data.amountDue > 0
-                  ? "Confirm & Pay"
-                  : "Confirm"}
+                {invoicePreviewData.amountDue > 0 ? "Confirm & Pay" : "Confirm"}
               </Button>
             </div>
           </div>

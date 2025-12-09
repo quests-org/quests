@@ -1,9 +1,16 @@
 import { oc } from "@orpc/contract";
 import { z } from "zod";
 
+const base = oc.errors({
+  BAD_REQUEST: {},
+  FORBIDDEN: {},
+  INTERNAL_SERVER_ERROR: {},
+  UNAUTHORIZED: {},
+});
+
 export const contract = {
   plans: {
-    get: oc.input(z.void()).output(
+    get: base.input(z.void()).output(
       z.array(
         z.object({
           description: z.string(),
@@ -20,16 +27,16 @@ export const contract = {
     ),
   },
   root: {
-    ping: oc.input(z.void()).output(z.string()),
+    ping: base.input(z.void()).output(z.string()),
   },
   stripe: {
-    createCheckoutSession: oc
+    createCheckoutSession: base
       .input(z.object({ priceId: z.string() }))
       .output(z.object({ url: z.string().nullable() })),
-    createPortalSession: oc
+    createPortalSession: base
       .input(z.void())
       .output(z.object({ url: z.string() })),
-    getInvoicePreview: oc.input(z.object({ priceId: z.string() })).output(
+    getInvoicePreview: base.input(z.object({ priceId: z.string() })).output(
       z.object({
         amountDue: z.number(),
         currency: z.string(),
@@ -40,7 +47,7 @@ export const contract = {
     ),
   },
   users: {
-    getMe: oc.input(z.void()).output(
+    getMe: base.input(z.void()).output(
       z.object({
         createdAt: z.date(),
         email: z.string(),
@@ -50,7 +57,7 @@ export const contract = {
         updatedAt: z.date(),
       }),
     ),
-    getSubscriptionStatus: oc.input(z.void()).output(
+    getSubscriptionStatus: base.input(z.void()).output(
       z.object({
         billingCycle: z.enum(["monthly", "yearly"]).nullable(),
         freeUsagePercent: z.number(),

@@ -2,11 +2,13 @@ import { workspaceRouter } from "@quests/workspace/electron";
 
 import { appState } from "./app-state";
 import { auth } from "./auth";
+import { cache } from "./cache";
 import { debug } from "./debug";
 import { evals } from "./evals";
 import { favorites } from "./favorites";
 import { features } from "./features";
 import { gateway } from "./gateway";
+import { plans } from "./plans";
 import { preferences } from "./preferences";
 import { providerConfig } from "./provider-config";
 import { releases } from "./releases";
@@ -21,11 +23,13 @@ import { utils } from "./utils";
 export const router = {
   appState,
   auth,
+  cache,
   debug,
   evals,
   favorites,
   features,
   gateway,
+  plans,
   preferences,
   providerConfig,
   releases,

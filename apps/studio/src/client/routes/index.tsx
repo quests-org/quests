@@ -7,9 +7,9 @@ export const Route = createFileRoute("/")({
     const [_appStateError, appState] = await safe(
       vanillaRpcClient.appState.get(),
     );
-    const [_userError, user] = await safe(vanillaRpcClient.user.me({}));
+    const { data: user } = await safe(vanillaRpcClient.user.me());
 
-    if (appState?.hasCompletedProviderSetup || user?.data?.id) {
+    if (appState?.hasCompletedProviderSetup || user) {
       // eslint-disable-next-line @typescript-eslint/only-throw-error
       throw redirect({ to: "/new-tab" });
     }

@@ -1,12 +1,6 @@
-import { type AsyncGeneratorYield, type RPCOutput } from "@/client/rpc/client";
+import { type Subscription } from "@/electron-main/api/client";
 
-type Subscription = AsyncGeneratorYield<
-  RPCOutput["user"]["live"]["subscription"]
->;
-
-export function isLowOnCredits(
-  data: Subscription["data"] | undefined,
-): boolean {
+export function isLowOnCredits(data: null | Subscription | undefined): boolean {
   if (!data) {
     return false;
   }

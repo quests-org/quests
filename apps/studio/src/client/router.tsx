@@ -2,17 +2,14 @@ import type { FileRoutesByPath, RouterHistory } from "@tanstack/react-router";
 
 import { DefaultErrorComponent } from "@/client/components/default-error-component";
 import { NotFoundRouteComponent } from "@/client/components/not-found";
-import { safe } from "@orpc/client";
 import { QueryClient } from "@tanstack/react-query";
 import {
   createHashHistory,
   createRouter as createTanStackRouter,
 } from "@tanstack/react-router";
 
-import { logger } from "./lib/logger";
 import { telemetry } from "./lib/telemetry";
 import { routeTree } from "./routeTree.gen";
-import { vanillaRpcClient } from "./rpc/client";
 
 const IGNORED_PATHS = new Set<keyof FileRoutesByPath>([
   "/sidebar", // Always rendered as separate view in Electron app
@@ -61,27 +58,18 @@ window.api.onNavigate((url) => {
   void router.navigate({ to: url });
 });
 
-async function subscribeToUserChanges() {
-  const [initialError, initialResult] = await safe(
-    vanillaRpcClient.user.me({}),
-  );
-  let hadUser = initialError ? false : initialResult.data !== null;
+// async function subscribeToUserChanges() {
+//   let isAuthenticated = false;
+//   const iterator = await vanillaRpcClient.user.live.session();
+//   for await (const payload of iterator) {
+//     const newIsAuthenticated = payload !== undefined;
+//     if (isAuthenticated !== newIsAuthenticated) {
+//       void router.invalidate();
+//     }
+//     isAuthenticated = payload !== undefined;
+//   }
+// }
 
-  const iterator = await vanillaRpcClient.user.live.me();
-  for await (const _payload of iterator) {
-    const [error, result] = await safe(vanillaRpcClient.user.me({}));
-    if (error) {
-      continue;
-    }
-    const hasUser = result.data !== null;
-    if (hadUser !== hasUser) {
-      void router.invalidate();
-    }
-    hadUser = hasUser;
-  }
-}
-
-// eslint-disable-next-line unicorn/prefer-top-level-await
-void subscribeToUserChanges().catch((error: unknown) => {
-  logger.error("Error subscribing to user changes", error);
-});
+// void subscribeToUserChanges().catch((error: unknown) => {
+//   logger.error("Error subscribing to user changes", error);
+// });

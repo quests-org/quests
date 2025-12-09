@@ -3,7 +3,7 @@ export function mergeGenerators<T>(
 ): AsyncGenerator<T>;
 export function mergeGenerators<T, U = T>(
   generators: AsyncGenerator<T>[],
-  mapResult: (result: IteratorResult<T>) => U,
+  mapResult: (result: IteratorResult<T>, index: number) => U,
 ): AsyncGenerator<NonNullable<U>>;
 export async function* mergeGenerators<T, U>(
   generators: AsyncGenerator<T>[],

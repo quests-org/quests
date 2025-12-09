@@ -1,5 +1,4 @@
 import { agentNameAtom } from "@/client/atoms/agent-name";
-import { userAtom } from "@/client/atoms/user";
 import { SmallAppIcon } from "@/client/components/app-icon";
 import { AppStatusIcon } from "@/client/components/app-status-icon";
 import { NewTabDiscoverHeroCards } from "@/client/components/discover-hero-card";
@@ -28,7 +27,7 @@ import {
   useRouter,
 } from "@tanstack/react-router";
 import { formatDistanceToNow } from "date-fns";
-import { useAtom, useAtomValue } from "jotai";
+import { useAtom } from "jotai";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/new-tab")({
@@ -46,8 +45,7 @@ function RouteComponent() {
   const [selectedModelURI, setSelectedModelURI, saveSelectedModelURI] =
     useDefaultModelURI();
   const [agentName, setAgentName] = useAtom(agentNameAtom);
-  const userResult = useAtomValue(userAtom);
-  const isLoggedIn = Boolean(userResult.data?.id);
+  const { data: user } = useQuery(rpcClient.user.me.queryOptions());
   const navigate = useNavigate({ from: "/new-tab" });
   const router = useRouter();
   const { addTab } = useTabActions();
@@ -68,7 +66,7 @@ function RouteComponent() {
     <div className="w-full min-h-screen flex-1 flex flex-col items-center relative">
       <div className="flex items-center justify-center w-full">
         <div className="w-full max-w-2xl space-y-8 px-8 pt-36">
-          {!isLoggedIn && (
+          {!user && (
             <div className="flex flex-col items-center gap-y-4 mb-8">
               <button
                 className="group flex items-center gap-x-3 border-2 border-brand/40 hover:border-brand rounded-full px-4 py-2 transition-colors"
