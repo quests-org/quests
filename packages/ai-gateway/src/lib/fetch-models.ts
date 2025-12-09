@@ -25,12 +25,12 @@ export function fetchModelsForProvider(
       return await fetchModels(config, { captureException });
     },
     (error) => {
-      captureException(error);
       return new TypedError.Unknown("Failed to fetch models for provider", {
         cause: error,
       });
     },
   ).mapError((error) => {
+    captureException(error);
     const metadata = getProviderMetadata(config.type);
     return {
       config: {
