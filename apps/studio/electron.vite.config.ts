@@ -39,6 +39,20 @@ export default defineConfig({
       lib: {
         entry: path.join(process.cwd(), "src/electron-main/index.ts"),
       },
+      rollupOptions: {
+        onwarn(warning, warn) {
+          if (
+            warning.code === "UNUSED_EXTERNAL_IMPORT" &&
+            warning.message.includes("ZodFirstPartyTypeKind")
+          ) {
+            // Suppresses "ZodFirstPartyTypeKind" is imported from external module "zod" but never used
+            // Due to OpenRouter AI SDK Provider using older Zod
+            // Remove this if they update https://github.com/OpenRouterTeam/ai-sdk-provider
+            return;
+          }
+          warn(warning);
+        },
+      },
       watch: {}, // Enable hot reloading
     },
     plugins: [
