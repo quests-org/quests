@@ -27,26 +27,38 @@ const navigate = base
   .input(z.object({ appPath: AppPathSchema }))
   .handler(({ context: { tabsManager }, input }) => {
     if (!tabsManager) {
-      return false;
+      return;
     }
 
-    const existingTab = tabsManager.doesTabExist({ urlPath: input.appPath });
-    if (existingTab) {
-      tabsManager.selectTab({ id: existingTab.id });
-      return true;
+    const tabs = tabsManager.getTabs();
+    const inputPathWithoutQuery = input.appPath.split("?")[0];
+
+    const exactMatch = tabs.find((tab) => tab.pathname === input.appPath);
+    if (exactMatch) {
+      tabsManager.selectTab({ id: exactMatch.id });
+      exactMatch.webView.webContents.focus();
+      return;
+    }
+
+    const basePathMatch = tabs.find((tab) => {
+      const tabPathWithoutQuery = tab.pathname.split("?")[0];
+      return tabPathWithoutQuery === inputPathWithoutQuery;
+    });
+
+    if (basePathMatch) {
+      basePathMatch.webView.webContents.send("navigate", input.appPath);
+      tabsManager.selectTab({ id: basePathMatch.id });
+      basePathMatch.webView.webContents.focus();
+      return;
     }
 
     const currentTab = tabsManager.getCurrentTab();
     if (!currentTab) {
-      return false;
+      return;
     }
 
-    // Use the IPC API on the current tab to navigate to the new URL
     currentTab.webView.webContents.send("navigate", input.appPath);
-    // Ensure keyboard focus is on the current tab
     currentTab.webView.webContents.focus();
-
-    return true;
   });
 
 const navigateBack = base.handler(({ context }) => {

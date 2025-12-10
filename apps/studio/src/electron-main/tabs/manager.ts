@@ -167,13 +167,6 @@ export class TabsManager {
     }
   }
 
-  public doesTabExist({ urlPath }: { urlPath: string }) {
-    return this.tabs.find((tab) => {
-      const tabPathName = tab.pathname.split("?")[0];
-      return urlPath === tabPathName;
-    });
-  }
-
   public focusCurrentTab() {
     const tab = this.getCurrentTab();
     if (tab) {
@@ -198,6 +191,10 @@ export class TabsManager {
         title: tab.title,
       })),
     };
+  }
+
+  public getTabs() {
+    return this.tabs;
   }
 
   public goBack() {
