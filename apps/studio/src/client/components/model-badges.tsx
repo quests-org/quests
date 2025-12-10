@@ -1,3 +1,5 @@
+import type { ComponentType } from "react";
+
 import { type AIGatewayModel } from "@quests/ai-gateway/client";
 import { cva, type VariantProps } from "class-variance-authority";
 import {
@@ -5,7 +7,6 @@ import {
   Hourglass,
   Image,
   type LucideIcon,
-  Sprout,
   Target,
   TextCursorInput,
   Video,
@@ -14,12 +15,40 @@ import {
 
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
+function Sparkle2Icon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      fill="none"
+      height="1em"
+      stroke="currentColor"
+      strokeLinejoin="round"
+      strokeWidth="1.5"
+      viewBox="0 0 24 24"
+      width="1em"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <g>
+        <path
+          d="m17.503 14.751l.306.777c.3.763.904 1.366 1.666 1.667l.777.306l-.777.307c-.762.3-1.365.904-1.666 1.666l-.306.777l-.307-.777a2.96 2.96 0 0 0-1.666-1.666l-.777-.307l.777-.306a2.96 2.96 0 0 0 1.666-1.667z"
+          fill="currentColor"
+        />
+        <path
+          d="M9.61 3.976c.08-.296.5-.296.58 0l.154.572a6.96 6.96 0 0 0 4.908 4.908l.572.154c.296.08.296.5 0 .58l-.572.154a6.96 6.96 0 0 0-4.908 4.908l-.154.572c-.08.296-.5.296-.58 0l-.154-.572a6.96 6.96 0 0 0-4.908-4.908l-.572-.154c-.296-.08-.296-.5 0-.58l.572-.154a6.96 6.96 0 0 0 4.908-4.908z"
+          fill="currentColor"
+        />
+      </g>
+    </svg>
+  );
+}
+
 const iconVariants = cva("size-4", {
   defaultVariants: {
     color: "primary",
   },
   variants: {
     color: {
+      brand: "text-brand",
       destructive: "text-destructive",
       primary: "text-primary",
       warning: "text-warning-foreground",
@@ -29,7 +58,7 @@ const iconVariants = cva("size-4", {
 
 interface BadgeConfig {
   color?: VariantProps<typeof iconVariants>["color"];
-  icon: LucideIcon;
+  icon: ComponentType<{ className?: string }> | LucideIcon;
   key: string;
   shouldShow: (model: AIGatewayModel.Type) => boolean;
   tooltip: string;
@@ -37,10 +66,11 @@ interface BadgeConfig {
 
 const BADGE_CONFIGS: BadgeConfig[] = [
   {
-    icon: Sprout,
+    color: "brand",
+    icon: Sparkle2Icon,
     key: "new",
     shouldShow: (model) => model.tags.includes("new"),
-    tooltip: "A recently released or added model",
+    tooltip: "A recently released model",
   },
   {
     icon: Target,
