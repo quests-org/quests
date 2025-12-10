@@ -57,19 +57,3 @@ export const { queryClient, router } = createRouter({ history });
 window.api.onNavigate((url) => {
   void router.navigate({ to: url });
 });
-
-// async function subscribeToUserChanges() {
-//   let isAuthenticated = false;
-//   const iterator = await vanillaRpcClient.user.live.session();
-//   for await (const payload of iterator) {
-//     const newIsAuthenticated = payload !== undefined;
-//     if (isAuthenticated !== newIsAuthenticated) {
-//       void router.invalidate();
-//     }
-//     isAuthenticated = payload !== undefined;
-//   }
-// }
-
-// void subscribeToUserChanges().catch((error: unknown) => {
-//   logger.error("Error subscribing to user changes", error);
-// });

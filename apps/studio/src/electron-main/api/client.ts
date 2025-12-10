@@ -70,9 +70,6 @@ const SYNCED_QUERY_HASHES = new Set([
   hashKey(QUERY_KEYS.user.subscriptionStatus),
 ]);
 
-export type QueryKey = QueryKeys[keyof QueryKeys];
-type QueryKeys = typeof QUERY_KEYS;
-
 queryClient.getQueryCache().subscribe((event) => {
   if (event.type !== "updated") {
     return;
