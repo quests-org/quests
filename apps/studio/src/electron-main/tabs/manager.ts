@@ -96,6 +96,46 @@ export class TabsManager {
     this.afterUpdate();
   }
 
+  public async closeAllTabsByPathname(pathname: string) {
+    const tabsToClose = this.tabs.filter((tab) => {
+      const tabPathName = tab.pathname.split("?")[0];
+      return pathname === tabPathName;
+    });
+
+    if (tabsToClose.length === 0) {
+      return;
+    }
+
+    const isCurrentTabBeingClosed = tabsToClose.some(
+      (tab) => tab.id === this.selectedTabId,
+    );
+
+    for (const tab of tabsToClose) {
+      if (tab.pinned) {
+        continue;
+      }
+      this.closeTabView(tab);
+    }
+
+    this.tabs = this.tabs.filter((tab) => {
+      const tabPathName = tab.pathname.split("?")[0];
+      return pathname !== tabPathName || tab.pinned;
+    });
+
+    if (isCurrentTabBeingClosed) {
+      const nextTab = this.tabs.find((tab) => !tab.pinned) ?? this.tabs[0];
+      if (nextTab) {
+        this.showTabView(nextTab);
+      }
+    }
+
+    if (this.tabs.length === 0) {
+      await this.addTab({});
+    } else {
+      this.afterUpdate();
+    }
+  }
+
   public async closeTab({ id }: { id: string }) {
     const tabIndex = this.tabs.findIndex((tab) => tab.id === id);
     const tab = this.tabs[tabIndex];

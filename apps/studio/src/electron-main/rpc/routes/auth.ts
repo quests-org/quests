@@ -6,8 +6,9 @@ import {
 import { base } from "@/electron-main/rpc/base";
 import { z } from "zod";
 
-const signOut = base.handler(async () => {
+const signOut = base.handler(async ({ context }) => {
   await signOutFn();
+  context.tabsManager?.closeAllTabsByPathname("/subscribe");
 });
 
 const hasToken = base.handler(() => {
