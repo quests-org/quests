@@ -1,7 +1,7 @@
 import { providerMetadataAtom } from "@/client/atoms/provider-metadata";
 import { AIProviderIcon } from "@/client/components/ai-provider-icon";
 import { IconMap } from "@/client/components/app-icons";
-import { ModelTags } from "@/client/components/model-tags";
+import { ModelBadges } from "@/client/components/model-badges";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -489,7 +489,7 @@ function RouteComponent() {
                                     </span>
                                   </div>
                                   <div className="flex items-center gap-1 ml-2">
-                                    <ModelTags model={model} />
+                                    <ModelBadges model={model} />
                                   </div>
                                 </CommandItem>
                               ))}

@@ -26,7 +26,7 @@ import { AlertCircle, Check, ChevronDown, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { AIProviderIcon } from "./ai-provider-icon";
-import { ModelTags } from "./model-tags";
+import { ModelBadges } from "./model-badges";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 interface ModelPickerProps {
@@ -264,8 +264,8 @@ export function ModelPicker({
                               </div>
                             </div>
                           </div>
-                          <div className="flex items-center gap-1 ml-2">
-                            <ModelTags model={model} />
+                          <div className="flex self-start gap-1 ml-2 mt-1">
+                            <ModelBadges model={model} />
                           </div>
                         </CommandItem>
                       ))}
