@@ -146,6 +146,7 @@ export async function startAuthCallbackServer() {
     captureServerEvent("auth.signed_in");
     void setDefaultModelIfNeeded({ forceUpdateForNewLogin: true });
     void onSignIn();
+    publisher.publish("auth.sign-in-success", { success: true });
     publisher.publish("auth.updated", null);
     focusMainWindow();
     return c.html(renderAuthPage({}));

@@ -142,6 +142,7 @@ function SubscribePage() {
     }
 
     await processCheckout(priceId);
+    await refetchSubscription();
   };
 
   const confirmUpgrade = async () => {
@@ -154,6 +155,7 @@ function SubscribePage() {
     }
 
     await processCheckout(priceId);
+    await refetchSubscription();
     setShowPlanChangePreview(false);
   };
 

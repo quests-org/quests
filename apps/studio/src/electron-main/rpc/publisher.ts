@@ -13,6 +13,9 @@ export const publisher = new EventPublisher<{
       statusText: string;
     };
   };
+  "auth.sign-in-success": {
+    success: true;
+  };
   "auth.updated": null;
   "cache.invalidated": {
     invalidatedQueryKeys?: QueryKey[];

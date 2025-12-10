@@ -3,6 +3,7 @@ import { API_AUTH_BASE_URL } from "@/electron-main/api/constants";
 import { getAuthServerPort } from "@/electron-main/auth/state";
 import { publisher } from "@/electron-main/rpc/publisher";
 import { getSessionStore } from "@/electron-main/stores/session";
+import { mergeGenerators } from "@quests/shared/merge-generators";
 import * as arctic from "arctic";
 import { createAuthClient } from "better-auth/client";
 import { shell } from "electron";
@@ -79,6 +80,27 @@ export async function signInSocial(inviteCode?: string) {
     scopes,
   );
   await shell.openExternal(url.toString());
+
+  const promise = new Promise((resolve, reject) => {
+    const onError = publisher.subscribe("auth.sign-in-error");
+    const onSuccess = publisher.subscribe("auth.sign-in-success");
+
+    async function waitForAuthUpdate() {
+      for await (const payload of mergeGenerators([onError, onSuccess])) {
+        if ("error" in payload) {
+          reject(new Error("Sign in failed", { cause: payload.error }));
+          break;
+        } else {
+          resolve(payload);
+          break;
+        }
+      }
+    }
+
+    void waitForAuthUpdate();
+  });
+
+  return promise;
 }
 
 export async function signOut() {
