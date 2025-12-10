@@ -131,14 +131,53 @@ const rl = readline.createInterface({
 let project: undefined | WorkspaceAppProject;
 const sessionId = StoreId.newSessionId();
 
+const FAKE_FILES = {
+  audio: {
+    content: "UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=",
+    filename: "sample.wav",
+  },
+  image: {
+    content:
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+    filename: "sample.png",
+  },
+  pdf: {
+    content:
+      "JVBERi0xLjQKJeLjz9MKMSAwIG9iago8PC9UeXBlL0NhdGFsb2cvUGFnZXMgMiAwIFI+PgplbmRvYmoKMiAwIG9iago8PC9UeXBlL1BhZ2VzL0tpZHNbMyAwIFJdL0NvdW50IDE+PgplbmRvYmoKMyAwIG9iago8PC9UeXBlL1BhZ2UvTWVkaWFCb3hbMCAwIDMgM10+PgplbmRvYmoKeHJlZgowIDQKMDAwMDAwMDAwMCA2NTUzNSBmCjAwMDAwMDAwMTAgMDAwMDAgbgowMDAwMDAwMDUzIDAwMDAwIG4KMDAwMDAwMDEwMiAwMDAwMCBuCnRyYWlsZXIKPDwvU2l6ZSA0L1Jvb3QgMSAwIFI+PgpzdGFydHhyZWYKMTQ5CiUlRU9G",
+    filename: "sample.pdf",
+  },
+  text: {
+    // cspell:disable-next-line
+    content: "VGhpcyBpcyBhIHNhbXBsZSB0ZXh0IGZpbGUu",
+    filename: "sample.txt",
+  },
+};
+
+const extractFilePrefix = (input: string) => {
+  const prefixes = ["pdf:", "audio:", "image:", "text:"] as const;
+  for (const prefix of prefixes) {
+    if (input.startsWith(prefix)) {
+      const type = prefix.slice(0, -1) as keyof typeof FAKE_FILES;
+      return {
+        files: [FAKE_FILES[type]],
+        text: input.slice(prefix.length).trim(),
+      };
+    }
+  }
+  return { files: undefined, text: input };
+};
+
 // eslint-disable-next-line no-console
 console.log("Enter task prompt (press Enter to submit):");
 rl.on("line", (input) => {
   if (input.trim()) {
     const trimmedInput = input.trim();
-    const isChatMode = trimmedInput.startsWith("chat:");
+    const isChatMode = /^[a-z]+:/i.test(trimmedInput);
     const mode = isChatMode ? "chat" : "app-builder";
-    const text = isChatMode ? trimmedInput.slice(5).trim() : trimmedInput;
+    const textAfterChatPrefix = isChatMode
+      ? trimmedInput.slice(5).trim()
+      : trimmedInput;
+    const { files, text } = extractFilePrefix(textAfterChatPrefix);
     const messageId = StoreId.newMessageId();
     const message = {
       id: messageId,
@@ -182,6 +221,7 @@ rl.on("line", (input) => {
         messageRoute.create,
         {
           agentName: project.mode === "chat" ? "chat" : "app-builder",
+          files,
           message,
           modelURI,
           sessionId,
@@ -193,6 +233,7 @@ rl.on("line", (input) => {
       void call(
         projectRoute.create,
         {
+          files,
           message,
           mode,
           modelURI,
