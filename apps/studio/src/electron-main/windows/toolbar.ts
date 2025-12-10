@@ -4,7 +4,7 @@ import path from "node:path";
 
 import { getSidebarWidth } from "../lib/sidebar";
 import { getBackgroundColor } from "../lib/theme-utils";
-import { mainAppUrl } from "../lib/urls";
+import { studioURL } from "../lib/urls";
 
 const toolbarHeight = 40;
 let toolbarView: null | WebContentsView = null;
@@ -64,7 +64,7 @@ export function createToolbar({
       y: 0,
     });
 
-    void toolbarView.webContents.loadURL(mainAppUrl("/toolbar"));
+    void toolbarView.webContents.loadURL(studioURL("/toolbar"));
     toolbarView.webContents.on("did-finish-load", () => {
       resolve(toolbarView);
     });

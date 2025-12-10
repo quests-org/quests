@@ -3,7 +3,7 @@ import {
   getMainWindowBackgroundColor,
   getTitleBarOverlay,
 } from "@/electron-main/lib/theme-utils";
-import { mainAppUrl } from "@/electron-main/lib/urls";
+import { studioURL } from "@/electron-main/lib/urls";
 import { onMainWindowContextMenu } from "@/electron-main/menus/context-menus";
 import { publisher } from "@/electron-main/rpc/publisher";
 import { windowStateStore } from "@/electron-main/stores/main-window";
@@ -86,7 +86,7 @@ export async function createMainWindow() {
     return;
   }
 
-  void mainWindow.loadURL(mainAppUrl("/sidebar"));
+  void mainWindow.loadURL(studioURL("/sidebar"));
   mainWindow.contentView.addChildView(toolbar);
   await tabsManager.initialize();
   showWindow(mainWindow);

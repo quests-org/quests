@@ -1,10 +1,10 @@
 import { getBackgroundColor } from "@/electron-main/lib/theme-utils";
 import { publisher } from "@/electron-main/rpc/publisher";
-import { type MainAppPath } from "@/shared/main-app-path";
+import { type StudioPath } from "@/shared/studio-path";
 import { BrowserWindow, Menu, shell } from "electron";
 import path from "node:path";
 
-import { mainAppUrl } from "../lib/urls";
+import { studioURL } from "../lib/urls";
 import { isDeveloperMode } from "../stores/preferences";
 
 let settingsWindow: BrowserWindow | null = null;
@@ -64,7 +64,7 @@ export function openSettingsWindow(
     return { action: "deny" };
   });
 
-  let settingsPath: MainAppPath = "/settings";
+  let settingsPath: StudioPath = "/settings";
   const searchParams = new URLSearchParams();
 
   switch (tab) {
@@ -88,7 +88,7 @@ export function openSettingsWindow(
 
   const queryString = searchParams.toString();
   const fullUrl =
-    mainAppUrl(settingsPath) + (queryString ? `?${queryString}` : "");
+    studioURL(settingsPath) + (queryString ? `?${queryString}` : "");
   void settingsWindow.loadURL(fullUrl);
 
   if (isDeveloperMode()) {

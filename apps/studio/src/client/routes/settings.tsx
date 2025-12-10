@@ -9,7 +9,7 @@ import {
   SidebarProvider,
 } from "@/client/components/ui/sidebar";
 import { Toaster } from "@/client/components/ui/sonner";
-import { type MainAppPath } from "@/shared/main-app-path";
+import { type StudioPath } from "@/shared/studio-path";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 import {
@@ -36,7 +36,7 @@ function SettingsLayout() {
     path:
       | "/settings/debug"
       | Extract<
-          MainAppPath,
+          StudioPath,
           | "/settings"
           | "/settings/advanced"
           | "/settings/features"

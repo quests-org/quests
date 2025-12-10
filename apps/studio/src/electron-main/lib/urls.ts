@@ -1,18 +1,18 @@
-import { type MainAppPath } from "@/shared/main-app-path";
+import { type StudioPath } from "@/shared/studio-path";
 import { is } from "@electron-toolkit/utils";
 import path from "node:path";
 import url from "node:url";
 
-export function mainAppUrl(pathname: MainAppPath) {
-  return createBaseUrl("../renderer/index.html", pathname);
+export function studioURL(pathname: StudioPath) {
+  return createBaseURL("../renderer/index.html", pathname);
 }
 
 // Unsafe because it's a direct cast
-export function unsafe_mainAppUrl(pathname: string) {
-  return mainAppUrl(pathname as MainAppPath);
+export function unsafe_studioURL(pathname: string) {
+  return studioURL(pathname as StudioPath);
 }
 
-function createBaseUrl(rendererPath: string, hash = "") {
+function createBaseURL(rendererPath: string, hash = "") {
   if (is.dev && process.env.ELECTRON_RENDERER_URL) {
     const baseUrl = new URL(process.env.ELECTRON_RENDERER_URL);
     baseUrl.pathname = rendererPath;

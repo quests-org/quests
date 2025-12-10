@@ -6,7 +6,7 @@ import {
   getToolbarHeight,
   resizeToolbar,
 } from "@/electron-main/windows/toolbar";
-import { type MainAppPath } from "@/shared/main-app-path";
+import { type StudioPath } from "@/shared/studio-path";
 import {
   META_TAG_ICON_BACKGROUND,
   META_TAG_LUCIDE_ICON,
@@ -22,7 +22,7 @@ import { type LogFunctions } from "electron-log";
 import Store from "electron-store";
 import path from "node:path";
 
-import { unsafe_mainAppUrl } from "../lib/urls";
+import { unsafe_studioURL } from "../lib/urls";
 import { isDeveloperMode } from "../stores/preferences";
 
 interface TabStore {
@@ -59,7 +59,7 @@ export class TabsManager {
   }: {
     params?: Record<string, string>;
     select?: boolean;
-    urlPath?: MainAppPath;
+    urlPath?: StudioPath;
   }) {
     const searchParams = new URLSearchParams(params);
     const queryString = searchParams.toString();
@@ -228,7 +228,7 @@ export class TabsManager {
           const view = await this.createTabView({
             id: tab.id,
             // Unsafe, but cannot be verified. Client will handle possible 404s
-            urlPath: tab.pathname as MainAppPath,
+            urlPath: tab.pathname as StudioPath,
           });
           if (view) {
             return {
@@ -349,7 +349,7 @@ export class TabsManager {
     urlPath: string;
   }) {
     return new Promise<null | WebContentsView>((resolve) => {
-      const url = unsafe_mainAppUrl(urlPath);
+      const url = unsafe_studioURL(urlPath);
       const newContentView = new WebContentsView({
         webPreferences: {
           additionalArguments: [`--tabId=${id}`],

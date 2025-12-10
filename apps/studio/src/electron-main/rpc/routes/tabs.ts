@@ -1,16 +1,16 @@
 import { base } from "@/electron-main/rpc/base";
 import { publisher } from "@/electron-main/rpc/publisher";
-import { type MainAppPath } from "@/shared/main-app-path";
+import { type StudioPath } from "@/shared/studio-path";
 import { z } from "zod";
 
-const AppPathSchema = z.custom<MainAppPath>(
+const StudioPathSchema = z.custom<StudioPath>(
   (value) => typeof value === "string" && value.startsWith("/"),
 );
 
 const add = base
   .input(
     z.object({
-      appPath: AppPathSchema,
+      appPath: StudioPathSchema,
       select: z.boolean().optional(),
     }),
   )
@@ -24,7 +24,7 @@ const add = base
   });
 
 const navigate = base
-  .input(z.object({ appPath: AppPathSchema }))
+  .input(z.object({ appPath: StudioPathSchema }))
   .handler(({ context: { tabsManager }, input }) => {
     if (!tabsManager) {
       return;

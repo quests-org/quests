@@ -1,5 +1,5 @@
 import { type RPCInput, vanillaRpcClient } from "@/client/rpc/client";
-import { type MainAppPath } from "@/shared/main-app-path";
+import { type StudioPath } from "@/shared/studio-path";
 import {
   type ParsedLocation,
   type RegisteredRouter,
@@ -23,7 +23,7 @@ export function useTabActions() {
       const location = router.buildLocation(
         opts as Parameters<typeof router.buildLocation>[0],
       );
-      return parsedLocationToMainAppPath(location);
+      return locationToAppPath(location);
     };
 
     return {
@@ -62,9 +62,9 @@ export function useTabActions() {
   }, [router]);
 }
 
-function parsedLocationToMainAppPath(location: ParsedLocation) {
+function locationToAppPath(location: ParsedLocation) {
   if (!location.href.startsWith("/")) {
     throw new Error("Invalid location href");
   }
-  return location.href as MainAppPath;
+  return location.href as StudioPath;
 }
