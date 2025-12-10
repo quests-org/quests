@@ -6,11 +6,11 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export function NavControls() {
   const { mutateAsync: navigateBack } = useMutation(
-    rpcClient.tabs.navigateCurrentBack.mutationOptions(),
+    rpcClient.tabs.navigateBack.mutationOptions(),
   );
 
   const { mutateAsync: navigateForward } = useMutation(
-    rpcClient.tabs.navigateCurrentForward.mutationOptions(),
+    rpcClient.tabs.navigateForward.mutationOptions(),
   );
 
   const handleBack = async () => {

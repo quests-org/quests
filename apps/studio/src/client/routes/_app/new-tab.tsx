@@ -8,8 +8,8 @@ import { ModelPreview } from "@/client/components/projects-data-table/model-prev
 import { PromptInput } from "@/client/components/prompt-input";
 import { Card, CardContent } from "@/client/components/ui/card";
 import { Kbd } from "@/client/components/ui/kbd";
-import { useTabActions } from "@/client/hooks/tabs";
 import { useDefaultModelURI } from "@/client/hooks/use-default-model-uri";
+import { useTabActions } from "@/client/hooks/use-tab-actions";
 import { createUserMessage } from "@/client/lib/create-user-message";
 import { isMacOS } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
@@ -21,11 +21,7 @@ import {
 } from "@quests/shared";
 import { StoreId } from "@quests/workspace/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import {
-  createFileRoute,
-  useNavigate,
-  useRouter,
-} from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { formatDistanceToNow } from "date-fns";
 import { useAtom } from "jotai";
 import { toast } from "sonner";
@@ -47,7 +43,6 @@ function RouteComponent() {
   const [agentName, setAgentName] = useAtom(agentNameAtom);
   const { data: user } = useQuery(rpcClient.user.me.queryOptions());
   const navigate = useNavigate({ from: "/new-tab" });
-  const router = useRouter();
   const { addTab } = useTabActions();
   const createProjectMutation = useMutation(
     rpcClient.workspace.project.create.mutationOptions(),
@@ -124,14 +119,15 @@ function RouteComponent() {
                       );
                     },
                     onSuccess: ({ subdomain }) => {
-                      const location = router.buildLocation({
-                        params: { subdomain },
-                        search: { selectedSessionId: sessionId },
-                        to: "/projects/$subdomain",
-                      });
-
                       if (openInNewTab) {
-                        void addTab({ select: false, urlPath: location.href });
+                        void addTab(
+                          {
+                            params: { subdomain },
+                            search: { selectedSessionId: sessionId },
+                            to: "/projects/$subdomain",
+                          },
+                          { select: false },
+                        );
                       } else {
                         void navigate({
                           params: { subdomain },

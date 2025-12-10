@@ -1,26 +1,36 @@
 import { base } from "@/electron-main/rpc/base";
 import { publisher } from "@/electron-main/rpc/publisher";
+import { type MainAppPath } from "@/shared/main-app-path";
 import { z } from "zod";
 
+const AppPathSchema = z.custom<MainAppPath>(
+  (value) => typeof value === "string" && value.startsWith("/"),
+);
+
 const add = base
-  .input(z.object({ select: z.boolean().optional(), urlPath: z.string() }))
+  .input(
+    z.object({
+      appPath: AppPathSchema,
+      select: z.boolean().optional(),
+    }),
+  )
   .handler(async ({ context: { tabsManager }, input }) => {
     if (!tabsManager) {
       return false;
     }
 
-    await tabsManager.addTab({ select: input.select, urlPath: input.urlPath });
+    await tabsManager.addTab({ select: input.select, urlPath: input.appPath });
     return true;
   });
 
-const navigateCurrent = base
-  .input(z.object({ urlPath: z.string() }))
+const navigate = base
+  .input(z.object({ appPath: AppPathSchema }))
   .handler(({ context: { tabsManager }, input }) => {
     if (!tabsManager) {
       return false;
     }
 
-    const existingTab = tabsManager.doesTabExist({ urlPath: input.urlPath });
+    const existingTab = tabsManager.doesTabExist({ urlPath: input.appPath });
     if (existingTab) {
       tabsManager.selectTab({ id: existingTab.id });
       return true;
@@ -32,18 +42,18 @@ const navigateCurrent = base
     }
 
     // Use the IPC API on the current tab to navigate to the new URL
-    currentTab.webView.webContents.send("navigate", input.urlPath);
+    currentTab.webView.webContents.send("navigate", input.appPath);
     // Ensure keyboard focus is on the current tab
     currentTab.webView.webContents.focus();
 
     return true;
   });
 
-const navigateCurrentBack = base.handler(({ context }) => {
+const navigateBack = base.handler(({ context }) => {
   context.tabsManager?.goBack();
 });
 
-const navigateCurrentForward = base.handler(({ context }) => {
+const navigateForward = base.handler(({ context }) => {
   context.tabsManager?.goForward();
 });
 
@@ -99,9 +109,9 @@ export const tabs = {
   add,
   close,
   live,
-  navigateCurrent,
-  navigateCurrentBack,
-  navigateCurrentForward,
+  navigate,
+  navigateBack,
+  navigateForward,
   reorder,
   select,
 };

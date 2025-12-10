@@ -13,14 +13,14 @@ import { createColumns } from "@/client/components/projects-data-table/columns";
 import { Badge } from "@/client/components/ui/badge";
 import { Button } from "@/client/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/client/components/ui/tabs";
-import { useTabActions } from "@/client/hooks/tabs";
+import { useTabActions } from "@/client/hooks/use-tab-actions";
 import { useTrashApp } from "@/client/hooks/use-trash-app";
 import { captureClientEvent } from "@/client/lib/capture-client-event";
 import { getTrashTerminology } from "@/client/lib/trash-terminology";
 import { rpcClient } from "@/client/rpc/client";
 import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { Circle, Loader2, Square, Trash2 } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -52,7 +52,6 @@ export const Route = createFileRoute("/_app/projects/")({
 });
 
 function RouteComponent() {
-  const router = useRouter();
   const { addTab } = useTabActions();
   const search = Route.useSearch();
   const navigate = Route.useNavigate();
@@ -273,13 +272,15 @@ function RouteComponent() {
 
   const handleOpenInNewTab = useCallback(
     (subdomain: ProjectSubdomain) => {
-      const location = router.buildLocation({
-        params: { subdomain },
-        to: "/projects/$subdomain",
-      });
-      void addTab({ select: true, urlPath: location.href });
+      void addTab(
+        {
+          params: { subdomain },
+          to: "/projects/$subdomain",
+        },
+        { select: true },
+      );
     },
-    [addTab, router],
+    [addTab],
   );
 
   const handleSettings = useCallback(

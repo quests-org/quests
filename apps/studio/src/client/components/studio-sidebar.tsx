@@ -11,7 +11,7 @@ import {
   SidebarFooter,
   SidebarHeader,
 } from "@/client/components/ui/sidebar";
-import { useSelectedTab } from "@/client/hooks/tabs";
+import { useSelectedTab } from "@/client/hooks/use-selected-tab";
 import { useMatchesForPathname } from "@/client/lib/get-route-matches";
 import { logger } from "@/client/lib/logger";
 import { cn, isMacOS, isWindows } from "@/client/lib/utils";

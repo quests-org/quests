@@ -3,6 +3,7 @@ import {
   SidebarGroupLabel,
   SidebarMenu,
 } from "@/client/components/ui/sidebar";
+import { useTabActions } from "@/client/hooks/use-tab-actions";
 import { cn } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
 import {
@@ -10,7 +11,7 @@ import {
   type WorkspaceAppProject,
 } from "@quests/workspace/client";
 import { useMutation } from "@tanstack/react-query";
-import { type MakeRouteMatchUnion, useRouter } from "@tanstack/react-router";
+import { type MakeRouteMatchUnion } from "@tanstack/react-router";
 import { useMemo } from "react";
 
 import { InternalLink } from "./internal-link";
@@ -29,15 +30,13 @@ export function NavProjects({
   projects: WorkspaceAppProject[];
   title: string;
 }) {
-  const { mutate: addTab } = useMutation(rpcClient.tabs.add.mutationOptions());
-  const router = useRouter();
+  const { addTab } = useTabActions();
 
   const handleOpenInNewTab = (subdomain: ProjectSubdomain) => {
-    const projectLocation = router.buildLocation({
+    void addTab({
       params: { subdomain },
       to: "/projects/$subdomain",
     });
-    addTab({ urlPath: projectLocation.href });
   };
   const { mutate: removeFavorite } = useMutation(
     rpcClient.favorites.remove.mutationOptions(),

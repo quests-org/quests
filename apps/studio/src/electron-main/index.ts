@@ -191,9 +191,15 @@ function handleDeepLink(url: string) {
     if (tabsManager) {
       if (url.includes("checkout?success=true")) {
         publisher.publish("subscription.refetch", null);
-        void tabsManager.addTab({ urlPath: "/checkout?success=true" });
+        void tabsManager.addTab({
+          params: { success: "true" },
+          urlPath: "/checkout",
+        });
       } else if (url.includes("checkout?canceled=true")) {
-        void tabsManager.addTab({ urlPath: "/checkout?canceled=true" });
+        void tabsManager.addTab({
+          params: { canceled: "true" },
+          urlPath: "/checkout",
+        });
       }
     }
   }

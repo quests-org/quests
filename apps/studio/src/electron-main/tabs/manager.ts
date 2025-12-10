@@ -6,6 +6,7 @@ import {
   getToolbarHeight,
   resizeToolbar,
 } from "@/electron-main/windows/toolbar";
+import { type MainAppPath } from "@/shared/main-app-path";
 import {
   META_TAG_ICON_BACKGROUND,
   META_TAG_LUCIDE_ICON,
@@ -52,18 +53,24 @@ export class TabsManager {
   }
 
   public async addTab({
+    params = {},
     select = true,
     urlPath = "/",
   }: {
+    params?: Record<string, string>;
     select?: boolean;
-    urlPath?: string;
+    urlPath?: MainAppPath;
   }) {
-    if (this.selectOnAddNewTab({ urlPath })) {
+    const searchParams = new URLSearchParams(params);
+    const queryString = searchParams.toString();
+    const pathWithParams = urlPath + (queryString ? `?${queryString}` : "");
+
+    if (this.selectOnAddNewTab({ urlPath: pathWithParams })) {
       return;
     }
 
     const id = crypto.randomUUID();
-    const view = await this.createTabView({ id, urlPath });
+    const view = await this.createTabView({ id, urlPath: pathWithParams });
     if (view === null) {
       this.logger.error("Failed to create new tab");
       return;
@@ -72,7 +79,7 @@ export class TabsManager {
     const newTab = {
       icon: undefined,
       id,
-      pathname: urlPath,
+      pathname: pathWithParams,
       pinned: false,
       webView: view,
     };
@@ -223,7 +230,8 @@ export class TabsManager {
         .map(async (tab) => {
           const view = await this.createTabView({
             id: tab.id,
-            urlPath: tab.pathname,
+            // Unsafe, but cannot be verified. Client will handle possible 404s
+            urlPath: tab.pathname as MainAppPath,
           });
           if (view) {
             return {

@@ -1,9 +1,10 @@
 import { getBackgroundColor } from "@/electron-main/lib/theme-utils";
 import { publisher } from "@/electron-main/rpc/publisher";
+import { type MainAppPath } from "@/shared/main-app-path";
 import { BrowserWindow, Menu, shell } from "electron";
 import path from "node:path";
 
-import { type MainAppPath, mainAppUrl } from "../lib/urls";
+import { mainAppUrl } from "../lib/urls";
 import { isDeveloperMode } from "../stores/preferences";
 
 let settingsWindow: BrowserWindow | null = null;

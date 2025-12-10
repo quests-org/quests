@@ -1,11 +1,5 @@
-import { rpcClient } from "@/client/rpc/client";
-import { useMutation } from "@tanstack/react-query";
-import {
-  Link,
-  type LinkProps,
-  useNavigate,
-  useRouter,
-} from "@tanstack/react-router";
+import { useTabActions } from "@/client/hooks/use-tab-actions";
+import { Link, type LinkProps, useNavigate } from "@tanstack/react-router";
 import * as React from "react";
 
 export function InternalLink(
@@ -16,10 +10,7 @@ export function InternalLink(
       openInNewTab?: boolean;
     },
 ) {
-  const { mutate: navigateInCurrentTab } = useMutation(
-    rpcClient.tabs.navigateCurrent.mutationOptions(),
-  );
-  const { mutate: addTab } = useMutation(rpcClient.tabs.add.mutationOptions());
+  const { addTab, navigateTab } = useTabActions();
   const {
     allowOpenNewTab = true,
     onAuxClick,
@@ -33,7 +24,6 @@ export function InternalLink(
     to,
     ...rest
   } = props;
-  const router = useRouter();
   const navigate = useNavigate();
 
   const handleMouseDown = React.useCallback(
@@ -51,12 +41,10 @@ export function InternalLink(
 
   const performNavigation = React.useCallback(
     (shouldOpenNewTab: boolean, selectTab = true) => {
-      const location = router.buildLocation({ params, search, to });
-
       if (shouldOpenNewTab && allowOpenNewTab) {
-        addTab({ select: selectTab, urlPath: location.href });
+        void addTab({ params, search, to }, { select: selectTab });
       } else if (openInCurrentTab) {
-        navigateInCurrentTab({ urlPath: location.href });
+        void navigateTab({ params, search, to });
       } else {
         void navigate({ params, search, to });
       }
@@ -65,10 +53,9 @@ export function InternalLink(
       addTab,
       allowOpenNewTab,
       navigate,
-      navigateInCurrentTab,
+      navigateTab,
       openInCurrentTab,
       params,
-      router,
       search,
       to,
     ],

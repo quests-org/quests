@@ -9,7 +9,7 @@ import {
   SidebarProvider,
 } from "@/client/components/ui/sidebar";
 import { Toaster } from "@/client/components/ui/sonner";
-import { type MainAppPath } from "@/electron-main/lib/urls";
+import { type MainAppPath } from "@/shared/main-app-path";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 import {

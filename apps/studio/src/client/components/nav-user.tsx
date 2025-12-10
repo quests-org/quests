@@ -20,13 +20,13 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/client/components/ui/sidebar";
+import { useTabActions } from "@/client/hooks/use-tab-actions";
 import { captureClientEvent } from "@/client/lib/capture-client-event";
 import { getInitials } from "@/client/lib/get-initials";
 import { isLowOnCredits } from "@/client/lib/is-low-on-credits";
 import { signOut } from "@/client/lib/sign-out";
 import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { useRouter } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import {
   ChevronsUpDown,
   KeyIcon,
@@ -37,8 +37,7 @@ import { startTransition } from "react";
 
 export function NavUser() {
   const { isMobile } = useSidebar();
-  const router = useRouter();
-  const { mutate: addTab } = useMutation(rpcClient.tabs.add.mutationOptions());
+  const { addTab } = useTabActions();
   const { data: providerConfigs } = useQuery(
     rpcClient.providerConfig.live.list.experimental_liveOptions(),
   );
@@ -65,10 +64,7 @@ export function NavUser() {
     captureClientEvent("upgrade.clicked", {
       source: "nav_user",
     });
-    const location = router.buildLocation({
-      to: "/subscribe",
-    });
-    addTab({ urlPath: location.href });
+    void addTab({ to: "/subscribe" });
   };
 
   if (!user) {

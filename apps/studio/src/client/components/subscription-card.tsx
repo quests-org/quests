@@ -1,10 +1,10 @@
 import { Badge } from "@/client/components/ui/badge";
 import { Button } from "@/client/components/ui/button";
 import { Card } from "@/client/components/ui/card";
+import { useTabActions } from "@/client/hooks/use-tab-actions";
 import { cn } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useRouter } from "@tanstack/react-router";
 import { cva } from "class-variance-authority";
 import { toast } from "sonner";
 
@@ -23,7 +23,7 @@ const planBadgeVariants = cva("text-xs px-2 py-0.5", {
 });
 
 export function SubscriptionCard() {
-  const { mutate: addTab } = useMutation(rpcClient.tabs.add.mutationOptions());
+  const { addTab } = useTabActions();
   const { data: subscription } = useQuery(
     rpcClient.user.subscriptionStatus.queryOptions({
       input: { watchFocusChanges: true },
@@ -35,7 +35,6 @@ export function SubscriptionCard() {
   const { mutateAsync: openExternalLink } = useMutation(
     rpcClient.utils.openExternalLink.mutationOptions(),
   );
-  const router = useRouter();
 
   const handleManageSubscription = async () => {
     try {
@@ -80,10 +79,7 @@ export function SubscriptionCard() {
             <Button
               className="shrink-0 font-semibold gap-1.5"
               onClick={() => {
-                const location = router.buildLocation({
-                  to: "/subscribe",
-                });
-                addTab({ urlPath: location.href });
+                void addTab({ to: "/subscribe" });
                 window.close();
               }}
               size="sm"
@@ -137,10 +133,7 @@ export function SubscriptionCard() {
                 <Button
                   className="shrink-0 font-semibold gap-1.5"
                   onClick={() => {
-                    const location = router.buildLocation({
-                      to: "/subscribe",
-                    });
-                    addTab({ urlPath: location.href });
+                    void addTab({ to: "/subscribe" });
                     window.close();
                   }}
                   size="sm"

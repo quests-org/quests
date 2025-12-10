@@ -1,9 +1,9 @@
 import { Button } from "@/client/components/ui/button";
 import { Skeleton } from "@/client/components/ui/skeleton";
+import { useTabActions } from "@/client/hooks/use-tab-actions";
 import { signOut } from "@/client/lib/sign-out";
 import { rpcClient } from "@/client/rpc/client";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { useRouter } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 
 import { ErrorAlert } from "./error-alert";
 import { SubscriptionCard } from "./subscription-card";
@@ -17,8 +17,7 @@ export function AccountInfo() {
     isLoading,
     refetch,
   } = useQuery(rpcClient.user.me.queryOptions());
-  const { mutate: addTab } = useMutation(rpcClient.tabs.add.mutationOptions());
-  const router = useRouter();
+  const { addTab } = useTabActions();
 
   return (
     <div className="space-y-3">
@@ -110,8 +109,7 @@ export function AccountInfo() {
                   </div>
                   <Button
                     onClick={() => {
-                      const location = router.buildLocation({ to: "/sign-in" });
-                      addTab({ urlPath: location.href });
+                      void addTab({ to: "/sign-in" });
                       window.close();
                     }}
                     variant="brand"

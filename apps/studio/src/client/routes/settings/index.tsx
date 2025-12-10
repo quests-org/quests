@@ -4,11 +4,12 @@ import { ThemeToggle } from "@/client/components/theme-toggle";
 import { Button } from "@/client/components/ui/button";
 import { Label } from "@/client/components/ui/label";
 import { Progress } from "@/client/components/ui/progress";
+import { useTabActions } from "@/client/hooks/use-tab-actions";
 import { isLinux } from "@/client/lib/utils";
 import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
 import { APP_REPO_URL, DISCORD_URL } from "@quests/shared";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { Download, ExternalLink as ExternalLinkIcon } from "lucide-react";
 
 export const Route = createFileRoute("/settings/")({
@@ -36,8 +37,7 @@ function About() {
     rpcClient.preferences.checkForUpdates.mutationOptions(),
   );
 
-  const { mutate: addTab } = useMutation(rpcClient.tabs.add.mutationOptions());
-  const router = useRouter();
+  const { addTab } = useTabActions();
   const { data: updateState } = useQuery(
     rpcClient.updates.live.status.experimental_liveOptions(),
   );
@@ -224,10 +224,7 @@ function About() {
               <Button
                 className="p-0 h-auto text-blue-600 dark:text-blue-400"
                 onClick={() => {
-                  const location = router.buildLocation({
-                    to: "/release-notes",
-                  });
-                  addTab({ urlPath: location.href });
+                  void addTab({ to: "/release-notes" });
                   window.close();
                 }}
                 variant="link"
