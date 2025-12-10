@@ -1,11 +1,7 @@
 {
   "compounds": [
     {
-      "configurations": [
-        "Debug Studio Main Process",
-        "Debug Studio Renderer Process",
-        "Dev Shim Client"
-      ],
+      "configurations": ["Debug Studio Main Process", "Dev Shim Client"],
       "name": "🐛 Studio",
       "presentation": {
         "order": 1
@@ -13,10 +9,14 @@
       "stopAll": true
     },
     {
-      "configurations": ["Dev Studio Main Process", "Dev Shim Client"],
-      "name": "🛠️ Studio",
+      "configurations": [
+        "Debug Studio Main Process",
+        "Debug Studio Renderer Process",
+        "Dev Shim Client"
+      ],
+      "name": "🐛 Studio with Renderer",
       "presentation": {
-        "order": 2
+        "order": 1
       },
       "stopAll": true
     },
@@ -37,11 +37,7 @@
       "stopAll": true
     },
     {
-      "configurations": [
-        "Debug Studio Main Process Fresh",
-        "Debug Studio Renderer Process",
-        "Dev Shim Client"
-      ],
+      "configurations": ["Debug Studio Main Process Fresh", "Dev Shim Client"],
       "name": "🐛 Studio Fresh",
       "presentation": {
         "order": 1
@@ -50,18 +46,6 @@
     }
   ],
   "configurations": [
-    {
-      "cwd": "${workspaceRoot}/apps/studio",
-      "env": {
-        "ELECTRON_ENABLE_LOGGING": "1",
-        "NODE_OPTIONS": "--enable-source-maps"
-      },
-      "name": "Dev Studio Main Process",
-      "request": "launch",
-      "runtimeArgs": ["--sourcemap"],
-      "runtimeExecutable": "${workspaceRoot}/apps/studio/node_modules/.bin/electron-vite",
-      "type": "node"
-    },
     {
       "cwd": "${workspaceRoot}/apps/studio",
       "env": {
