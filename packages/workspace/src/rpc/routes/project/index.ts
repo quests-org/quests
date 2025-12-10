@@ -22,6 +22,7 @@ import { generateChatTitle } from "../../../lib/generate-project-title";
 import { generateProjectTitleAndIcon } from "../../../lib/generate-project-title-and-icon";
 import { getApp, getProjects } from "../../../lib/get-apps";
 import { getWorkspaceAppForSubdomain } from "../../../lib/get-workspace-app-for-subdomain";
+import { pathExists } from "../../../lib/path-exists";
 import { projectModeForSubdomain } from "../../../lib/project-mode-for-subdomain";
 import { setProjectState } from "../../../lib/project-state-store";
 import {
@@ -36,6 +37,7 @@ import {
 } from "../../../lib/write-uploaded-files";
 import { getWorkspaceServerURL } from "../../../logic/server/url";
 import { WorkspaceAppProjectSchema } from "../../../schemas/app";
+import { AbsolutePathSchema } from "../../../schemas/paths";
 import { SessionMessage } from "../../../schemas/session/message";
 import { StoreId } from "../../../schemas/store-id";
 import { ProjectSubdomainSchema } from "../../../schemas/subdomains";
@@ -540,9 +542,15 @@ const exportZip = base
         .replaceAll(/^-|-$/g, "")
         .slice(0, 50);
 
-      const timestamp = new Date().toISOString().replaceAll(/[:.]/g, "-");
-      const filename = `${safeName}-${timestamp}.zip`;
-      const filepath = `${input.outputPath}/${filename}`;
+      let counter = 1;
+      let filename = `${safeName}.zip`;
+      let filepath = `${input.outputPath}/${filename}`;
+
+      while (await pathExists(AbsolutePathSchema.parse(filepath))) {
+        counter++;
+        filename = `${safeName}-${counter}.zip`;
+        filepath = `${input.outputPath}/${filename}`;
+      }
 
       const result = await exportProjectZip({
         appDir: appConfig.appDir,
