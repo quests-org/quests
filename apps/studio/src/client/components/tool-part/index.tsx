@@ -146,7 +146,7 @@ export function ToolPart({
     <div className="w-full">
       {isExpandable ? (
         <Button
-          className="h-6 p-0 w-full justify-start hover:bg-accent/30 rounded-sm"
+          className="h-6 px-1 py-0 w-full justify-start hover:bg-accent/30 rounded-sm"
           onClick={handleToggle}
           variant="ghost"
         >
