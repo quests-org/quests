@@ -7,6 +7,7 @@ import { z } from "zod";
 /* eslint-disable unicorn/prefer-top-level-await */
 const PreferencesStoreSchema = z.object({
   defaultModelURI: AIGatewayModelURI.Schema.optional().catch(undefined),
+  developerMode: z.boolean().catch(import.meta.env.DEV), // Default to true when running app in development mode
   enableUsageMetrics: z.boolean().catch(true),
   lastUpdateCheck: z.number().optional(),
   preferApiKeyOverAccount: z.boolean().catch(false),
@@ -50,17 +51,22 @@ export const getPreferencesStore = (): Store<PreferencesStore> => {
   return PREFERENCES_STORE;
 };
 
-export const setLastUpdateCheck = (): void => {
-  const store = getPreferencesStore();
-  store.set("lastUpdateCheck", Date.now());
-};
-
-export const getDefaultModelURI = (): AIGatewayModelURI.Type | undefined => {
+export function getDefaultModelURI(): AIGatewayModelURI.Type | undefined {
   const store = getPreferencesStore();
   return store.get("defaultModelURI");
-};
+}
 
-export const setDefaultModelURI = (modelURI: AIGatewayModelURI.Type): void => {
+export function isDeveloperMode() {
+  const store = getPreferencesStore();
+  return store.get("developerMode");
+}
+
+export function setDefaultModelURI(modelURI: AIGatewayModelURI.Type): void {
   const store = getPreferencesStore();
   store.set("defaultModelURI", modelURI);
-};
+}
+
+export function setLastUpdateCheck(): void {
+  const store = getPreferencesStore();
+  store.set("lastUpdateCheck", Date.now());
+}

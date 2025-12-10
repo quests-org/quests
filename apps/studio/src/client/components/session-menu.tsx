@@ -39,6 +39,9 @@ export function SessionMenu({ project }: SessionMenuProps) {
       input: { subdomain: project.subdomain },
     }),
   );
+  const { data: preferences } = useQuery(
+    rpcClient.preferences.live.get.experimental_liveOptions(),
+  );
   const { selectedSessionId } = useSearch({
     from: "/_app/projects/$subdomain/",
   });
@@ -205,7 +208,7 @@ export function SessionMenu({ project }: SessionMenuProps) {
             </DropdownMenuSubContent>
           </DropdownMenuSub>
           <DropdownMenuSeparator />
-          {import.meta.env.DEV && (
+          {preferences?.developerMode && (
             <DropdownMenuItem
               className="text-warning-foreground"
               disabled={!selectedSessionId}

@@ -7,6 +7,7 @@ import { mainAppUrl } from "@/electron-main/lib/urls";
 import { onMainWindowContextMenu } from "@/electron-main/menus/context-menus";
 import { publisher } from "@/electron-main/rpc/publisher";
 import { windowStateStore } from "@/electron-main/stores/main-window";
+import { isDeveloperMode } from "@/electron-main/stores/preferences";
 import { createTabsManager, getTabsManager } from "@/electron-main/tabs";
 import {
   getMainWindow,
@@ -94,7 +95,7 @@ export async function createMainWindow() {
     mainWindow.maximize();
   }
 
-  if (is.dev) {
+  if (isDeveloperMode()) {
     mainWindow.webContents.on("context-menu", (_, props) => {
       const window = getMainWindow();
       if (!window) {

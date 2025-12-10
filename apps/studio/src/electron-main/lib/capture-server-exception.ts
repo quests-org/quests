@@ -5,6 +5,7 @@ import {
 import { app } from "electron";
 
 import { getAppStateStore } from "../stores/app-state";
+import { isDeveloperMode } from "../stores/preferences";
 import { addServerException } from "./server-exceptions";
 import { getSystemProperties } from "./system-properties";
 import { telemetry } from "./telemetry";
@@ -25,7 +26,7 @@ export const captureServerException: CaptureExceptionFunction = function (
   const appStateStore = getAppStateStore();
   const telemetryId = appStateStore.get("telemetryId");
   telemetry?.captureException(error, telemetryId, finalProperties);
-  if (import.meta.env.DEV) {
+  if (isDeveloperMode()) {
     /* eslint-disable no-console */
     const errorMessage = error instanceof Error ? error.message : String(error);
     const errorStack = error instanceof Error ? error.stack : undefined;

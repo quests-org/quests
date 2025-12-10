@@ -14,7 +14,6 @@ import {
   type Tab,
   type TabState,
 } from "@/shared/tabs";
-import { is } from "@electron-toolkit/utils";
 import { type ProjectMode } from "@quests/shared";
 import { type IconName } from "@quests/shared/icons";
 import { type BaseWindow, Menu, shell, WebContentsView } from "electron";
@@ -23,6 +22,7 @@ import Store from "electron-store";
 import path from "node:path";
 
 import { unsafe_mainAppUrl } from "../lib/urls";
+import { isDeveloperMode } from "../stores/preferences";
 
 interface TabStore {
   root?: TabState;
@@ -391,8 +391,7 @@ export class TabsManager {
           },
         );
 
-        // Inspect element - only in dev mode
-        if (is.dev) {
+        if (isDeveloperMode()) {
           if (menuTemplate.length > 0) {
             menuTemplate.push({
               type: "separator",

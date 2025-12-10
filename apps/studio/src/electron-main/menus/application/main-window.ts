@@ -1,6 +1,6 @@
 import { publisher } from "@/electron-main/rpc/publisher";
+import { isDeveloperMode } from "@/electron-main/stores/preferences";
 import { getTabsManager } from "@/electron-main/tabs";
-import { is } from "@electron-toolkit/utils";
 import { type MenuItemConstructorOptions } from "electron";
 
 import {
@@ -197,6 +197,6 @@ export function createMainWindowMenu(): MenuItemConstructorOptions[] {
     viewMenu,
     createWindowMenu(),
     createHelpMenu(),
-    ...(is.dev ? createDevToolsMenu() : []),
+    ...(isDeveloperMode() ? createDevToolsMenu() : []),
   ];
 }

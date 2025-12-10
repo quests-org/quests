@@ -14,6 +14,7 @@ import { z } from "zod";
 function getPreferencesData() {
   const preferencesStore = getPreferencesStore();
   return {
+    developerMode: preferencesStore.get("developerMode"),
     enableUsageMetrics: preferencesStore.get("enableUsageMetrics") || false,
     lastUpdateCheck: preferencesStore.get("lastUpdateCheck"),
     preferApiKeyOverAccount:

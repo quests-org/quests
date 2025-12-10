@@ -1,10 +1,10 @@
 import { getBackgroundColor } from "@/electron-main/lib/theme-utils";
 import { publisher } from "@/electron-main/rpc/publisher";
-import { is } from "@electron-toolkit/utils";
 import { BrowserWindow, Menu, shell } from "electron";
 import path from "node:path";
 
 import { type MainAppPath, mainAppUrl } from "../lib/urls";
+import { isDeveloperMode } from "../stores/preferences";
 
 let settingsWindow: BrowserWindow | null = null;
 
@@ -90,7 +90,7 @@ export function openSettingsWindow(
     mainAppUrl(settingsPath) + (queryString ? `?${queryString}` : "");
   void settingsWindow.loadURL(fullUrl);
 
-  if (is.dev) {
+  if (isDeveloperMode()) {
     settingsWindow.webContents.on("context-menu", (_, props) => {
       const menu = Menu.buildFromTemplate([
         {
