@@ -43,9 +43,7 @@ export class TabsManager {
     this.tabs = [];
     this.logger = logger.scope("tabs");
     this.baseWindow = baseWindow;
-    this.store = new Store<TabStore>({
-      name: is.dev ? "tabs-dev" : "tabs",
-    });
+    this.store = new Store<TabStore>({ name: "tabs" });
     this.store.onDidAnyChange((value) => {
       if (value?.root) {
         this.emitStateChange(value.root);
