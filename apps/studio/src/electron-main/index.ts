@@ -28,6 +28,12 @@ import { setupBinDirectory } from "./lib/setup-bin-directory";
 import { watchThemePreferenceAndApply } from "./lib/theme-utils";
 import { initializeRPC } from "./rpc/initialize";
 
+// Suppress Unstorage dB0 experimental warning
+// Remove when stable https://github.com/unjs/unstorage/blob/main/src/drivers/db0.ts
+(
+  globalThis as unknown as Record<string, boolean>
+).__unstorage_db0_experimental_warning__ = true;
+
 const passwordStore = setupDBusEnvironment();
 
 if (platform.isLinux) {
