@@ -3,6 +3,7 @@ import { simulateReadableStream } from "ai";
 import { MockLanguageModelV2 } from "ai/test";
 import mockFs from "mock-fs";
 import { ok } from "neverthrow";
+import path from "node:path";
 import { pick } from "radashi";
 import {
   afterEach,
@@ -320,8 +321,12 @@ describe("sessionMachine", () => {
         [MOCK_WORKSPACE_DIRS.previews]: {},
         [MOCK_WORKSPACE_DIRS.projects]: {
           [projectAppConfig.folderName]: {
-            "image.png":
-              "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAQMAAAAlPW0iAAAABlBMVEUAAAD/",
+            "image.png": mockFs.load(
+              path.resolve(
+                import.meta.dirname,
+                "../../fixtures/assets/image.png",
+              ),
+            ),
             "package.json": "{}",
             "test.txt": "Hello, world!",
           },
@@ -438,7 +443,7 @@ describe("sessionMachine", () => {
               </input>
               <output>
                 {
-                  "base64Data": "aVZCT1J3MEtHZ29BQUFBTlNVaEVVZ0FBQUJBQUFBQVFBUU1BQUFBbFBXMGlBQUFBQmxCTVZFVUFBQUQv",
+                  "base64Data": "iVBORw0KGgoAAAANSUhEUgAAAGQAAABLAQMAAAC81rD0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABlBMVEUAAP7////DYP5JAAAAAWJLR0QB/wIt3gAAAAlwSFlzAAALEgAACxIB0t1+/AAAAAd0SU1FB+QIGBcKN7/nP/UAAAASSURBVDjLY2AYBaNgFIwCdAAABBoAAaNglfsAAAAZdEVYdGNvbW1lbnQAQ3JlYXRlZCB3aXRoIEdJTVDnr0DLAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDIwLTA4LTI0VDIzOjEwOjU1KzAzOjAwkHdeuQAAACV0RVh0ZGF0ZTptb2RpZnkAMjAyMC0wOC0yNFQyMzoxMDo1NSswMzowMOEq5gUAAAAASUVORK5CYII=",
                   "filePath": "./image.png",
                   "mimeType": "image/png",
                   "state": "image"

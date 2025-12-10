@@ -1,5 +1,6 @@
 // Adapted from
 // https://github.com/sst/opencode/blob/dev/packages/opencode/src/tool/read.ts
+import { isBinaryFile } from "isbinaryfile";
 import mime from "mime";
 import ms from "ms";
 import { err, ok } from "neverthrow";
@@ -12,7 +13,6 @@ import { absolutePathJoin } from "../lib/absolute-path-join";
 import { addLineNumbers } from "../lib/add-line-numbers";
 import { fixRelativePath } from "../lib/fix-relative-path";
 import { formatBytes } from "../lib/format-bytes";
-import { isBinaryFile } from "../lib/is-binary-file";
 import { pathExists } from "../lib/path-exists";
 import { RelativePathSchema } from "../schemas/paths";
 import { BaseInputSchema } from "./base";
@@ -161,6 +161,50 @@ export const ReadFile = createTool({
       }
     }
 
+    const isBinary = await isBinaryFile(absolutePath);
+    if (!isBinary) {
+      const content = await fs.readFile(absolutePath, {
+        encoding: "utf8",
+        signal,
+      });
+
+      const lines = content.split("\n");
+
+      let limit = input.limit ?? DEFAULT_READ_LIMIT;
+      if (limit <= 0) {
+        limit = DEFAULT_READ_LIMIT;
+      }
+
+      let offset = input.offset ?? 0;
+      if (offset < 0) {
+        offset = 0;
+      }
+      if (offset >= lines.length) {
+        offset = Math.max(0, lines.length - 1);
+      }
+
+      const selectedLines = lines.slice(offset, offset + limit);
+
+      const processedLines = selectedLines.map((line) =>
+        line.length > MAX_LINE_LENGTH
+          ? line.slice(0, Math.max(0, MAX_LINE_LENGTH)) + "..."
+          : line,
+      );
+
+      const rawContent = processedLines.join("\n");
+      const hasMoreLines = lines.length > offset + selectedLines.length;
+
+      return ok({
+        content: rawContent,
+        displayedLines: selectedLines.length,
+        filePath: fixedPath,
+        hasMoreLines,
+        offset,
+        state: "exists" as const,
+        totalLines: lines.length,
+      });
+    }
+
     const mimeType = mime.getType(absolutePath);
 
     if (mimeType?.startsWith("image/")) {
@@ -203,57 +247,11 @@ export const ReadFile = createTool({
       });
     }
 
-    const isBinary = await isBinaryFile(absolutePath);
-    if (isBinary) {
-      return ok({
-        filePath: fixedPath,
-        mimeType: mimeType ?? undefined,
-        reason: "binary-file" as const,
-        state: "unsupported-format" as const,
-      });
-    }
-
-    const content = await fs.readFile(absolutePath, {
-      encoding: "utf8",
-      signal,
-    });
-
-    const lines = content.split("\n");
-
-    let limit = input.limit ?? DEFAULT_READ_LIMIT;
-    if (limit <= 0) {
-      limit = DEFAULT_READ_LIMIT;
-    }
-
-    // Handle offset validation and defaults
-    let offset = input.offset ?? 0;
-    if (offset < 0) {
-      offset = 0;
-    }
-    if (offset >= lines.length) {
-      offset = Math.max(0, lines.length - 1);
-    }
-
-    const selectedLines = lines.slice(offset, offset + limit);
-
-    // Truncate long lines but don't add line numbers here
-    const processedLines = selectedLines.map((line) =>
-      line.length > MAX_LINE_LENGTH
-        ? line.slice(0, Math.max(0, MAX_LINE_LENGTH)) + "..."
-        : line,
-    );
-
-    const rawContent = processedLines.join("\n");
-    const hasMoreLines = lines.length > offset + selectedLines.length;
-
     return ok({
-      content: rawContent,
-      displayedLines: selectedLines.length,
       filePath: fixedPath,
-      hasMoreLines,
-      offset,
-      state: "exists" as const,
-      totalLines: lines.length,
+      mimeType: mimeType ?? undefined,
+      reason: "binary-file" as const,
+      state: "unsupported-format" as const,
     });
   },
   inputSchema: BaseInputSchema.extend({
