@@ -155,7 +155,7 @@ export function useUpdateNotifications() {
   }, [updateState]);
 
   useEffect(() => {
-    if (testNotification) {
+    if (testNotification && testNotification.length > 0) {
       toast.info("Test notification", {
         closeButton: true,
       });

@@ -1,7 +1,11 @@
-import { type QueryKey } from "@/electron-main/api/client";
 import { type AppUpdaterStatus } from "@/electron-main/lib/update";
 import { type TabState } from "@/shared/tabs";
 import { EventPublisher } from "@orpc/server";
+
+interface CacheUpdate<T = unknown> {
+  data: T;
+  queryKey: string[][];
+}
 
 export const publisher = new EventPublisher<{
   "app.reload": { webContentsId: number };
@@ -17,9 +21,6 @@ export const publisher = new EventPublisher<{
     success: true;
   };
   "auth.updated": null;
-  "cache.invalidated": {
-    invalidatedQueryKeys?: QueryKey[];
-  };
   "debug.open-analytics-toolbar": null;
   "debug.open-debug-page": null;
   "debug.open-query-devtools": null;
@@ -28,7 +29,18 @@ export const publisher = new EventPublisher<{
   "features.updated": null;
   "preferences.updated": null;
   "provider-config.updated": null;
+  "query-cache.invalidated": {
+    invalidatedQueryKeys?: string[][];
+  };
+  "query-cache.updated": {
+    updates: CacheUpdate[];
+  };
+  "server-exception": {
+    message: string;
+    stack?: string;
+  };
   "server-exceptions.updated": null;
+  "session.updated": null;
   "sidebar.visibility-updated": Partial<{
     visible: boolean;
   }>;

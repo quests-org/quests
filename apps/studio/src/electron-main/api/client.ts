@@ -2,6 +2,7 @@ import { API_RPC_BASE_URL } from "@/electron-main/api/constants";
 import { type contract } from "@/electron-main/api/contract";
 import { getToken } from "@/electron-main/api/utils";
 import { publisher } from "@/electron-main/rpc/publisher";
+import { QUERY_KEYS } from "@/shared/query-keys";
 import { createORPCClient } from "@orpc/client";
 import { RPCLink } from "@orpc/client/fetch";
 import { DedupeRequestsPlugin } from "@orpc/client/plugins";
@@ -9,8 +10,7 @@ import {
   type ContractRouterClient,
   type InferContractRouterOutputs,
 } from "@orpc/contract";
-import { generateOperationKey } from "@orpc/tanstack-query";
-import { QueryClient } from "@tanstack/query-core";
+import { hashKey, QueryClient } from "@tanstack/query-core";
 
 const link = new RPCLink({
   headers: () => ({
@@ -52,41 +52,57 @@ const queryClient = new QueryClient({
   },
 });
 
-// Use ORPC's generateOperationKey to generate query keys that are consistent
-// with the main process's query client and the client-side query client.
-const QUERY_KEYS = {
-  "auth.hasToken": generateOperationKey(["auth", "hasToken"]),
-  "user.me": generateOperationKey(["user", "me"]),
-  "user.subscriptionStatus": generateOperationKey([
-    "user",
-    "subscriptionStatus",
-  ]),
-};
-
 const DEPENDENT_QUERY_KEYS = {
   signIn: [
-    QUERY_KEYS["auth.hasToken"],
-    QUERY_KEYS["user.me"],
-    QUERY_KEYS["user.subscriptionStatus"],
+    QUERY_KEYS.auth.hasToken,
+    QUERY_KEYS.user.me,
+    QUERY_KEYS.user.subscriptionStatus,
   ],
   signOut: [
-    QUERY_KEYS["auth.hasToken"],
-    QUERY_KEYS["user.me"],
-    QUERY_KEYS["user.subscriptionStatus"],
+    QUERY_KEYS.auth.hasToken,
+    QUERY_KEYS.user.me,
+    QUERY_KEYS.user.subscriptionStatus,
   ],
 };
+
+const SYNCED_QUERY_HASHES = new Set([
+  hashKey(QUERY_KEYS.user.me),
+  hashKey(QUERY_KEYS.user.subscriptionStatus),
+]);
 
 export type QueryKey = QueryKeys[keyof QueryKeys];
 type QueryKeys = typeof QUERY_KEYS;
+
+queryClient.getQueryCache().subscribe((event) => {
+  if (event.type !== "updated") {
+    return;
+  }
+
+  const query = event.query;
+
+  if (!SYNCED_QUERY_HASHES.has(query.queryHash)) {
+    return;
+  }
+
+  publisher.publish("query-cache.updated", {
+    updates: [
+      {
+        data: query.state.data,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        queryKey: query.queryKey,
+      },
+    ],
+  });
+});
 
 export async function fetchSubscriptionStatus({
   staleTime = 30_000,
 }: {
   staleTime?: number;
 }) {
-  return queryClient.fetchQuery({
+  return await queryClient.fetchQuery({
     queryFn: () => client.users.getSubscriptionStatus(),
-    queryKey: QUERY_KEYS["user.subscriptionStatus"],
+    queryKey: QUERY_KEYS.user.subscriptionStatus,
     staleTime,
   });
 }
@@ -94,7 +110,7 @@ export async function fetchSubscriptionStatus({
 export async function getMe() {
   const data = await queryClient.fetchQuery({
     queryFn: () => client.users.getMe(),
-    queryKey: QUERY_KEYS["user.me"],
+    queryKey: QUERY_KEYS.user.me,
   });
   return data;
 }
@@ -107,14 +123,14 @@ export async function onSignOut() {
   await invalidateCacheKeys(DEPENDENT_QUERY_KEYS.signOut);
 }
 
-async function invalidateCacheKeys(cacheKeys: QueryKey[]) {
+async function invalidateCacheKeys(cacheKeys: string[][]) {
   for (const cacheKey of cacheKeys) {
     await queryClient.invalidateQueries({
       queryKey: cacheKey,
     });
   }
 
-  publisher.publish("cache.invalidated", {
+  publisher.publish("query-cache.invalidated", {
     invalidatedQueryKeys: cacheKeys,
   });
 }

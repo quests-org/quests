@@ -8,7 +8,7 @@ export function useQueryClientSync() {
   useEffect(() => {
     let isCancelled = false;
 
-    async function subscribe() {
+    async function subscribeToCacheInvalidation() {
       const subscription =
         await vanillaRpcClient.cache.live.onQueryInvalidation();
 
@@ -25,7 +25,22 @@ export function useQueryClientSync() {
       }
     }
 
-    void subscribe();
+    async function subscribeToCacheUpdate() {
+      const subscription = await vanillaRpcClient.cache.live.onQueryUpdate();
+
+      for await (const payload of subscription) {
+        if (isCancelled) {
+          break;
+        }
+
+        for (const update of payload.updates) {
+          await queryClient.setQueryData(update.queryKey, update.data);
+        }
+      }
+    }
+
+    void subscribeToCacheInvalidation();
+    void subscribeToCacheUpdate();
 
     return () => {
       isCancelled = true;
