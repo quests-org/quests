@@ -6,6 +6,8 @@ interface ContentPart {
   type: string;
 }
 
+type MediaCategory = "audio" | "file" | "image" | "video";
+
 export function filterUnsupportedMedia({
   messages,
   model,
@@ -15,10 +17,7 @@ export function filterUnsupportedMedia({
 }): ModelMessage[] {
   const features = model.features;
 
-  const mediaFeatureMap: Record<
-    "audio" | "file" | "image" | "video",
-    AIGatewayModel.ModelFeatures
-  > = {
+  const mediaFeatureMap: Record<MediaCategory, AIGatewayModel.ModelFeatures> = {
     audio: "inputAudio",
     file: "inputFile",
     image: "inputImage",
@@ -61,10 +60,32 @@ export function filterUnsupportedMedia({
           typeof part === "object" &&
           "output" in part &&
           typeof part.output === "object" &&
-          "parts" in part.output &&
-          Array.isArray(part.output.parts)
+          "type" in part.output &&
+          part.output.type === "content" &&
+          "value" in part.output &&
+          Array.isArray(part.output.value)
         ) {
-          part.output.parts = part.output.parts.map(filterPart);
+          part.output.value = part.output.value.map((valuePart) => {
+            if (
+              valuePart.type === "media" &&
+              "mediaType" in valuePart &&
+              typeof valuePart.mediaType === "string"
+            ) {
+              const mediaCategory = getMediaTypeCategory(valuePart.mediaType);
+
+              if (
+                mediaCategory !== "other" &&
+                !features.includes(mediaFeatureMap[mediaCategory])
+              ) {
+                return {
+                  text: createReplacementTextPart(mediaCategory).text,
+                  type: "text" as const,
+                };
+              }
+            }
+
+            return valuePart;
+          });
         }
 
         return part;
@@ -82,9 +103,7 @@ const MEDIA_LABELS: Record<"audio" | "file" | "image" | "video", string> = {
   video: "Video",
 };
 
-function createReplacementTextPart(
-  mediaCategory: "audio" | "file" | "image" | "video",
-): TextPart {
+function createReplacementTextPart(mediaCategory: MediaCategory): TextPart {
   const mediaTypeLabel = MEDIA_LABELS[mediaCategory];
   return {
     text: [
