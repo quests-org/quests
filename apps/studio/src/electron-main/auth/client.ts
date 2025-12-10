@@ -1,5 +1,6 @@
 import { onSignOut } from "@/electron-main/api/client";
 import { API_AUTH_BASE_URL } from "@/electron-main/api/constants";
+import { getToken } from "@/electron-main/api/utils";
 import { getAuthServerPort } from "@/electron-main/auth/state";
 import { publisher } from "@/electron-main/rpc/publisher";
 import { getSessionStore } from "@/electron-main/stores/session";
@@ -104,7 +105,19 @@ export async function signInSocial(inviteCode?: string) {
 }
 
 export async function signOut() {
-  const response = await auth.signOut({});
+  const response = await auth.signOut({
+    fetchOptions: {
+      headers: {
+        authorization: `Bearer ${getToken() ?? ""}`,
+      },
+    },
+  });
+  if (response.error) {
+    captureServerException(
+      new Error("Sign out failed", { cause: response.error }),
+      { scopes: ["auth"] },
+    );
+  }
   const sessionStore = getSessionStore();
   sessionStore.set("apiBearerToken", null);
   void onSignOut();

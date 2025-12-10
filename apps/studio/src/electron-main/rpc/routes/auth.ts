@@ -8,7 +8,7 @@ import { z } from "zod";
 
 const signOut = base.handler(async ({ context }) => {
   await signOutFn();
-  context.tabsManager?.closeAllTabsByPathname("/subscribe");
+  await context.tabsManager?.closeAllTabsByPathname("/subscribe");
 });
 
 const hasToken = base.handler(() => {
