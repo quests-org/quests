@@ -3,14 +3,14 @@ import { type AIGatewayModel } from "../schemas/model";
 export function getModelFeatures(
   canonicalId: AIGatewayModel.CanonicalId,
 ): AIGatewayModel.ModelFeatures[] {
-  const features: AIGatewayModel.ModelFeatures[] = [];
+  let features: AIGatewayModel.ModelFeatures[] = [];
 
   if (canonicalId.startsWith("claude-")) {
-    features.push("inputText", "outputText", "tools", "inputImage");
+    features = ["inputText", "outputText", "tools", "inputImage"];
   }
 
   if (canonicalId.startsWith("gemini-")) {
-    features.push(
+    features = [
       "inputAudio",
       "inputFile",
       "inputVideo",
@@ -18,21 +18,15 @@ export function getModelFeatures(
       "inputText",
       "outputText",
       "tools",
-    );
+    ];
   }
 
   if (/^gpt-\d+/.test(canonicalId) || canonicalId.startsWith("o-")) {
-    features.push(
-      "inputFile",
-      "inputImage",
-      "inputText",
-      "outputText",
-      "tools",
-    );
+    features = ["inputFile", "inputImage", "inputText", "outputText", "tools"];
 
     if (canonicalId.endsWith("-audio-preview")) {
-      // For openai/gpt-4o-audio-preview
-      features.push("inputAudio");
+      // Matches openai/gpt-4o-audio-preview, which is an audio-only model
+      features = ["inputAudio"];
     }
   }
 
