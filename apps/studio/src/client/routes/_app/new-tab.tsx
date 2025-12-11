@@ -21,9 +21,14 @@ import {
 } from "@quests/shared";
 import { StoreId } from "@quests/workspace/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  useNavigate,
+  useRouter,
+} from "@tanstack/react-router";
 import { formatDistanceToNow } from "date-fns";
 import { useAtom } from "jotai";
+import { useEffect } from "react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/new-tab")({
@@ -43,6 +48,7 @@ function RouteComponent() {
   const [agentName, setAgentName] = useAtom(agentNameAtom);
   const { data: user } = useQuery(rpcClient.user.me.queryOptions());
   const navigate = useNavigate({ from: "/new-tab" });
+  const router = useRouter();
   const { addTab } = useTabActions();
   const createProjectMutation = useMutation(
     rpcClient.workspace.project.create.mutationOptions(),
@@ -56,6 +62,16 @@ function RouteComponent() {
 
   const recentProjects = projectsData?.projects ?? [];
   const hasProjects = (projectsData?.projects.length ?? 0) > 0;
+
+  useEffect(() => {
+    // Preload the project route chunk for faster navigation
+    async function preloadRouteChunks() {
+      const projectRoute = router.routesByPath["/projects/$subdomain"];
+      await router.loadRouteChunk(projectRoute);
+    }
+
+    void preloadRouteChunks();
+  }, [router]);
 
   return (
     <div className="w-full min-h-screen flex-1 flex flex-col items-center relative">
