@@ -6,7 +6,7 @@ import { type WorkspaceConfig } from "../types";
 import { absolutePathJoin } from "./absolute-path-join";
 import { type AppConfigProject } from "./app-config/types";
 import { templateExists } from "./app-dir-utils";
-import { copyTemplate } from "./copy-template";
+import { copyProject } from "./copy-project";
 import { TypedError } from "./errors";
 import { git } from "./git";
 import { GitCommands } from "./git/commands";
@@ -62,7 +62,11 @@ export async function createProjectApp(
       );
     }
 
-    yield* copyTemplate({ targetDir: projectConfig.appDir, templateDir });
+    yield* copyProject({
+      isTemplate: true,
+      sourceDir: templateDir,
+      targetDir: projectConfig.appDir,
+    });
 
     yield* git(GitCommands.init(), projectConfig.appDir, { signal });
     yield* git(GitCommands.addAll(), projectConfig.appDir, { signal });

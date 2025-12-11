@@ -9,7 +9,7 @@ import {
 import { REGISTRY_TEMPLATES_FOLDER } from "../constants";
 import { absolutePathJoin } from "../lib/absolute-path-join";
 import { type AppConfigPreview } from "../lib/app-config/types";
-import { copyTemplate } from "../lib/copy-template";
+import { copyProject } from "../lib/copy-project";
 
 export type CreatePreviewParentEvent =
   | {
@@ -41,9 +41,10 @@ export const createPreviewLogic = fromCallback<
     input.appConfig.folderName,
   );
 
-  void copyTemplate({
+  void copyProject({
+    isTemplate: true,
+    sourceDir: templateDir,
     targetDir: input.appConfig.appDir,
-    templateDir,
   })
     .match(
       () => ({
