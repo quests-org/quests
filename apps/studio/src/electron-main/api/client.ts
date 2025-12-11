@@ -13,9 +13,15 @@ import {
 import { hashKey, QueryClient } from "@tanstack/query-core";
 
 const link = new RPCLink({
-  headers: () => ({
-    authorization: `Bearer ${getToken() ?? ""}`,
-  }),
+  headers: () => {
+    const token = getToken();
+    if (!token) {
+      return {};
+    }
+    return {
+      authorization: `Bearer ${token}`,
+    };
+  },
   plugins: [
     new DedupeRequestsPlugin({
       filter: ({ path }) => {
@@ -40,7 +46,6 @@ export const client: ContractRouterClient<typeof contract> =
   createORPCClient(link);
 
 export type Subscription = Outputs["users"]["getSubscriptionStatus"];
-// export type User = Outputs["users"]["getMe"];
 
 type Outputs = InferContractRouterOutputs<typeof contract>;
 
