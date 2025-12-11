@@ -33,9 +33,6 @@ export function copyProject({
         // Screenshots can confuse the agent
         ignore.add("screenshot.*");
       }
-      if (!includePrivateFolder) {
-        ignore.add(APP_PRIVATE_FOLDER);
-      }
       return ok(ignore);
     })
     .andThen((ignore) =>
