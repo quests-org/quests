@@ -6,7 +6,6 @@ import { getAIProviderConfigs } from "@/electron-main/lib/get-ai-provider-config
 import { is } from "@electron-toolkit/utils";
 import { aiGatewayApp } from "@quests/ai-gateway";
 import {
-  WORKSPACE_FOLDER,
   workspaceMachine,
   workspacePublisher,
 } from "@quests/workspace/electron";
@@ -17,10 +16,11 @@ import { createActor } from "xstate";
 
 import { captureServerEvent } from "./capture-server-event";
 import { captureServerException } from "./capture-server-exception";
+import { getWorkspaceFolder } from "./get-workspace-folder";
 import { getPNPMBinPath } from "./setup-bin-directory";
 
 export function createWorkspaceActor() {
-  const rootDir = path.join(app.getPath("userData"), WORKSPACE_FOLDER);
+  const rootDir = getWorkspaceFolder();
   const actor = createActor(workspaceMachine, {
     input: {
       aiGatewayApp,
