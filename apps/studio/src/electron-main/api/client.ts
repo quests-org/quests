@@ -1,8 +1,10 @@
 import { API_RPC_BASE_URL } from "@/electron-main/api/constants";
 import { type contract } from "@/electron-main/api/contract";
 import { getToken } from "@/electron-main/api/utils";
-import { publisher } from "@/electron-main/rpc/publisher";
-import { QUERY_KEYS } from "@/shared/query-keys";
+import {
+  publisher,
+  type PublisherEventType,
+} from "@/electron-main/rpc/publisher";
 import { createORPCClient } from "@orpc/client";
 import { RPCLink } from "@orpc/client/fetch";
 import { DedupeRequestsPlugin } from "@orpc/client/plugins";
@@ -10,9 +12,20 @@ import {
   type ContractRouterClient,
   type InferContractRouterOutputs,
 } from "@orpc/contract";
-import { hashKey, QueryClient } from "@tanstack/query-core";
+import { QueryClient } from "@tanstack/query-core";
+import { isEqual } from "radashi";
 
-const link = new RPCLink({
+import { captureServerException } from "../lib/capture-server-exception";
+
+const SUBSCRIBERS = new Map<
+  string,
+  {
+    eventTypes: PublisherEventType[];
+    rpcPath: string[];
+  }
+>();
+
+const RPC_LINK = new RPCLink({
   headers: () => {
     const token = getToken();
     if (!token) {
@@ -43,7 +56,7 @@ const link = new RPCLink({
 });
 
 export const client: ContractRouterClient<typeof contract> =
-  createORPCClient(link);
+  createORPCClient(RPC_LINK);
 
 export type Subscription = Outputs["users"]["getSubscriptionStatus"];
 
@@ -57,44 +70,33 @@ const queryClient = new QueryClient({
   },
 });
 
-const DEPENDENT_QUERY_KEYS = {
-  signIn: [
-    QUERY_KEYS.auth.hasToken,
-    QUERY_KEYS.user.me,
-    QUERY_KEYS.user.subscriptionStatus,
-  ],
-  signOut: [
-    QUERY_KEYS.auth.hasToken,
-    QUERY_KEYS.user.me,
-    QUERY_KEYS.user.subscriptionStatus,
-  ],
-};
-
-const SYNCED_QUERY_HASHES = new Set([
-  hashKey(QUERY_KEYS.user.me),
-  hashKey(QUERY_KEYS.user.subscriptionStatus),
-]);
-
 queryClient.getQueryCache().subscribe((event) => {
   if (event.type !== "updated") {
     return;
   }
 
-  const query = event.query;
-
-  if (!SYNCED_QUERY_HASHES.has(query.queryHash)) {
-    return;
-  }
-
-  publisher.publish("query-cache.updated", {
-    updates: [
-      {
-        data: query.state.data,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        queryKey: query.queryKey,
-      },
-    ],
+  publisher.publish("rpc.invalidate", {
+    rpcPaths: [...SUBSCRIBERS.values()].map(({ rpcPath }) => rpcPath),
   });
+});
+
+void publisher.subscribe("auth.updated", () => {
+  // Clears the entire server query cache. Make this more granular in the future
+  // if needed.
+  queryClient
+    .invalidateQueries()
+    .then(() => {
+      // Causes all clients to invalidate the relevant queries.
+
+      publisher.publish("rpc.invalidate", {
+        rpcPaths: [...SUBSCRIBERS.values()]
+          .filter(({ eventTypes }) => eventTypes.includes("auth.updated"))
+          .map(({ rpcPath }) => rpcPath),
+      });
+    })
+    .catch((error: unknown) => {
+      captureServerException(error, { scopes: ["api"] });
+    });
 });
 
 export async function fetchSubscriptionStatus({
@@ -104,7 +106,7 @@ export async function fetchSubscriptionStatus({
 }) {
   return await queryClient.fetchQuery({
     queryFn: () => client.users.getSubscriptionStatus(),
-    queryKey: QUERY_KEYS.user.subscriptionStatus,
+    queryKey: ["users", "getSubscriptionStatus"],
     staleTime,
   });
 }
@@ -112,27 +114,36 @@ export async function fetchSubscriptionStatus({
 export async function getMe() {
   const data = await queryClient.fetchQuery({
     queryFn: () => client.users.getMe(),
-    queryKey: QUERY_KEYS.user.me,
+    queryKey: ["users", "getMe"],
   });
   return data;
 }
 
-export async function onSignIn() {
-  await invalidateCacheKeys(DEPENDENT_QUERY_KEYS.signIn);
-}
+export function registerProcedureInvalidation({
+  eventTypes,
+  rpcPath,
+}: {
+  eventTypes: PublisherEventType[];
+  rpcPath: readonly string[];
+}) {
+  const key = rpcPath.join(".");
+  const existing = SUBSCRIBERS.get(key);
 
-export async function onSignOut() {
-  await invalidateCacheKeys(DEPENDENT_QUERY_KEYS.signOut);
-}
-
-async function invalidateCacheKeys(cacheKeys: string[][]) {
-  for (const cacheKey of cacheKeys) {
-    await queryClient.invalidateQueries({
-      queryKey: cacheKey,
-    });
+  if (existing) {
+    const isSame = isEqual(existing.eventTypes, eventTypes);
+    if (!isSame) {
+      captureServerException(
+        new Error(
+          `Cannot re-register RPC path "${key}" with different event types`,
+        ),
+        { scopes: ["api"] },
+      );
+    }
+    return;
   }
 
-  publisher.publish("query-cache.invalidated", {
-    invalidatedQueryKeys: cacheKeys,
+  SUBSCRIBERS.set(key, {
+    eventTypes,
+    rpcPath: [...rpcPath],
   });
 }

@@ -139,6 +139,7 @@ export type CaptureExceptionFunction = (
 
 export type ExceptionScope =
   | "ai-gateway"
+  | "api"
   | "auth"
   | "llm-request"
   | "rpc"

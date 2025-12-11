@@ -3,18 +3,8 @@ import { publisher } from "@/electron-main/rpc/publisher";
 
 export const cache = {
   live: {
-    onQueryInvalidation: base.handler(async function* ({ signal }) {
-      for await (const payload of publisher.subscribe(
-        "query-cache.invalidated",
-        {
-          signal,
-        },
-      )) {
-        yield payload;
-      }
-    }),
-    onQueryUpdate: base.handler(async function* ({ signal }) {
-      for await (const payload of publisher.subscribe("query-cache.updated", {
+    onRPCInvalidation: base.handler(async function* ({ signal }) {
+      for await (const payload of publisher.subscribe("rpc.invalidate", {
         signal,
       })) {
         yield payload;

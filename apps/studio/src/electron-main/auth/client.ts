@@ -1,4 +1,3 @@
-import { onSignOut } from "@/electron-main/api/client";
 import { API_AUTH_BASE_URL } from "@/electron-main/api/constants";
 import { getToken } from "@/electron-main/api/utils";
 import { getAuthServerPort } from "@/electron-main/auth/state";
@@ -120,7 +119,6 @@ export async function signOut() {
   }
   const sessionStore = getSessionStore();
   sessionStore.set("apiBearerToken", null);
-  void onSignOut();
   publisher.publish("auth.updated", null);
   return response;
 }

@@ -2,12 +2,9 @@ import { type AppUpdaterStatus } from "@/electron-main/lib/update";
 import { type TabState } from "@/shared/tabs";
 import { EventPublisher } from "@orpc/server";
 
-interface CacheUpdate<T = unknown> {
-  data: T;
-  queryKey: string[][];
-}
+export type PublisherEventType = keyof PublisherEvents;
 
-export const publisher = new EventPublisher<{
+interface PublisherEvents {
   "app.reload": { webContentsId: number };
   "auth.sign-in-error": {
     error: {
@@ -29,11 +26,8 @@ export const publisher = new EventPublisher<{
   "features.updated": null;
   "preferences.updated": null;
   "provider-config.updated": null;
-  "query-cache.invalidated": {
-    invalidatedQueryKeys?: string[][];
-  };
-  "query-cache.updated": {
-    updates: CacheUpdate[];
+  "rpc.invalidate": {
+    rpcPaths: string[][];
   };
   "server-exception": {
     message: string;
@@ -49,6 +43,8 @@ export const publisher = new EventPublisher<{
   "updates.status": { status: AppUpdaterStatus };
   "updates.trigger-check": null;
   "window.focus-changed": null;
-}>({
+}
+
+export const publisher = new EventPublisher<PublisherEvents>({
   maxBufferedEvents: 1, // Keep no history as we only need to know the latest state
 });

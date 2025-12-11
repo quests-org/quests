@@ -6,14 +6,15 @@ import {
 import { base } from "@/electron-main/rpc/base";
 import { z } from "zod";
 
-const signOut = base.handler(async ({ context }) => {
+const signOut = base.handler(async () => {
   await signOutFn();
-  await context.tabsManager?.closeAllTabsByPathname("/subscribe");
 });
 
-const hasToken = base.handler(() => {
-  return hasTokenUtil();
-});
+const hasToken = base
+  .meta({ invalidateClientsOn: ["auth.updated"] })
+  .handler(() => {
+    return hasTokenUtil();
+  });
 
 const signInSocial = base
   .input(

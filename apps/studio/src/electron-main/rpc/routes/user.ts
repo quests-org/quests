@@ -11,11 +11,14 @@ const hasAIProviderConfig = base.handler(() => {
   return hasTokenUtil() || hasConfig;
 });
 
-const me = authenticatedOptional.handler(() => {
-  return getMe();
-});
+const me = authenticatedOptional
+  .meta({ invalidateClientsOn: ["auth.updated"] })
+  .handler(() => {
+    return getMe();
+  });
 
 const subscriptionStatus = authenticatedOptional
+  .meta({ invalidateClientsOn: ["auth.updated"] })
   .input(z.void().or(z.object({ staleTime: z.number().optional() })))
   .handler(({ input }) => {
     return fetchSubscriptionStatus(input ? { staleTime: input.staleTime } : {});
