@@ -190,7 +190,6 @@ function handleDeepLink(url: string) {
     const tabsManager = getTabsManager();
     if (tabsManager) {
       if (url.includes("checkout?success=true")) {
-        publisher.publish("subscription.refetch", null);
         void tabsManager.addTab({
           params: { success: "true" },
           urlPath: "/checkout",

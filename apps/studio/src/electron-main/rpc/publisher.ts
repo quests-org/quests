@@ -44,7 +44,6 @@ export const publisher = new EventPublisher<{
   "sidebar.visibility-updated": Partial<{
     visible: boolean;
   }>;
-  "subscription.refetch": null;
   "tabs.updated": null | TabState;
   "test-notification": null;
   "updates.status": { status: AppUpdaterStatus };
