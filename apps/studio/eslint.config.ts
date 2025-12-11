@@ -8,6 +8,7 @@ export default [
     "**/*.snap",
     "*.local",
     "src/client/routeTree.gen.ts",
+    "electron.vite.config.*.mjs", // Temporary files created by Vite
     ".vite",
     "coverage",
     "out",

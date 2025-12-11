@@ -3,13 +3,8 @@
 coverage/
 pnpm-lock.yaml
 llm-cache.local/
-worker-configuration.d.ts
 routeTree.gen.ts
-apps/api/drizzle/
-.next/
-.vercel/
-.open-next/
-cloudflare-env.d.ts
+apps/studio/electron.vite.config.*.mjs
 dist/
 registry/
 **/out/
