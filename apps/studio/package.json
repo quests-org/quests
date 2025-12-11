@@ -136,7 +136,7 @@
     "@tanstack/router-plugin": "^1.131.28",
     "@types/color-hash": "^2.0.0",
     "@types/ms": "^2.1.0",
-    "@types/node": "22.16.0",
+    "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@types/semver": "^7.7.0",

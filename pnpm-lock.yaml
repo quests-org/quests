@@ -18,6 +18,9 @@ catalogs:
     '@orpc/tanstack-query':
       specifier: ^1.12.2
       version: 1.12.2
+    '@types/node':
+      specifier: 22.16.0
+      version: 22.16.0
     '@types/react':
       specifier: ^19.2.7
       version: 19.2.7
@@ -97,7 +100,7 @@ importers:
         specifier: workspace:*
         version: link:packages/typescript-config
       '@types/node':
-        specifier: 22.16.0
+        specifier: 'catalog:'
         version: 22.16.0
       cross-env:
         specifier: ^10.0.0
@@ -398,7 +401,7 @@ importers:
         specifier: ^2.1.0
         version: 2.1.0
       '@types/node':
-        specifier: 22.16.0
+        specifier: 'catalog:'
         version: 22.16.0
       '@types/react':
         specifier: 'catalog:'
@@ -546,7 +549,7 @@ importers:
         specifier: workspace:*
         version: link:../typescript-config
       '@types/node':
-        specifier: ^22.16.0
+        specifier: 'catalog:'
         version: 22.16.0
       vitest:
         specifier: 'catalog:'
@@ -854,7 +857,7 @@ importers:
         specifier: ^2.1.0
         version: 2.1.0
       '@types/node':
-        specifier: ^22.16.0
+        specifier: 'catalog:'
         version: 22.16.0
       dotenv:
         specifier: ^16.6.1
@@ -11092,7 +11095,7 @@ snapshots:
     dependencies:
       '@types/http-cache-semantics': 4.0.4
       '@types/keyv': 3.1.4
-      '@types/node': 22.16.0
+      '@types/node': 24.0.14
       '@types/responselike': 1.0.3
 
   '@types/chai@5.2.2':
@@ -11128,7 +11131,7 @@ snapshots:
 
   '@types/fs-extra@9.0.13':
     dependencies:
-      '@types/node': 22.16.0
+      '@types/node': 24.0.14
 
   '@types/hast@3.0.4':
     dependencies:
@@ -11145,7 +11148,7 @@ snapshots:
 
   '@types/keyv@3.1.4':
     dependencies:
-      '@types/node': 22.16.0
+      '@types/node': 24.0.14
 
   '@types/mdast@3.0.15':
     dependencies:
@@ -11157,7 +11160,7 @@ snapshots:
 
   '@types/mock-fs@4.13.4':
     dependencies:
-      '@types/node': 22.16.0
+      '@types/node': 24.0.14
 
   '@types/ms@2.1.0': {}
 
@@ -11168,7 +11171,6 @@ snapshots:
   '@types/node@24.0.14':
     dependencies:
       undici-types: 7.8.0
-    optional: true
 
   '@types/normalize-package-data@2.4.4': {}
 
@@ -11176,14 +11178,14 @@ snapshots:
 
   '@types/pg@8.6.1':
     dependencies:
-      '@types/node': 22.16.0
+      '@types/node': 24.0.14
       pg-protocol: 1.10.3
       pg-types: 2.2.0
     optional: true
 
   '@types/plist@3.0.5':
     dependencies:
-      '@types/node': 22.16.0
+      '@types/node': 24.0.14
       xmlbuilder: 15.1.1
     optional: true
 
@@ -11197,7 +11199,7 @@ snapshots:
 
   '@types/responselike@1.0.3':
     dependencies:
-      '@types/node': 22.16.0
+      '@types/node': 24.0.14
 
   '@types/semver@7.7.0': {}
 
@@ -11218,11 +11220,11 @@ snapshots:
 
   '@types/ws@8.18.1':
     dependencies:
-      '@types/node': 22.16.0
+      '@types/node': 24.0.14
 
   '@types/yauzl@2.10.3':
     dependencies:
-      '@types/node': 22.16.0
+      '@types/node': 24.0.14
     optional: true
 
   '@typescript-eslint/eslint-plugin@8.40.0(@typescript-eslint/parser@8.40.0(eslint@9.31.0(jiti@2.6.1))(typescript@5.9.2))(eslint@9.31.0(jiti@2.6.1))(typescript@5.9.2)':
@@ -16734,8 +16736,7 @@ snapshots:
 
   undici-types@6.21.0: {}
 
-  undici-types@7.8.0:
-    optional: true
+  undici-types@7.8.0: {}
 
   unicorn-magic@0.1.0: {}
 

@@ -69,7 +69,7 @@
     "@t3-oss/env-core": "^0.13.8",
     "@types/mock-fs": "^4.13.4",
     "@types/ms": "^2.1.0",
-    "@types/node": "^22.16.0",
+    "@types/node": "catalog:",
     "dotenv": "^16.6.1",
     "mock-fs": "^5.5.0",
     "tsx": "^4.20.3",
