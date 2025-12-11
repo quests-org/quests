@@ -3,6 +3,8 @@ import { Button } from "@/client/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogHeader,
   DialogTitle,
 } from "@/client/components/ui/dialog";
 import { useSignInSocial } from "@/client/hooks/use-sign-in-social";
@@ -35,10 +37,11 @@ export function AIProviderGuardDialog({
 
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent aria-describedby={undefined} className="p-6 max-w-md">
-        <DialogTitle className="sr-only">
-          Add an AI provider to continue
-        </DialogTitle>
+      <DialogContent className="p-6 max-w-md">
+        <DialogHeader className="sr-only">
+          <DialogTitle>Add an AI provider to continue</DialogTitle>
+          <DialogDescription>{description}</DialogDescription>
+        </DialogHeader>
         <div className="flex flex-col items-center gap-6">
           <div className="flex flex-col items-center gap-4">
             <div className="flex size-16 items-center justify-center rounded-md">
