@@ -70,6 +70,7 @@ export interface AnalyticsEvents {
     template_name: string;
   }>;
   "project.forked": never;
+  "project.imported": never;
   "project.opened_in": {
     app_name: string;
   };

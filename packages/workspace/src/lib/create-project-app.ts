@@ -63,6 +63,7 @@ export async function createProjectApp(
     }
 
     yield* copyProject({
+      includePrivateFolder: false,
       isTemplate: true,
       sourceDir: templateDir,
       targetDir: projectConfig.appDir,

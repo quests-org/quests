@@ -42,6 +42,7 @@ export const createPreviewLogic = fromCallback<
   );
 
   void copyProject({
+    includePrivateFolder: false,
     isTemplate: true,
     sourceDir: templateDir,
     targetDir: input.appConfig.appDir,

@@ -13,14 +13,20 @@ import { createColumns } from "@/client/components/projects-data-table/columns";
 import { Badge } from "@/client/components/ui/badge";
 import { Button } from "@/client/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/client/components/ui/tabs";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/client/components/ui/tooltip";
 import { useTabActions } from "@/client/hooks/use-tab-actions";
 import { useTrashApp } from "@/client/hooks/use-trash-app";
 import { captureClientEvent } from "@/client/lib/capture-client-event";
 import { getTrashTerminology } from "@/client/lib/trash-terminology";
 import { rpcClient } from "@/client/rpc/client";
 import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
+import { isDefinedError } from "@orpc/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { Circle, Loader2, Square, Trash2 } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -53,6 +59,7 @@ export const Route = createFileRoute("/_app/projects/")({
 
 function RouteComponent() {
   const { addTab } = useTabActions();
+  const router = useRouter();
   const search = Route.useSearch();
   const navigate = Route.useNavigate();
   const [deleteSelectedDialogOpen, setDeleteSelectedDialogOpen] =
@@ -181,6 +188,29 @@ function RouteComponent() {
   );
 
   const { trashApp } = useTrashApp({ navigateOnDelete: false });
+
+  const importProjectMutation = useMutation(
+    rpcClient.utils.importProject.mutationOptions(),
+  );
+
+  const handleImport = useCallback(() => {
+    importProjectMutation.mutate(undefined, {
+      onError: (error) => {
+        if (isDefinedError(error) && error.code !== "IMPORT_CANCELLED") {
+          toast.error("Failed to import project", {
+            description: error.message,
+          });
+        }
+      },
+      onSuccess: (data) => {
+        toast.success("Project imported successfully");
+        void router.navigate({
+          params: { subdomain: data.subdomain },
+          to: "/projects/$subdomain",
+        });
+      },
+    });
+  }, [importProjectMutation, router]);
 
   const handleStop = useCallback(
     (subdomain: ProjectSubdomain) => {
@@ -383,9 +413,27 @@ function RouteComponent() {
                 )}
               </TabsList>
             </Tabs>
-            <Button asChild size="sm">
-              <InternalLink to="/new-tab">New project</InternalLink>
-            </Button>
+            <div className="flex gap-x-2">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    disabled={importProjectMutation.isPending}
+                    onClick={handleImport}
+                    size="sm"
+                    variant="secondary"
+                  >
+                    Import project
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  Select a folder exported from Quests containing a quests.json
+                  file
+                </TooltipContent>
+              </Tooltip>
+              <Button asChild size="sm">
+                <InternalLink to="/new-tab">New project</InternalLink>
+              </Button>
+            </div>
           </div>
 
           {isLoading ? (

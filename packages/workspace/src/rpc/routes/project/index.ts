@@ -22,6 +22,7 @@ import { generateChatTitle } from "../../../lib/generate-project-title";
 import { generateProjectTitleAndIcon } from "../../../lib/generate-project-title-and-icon";
 import { getApp, getProjects } from "../../../lib/get-apps";
 import { getWorkspaceAppForSubdomain } from "../../../lib/get-workspace-app-for-subdomain";
+import { importProject as importProjectLib } from "../../../lib/import-project";
 import { pathExists } from "../../../lib/path-exists";
 import { projectModeForSubdomain } from "../../../lib/project-mode-for-subdomain";
 import { setProjectState } from "../../../lib/project-state-store";
@@ -451,6 +452,40 @@ const duplicate = base
     },
   );
 
+const importProject = base
+  .input(
+    z.object({
+      sourcePath: z.string(),
+    }),
+  )
+  .output(
+    z.object({
+      subdomain: ProjectSubdomainSchema,
+    }),
+  )
+  .handler(async ({ context, errors, input: { sourcePath }, signal }) => {
+    const result = await importProjectLib(
+      {
+        sourcePath,
+        workspaceFolder: context.workspaceConfig.rootDir,
+      },
+      { signal },
+    );
+
+    if (result.isErr()) {
+      context.workspaceConfig.captureException(result.error);
+      throw toORPCError(result.error, errors);
+    }
+
+    publisher.publish("project.updated", {
+      subdomain: result.value.projectConfig.subdomain,
+    });
+
+    context.workspaceConfig.captureEvent("project.imported");
+
+    return { subdomain: result.value.projectConfig.subdomain };
+  });
+
 const trash = base
   .input(z.object({ subdomain: ProjectSubdomainSchema }))
   .handler(async ({ context, errors, input: { subdomain } }) => {
@@ -646,6 +681,7 @@ export const project = {
   duplicate,
   exportZip,
   git: projectGit,
+  import: importProject,
   list,
   live,
   state: projectState,

@@ -2,16 +2,18 @@ import { ok, ResultAsync } from "neverthrow";
 import fs from "node:fs/promises";
 import path from "node:path";
 
-import { QUEST_MANIFEST_FILE_NAME } from "../constants";
+import { APP_PRIVATE_FOLDER, QUEST_MANIFEST_FILE_NAME } from "../constants";
 import { type AbsolutePath } from "../schemas/paths";
 import { TypedError } from "./errors";
 import { getIgnore } from "./get-ignore";
 
 export function copyProject({
+  includePrivateFolder,
   isTemplate,
   sourceDir,
   targetDir,
 }: {
+  includePrivateFolder: boolean;
   isTemplate: boolean;
   sourceDir: AbsolutePath;
   targetDir: AbsolutePath;
@@ -31,6 +33,9 @@ export function copyProject({
         // Screenshots can confuse the agent
         ignore.add("screenshot.*");
       }
+      if (!includePrivateFolder) {
+        ignore.add(APP_PRIVATE_FOLDER);
+      }
       return ok(ignore);
     })
     .andThen((ignore) =>
@@ -38,7 +43,16 @@ export function copyProject({
         fs.cp(sourceDir, targetDir, {
           filter: (src) => {
             const relativePath = path.relative(sourceDir, src);
-            return relativePath === "" || !ignore.ignores(relativePath);
+            if (relativePath === "") {
+              return true;
+            }
+            if (
+              includePrivateFolder &&
+              relativePath.startsWith(APP_PRIVATE_FOLDER)
+            ) {
+              return true;
+            }
+            return !ignore.ignores(relativePath);
           },
           recursive: true,
         }),
