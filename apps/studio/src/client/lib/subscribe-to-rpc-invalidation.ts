@@ -27,7 +27,7 @@ export async function subscribeToRPCInvalidation({
 
   for await (const payload of subscription) {
     for (const rpcPath of payload.rpcPaths) {
-      const procedure = get<Procedure>(rpcClient, rpcPath.join("."));
+      const procedure = get<Procedure>(rpcClient, rpcPath);
       await queryClient.invalidateQueries({ queryKey: procedure.queryKey() });
 
       if (isEqual(procedure.queryKey(), userQueryKey)) {

@@ -27,7 +27,7 @@ interface PublisherEvents {
   "preferences.updated": null;
   "provider-config.updated": null;
   "rpc.invalidate": {
-    rpcPaths: string[][];
+    rpcPaths: string[];
   };
   "server-exception": {
     message: string;

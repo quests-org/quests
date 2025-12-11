@@ -13,7 +13,9 @@ const ORPC_ERRORS = {
 } as const satisfies ErrorMap;
 
 interface ORPCMetadata {
-  invalidateClientsOn?: PublisherEventType[];
+  // Right now, we only support a limited explicit set of event types that can
+  // be used to invalidate clients.
+  invalidateClientsOn?: Extract<PublisherEventType, "auth.updated">[];
 }
 
 const osBase = os.$context<InitialRPCContext>().errors(ORPC_ERRORS);
@@ -29,7 +31,7 @@ export const base = osBase
     if (meta.invalidateClientsOn) {
       registerProcedureInvalidation({
         eventTypes: meta.invalidateClientsOn,
-        rpcPath: path,
+        rpcPath: path.join("."),
       });
     }
     return await next();

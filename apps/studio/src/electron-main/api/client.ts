@@ -17,13 +17,7 @@ import { isEqual } from "radashi";
 
 import { captureServerException } from "../lib/capture-server-exception";
 
-const SUBSCRIBERS = new Map<
-  string,
-  {
-    eventTypes: PublisherEventType[];
-    rpcPath: string[];
-  }
->();
+const SUBSCRIBERS = new Map<string, PublisherEventType[]>();
 
 const RPC_LINK = new RPCLink({
   headers: () => {
@@ -76,7 +70,7 @@ queryClient.getQueryCache().subscribe((event) => {
   }
 
   publisher.publish("rpc.invalidate", {
-    rpcPaths: [...SUBSCRIBERS.values()].map(({ rpcPath }) => rpcPath),
+    rpcPaths: [...SUBSCRIBERS.keys()],
   });
 });
 
@@ -89,9 +83,9 @@ void publisher.subscribe("auth.updated", () => {
       // Causes all clients to invalidate the relevant queries.
 
       publisher.publish("rpc.invalidate", {
-        rpcPaths: [...SUBSCRIBERS.values()]
-          .filter(({ eventTypes }) => eventTypes.includes("auth.updated"))
-          .map(({ rpcPath }) => rpcPath),
+        rpcPaths: [...SUBSCRIBERS.entries()]
+          .filter(([, eventTypes]) => eventTypes.includes("auth.updated"))
+          .map(([rpcPath]) => rpcPath),
       });
     })
     .catch((error: unknown) => {
@@ -124,17 +118,16 @@ export function registerProcedureInvalidation({
   rpcPath,
 }: {
   eventTypes: PublisherEventType[];
-  rpcPath: readonly string[];
+  rpcPath: string;
 }) {
-  const key = rpcPath.join(".");
-  const existing = SUBSCRIBERS.get(key);
+  const existing = SUBSCRIBERS.get(rpcPath);
 
   if (existing) {
-    const isSame = isEqual(existing.eventTypes, eventTypes);
+    const isSame = isEqual(existing, eventTypes);
     if (!isSame) {
       captureServerException(
         new Error(
-          `Cannot re-register RPC path "${key}" with different event types`,
+          `Cannot re-register RPC path "${rpcPath}" with different event types`,
         ),
         { scopes: ["api"] },
       );
@@ -142,8 +135,5 @@ export function registerProcedureInvalidation({
     return;
   }
 
-  SUBSCRIBERS.set(key, {
-    eventTypes,
-    rpcPath: [...rpcPath],
-  });
+  SUBSCRIBERS.set(rpcPath, eventTypes);
 }
