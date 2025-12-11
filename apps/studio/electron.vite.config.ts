@@ -4,12 +4,38 @@ import { ValidateEnv } from "@julr/vite-plugin-validate-env";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
-import { defineConfig, externalizeDepsPlugin } from "electron-vite";
+import { defineConfig } from "electron-vite";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { readPackage } from "read-pkg";
 import { analyzer } from "vite-bundle-analyzer";
 
 const isAnalyzing = process.env.ANALYZE_BUILD === "true";
+
+const monorepoNamespace = "@quests";
+// Not including "components" it will be bundled by default in the client
+const monorepoPackages = ["workspace", "shared", "ai-gateway"];
+
+async function getMonorepoDeps(packageName: string) {
+  const pkg = await readPackage({
+    cwd: path.join(process.cwd(), `../../packages/${packageName}`),
+  });
+  return Object.keys(pkg.dependencies ?? {}).filter(
+    (dep) => !dep.startsWith(monorepoNamespace),
+  );
+}
+
+const monorepoDepsPromises = await Promise.all(
+  monorepoPackages.map(getMonorepoDeps),
+);
+const monorepoDeps = [...new Set(monorepoDepsPromises.flat())];
+
+const mainExternalizeExclude = [
+  // Monorepos packages export .ts files, which must be bundled
+  ...monorepoPackages.map((pkg) => `${monorepoNamespace}/${pkg}`),
+  "@tanstack/query-core",
+  "execa",
+];
 
 const resolve = {
   alias: {
@@ -33,9 +59,19 @@ const validateProductionEnv: Plugin = {
   name: "validate-production-env",
 };
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   main: {
     build: {
+      externalizeDeps: {
+        exclude: mainExternalizeExclude,
+        include:
+          // In dev, we must include all dependencies
+          command === "serve"
+            ? []
+            : monorepoDeps.filter(
+                (dep) => !mainExternalizeExclude.includes(dep),
+              ),
+      },
       lib: {
         entry: path.join(process.cwd(), "src/electron-main/index.ts"),
       },
@@ -55,13 +91,7 @@ export default defineConfig({
       },
       watch: {}, // Enable hot reloading
     },
-    plugins: [
-      ...(isAnalyzing ? [analyzer()] : []),
-      validateProductionEnv,
-      externalizeDepsPlugin({
-        exclude: ["@quests/workspace", "@quests/shared", "@quests/ai-gateway"],
-      }),
-    ],
+    plugins: [...(isAnalyzing ? [analyzer()] : []), validateProductionEnv],
     resolve,
   },
   preload: {
@@ -71,11 +101,7 @@ export default defineConfig({
       },
       watch: {}, // Enable hot reloading
     },
-    plugins: [
-      ...(isAnalyzing ? [analyzer()] : []),
-      validateProductionEnv,
-      externalizeDepsPlugin(),
-    ],
+    plugins: [...(isAnalyzing ? [analyzer()] : []), validateProductionEnv],
     resolve,
   },
   renderer: {
@@ -106,4 +132,4 @@ export default defineConfig({
     resolve,
     root: path.resolve("src"),
   },
-});
+}));
