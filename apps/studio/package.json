@@ -38,7 +38,6 @@
     "check:types": "tsc --noEmit",
     "dev": "NODE_OPTIONS='--enable-source-maps' electron-vite dev --sourcemap",
     "dev:fresh": "ELECTRON_USE_NEW_USER_FOLDER=true NODE_OPTIONS='--enable-source-maps' electron-vite dev --sourcemap",
-    "electron-vite": "electron-vite",
     "lint:fix": "eslint . --max-warnings 0 --fix",
     "start": "electron-vite preview",
     "tag:release:minor": "tsx scripts/tag-release.ts minor",
