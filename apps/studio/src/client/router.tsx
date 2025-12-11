@@ -8,6 +8,10 @@ import {
   createRouter as createTanStackRouter,
 } from "@tanstack/react-router";
 
+import {
+  subscribeToCacheDataUpdates,
+  subscribeToCacheUpdates,
+} from "./lib/subscribe-to-cache-updates";
 import { telemetry } from "./lib/telemetry";
 import { routeTree } from "./routeTree.gen";
 
@@ -37,6 +41,9 @@ function createRouter(options?: { history?: RouterHistory }) {
     }
     telemetry?.capture("$pageview");
   });
+
+  void subscribeToCacheUpdates(queryClient);
+  void subscribeToCacheDataUpdates(queryClient);
 
   return {
     queryClient,

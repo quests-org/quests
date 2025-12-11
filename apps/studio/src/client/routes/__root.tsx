@@ -3,7 +3,6 @@ import type { ErrorComponentProps } from "@tanstack/react-router";
 import { DefaultErrorComponent } from "@/client/components/default-error-component";
 import { NotFoundRouteComponent } from "@/client/components/not-found";
 import { ThemeProvider } from "@/client/components/theme-provider";
-import { useQueryClientSync } from "@/client/hooks/use-query-client-sync";
 import { type QueryClient } from "@tanstack/react-query";
 import {
   createRootRouteWithContext,
@@ -54,7 +53,6 @@ function RootComponent() {
     (match) => match.context.disableHotkeyReload,
   );
 
-  useQueryClientSync();
   useReload(
     useCallback(() => {
       if (disableHotkeyReload) {
