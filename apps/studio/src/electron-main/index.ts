@@ -36,6 +36,14 @@ import { initializeRPC } from "./rpc/initialize";
 const passwordStore = setupDBusEnvironment();
 
 if (platform.isLinux) {
+  // Fix issues with Wayland on Linux until it stabilizes
+  // https://github.com/RocketChat/Rocket.Chat.Electron/pull/3159
+  // https://github.com/electron/electron/pull/48301
+  //
+  // `ELECTRON_OZONE_PLATFORM_HINT` was removed.
+  // https://www.electronjs.org/docs/latest/breaking-changes#planned-breaking-api-changes-380
+  app.commandLine.appendSwitch("ozone-platform", "x11");
+
   const existing = app.commandLine.getSwitchValue("password-store");
   if (existing) {
     logger.info(
