@@ -88,8 +88,8 @@ export async function importProject(
     if (!hasGitRepo) {
       yield* git(GitCommands.init(), projectDir, { signal });
       yield* git(GitCommands.addAll(), projectDir, { signal });
-      // If "import" is used literally at the end of a string,
-      // it will cause an unterminated string literal error with Electron Vite.
+      // If "import" is used literally at the end of a string, it will cause an
+      // unterminated string literal error with Electron Vite.
       const reservedWord = "import";
       yield* git(
         GitCommands.commitWithAuthor(`Initial commit after ${reservedWord}`),
