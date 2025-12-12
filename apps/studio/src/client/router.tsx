@@ -39,7 +39,7 @@ function createRouter(options?: { history?: RouterHistory }) {
     telemetry?.capture("$pageview");
   });
 
-  void subscribeToRPCInvalidation({ queryClient, router });
+  void subscribeToRPCInvalidation({ queryClient });
 
   return {
     queryClient,

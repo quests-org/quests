@@ -142,11 +142,11 @@ export async function startAuthCallbackServer() {
       return c.html(renderAuthPage({ isError: true }), 400);
     }
 
-    captureServerEvent("auth.signed_in");
     void setDefaultModelIfNeeded({ forceUpdateForNewLogin: true });
     publisher.publish("auth.sign-in-success", { success: true });
     publisher.publish("auth.updated", null);
     focusMainWindow();
+    captureServerEvent("auth.signed_in");
     return c.html(renderAuthPage({}));
   });
 

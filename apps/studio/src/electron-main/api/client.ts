@@ -1,10 +1,7 @@
 import { API_RPC_BASE_URL } from "@/electron-main/api/constants";
 import { type contract } from "@/electron-main/api/contract";
 import { getToken } from "@/electron-main/api/utils";
-import {
-  publisher,
-  type PublisherEventType,
-} from "@/electron-main/rpc/publisher";
+import { publisher } from "@/electron-main/rpc/publisher";
 import { createORPCClient } from "@orpc/client";
 import { RPCLink } from "@orpc/client/fetch";
 import { DedupeRequestsPlugin } from "@orpc/client/plugins";
@@ -13,11 +10,9 @@ import {
   type InferContractRouterOutputs,
 } from "@orpc/contract";
 import { QueryClient } from "@tanstack/query-core";
-import { isEqual } from "radashi";
 
 import { captureServerException } from "../lib/capture-server-exception";
-
-const SUBSCRIBERS = new Map<string, PublisherEventType[]>();
+import { invalidateClientQueries } from "../lib/invalidate-client-queries";
 
 const RPC_LINK = new RPCLink({
   headers: () => {
@@ -65,32 +60,23 @@ const queryClient = new QueryClient({
 });
 
 queryClient.getQueryCache().subscribe((event) => {
-  if (event.type !== "updated") {
+  if (
+    (event.type === "updated" &&
+      ["setState", "success"].includes(event.action.type)) ||
+    event.type === "removed"
+  ) {
+    // Could be made more granular, but fine for now.
+    invalidateClientQueries(["user.updated", "subscription.updated"]);
     return;
   }
-
-  publisher.publish("rpc.invalidate", {
-    rpcPaths: [...SUBSCRIBERS.keys()],
-  });
 });
 
 void publisher.subscribe("auth.updated", () => {
-  // Clears the entire server query cache. Make this more granular in the future
-  // if needed.
-  queryClient
-    .invalidateQueries()
-    .then(() => {
-      // Causes all clients to invalidate the relevant queries.
-
-      publisher.publish("rpc.invalidate", {
-        rpcPaths: [...SUBSCRIBERS.entries()]
-          .filter(([, eventTypes]) => eventTypes.includes("auth.updated"))
-          .map(([rpcPath]) => rpcPath),
-      });
-    })
-    .catch((error: unknown) => {
-      captureServerException(error, { scopes: ["api"] });
-    });
+  // Must use resetQueries instead of other methods because it doesn't remove
+  // the subscriber above.
+  void queryClient.resetQueries().catch((error: unknown) => {
+    captureServerException(error, { scopes: ["api"] });
+  });
 });
 
 export async function fetchSubscriptionStatus({
@@ -111,29 +97,4 @@ export async function getMe() {
     queryKey: ["users", "getMe"],
   });
   return data;
-}
-
-export function registerProcedureInvalidation({
-  eventTypes,
-  rpcPath,
-}: {
-  eventTypes: PublisherEventType[];
-  rpcPath: string;
-}) {
-  const existing = SUBSCRIBERS.get(rpcPath);
-
-  if (existing) {
-    const isSame = isEqual(existing, eventTypes);
-    if (!isSame) {
-      captureServerException(
-        new Error(
-          `Cannot re-register RPC path "${rpcPath}" with different event types`,
-        ),
-        { scopes: ["api"] },
-      );
-    }
-    return;
-  }
-
-  SUBSCRIBERS.set(rpcPath, eventTypes);
 }

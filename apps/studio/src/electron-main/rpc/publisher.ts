@@ -2,9 +2,8 @@ import { type AppUpdaterStatus } from "@/electron-main/lib/update";
 import { type TabState } from "@/shared/tabs";
 import { EventPublisher } from "@orpc/server";
 
-export type PublisherEventType = keyof PublisherEvents;
-
 interface PublisherEvents {
+  "apiBearerToken.updated": null;
   "app.reload": { webContentsId: number };
   "auth.sign-in-error": {
     error: {

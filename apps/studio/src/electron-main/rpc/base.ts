@@ -1,11 +1,13 @@
 import { hasToken } from "@/electron-main/api/utils";
 import { type ErrorMap, onError, os } from "@orpc/server";
 
-import { registerProcedureInvalidation } from "../api/client";
 import { captureServerException } from "../lib/capture-server-exception";
+import {
+  type ClientInvalidationEventType,
+  registerProcedureForClientInvalidation,
+} from "../lib/invalidate-client-queries";
 import { getTabsManager } from "../tabs";
 import { type InitialRPCContext } from "./context";
-import { type PublisherEventType } from "./publisher";
 
 const ORPC_ERRORS = {
   NOT_FOUND: {},
@@ -13,9 +15,7 @@ const ORPC_ERRORS = {
 } as const satisfies ErrorMap;
 
 interface ORPCMetadata {
-  // Right now, we only support a limited explicit set of event types that can
-  // be used to invalidate clients.
-  invalidateClientsOn?: Extract<PublisherEventType, "auth.updated">[];
+  invalidateClientsOn?: ClientInvalidationEventType[];
 }
 
 const osBase = os.$context<InitialRPCContext>().errors(ORPC_ERRORS);
@@ -29,7 +29,7 @@ export const base = osBase
   .use(async ({ next, path, procedure }) => {
     const meta = procedure["~orpc"].meta;
     if (meta.invalidateClientsOn) {
-      registerProcedureInvalidation({
+      registerProcedureForClientInvalidation({
         eventTypes: meta.invalidateClientsOn,
         rpcPath: path.join("."),
       });

@@ -1,4 +1,5 @@
 import { Toaster } from "@/client/components/ui/sonner";
+import { useInvalidateRouterOnUserChange } from "@/client/hooks/use-invalidate-router-on-user-change";
 import { useUpdateNotifications } from "@/client/hooks/use-update-notifications";
 import { rpcClient } from "@/client/rpc/client";
 import { useQuery } from "@tanstack/react-query";
@@ -20,6 +21,7 @@ function RouteComponent() {
     rpcClient.preferences.live.get.experimental_liveOptions(),
   );
   useUpdateNotifications();
+  useInvalidateRouterOnUserChange();
 
   return (
     <div className="flex h-full flex-col relative bg-background min-h-dvh">

@@ -12,13 +12,13 @@ const hasAIProviderConfig = base.handler(() => {
 });
 
 const me = authenticatedOptional
-  .meta({ invalidateClientsOn: ["auth.updated"] })
+  .meta({ invalidateClientsOn: ["user.updated"] })
   .handler(() => {
     return getMe();
   });
 
 const subscriptionStatus = authenticatedOptional
-  .meta({ invalidateClientsOn: ["auth.updated"] })
+  .meta({ invalidateClientsOn: ["subscription.updated"] })
   .input(z.void().or(z.object({ staleTime: z.number().optional() })))
   .handler(({ input }) => {
     return fetchSubscriptionStatus(input ? { staleTime: input.staleTime } : {});

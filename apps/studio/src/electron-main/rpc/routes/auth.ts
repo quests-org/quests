@@ -11,7 +11,7 @@ const signOut = base.handler(async () => {
 });
 
 const hasToken = base
-  .meta({ invalidateClientsOn: ["auth.updated"] })
+  .meta({ invalidateClientsOn: ["apiBearerToken.updated"] })
   .handler(() => {
     return hasTokenUtil();
   });
