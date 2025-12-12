@@ -3,5 +3,4 @@ description: General rules for the project.
 alwaysApply: true
 ---
 
-- NEVER add comments unless asked by the user.
-- Don't remove existing comments unless asked by the user.
+- Only add comments for very complex code or if asked by the user.
