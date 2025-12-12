@@ -46,7 +46,9 @@ function RouteComponent() {
   const [selectedModelURI, setSelectedModelURI, saveSelectedModelURI] =
     useDefaultModelURI();
   const [agentName, setAgentName] = useAtom(agentNameAtom);
-  const { data: user } = useQuery(rpcClient.user.me.queryOptions());
+  const { data: hasToken, isLoading: isLoadingHasToken } = useQuery(
+    rpcClient.auth.hasToken.queryOptions(),
+  );
   const navigate = useNavigate({ from: "/new-tab" });
   const router = useRouter();
   const { addTab } = useTabActions();
@@ -77,7 +79,7 @@ function RouteComponent() {
     <div className="w-full min-h-screen flex-1 flex flex-col items-center relative">
       <div className="flex items-center justify-center w-full">
         <div className="w-full max-w-2xl space-y-8 px-8 pt-36">
-          {!user && (
+          {!hasToken && !isLoadingHasToken && (
             <div className="flex flex-col items-center gap-y-4 mb-8">
               <button
                 className="group flex items-center gap-x-3 border-2 border-brand/40 hover:border-brand rounded-full px-4 py-2 transition-colors"
