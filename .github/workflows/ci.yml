@@ -119,6 +119,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          # A fine-grained GitHub personal access token is required to checkout submodules
+          # https://github.com/actions/checkout/issues/287
+          # Permissions required:
+          # - Repository access to quests-org/quests & quests-org/registry
+          # - Read access to "Contents" and "Metadata"
+          # - Read/Write access to actions and workflows
+          token: ${{ secrets.CHECKOUT_ACCESS_TOKEN }}
       - uses: ./.github/actions/setup-ripgrep-cache
       - uses: ./.github/actions/prepare
         with:
