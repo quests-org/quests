@@ -96,7 +96,10 @@
     "check:unused": {
       "dependsOn": ["^check:unused"]
     },
-    "//#check:unused": {},
+    "//#check:electron-node-version": {},
+    "check:electron-node-version": {
+      "dependsOn": ["^check:electron-node-version"]
+    },
     "check:unused-words": {
       "dependsOn": ["^check:unused-words"]
     },

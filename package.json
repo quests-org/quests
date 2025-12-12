@@ -14,8 +14,9 @@
   "files": [],
   "scripts": {
     "build": "turbo build",
-    "check": "turbo run check:format check:unused check:unused-words check:packages check:spelling check:md check:types check:lint check:build --ui tui --continue=dependencies-successful --output-logs errors-only",
+    "check": "turbo run check:electron-node-version check:format check:unused check:unused-words check:packages check:spelling check:md check:types check:lint check:build --ui tui --continue=dependencies-successful --output-logs errors-only",
     "check-and-test": "pnpm check test:ci",
+    "check:electron-node-version": "tsx scripts/check-electron-node-version.ts",
     "check:format": "prettier --check .",
     "check:lint": "eslint . --max-warnings 0 --cache",
     "check:md": "markdownlint \"**/*.md\" \".github/**/*.md\"",
@@ -75,7 +76,7 @@
   },
   "packageManager": "pnpm@10.22.0",
   "engines": {
-    "node": ">=22.16.0"
+    "node": ">=22.21.1"
   },
   "publishConfig": {
     "provenance": true

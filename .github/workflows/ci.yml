@@ -114,6 +114,17 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
       - uses: rharkor/caching-for-turbo@v1.8
       - run: pnpm turbo:check:types
+  check_electron_node_version:
+    name: Check Electron Node Version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-ripgrep-cache
+      - uses: ./.github/actions/prepare
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: rharkor/caching-for-turbo@v1.8
+      - run: pnpm scripts:check-electron-node-version
 
 name: CI
 

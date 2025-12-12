@@ -142,8 +142,8 @@
     "@types/semver": "^7.7.0",
     "@vitejs/plugin-react": "catalog:",
     "babel-plugin-react-compiler": "^1.0.0",
-    "electron": "^37.2.3",
-    "electron-builder": "^26.0.20",
+    "electron": "^39.2.6",
+    "electron-builder": "^26.3.6",
     "electron-vite": "^5.0.0",
     "semver": "^7.7.2",
     "sharp": "^0.34.3",
@@ -157,7 +157,7 @@
     "write-package": "^7.1.0"
   },
   "engines": {
-    "node": ">=22.5"
+    "node": ">=22.21.1"
   },
   "productName": "Quests"
 }
