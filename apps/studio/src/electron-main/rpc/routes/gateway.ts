@@ -67,11 +67,14 @@ const live = {
         signal,
       },
     );
-    const authUpdates = publisher.subscribe("auth.updated", { signal });
+    const apiBearerTokenUpdated = publisher.subscribe(
+      "session.apiBearerToken.updated",
+      { signal },
+    );
 
     for await (const _ of mergeGenerators([
       providerConfigUpdates,
-      authUpdates,
+      apiBearerTokenUpdated,
     ])) {
       yield call(list, {}, { context, signal });
     }

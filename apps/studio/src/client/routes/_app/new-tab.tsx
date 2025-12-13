@@ -47,7 +47,7 @@ function RouteComponent() {
     useDefaultModelURI();
   const [agentName, setAgentName] = useAtom(agentNameAtom);
   const { data: hasToken, isLoading: isLoadingHasToken } = useQuery(
-    rpcClient.auth.hasToken.queryOptions(),
+    rpcClient.auth.live.hasToken.experimental_liveOptions(),
   );
   const navigate = useNavigate({ from: "/new-tab" });
   const router = useRouter();

@@ -2,8 +2,9 @@ import { type AppUpdaterStatus } from "@/electron-main/lib/update";
 import { type TabState } from "@/shared/tabs";
 import { EventPublisher } from "@orpc/server";
 
+export type PublisherEventType = keyof PublisherEvents;
+
 interface PublisherEvents {
-  "apiBearerToken.updated": null;
   "app.reload": { webContentsId: number };
   "auth.sign-in-error": {
     error: {
@@ -16,7 +17,6 @@ interface PublisherEvents {
   "auth.sign-in-success": {
     success: true;
   };
-  "auth.updated": null;
   "debug.open-analytics-toolbar": null;
   "debug.open-debug-page": null;
   "debug.open-query-devtools": null;
@@ -25,15 +25,12 @@ interface PublisherEvents {
   "features.updated": null;
   "preferences.updated": null;
   "provider-config.updated": null;
-  "rpc.invalidate": {
-    rpcPaths: string[];
-  };
   "server-exception": {
     message: string;
     stack?: string;
   };
   "server-exceptions.updated": null;
-  "session.updated": null;
+  "session.apiBearerToken.updated": null;
   "sidebar.visibility-updated": Partial<{
     visible: boolean;
   }>;

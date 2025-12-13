@@ -119,6 +119,5 @@ export async function signOut() {
   }
   const sessionStore = getSessionStore();
   sessionStore.set("apiBearerToken", null);
-  publisher.publish("auth.updated", null);
   return response;
 }

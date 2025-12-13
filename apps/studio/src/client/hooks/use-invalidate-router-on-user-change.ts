@@ -12,7 +12,9 @@ import { useEffect, useRef } from "react";
 // router invalidation happens at the app level when user state changes.
 export function useInvalidateRouterOnUserChange() {
   const router = useRouter();
-  const { data: user } = useQuery(rpcClient.user.me.queryOptions());
+  const { data: user } = useQuery(
+    rpcClient.user.live.me.experimental_liveOptions(),
+  );
   const hadUserRef = useRef<boolean | null>(null);
 
   useEffect(() => {

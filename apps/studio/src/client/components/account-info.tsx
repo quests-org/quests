@@ -10,13 +10,15 @@ import { SubscriptionCard } from "./subscription-card";
 import { UserInfoCard } from "./user-info-card";
 
 export function AccountInfo() {
-  const { data: hasToken } = useQuery(rpcClient.auth.hasToken.queryOptions());
+  const { data: hasToken } = useQuery(
+    rpcClient.auth.live.hasToken.experimental_liveOptions(),
+  );
   const {
     data: user,
     error,
     isLoading,
     refetch,
-  } = useQuery(rpcClient.user.me.queryOptions());
+  } = useQuery(rpcClient.user.live.me.experimental_liveOptions());
   const { addTab } = useTabActions();
 
   return (

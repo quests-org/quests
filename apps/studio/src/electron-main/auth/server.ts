@@ -124,7 +124,6 @@ export async function startAuthCallbackServer() {
         publisher.publish("auth.sign-in-error", {
           error: res.error,
         });
-        publisher.publish("auth.updated", null);
         focusMainWindow();
         return await c.html(
           renderAuthPage({
@@ -144,7 +143,6 @@ export async function startAuthCallbackServer() {
 
     void setDefaultModelIfNeeded({ forceUpdateForNewLogin: true });
     publisher.publish("auth.sign-in-success", { success: true });
-    publisher.publish("auth.updated", null);
     focusMainWindow();
     captureServerEvent("auth.signed_in");
     return c.html(renderAuthPage({}));

@@ -8,7 +8,6 @@ import {
   createRouter as createTanStackRouter,
 } from "@tanstack/react-router";
 
-import { subscribeToRPCInvalidation } from "./lib/subscribe-to-rpc-invalidation";
 import { telemetry } from "./lib/telemetry";
 import { routeTree } from "./routeTree.gen";
 
@@ -38,8 +37,6 @@ function createRouter(options?: { history?: RouterHistory }) {
     }
     telemetry?.capture("$pageview");
   });
-
-  void subscribeToRPCInvalidation({ queryClient });
 
   return {
     queryClient,

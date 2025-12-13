@@ -37,6 +37,7 @@ interface ModelPickerProps {
   isLoading?: boolean;
   models?: AIGatewayModel.Type[];
   onAddProvider?: () => void;
+  onOpenChange?: (open: boolean) => void;
   onValueChange: (value: AIGatewayModelURI.Type) => void;
   placeholder?: string;
   selectedModel?: AIGatewayModel.Type;
@@ -50,6 +51,7 @@ export function ModelPicker({
   isLoading = false,
   models,
   onAddProvider,
+  onOpenChange,
   onValueChange,
   placeholder = "Select a model",
   selectedModel,
@@ -107,7 +109,13 @@ export function ModelPicker({
   };
 
   return (
-    <Popover onOpenChange={setOpen} open={open}>
+    <Popover
+      onOpenChange={(newOpen) => {
+        setOpen(newOpen);
+        onOpenChange?.(newOpen);
+      }}
+      open={open}
+    >
       <PopoverTrigger asChild>
         <Button
           aria-expanded={open}

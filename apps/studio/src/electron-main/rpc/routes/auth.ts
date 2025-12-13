@@ -6,15 +6,26 @@ import {
 import { base } from "@/electron-main/rpc/base";
 import { z } from "zod";
 
+import { publisher } from "../publisher";
+
 const signOut = base.handler(async () => {
   await signOutFn();
 });
 
-const hasToken = base
-  .meta({ invalidateClientsOn: ["apiBearerToken.updated"] })
-  .handler(() => {
-    return hasTokenUtil();
-  });
+const live = {
+  hasToken: base.handler(async function* ({ signal }) {
+    yield hasTokenUtil();
+
+    for await (const _ of publisher.subscribe(
+      "session.apiBearerToken.updated",
+      {
+        signal,
+      },
+    )) {
+      yield hasTokenUtil();
+    }
+  }),
+};
 
 const signInSocial = base
   .input(
@@ -27,7 +38,7 @@ const signInSocial = base
   });
 
 export const auth = {
-  hasToken,
+  live,
   signInSocial,
   signOut,
 };

@@ -11,7 +11,9 @@ import { rpcClient } from "@/client/rpc/client";
 import { useQuery } from "@tanstack/react-query";
 
 export function UserInfoCard() {
-  const { data: user } = useQuery(rpcClient.user.me.queryOptions());
+  const { data: user } = useQuery(
+    rpcClient.user.live.me.experimental_liveOptions(),
+  );
 
   if (!user?.id) {
     return null;

@@ -25,9 +25,7 @@ const planBadgeVariants = cva("text-xs px-2 py-0.5", {
 export function SubscriptionCard() {
   const { addTab } = useTabActions();
   const { data: subscription } = useQuery(
-    rpcClient.user.subscriptionStatus.queryOptions({
-      input: { watchFocusChanges: true },
-    }),
+    rpcClient.user.live.subscriptionStatus.experimental_liveOptions(),
   );
   const { mutateAsync: createPortalSession } = useMutation(
     rpcClient.stripe.createPortalSession.mutationOptions(),

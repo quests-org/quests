@@ -42,10 +42,10 @@ export function NavUser() {
     rpcClient.providerConfig.live.list.experimental_liveOptions(),
   );
   const { data: user, refetch: refetchUser } = useQuery(
-    rpcClient.user.me.queryOptions(),
+    rpcClient.user.live.me.experimental_liveOptions(),
   );
   const { data: subscription, refetch: refetchSubscription } = useQuery(
-    rpcClient.user.subscriptionStatus.queryOptions(),
+    rpcClient.user.live.subscriptionStatus.experimental_liveOptions(),
   );
 
   const plan = subscription?.plan;

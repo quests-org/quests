@@ -11,9 +11,7 @@ export function UpgradeSubscriptionAlert({
   onContinue: () => void;
 }) {
   const { data: subscription } = useQuery(
-    rpcClient.user.subscriptionStatus.queryOptions({
-      refetchOnWindowFocus: true,
-    }),
+    rpcClient.user.live.subscriptionStatus.experimental_liveOptions(),
   );
 
   const plan = subscription?.plan;

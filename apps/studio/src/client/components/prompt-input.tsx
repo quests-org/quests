@@ -123,6 +123,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
       data: modelsData,
       isError: modelsIsError,
       isLoading: modelsIsLoading,
+      refetch: modelsRefetch,
     } = useQuery(rpcClient.gateway.models.live.list.experimental_liveOptions());
     const { errors: modelsErrors, models } = modelsData ?? {};
 
@@ -524,6 +525,11 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
                   models={models}
                   onAddProvider={() => {
                     setShowAIProviderGuard(true);
+                  }}
+                  onOpenChange={(open) => {
+                    if (open && modelsErrors && modelsErrors.length > 0) {
+                      void modelsRefetch();
+                    }
                   }}
                   onValueChange={onModelChange}
                   selectedModel={selectedModel}

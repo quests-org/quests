@@ -69,7 +69,7 @@ export const getSessionStore = (): Store<SessionState> => {
     });
 
     SESSION_STORE.onDidChange("apiBearerToken", () => {
-      publisher.publish("apiBearerToken.updated", null);
+      publisher.publish("session.apiBearerToken.updated", null);
     });
   }
 

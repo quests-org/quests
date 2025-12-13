@@ -27,7 +27,9 @@ export function AISetupView({ mode }: { mode: "setup" | "sign-in" }) {
   const { error, signIn } = useSignInSocial();
   const navigate = useNavigate();
   const { providerMetadataMap } = useAtomValue(providerMetadataAtom);
-  const { data: hasToken } = useQuery(rpcClient.auth.hasToken.queryOptions());
+  const { data: hasToken } = useQuery(
+    rpcClient.auth.live.hasToken.experimental_liveOptions(),
+  );
 
   const { data: providerConfigs } = useQuery(
     rpcClient.providerConfig.live.list.experimental_liveOptions(),
