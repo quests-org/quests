@@ -37,7 +37,10 @@ export function fetchModelsForProvider(
         displayName: config.displayName || metadata.name,
         type: config.type,
       },
-      message: error.message,
+      message:
+        error.type === "gateway-fetch-error"
+          ? `Failed to fetch models for ${config.displayName ?? metadata.name}`
+          : error.message,
     };
   });
 }

@@ -68,6 +68,11 @@ export function ModelPicker({
   const hasErrors = !!errors?.length;
   const isSelectDisabled = disabled || isLoading || isError;
 
+  const hasQuestsProviderError = useMemo(
+    () => errors?.some((error) => error.config.type === "quests"),
+    [errors],
+  );
+
   const getPlaceholderText = () => {
     if (isLoading) {
       return "Loading models...";
@@ -194,15 +199,23 @@ export function ModelPicker({
                     <Button
                       className="h-6 px-2 text-xs"
                       onClick={() => {
-                        void vanillaRpcClient.preferences.openSettingsWindow({
-                          showNewProviderDialog: false,
-                          tab: "Providers",
-                        });
+                        if (hasQuestsProviderError) {
+                          void vanillaRpcClient.preferences.openSettingsWindow({
+                            tab: "General",
+                          });
+                        } else {
+                          void vanillaRpcClient.preferences.openSettingsWindow({
+                            showNewProviderDialog: false,
+                            tab: "Providers",
+                          });
+                        }
                       }}
                       size="sm"
                       variant="outline"
                     >
-                      Edit providers
+                      {hasQuestsProviderError
+                        ? "Check account"
+                        : "Edit providers"}
                     </Button>
                   </div>
                 }
