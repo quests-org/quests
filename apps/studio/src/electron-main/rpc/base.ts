@@ -1,6 +1,6 @@
-import { hasToken } from "@/electron-main/api/utils";
 import { type ErrorMap, onError, os } from "@orpc/server";
 
+import { hasToken } from "../api/utils";
 import { captureServerException } from "../lib/capture-server-exception";
 import { getTabsManager } from "../tabs";
 import { type InitialRPCContext } from "./context";
@@ -16,15 +16,14 @@ export const base = osBase
   .$context<InitialRPCContext>()
   // Injecting this dynamically since it relies on a globally mutable singleton
   .use(({ next }) => next({ context: { tabsManager: getTabsManager() } }))
-  .use(({ next }) => next({ context: { hasToken: hasToken() } }))
   .use(
     onError((error) => {
       captureServerException(error, { scopes: ["rpc"] });
     }),
   );
 
-const authRequired = osBase.middleware(async ({ context, errors, next }) => {
-  if (!context.hasToken) {
+const authRequired = osBase.middleware(async ({ errors, next }) => {
+  if (!hasToken()) {
     throw errors.UNAUTHORIZED();
   }
 

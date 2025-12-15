@@ -1,4 +1,3 @@
-import { hasToken } from "@/electron-main/api/utils";
 import { logger } from "@/electron-main/lib/electron-logger";
 import { RPCHandler } from "@orpc/server/message-port";
 import { fetchAISDKModel } from "@quests/ai-gateway";
@@ -42,7 +41,6 @@ export function initializeRPC({
     handler.upgrade(serverPort, {
       context: {
         appUpdater,
-        hasToken: hasToken(),
         modelRegistry: {
           languageModel: fetchAISDKModel,
         },

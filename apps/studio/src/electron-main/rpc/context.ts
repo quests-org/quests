@@ -8,7 +8,6 @@ import { type StudioAppUpdater } from "../lib/update";
 
 export interface InitialRPCContext extends WorkspaceRPCContext {
   appUpdater: StudioAppUpdater;
-  hasToken: boolean;
   webContentsId: number;
   workspaceConfig: WorkspaceConfig;
   workspaceRef: WorkspaceActorRef;
