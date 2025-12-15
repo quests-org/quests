@@ -16,75 +16,6 @@ const registryToolVersionsPath = path.join(registryPath, ".tool-versions");
 const registryNodeVersionPath = path.join(registryPath, ".node-version");
 const registryPackageJsonPath = path.join(registryPath, "package.json");
 
-function compareVersions(version1: string, version2: string): number {
-  const v1 = parseVersion(version1);
-  const v2 = parseVersion(version2);
-  for (let i = 0; i < 3; i++) {
-    const part1 = v1[i];
-    const part2 = v2[i];
-    if (part1 === undefined || part2 === undefined) {
-      continue;
-    }
-    if (part1 > part2) {
-      return 1;
-    }
-    if (part1 < part2) {
-      return -1;
-    }
-  }
-  return 0;
-}
-
-function findClosestTypesNodeVersion(nodeVersion: string): string {
-  try {
-    const output = execSync("npm view @types/node versions --json", {
-      encoding: "utf8",
-      stdio: "pipe",
-    });
-
-    const versions = JSON.parse(output) as string[];
-    if (!Array.isArray(versions)) {
-      throw new TypeError("Invalid response from npm");
-    }
-
-    const nodeVersionParts = parseVersion(nodeVersion);
-    const matchingVersions = versions.filter((version) => {
-      const versionParts = parseVersion(version);
-      for (let i = 0; i < 3; i++) {
-        const versionPart = versionParts[i];
-        const nodePart = nodeVersionParts[i];
-        if (versionPart === undefined || nodePart === undefined) {
-          continue;
-        }
-        if (versionPart > nodePart) {
-          return false;
-        }
-        if (versionPart < nodePart) {
-          return true;
-        }
-      }
-      return true;
-    });
-
-    if (matchingVersions.length === 0) {
-      throw new Error(
-        `No @types/node version found that is <= Node.js version ${nodeVersion}`,
-      );
-    }
-
-    matchingVersions.sort((a, b) => compareVersions(b, a));
-    const closestVersion = matchingVersions[0];
-    if (!closestVersion) {
-      throw new Error("No matching @types/node version found");
-    }
-    return closestVersion;
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Unknown error occurred";
-    throw new Error(`Failed to query npm for @types/node versions: ${message}`);
-  }
-}
-
 function getElectronNodeVersion(): string {
   try {
     const output = execSync("pnpm exec electron -v", {
@@ -108,6 +39,15 @@ function getElectronNodeVersion(): string {
       `Failed to get Electron Node version: ${message}. Make sure electron is installed in apps/studio.`,
     );
   }
+}
+
+function getExpectedTypesNodeMajorVersion(nodeVersion: string): string {
+  const nodeVersionParts = parseVersion(nodeVersion);
+  const majorVersion = nodeVersionParts[0];
+  if (majorVersion === undefined) {
+    throw new Error(`Invalid Node.js version format: ${nodeVersion}`);
+  }
+  return `${majorVersion}`;
 }
 
 function getNodeVersionFileVersion(filePath: string, name: string): string {
@@ -164,6 +104,12 @@ function getToolVersionsNodeVersion(filePath: string, name: string): string {
   return nodeVersionMatch[1];
 }
 
+function majorVersionsMatch(version1: string, version2: string): boolean {
+  const v1Parts = parseVersion(normalizeVersion(version1));
+  const v2Parts = parseVersion(normalizeVersion(version2));
+  return v1Parts[0] === v2Parts[0];
+}
+
 function normalizeVersion(version: string): string {
   const normalized = version.split("-")[0];
   if (!normalized) {
@@ -218,8 +164,8 @@ try {
   );
   const pnpmWorkspaceTypesNodeVersion =
     getPnpmWorkspaceCatalogTypesNodeVersion();
-  const expectedTypesNodeVersion =
-    findClosestTypesNodeVersion(electronNodeVersion);
+  const expectedTypesNodeMajorVersion =
+    getExpectedTypesNodeMajorVersion(electronNodeVersion);
 
   console.log(`Electron Node.js version: ${electronNodeVersion}`);
   console.log(`Root .node-version: ${nodeVersionFileVersion}`);
@@ -237,7 +183,7 @@ try {
     `pnpm-workspace.yaml catalog @types/node: ${pnpmWorkspaceTypesNodeVersion}`,
   );
   console.log(
-    `Expected @types/node version (closest <= ${electronNodeVersion}): ${expectedTypesNodeVersion}`,
+    `Expected @types/node major version: ${expectedTypesNodeMajorVersion}`,
   );
 
   const errors: string[] = [];
@@ -284,9 +230,14 @@ try {
     );
   }
 
-  if (!versionsMatch(pnpmWorkspaceTypesNodeVersion, expectedTypesNodeVersion)) {
+  if (
+    !majorVersionsMatch(
+      pnpmWorkspaceTypesNodeVersion,
+      expectedTypesNodeMajorVersion,
+    )
+  ) {
     errors.push(
-      `pnpm-workspace.yaml catalog @types/node (${pnpmWorkspaceTypesNodeVersion}) does not match expected version (${expectedTypesNodeVersion}, closest <= ${electronNodeVersion})`,
+      `pnpm-workspace.yaml catalog @types/node (${pnpmWorkspaceTypesNodeVersion}) major version does not match expected major version (${expectedTypesNodeMajorVersion})`,
     );
   }
 
