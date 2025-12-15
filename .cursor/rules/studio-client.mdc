@@ -11,3 +11,5 @@ alwaysApply: false
 - The src/client folder contains the TanStack Router app.
 - shadcn components are installed in `@/client/components/ui`.
 - Use shadcn Tailwind colors for styling, e.g. `bg-background` instead of `bg-white`.
+- The app communicates over oRPC to the main process.
+- We have a remote API for accounts that is also exposed via oRPC.

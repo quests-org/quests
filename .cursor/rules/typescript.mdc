@@ -1,5 +1,5 @@
 ---
-globs: *ts,*.tsx,*.html
+globs: *ts,*.tsx
 alwaysApply: false
 ---
 
@@ -13,6 +13,7 @@ alwaysApply: false
 - Prefer objects for functions with many parameters.
 - Don't run `tsc` to check for type errors, use your built-in diagnostics tool.
 - `"lib": ["es2023", "DOM", "DOM.Iterable"]` is set, so you can use modern features.
+- The `radashi` import is installed. Use it for common lodash-style functions.
 
 ## Tailwind Rules
 
