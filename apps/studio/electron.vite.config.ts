@@ -33,8 +33,7 @@ const monorepoDeps = [...new Set(monorepoDepsPromises.flat())];
 const mainExternalizeExclude = [
   // Monorepos packages export .ts files, which must be bundled
   ...monorepoPackages.map((pkg) => `${monorepoNamespace}/${pkg}`),
-  "@tanstack/query-core",
-  "execa",
+  "execa", // Unsure why this is needed, maybe ESM vs CJS?
 ];
 
 const resolve = {

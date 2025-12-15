@@ -62,7 +62,6 @@ const config: Configuration = {
     // Exclude large client-side dependencies
     "!node_modules/lucide-react/**",
     "!node_modules/react-icons/**",
-    "!node_modules/@tanstack/**",
     "!node_modules/react-dom/**",
     "!**/node_modules/**/*.md",
     "!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}",
