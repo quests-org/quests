@@ -1,7 +1,13 @@
-import { Result } from "typescript-result";
+import { type AsyncResult, Result } from "typescript-result";
 
 import { getCachedResult, setCachedResult } from "./cache";
 import { TypedError } from "./errors";
+
+// Multiple open tabs in the Studio can fire concurrent requests to the same URL.
+const inFlightRequests = new Map<
+  string,
+  AsyncResult<unknown, TypedError.Fetch | TypedError.Parse>
+>();
 
 export function fetchJson({
   cache = true,
@@ -12,46 +18,58 @@ export function fetchJson({
   headers: Headers;
   url: string;
 }) {
-  return Result.gen(function* () {
-    const cacheKey = cache ? createCacheKey(url, headers) : "";
+  const cacheKey = createCacheKey(url, headers);
 
-    if (cache) {
-      const cachedData = getCachedResult<object>(cacheKey);
-      if (cachedData !== undefined) {
-        return cachedData;
-      }
+  if (cache) {
+    const cachedData = getCachedResult<object>(cacheKey);
+    if (cachedData !== undefined) {
+      return Result.ok(cachedData);
     }
+  }
 
-    const response = yield* Result.try(
-      () => fetch(url, { headers, method: "GET" }),
-      (error) =>
-        new TypedError.Fetch(`Failed to fetch from ${url}`, {
-          cause: error,
-        }),
-    );
+  const existingRequest = inFlightRequests.get(cacheKey);
+  if (existingRequest) {
+    return existingRequest;
+  }
 
-    if (!response.ok) {
-      return Result.error(
-        new TypedError.Fetch(
-          `Failed to fetch from ${url}: ${response.status} ${response.statusText}`,
-        ),
+  const requestPromise = Result.gen(function* () {
+    try {
+      const response = yield* Result.try(
+        () => fetch(url, { headers, method: "GET" }),
+        (error) =>
+          new TypedError.Fetch(`Failed to fetch from ${url}`, {
+            cause: error,
+          }),
       );
+
+      if (!response.ok) {
+        return Result.error(
+          new TypedError.Fetch(
+            `Failed to fetch from ${url}: ${response.status} ${response.statusText}`,
+          ),
+        );
+      }
+
+      const data: unknown = yield* Result.try(
+        () => response.json(),
+        (error) =>
+          new TypedError.Parse(`Failed to parse JSON from ${url}`, {
+            cause: error,
+          }),
+      );
+
+      if (cache) {
+        setCachedResult(cacheKey, data as object);
+      }
+
+      return data;
+    } finally {
+      inFlightRequests.delete(cacheKey);
     }
-
-    const data: unknown = yield* Result.try(
-      () => response.json(),
-      (error) =>
-        new TypedError.Parse(`Failed to parse JSON from ${url}`, {
-          cause: error,
-        }),
-    );
-
-    if (cache) {
-      setCachedResult(cacheKey, data as object);
-    }
-
-    return data;
   });
+
+  inFlightRequests.set(cacheKey, requestPromise);
+  return requestPromise;
 }
 
 function createCacheKey(url: string, headers: Headers): string {
