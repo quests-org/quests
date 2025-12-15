@@ -360,6 +360,9 @@ importers:
       tailwind-merge:
         specifier: ^3.3.1
         version: 3.3.1
+      top-user-agents:
+        specifier: ^2.1.84
+        version: 2.1.84
       ulid:
         specifier: ^3.0.1
         version: 3.0.1
@@ -7853,6 +7856,9 @@ packages:
   to-regex-range@5.0.1:
     resolution: {integrity: sha512-65P7iz6X5yEr1cwcgvQxbbIw7Uk3gOy5dIdtZ4rDveLqhrdJP+Li/Hx6tyK0NEb+2GCyneCMJiGqrADCSNk8sQ==}
     engines: {node: '>=8.0'}
+
+  top-user-agents@2.1.84:
+    resolution: {integrity: sha512-T9CNp3Tmus0Pn33GAVSL7QqcbZGJTsVR14m12FCT9xjemimwMhlSGcc8FNWE+xEwKzpbnOuYP0vVUcd+qvk+mA==}
 
   tough-cookie@4.1.4:
     resolution: {integrity: sha512-Loo5UUvLD9ScZ6jh8beX1T6sO1w2/MpCRpEP7V280GKMVUQ0Jzar2U3UJPsrdbziLEMMhu3Ujnq//rhiFuIeag==}
@@ -16740,6 +16746,8 @@ snapshots:
   to-regex-range@5.0.1:
     dependencies:
       is-number: 7.0.0
+
+  top-user-agents@2.1.84: {}
 
   tough-cookie@4.1.4:
     dependencies:

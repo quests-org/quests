@@ -22,6 +22,7 @@ import fixPath from "fix-path";
 import path from "node:path";
 
 import { createWorkspaceActor } from "./lib/create-workspace-actor";
+import { generateUserAgent } from "./lib/generate-user-agent";
 import { registerTelemetry } from "./lib/register-telemetry";
 import { setupBinDirectory } from "./lib/setup-bin-directory";
 import { watchThemePreferenceAndApply } from "./lib/theme-utils";
@@ -99,6 +100,11 @@ protocol.registerSchemesAsPrivileged([
 app.setAsDefaultProtocolClient(APP_PROTOCOL);
 
 registerTelemetry(app);
+
+const userAgent = generateUserAgent();
+if (userAgent) {
+  app.userAgentFallback = userAgent;
+}
 
 // eslint-disable-next-line unicorn/prefer-top-level-await
 void app.whenReady().then(async () => {
