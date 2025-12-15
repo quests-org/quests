@@ -60,7 +60,7 @@ function SubscribePage() {
   } = useQuery(rpcClient.plans.get.queryOptions());
   const { data: subscription, refetch: refetchSubscription } = useQuery(
     rpcClient.user.live.subscriptionStatus.experimental_liveOptions({
-      input: { staleTime: 0 },
+      input: { baz: true, staleTime: 0 },
     }),
   );
   const { mutateAsync: createCheckoutSession } = useMutation(

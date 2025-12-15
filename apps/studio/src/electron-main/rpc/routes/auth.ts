@@ -12,6 +12,10 @@ const signOut = base.handler(async () => {
   await signOutFn();
 });
 
+const hasToken = base.handler(() => {
+  return hasTokenUtil();
+});
+
 const live = {
   hasToken: base.handler(async function* ({ signal }) {
     yield hasTokenUtil();
@@ -38,6 +42,7 @@ const signInSocial = base
   });
 
 export const auth = {
+  hasToken,
   live,
   signInSocial,
   signOut,

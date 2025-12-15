@@ -4,8 +4,8 @@ import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_app/_authenticated")({
   beforeLoad: async () => {
-    const { data: user } = await safe(vanillaRpcClient.user.me());
-    if (!user) {
+    const { data: hasToken } = await safe(vanillaRpcClient.auth.hasToken());
+    if (!hasToken) {
       // eslint-disable-next-line @typescript-eslint/only-throw-error
       throw redirect({ to: "/" });
     }
