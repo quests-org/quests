@@ -1,6 +1,6 @@
 import { AgentPicker } from "@/client/components/agent-picker";
 import { AIProviderGuardDialog } from "@/client/components/ai-provider-guard-dialog";
-import { FileIcon } from "@/client/components/file-icon";
+import { AttachmentItem } from "@/client/components/attachment-item";
 import { ModelPicker } from "@/client/components/model-picker";
 import { Button } from "@/client/components/ui/button";
 import {
@@ -9,10 +9,13 @@ import {
 } from "@/client/components/ui/textarea-container";
 import { cn, isMacOS } from "@/client/lib/utils";
 import { type AIGatewayModelURI } from "@quests/ai-gateway/client";
-import { type AgentName } from "@quests/workspace/client";
+import {
+  type AgentName,
+  type Upload as UploadType,
+} from "@quests/workspace/client";
 import { useQuery } from "@tanstack/react-query";
 import { useAtom } from "jotai";
-import { ArrowUp, Loader2, Paperclip, Square, Upload, X } from "lucide-react";
+import { ArrowUp, Loader2, Paperclip, Square, Upload } from "lucide-react";
 import {
   forwardRef,
   useCallback,
@@ -32,10 +35,10 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 interface UploadedFile {
   content: string;
+  mimeType: string;
   name: string;
   previewUrl?: string;
   size: number;
-  type: string;
 }
 
 function isImageFile(type: string) {
@@ -66,7 +69,7 @@ interface PromptInputProps {
   onStop?: () => void;
   onSubmit: (value: {
     agentName: AgentName;
-    files?: UploadedFile[];
+    files?: UploadType.Type[];
     modelURI: AIGatewayModelURI.Type;
     openInNewTab?: boolean;
     prompt: string;
@@ -208,10 +211,10 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
             ...prev,
             {
               content: base64,
+              mimeType: file.type,
               name: file.name,
               previewUrl: isImageFile(file.type) ? dataUrl : undefined,
               size: file.size,
-              type: file.type,
             },
           ]);
         });
@@ -238,10 +241,10 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
             ...prev,
             {
               content: base64,
+              mimeType: file.type,
               name: file.name,
               previewUrl: isImageFile(file.type) ? dataUrl : undefined,
               size: file.size,
-              type: file.type,
             },
           ]);
         });
@@ -282,12 +285,20 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
         const trimmedPrompt = value.trim();
         const prompt =
           !trimmedPrompt && uploadedFiles.length > 0
-            ? "Please review the following files and use their content to help with this request:"
+            ? `Review the uploaded ${uploadedFiles.length} file${uploadedFiles.length === 1 ? "" : "s"} to help with this request.`
             : trimmedPrompt;
 
         onSubmit({
           agentName,
-          files: uploadedFiles.length > 0 ? uploadedFiles : undefined,
+          files:
+            uploadedFiles.length > 0
+              ? uploadedFiles.map((f) => ({
+                  content: f.content,
+                  filename: f.name,
+                  mimeType: f.mimeType,
+                  size: f.size,
+                }))
+              : undefined,
           modelURI,
           openInNewTab,
           prompt,
@@ -354,10 +365,10 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
               ...prev,
               {
                 content: base64,
+                mimeType: file.type,
                 name: file.name,
                 previewUrl: isImageFile(file.type) ? dataUrl : undefined,
                 size: file.size,
-                type: file.type,
               },
             ]);
           });
@@ -385,9 +396,9 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
             ...prev,
             {
               content: base64,
+              mimeType: "text/plain",
               name: filename,
               size: blob.size,
-              type: "text/plain",
             },
           ]);
         });
@@ -431,59 +442,16 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
 
           {uploadedFiles.length > 0 && (
             <div className="flex flex-wrap items-start gap-2 mb-2 max-h-32 overflow-y-auto">
-              {uploadedFiles.map((file, index) =>
-                file.previewUrl ? (
-                  <Tooltip key={`${file.name}-${index}`}>
-                    <TooltipTrigger asChild>
-                      <div className="relative group size-12 shrink-0">
-                        <img
-                          alt={file.name}
-                          className="size-12 rounded-lg object-cover border border-border"
-                          src={file.previewUrl}
-                        />
-                        <button
-                          className="absolute -top-1.5 -right-1.5 size-5 rounded-full bg-background border border-border flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-muted"
-                          onClick={() => {
-                            removeUploadedFile(index);
-                          }}
-                          type="button"
-                        >
-                          <X className="size-3" />
-                        </button>
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent side="top">
-                      <p>{file.name}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                ) : (
-                  <Tooltip key={`${file.name}-${index}`}>
-                    <TooltipTrigger asChild>
-                      <div className="relative group flex items-center gap-1.5 h-12 px-2.5 rounded-lg bg-muted/50 border border-border max-w-[180px]">
-                        <FileIcon
-                          className="size-5 shrink-0 text-muted-foreground"
-                          filename={file.name}
-                        />
-                        <span className="text-xs leading-tight line-clamp-2 break-all">
-                          {file.name}
-                        </span>
-                        <button
-                          className="absolute -top-1.5 -right-1.5 size-5 rounded-full bg-background border border-border flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-muted"
-                          onClick={() => {
-                            removeUploadedFile(index);
-                          }}
-                          type="button"
-                        >
-                          <X className="size-3" />
-                        </button>
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent side="top">
-                      <p>{file.name}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                ),
-              )}
+              {uploadedFiles.map((file, index) => (
+                <AttachmentItem
+                  filename={file.name}
+                  key={`${file.name}-${index}`}
+                  onRemove={() => {
+                    removeUploadedFile(index);
+                  }}
+                  previewUrl={file.previewUrl}
+                />
+              ))}
             </div>
           )}
 

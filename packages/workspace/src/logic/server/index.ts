@@ -10,6 +10,7 @@ import { type AppSubdomain } from "../../schemas/subdomains";
 import { type WorkspaceConfig } from "../../types";
 import { DEFAULT_APPS_SERVER_PORT } from "./constants";
 import { allProxyRoute } from "./routes/all-proxy";
+import { assetsRoute } from "./routes/assets";
 import { heartbeatRoute } from "./routes/heartbeat";
 import { redirectRoute } from "./routes/redirect";
 import { shimIFrameRoute } from "./routes/shim-iframe";
@@ -48,6 +49,7 @@ export const workspaceServerLogic = fromCallback<
   app.route("/", shimScriptRoute);
   app.route("/", shimIFrameRoute);
   app.route("/", heartbeatRoute);
+  app.route("/", assetsRoute);
   app.route("/", redirectRoute);
   // Note: Must be after all app-specific routes
   app.route("/", allProxyRoute);

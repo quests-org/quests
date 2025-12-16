@@ -1,11 +1,15 @@
-import { type SessionMessagePart, StoreId } from "@quests/workspace/client";
+import {
+  type SessionMessagePart,
+  StoreId,
+  type Upload,
+} from "@quests/workspace/client";
 
 export function createUserMessage({
   files,
   prompt,
   sessionId,
 }: {
-  files?: { content: string; name: string }[];
+  files?: Upload.Type[];
   prompt: string;
   sessionId: StoreId.Session;
 }) {
@@ -26,13 +30,8 @@ export function createUserMessage({
     });
   }
 
-  const mappedFiles = files?.map((f) => ({
-    content: f.content,
-    filename: f.name,
-  }));
-
   return {
-    files: mappedFiles,
+    files,
     message: {
       id: messageId,
       metadata: {

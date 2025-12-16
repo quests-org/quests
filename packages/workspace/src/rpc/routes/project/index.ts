@@ -31,17 +31,14 @@ import {
   updateQuestManifest,
 } from "../../../lib/quest-manifest";
 import { trashProject } from "../../../lib/trash-project";
-import {
-  appendFilesToMessage,
-  UploadedFileSchema,
-  writeUploadedFiles,
-} from "../../../lib/write-uploaded-files";
+import { writeUploadedFiles } from "../../../lib/write-uploaded-files";
 import { getWorkspaceServerURL } from "../../../logic/server/url";
 import { WorkspaceAppProjectSchema } from "../../../schemas/app";
 import { AbsolutePathSchema } from "../../../schemas/paths";
 import { SessionMessage } from "../../../schemas/session/message";
 import { StoreId } from "../../../schemas/store-id";
 import { ProjectSubdomainSchema } from "../../../schemas/subdomains";
+import { Upload } from "../../../schemas/upload";
 import { base, toORPCError } from "../../base";
 import { publisher } from "../../publisher";
 import { projectGit } from "./git";
@@ -126,7 +123,7 @@ const list = base
 const create = base
   .input(
     z.object({
-      files: z.array(UploadedFileSchema).optional(),
+      files: z.array(Upload.Schema).optional(),
       message: SessionMessage.UserSchemaWithParts,
       mode: ProjectModeSchema,
       modelURI: AIGatewayModelURI.Schema,
@@ -234,7 +231,27 @@ const create = base
           projectConfig.appDir,
           files,
         );
-        messageWithFiles = appendFilesToMessage(message, uploadResult.paths);
+
+        const fileAttachmentParts = uploadResult.fileMetadata.map((file) => ({
+          data: {
+            filename: file.filename,
+            filePath: file.filePath,
+            mimeType: file.mimeType,
+            size: file.size,
+          },
+          metadata: {
+            createdAt: new Date(),
+            id: StoreId.newPartId(),
+            messageId: message.id,
+            sessionId,
+          },
+          type: "data-fileAttachment" as const,
+        }));
+
+        messageWithFiles = {
+          ...message,
+          parts: [...message.parts, ...fileAttachmentParts],
+        };
       }
 
       context.workspaceRef.send({

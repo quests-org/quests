@@ -6,6 +6,7 @@ import {
   type ToolSet,
   type UIMessage,
 } from "ai";
+import { dedent } from "radashi";
 import { z } from "zod";
 
 import { type AgentName } from "../../agents/types";
@@ -189,9 +190,8 @@ export namespace SessionMessage {
     messages: WithParts[],
     tools: ToolSet,
   ): ModelMessage[] {
-    const uiMessages: UIMessage[] = messages.map((message) => ({
-      ...message,
-      parts: message.parts
+    const uiMessages: UIMessage[] = messages.map((message) => {
+      const filteredParts = message.parts
         .filter(
           (part) =>
             // Must filter or the AI SDK will throw an error in toModelMessages
@@ -200,12 +200,42 @@ export namespace SessionMessage {
             part.state === "output-available" ||
             part.state === "output-error",
         )
-        .map(SessionMessagePart.toUIPart),
-      role:
-        message.role === "session-context"
-          ? message.metadata.realRole
-          : message.role,
-    }));
+        .map(SessionMessagePart.toUIPart);
+
+      const parts = [...filteredParts];
+
+      if (message.role === "user") {
+        const fileAttachments = message.parts.filter(
+          (part) => part.type === "data-fileAttachment",
+        );
+
+        if (fileAttachments.length > 0) {
+          const attachmentDescriptions = fileAttachments
+            .map(({ data }) => {
+              const sizeInKB = (data.size / 1024).toFixed(2);
+              return `- ${data.filePath} (${sizeInKB} KB)`;
+            })
+            .join("\n");
+
+          const attachmentText = dedent`
+            <uploaded_files>
+            ${attachmentDescriptions}
+            </uploaded_files>
+          `;
+
+          parts.push({ text: attachmentText, type: "text" });
+        }
+      }
+
+      return {
+        ...message,
+        parts,
+        role:
+          message.role === "session-context"
+            ? message.metadata.realRole
+            : message.role,
+      };
+    });
     return convertToModelMessages(uiMessages, { tools });
   }
 }

@@ -7,6 +7,7 @@ import {
 } from "@quests/ai-gateway";
 import { AIProviderConfigIdSchema } from "@quests/shared";
 import { execa } from "execa";
+import mime from "mime";
 import path from "node:path";
 import readline from "node:readline";
 import { ulid } from "ulid";
@@ -153,31 +154,39 @@ const FAKE_FILES = {
   },
 };
 
-const extractFilePrefix = (input: string) => {
+function extractFilePrefix(input: string) {
   const prefixes = ["pdf:", "audio:", "image:", "text:"] as const;
   for (const prefix of prefixes) {
-    if (input.startsWith(prefix)) {
+    if (input.toLowerCase().startsWith(prefix)) {
       const type = prefix.slice(0, -1) as keyof typeof FAKE_FILES;
       return {
-        files: [FAKE_FILES[type]],
+        files: [
+          {
+            ...FAKE_FILES[type],
+            mimeType:
+              mime.getType(FAKE_FILES[type].filename) ??
+              "application/octet-stream",
+            size: Buffer.from(FAKE_FILES[type].content, "base64").length,
+          },
+        ],
         text: input.slice(prefix.length).trim(),
       };
     }
   }
   return { files: undefined, text: input };
-};
+}
 
 // eslint-disable-next-line no-console
 console.log("Enter task prompt (press Enter to submit):");
 rl.on("line", (input) => {
   if (input.trim()) {
     const trimmedInput = input.trim();
-    const isChatMode = /^[a-z]+:/i.test(trimmedInput);
-    const mode = isChatMode ? "chat" : "app-builder";
+    const isChatMode = trimmedInput.toLowerCase().startsWith("chat:");
     const textAfterChatPrefix = isChatMode
       ? trimmedInput.slice(5).trim()
       : trimmedInput;
     const { files, text } = extractFilePrefix(textAfterChatPrefix);
+    const finalMode = isChatMode ? "chat" : "app-builder";
     const messageId = StoreId.newMessageId();
     const message = {
       id: messageId,
@@ -235,7 +244,7 @@ rl.on("line", (input) => {
         {
           files,
           message,
-          mode,
+          mode: finalMode,
           modelURI,
           sessionId,
         },

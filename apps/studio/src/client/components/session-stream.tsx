@@ -19,6 +19,7 @@ import { AssistantMessage } from "./assistant-message";
 import { ChatErrorAlert } from "./chat-error-alert";
 import { ChatZeroState } from "./chat-zero-state";
 import { ContextMessages } from "./context-messages";
+import { FileAttachmentCard } from "./file-attachment-card";
 import { GitCommitCard } from "./git-commit-card";
 import { MessageActionsRow } from "./message-actions-row";
 import { MessageError } from "./message-error";
@@ -187,6 +188,10 @@ export function SessionStream({
         );
       }
 
+      if (part.type === "data-fileAttachment") {
+        return null;
+      }
+
       if (isToolPart(part)) {
         return (
           <ToolPart
@@ -271,6 +276,8 @@ export function SessionStream({
       let assistantTextContent = "";
       let isAssistantMessageDone = false;
 
+      const fileAttachments: SessionMessagePart.Type[] = [];
+
       for (const [partIndex, part] of message.parts.entries()) {
         if (
           (part.type === "source-document" || part.type === "source-url") &&
@@ -287,10 +294,41 @@ export function SessionStream({
           assistantTextContent += part.text;
           isAssistantMessageDone = part.state === "done";
         }
+
+        if (message.role === "user" && part.type === "data-fileAttachment") {
+          fileAttachments.push(part);
+          continue;
+        }
+
         const rendered = renderChatPart(part, message, partIndex);
         if (rendered) {
           messageElements.push(rendered);
         }
+      }
+
+      if (message.role === "user" && fileAttachments.length > 0) {
+        messageElements.unshift(
+          <div
+            className="flex flex-wrap items-start gap-2 justify-end"
+            key={`attachments-${message.id}`}
+          >
+            {fileAttachments.map((part) => {
+              if (part.type === "data-fileAttachment") {
+                return (
+                  <FileAttachmentCard
+                    filename={part.data.filename}
+                    filePath={part.data.filePath}
+                    key={part.metadata.id}
+                    mimeType={part.data.mimeType}
+                    projectSubdomain={app.subdomain}
+                    size={part.data.size}
+                  />
+                );
+              }
+              return null;
+            })}
+          </div>,
+        );
       }
 
       if (message.role === "assistant" && isAssistantMessageDone) {
@@ -333,6 +371,7 @@ export function SessionStream({
     isAnyAgentRunning,
     showMessageActions,
     onContinue,
+    app.subdomain,
   ]);
 
   const shouldShowErrorRecoveryPrompt = useMemo(() => {

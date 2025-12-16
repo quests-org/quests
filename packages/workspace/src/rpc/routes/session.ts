@@ -9,15 +9,12 @@ import { createMessage } from "../../lib/create-message";
 import { generateSessionTitle } from "../../lib/generate-session-title";
 import { resolveModel } from "../../lib/resolve-model";
 import { Store } from "../../lib/store";
-import {
-  appendFilesToMessage,
-  UploadedFileSchema,
-  writeUploadedFiles,
-} from "../../lib/write-uploaded-files";
+import { writeUploadedFiles } from "../../lib/write-uploaded-files";
 import { Session } from "../../schemas/session";
 import { SessionMessage } from "../../schemas/session/message";
 import { StoreId } from "../../schemas/store-id";
 import { AppSubdomainSchema } from "../../schemas/subdomains";
+import { Upload } from "../../schemas/upload";
 import { base, toORPCError } from "../base";
 import { publisher } from "../publisher";
 
@@ -149,7 +146,7 @@ const createWithMessage = base
   .input(
     z.object({
       agentName: AgentNameSchema,
-      files: z.array(UploadedFileSchema).optional(),
+      files: z.array(Upload.Schema).optional(),
       message: SessionMessage.UserSchemaWithParts,
       modelURI: AIGatewayModelURI.Schema,
       sessionId: StoreId.SessionSchema,
@@ -179,10 +176,27 @@ const createWithMessage = base
         appConfig.appDir,
         input.files,
       );
-      messageWithFiles = appendFilesToMessage(
-        input.message,
-        uploadResult.paths,
-      );
+
+      const fileAttachmentParts = uploadResult.fileMetadata.map((file) => ({
+        data: {
+          filename: file.filename,
+          filePath: file.filePath,
+          mimeType: file.mimeType,
+          size: file.size,
+        },
+        metadata: {
+          createdAt: new Date(),
+          id: StoreId.newPartId(),
+          messageId: input.message.id,
+          sessionId: input.sessionId,
+        },
+        type: "data-fileAttachment" as const,
+      }));
+
+      messageWithFiles = {
+        ...input.message,
+        parts: [...input.message.parts, ...fileAttachmentParts],
+      };
     }
 
     context.workspaceRef.send({

@@ -1,85 +1,44 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import { z } from "zod";
 
-import { type AbsolutePath } from "../schemas/paths";
-import { type SessionMessage } from "../schemas/session/message";
+import { type AbsolutePath, RelativePathSchema } from "../schemas/paths";
+import { type SessionMessageDataPart } from "../schemas/session/message-data-part";
+import { type Upload } from "../schemas/upload";
 import { absolutePathJoin } from "./absolute-path-join";
 
 const UPLOADS_FOLDER = "uploads";
 
-function sanitizeFilename(filename: string): string {
-  const ext = path.extname(filename);
-  const base = path.basename(filename, ext);
-
-  const sanitized = base
-    .normalize("NFKD")
-    .replaceAll(/[\u0300-\u036F]/g, "")
-    .replaceAll(/[\u2000-\u206F\u2E00-\u2E7F\u00A0]/g, "-")
-    .replaceAll(/[^\w.-]/g, "-")
-    .replaceAll(/-+/g, "-")
-    .replaceAll(/^-|-$/g, "")
-    .slice(0, 200);
-
-  return (sanitized || "file") + ext.toLowerCase();
-}
-
-export const UploadedFileSchema = z.object({
-  content: z.string(),
-  filename: z.string(),
-});
-
-type UploadedFile = z.output<typeof UploadedFileSchema>;
-
-export function appendFilesToMessage(
-  message: SessionMessage.UserWithParts,
-  filePaths: string[],
-): SessionMessage.UserWithParts {
-  if (filePaths.length === 0) {
-    return message;
-  }
-
-  const fileList = `Uploaded files:\n${filePaths.map((p) => `- ${p}`).join("\n")}`;
-  const firstTextPart = message.parts.find((p) => p.type === "text");
-
-  if (!firstTextPart) {
-    return message;
-  }
-
-  return {
-    ...message,
-    parts: message.parts.map((p) =>
-      p === firstTextPart ? { ...p, text: `${p.text}\n\n${fileList}` } : p,
-    ),
-  };
-}
-
 export async function writeUploadedFiles(
   appDir: AbsolutePath,
-  files: UploadedFile[],
+  files: Upload.Type[],
 ) {
   if (files.length === 0) {
-    return { paths: [] };
+    return { fileMetadata: [] };
   }
 
   const uploadsDir = absolutePathJoin(appDir, UPLOADS_FOLDER);
   await fs.mkdir(uploadsDir, { recursive: true });
 
-  const paths: string[] = [];
+  const fileMetadata: SessionMessageDataPart.FileAttachmentDataPart[] = [];
 
   for (const file of files) {
     const sanitized = sanitizeFilename(file.filename);
     const uniqueFilename = await getUniqueFilename(uploadsDir, sanitized);
 
-    const filePath = absolutePathJoin(uploadsDir, uniqueFilename);
+    const relativePath = `./${UPLOADS_FOLDER}/${uniqueFilename}`;
+    const filePath = absolutePathJoin(appDir, relativePath);
     const buffer = Buffer.from(file.content, "base64");
     await fs.writeFile(filePath, buffer);
 
-    const relativePath = `./${UPLOADS_FOLDER}/${uniqueFilename}`;
-    paths.push(relativePath);
+    fileMetadata.push({
+      filename: uniqueFilename,
+      filePath: RelativePathSchema.parse(relativePath),
+      mimeType: file.mimeType,
+      size: file.size,
+    });
   }
 
-  return { paths };
+  return { fileMetadata };
 }
 
 async function getUniqueFilename(
@@ -102,4 +61,20 @@ async function getUniqueFilename(
       return candidate;
     }
   }
+}
+
+function sanitizeFilename(filename: string): string {
+  const ext = path.extname(filename);
+  const base = path.basename(filename, ext);
+
+  const sanitized = base
+    .normalize("NFKD")
+    .replaceAll(/[\u0300-\u036F]/g, "")
+    .replaceAll(/[\u2000-\u206F\u2E00-\u2E7F\u00A0]/g, "-")
+    .replaceAll(/[^\w.-]/g, "-")
+    .replaceAll(/-+/g, "-")
+    .replaceAll(/^-|-$/g, "")
+    .slice(0, 200);
+
+  return (sanitized || "file") + ext.toLowerCase();
 }

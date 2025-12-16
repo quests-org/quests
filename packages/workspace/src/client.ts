@@ -25,4 +25,5 @@ export {
   type VersionSubdomain,
   VersionSubdomainSchema,
 } from "./schemas/subdomains";
+export { type Upload } from "./schemas/upload";
 export type { ToolName } from "./tools/types";

@@ -17,6 +17,7 @@ const WorkspaceAppBaseSchema = z.object({
   title: z.string(),
   updatedAt: z.date(),
   urls: z.object({
+    assetBase: z.string(),
     localhost: z.string(),
     localRedirect: z.string(),
     loopback: z.string(),
