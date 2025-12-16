@@ -106,6 +106,27 @@ if (userAgent) {
   app.userAgentFallback = userAgent;
 }
 
+const gotTheLock = app.requestSingleInstanceLock();
+
+if (gotTheLock) {
+  app.on("second-instance", (_event, commandLine) => {
+    const mainWindow = getMainWindow();
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) {
+        mainWindow.restore();
+      }
+      mainWindow.focus();
+    }
+
+    const url = commandLine.find((arg) => arg.startsWith(`${APP_PROTOCOL}://`));
+    if (url) {
+      handleDeepLink(url);
+    }
+  });
+} else {
+  app.quit();
+}
+
 // eslint-disable-next-line unicorn/prefer-top-level-await
 void app.whenReady().then(async () => {
   if (
@@ -182,13 +203,6 @@ void app.whenReady().then(async () => {
   app.on("open-url", (event, url) => {
     event.preventDefault();
     handleDeepLink(url);
-  });
-
-  app.on("second-instance", (_event, commandLine) => {
-    const url = commandLine.find((arg) => arg.startsWith(`${APP_PROTOCOL}://`));
-    if (url) {
-      handleDeepLink(url);
-    }
   });
 });
 
