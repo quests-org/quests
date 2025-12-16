@@ -28,6 +28,7 @@ import {
 } from "@tanstack/react-router";
 import { formatDistanceToNow } from "date-fns";
 import { useAtom } from "jotai";
+import { Gift } from "lucide-react";
 import { useEffect } from "react";
 import { toast } from "sonner";
 
@@ -82,16 +83,22 @@ function RouteComponent() {
           {!hasToken && !isLoadingHasToken && (
             <div className="flex flex-col items-center gap-y-4 mb-8">
               <button
-                className="group flex items-center gap-x-3 border-2 border-brand/40 hover:border-brand rounded-full px-4 py-2 transition-colors"
+                className="group relative overflow-hidden flex items-center gap-x-4 bg-linear-to-r from-brand/20 via-brand/10 to-brand/20 hover:from-brand/30 hover:via-brand/20 hover:to-brand/30 border border-brand/50 hover:border-brand rounded-2xl px-6 py-4 transition-all duration-300 shadow-lg shadow-brand/10 hover:shadow-xl hover:shadow-brand/20 hover:scale-[1.02]"
                 onClick={() => void navigate({ to: "/sign-in" })}
                 type="button"
               >
-                <p className="text-sm text-foreground">
-                  Unlock access to hundreds of AI models for free.
-                </p>
-                <span className="text-sm font-semibold text-brand">
-                  Claim your credits →
-                </span>
+                <div className="absolute inset-0 bg-linear-to-r from-transparent via-brand/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                <div className="flex items-center justify-center size-10 rounded-xl bg-brand/20 group-hover:bg-brand/30 transition-colors">
+                  <Gift className="size-5 text-brand" />
+                </div>
+                <div className="flex flex-col items-start gap-y-0.5">
+                  <p className="text-sm font-medium text-foreground">
+                    Unlock access to hundreds of AI models for free
+                  </p>
+                  <span className="text-sm font-semibold text-brand group-hover:underline">
+                    Claim your credits →
+                  </span>
+                </div>
               </button>
             </div>
           )}
