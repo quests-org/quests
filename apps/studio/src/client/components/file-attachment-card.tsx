@@ -17,6 +17,7 @@ export function FileAttachmentCard({
   filePath,
   mimeType,
   projectSubdomain,
+  size,
 }: FileAttachmentCardProps) {
   const { data: app } = useQuery(
     rpcClient.workspace.project.bySubdomain.queryOptions({
@@ -29,12 +30,13 @@ export function FileAttachmentCard({
   }
 
   const assetUrl = getAssetUrl(app.urls.assetBase, filePath);
-  const isImage = isImageFile(mimeType);
 
   return (
     <AttachmentItem
       filename={filename}
-      previewUrl={isImage ? assetUrl : undefined}
+      mimeType={mimeType}
+      previewUrl={assetUrl}
+      size={size}
     />
   );
 }
@@ -42,8 +44,4 @@ export function FileAttachmentCard({
 function getAssetUrl(assetBase: string, filePath: string): string {
   const cleanPath = filePath.startsWith("./") ? filePath.slice(2) : filePath;
   return `${assetBase}/${cleanPath}`;
-}
-
-function isImageFile(mimeType: string): boolean {
-  return mimeType.startsWith("image/");
 }

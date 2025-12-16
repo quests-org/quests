@@ -1,4 +1,6 @@
-import { memo, useCallback, useState } from "react";
+import { openFileViewerAtom } from "@/client/atoms/file-viewer";
+import { useSetAtom } from "jotai";
+import { memo, useCallback } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remend from "remend";
@@ -34,22 +36,20 @@ const CodeWithCopy = ({
 );
 
 export const Markdown = memo(({ markdown, rehypePlugins }: MarkdownProps) => {
-  const [expandedImages, setExpandedImages] = useState<Set<string>>(new Set());
+  const openFileViewer = useSetAtom(openFileViewerAtom);
 
   const handleImageClick = useCallback(
     (event: React.MouseEvent<HTMLImageElement>) => {
       const src = event.currentTarget.src;
-      setExpandedImages((prev) => {
-        const newSet = new Set(prev);
-        if (newSet.has(src)) {
-          newSet.delete(src);
-        } else {
-          newSet.add(src);
-        }
-        return newSet;
-      });
+      const alt = event.currentTarget.alt || "image";
+      if (src) {
+        openFileViewer({
+          filename: alt,
+          url: src,
+        });
+      }
     },
-    [],
+    [openFileViewer],
   );
 
   return (
@@ -68,16 +68,11 @@ export const Markdown = memo(({ markdown, rehypePlugins }: MarkdownProps) => {
           );
         },
         img: ({ alt, className, src, ...props }) => {
-          const isExpanded = src && expandedImages.has(src);
           return (
             <img
               {...props}
               alt={alt}
-              className={cn(
-                "cursor-pointer! rounded-md transition-all duration-200",
-                isExpanded ? "w-full" : "max-w-full",
-                className,
-              )}
+              className={cn("cursor-pointer! rounded-md max-w-full", className)}
               onClick={handleImageClick}
               src={src}
             />

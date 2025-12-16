@@ -41,10 +41,6 @@ interface UploadedFile {
   size: number;
 }
 
-function isImageFile(type: string) {
-  return type.startsWith("image/");
-}
-
 const MAX_PASTE_TEXT_LENGTH = 5000;
 
 const AGENT_PLACEHOLDER_MAP: Record<AgentName, string> = {
@@ -213,7 +209,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
               content: base64,
               mimeType: file.type,
               name: file.name,
-              previewUrl: isImageFile(file.type) ? dataUrl : undefined,
+              previewUrl: dataUrl,
               size: file.size,
             },
           ]);
@@ -243,7 +239,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
               content: base64,
               mimeType: file.type,
               name: file.name,
-              previewUrl: isImageFile(file.type) ? dataUrl : undefined,
+              previewUrl: dataUrl,
               size: file.size,
             },
           ]);
@@ -367,7 +363,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
                 content: base64,
                 mimeType: file.type,
                 name: file.name,
-                previewUrl: isImageFile(file.type) ? dataUrl : undefined,
+                previewUrl: dataUrl,
                 size: file.size,
               },
             ]);
@@ -441,15 +437,17 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
           )}
 
           {uploadedFiles.length > 0 && (
-            <div className="flex flex-wrap items-start gap-2 mb-2 max-h-32 overflow-y-auto">
+            <div className="flex flex-wrap items-start gap-2 mb-2 max-h-32 overflow-y-auto p-2 -m-2">
               {uploadedFiles.map((file, index) => (
                 <AttachmentItem
                   filename={file.name}
                   key={`${file.name}-${index}`}
+                  mimeType={file.mimeType}
                   onRemove={() => {
                     removeUploadedFile(index);
                   }}
                   previewUrl={file.previewUrl}
+                  size={file.size}
                 />
               ))}
             </div>

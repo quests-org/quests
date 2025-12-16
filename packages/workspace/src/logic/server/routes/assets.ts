@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { cors } from "hono/cors";
 import mime from "mime";
 import fs from "node:fs/promises";
 import path from "node:path";
@@ -9,6 +10,8 @@ import { type WorkspaceServerEnv } from "../types";
 import { uriDetailsForHost } from "../uri-details-for-host";
 
 const app = new Hono<WorkspaceServerEnv>().basePath(APPS_SERVER_API_PATH);
+
+app.use("/assets/*", cors());
 
 app.get("/assets/*", async (c) => {
   const uriDetails = uriDetailsForHost(c.req.header("host") || "");

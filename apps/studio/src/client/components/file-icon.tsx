@@ -1,6 +1,5 @@
 import type { ComponentType } from "react";
 
-import { File } from "lucide-react";
 import {
   BsFileEarmarkExcel,
   BsFileEarmarkMusic,
@@ -112,16 +111,33 @@ export function FileIcon({
   filename: string;
 }) {
   const Icon = getFileIcon(filename);
+  const ext = getFileExtension(filename);
+
+  if (Icon === null) {
+    return (
+      <div
+        className={`${className} flex items-center justify-center rounded border border-border bg-muted text-[0.45em] font-semibold uppercase text-muted-foreground`}
+      >
+        {ext.slice(0, 4)}
+      </div>
+    );
+  }
+
   return <Icon className={className} />;
 }
 
-function getFileIcon(filename: string): IconComponent {
+function getFileExtension(filename: string): string {
+  const lowerName = filename.toLowerCase();
+  return lowerName.split(".").pop() ?? "";
+}
+
+function getFileIcon(filename: string): IconComponent | null {
   const lowerName = filename.toLowerCase();
 
   if (FILENAME_ICON_MAP[lowerName]) {
     return FILENAME_ICON_MAP[lowerName];
   }
 
-  const ext = lowerName.split(".").pop() ?? "";
-  return EXTENSION_ICON_MAP[ext] ?? File;
+  const ext = getFileExtension(filename);
+  return EXTENSION_ICON_MAP[ext] ?? null;
 }

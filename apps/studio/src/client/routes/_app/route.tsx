@@ -1,3 +1,4 @@
+import { FileViewerModal } from "@/client/components/file-viewer-modal";
 import { Toaster } from "@/client/components/ui/sonner";
 import { useInvalidateRouterOnUserChange } from "@/client/hooks/use-invalidate-router-on-user-change";
 import { useUpdateNotifications } from "@/client/hooks/use-update-notifications";
@@ -33,6 +34,7 @@ function RouteComponent() {
         </Suspense>
       )}
 
+      <FileViewerModal />
       <Toaster position="top-center" />
     </div>
   );

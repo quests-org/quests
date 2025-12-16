@@ -10,6 +10,7 @@ import { dedent } from "radashi";
 import { z } from "zod";
 
 import { type AgentName } from "../../agents/types";
+import { formatBytes } from "../../lib/format-bytes";
 import { isToolPart } from "../../lib/is-tool-part";
 import { StoreId } from "../store-id";
 import { SessionMessagePart } from "./message-part";
@@ -212,8 +213,8 @@ export namespace SessionMessage {
         if (fileAttachments.length > 0) {
           const attachmentDescriptions = fileAttachments
             .map(({ data }) => {
-              const sizeInKB = (data.size / 1024).toFixed(2);
-              return `- ${data.filePath} (${sizeInKB} KB)`;
+              const formattedSize = formatBytes(data.size);
+              return `- ${data.filePath} (${formattedSize})`;
             })
             .join("\n");
 

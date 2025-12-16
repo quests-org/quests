@@ -1,56 +1,99 @@
+import { openFileViewerAtom } from "@/client/atoms/file-viewer";
+import { cn } from "@/client/lib/utils";
+import { useSetAtom } from "jotai";
 import { X } from "lucide-react";
 
 import { FileIcon } from "./file-icon";
+import { ImageWithFallback } from "./image-with-fallback";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 interface AttachmentItemProps {
   filename: string;
+  mimeType?: string;
   onRemove?: () => void;
   previewUrl?: string;
+  size?: number;
 }
 
 export function AttachmentItem({
   filename,
+  mimeType,
   onRemove,
   previewUrl,
+  size,
 }: AttachmentItemProps) {
-  const content = previewUrl ? (
-    <div className="relative group size-12 shrink-0">
-      <img
-        alt={filename}
-        className="size-12 rounded-lg object-cover border border-border"
-        src={previewUrl}
-      />
-      {onRemove && (
+  const openFileViewer = useSetAtom(openFileViewerAtom);
+
+  const handlePreviewClick = () => {
+    if (previewUrl) {
+      openFileViewer({
+        filename,
+        mimeType,
+        size,
+        url: previewUrl,
+      });
+    }
+  };
+
+  const isImage = mimeType?.startsWith("image/");
+  const isSvg = mimeType === "image/svg+xml";
+  const hasPreview = Boolean(previewUrl);
+
+  const content =
+    hasPreview && isImage && previewUrl ? (
+      <div className="relative group size-12 shrink-0">
         <button
-          className="absolute -top-1.5 -right-1.5 size-5 rounded-full bg-background border border-border flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-muted"
-          onClick={onRemove}
+          className="size-12 rounded-lg overflow-hidden border border-border hover:ring-2 hover:ring-ring transition-all"
+          onClick={handlePreviewClick}
           type="button"
         >
-          <X className="size-3" />
+          <ImageWithFallback
+            alt={filename}
+            className={cn(
+              "size-12",
+              isSvg ? "object-contain bg-white p-1.5" : "object-cover",
+            )}
+            fallbackClassName="size-12 rounded-lg"
+            filename={filename}
+            src={previewUrl}
+          />
         </button>
-      )}
-    </div>
-  ) : (
-    <div className="relative group flex items-center gap-1.5 h-12 px-2.5 rounded-lg bg-muted/50 border border-border max-w-[180px]">
-      <FileIcon
-        className="size-5 shrink-0 text-muted-foreground"
-        filename={filename}
-      />
-      <span className="text-xs leading-tight line-clamp-2 break-all">
-        {filename}
-      </span>
-      {onRemove && (
+        {onRemove && (
+          <button
+            className="absolute -top-1.5 -right-1.5 size-5 rounded-full bg-background border border-border flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-muted"
+            onClick={onRemove}
+            type="button"
+          >
+            <X className="size-3" />
+          </button>
+        )}
+      </div>
+    ) : (
+      <div className="relative group flex items-center gap-1.5 h-12 px-2.5 rounded-lg bg-muted/50 border border-border max-w-[180px] hover:ring-2 hover:ring-ring transition-all">
         <button
-          className="absolute -top-1.5 -right-1.5 size-5 rounded-full bg-background border border-border flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-muted"
-          onClick={onRemove}
+          className="flex items-center gap-1.5 min-w-0"
+          onClick={handlePreviewClick}
           type="button"
         >
-          <X className="size-3" />
+          <FileIcon
+            className="size-5 shrink-0 text-muted-foreground"
+            filename={filename}
+          />
+          <span className="text-xs leading-tight line-clamp-2 break-all">
+            {filename}
+          </span>
         </button>
-      )}
-    </div>
-  );
+        {onRemove && (
+          <button
+            className="absolute -top-1.5 -right-1.5 size-5 rounded-full bg-background border border-border flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-muted"
+            onClick={onRemove}
+            type="button"
+          >
+            <X className="size-3" />
+          </button>
+        )}
+      </div>
+    );
 
   return (
     <Tooltip>

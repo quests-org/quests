@@ -1,3 +1,4 @@
+import { formatBytes } from "@quests/workspace/client";
 import { Download, Eye } from "lucide-react";
 import { useCallback, useMemo } from "react";
 
@@ -13,9 +14,6 @@ interface JsonViewerProps {
   open: boolean;
   title?: string;
 }
-
-const formatSize = (bytes: number) =>
-  bytes < 1024 ? `${bytes} bytes` : `${(bytes / 1024).toFixed(1)} KB`;
 
 export function JsonViewer({
   data,
@@ -88,7 +86,7 @@ export function JsonViewer({
             {title}
             {isTruncated && (
               <span className="text-xs text-muted-foreground">
-                (showing partial data - {formatSize(originalSize)} total)
+                (showing partial data - {formatBytes(originalSize)} total)
               </span>
             )}
           </DialogTitle>
