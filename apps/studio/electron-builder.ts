@@ -59,10 +59,6 @@ const config: Configuration = {
     "out/**/*",
     "resources/**/*",
     "node_modules/**",
-    // Exclude large client-side dependencies
-    "!node_modules/lucide-react/**",
-    "!node_modules/react-icons/**",
-    "!node_modules/react-dom/**",
     "!**/node_modules/**/*.md",
     "!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}",
     "!**/node_modules/*.d.ts",

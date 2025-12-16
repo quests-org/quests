@@ -177,15 +177,100 @@ importers:
       '@quests/ai-gateway':
         specifier: workspace:*
         version: link:../../packages/ai-gateway
-      '@quests/components':
-        specifier: workspace:*
-        version: link:../../packages/components
       '@quests/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       '@quests/workspace':
         specifier: workspace:*
         version: link:../../packages/workspace
+      '@tanstack/query-core':
+        specifier: ^5.90.12
+        version: 5.90.12
+      '@types/ws':
+        specifier: ^8.18.1
+        version: 8.18.1
+      '@vscode/ripgrep':
+        specifier: ^1.15.13
+        version: 1.15.13
+      '@zkochan/cmd-shim':
+        specifier: ^7.0.0
+        version: 7.0.0
+      arctic:
+        specifier: ^3.6.0
+        version: 3.6.0
+      better-auth:
+        specifier: 'catalog:'
+        version: 1.3.7(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(zod@4.1.13)
+      class-variance-authority:
+        specifier: ^0.7.1
+        version: 0.7.1
+      detect-port:
+        specifier: ^2.1.0
+        version: 2.1.0
+      dotenv:
+        specifier: ^16.6.1
+        version: 16.6.1
+      dugite:
+        specifier: 3.0.0-rc11
+        version: 3.0.0-rc11
+      electron-log:
+        specifier: ^5.4.1
+        version: 5.4.1
+      electron-store:
+        specifier: ^10.1.0
+        version: 10.1.0
+      electron-updater:
+        specifier: ^6.6.8
+        version: 6.6.8
+      fix-path:
+        specifier: ^5.0.0
+        version: 5.0.0
+      hono:
+        specifier: 'catalog:'
+        version: 4.8.5
+      ms:
+        specifier: ^2.1.3
+        version: 2.1.3
+      pnpm:
+        specifier: ^10.13.1
+        version: 10.13.1
+      posthog-node:
+        specifier: ^5.11.2
+        version: 5.11.2
+      radashi:
+        specifier: ^12.6.0
+        version: 12.6.0
+      read-pkg:
+        specifier: ^9.0.1
+        version: 9.0.1
+      top-user-agents:
+        specifier: ^2.1.84
+        version: 2.1.84
+      ulid:
+        specifier: ^3.0.1
+        version: 3.0.1
+      ws:
+        specifier: ^8.18.3
+        version: 8.18.3
+      xstate:
+        specifier: ^5.20.1
+        version: 5.20.1
+      zod:
+        specifier: 'catalog:'
+        version: 4.1.13
+    devDependencies:
+      '@julr/vite-plugin-validate-env':
+        specifier: ^2.2.0
+        version: 2.2.0(vite@7.2.7(@types/node@22.19.2)(jiti@2.6.1)(lightningcss@1.30.1)(terser@5.39.0)(tsx@4.20.3)(yaml@2.8.1))
+      '@quests/components':
+        specifier: workspace:*
+        version: link:../../packages/components
+      '@quests/eslint-config':
+        specifier: workspace:*
+        version: link:../../packages/eslint-config
+      '@quests/typescript-config':
+        specifier: workspace:*
+        version: link:../../packages/typescript-config
       '@radix-ui/react-accordion':
         specifier: ^1.2.12
         version: 1.2.12(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
@@ -231,9 +316,12 @@ importers:
       '@radix-ui/react-tooltip':
         specifier: ^1.2.7
         version: 1.2.7(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
-      '@tanstack/query-core':
-        specifier: ^5.90.12
-        version: 5.90.12
+      '@tailwindcss/typography':
+        specifier: ^0.5.16
+        version: 0.5.16(tailwindcss@4.1.17)
+      '@tailwindcss/vite':
+        specifier: ^4.1.11
+        version: 4.1.11(vite@7.2.7(@types/node@22.19.2)(jiti@2.6.1)(lightningcss@1.30.1)(terser@5.39.0)(tsx@4.20.3)(yaml@2.8.1))
       '@tanstack/react-form':
         specifier: ^1.23.8
         version: 1.23.8(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
@@ -252,148 +340,6 @@ importers:
       '@tanstack/react-table':
         specifier: ^8.21.3
         version: 8.21.3(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
-      '@types/ws':
-        specifier: ^8.18.1
-        version: 8.18.1
-      '@vscode/ripgrep':
-        specifier: ^1.15.13
-        version: 1.15.13
-      '@zkochan/cmd-shim':
-        specifier: ^7.0.0
-        version: 7.0.0
-      arctic:
-        specifier: ^3.6.0
-        version: 3.6.0
-      better-auth:
-        specifier: 'catalog:'
-        version: 1.3.7(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(zod@4.1.13)
-      class-variance-authority:
-        specifier: ^0.7.1
-        version: 0.7.1
-      clsx:
-        specifier: ^2.1.1
-        version: 2.1.1
-      cmdk:
-        specifier: ^1.1.1
-        version: 1.1.1(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
-      color-hash:
-        specifier: ^2.0.2
-        version: 2.0.2
-      date-fns:
-        specifier: ^4.1.0
-        version: 4.1.0
-      detect-port:
-        specifier: ^2.1.0
-        version: 2.1.0
-      dotenv:
-        specifier: ^16.6.1
-        version: 16.6.1
-      dugite:
-        specifier: 3.0.0-rc11
-        version: 3.0.0-rc11
-      electron-log:
-        specifier: ^5.4.1
-        version: 5.4.1
-      electron-store:
-        specifier: ^10.1.0
-        version: 10.1.0
-      electron-updater:
-        specifier: ^6.6.8
-        version: 6.6.8
-      fix-path:
-        specifier: ^5.0.0
-        version: 5.0.0
-      framer-motion:
-        specifier: 11.13.5
-        version: 11.13.5(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
-      hono:
-        specifier: 'catalog:'
-        version: 4.8.5
-      jotai:
-        specifier: ^2.14.0
-        version: 2.14.0(@babel/core@7.28.5)(@babel/template@7.27.2)(@types/react@19.2.7)(react@19.2.1)
-      lucide-react:
-        specifier: 'catalog:'
-        version: 0.525.0(react@19.2.1)
-      ms:
-        specifier: ^2.1.3
-        version: 2.1.3
-      pnpm:
-        specifier: ^10.13.1
-        version: 10.13.1
-      posthog-js:
-        specifier: ^1.292.0
-        version: 1.292.0
-      posthog-node:
-        specifier: ^5.11.2
-        version: 5.11.2
-      radashi:
-        specifier: ^12.6.0
-        version: 12.6.0
-      react:
-        specifier: 'catalog:'
-        version: 19.2.1
-      react-dom:
-        specifier: 'catalog:'
-        version: 19.2.1(react@19.2.1)
-      react-icons:
-        specifier: ^5.5.0
-        version: 5.5.0(react@19.2.1)
-      react-markdown:
-        specifier: ^10.1.0
-        version: 10.1.0(@types/react@19.2.7)(react@19.2.1)
-      read-pkg:
-        specifier: ^9.0.1
-        version: 9.0.1
-      rehype-raw:
-        specifier: ^7.0.0
-        version: 7.0.0
-      remark-gfm:
-        specifier: ^4.0.1
-        version: 4.0.1
-      remend:
-        specifier: ^1.0.1
-        version: 1.0.1
-      sonner:
-        specifier: ^1.7.4
-        version: 1.7.4(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
-      tailwind-merge:
-        specifier: ^3.3.1
-        version: 3.3.1
-      top-user-agents:
-        specifier: ^2.1.84
-        version: 2.1.84
-      ulid:
-        specifier: ^3.0.1
-        version: 3.0.1
-      use-stick-to-bottom:
-        specifier: ^1.1.1
-        version: 1.1.1(react@19.2.1)
-      ws:
-        specifier: ^8.18.3
-        version: 8.18.3
-      xstate:
-        specifier: ^5.20.1
-        version: 5.20.1
-      zod:
-        specifier: 'catalog:'
-        version: 4.1.13
-    devDependencies:
-      '@julr/vite-plugin-validate-env':
-        specifier: ^2.2.0
-        version: 2.2.0(vite@7.2.7(@types/node@22.19.2)(jiti@2.6.1)(lightningcss@1.30.1)(terser@5.39.0)(tsx@4.20.3)(yaml@2.8.1))
-      '@quests/eslint-config':
-        specifier: workspace:*
-        version: link:../../packages/eslint-config
-      '@quests/typescript-config':
-        specifier: workspace:*
-        version: link:../../packages/typescript-config
-      '@tailwindcss/typography':
-        specifier: ^0.5.16
-        version: 0.5.16(tailwindcss@4.1.17)
-      '@tailwindcss/vite':
-        specifier: ^4.1.11
-        version: 4.1.11(vite@7.2.7(@types/node@22.19.2)(jiti@2.6.1)(lightningcss@1.30.1)(terser@5.39.0)(tsx@4.20.3)(yaml@2.8.1))
       '@tanstack/router-plugin':
         specifier: ^1.131.28
         version: 1.131.28(@tanstack/react-router@1.139.0(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(vite-plugin-solid@2.11.6(solid-js@1.9.6)(vite@7.2.7(@types/node@22.19.2)(jiti@2.6.1)(lightningcss@1.30.1)(terser@5.39.0)(tsx@4.20.3)(yaml@2.8.1)))(vite@7.2.7(@types/node@22.19.2)(jiti@2.6.1)(lightningcss@1.30.1)(terser@5.39.0)(tsx@4.20.3)(yaml@2.8.1))
@@ -421,6 +367,18 @@ importers:
       babel-plugin-react-compiler:
         specifier: ^1.0.0
         version: 1.0.0
+      clsx:
+        specifier: ^2.1.1
+        version: 2.1.1
+      cmdk:
+        specifier: ^1.1.1
+        version: 1.1.1(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
+      color-hash:
+        specifier: ^2.0.2
+        version: 2.0.2
+      date-fns:
+        specifier: ^4.1.0
+        version: 4.1.0
       electron:
         specifier: ^39.2.6
         version: 39.2.6
@@ -430,12 +388,51 @@ importers:
       electron-vite:
         specifier: ^5.0.0
         version: 5.0.0(@swc/core@1.11.24)(vite@7.2.7(@types/node@22.19.2)(jiti@2.6.1)(lightningcss@1.30.1)(terser@5.39.0)(tsx@4.20.3)(yaml@2.8.1))
+      framer-motion:
+        specifier: 11.13.5
+        version: 11.13.5(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
+      jotai:
+        specifier: ^2.14.0
+        version: 2.14.0(@babel/core@7.28.5)(@babel/template@7.27.2)(@types/react@19.2.7)(react@19.2.1)
+      lucide-react:
+        specifier: 'catalog:'
+        version: 0.525.0(react@19.2.1)
+      posthog-js:
+        specifier: ^1.292.0
+        version: 1.292.0
+      react:
+        specifier: 'catalog:'
+        version: 19.2.1
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.2.1(react@19.2.1)
+      react-icons:
+        specifier: ^5.5.0
+        version: 5.5.0(react@19.2.1)
+      react-markdown:
+        specifier: ^10.1.0
+        version: 10.1.0(@types/react@19.2.7)(react@19.2.1)
+      rehype-raw:
+        specifier: ^7.0.0
+        version: 7.0.0
+      remark-gfm:
+        specifier: ^4.0.1
+        version: 4.0.1
+      remend:
+        specifier: ^1.0.1
+        version: 1.0.1
       semver:
         specifier: ^7.7.2
         version: 7.7.3
       sharp:
         specifier: ^0.34.3
         version: 0.34.3
+      sonner:
+        specifier: ^1.7.4
+        version: 1.7.4(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
+      tailwind-merge:
+        specifier: ^3.3.1
+        version: 3.3.1
       tailwindcss:
         specifier: ^4.1.11
         version: 4.1.17
@@ -448,6 +445,9 @@ importers:
       typescript:
         specifier: 'catalog:'
         version: 5.9.2
+      use-stick-to-bottom:
+        specifier: ^1.1.1
+        version: 1.1.1(react@19.2.1)
       vite:
         specifier: 'catalog:'
         version: 7.2.7(@types/node@22.19.2)(jiti@2.6.1)(lightningcss@1.30.1)(terser@5.39.0)(tsx@4.20.3)(yaml@2.8.1)
