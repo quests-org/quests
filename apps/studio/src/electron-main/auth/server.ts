@@ -28,8 +28,14 @@ import path from "node:path";
 function focusMainWindow() {
   const mainWindow = getMainWindow();
   if (mainWindow) {
+    if (mainWindow.isMinimized()) {
+      mainWindow.restore();
+    }
     mainWindow.show();
+    // Temporarily set always-on-top to reliably bring window to front on Windows
+    mainWindow.setAlwaysOnTop(true);
     mainWindow.focus();
+    mainWindow.setAlwaysOnTop(false);
   }
 }
 
