@@ -1,8 +1,9 @@
 import { type HeartbeatResponse } from "@quests/workspace/for-shim";
 
-export interface ClientToIframeMessage {
-  type: "hide-failed-to-render" | "show-failed-to-render";
-}
+export type ClientToIframeMessage =
+  | { type: "hide-failed-to-render" }
+  | { type: "set-studio-environment" }
+  | { type: "show-failed-to-render" };
 
 export type IframeMessage =
   | {

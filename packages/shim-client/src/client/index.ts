@@ -227,6 +227,13 @@ window.addEventListener("message", (event) => {
     if (message.type === "history-forward") {
       window.history.forward();
     }
+
+    if (message.type === "set-studio-environment") {
+      iframe.contentWindow?.postMessage(
+        { type: "set-studio-environment" } satisfies ClientToIframeMessage,
+        "*",
+      );
+    }
   }
 });
 

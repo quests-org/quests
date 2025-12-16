@@ -7,6 +7,7 @@ export {
 export type ShimIFrameInMessage =
   | { type: "history-back" }
   | { type: "history-forward" }
-  | { type: "reload-window" };
+  | { type: "reload-window" }
+  | { type: "set-studio-environment" };
 
 export type ShimIFrameMessage = ShimIFrameInMessage;

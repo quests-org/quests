@@ -1,4 +1,7 @@
-import { ShimIFrameOutMessageSchema } from "@quests/shared/shim";
+import {
+  type ShimIFrameMessage,
+  ShimIFrameOutMessageSchema,
+} from "@quests/shared/shim";
 import { type WorkspaceApp } from "@quests/workspace/client";
 import { useMutation } from "@tanstack/react-query";
 import { type atom, useSetAtom } from "jotai";
@@ -98,6 +101,27 @@ export function AppIFrame({
       window.removeEventListener("message", handleMessage);
     };
   }, [setClientLogs, iframeRef, app.urls.localhost, onOpenConsole]);
+
+  useEffect(() => {
+    const iframe = iframeRef?.current;
+    if (!iframe) {
+      return;
+    }
+
+    const sendStudioMessage = () => {
+      const message: ShimIFrameMessage = { type: "set-studio-environment" };
+      iframe.contentWindow?.postMessage(message, "*");
+    };
+
+    if (iframe.contentWindow) {
+      iframe.addEventListener("load", sendStudioMessage);
+      sendStudioMessage();
+    }
+
+    return () => {
+      iframe.removeEventListener("load", sendStudioMessage);
+    };
+  }, [iframeRef]);
 
   // Keep cover visible briefly after session ends to prevent modal being
   // dismissed right before the app reboots

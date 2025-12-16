@@ -10,11 +10,11 @@ export function App() {
   useTheme();
   const [response, setResponse] = useState<HeartbeatResponse | null>(null);
   const [showRecovery, setShowRecovery] = useState(false);
+  const [isInsideStudio, setIsInsideStudio] = useState(false);
   const previousStatusRef = useRef(response?.status ?? null);
   const retryAttemptsRef = useRef(0);
   const urlParams = new URLSearchParams(window.location.search);
   const isFallbackPage = urlParams.has("fallback");
-  const isInsideStudio = navigator.userAgent.includes("Electron");
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -27,6 +27,10 @@ export function App() {
         switch (msg.type) {
           case "hide-failed-to-render": {
             setShowRecovery(false);
+            break;
+          }
+          case "set-studio-environment": {
+            setIsInsideStudio(true);
             break;
           }
           case "show-failed-to-render": {
