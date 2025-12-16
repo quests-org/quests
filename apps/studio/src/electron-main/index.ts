@@ -162,6 +162,7 @@ void app.whenReady().then(async () => {
       });
 
       if (moved) {
+        app.quit();
         return;
       }
     }
