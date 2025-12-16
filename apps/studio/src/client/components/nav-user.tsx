@@ -78,7 +78,7 @@ export function NavUser() {
                 tab: "General",
               });
             }}
-            size="lg"
+            size="default"
           >
             <SettingsIcon className="h-5 w-5" />
             <div className="grid flex-1 text-left text-sm leading-tight">
