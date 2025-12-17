@@ -14,7 +14,6 @@ import { captureServerException } from "@/electron-main/lib/capture-server-excep
 import { setDefaultModelIfNeeded } from "@/electron-main/lib/set-default-model";
 import { publisher } from "@/electron-main/rpc/publisher";
 import { getSessionStore } from "@/electron-main/stores/session";
-import { getTabsManager } from "@/electron-main/tabs";
 import { getMainWindow } from "@/electron-main/windows/main/instance";
 import { serve } from "@hono/node-server";
 import { APP_PROTOCOL, SUPPORT_EMAIL } from "@quests/shared";
@@ -37,9 +36,6 @@ function focusMainWindow() {
     mainWindow.setAlwaysOnTop(true);
     mainWindow.focus();
     mainWindow.setAlwaysOnTop(false);
-
-    const tabsManager = getTabsManager();
-    tabsManager?.focusCurrentTab();
   }
 }
 
