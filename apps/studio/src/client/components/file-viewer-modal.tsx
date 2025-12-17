@@ -5,18 +5,63 @@ import {
 import { cn } from "@/client/lib/utils";
 import { formatBytes } from "@quests/workspace/client";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { useRouter } from "@tanstack/react-router";
 import { useAtomValue, useSetAtom } from "jotai";
 import { Download, Music, X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
+import { FileIcon } from "./file-icon";
 import { ImageWithFallback } from "./image-with-fallback";
 import { Button } from "./ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 export function FileViewerModal() {
   const state = useAtomValue(fileViewerAtom);
   const closeViewer = useSetAtom(closeFileViewerAtom);
   const [imageErrorUrl, setImageErrorUrl] = useState<null | string>(null);
+  const router = useRouter();
+
+  const truncatedFilename = useMemo(
+    () => truncateMiddle(state.filename, 50),
+    [state.filename],
+  );
+
+  const isFilenameTruncated = state.filename.length > 50;
+
+  // Only allow downloads for localhost URLs (including subdomains) and base64 data URLs,
+  // as external URLs may not support CORS, causing download attempts to fail
+  const isDownloadable = useMemo(() => {
+    if (state.url.startsWith("data:")) {
+      return true;
+    }
+
+    try {
+      const url = new URL(state.url);
+      return (
+        url.hostname === "localhost" || url.hostname.endsWith(".localhost")
+      );
+    } catch {
+      return false;
+    }
+  }, [state.url]);
+
+  useEffect(() => {
+    const unsubscribe = router.subscribe("onBeforeLoad", () => {
+      if (state.isOpen) {
+        closeViewer();
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [router, state.isOpen, closeViewer]);
+
+  // Happens when we are being dismissed, avoids zero state flicker
+  if (!state.url || !state.filename) {
+    return null;
+  }
 
   const handleDownload = async () => {
     try {
@@ -47,7 +92,8 @@ export function FileViewerModal() {
   };
 
   const isImage =
-    state.mimeType?.startsWith("image/") && imageErrorUrl !== state.url;
+    (state.mimeType?.startsWith("image/") || !state.mimeType) &&
+    imageErrorUrl !== state.url;
   const isSvg = state.mimeType === "image/svg+xml";
   const isPdf = state.mimeType === "application/pdf";
   const isVideo = state.mimeType?.startsWith("video/");
@@ -98,28 +144,43 @@ export function FileViewerModal() {
                 e.stopPropagation();
               }}
             >
-              <div className="flex flex-col items-center gap-1 text-white">
-                <p className="text-sm font-medium text-center">
-                  {state.filename}
-                </p>
+              <div className="flex flex-col items-center gap-1 text-white max-w-full">
+                {isFilenameTruncated ? (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <p className="text-sm font-medium text-center px-4">
+                        {truncatedFilename}
+                      </p>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-md wrap-break-word">
+                      <p>{state.filename}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                ) : (
+                  <p className="text-sm font-medium text-center px-4">
+                    {state.filename}
+                  </p>
+                )}
                 {typeof state.size === "number" && state.size > 0 && (
                   <p className="text-xs text-white/70">
                     {formatBytes(state.size)}
                   </p>
                 )}
               </div>
-              <Button
-                className="bg-white/10 hover:bg-white/20 text-white"
-                onClick={handleDownload}
-                size="sm"
-                variant="ghost"
-              >
-                <Download className="size-4" />
-                Download
-              </Button>
+              {isDownloadable && (
+                <Button
+                  className="bg-white/10 hover:bg-white/20 text-white"
+                  onClick={handleDownload}
+                  size="sm"
+                  variant="ghost"
+                >
+                  <Download className="size-4" />
+                  Download
+                </Button>
+              )}
             </div>
 
-            <div className="w-full h-full p-16 flex items-center justify-center">
+            <div className="w-full h-full p-16 pb-32 flex items-center justify-center">
               {isImage ? (
                 <ImageWithFallback
                   alt={state.filename}
@@ -139,7 +200,7 @@ export function FileViewerModal() {
                 />
               ) : isPdf ? (
                 <iframe
-                  className="w-full h-full rounded border border-white/10"
+                  className="max-w-full max-h-full w-full h-full rounded border border-white/10"
                   onClick={(e) => {
                     e.stopPropagation();
                   }}
@@ -168,16 +229,21 @@ export function FileViewerModal() {
                   <audio className="w-full" controls src={state.url} />
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center gap-4 p-8 text-center w-full max-w-md">
-                  <div className="size-16 rounded-full bg-white/10 flex items-center justify-center">
-                    <Download className="size-8 text-white" />
+                <div
+                  className="flex flex-col items-center justify-center gap-4 p-8 text-center w-full max-w-md"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                  }}
+                >
+                  <div className="size-32 rounded-lg bg-background flex items-center justify-center">
+                    <FileIcon className="size-16" filename={state.filename} />
                   </div>
                   <div>
                     <p className="text-sm font-medium text-white">
                       Preview not available
                     </p>
                     <p className="text-xs text-white/60 mt-1">
-                      Click download to save this file
+                      Use the download button below to save this file
                     </p>
                   </div>
                 </div>
@@ -187,5 +253,20 @@ export function FileViewerModal() {
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>
+  );
+}
+
+function truncateMiddle(str: string, maxLength: number): string {
+  if (str.length <= maxLength) {
+    return str;
+  }
+
+  const ellipsis = "…";
+  const charsToShow = maxLength - ellipsis.length;
+  const frontChars = Math.ceil(charsToShow / 2);
+  const backChars = Math.floor(charsToShow / 2);
+
+  return (
+    str.slice(0, frontChars) + ellipsis + str.slice(str.length - backChars)
   );
 }
