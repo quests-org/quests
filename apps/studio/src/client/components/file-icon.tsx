@@ -1,6 +1,7 @@
 import type { ComponentType } from "react";
 
 import {
+  BsFileEarmark,
   BsFileEarmarkExcel,
   BsFileEarmarkMusic,
   BsFileEarmarkPlay,
@@ -114,6 +115,10 @@ export function FileIcon({
   const ext = getFileExtension(filename);
 
   if (Icon === null) {
+    if (!ext) {
+      return <BsFileEarmark className={className} />;
+    }
+
     return (
       <div
         className={`${className} flex items-center justify-center rounded border border-border bg-muted text-[0.45em] font-semibold uppercase text-muted-foreground`}
@@ -128,7 +133,11 @@ export function FileIcon({
 
 function getFileExtension(filename: string): string {
   const lowerName = filename.toLowerCase();
-  return lowerName.split(".").pop() ?? "";
+  const lastDotIndex = lowerName.lastIndexOf(".");
+  if (lastDotIndex === -1 || lastDotIndex === 0) {
+    return "";
+  }
+  return lowerName.slice(lastDotIndex + 1);
 }
 
 function getFileIcon(filename: string): IconComponent | null {
