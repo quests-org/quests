@@ -22,7 +22,7 @@ export interface AnalyticsEvents {
     model_ids: string[];
   };
   "external_link.clicked": {
-    url: string;
+    external_url: string;
   };
   "favorite.added": never;
   "favorite.removed": never;

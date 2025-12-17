@@ -37,7 +37,9 @@ export function ExternalLink(
       const url = event.currentTarget.href;
       if (url) {
         const finalUrl = addReferral ? addRef(url) : url;
-        captureClientEvent("external_link.clicked", { url: finalUrl });
+        captureClientEvent("external_link.clicked", {
+          external_url: finalUrl,
+        });
         await openExternalLinkMutation.mutateAsync({ url: finalUrl });
       }
       onClick?.(event);
