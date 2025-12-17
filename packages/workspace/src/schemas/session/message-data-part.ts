@@ -3,7 +3,7 @@ import { z } from "zod";
 import { RelativePathSchema } from "../paths";
 
 export namespace SessionMessageDataPart {
-  export const NameSchema = z.enum(["gitCommit", "fileAttachment"]);
+  export const NameSchema = z.enum(["gitCommit", "fileAttachments"]);
 
   export type Name = z.output<typeof NameSchema>;
 
@@ -25,9 +25,17 @@ export namespace SessionMessageDataPart {
     typeof FileAttachmentDataPartSchema
   >;
 
+  export const FileAttachmentsDataPartSchema = z.object({
+    files: z.array(FileAttachmentDataPartSchema),
+  });
+
+  export type FileAttachmentsDataPart = z.output<
+    typeof FileAttachmentsDataPartSchema
+  >;
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const DataPartsSchema = z.object({
-    [NameSchema.enum.fileAttachment]: FileAttachmentDataPartSchema,
+    [NameSchema.enum.fileAttachments]: FileAttachmentsDataPartSchema,
     [NameSchema.enum.gitCommit]: GitCommitDataPartSchema,
   });
   export type DataParts = z.output<typeof DataPartsSchema>;

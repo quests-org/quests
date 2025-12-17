@@ -1,19 +1,22 @@
 import { atom } from "jotai";
 
-export interface FileViewerState {
+export interface FileViewerFile {
   filename: string;
-  isOpen: boolean;
   mimeType?: string;
   size?: number;
   url: string;
 }
 
+export interface FileViewerState {
+  currentIndex: number;
+  files: FileViewerFile[];
+  isOpen: boolean;
+}
+
 const initialState: FileViewerState = {
-  filename: "",
+  currentIndex: 0,
+  files: [],
   isOpen: false,
-  mimeType: undefined,
-  size: undefined,
-  url: "",
 };
 
 export const fileViewerAtom = atom<FileViewerState>(initialState);
@@ -24,23 +27,17 @@ export const openFileViewerAtom = atom(
     _get,
     set,
     {
-      filename,
-      mimeType,
-      size,
-      url,
+      currentIndex = 0,
+      files,
     }: {
-      filename: string;
-      mimeType?: string;
-      size?: number;
-      url: string;
+      currentIndex?: number;
+      files: FileViewerFile[];
     },
   ) => {
     set(fileViewerAtom, {
-      filename,
+      currentIndex,
+      files,
       isOpen: true,
-      mimeType,
-      size,
-      url,
     });
   },
 );
@@ -48,3 +45,30 @@ export const openFileViewerAtom = atom(
 export const closeFileViewerAtom = atom(null, (_get, set) => {
   set(fileViewerAtom, initialState);
 });
+
+export const navigateFileViewerAtom = atom(
+  null,
+  (get, set, action: "next" | "prev" | number) => {
+    const state = get(fileViewerAtom);
+    if (!state.isOpen || state.files.length <= 1) {
+      return;
+    }
+
+    let newIndex = state.currentIndex;
+    if (typeof action === "number") {
+      newIndex = action;
+    } else if (action === "next") {
+      newIndex = (state.currentIndex + 1) % state.files.length;
+    } else {
+      newIndex =
+        state.currentIndex === 0
+          ? state.files.length - 1
+          : state.currentIndex - 1;
+    }
+
+    set(fileViewerAtom, {
+      ...state,
+      currentIndex: newIndex,
+    });
+  },
+);

@@ -13,7 +13,7 @@ export async function writeUploadedFiles(
   files: Upload.Type[],
 ) {
   if (files.length === 0) {
-    return { fileMetadata: [] };
+    return { files: [] };
   }
 
   const uploadsDir = absolutePathJoin(appDir, UPLOADS_FOLDER);
@@ -38,7 +38,7 @@ export async function writeUploadedFiles(
     });
   }
 
-  return { fileMetadata };
+  return { files: fileMetadata };
 }
 
 async function getUniqueFilename(

@@ -1,23 +1,23 @@
-import { type ProjectSubdomain } from "@quests/workspace/client";
+import { type FileViewerFile } from "@/client/atoms/file-viewer";
+import {
+  type ProjectSubdomain,
+  type SessionMessageDataPart,
+} from "@quests/workspace/client";
 import { useQuery } from "@tanstack/react-query";
 
 import { rpcClient } from "../rpc/client";
 import { AttachmentItem } from "./attachment-item";
 
 interface FileAttachmentCardProps {
-  filename: string;
-  filePath: string;
-  mimeType: string;
+  file: SessionMessageDataPart.FileAttachmentDataPart;
+  files: SessionMessageDataPart.FileAttachmentDataPart[];
   projectSubdomain: ProjectSubdomain;
-  size: number;
 }
 
 export function FileAttachmentCard({
-  filename,
-  filePath,
-  mimeType,
+  file,
+  files,
   projectSubdomain,
-  size,
 }: FileAttachmentCardProps) {
   const { data: app } = useQuery(
     rpcClient.workspace.project.bySubdomain.queryOptions({
@@ -29,14 +29,22 @@ export function FileAttachmentCard({
     return null;
   }
 
-  const assetUrl = getAssetUrl(app.urls.assetBase, filePath);
+  const assetUrl = getAssetUrl(app.urls.assetBase, file.filePath);
+
+  const gallery: FileViewerFile[] = files.map((f) => ({
+    filename: f.filename,
+    mimeType: f.mimeType,
+    size: f.size,
+    url: getAssetUrl(app.urls.assetBase, f.filePath),
+  }));
 
   return (
     <AttachmentItem
-      filename={filename}
-      mimeType={mimeType}
+      filename={file.filename}
+      gallery={gallery}
+      mimeType={file.mimeType}
       previewUrl={assetUrl}
-      size={size}
+      size={file.size}
     />
   );
 }

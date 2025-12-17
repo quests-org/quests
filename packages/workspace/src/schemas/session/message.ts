@@ -206,15 +206,15 @@ export namespace SessionMessage {
       const parts = [...filteredParts];
 
       if (message.role === "user") {
-        const fileAttachments = message.parts.filter(
-          (part) => part.type === "data-fileAttachment",
+        const fileAttachmentsPart = message.parts.find(
+          (part) => part.type === "data-fileAttachments",
         );
 
-        if (fileAttachments.length > 0) {
-          const attachmentDescriptions = fileAttachments
-            .map(({ data }) => {
-              const formattedSize = formatBytes(data.size);
-              return `- ${data.filePath} (${formattedSize})`;
+        if (fileAttachmentsPart) {
+          const attachmentDescriptions = fileAttachmentsPart.data.files
+            .map((file) => {
+              const formattedSize = formatBytes(file.size);
+              return `- ${file.filePath} (${formattedSize})`;
             })
             .join("\n");
 

@@ -44,8 +44,7 @@ export const Markdown = memo(({ markdown, rehypePlugins }: MarkdownProps) => {
       const alt = event.currentTarget.alt || "image";
       if (src) {
         openFileViewer({
-          filename: alt,
-          url: src,
+          files: [{ filename: alt, url: src }],
         });
       }
     },

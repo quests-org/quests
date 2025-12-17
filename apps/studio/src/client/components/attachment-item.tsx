@@ -1,4 +1,7 @@
-import { openFileViewerAtom } from "@/client/atoms/file-viewer";
+import {
+  type FileViewerFile,
+  openFileViewerAtom,
+} from "@/client/atoms/file-viewer";
 import { cn } from "@/client/lib/utils";
 import { useSetAtom } from "jotai";
 import { X } from "lucide-react";
@@ -10,6 +13,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 interface AttachmentItemProps {
   filename: string;
+  gallery?: FileViewerFile[];
   mimeType?: string;
   onRemove?: () => void;
   previewUrl?: string;
@@ -18,6 +22,7 @@ interface AttachmentItemProps {
 
 export function AttachmentItem({
   filename,
+  gallery,
   mimeType,
   onRemove,
   previewUrl,
@@ -27,11 +32,21 @@ export function AttachmentItem({
 
   const handlePreviewClick = () => {
     if (previewUrl) {
+      const files = gallery ?? [
+        {
+          filename,
+          mimeType,
+          size,
+          url: previewUrl,
+        },
+      ];
+      const currentIndex = gallery
+        ? gallery.findIndex((f) => f.url === previewUrl)
+        : 0;
+
       openFileViewer({
-        filename,
-        mimeType,
-        size,
-        url: previewUrl,
+        currentIndex: currentIndex === -1 ? 0 : currentIndex,
+        files,
       });
     }
   };

@@ -188,7 +188,7 @@ export function SessionStream({
         );
       }
 
-      if (part.type === "data-fileAttachment") {
+      if (part.type === "data-fileAttachments") {
         return null;
       }
 
@@ -231,6 +231,12 @@ export function SessionStream({
       if (part.type === "file") {
         // eslint-disable-next-line no-console
         console.warn("File part not supported yet", part);
+        return null;
+      }
+
+      // File attachments were one part per file. Safe to ignore these.
+      // Remove after 2026-01-17
+      if ((part as { type: string }).type === "data-fileAttachment") {
         return null;
       }
 
@@ -295,7 +301,7 @@ export function SessionStream({
           isAssistantMessageDone = part.state === "done";
         }
 
-        if (message.role === "user" && part.type === "data-fileAttachment") {
+        if (message.role === "user" && part.type === "data-fileAttachments") {
           fileAttachments.push(part);
           continue;
         }
@@ -307,28 +313,29 @@ export function SessionStream({
       }
 
       if (message.role === "user" && fileAttachments.length > 0) {
-        messageElements.unshift(
-          <div
-            className="flex flex-wrap items-start gap-2 justify-end"
-            key={`attachments-${message.id}`}
-          >
-            {fileAttachments.map((part) => {
-              if (part.type === "data-fileAttachment") {
-                return (
-                  <FileAttachmentCard
-                    filename={part.data.filename}
-                    filePath={part.data.filePath}
-                    key={part.metadata.id}
-                    mimeType={part.data.mimeType}
-                    projectSubdomain={app.subdomain}
-                    size={part.data.size}
-                  />
-                );
-              }
-              return null;
-            })}
-          </div>,
+        const fileAttachmentsPart = fileAttachments.find(
+          (part) => part.type === "data-fileAttachments",
         );
+
+        if (fileAttachmentsPart) {
+          const files = fileAttachmentsPart.data.files;
+
+          messageElements.unshift(
+            <div
+              className="flex flex-wrap items-start gap-2 justify-end"
+              key={`attachments-${message.id}`}
+            >
+              {files.map((file, index) => (
+                <FileAttachmentCard
+                  file={file}
+                  files={files}
+                  key={`${fileAttachmentsPart.metadata.id}-${index}`}
+                  projectSubdomain={app.subdomain}
+                />
+              ))}
+            </div>,
+          );
+        }
       }
 
       if (message.role === "assistant" && isAssistantMessageDone) {

@@ -177,12 +177,9 @@ const createWithMessage = base
         input.files,
       );
 
-      const fileAttachmentParts = uploadResult.fileMetadata.map((file) => ({
+      const fileAttachmentsPart = {
         data: {
-          filename: file.filename,
-          filePath: file.filePath,
-          mimeType: file.mimeType,
-          size: file.size,
+          files: uploadResult.files,
         },
         metadata: {
           createdAt: new Date(),
@@ -190,12 +187,12 @@ const createWithMessage = base
           messageId: input.message.id,
           sessionId: input.sessionId,
         },
-        type: "data-fileAttachment" as const,
-      }));
+        type: "data-fileAttachments" as const,
+      };
 
       messageWithFiles = {
         ...input.message,
-        parts: [...input.message.parts, ...fileAttachmentParts],
+        parts: [...input.message.parts, fileAttachmentsPart],
       };
     }
 

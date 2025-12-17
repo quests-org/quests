@@ -76,12 +76,9 @@ const create = base
       if (files && files.length > 0) {
         const uploadResult = await writeUploadedFiles(appConfig.appDir, files);
 
-        const fileAttachmentParts = uploadResult.fileMetadata.map((file) => ({
+        const fileAttachmentsPart = {
           data: {
-            filename: file.filename,
-            filePath: file.filePath,
-            mimeType: file.mimeType,
-            size: file.size,
+            files: uploadResult.files,
           },
           metadata: {
             createdAt: new Date(),
@@ -89,12 +86,12 @@ const create = base
             messageId: message.id,
             sessionId,
           },
-          type: "data-fileAttachment" as const,
-        }));
+          type: "data-fileAttachments" as const,
+        };
 
         messageWithFiles = {
           ...message,
-          parts: [...message.parts, ...fileAttachmentParts],
+          parts: [...message.parts, fileAttachmentsPart],
         };
       }
 
