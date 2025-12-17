@@ -155,9 +155,19 @@ const FAKE_FILES = {
 };
 
 function extractFilePrefix(input: string) {
-  const prefixes = ["pdf:", "audio:", "image:", "text:"] as const;
+  const prefixes = ["all:", "pdf:", "audio:", "image:", "text:"] as const;
   for (const prefix of prefixes) {
     if (input.toLowerCase().startsWith(prefix)) {
+      if (prefix === "all:") {
+        return {
+          files: Object.values(FAKE_FILES).map((file) => ({
+            ...file,
+            mimeType: mime.getType(file.filename) ?? "application/octet-stream",
+            size: Buffer.from(file.content, "base64").length,
+          })),
+          text: input.slice(prefix.length).trim(),
+        };
+      }
       const type = prefix.slice(0, -1) as keyof typeof FAKE_FILES;
       return {
         files: [
@@ -222,8 +232,8 @@ rl.on("line", (input) => {
       // "google/gemini-2.5-pro?provider=google&providerConfigId=google-config-id";
       // "google/gemini-2.5-flash?provider=google&providerConfigId=google-config-id";
       // "x-ai/grok-code-fast-1?provider=openrouter&providerConfigId=openrouter-config-id";
-      "google/gemini-3-pro-preview?provider=openrouter&providerConfigId=openrouter-config-id";
-    // "openai/gpt-5.1-codex-mini?provider=openrouter&providerConfigId=openrouter-config-id";
+      // "google/gemini-3-pro-preview?provider=openrouter&providerConfigId=openrouter-config-id";
+      "openai/gpt-5.2?provider=openrouter&providerConfigId=openrouter-config-id";
 
     if (project) {
       void call(
