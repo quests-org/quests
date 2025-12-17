@@ -120,11 +120,36 @@ export function FileIcon({
     }
 
     return (
-      <div
-        className={`${className} flex items-center justify-center rounded border border-border bg-muted text-[0.45em] font-semibold uppercase text-muted-foreground`}
+      <svg
+        className={className}
+        fill="none"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
       >
-        {ext.slice(0, 4)}
-      </div>
+        <rect
+          className="fill-muted stroke-border"
+          height="20"
+          rx="2"
+          strokeWidth="1.5"
+          width="16"
+          x="4"
+          y="2"
+        />
+        <text
+          className="fill-muted-foreground"
+          style={{
+            fontSize: "6px",
+            fontWeight: 600,
+            letterSpacing: "-0.3px",
+            textTransform: "uppercase",
+          }}
+          textAnchor="middle"
+          x="12"
+          y="14"
+        >
+          {ext.slice(0, 4)}
+        </text>
+      </svg>
     );
   }
 
