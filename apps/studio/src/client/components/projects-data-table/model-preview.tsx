@@ -29,14 +29,14 @@ export function ModelPreview({ subdomain }: { subdomain: ProjectSubdomain }) {
     : (selectedModelURI.split("?")[0] ?? "");
 
   return (
-    <span className="flex items-center gap-x-1 text-muted-foreground">
+    <span className="flex items-center gap-x-1 text-muted-foreground min-w-0">
       {matchedModel && (
         <AIProviderIcon
           className="size-3 shrink-0"
           type={matchedModel.params.provider}
         />
       )}
-      <span>{displayName}</span>
+      <span className="truncate">{displayName}</span>
     </span>
   );
 }

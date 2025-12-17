@@ -226,10 +226,10 @@ function RouteComponent() {
                             subdomain={project.subdomain}
                           />
                         </div>
-                        <div className="flex items-center gap-x-1.5 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-x-1.5 text-xs text-muted-foreground min-w-0">
                           <ModelPreview subdomain={project.subdomain} />
-                          <span>·</span>
-                          <span>
+                          <span className="shrink-0">·</span>
+                          <span className="shrink-0">
                             {formatDistanceToNow(project.updatedAt, {
                               addSuffix: true,
                             })
