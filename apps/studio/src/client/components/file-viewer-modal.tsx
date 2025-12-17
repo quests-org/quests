@@ -13,21 +13,14 @@ import { toast } from "sonner";
 
 import { FileIcon } from "./file-icon";
 import { ImageWithFallback } from "./image-with-fallback";
+import { TruncatedText } from "./truncated-text";
 import { Button } from "./ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 export function FileViewerModal() {
   const state = useAtomValue(fileViewerAtom);
   const closeViewer = useSetAtom(closeFileViewerAtom);
   const [imageErrorUrl, setImageErrorUrl] = useState<null | string>(null);
   const router = useRouter();
-
-  const truncatedFilename = useMemo(
-    () => truncateMiddle(state.filename, 50),
-    [state.filename],
-  );
-
-  const isFilenameTruncated = state.filename.length > 50;
 
   // Only allow downloads for localhost URLs (including subdomains) and base64 data URLs,
   // as external URLs may not support CORS, causing download attempts to fail
@@ -145,22 +138,12 @@ export function FileViewerModal() {
               }}
             >
               <div className="flex flex-col items-center gap-1 text-white max-w-full">
-                {isFilenameTruncated ? (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <p className="text-sm font-medium text-center px-4">
-                        {truncatedFilename}
-                      </p>
-                    </TooltipTrigger>
-                    <TooltipContent className="max-w-md wrap-break-word">
-                      <p>{state.filename}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                ) : (
-                  <p className="text-sm font-medium text-center px-4">
-                    {state.filename}
-                  </p>
-                )}
+                <TruncatedText
+                  className="text-sm font-medium text-center px-4"
+                  maxLength={50}
+                >
+                  {state.filename}
+                </TruncatedText>
                 {typeof state.size === "number" && state.size > 0 && (
                   <p className="text-xs text-white/70">
                     {formatBytes(state.size)}
@@ -253,20 +236,5 @@ export function FileViewerModal() {
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>
-  );
-}
-
-function truncateMiddle(str: string, maxLength: number): string {
-  if (str.length <= maxLength) {
-    return str;
-  }
-
-  const ellipsis = "…";
-  const charsToShow = maxLength - ellipsis.length;
-  const frontChars = Math.ceil(charsToShow / 2);
-  const backChars = Math.floor(charsToShow / 2);
-
-  return (
-    str.slice(0, frontChars) + ellipsis + str.slice(str.length - backChars)
   );
 }
