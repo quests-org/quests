@@ -47,6 +47,8 @@ export function exportProjectZip({
       );
     }
 
+    let needsReset = false;
+
     if (includeChat) {
       const sessionsDbPath = absolutePathJoin(
         appDir,
@@ -61,29 +63,35 @@ export function exportProjectZip({
           appDir,
           {},
         );
-        yield* git(
-          [
-            "commit",
-            "-m",
-            "Temporary: include chat for export",
-            "--author",
-            `${GIT_AUTHOR.name} <${GIT_AUTHOR.email}>`,
-          ],
-          appDir,
-          {},
-        );
-        yield* git(GitCommands.archiveZip(outputPath), appDir, {});
-        yield* git(["reset", "--soft", "HEAD~1"], appDir, {});
-        yield* git(
-          ["reset", "HEAD", `${APP_PRIVATE_FOLDER}/${SESSIONS_DB_FILE_NAME}`],
-          appDir,
-          {},
-        );
-      } else {
-        yield* git(GitCommands.archiveZip(outputPath), appDir, {});
+
+        const statusAfterAdd = yield* git(GitCommands.status(), appDir, {});
+
+        if (statusAfterAdd.stdout.toString("utf8").trim() !== "") {
+          yield* git(
+            [
+              "commit",
+              "-m",
+              "Temporary: include chat for export",
+              "--author",
+              `${GIT_AUTHOR.name} <${GIT_AUTHOR.email}>`,
+            ],
+            appDir,
+            {},
+          );
+          needsReset = true;
+        }
       }
-    } else {
-      yield* git(GitCommands.archiveZip(outputPath), appDir, {});
+    }
+
+    yield* git(GitCommands.archiveZip(outputPath), appDir, {});
+
+    if (needsReset) {
+      yield* git(["reset", "--soft", "HEAD~1"], appDir, {});
+      yield* git(
+        ["reset", "HEAD", `${APP_PRIVATE_FOLDER}/${SESSIONS_DB_FILE_NAME}`],
+        appDir,
+        {},
+      );
     }
 
     return okAsync({ outputPath });
