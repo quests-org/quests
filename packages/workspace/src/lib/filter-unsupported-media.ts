@@ -1,10 +1,7 @@
 import type { AIGatewayModel } from "@quests/ai-gateway";
-import type { ModelMessage, TextPart } from "ai";
+import type { ModelMessage } from "ai";
 
-interface ContentPart {
-  mediaType?: string;
-  type: string;
-}
+import { dedent } from "radashi";
 
 type MediaCategory = "audio" | "file" | "image" | "video";
 
@@ -15,43 +12,47 @@ export function filterUnsupportedMedia({
   messages: ModelMessage[];
   model: AIGatewayModel.Type;
 }): ModelMessage[] {
-  const features = model.features;
-
-  const mediaFeatureMap: Record<MediaCategory, AIGatewayModel.ModelFeatures> = {
-    audio: "inputAudio",
-    file: "inputFile",
-    image: "inputImage",
-    video: "inputVideo",
-  };
-
-  function filterPart<T extends ContentPart>(part: T): T | TextPart {
-    if (
-      typeof part === "object" &&
-      "type" in part &&
-      part.type === "file" &&
-      "mediaType" in part &&
-      typeof part.mediaType === "string"
-    ) {
-      const mediaCategory = getMediaTypeCategory(part.mediaType);
-
-      if (
-        mediaCategory !== "other" &&
-        !features.includes(mediaFeatureMap[mediaCategory])
-      ) {
-        return createReplacementTextPart(mediaCategory);
-      }
-    }
-
-    return part;
-  }
-
   return messages.map((message) => {
     if (message.role === "user" && Array.isArray(message.content)) {
-      message.content = message.content.map(filterPart);
+      message.content = message.content.map((part) => {
+        if (
+          typeof part === "object" &&
+          "type" in part &&
+          part.type === "file" &&
+          "mediaType" in part &&
+          typeof part.mediaType === "string"
+        ) {
+          const replacementText = maybeCreateReplacementText(
+            part.mediaType,
+            model,
+          );
+          if (replacementText) {
+            return { text: replacementText, type: "text" };
+          }
+        }
+        return part;
+      });
     }
 
     if (message.role === "assistant" && Array.isArray(message.content)) {
-      message.content = message.content.map(filterPart);
+      message.content = message.content.map((part) => {
+        if (
+          typeof part === "object" &&
+          "type" in part &&
+          part.type === "file" &&
+          "mediaType" in part &&
+          typeof part.mediaType === "string"
+        ) {
+          const replacementText = maybeCreateReplacementText(
+            part.mediaType,
+            model,
+          );
+          if (replacementText) {
+            return { text: replacementText, type: "text" };
+          }
+        }
+        return part;
+      });
     }
 
     if (message.role === "tool" && Array.isArray(message.content)) {
@@ -71,16 +72,12 @@ export function filterUnsupportedMedia({
               "mediaType" in valuePart &&
               typeof valuePart.mediaType === "string"
             ) {
-              const mediaCategory = getMediaTypeCategory(valuePart.mediaType);
-
-              if (
-                mediaCategory !== "other" &&
-                !features.includes(mediaFeatureMap[mediaCategory])
-              ) {
-                return {
-                  text: createReplacementTextPart(mediaCategory).text,
-                  type: "text" as const,
-                };
+              const replacementText = maybeCreateReplacementText(
+                valuePart.mediaType,
+                model,
+              );
+              if (replacementText) {
+                return { text: replacementText, type: "text" as const };
               }
             }
 
@@ -103,15 +100,37 @@ const MEDIA_LABELS: Record<"audio" | "file" | "image" | "video", string> = {
   video: "Video",
 };
 
-function createReplacementTextPart(mediaCategory: MediaCategory): TextPart {
+const MEDIA_FEATURE_MAP: Record<MediaCategory, AIGatewayModel.ModelFeatures> = {
+  audio: "inputAudio",
+  file: "inputFile",
+  image: "inputImage",
+  video: "inputVideo",
+};
+
+function createReplacementTextForCategory(
+  mediaCategory: MediaCategory,
+  isOpenAIViaOpenRouter: boolean,
+): string {
   const mediaTypeLabel = MEDIA_LABELS[mediaCategory];
-  return {
-    text: [
-      `[System note: ${mediaTypeLabel} file removed - your model lacks ${mediaCategory} input capability.`,
-      `Convert it to a different format or request the user to provide it in a different format if you need to access it.]`,
-    ].join(" "),
-    type: "text",
-  };
+  const alternativeInstruction =
+    "Convert it to a different format or request the user to provide it in a different format if you need to access it.";
+
+  if (isOpenAIViaOpenRouter) {
+    return dedent`
+      <system_note>
+      ${mediaTypeLabel} file removed - OpenAI models via OpenRouter are currently causing errors with ${mediaCategory} inputs.
+      The model has the capability to read these files, but this provider combination is experiencing technical issues.
+      ${alternativeInstruction}
+      </system_note>
+    `;
+  }
+
+  return dedent`
+    <system_note>
+    ${mediaTypeLabel} file removed - your model lacks ${mediaCategory} input capability.
+    ${alternativeInstruction}
+    </system_note>
+  `;
 }
 
 function getMediaTypeCategory(mediaType: string) {
@@ -128,4 +147,30 @@ function getMediaTypeCategory(mediaType: string) {
     return "file";
   }
   return "other";
+}
+
+function maybeCreateReplacementText(
+  mediaType: string,
+  model: AIGatewayModel.Type,
+): null | string {
+  const mediaCategory = getMediaTypeCategory(mediaType);
+
+  if (mediaCategory === "other") {
+    return null;
+  }
+
+  const isOpenAIModelViaOpenRouter =
+    model.author.toLowerCase() === "openai" &&
+    (model.params.provider === "openrouter" ||
+      model.params.provider === "quests");
+
+  if (isOpenAIModelViaOpenRouter && mediaType === "application/pdf") {
+    return createReplacementTextForCategory(mediaCategory, true);
+  }
+
+  if (!model.features.includes(MEDIA_FEATURE_MAP[mediaCategory])) {
+    return createReplacementTextForCategory(mediaCategory, false);
+  }
+
+  return null;
 }

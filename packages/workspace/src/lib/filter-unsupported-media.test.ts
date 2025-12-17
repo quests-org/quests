@@ -77,7 +77,10 @@ describe("filterUnsupportedMedia", () => {
               "type": "text",
             },
             {
-              "text": "[System note: Audio file removed - your model lacks audio input capability. Convert it to a different format or request the user to provide it in a different format if you need to access it.]",
+              "text": "<system_note>
+      Audio file removed - your model lacks audio input capability.
+      Convert it to a different format or request the user to provide it in a different format if you need to access it.
+      </system_note>",
               "type": "text",
             },
           ],
@@ -135,7 +138,10 @@ describe("filterUnsupportedMedia", () => {
               "type": "text",
             },
             {
-              "text": "[System note: Image file removed - your model lacks image input capability. Convert it to a different format or request the user to provide it in a different format if you need to access it.]",
+              "text": "<system_note>
+      Image file removed - your model lacks image input capability.
+      Convert it to a different format or request the user to provide it in a different format if you need to access it.
+      </system_note>",
               "type": "text",
             },
           ],
@@ -177,11 +183,17 @@ describe("filterUnsupportedMedia", () => {
               "type": "text",
             },
             {
-              "text": "[System note: Image file removed - your model lacks image input capability. Convert it to a different format or request the user to provide it in a different format if you need to access it.]",
+              "text": "<system_note>
+      Image file removed - your model lacks image input capability.
+      Convert it to a different format or request the user to provide it in a different format if you need to access it.
+      </system_note>",
               "type": "text",
             },
             {
-              "text": "[System note: Audio file removed - your model lacks audio input capability. Convert it to a different format or request the user to provide it in a different format if you need to access it.]",
+              "text": "<system_note>
+      Audio file removed - your model lacks audio input capability.
+      Convert it to a different format or request the user to provide it in a different format if you need to access it.
+      </system_note>",
               "type": "text",
             },
           ],
@@ -223,7 +235,10 @@ describe("filterUnsupportedMedia", () => {
               "type": "file",
             },
             {
-              "text": "[System note: Audio file removed - your model lacks audio input capability. Convert it to a different format or request the user to provide it in a different format if you need to access it.]",
+              "text": "<system_note>
+      Audio file removed - your model lacks audio input capability.
+      Convert it to a different format or request the user to provide it in a different format if you need to access it.
+      </system_note>",
               "type": "text",
             },
           ],
@@ -272,7 +287,10 @@ describe("filterUnsupportedMedia", () => {
           {
             "content": [
               {
-                "text": "[System note: Audio file removed - your model lacks audio input capability. Convert it to a different format or request the user to provide it in a different format if you need to access it.]",
+                "text": "<system_note>
+        Audio file removed - your model lacks audio input capability.
+        Convert it to a different format or request the user to provide it in a different format if you need to access it.
+        </system_note>",
                 "type": "text",
               },
             ],
@@ -314,7 +332,10 @@ describe("filterUnsupportedMedia", () => {
           {
             "content": [
               {
-                "text": "[System note: Image file removed - your model lacks image input capability. Convert it to a different format or request the user to provide it in a different format if you need to access it.]",
+                "text": "<system_note>
+        Image file removed - your model lacks image input capability.
+        Convert it to a different format or request the user to provide it in a different format if you need to access it.
+        </system_note>",
                 "type": "text",
               },
             ],
@@ -393,7 +414,10 @@ describe("filterUnsupportedMedia", () => {
               "type": "text",
             },
             {
-              "text": "[System note: Video file removed - your model lacks video input capability. Convert it to a different format or request the user to provide it in a different format if you need to access it.]",
+              "text": "<system_note>
+      Video file removed - your model lacks video input capability.
+      Convert it to a different format or request the user to provide it in a different format if you need to access it.
+      </system_note>",
               "type": "text",
             },
           ],
@@ -451,7 +475,10 @@ describe("filterUnsupportedMedia", () => {
               "type": "text",
             },
             {
-              "text": "[System note: File file removed - your model lacks file input capability. Convert it to a different format or request the user to provide it in a different format if you need to access it.]",
+              "text": "<system_note>
+      File file removed - your model lacks file input capability.
+      Convert it to a different format or request the user to provide it in a different format if you need to access it.
+      </system_note>",
               "type": "text",
             },
           ],
@@ -486,7 +513,10 @@ describe("filterUnsupportedMedia", () => {
           {
             "content": [
               {
-                "text": "[System note: Video file removed - your model lacks video input capability. Convert it to a different format or request the user to provide it in a different format if you need to access it.]",
+                "text": "<system_note>
+        Video file removed - your model lacks video input capability.
+        Convert it to a different format or request the user to provide it in a different format if you need to access it.
+        </system_note>",
                 "type": "text",
               },
             ],
@@ -495,5 +525,50 @@ describe("filterUnsupportedMedia", () => {
         ]
       `);
     }
+  });
+
+  it("should filter PDF files for OpenAI models via OpenRouter even if inputFile is supported", () => {
+    const messages: ModelMessage[] = [
+      {
+        content: [
+          { text: "Read this document", type: "text" },
+          {
+            data: "data:pdf",
+            mediaType: "application/pdf",
+            type: "file",
+          },
+        ],
+        role: "user",
+      },
+    ];
+
+    const model = createMockAIGatewayModelType({
+      author: "OpenAI",
+      features: ["inputText", "inputFile", "outputText"],
+      provider: "openrouter",
+    });
+    const result = filterUnsupportedMedia({ messages, model });
+
+    expect(result).toMatchInlineSnapshot(`
+      [
+        {
+          "content": [
+            {
+              "text": "Read this document",
+              "type": "text",
+            },
+            {
+              "text": "<system_note>
+      File file removed - OpenAI models via OpenRouter are currently causing errors with file inputs.
+      The model has the capability to read these files, but this provider combination is experiencing technical issues.
+      Convert it to a different format or request the user to provide it in a different format if you need to access it.
+      </system_note>",
+              "type": "text",
+            },
+          ],
+          "role": "user",
+        },
+      ]
+    `);
   });
 });

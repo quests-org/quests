@@ -22,17 +22,19 @@ export function createMockAIGatewayModel(
 
 export function createMockAIGatewayModelType(
   options: {
+    author?: string;
     features?: AIGatewayModel.ModelFeatures[];
     provider?: AIProviderType;
   } = {},
 ): AIGatewayModel.Type {
   const {
+    author = "test",
     features = ["inputText", "outputText", "tools"],
     provider = "openai",
   } = options;
 
   return AIGatewayModel.Schema.parse({
-    author: "test",
+    author,
     canonicalId: AIGatewayModel.CanonicalIdSchema.parse("test-model"),
     features,
     name: "Test Model",
