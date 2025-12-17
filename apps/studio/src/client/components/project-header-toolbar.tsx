@@ -72,6 +72,10 @@ export function ProjectHeaderToolbar({
   sidebarCollapsed,
 }: ProjectHeaderToolbarProps) {
   const isChat = project.mode === "chat";
+  const { data: preferences } = useQuery(
+    rpcClient.preferences.live.get.experimental_liveOptions(),
+  );
+  const isDeveloperMode = preferences?.developerMode;
   const iframeRef = useAtomValue(projectIframeRefAtom);
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
   const [restoreModalOpen, setRestoreModalOpen] = useState(false);
@@ -287,7 +291,7 @@ export function ProjectHeaderToolbar({
             ) : (
               <div className="flex items-center gap-2">
                 <ToolbarFavoriteAction project={project} />
-                {!isChat && (
+                {(!isChat || isDeveloperMode) && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
@@ -379,7 +383,7 @@ export function ProjectHeaderToolbar({
                     </DropdownMenuContent>
                   </DropdownMenu>
                 )}
-                {!isChat && (
+                {(!isChat || isDeveloperMode) && (
                   <DropdownMenu
                     onOpenChange={(open) => {
                       if (open) {
@@ -397,15 +401,17 @@ export function ProjectHeaderToolbar({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={handleCopyScreenshot}>
-                        <Clipboard className="h-4 w-4" />
-                        Copy screenshot
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={handleTakeScreenshot}>
-                        <Save className="h-4 w-4" />
-                        Save screenshot
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
+                      <>
+                        <DropdownMenuItem onClick={handleCopyScreenshot}>
+                          <Clipboard className="h-4 w-4" />
+                          Copy screenshot
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleTakeScreenshot}>
+                          <Save className="h-4 w-4" />
+                          Save screenshot
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                      </>
                       <DropdownMenuItem
                         onClick={() => {
                           setExportZipModalOpen(true);
