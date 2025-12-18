@@ -2,6 +2,8 @@ import type { LanguageModelV2ToolResultOutput } from "@ai-sdk/provider";
 import type { AIProviderType } from "@quests/shared";
 import type { FilePart, ModelMessage } from "ai";
 
+import mime from "mime";
+
 type ContentOutput = Extract<
   LanguageModelV2ToolResultOutput,
   { type: "content" }
@@ -106,6 +108,8 @@ function extractMediaParts(output: ContentOutput): FilePart[] {
     .filter((item): item is MediaPart => item.type === "media")
     .map((item) => ({
       data: item.data,
+      // OpenAI requires a filename for media parts or it will throw an error
+      filename: generateFilenameFromMimeType(item.mediaType),
       mediaType: item.mediaType,
       type: "file" as const,
     }));
@@ -113,6 +117,11 @@ function extractMediaParts(output: ContentOutput): FilePart[] {
 
 function extractTextParts(output: ContentOutput) {
   return output.value.filter((item) => item.type === "text");
+}
+
+function generateFilenameFromMimeType(mimeType: string): string {
+  const extension = mime.getExtension(mimeType) ?? "bin";
+  return `placeholder.${extension}`;
 }
 
 function hasMediaParts(output: ContentOutput): boolean {

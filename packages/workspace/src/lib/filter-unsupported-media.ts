@@ -159,15 +159,6 @@ function maybeCreateReplacementText(
     return null;
   }
 
-  const isOpenAIModelViaOpenRouter =
-    model.author.toLowerCase() === "openai" &&
-    (model.params.provider === "openrouter" ||
-      model.params.provider === "quests");
-
-  if (isOpenAIModelViaOpenRouter && mediaType === "application/pdf") {
-    return createReplacementTextForCategory(mediaCategory, true);
-  }
-
   if (!model.features.includes(MEDIA_FEATURE_MAP[mediaCategory])) {
     return createReplacementTextForCategory(mediaCategory, false);
   }

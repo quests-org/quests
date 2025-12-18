@@ -527,7 +527,7 @@ describe("filterUnsupportedMedia", () => {
     }
   });
 
-  it("should filter PDF files for OpenAI models via OpenRouter even if inputFile is supported", () => {
+  it("should allow PDF files for OpenAI models via OpenRouter", () => {
     const messages: ModelMessage[] = [
       {
         content: [
@@ -558,12 +558,9 @@ describe("filterUnsupportedMedia", () => {
               "type": "text",
             },
             {
-              "text": "<system_note>
-      File file removed - OpenAI models via OpenRouter are currently causing errors with file inputs.
-      The model has the capability to read these files, but this provider combination is experiencing technical issues.
-      Convert it to a different format or request the user to provide it in a different format if you need to access it.
-      </system_note>",
-              "type": "text",
+              "data": "data:pdf",
+              "mediaType": "application/pdf",
+              "type": "file",
             },
           ],
           "role": "user",

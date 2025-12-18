@@ -97,16 +97,19 @@ describe("splitMultipartToolResults", () => {
       ],
       role: "tool",
     });
-    expect(result[1]).toEqual({
-      content: [
-        {
-          data: "base64data",
-          mediaType: "image/png",
-          type: "file",
-        },
-      ],
-      role: "user",
-    });
+    expect(result[1]).toMatchInlineSnapshot(`
+      {
+        "content": [
+          {
+            "data": "base64data",
+            "filename": "placeholder.png",
+            "mediaType": "image/png",
+            "type": "file",
+          },
+        ],
+        "role": "user",
+      }
+    `);
   });
 
   it("should handle multiple tool results in same message", () => {
@@ -202,16 +205,19 @@ describe("splitMultipartToolResults", () => {
       ],
       role: "tool",
     });
-    expect(result[1]).toEqual({
-      content: [
-        {
-          data: "base64data",
-          mediaType: "image/png",
-          type: "file",
-        },
-      ],
-      role: "user",
-    });
+    expect(result[1]).toMatchInlineSnapshot(`
+      {
+        "content": [
+          {
+            "data": "base64data",
+            "filename": "placeholder.png",
+            "mediaType": "image/png",
+            "type": "file",
+          },
+        ],
+        "role": "user",
+      }
+    `);
   });
 
   it("should handle multiple text parts", () => {
