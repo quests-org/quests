@@ -349,15 +349,17 @@ export function SessionStream({
         );
       }
 
-      if (message.role === "assistant" && message.metadata.error) {
+      if (
+        message.role === "assistant" &&
+        message.metadata.error &&
+        // Aborted errors mostly happen when user stops the agent, so we don't
+        // want to show the error
+        message.metadata.error.kind !== "aborted"
+      ) {
         const isLastMessage = messageIndex === regularMessages.length - 1;
         messageElements.push(
           <MessageError
-            defaultExpanded={
-              isLastMessage &&
-              !isAnyAgentRunning &&
-              message.metadata.error.kind !== "aborted"
-            }
+            defaultExpanded={isLastMessage && !isAnyAgentRunning}
             key={`error-${message.id}`}
             message={message}
             onContinue={onContinue}
