@@ -120,7 +120,7 @@ function extractTextParts(output: ContentOutput) {
 }
 
 function generateFilenameFromMimeType(mimeType: string): string {
-  const extension = mime.getExtension(mimeType) ?? "bin";
+  const extension = mime.getExtension(mimeType) ?? "unknown";
   return `placeholder.${extension}`;
 }
 
