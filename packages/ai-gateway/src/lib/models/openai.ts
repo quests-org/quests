@@ -24,19 +24,9 @@ export function fetchAndParseOpenAIModels(
     return baseModels.map((model) => {
       const features = getModelFeatures(model.canonicalId);
 
-      const tags = [...model.tags];
-      if (
-        model.providerId.startsWith("gpt-3") ||
-        model.providerId.startsWith("gpt-4") ||
-        model.providerId.startsWith("o-")
-      ) {
-        tags.push("legacy");
-      }
-
       return {
         ...model,
         features,
-        tags,
       } satisfies AIGatewayModel.Type;
     });
   });
