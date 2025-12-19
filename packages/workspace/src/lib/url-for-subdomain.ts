@@ -6,10 +6,6 @@ import {
 import { getWorkspaceServerPort } from "../logic/server/url";
 import { type AppSubdomain } from "../schemas/subdomains";
 
-export function assetBaseUrl(subdomain: AppSubdomain) {
-  return `${localhostUrl(subdomain)}${APPS_SERVER_API_PATH}/assets`;
-}
-
 export function localhostUrl(subdomain: AppSubdomain) {
   return `http://${subdomain}.${LOCALHOST_APPS_SERVER_DOMAIN}:${getWorkspaceServerPort()}`;
 }
@@ -25,6 +21,10 @@ export function urlsForSubdomain(subdomain: AppSubdomain) {
     localRedirect: localRedirectUrl(subdomain),
     loopback: loopbackUrl(subdomain),
   };
+}
+
+function assetBaseUrl(subdomain: AppSubdomain) {
+  return `${localhostUrl(subdomain)}${APPS_SERVER_API_PATH}/assets`;
 }
 
 function localRedirectUrl(subdomain: AppSubdomain) {

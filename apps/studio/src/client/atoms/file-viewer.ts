@@ -7,7 +7,7 @@ export interface FileViewerFile {
   url: string;
 }
 
-export interface FileViewerState {
+interface FileViewerState {
   currentIndex: number;
   files: FileViewerFile[];
   isOpen: boolean;
