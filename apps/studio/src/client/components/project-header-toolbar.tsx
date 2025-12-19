@@ -6,6 +6,7 @@ import type {
 import { SmallAppIcon } from "@/client/components/app-icon";
 import { ProjectSettingsDialog } from "@/client/components/project-settings-dialog";
 import { Button } from "@/client/components/ui/button";
+import { Toggle } from "@/client/components/ui/toggle";
 import { ToolbarFavoriteAction } from "@/client/components/ui/toolbar-favorite-action";
 import { captureClientEvent } from "@/client/lib/capture-client-event";
 import { cn, isMacOS } from "@/client/lib/utils";
@@ -255,22 +256,22 @@ export function ProjectHeaderToolbar({
             {!sidebarCollapsed && <div className="flex-1" />}
 
             {!isChat && (
-              <Button
-                className="ml-1 transition-all duration-300 ease-in-out h-7 inline-flex items-center shrink-0"
-                onClick={onSidebarToggle}
+              <Toggle
+                aria-label={sidebarCollapsed ? "Show sidebar" : "Hide sidebar"}
+                onPressedChange={onSidebarToggle}
+                pressed={sidebarCollapsed}
                 size="sm"
-                title={sidebarCollapsed ? "Show sidebar" : "Hide sidebar"}
-                variant={sidebarCollapsed ? "secondary" : "ghost"}
+                variant={sidebarCollapsed ? "outline" : "default"}
               >
                 {sidebarCollapsed ? (
                   <>
-                    <MessageCircle className="h-4 w-4" />
+                    <MessageCircle className="size-4" />
                     <span>Chat</span>
                   </>
                 ) : (
-                  <PanelLeftClose className="h-4 w-4" />
+                  <PanelLeftClose className="size-4" />
                 )}
-              </Button>
+              </Toggle>
             )}
           </div>
 

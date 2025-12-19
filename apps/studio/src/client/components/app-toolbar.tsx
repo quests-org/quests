@@ -1,5 +1,6 @@
 import { Button } from "@/client/components/ui/button";
 import { Input } from "@/client/components/ui/input";
+import { Toggle } from "@/client/components/ui/toggle";
 import { useShimIFrame } from "@/client/hooks/use-shim-iframe";
 import { cn } from "@/client/lib/utils";
 import { type WorkspaceApp } from "@quests/workspace/client";
@@ -227,20 +228,20 @@ export function AppToolbar({
         <Tooltip>
           <TooltipTrigger asChild>
             <div className="relative">
-              <Button
-                className="size-6"
+              <Toggle
+                aria-label={isConsoleOpen ? "Hide Console" : "Show Console"}
                 disabled={disabled}
-                onClick={handleConsoleToggleWithTracking}
-                size="icon"
-                variant="ghost"
+                onPressedChange={handleConsoleToggleWithTracking}
+                pressed={isConsoleOpen}
+                size="sm"
               >
                 <PanelBottom className="size-4" />
-              </Button>
+              </Toggle>
               <ConsoleBadge status={badgeStatus} />
             </div>
           </TooltipTrigger>
           <TooltipContent>
-            <p>{isConsoleOpen ? "Show Console" : "Hide Console"}</p>
+            <p>{isConsoleOpen ? "Hide Console" : "Show Console"}</p>
           </TooltipContent>
         </Tooltip>
 

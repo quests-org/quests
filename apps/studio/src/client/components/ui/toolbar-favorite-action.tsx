@@ -1,4 +1,4 @@
-import { Button } from "@/client/components/ui/button";
+import { Toggle } from "@/client/components/ui/toggle";
 import {
   Tooltip,
   TooltipContent,
@@ -34,38 +34,31 @@ export function ToolbarFavoriteAction({
     rpcClient.favorites.add.mutationOptions(),
   );
 
-  const handleUnfavorite = () => {
-    void removeFavorite({ subdomain: project.subdomain });
-  };
-
-  const handleAddFavorite = async () => {
-    await addFavorite({ subdomain: project.subdomain });
+  const handleToggle = (pressed: boolean) => {
+    if (pressed) {
+      void addFavorite({ subdomain: project.subdomain });
+    } else {
+      void removeFavorite({ subdomain: project.subdomain });
+    }
   };
 
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <Button
+        <Toggle
+          aria-label={isFavorite ? "Unfavorite Project" : "Favorite Project"}
           className={cn(compact && "size-7")}
-          onClick={() => {
-            if (isFavorite) {
-              handleUnfavorite();
-            } else {
-              void handleAddFavorite();
-            }
-          }}
+          onPressedChange={handleToggle}
+          pressed={isFavorite}
           size="sm"
-          variant="ghost"
         >
-          {isFavorite ? (
-            <Star className="h-4 w-4 fill-amber-500 text-amber-500" />
-          ) : (
-            <Star className="h-4 w-4" />
-          )}
-          <span className="sr-only">
-            {isFavorite ? "Unfavorite Project" : "Favorite Project"}
-          </span>
-        </Button>
+          <Star
+            className={cn(
+              "h-4 w-4",
+              isFavorite && "fill-amber-500 text-amber-500",
+            )}
+          />
+        </Toggle>
       </TooltipTrigger>
       <TooltipContent>
         {isFavorite ? "Remove from favorites" : "Add to favorites"}
