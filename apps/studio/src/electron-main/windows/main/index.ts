@@ -65,6 +65,10 @@ export async function createMainWindow() {
   mainWindow.on("move", saveState);
   mainWindow.on("focus", () => {
     publisher.publish("window.focus-changed", null);
+    // Required or the sidebar will always be focused instead when the user
+    // brings the window back to focus
+    const tabsManager = getTabsManager();
+    tabsManager?.focusCurrentTab();
   });
   mainWindow.on("ready-to-show", () => {
     const window = getMainWindow();

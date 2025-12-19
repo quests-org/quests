@@ -116,6 +116,8 @@ if (gotTheLock) {
         mainWindow.restore();
       }
       mainWindow.focus();
+      const tabsManager = getTabsManager();
+      tabsManager?.focusCurrentTab();
     }
 
     const url = commandLine.find((arg) => arg.startsWith(`${APP_PROTOCOL}://`));
@@ -228,6 +230,7 @@ function handleDeepLink(url: string) {
           urlPath: "/checkout",
         });
       }
+      tabsManager.focusCurrentTab();
     }
   }
 }
