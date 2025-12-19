@@ -15,7 +15,7 @@ import { OpenAppInTypeSchema } from "@/shared/schemas/editors";
 import { type WorkspaceAppProject } from "@quests/workspace/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { useAtomValue } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 import {
   ChevronDown,
   Clipboard,
@@ -33,6 +33,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { projectIframeRefAtom } from "../atoms/project";
+import { projectSidebarCollapsedAtomFamily } from "../atoms/project-sidebar";
 import { DuplicateProjectModal } from "./duplicate-project-modal";
 import { ExportZipModal } from "./export-zip-modal";
 import { RestoreVersionModal } from "./restore-version-modal";
@@ -59,18 +60,14 @@ const EDITOR_ICON_MAP: Record<
 
 interface ProjectHeaderToolbarProps {
   onDeleteClick: () => void;
-  onSidebarToggle: () => void;
   project: WorkspaceAppProject;
   selectedVersion?: string;
-  sidebarCollapsed?: boolean;
 }
 
 export function ProjectHeaderToolbar({
   onDeleteClick,
-  onSidebarToggle,
   project,
   selectedVersion,
-  sidebarCollapsed,
 }: ProjectHeaderToolbarProps) {
   const isChat = project.mode === "chat";
   const { data: preferences } = useQuery(
@@ -78,6 +75,9 @@ export function ProjectHeaderToolbar({
   );
   const isDeveloperMode = preferences?.developerMode;
   const iframeRef = useAtomValue(projectIframeRefAtom);
+  const [sidebarCollapsed, setSidebarCollapsed] = useAtom(
+    projectSidebarCollapsedAtomFamily(project.subdomain),
+  );
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
   const [restoreModalOpen, setRestoreModalOpen] = useState(false);
   const [duplicateModalOpen, setDuplicateModalOpen] = useState(false);
@@ -258,7 +258,9 @@ export function ProjectHeaderToolbar({
             {!isChat && (
               <Toggle
                 aria-label={sidebarCollapsed ? "Show sidebar" : "Hide sidebar"}
-                onPressedChange={onSidebarToggle}
+                onPressedChange={() => {
+                  setSidebarCollapsed(!sidebarCollapsed);
+                }}
                 pressed={sidebarCollapsed}
                 size="sm"
                 variant={sidebarCollapsed ? "outline" : "default"}

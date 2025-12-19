@@ -261,7 +261,7 @@ function ConsoleBadge({ status }: ConsoleBadgeProps) {
   return (
     <div
       className={cn(
-        "absolute top-0.5 right-0.5 size-1.5 rounded-full ring-2 ring-background animate-in fade-in-0 zoom-in-75 duration-200",
+        "absolute top-1.5 right-1.5 size-1.5 rounded-full ring-2 ring-background animate-in fade-in-0 zoom-in-75 duration-200",
         status === "error" ? "bg-destructive" : "bg-primary",
       )}
     />

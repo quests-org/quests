@@ -140,7 +140,6 @@ function RouteComponent() {
   const { selectedSessionId, selectedVersion, showDelete } = Route.useSearch();
   const navigate = useNavigate();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   useEffect(() => {
     if (showDelete) {
@@ -203,12 +202,8 @@ function RouteComponent() {
         onDeleteClick={() => {
           setShowDeleteDialog(true);
         }}
-        onSidebarToggle={() => {
-          setSidebarCollapsed(!sidebarCollapsed);
-        }}
         project={project}
         selectedVersion={selectedVersion}
-        sidebarCollapsed={sidebarCollapsed}
       />
 
       <div className="flex flex-1 overflow-hidden">
@@ -223,7 +218,6 @@ function RouteComponent() {
             project={project}
             selectedModelURI={projectState.selectedModelURI}
             selectedVersion={selectedVersion}
-            sidebarCollapsed={sidebarCollapsed}
           />
         )}
       </div>

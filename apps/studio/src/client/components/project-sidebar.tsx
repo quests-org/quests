@@ -21,14 +21,12 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { VersionList } from "./version-list";
 
 interface ProjectSidebarProps {
-  collapsed?: boolean;
   project: WorkspaceAppProject;
   selectedModelURI?: AIGatewayModelURI.Type;
   selectedVersion?: string;
 }
 
 export function ProjectSidebar({
-  collapsed = false,
   project,
   selectedModelURI: initialSelectedModelURI,
   selectedVersion,
@@ -130,11 +128,7 @@ export function ProjectSidebar({
   }, []);
 
   return (
-    <div
-      className={`bg-background flex flex-col relative transition-all duration-300 ease-in-out ${
-        collapsed ? "w-0 overflow-hidden" : "w-96 shrink-0"
-      }`}
-    >
+    <div className="size-full bg-background flex flex-col relative transition-all duration-300 ease-in-out">
       <div className="p-2">
         <div className="flex items-center justify-between gap-2">
           <Tabs
