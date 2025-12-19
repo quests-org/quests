@@ -367,14 +367,20 @@ function RouteComponent() {
               <TabsList>
                 <TabsTrigger value="all">
                   All
-                  <Badge className="ml-2 px-1.5" variant="secondary">
+                  <Badge
+                    className="ml-2 px-1.5"
+                    variant={filterTab === "all" ? "default" : "secondary"}
+                  >
                     {projects.length}
                   </Badge>
                 </TabsTrigger>
                 {appsCount > 0 && (
                   <TabsTrigger value="apps">
                     Apps
-                    <Badge className="ml-2 px-1.5" variant="secondary">
+                    <Badge
+                      className="ml-2 px-1.5"
+                      variant={filterTab === "apps" ? "default" : "secondary"}
+                    >
                       {appsCount}
                     </Badge>
                   </TabsTrigger>
@@ -382,7 +388,10 @@ function RouteComponent() {
                 {chatsCount > 0 && (
                   <TabsTrigger value="chats">
                     Chats
-                    <Badge className="ml-2 px-1.5" variant="secondary">
+                    <Badge
+                      className="ml-2 px-1.5"
+                      variant={filterTab === "chats" ? "default" : "secondary"}
+                    >
                       {chatsCount}
                     </Badge>
                   </TabsTrigger>
@@ -390,7 +399,10 @@ function RouteComponent() {
                 {evalsCount > 0 && (
                   <TabsTrigger value="evals">
                     Evals
-                    <Badge className="ml-2 px-1.5" variant="secondary">
+                    <Badge
+                      className="ml-2 px-1.5"
+                      variant={filterTab === "evals" ? "default" : "secondary"}
+                    >
                       {evalsCount}
                     </Badge>
                   </TabsTrigger>
@@ -398,7 +410,10 @@ function RouteComponent() {
                 {activeProjectSubdomains.size > 0 && (
                   <TabsTrigger value="active">
                     Active
-                    <Badge className="ml-2 px-1.5" variant="secondary">
+                    <Badge
+                      className="ml-2 px-1.5"
+                      variant={filterTab === "active" ? "default" : "secondary"}
+                    >
                       {activeProjectSubdomains.size}
                     </Badge>
                   </TabsTrigger>
@@ -406,7 +421,12 @@ function RouteComponent() {
                 {favoriteProjectSubdomains.size > 0 && (
                   <TabsTrigger value="favorites">
                     Favorites
-                    <Badge className="ml-2 px-1.5" variant="secondary">
+                    <Badge
+                      className="ml-2 px-1.5"
+                      variant={
+                        filterTab === "favorites" ? "default" : "secondary"
+                      }
+                    >
                       {favoriteProjectSubdomains.size}
                     </Badge>
                   </TabsTrigger>
