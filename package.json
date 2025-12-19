@@ -80,5 +80,8 @@
   },
   "publishConfig": {
     "provenance": true
+  },
+  "overrides": {
+    "@types/node": "22.19.2"
   }
 }
