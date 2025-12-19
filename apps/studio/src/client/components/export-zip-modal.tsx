@@ -28,7 +28,7 @@ export function ExportZipModal({
   projectName,
   projectSubdomain,
 }: ExportZipModalProps) {
-  const [includeChat, setIncludeChat] = useState(false);
+  const [includeChat, setIncludeChat] = useState(true);
 
   const showFileInFolderMutation = useMutation(
     rpcClient.utils.showFileInFolder.mutationOptions(),
