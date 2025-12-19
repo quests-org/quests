@@ -7,8 +7,16 @@ import type {
   VisibilityState,
 } from "@tanstack/react-table";
 
-import { Button } from "@/client/components/ui/button";
 import { Input } from "@/client/components/ui/input";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/client/components/ui/pagination";
 import {
   Table,
   TableBody,
@@ -151,37 +159,99 @@ export function ProjectsDataTable<TData, TValue>({
       </div>
 
       <div className="flex items-center justify-between">
-        <div className="text-muted-foreground flex-1 text-sm">
-          {filteredSelectedRowModel.rows.length > 0 && (
+        <div className="text-muted-foreground flex-1 whitespace-nowrap text-sm">
+          {filteredSelectedRowModel.rows.length > 0 ? (
             <>
               {filteredSelectedRowModel.rows.length} of{" "}
               {filteredRowModel.rows.length}{" "}
               {filteredRowModel.rows.length === 1 ? "row" : "rows"} selected
             </>
+          ) : (
+            <>
+              {filteredRowModel.rows.length}{" "}
+              {filteredRowModel.rows.length === 1 ? "project" : "projects"}
+            </>
           )}
         </div>
-        <div className="flex items-center space-x-2">
-          <Button
-            disabled={!table.getCanPreviousPage()}
-            onClick={() => {
-              table.previousPage();
-            }}
-            size="sm"
-            variant="outline"
-          >
-            Previous
-          </Button>
-          <Button
-            disabled={!table.getCanNextPage()}
-            onClick={() => {
-              table.nextPage();
-            }}
-            size="sm"
-            variant="outline"
-          >
-            Next
-          </Button>
-        </div>
+        <Pagination className="justify-end">
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                aria-disabled={!table.getCanPreviousPage()}
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (table.getCanPreviousPage()) {
+                    table.previousPage();
+                  }
+                }}
+                tabIndex={table.getCanPreviousPage() ? undefined : -1}
+              />
+            </PaginationItem>
+            {(() => {
+              const currentPage = table.getState().pagination.pageIndex;
+              const pageCount = table.getPageCount();
+              const pages: ("ellipsis" | number)[] = [];
+
+              if (pageCount <= 7) {
+                pages.push(...Array.from({ length: pageCount }, (_, i) => i));
+              } else if (currentPage <= 3) {
+                pages.push(
+                  ...Array.from({ length: 5 }, (_, i) => i),
+                  "ellipsis",
+                  pageCount - 1,
+                );
+              } else if (currentPage >= pageCount - 4) {
+                pages.push(
+                  0,
+                  "ellipsis",
+                  ...Array.from({ length: 5 }, (_, i) => pageCount - 5 + i),
+                );
+              } else {
+                pages.push(
+                  0,
+                  "ellipsis",
+                  currentPage - 1,
+                  currentPage,
+                  currentPage + 1,
+                  "ellipsis",
+                  pageCount - 1,
+                );
+              }
+
+              return pages.map((page, index) =>
+                page === "ellipsis" ? (
+                  <PaginationItem key={`ellipsis-${index}`}>
+                    <PaginationEllipsis />
+                  </PaginationItem>
+                ) : (
+                  <PaginationItem key={page}>
+                    <PaginationLink
+                      isActive={currentPage === page}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        table.setPageIndex(page);
+                      }}
+                    >
+                      {page + 1}
+                    </PaginationLink>
+                  </PaginationItem>
+                ),
+              );
+            })()}
+            <PaginationItem>
+              <PaginationNext
+                aria-disabled={!table.getCanNextPage()}
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (table.getCanNextPage()) {
+                    table.nextPage();
+                  }
+                }}
+                tabIndex={table.getCanNextPage() ? undefined : -1}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
       </div>
     </div>
   );
