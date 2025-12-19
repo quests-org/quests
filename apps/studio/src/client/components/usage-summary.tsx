@@ -4,6 +4,12 @@ import { type SessionMessage } from "@quests/workspace/client";
 import { ChevronDown } from "lucide-react";
 import { useMemo, useState } from "react";
 
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "./ui/collapsible";
+
 interface UsageSummaryProps {
   messages: SessionMessage.WithParts[];
 }
@@ -122,34 +128,35 @@ export function UsageSummary({ messages }: UsageSummaryProps) {
   }
 
   return (
-    <div className="text-[10px] text-muted-foreground py-2">
-      <button
-        className="flex w-full items-center justify-between gap-2 text-muted-foreground/60 hover:text-muted-foreground transition-colors"
-        onClick={() => {
-          setIsExpanded(!isExpanded);
-        }}
-      >
-        <div className="flex items-center justify-between w-full min-w-0">
-          <div className="flex items-center gap-2 min-w-0">
-            {modelsUsed.length > 0 && (
-              <span className="truncate">
-                {modelsUsed.map((m) => m.label).join(", ")}
+    <Collapsible
+      className="text-[10px] text-muted-foreground py-2"
+      onOpenChange={setIsExpanded}
+      open={isExpanded}
+    >
+      <CollapsibleTrigger asChild>
+        <button className="flex w-full items-center justify-between gap-2 text-muted-foreground/60 hover:text-muted-foreground transition-colors">
+          <div className="flex items-center justify-between w-full min-w-0">
+            <div className="flex items-center gap-2 min-w-0">
+              {modelsUsed.length > 0 && (
+                <span className="truncate">
+                  {modelsUsed.map((m) => m.label).join(", ")}
+                </span>
+              )}
+            </div>
+            {usage.totalTokens > 0 && (
+              <span className="tabular-nums whitespace-nowrap">
+                {formatNumber(usage.totalTokens)}{" "}
+                {usage.totalTokens === 1 ? "token" : "tokens"}
               </span>
             )}
           </div>
-          {usage.totalTokens > 0 && (
-            <span className="tabular-nums whitespace-nowrap">
-              {formatNumber(usage.totalTokens)}{" "}
-              {usage.totalTokens === 1 ? "token" : "tokens"}
-            </span>
-          )}
-        </div>
-        <ChevronDown
-          className={`size-3 transition-transform ${isExpanded ? "rotate-180" : ""}`}
-        />
-      </button>
+          <ChevronDown
+            className={`size-3 transition-transform ${isExpanded ? "rotate-180" : ""}`}
+          />
+        </button>
+      </CollapsibleTrigger>
 
-      {isExpanded && (
+      <CollapsibleContent>
         <div className="mt-2 space-y-2 text-muted-foreground/80">
           {modelsUsed.length > 0 && (
             <div className="space-y-1">
@@ -230,7 +237,7 @@ export function UsageSummary({ messages }: UsageSummaryProps) {
             </div>
           )}
         </div>
-      )}
-    </div>
+      </CollapsibleContent>
+    </Collapsible>
   );
 }

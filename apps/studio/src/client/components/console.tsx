@@ -11,6 +11,11 @@ import { type RPCOutput } from "../rpc/client";
 import { ConfirmedIconButton } from "./confirmed-icon-button";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "./ui/collapsible";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 const MAX_LINE_LENGTH = 200;
@@ -339,31 +344,31 @@ function TruncatedLogLine({
   const exceedsCharLength = message.length > MAX_LINE_LENGTH;
   const needsTruncation = exceedsLineCount || exceedsCharLength;
 
-  let displayMessage = message;
-  if (needsTruncation && !isExpanded) {
-    if (exceedsLineCount) {
-      displayMessage = lines.slice(0, MAX_LINES).join("\n");
-    } else if (exceedsCharLength) {
-      displayMessage = message.slice(0, MAX_LINE_LENGTH);
-    }
-  }
-
   if (!needsTruncation) {
     return <div className={styles.message}>{message}</div>;
   }
 
+  let truncatedMessage = message;
+  if (exceedsLineCount) {
+    truncatedMessage = lines.slice(0, MAX_LINES).join("\n");
+  } else if (exceedsCharLength) {
+    truncatedMessage = message.slice(0, MAX_LINE_LENGTH);
+  }
+
   return (
-    <div className={styles.message}>
-      <button
-        className="text-muted-foreground hover:text-foreground transition-colors mr-1 font-mono"
-        onClick={() => {
-          setIsExpanded(!isExpanded);
-        }}
-        type="button"
-      >
-        {isExpanded ? "▼" : "▶"}
-      </button>
-      {displayMessage}
-    </div>
+    <Collapsible onOpenChange={setIsExpanded} open={isExpanded}>
+      <div className={styles.message}>
+        <CollapsibleTrigger asChild>
+          <button
+            className="text-muted-foreground hover:text-foreground transition-colors mr-1 font-mono"
+            type="button"
+          >
+            {isExpanded ? "▼" : "▶"}
+          </button>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="inline">{message}</CollapsibleContent>
+        {!isExpanded && truncatedMessage}
+      </div>
+    </Collapsible>
   );
 }

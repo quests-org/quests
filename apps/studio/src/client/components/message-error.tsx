@@ -5,7 +5,12 @@ import {
 import { AlertTriangle, ChevronUp } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { Button } from "./ui/button";
+import { CollapsiblePartTrigger } from "./collapsible-part-trigger";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "./ui/collapsible";
 import { UpgradeSubscriptionAlert } from "./upgrade-subscription-alert";
 
 interface MessageErrorProps {
@@ -35,10 +40,6 @@ export function MessageError({
   if (showUpgradeAlertIfApplicable && isInsufficientCreditsError(message)) {
     return <UpgradeSubscriptionAlert onContinue={onContinue} />;
   }
-
-  const handleToggle = () => {
-    setIsExpanded(!isExpanded);
-  };
 
   const getErrorTitle = () => {
     switch (error.kind) {
@@ -95,7 +96,7 @@ export function MessageError({
         {getErrorTypeLabel()}
       </span>
       {isExpanded && (
-        <span className="shrink-0 text-accent-foreground/60 ml-2">
+        <span className="shrink-0 text-accent-foreground/60">
           <ChevronUp className="size-3" />
         </span>
       )}
@@ -103,16 +104,16 @@ export function MessageError({
   );
 
   return (
-    <div className="w-full">
-      <Button
-        className="h-6 px-1 py-0 w-full justify-start hover:bg-accent/30 rounded-sm"
-        onClick={handleToggle}
-        variant="ghost"
-      >
-        {mainContent}
-      </Button>
+    <Collapsible
+      className="w-full"
+      onOpenChange={setIsExpanded}
+      open={isExpanded}
+    >
+      <CollapsibleTrigger asChild>
+        <CollapsiblePartTrigger>{mainContent}</CollapsiblePartTrigger>
+      </CollapsibleTrigger>
 
-      {isExpanded && (
+      <CollapsibleContent>
         <div className="mt-2 text-xs">
           <div className="p-2 bg-muted/30 rounded-md border max-h-64 overflow-y-auto">
             <div className="mb-2">
@@ -162,7 +163,7 @@ export function MessageError({
             )}
           </div>
         </div>
-      )}
-    </div>
+      </CollapsibleContent>
+    </Collapsible>
   );
 }

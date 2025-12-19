@@ -5,6 +5,11 @@ import { memo, useMemo, useState } from "react";
 import { CopyButton } from "./copy-button";
 import { ContextMessage } from "./session-context-message";
 import { Button } from "./ui/button";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "./ui/collapsible";
 
 export const ContextMessages = memo(function ContextMessages({
   messages,
@@ -46,23 +51,28 @@ export const ContextMessages = memo(function ContextMessages({
   };
 
   return (
-    <div className="w-full mb-2">
+    <Collapsible
+      className="w-full mb-2"
+      onOpenChange={setIsExpanded}
+      open={isExpanded}
+    >
       <div className="flex justify-center">
-        <Button
-          className="h-5 px-2 text-xs text-muted-foreground/50 hover:text-muted-foreground hover:bg-accent/20 rounded-sm"
-          onClick={() => {
-            setIsExpanded(!isExpanded);
-          }}
-          variant="ghost"
-        >
-          <div className="flex items-center gap-1">
-            <span className="text-[10px] font-normal">View system prompt</span>
-            {isExpanded && <ChevronDown className="size-2" />}
-          </div>
-        </Button>
+        <CollapsibleTrigger asChild>
+          <Button
+            className="h-5 px-2 text-xs text-muted-foreground/50 hover:text-muted-foreground hover:bg-accent/20 rounded-sm"
+            variant="ghost"
+          >
+            <div className="flex items-center gap-1">
+              <span className="text-[10px] font-normal">
+                View system prompt
+              </span>
+              {isExpanded && <ChevronDown className="size-2" />}
+            </div>
+          </Button>
+        </CollapsibleTrigger>
       </div>
 
-      {isExpanded && (
+      <CollapsibleContent>
         <div className="group mt-2">
           <div className="border-l-4 border-muted-foreground/30 pl-4 bg-muted/30 py-2 rounded-r-md">
             <div className="mb-3 pb-2 pr-4 border-b border-muted-foreground/20">
@@ -84,7 +94,7 @@ export const ContextMessages = memo(function ContextMessages({
             />
           </div>
         </div>
-      )}
-    </div>
+      </CollapsibleContent>
+    </Collapsible>
   );
 });

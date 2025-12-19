@@ -4,8 +4,13 @@ import { Brain, ChevronDown } from "lucide-react";
 import { memo, useEffect, useRef, useState } from "react";
 import { useStickToBottom } from "use-stick-to-bottom";
 
+import { CollapsiblePartTrigger } from "./collapsible-part-trigger";
 import { Markdown } from "./markdown";
-import { Button } from "./ui/button";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "./ui/collapsible";
 
 interface ReasoningMessageProps {
   createdAt?: Date;
@@ -93,56 +98,56 @@ export const ReasoningMessage = memo(function ReasoningMessage({
   );
 
   return (
-    <div className="w-full">
-      <Button
-        className="h-6 p-0 w-full justify-start hover:bg-accent/30 rounded-sm"
-        onClick={() => {
-          setIsExpanded(!isExpanded);
-        }}
-        variant="ghost"
-      >
-        {headerContent}
-      </Button>
+    <Collapsible
+      className="w-full"
+      onOpenChange={setIsExpanded}
+      open={isExpanded || isLoading}
+    >
+      <CollapsibleTrigger asChild>
+        <CollapsiblePartTrigger>{headerContent}</CollapsiblePartTrigger>
+      </CollapsibleTrigger>
 
-      {(isLoading || isExpanded) && !(isLoading && !text.trim()) && (
-        <div className="mt-2 text-xs relative">
-          <div
-            className="max-h-44 overflow-y-auto border-l-4 border-muted-foreground/30 pl-4 bg-muted/30 py-2 rounded-r-md"
-            ref={(el) => {
-              scrollContainerRef.current = el;
-              if (isLoading) {
-                scrollRef.current = el;
-              }
-            }}
-          >
+      {!(isLoading && !text.trim()) && (
+        <CollapsibleContent>
+          <div className="mt-2 text-xs relative">
             <div
-              className={cn(
-                "text-sm leading-relaxed prose prose-sm max-w-none dark:prose-invert wrap-break-word italic",
-                !isLoading && "opacity-60",
-              )}
-              ref={contentRef}
-            >
-              <Markdown
-                markdown={
-                  isLoading
-                    ? text
-                    : text.trim()
-                      ? text
-                      : "Reasoning not available"
+              className="max-h-44 overflow-y-auto border-l-4 border-muted-foreground/30 pl-4 bg-muted/30 py-2 rounded-r-md"
+              ref={(el) => {
+                scrollContainerRef.current = el;
+                if (isLoading) {
+                  scrollRef.current = el;
                 }
-              />
+              }}
+            >
+              <div
+                className={cn(
+                  "text-sm leading-relaxed prose prose-sm max-w-none dark:prose-invert wrap-break-word italic",
+                  !isLoading && "opacity-60",
+                )}
+                ref={contentRef}
+              >
+                <Markdown
+                  markdown={
+                    isLoading
+                      ? text
+                      : text.trim()
+                        ? text
+                        : "Reasoning not available"
+                  }
+                />
+              </div>
             </div>
+
+            {scrollState.canScrollUp && (
+              <div className="absolute top-0 left-0 right-0 h-4 bg-linear-to-b from-background to-transparent pointer-events-none z-10" />
+            )}
+
+            {scrollState.canScrollDown && (
+              <div className="absolute bottom-0 left-0 right-0 h-4 bg-linear-to-t from-background to-transparent pointer-events-none z-10" />
+            )}
           </div>
-
-          {scrollState.canScrollUp && (
-            <div className="absolute top-0 left-0 right-0 h-4 bg-linear-to-b from-background to-transparent pointer-events-none z-10" />
-          )}
-
-          {scrollState.canScrollDown && (
-            <div className="absolute bottom-0 left-0 right-0 h-4 bg-linear-to-t from-background to-transparent pointer-events-none z-10" />
-          )}
-        </div>
+        </CollapsibleContent>
       )}
-    </div>
+    </Collapsible>
   );
 });

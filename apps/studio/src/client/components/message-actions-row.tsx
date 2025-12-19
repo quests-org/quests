@@ -5,6 +5,11 @@ import { memo, useState } from "react";
 import { CopyButton } from "./copy-button";
 import { ExternalLink } from "./external-link";
 import { Button } from "./ui/button";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "./ui/collapsible";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 interface MessageActionsRowProps {
@@ -62,7 +67,11 @@ export const MessageActionsRow = memo(function MessageActionsRow({
   const uniqueUrls = extractUniqueUrls(sources);
 
   return (
-    <div className="flex flex-col gap-2 mt-2">
+    <Collapsible
+      className="flex flex-col gap-2 mt-2"
+      onOpenChange={setIsExpanded}
+      open={isExpanded}
+    >
       <div className="flex items-center gap-2">
         {showActions && (
           <Tooltip>
@@ -76,80 +85,78 @@ export const MessageActionsRow = memo(function MessageActionsRow({
           </Tooltip>
         )}
         {sources.length > 0 && (
-          <Button
-            onClick={() => {
-              setIsExpanded(!isExpanded);
-            }}
-            size="sm"
-            variant="ghost"
-          >
-            <div className="flex items-center gap-2 min-w-0">
-              <span className="text-xs font-medium shrink-0">Sources</span>
-              {uniqueUrls.length > 0 && (
-                <div className="flex items-center gap-1 shrink-0">
-                  {uniqueUrls.map((url) => (
-                    <img
-                      alt=""
-                      className="size-5 rounded-full bg-background"
-                      key={url}
-                      src={getFaviconUrl(url)}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          </Button>
+          <CollapsibleTrigger asChild>
+            <Button size="sm" variant="ghost">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="text-xs font-medium shrink-0">Sources</span>
+                {uniqueUrls.length > 0 && (
+                  <div className="flex items-center gap-1 shrink-0">
+                    {uniqueUrls.map((url) => (
+                      <img
+                        alt=""
+                        className="size-5 rounded-full bg-background"
+                        key={url}
+                        src={getFaviconUrl(url)}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </Button>
+          </CollapsibleTrigger>
         )}
       </div>
 
-      {isExpanded && sources.length > 0 && (
-        <div className="mt-2 space-y-2 pl-1">
-          {sources.map((source) => {
-            if (source.type === "source-url") {
-              const faviconUrl = getFaviconUrl(source.url);
+      {sources.length > 0 && (
+        <CollapsibleContent>
+          <div className="mt-2 space-y-2 pl-1">
+            {sources.map((source) => {
+              if (source.type === "source-url") {
+                const faviconUrl = getFaviconUrl(source.url);
+                return (
+                  <div
+                    className="flex items-center gap-2 text-sm"
+                    key={source.metadata.id}
+                  >
+                    <img
+                      alt=""
+                      className="size-4 shrink-0 rounded-full bg-background"
+                      src={faviconUrl}
+                    />
+                    <ExternalLink
+                      className="text-muted-foreground hover:text-foreground transition-colors"
+                      href={source.url}
+                    >
+                      {source.title || source.url}
+                    </ExternalLink>
+                  </div>
+                );
+              }
+
               return (
                 <div
                   className="flex items-center gap-2 text-sm"
                   key={source.metadata.id}
                 >
-                  <img
-                    alt=""
-                    className="size-4 shrink-0 rounded-full bg-background"
-                    src={faviconUrl}
-                  />
-                  <ExternalLink
-                    className="text-muted-foreground hover:text-foreground transition-colors"
-                    href={source.url}
-                  >
-                    {source.title || source.url}
-                  </ExternalLink>
+                  <FileText className="size-4 shrink-0 text-muted-foreground" />
+                  <div className="flex flex-col gap-0.5 min-w-0">
+                    <span className="text-foreground font-medium">
+                      {source.title}
+                    </span>
+                    {(source.filename || source.mediaType) && (
+                      <span className="text-xs text-muted-foreground truncate">
+                        {source.filename && source.mediaType
+                          ? `${source.filename} • ${source.mediaType}`
+                          : source.filename || source.mediaType}
+                      </span>
+                    )}
+                  </div>
                 </div>
               );
-            }
-
-            return (
-              <div
-                className="flex items-center gap-2 text-sm"
-                key={source.metadata.id}
-              >
-                <FileText className="size-4 shrink-0 text-muted-foreground" />
-                <div className="flex flex-col gap-0.5 min-w-0">
-                  <span className="text-foreground font-medium">
-                    {source.title}
-                  </span>
-                  {(source.filename || source.mediaType) && (
-                    <span className="text-xs text-muted-foreground truncate">
-                      {source.filename && source.mediaType
-                        ? `${source.filename} • ${source.mediaType}`
-                        : source.filename || source.mediaType}
-                    </span>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+            })}
+          </div>
+        </CollapsibleContent>
       )}
-    </div>
+    </Collapsible>
   );
 });

@@ -2,7 +2,12 @@ import { type SessionMessagePart } from "@quests/workspace/client";
 import { ChevronUp, HelpCircle } from "lucide-react";
 import { useState } from "react";
 
-import { Button } from "./ui/button";
+import { CollapsiblePartTrigger } from "./collapsible-part-trigger";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "./ui/collapsible";
 
 interface UnknownPartProps {
   part: SessionMessagePart.Type;
@@ -10,10 +15,6 @@ interface UnknownPartProps {
 
 export function UnknownPart({ part }: UnknownPartProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-
-  const handleToggle = () => {
-    setIsExpanded(!isExpanded);
-  };
 
   const mainContent = (
     <div className="flex items-center gap-2 min-w-0 w-full text-xs leading-tight">
@@ -38,16 +39,16 @@ export function UnknownPart({ part }: UnknownPartProps) {
   );
 
   return (
-    <div className="w-full">
-      <Button
-        className="h-auto p-0 w-full justify-start hover:bg-accent/30 rounded-sm"
-        onClick={handleToggle}
-        variant="ghost"
-      >
-        {mainContent}
-      </Button>
+    <Collapsible
+      className="w-full"
+      onOpenChange={setIsExpanded}
+      open={isExpanded}
+    >
+      <CollapsibleTrigger asChild>
+        <CollapsiblePartTrigger>{mainContent}</CollapsiblePartTrigger>
+      </CollapsibleTrigger>
 
-      {isExpanded && (
+      <CollapsibleContent>
         <div className="mt-2 text-xs">
           <div className="p-2 bg-muted/30 rounded-md border max-h-64 overflow-y-auto">
             <div className="mb-1 font-semibold">Unknown Part Data:</div>
@@ -56,7 +57,7 @@ export function UnknownPart({ part }: UnknownPartProps) {
             </pre>
           </div>
         </div>
-      )}
-    </div>
+      </CollapsibleContent>
+    </Collapsible>
   );
 }

@@ -1,6 +1,7 @@
 import { Badge } from "@/client/components/ui/badge";
 import { Button } from "@/client/components/ui/button";
 import { Card } from "@/client/components/ui/card";
+import { Progress } from "@/client/components/ui/progress";
 import { useTabActions } from "@/client/hooks/use-tab-actions";
 import { cn } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
@@ -99,14 +100,7 @@ export function SubscriptionCard() {
                   {displayUsagePercent.toFixed(0)}% used
                 </span>
               </div>
-              <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-primary transition-all duration-500 ease-in-out"
-                  style={{
-                    width: `${displayUsagePercent}%`,
-                  }}
-                />
-              </div>
+              <Progress value={displayUsagePercent} />
             </div>
           )}
           {subscription?.nextAllocation && (

@@ -11,8 +11,13 @@ import {
   getToolStreamingDisplayName,
 } from "../../lib/tool-display";
 import { cn } from "../../lib/utils";
+import { CollapsiblePartTrigger } from "../collapsible-part-trigger";
 import { ReasoningMessage } from "../reasoning-message";
-import { Button } from "../ui/button";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "../ui/collapsible";
 import { ToolPartExpanded } from "./expanded";
 
 export function ToolPart({
@@ -91,12 +96,6 @@ export function ToolPart({
 
   const DisplayIcon = isError ? TriangleAlert : ToolIcon;
 
-  const handleToggle = () => {
-    if (isExpandable) {
-      setIsExpanded(!isExpanded);
-    }
-  };
-
   const mainContent = (
     <div className="flex items-center gap-2 min-w-0 w-full text-xs leading-tight">
       {isLoading ? (
@@ -142,49 +141,55 @@ export function ToolPart({
     </div>
   );
 
-  return (
-    <div className="w-full">
-      {isExpandable ? (
-        <Button
-          className="h-6 px-1 py-0 w-full justify-start hover:bg-accent/30 rounded-sm"
-          onClick={handleToggle}
-          variant="ghost"
-        >
-          {mainContent}
-        </Button>
-      ) : (
+  if (!isExpandable) {
+    return (
+      <div className="w-full">
         <div className="h-6 flex items-center">{mainContent}</div>
-      )}
+      </div>
+    );
+  }
 
-      {isExpanded && isSuccess && (
-        <div className="mt-2 text-xs">
-          <div className="p-2 bg-muted/30 rounded-md border max-h-64 overflow-y-auto">
-            <ToolPartExpanded part={part} />
-          </div>
-        </div>
-      )}
+  return (
+    <Collapsible
+      className="w-full"
+      onOpenChange={setIsExpanded}
+      open={isExpanded}
+    >
+      <CollapsibleTrigger asChild>
+        <CollapsiblePartTrigger>{mainContent}</CollapsiblePartTrigger>
+      </CollapsibleTrigger>
 
-      {isExpanded && isError && (
-        <div className="mt-2 text-xs space-y-2">
-          <div className="p-2 bg-muted/30 rounded-md border max-h-64 overflow-y-auto">
-            <div className="mb-1 font-semibold">Error:</div>
-            <pre className="whitespace-pre-wrap wrap-break-word font-mono text-xs">
-              {isFileNotFound &&
-                `File not found: ${part.output.filePath || ""}`}
-              {!isFileNotFound &&
-                part.state === "output-error" &&
-                part.errorText}
-            </pre>
+      <CollapsibleContent>
+        {isSuccess && (
+          <div className="mt-2 text-xs">
+            <div className="p-2 bg-muted/30 rounded-md border max-h-64 overflow-y-auto">
+              <ToolPartExpanded part={part} />
+            </div>
           </div>
-          <div className="p-2 bg-muted/30 rounded-md border max-h-64 overflow-y-auto">
-            <div className="mb-1 font-semibold">Input:</div>
-            <pre className="whitespace-pre-wrap wrap-break-word font-mono text-xs">
-              {JSON.stringify(part.input, null, 2)}
-            </pre>
+        )}
+
+        {isError && (
+          <div className="mt-2 text-xs space-y-2">
+            <div className="p-2 bg-muted/30 rounded-md border max-h-64 overflow-y-auto">
+              <div className="mb-1 font-semibold">Error:</div>
+              <pre className="whitespace-pre-wrap wrap-break-word font-mono text-xs">
+                {isFileNotFound &&
+                  `File not found: ${part.output.filePath || ""}`}
+                {!isFileNotFound &&
+                  part.state === "output-error" &&
+                  part.errorText}
+              </pre>
+            </div>
+            <div className="p-2 bg-muted/30 rounded-md border max-h-64 overflow-y-auto">
+              <div className="mb-1 font-semibold">Input:</div>
+              <pre className="whitespace-pre-wrap wrap-break-word font-mono text-xs">
+                {JSON.stringify(part.input, null, 2)}
+              </pre>
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </CollapsibleContent>
+    </Collapsible>
   );
 }
 
