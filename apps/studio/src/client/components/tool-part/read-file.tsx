@@ -1,6 +1,7 @@
 import { type SessionMessagePart } from "@quests/workspace/client";
 
 import { cleanFilePath } from "../../lib/file-utils";
+import { AttachmentItem } from "../attachment-item";
 import { CodeBlock } from "./code-block";
 import { ToolPartFilePath } from "./file-path";
 import { MonoText } from "./mono-text";
@@ -18,17 +19,19 @@ export function ToolPartReadFile({
   >["output"];
 }) {
   switch (output.state) {
-    case "audio": {
+    case "audio":
+    case "image":
+    case "pdf":
+    case "video": {
+      const dataUrl = `data:${output.mimeType};base64,${output.base64Data}`;
+      const filename = output.filePath.split("/").pop() || output.filePath;
       return (
         <div>
-          <SectionHeader>Audio: {cleanFilePath(output.filePath)}</SectionHeader>
-          <div className="text-muted-foreground text-xs mb-2">
-            {output.mimeType}
-          </div>
-          <audio
-            className="w-full"
-            controls
-            src={`data:${output.mimeType};base64,${output.base64Data}`}
+          <SectionHeader>Read {cleanFilePath(output.filePath)}</SectionHeader>
+          <AttachmentItem
+            filename={filename}
+            mimeType={output.mimeType}
+            previewUrl={dataUrl}
           />
         </div>
       );
@@ -83,36 +86,6 @@ export function ToolPartReadFile({
         </div>
       );
     }
-    case "image": {
-      return (
-        <div>
-          <SectionHeader>Image: {cleanFilePath(output.filePath)}</SectionHeader>
-          <div className="text-muted-foreground text-xs mb-2">
-            {output.mimeType}
-          </div>
-          <img
-            alt={output.filePath}
-            className="max-w-full rounded border"
-            src={`data:${output.mimeType};base64,${output.base64Data}`}
-          />
-        </div>
-      );
-    }
-    case "pdf": {
-      return (
-        <div>
-          <SectionHeader>PDF: {cleanFilePath(output.filePath)}</SectionHeader>
-          <div className="text-muted-foreground text-xs mb-2">
-            {output.mimeType}
-          </div>
-          <iframe
-            className="w-full h-96 rounded border"
-            src={`data:application/pdf;base64,${output.base64Data}`}
-            title={output.filePath}
-          />
-        </div>
-      );
-    }
     case "unsupported-format": {
       const message =
         output.reason === "unsupported-image-format"
@@ -131,21 +104,6 @@ export function ToolPartReadFile({
             </div>
           )}
           <div className="text-destructive text-sm mt-2">{message}</div>
-        </div>
-      );
-    }
-    case "video": {
-      return (
-        <div>
-          <SectionHeader>Video: {cleanFilePath(output.filePath)}</SectionHeader>
-          <div className="text-muted-foreground text-xs mb-2">
-            {output.mimeType}
-          </div>
-          <video
-            className="w-full rounded border"
-            controls
-            src={`data:${output.mimeType};base64,${output.base64Data}`}
-          />
         </div>
       );
     }
