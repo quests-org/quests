@@ -10,7 +10,6 @@ import { PromptInput } from "@/client/components/prompt-input";
 import { GithubLogo } from "@/client/components/service-icons";
 import { TechStack } from "@/client/components/tech-stack";
 import { Button } from "@/client/components/ui/button";
-import { Dialog, DialogContent } from "@/client/components/ui/dialog";
 import { useDefaultModelURI } from "@/client/hooks/use-default-model-uri";
 import { rpcClient } from "@/client/rpc/client";
 import {
@@ -19,6 +18,7 @@ import {
   REGISTRY_REPO_URL,
 } from "@quests/shared";
 import { StoreId } from "@quests/workspace/client";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { ArrowUp, Eye, X } from "lucide-react";
@@ -216,12 +216,21 @@ export function TemplateDetail({
         open={showAIProviderGuard}
       />
 
-      <Dialog onOpenChange={setShowPreviewDialog} open={showPreviewDialog}>
-        <DialogContent
-          className="max-w-[80vw] sm:max-w-[80vw] w-full max-h-[75vh] p-0 h-full flex flex-col"
-          portalContent={
+      <DialogPrimitive.Root
+        onOpenChange={setShowPreviewDialog}
+        open={showPreviewDialog}
+      >
+        <DialogPrimitive.Portal>
+          <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+          <DialogPrimitive.Content className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 max-w-[80vw] w-full max-h-[75vh] h-full flex flex-col p-0 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0">
+            <DialogPrimitive.Title className="sr-only">
+              Preview
+            </DialogPrimitive.Title>
+            <DialogPrimitive.Description className="sr-only">
+              App preview
+            </DialogPrimitive.Description>
             <Button
-              className="fixed right-[4%] top-[5%] z-60 rounded-full size-10"
+              className="absolute right-[-4%] top-[-5%] z-10 rounded-full size-10"
               onClick={() => {
                 setShowPreviewDialog(false);
               }}
@@ -230,17 +239,15 @@ export function TemplateDetail({
             >
               <X className="size-5" />
             </Button>
-          }
-          showCloseButton={false}
-        >
-          <div className="flex-1 min-h-0 relative">
-            <AppView
-              app={appDetails.preview}
-              className="w-full h-full overflow-hidden flex flex-col"
-            />
-          </div>
-        </DialogContent>
-      </Dialog>
+            <div className="flex-1 min-h-0 relative">
+              <AppView
+                app={appDetails.preview}
+                className="w-full h-full overflow-hidden flex flex-col"
+              />
+            </div>
+          </DialogPrimitive.Content>
+        </DialogPrimitive.Portal>
+      </DialogPrimitive.Root>
     </div>
   );
 }

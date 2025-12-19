@@ -1,5 +1,3 @@
-"use client";
-
 import { cn } from "@/client/lib/utils";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { XIcon } from "lucide-react";
@@ -20,17 +18,13 @@ function DialogClose({
 function DialogContent({
   children,
   className,
-  container,
-  portalContent,
   showCloseButton = true,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
-  container?: HTMLElement | null;
-  portalContent?: React.ReactNode;
   showCloseButton?: boolean;
 }) {
   return (
-    <DialogPortal container={container} data-slot="dialog-portal">
+    <DialogPortal data-slot="dialog-portal">
       <DialogOverlay />
       <DialogPrimitive.Content
         className={cn(
@@ -51,9 +45,6 @@ function DialogContent({
           </DialogPrimitive.Close>
         )}
       </DialogPrimitive.Content>
-      {portalContent && (
-        <div className="pointer-events-auto">{portalContent}</div>
-      )}
     </DialogPortal>
   );
 }
@@ -101,7 +92,7 @@ function DialogOverlay({
   return (
     <DialogPrimitive.Overlay
       className={cn(
-        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/50 pointer-events-none",
+        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/50",
         className,
       )}
       data-slot="dialog-overlay"

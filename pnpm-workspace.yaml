@@ -5,26 +5,22 @@ packages:
 catalog:
   "@orpc/client": ^1.12.2
   "@orpc/contract": ^1.12.2
-  "@orpc/openapi": ^1.12.2
   "@orpc/server": ^1.12.2
   "@orpc/tanstack-query": ^1.12.2
-  "@orpc/zod": ^1.12.2
+  "@types/node": 22.19.2
   "@types/react": ^19.2.7
   "@types/react-dom": ^19.2.3
-  "@types/node": 22.19.2
   "@vitejs/plugin-react": ^5.1.2
   ai: ^5.0.97
   better-auth: ^1.2.12
   hono: ^4.7.8
   lucide-react: ^0.525.0
-  nanoid: ^5.1.5
   react: ^19.2.1
   react-dom: ^19.2.1
   typescript: 5.9.2
   typescript-result: ^3.5.2
   vite: ^7.2.7
   vitest: ^3.2.4
-  wrangler: ^4.25.0
   zod: ^4.1.13
 
 configDependencies:
