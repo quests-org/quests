@@ -64,7 +64,7 @@ export function ProjectViewApp({
         />
       </ResizablePanel>
 
-      <ResizableHandle className="bg-transparent" />
+      <ResizableHandle className="bg-transparent data-[resize-handle-state='hover']:bg-muted-foreground data-[resize-handle-state='drag']:bg-primary/50 transition-all duration-200 data-[resize-handle-state='hover']:scale-x-[3]" />
 
       <ResizablePanel defaultSize={67} minSize={50}>
         <div
