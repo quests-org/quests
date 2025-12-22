@@ -30,5 +30,17 @@ export function getModelFeatures(
     }
   }
 
+  if (canonicalId.startsWith("grok-")) {
+    features = ["inputText", "outputText", "tools", "inputImage"];
+  }
+
+  if (canonicalId.startsWith("llama-4")) {
+    features = ["inputText", "outputText", "tools", "inputImage"];
+  }
+
+  if (canonicalId.startsWith("glm") && canonicalId.endsWith("v")) {
+    features = ["inputText", "outputText", "tools", "inputImage"];
+  }
+
   return features;
 }
