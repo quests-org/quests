@@ -3,14 +3,12 @@ import { type AIGatewayModel } from "../schemas/model";
 export function getModelFeatures(
   canonicalId: AIGatewayModel.CanonicalId,
 ): AIGatewayModel.ModelFeatures[] {
-  let features: AIGatewayModel.ModelFeatures[] = [];
-
   if (canonicalId.startsWith("claude-")) {
-    features = ["inputText", "outputText", "tools", "inputImage"];
+    return ["inputText", "outputText", "tools", "inputImage"];
   }
 
   if (canonicalId.startsWith("gemini-")) {
-    features = [
+    return [
       "inputAudio",
       "inputFile",
       "inputVideo",
@@ -22,25 +20,21 @@ export function getModelFeatures(
   }
 
   if (/^gpt-\d+/.test(canonicalId) || canonicalId.startsWith("o-")) {
-    features = ["inputFile", "inputImage", "inputText", "outputText", "tools"];
-
-    if (canonicalId.endsWith("-audio-preview")) {
-      // Matches openai/gpt-4o-audio-preview, which is an audio-only model
-      features = ["inputAudio"];
-    }
+    return ["inputFile", "inputImage", "inputText", "outputText", "tools"];
   }
 
   if (canonicalId.startsWith("grok-")) {
-    features = ["inputText", "outputText", "tools", "inputImage"];
+    return ["inputText", "outputText", "tools", "inputImage"];
   }
 
   if (canonicalId.startsWith("llama-4")) {
-    features = ["inputText", "outputText", "tools", "inputImage"];
+    return ["inputText", "outputText", "tools", "inputImage"];
   }
 
   if (canonicalId.startsWith("glm") && canonicalId.endsWith("v")) {
-    features = ["inputText", "outputText", "tools", "inputImage"];
+    return ["inputText", "outputText", "tools", "inputImage"];
   }
 
-  return features;
+  // Unknown model
+  return ["inputText", "outputText", "tools"];
 }
