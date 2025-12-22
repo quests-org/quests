@@ -8,24 +8,48 @@ import { formatBytes } from "@quests/workspace/client";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { useRouter } from "@tanstack/react-router";
 import { useAtomValue, useSetAtom } from "jotai";
-import { ChevronLeft, ChevronRight, Download, X } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { toast } from "sonner";
+import {
+  AlertCircle,
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  X,
+} from "lucide-react";
+import { useEffect, useMemo, useReducer } from "react";
 
 import { FileIcon } from "./file-icon";
 import { ImageWithFallback } from "./image-with-fallback";
 import { TruncatedText } from "./truncated-text";
+import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { Button } from "./ui/button";
+
+type ErrorAction =
+  | { error: "download"; message: string; type: "SET"; url: string }
+  | { error: "download" | "image" | "load"; type: "CLEAR"; url: string }
+  | { error: "image" | "load"; type: "SET"; url: string }
+  | { type: "RESET" };
+
+type FileErrors = Record<
+  string,
+  {
+    download?: string;
+    image?: boolean;
+    load?: boolean;
+  }
+>;
 
 export function FileViewerModal() {
   const state = useAtomValue(fileViewerAtom);
   const closeViewer = useSetAtom(closeFileViewerAtom);
   const navigate = useSetAtom(navigateFileViewerAtom);
-  const [imageErrorUrl, setImageErrorUrl] = useState<null | string>(null);
+  const [fileErrors, dispatch] = useReducer(fileErrorsReducer, {});
   const router = useRouter();
 
   const currentFile = state.files[state.currentIndex];
   const hasMultipleFiles = state.files.length > 1;
+  const currentFileErrors = currentFile
+    ? fileErrors[currentFile.url]
+    : undefined;
 
   const isDownloadable = useMemo(() => {
     // We can't assume a file is downloadable via fetch due to CORS restrictions
@@ -86,6 +110,7 @@ export function FileViewerModal() {
 
   const handleDownload = async () => {
     try {
+      dispatch({ error: "download", type: "CLEAR", url: currentFile.url });
       if (currentFile.url.startsWith("data:")) {
         const link = document.createElement("a");
         link.href = currentFile.url;
@@ -95,6 +120,10 @@ export function FileViewerModal() {
         link.remove();
       } else {
         const response = await fetch(currentFile.url);
+        if (!response.ok) {
+          dispatch({ error: "load", type: "SET", url: currentFile.url });
+          throw new Error(`Failed to fetch file: ${response.statusText}`);
+        }
         const blob = await response.blob();
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
@@ -106,27 +135,43 @@ export function FileViewerModal() {
         URL.revokeObjectURL(url);
       }
     } catch (error) {
-      toast.error("Failed to download file", {
-        description: error instanceof Error ? error.message : "Unknown error",
+      dispatch({ error: "load", type: "SET", url: currentFile.url });
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "An unknown error occurred while downloading the file";
+      dispatch({
+        error: "download",
+        message: `${errorMessage}\n\nFile: ${currentFile.filePath ?? currentFile.url}`,
+        type: "SET",
+        url: currentFile.url,
       });
     }
   };
 
+  const hasLoadError = currentFileErrors?.load ?? false;
+
   const isImage =
     (currentFile.mimeType?.startsWith("image/") || !currentFile.mimeType) &&
-    imageErrorUrl !== currentFile.url;
+    !currentFileErrors?.image;
   const isSvg = currentFile.mimeType === "image/svg+xml";
-  const isPdf = currentFile.mimeType === "application/pdf";
-  const isVideo = currentFile.mimeType?.startsWith("video/");
-  const isAudio = currentFile.mimeType?.startsWith("audio/");
+  const isPdf = currentFile.mimeType === "application/pdf" && !hasLoadError;
+  const isVideo = currentFile.mimeType?.startsWith("video/") && !hasLoadError;
+  const isAudio = currentFile.mimeType?.startsWith("audio/") && !hasLoadError;
+
+  const handleMediaError = () => {
+    dispatch({ error: "load", type: "SET", url: currentFile.url });
+  };
+
+  const handleImageError = () => {
+    dispatch({ error: "image", type: "SET", url: currentFile.url });
+  };
 
   return (
     <DialogPrimitive.Root
       onOpenChange={(open) => {
-        if (open) {
-          setImageErrorUrl(null);
-        } else {
-          setImageErrorUrl(null);
+        if (!open) {
+          dispatch({ type: "RESET" });
           closeViewer();
         }
       }}
@@ -199,9 +244,7 @@ export function FileViewerModal() {
                   onClick={(e) => {
                     e.stopPropagation();
                   }}
-                  onError={() => {
-                    setImageErrorUrl(currentFile.url);
-                  }}
+                  onError={handleImageError}
                   src={currentFile.url}
                 />
               ) : isPdf ? (
@@ -211,6 +254,7 @@ export function FileViewerModal() {
                   onClick={(e) => {
                     e.stopPropagation();
                   }}
+                  onError={handleMediaError}
                   src={currentFile.url}
                   title={currentFile.filename}
                 />
@@ -222,6 +266,7 @@ export function FileViewerModal() {
                   onClick={(e) => {
                     e.stopPropagation();
                   }}
+                  onError={handleMediaError}
                   src={currentFile.url}
                 />
               ) : isAudio ? (
@@ -232,6 +277,7 @@ export function FileViewerModal() {
                   onClick={(e) => {
                     e.stopPropagation();
                   }}
+                  onError={handleMediaError}
                   src={currentFile.url}
                 />
               ) : (
@@ -285,13 +331,22 @@ export function FileViewerModal() {
                   ))}
                 </div>
               )}
-              <div className="flex flex-col items-center gap-3 text-white max-w-full">
+              <div className="flex flex-col items-center gap-3 text-white max-w-full w-full">
                 <TruncatedText
                   className="text-sm font-medium text-center px-4"
                   maxLength={50}
                 >
                   {currentFile.filename}
                 </TruncatedText>
+                {currentFileErrors?.download && (
+                  <Alert className="max-w-2xl w-full" variant="destructive">
+                    <AlertCircle className="size-4" />
+                    <AlertTitle>Failed to download file</AlertTitle>
+                    <AlertDescription className="whitespace-pre-line">
+                      {currentFileErrors.download}
+                    </AlertDescription>
+                  </Alert>
+                )}
                 {isDownloadable && (
                   <Button
                     className="bg-white/10 hover:bg-white/20 text-white"
@@ -316,4 +371,35 @@ export function FileViewerModal() {
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>
   );
+}
+
+function fileErrorsReducer(
+  errors: FileErrors,
+  action: ErrorAction,
+): FileErrors {
+  switch (action.type) {
+    case "CLEAR": {
+      const { [action.error]: _, ...rest } = errors[action.url] ?? {};
+      if (Object.keys(rest).length === 0) {
+        const { [action.url]: __, ...remaining } = errors;
+        return remaining;
+      }
+      return { ...errors, [action.url]: rest };
+    }
+    case "RESET": {
+      return {};
+    }
+    case "SET": {
+      return {
+        ...errors,
+        [action.url]: {
+          ...errors[action.url],
+          [action.error]: action.error === "download" ? action.message : true,
+        },
+      };
+    }
+    default: {
+      return errors;
+    }
+  }
 }

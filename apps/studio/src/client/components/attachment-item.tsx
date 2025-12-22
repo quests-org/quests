@@ -13,6 +13,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 interface AttachmentItemProps {
   filename: string;
+  filePath?: string;
   gallery?: FileViewerFile[];
   mimeType?: string;
   onRemove?: () => void;
@@ -22,6 +23,7 @@ interface AttachmentItemProps {
 
 export function AttachmentItem({
   filename,
+  filePath,
   gallery,
   mimeType,
   onRemove,
@@ -35,6 +37,7 @@ export function AttachmentItem({
       const files = gallery ?? [
         {
           filename,
+          filePath,
           mimeType,
           size,
           url: previewUrl,

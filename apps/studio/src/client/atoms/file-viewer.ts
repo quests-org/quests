@@ -2,6 +2,7 @@ import { atom } from "jotai";
 
 export interface FileViewerFile {
   filename: string;
+  filePath?: string;
   mimeType?: string;
   size?: number;
   url: string;

@@ -30,6 +30,7 @@ export function ToolPartReadFile({
           <SectionHeader>Read {cleanFilePath(output.filePath)}</SectionHeader>
           <AttachmentItem
             filename={filename}
+            filePath={output.filePath}
             mimeType={output.mimeType}
             previewUrl={dataUrl}
           />

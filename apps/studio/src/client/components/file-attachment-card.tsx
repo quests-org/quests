@@ -33,6 +33,7 @@ export function FileAttachmentCard({
 
   const gallery: FileViewerFile[] = files.map((f) => ({
     filename: f.filename,
+    filePath: f.filePath,
     mimeType: f.mimeType,
     size: f.size,
     url: getAssetUrl(app.urls.assetBase, f.filePath),
@@ -41,6 +42,7 @@ export function FileAttachmentCard({
   return (
     <AttachmentItem
       filename={file.filename}
+      filePath={file.filePath}
       gallery={gallery}
       mimeType={file.mimeType}
       previewUrl={assetUrl}
