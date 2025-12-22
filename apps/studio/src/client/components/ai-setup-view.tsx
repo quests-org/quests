@@ -1,7 +1,7 @@
 import { providerMetadataAtom } from "@/client/atoms/provider-metadata";
 import { AddProviderDialog } from "@/client/components/add-provider/dialog";
 import { AIProviderIcon } from "@/client/components/ai-provider-icon";
-import { ErrorAlert } from "@/client/components/error-alert";
+import { ContactErrorAlert } from "@/client/components/contact-error-alert";
 import { StarryLayout } from "@/client/components/starry-layout";
 import { Button } from "@/client/components/ui/button";
 import {
@@ -141,13 +141,13 @@ export function AISetupView({ mode }: { mode: "setup" | "sign-in" }) {
             ) : (
               <>
                 {error && (
-                  <ErrorAlert
+                  <ContactErrorAlert
                     className="w-full min-w-80"
                     subject="Sign In Error"
                     title="Sign in failed"
                   >
                     There was an error signing in. Please try again.
-                  </ErrorAlert>
+                  </ContactErrorAlert>
                 )}
 
                 <div className="flex flex-col items-center gap-3 w-full">

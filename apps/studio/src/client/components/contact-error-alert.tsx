@@ -5,7 +5,7 @@ import { EmailLink } from "./email-link";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { Button } from "./ui/button";
 
-export function ErrorAlert({
+export function ContactErrorAlert({
   children,
   className,
   onRetry,

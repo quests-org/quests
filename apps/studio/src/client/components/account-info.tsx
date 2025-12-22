@@ -5,7 +5,7 @@ import { signOut } from "@/client/lib/sign-out";
 import { rpcClient } from "@/client/rpc/client";
 import { useQuery } from "@tanstack/react-query";
 
-import { ErrorAlert } from "./error-alert";
+import { ContactErrorAlert } from "./contact-error-alert";
 import { SubscriptionCard } from "./subscription-card";
 import { UserInfoCard } from "./user-info-card";
 
@@ -65,7 +65,7 @@ export function AccountInfo() {
             )}
             {!user && error && (
               <>
-                <ErrorAlert
+                <ContactErrorAlert
                   onRetry={() => {
                     void refetch();
                   }}
@@ -73,7 +73,7 @@ export function AccountInfo() {
                   title="Connection error"
                 >
                   {error.message}
-                </ErrorAlert>
+                </ContactErrorAlert>
                 {hasToken && (
                   <div className="flex justify-end gap-4">
                     <Button
