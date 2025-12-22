@@ -1,4 +1,5 @@
 import { createGateway } from "@ai-sdk/gateway";
+import { unique } from "radashi";
 import { Result } from "typescript-result";
 
 import { AIGatewayModel } from "../../schemas/model";
@@ -6,6 +7,7 @@ import { AIGatewayModelURI } from "../../schemas/model-uri";
 import { type AIGatewayProviderConfig } from "../../schemas/provider-config";
 import { getCachedResult, setCachedResult } from "../cache";
 import { TypedError } from "../errors";
+import { getModelFeatures } from "../get-model-features";
 import { getModelTags } from "../get-model-tags";
 import { getProviderMetadata } from "../providers/metadata";
 
@@ -40,10 +42,11 @@ export function fetchModelsForVercel(config: AIGatewayProviderConfig.Type) {
       }
 
       const canonicalModelId = AIGatewayModel.CanonicalIdSchema.parse(modelId);
-      const features: AIGatewayModel.ModelFeatures[] = [];
+      let features = getModelFeatures(canonicalModelId);
 
       if (model.modelType === "language") {
         features.push("tools", "inputText", "outputText");
+        features = unique(features);
       }
 
       const tags = getModelTags(canonicalModelId, config);
