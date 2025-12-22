@@ -65,6 +65,11 @@ function getDynamicTags(
     if (canonicalId.includes("nano")) {
       return ["coding"];
     }
+
+    // Pro models are not recommended due to high cost
+    if (canonicalId.includes("pro")) {
+      return ["coding"];
+    }
     return ["coding", "recommended"];
   }
 
