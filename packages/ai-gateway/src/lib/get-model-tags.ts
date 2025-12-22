@@ -111,6 +111,10 @@ function isSuperseded(canonicalId: AIGatewayModel.CanonicalId): boolean {
     return true;
   }
 
+  if (canonicalId.startsWith("claude-3")) {
+    return true;
+  }
+
   if (
     canonicalId.startsWith("gpt-5-") ||
     canonicalId === "gpt-5" ||
@@ -119,10 +123,6 @@ function isSuperseded(canonicalId: AIGatewayModel.CanonicalId): boolean {
     if (canonicalId.includes("-max")) {
       return false;
     }
-    return true;
-  }
-
-  if (canonicalId.startsWith("glm-4.5")) {
     return true;
   }
 
