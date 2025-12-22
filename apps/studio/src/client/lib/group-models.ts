@@ -64,10 +64,27 @@ export function groupAndFilterModels(
 function prioritizeQuestsModels(
   models: AIGatewayModel.Type[],
 ): AIGatewayModel.Type[] {
-  const [questsModels, otherModels] = fork(
-    models,
-    (model) => model.params.provider === "quests",
-  );
+  return sortModelsByProviderAndName(models);
+}
 
-  return [...questsModels, ...otherModels];
+function sortModelsByProviderAndName(
+  models: AIGatewayModel.Type[],
+): AIGatewayModel.Type[] {
+  return models.toSorted((a, b) => {
+    const providerA = a.params.provider;
+    const providerB = b.params.provider;
+
+    if (providerA !== providerB) {
+      if (providerA === "quests") {
+        return -1;
+      }
+      if (providerB === "quests") {
+        return 1;
+      }
+
+      return providerA.localeCompare(providerB);
+    }
+
+    return a.name.localeCompare(b.name);
+  });
 }
