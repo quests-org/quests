@@ -343,9 +343,9 @@ function RouteComponent() {
   );
 
   return (
-    <div className="flex-1 mx-auto max-w-7xl w-full">
+    <div className="mx-auto w-full max-w-7xl flex-1">
       <div>
-        <div className="mx-auto px-4 pt-10 lg:pt-20 lg:pb-4 sm:px-6 lg:px-8">
+        <div className="mx-auto px-4 pt-10 sm:px-6 lg:px-8 lg:pt-20 lg:pb-4">
           <div className="text-center">
             <h1 className="text-3xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
               Your Projects
@@ -461,7 +461,7 @@ function RouteComponent() {
               <Loader2 className="size-6 animate-spin text-muted-foreground" />
             </div>
           ) : isBulkDeleting ? (
-            <div className="flex flex-col items-center justify-center gap-y-4 py-12 rounded-md border bg-muted/20">
+            <div className="flex flex-col items-center justify-center gap-y-4 rounded-md border bg-muted/20 py-12">
               <Loader2 className="size-8 animate-spin text-muted-foreground" />
               <div className="text-sm text-muted-foreground">
                 Deleting {selectedProjects.length}{" "}
@@ -480,7 +480,7 @@ function RouteComponent() {
                   >
                     <div className="relative flex items-center justify-center">
                       <Circle className="size-4" />
-                      <Square className="size-1.5 fill-current absolute inset-0 m-auto" />
+                      <Square className="absolute inset-0 m-auto size-1.5 fill-current" />
                     </div>
                     Stop
                   </Button>

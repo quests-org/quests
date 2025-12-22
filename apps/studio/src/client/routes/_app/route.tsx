@@ -25,7 +25,7 @@ function RouteComponent() {
   useInvalidateRouterOnUserChange();
 
   return (
-    <div className="flex h-full flex-col relative bg-background min-h-dvh">
+    <div className="relative flex h-full min-h-dvh flex-col bg-background">
       <Outlet />
 
       {preferences?.developerMode && (

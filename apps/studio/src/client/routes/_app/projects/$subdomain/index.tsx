@@ -197,7 +197,7 @@ function RouteComponent() {
   }
 
   return (
-    <div className="flex flex-col h-dvh w-full overflow-hidden">
+    <div className="flex h-dvh w-full flex-col overflow-hidden">
       <ProjectHeaderToolbar
         onDeleteClick={() => {
           setShowDeleteDialog(true);

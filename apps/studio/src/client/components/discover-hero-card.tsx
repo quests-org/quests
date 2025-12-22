@@ -62,24 +62,24 @@ function NewTabDiscoverHeroCard({
     <div className={cn("group relative block", className)} {...props}>
       <div className="flex flex-col gap-2">
         <InternalLink to={href}>
-          <div className="overflow-hidden rounded-md border border-border relative">
-            <div className="aspect-video w-full bg-muted flex items-center justify-center relative">
+          <div className="relative overflow-hidden rounded-md border border-border">
+            <div className="relative flex aspect-video w-full items-center justify-center bg-muted">
               {heroImageDataUrl ? (
                 <>
                   <img
                     alt={`Hero image for ${title}`}
-                    className="w-full h-full object-cover"
+                    className="h-full w-full object-cover"
                     src={heroImageDataUrl}
                   />
-                  <div className="absolute inset-0 bg-linear-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
+                  <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/20 via-transparent to-transparent" />
                 </>
               ) : isEvalsCard ? (
-                <div className="flex items-center justify-center w-full h-full bg-linear-to-br from-brand/5 via-brand/8 to-brand/10">
+                <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-brand/5 via-brand/8 to-brand/10">
                   <FlaskConical className="size-12 text-brand" />
                 </div>
               ) : (
                 <div className="text-center">
-                  <div className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
+                  <div className="mx-auto mb-2 h-8 w-8 text-muted-foreground/50" />
                   <p className="text-xs text-muted-foreground/75">Loading...</p>
                 </div>
               )}
@@ -90,7 +90,7 @@ function NewTabDiscoverHeroCard({
           <InternalLink to={href}>
             <h3 className="text-sm font-medium text-foreground">{title}</h3>
             {subtitle && (
-              <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{subtitle}</p>
             )}
           </InternalLink>
         </div>

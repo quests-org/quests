@@ -82,12 +82,12 @@ export function ProjectViewChat({
   }, []);
 
   return (
-    <div className="flex-1 flex flex-col border-t overflow-hidden">
+    <div className="flex flex-1 flex-col overflow-hidden border-t">
       <div
-        className="flex-1 flex items-start justify-center overflow-y-auto"
+        className="flex flex-1 items-start justify-center overflow-y-auto"
         ref={scrollRef}
       >
-        <div className="flex flex-col min-h-full w-full max-w-3xl bg-background">
+        <div className="flex min-h-full w-full max-w-3xl flex-col bg-background">
           <div className="flex-1 p-4">
             <div className="flex flex-col gap-4" ref={contentRef}>
               {selectedSessionId && (
@@ -103,7 +103,7 @@ export function ProjectViewChat({
 
           {!isNearBottom && (
             <Button
-              className="absolute left-1/2 transform -translate-x-1/2 z-10 shadow-lg border border-border"
+              className="absolute left-1/2 z-10 -translate-x-1/2 transform border border-border shadow-lg"
               onClick={() => scrollToBottom()}
               size="icon"
               style={{
@@ -116,7 +116,7 @@ export function ProjectViewChat({
           )}
 
           <div
-            className="sticky bottom-0 p-4 bg-background"
+            className="sticky bottom-0 bg-background p-4"
             ref={bottomSectionRef}
           >
             <PromptInput

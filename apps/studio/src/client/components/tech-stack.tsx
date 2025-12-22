@@ -101,7 +101,7 @@ export function TechStack({
   return (
     <TooltipProvider>
       <div>
-        <h3 className="text-sm font-medium mb-3">Tech Stack</h3>
+        <h3 className="mb-3 text-sm font-medium">Tech Stack</h3>
 
         <div className="flex flex-wrap gap-3">
           {keyFrameworks.map((packageName) => {

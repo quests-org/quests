@@ -20,7 +20,7 @@ export function UserInfoCard() {
   }
 
   return (
-    <Card className="p-4 bg-accent/30 shadow-sm">
+    <Card className="bg-accent/30 p-4 shadow-sm">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Avatar className="h-16 w-16">
@@ -31,7 +31,7 @@ export function UserInfoCard() {
           </Avatar>
           <div>
             <div className="flex items-center gap-2">
-              <h4 className="font-semibold text-lg">{user.name}</h4>
+              <h4 className="text-lg font-semibold">{user.name}</h4>
             </div>
             <p className="text-sm text-muted-foreground">{user.email}</p>
           </div>

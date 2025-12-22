@@ -37,7 +37,7 @@ function SettingsProvidersPage() {
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-base font-semibold">AI Providers</h3>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="mt-1 text-sm text-muted-foreground">
             Connect providers to access different models and services.
           </p>
         </div>
@@ -54,7 +54,7 @@ function SettingsProvidersPage() {
 
       <div className="space-y-3">
         {providerConfigs?.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground mt-32">
+          <div className="mt-32 py-8 text-center text-muted-foreground">
             <p className="text-sm">No providers configured yet.</p>
           </div>
         ) : (

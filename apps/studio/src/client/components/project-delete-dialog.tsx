@@ -51,7 +51,7 @@ export function ProjectDeleteDialog({
   return (
     <DeleteWithProgressDialog
       content={
-        <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg border">
+        <div className="flex items-center gap-3 rounded-lg border bg-muted/50 p-4">
           <SmallAppIcon
             background={project.icon?.background}
             icon={project.icon?.lucide}

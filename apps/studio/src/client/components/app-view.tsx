@@ -71,7 +71,7 @@ export function AppView({
   );
 
   return (
-    <div className={cn("flex flex-col size-full", className)}>
+    <div className={cn("flex size-full flex-col", className)}>
       <AppToolbar
         app={app}
         centerContent={centerContent}
@@ -85,11 +85,11 @@ export function AppView({
         rightActions={rightActions}
       />
 
-      <div className="flex-1 flex flex-col relative overflow-hidden">
+      <div className="relative flex flex-1 flex-col overflow-hidden">
         <AppIFrame
           app={app}
           className={cn(
-            "flex-1 min-h-0",
+            "min-h-0 flex-1",
             isConsoleOpen ? "rounded-b-none" : "rounded-b-lg",
           )}
           clientLogsAtom={clientLogsAtom}
@@ -103,7 +103,7 @@ export function AppView({
         />
 
         {isConsoleOpen && (
-          <div className="h-66 border-t shrink-0">
+          <div className="h-66 shrink-0 border-t">
             <ConsoleWithLogs
               app={app}
               clientLogsAtom={clientLogsAtom}

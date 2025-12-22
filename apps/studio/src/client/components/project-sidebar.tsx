@@ -128,7 +128,7 @@ export function ProjectSidebar({
   }, []);
 
   return (
-    <div className="size-full bg-background flex flex-col relative transition-all duration-300 ease-in-out">
+    <div className="relative flex size-full flex-col bg-background transition-all duration-300 ease-in-out">
       <div className="p-2">
         <div className="flex items-center justify-between gap-2">
           <Tabs
@@ -189,7 +189,7 @@ export function ProjectSidebar({
 
       {!isNearBottom && (
         <Button
-          className="absolute left-1/2 transform -translate-x-1/2 z-10 shadow-lg border border-border"
+          className="absolute left-1/2 z-10 -translate-x-1/2 transform border border-border shadow-lg"
           onClick={() => scrollToBottom()}
           size="icon"
           style={{

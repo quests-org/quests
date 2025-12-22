@@ -129,14 +129,14 @@ export function UsageSummary({ messages }: UsageSummaryProps) {
 
   return (
     <Collapsible
-      className="text-[10px] text-muted-foreground py-2"
+      className="py-2 text-[10px] text-muted-foreground"
       onOpenChange={setIsExpanded}
       open={isExpanded}
     >
       <CollapsibleTrigger asChild>
-        <button className="flex w-full items-center justify-between gap-2 text-muted-foreground/60 hover:text-muted-foreground transition-colors">
-          <div className="flex items-center justify-between w-full min-w-0">
-            <div className="flex items-center gap-2 min-w-0">
+        <button className="flex w-full items-center justify-between gap-2 text-muted-foreground/60 transition-colors hover:text-muted-foreground">
+          <div className="flex w-full min-w-0 items-center justify-between">
+            <div className="flex min-w-0 items-center gap-2">
               {modelsUsed.length > 0 && (
                 <span className="truncate">
                   {modelsUsed.map((m) => m.label).join(", ")}
@@ -144,7 +144,7 @@ export function UsageSummary({ messages }: UsageSummaryProps) {
               )}
             </div>
             {usage.totalTokens > 0 && (
-              <span className="tabular-nums whitespace-nowrap">
+              <span className="whitespace-nowrap tabular-nums">
                 {formatNumber(usage.totalTokens)}{" "}
                 {usage.totalTokens === 1 ? "token" : "tokens"}
               </span>
@@ -176,7 +176,7 @@ export function UsageSummary({ messages }: UsageSummaryProps) {
           {usage.totalTokens > 0 && (
             <div className="space-y-1">
               <div className="font-medium">Token Usage</div>
-              <div className="pl-2 space-y-1 tabular-nums text-muted-foreground/60">
+              <div className="space-y-1 pl-2 text-muted-foreground/60 tabular-nums">
                 {usage.inputTokens > 0 && (
                   <div className="flex justify-between">
                     <span>Input:</span>
@@ -212,7 +212,7 @@ export function UsageSummary({ messages }: UsageSummaryProps) {
           {timing.requestCount > 0 && (
             <div className="space-y-1">
               <div className="font-medium">Performance</div>
-              <div className="pl-2 space-y-1 tabular-nums text-muted-foreground/60">
+              <div className="space-y-1 pl-2 text-muted-foreground/60 tabular-nums">
                 {timing.avgTokensPerSecond > 0 && (
                   <div className="flex justify-between">
                     <span>Avg speed:</span>

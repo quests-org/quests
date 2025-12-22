@@ -13,7 +13,7 @@ export function DiscoverItemsGrid({
 }: DiscoverItemsGridProps) {
   if (items.length === 0) {
     return (
-      <div className="text-center py-16">
+      <div className="py-16 text-center">
         <div className="mx-auto max-w-md">
           <svg
             className="mx-auto h-16 w-16 text-muted-foreground/50"

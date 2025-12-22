@@ -73,13 +73,13 @@ export const ReasoningMessage = memo(function ReasoningMessage({
   }, [isExpanded, isLoading, text]);
 
   const headerContent = (
-    <div className="flex items-center gap-2 min-w-0 w-full text-xs leading-tight">
+    <div className="flex w-full min-w-0 items-center gap-2 text-xs leading-tight">
       <span className="shrink-0 text-accent-foreground/80">
         <Brain className="size-3" />
       </span>
       <span
         className={cn(
-          "text-foreground/60 font-medium shrink-0",
+          "shrink-0 font-medium text-foreground/60",
           isLoading && "shiny-text",
         )}
       >
@@ -90,7 +90,7 @@ export const ReasoningMessage = memo(function ReasoningMessage({
             : "Planning interrupted"}
       </span>
       {!isLoading && isExpanded && (
-        <span className="shrink-0 text-accent-foreground/60 ml-auto">
+        <span className="ml-auto shrink-0 text-accent-foreground/60">
           <ChevronDown className="size-3" />
         </span>
       )}
@@ -109,9 +109,9 @@ export const ReasoningMessage = memo(function ReasoningMessage({
 
       {!(isLoading && !text.trim()) && (
         <CollapsibleContent>
-          <div className="mt-2 text-xs relative">
+          <div className="relative mt-2 text-xs">
             <div
-              className="max-h-44 overflow-y-auto border-l-4 border-muted-foreground/30 pl-4 bg-muted/30 py-2 rounded-r-md"
+              className="max-h-44 overflow-y-auto rounded-r-md border-l-4 border-muted-foreground/30 bg-muted/30 py-2 pl-4"
               ref={(el) => {
                 scrollContainerRef.current = el;
                 if (isLoading) {
@@ -121,7 +121,7 @@ export const ReasoningMessage = memo(function ReasoningMessage({
             >
               <div
                 className={cn(
-                  "text-sm leading-relaxed prose prose-sm max-w-none dark:prose-invert wrap-break-word italic",
+                  "prose prose-sm max-w-none text-sm leading-relaxed wrap-break-word italic dark:prose-invert",
                   !isLoading && "opacity-60",
                 )}
                 ref={contentRef}
@@ -139,11 +139,11 @@ export const ReasoningMessage = memo(function ReasoningMessage({
             </div>
 
             {scrollState.canScrollUp && (
-              <div className="absolute top-0 left-0 right-0 h-4 bg-linear-to-b from-background to-transparent pointer-events-none z-10" />
+              <div className="pointer-events-none absolute top-0 right-0 left-0 z-10 h-4 bg-linear-to-b from-background to-transparent" />
             )}
 
             {scrollState.canScrollDown && (
-              <div className="absolute bottom-0 left-0 right-0 h-4 bg-linear-to-t from-background to-transparent pointer-events-none z-10" />
+              <div className="pointer-events-none absolute right-0 bottom-0 left-0 z-10 h-4 bg-linear-to-t from-background to-transparent" />
             )}
           </div>
         </CollapsibleContent>

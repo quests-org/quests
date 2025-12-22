@@ -92,7 +92,7 @@ export function ModelPicker({
     }
 
     return (
-      <div className="flex items-center gap-1.5 min-w-0">
+      <div className="flex min-w-0 items-center gap-1.5">
         <Tooltip>
           <TooltipTrigger asChild>
             <div className="shrink-0">
@@ -106,7 +106,7 @@ export function ModelPicker({
             <p>{selectedModel.providerName}</p>
           </TooltipContent>
         </Tooltip>
-        <span className="truncate text-xs min-w-0 flex-1">
+        <span className="min-w-0 flex-1 truncate text-xs">
           {selectedModel.name}
         </span>
       </div>
@@ -125,7 +125,7 @@ export function ModelPicker({
         <Button
           aria-expanded={open}
           className={cn(
-            "flex items-center justify-between text-left h-auto py-1 px-1.5!",
+            "flex h-auto items-center justify-between px-1.5! py-1 text-left",
             !selectedModel && "text-muted-foreground",
             "max-w-full",
             className,
@@ -135,7 +135,7 @@ export function ModelPicker({
           size="sm"
           variant="ghost"
         >
-          <div className="flex items-center w-full min-w-0 text-xs">
+          <div className="flex w-full min-w-0 items-center text-xs">
             {getModelDisplayValue()}
           </div>
           <ChevronDown className="size-4 shrink-0 opacity-70" />
@@ -184,7 +184,7 @@ export function ModelPicker({
                     <Plus className="mr-2 size-4" />
                     Add an AI provider
                   </Button>
-                  <p className="text-xs text-muted-foreground text-center max-w-64">
+                  <p className="max-w-64 text-center text-xs text-muted-foreground">
                     The model you&apos;re looking for might be available from a
                     different provider
                   </p>
@@ -194,7 +194,7 @@ export function ModelPicker({
             {hasErrors && (
               <CommandGroup
                 heading={
-                  <div className="flex items-center justify-between w-full">
+                  <div className="flex w-full items-center justify-between">
                     <span>Errors</span>
                     <Button
                       className="h-6 px-2 text-xs"
@@ -222,12 +222,12 @@ export function ModelPicker({
               >
                 {errors.map((error, index) => (
                   <CommandItem
-                    className="flex items-center py-2 cursor-default data-disabled:opacity-80!"
+                    className="flex cursor-default items-center py-2 data-disabled:opacity-80!"
                     disabled
                     key={index}
                   >
                     <AlertCircle className="mr-2 size-4 shrink-0 text-destructive" />
-                    <div className="flex flex-col gap-1 flex-1 min-w-0">
+                    <div className="flex min-w-0 flex-1 flex-col gap-1">
                       <div className="flex items-center gap-1 text-xs">
                         <AIProviderIcon
                           className="size-3 shrink-0"
@@ -237,7 +237,7 @@ export function ModelPicker({
                           {error.config.displayName}
                         </span>
                       </div>
-                      <span className="text-xs line-clamp-2 wrap-break-word">
+                      <span className="line-clamp-2 text-xs wrap-break-word">
                         {error.message}
                       </span>
                     </div>
@@ -285,7 +285,7 @@ export function ModelPicker({
                               </div>
                             </div>
                           </div>
-                          <div className="flex self-start gap-1 ml-2 mt-1">
+                          <div className="mt-1 ml-2 flex gap-1 self-start">
                             <ModelBadges model={model} />
                           </div>
                         </CommandItem>

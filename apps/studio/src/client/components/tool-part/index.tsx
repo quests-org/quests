@@ -97,10 +97,10 @@ export function ToolPart({
   const DisplayIcon = isError ? TriangleAlert : ToolIcon;
 
   const mainContent = (
-    <div className="flex items-center gap-2 min-w-0 w-full text-xs leading-tight">
+    <div className="flex w-full min-w-0 items-center gap-2 text-xs leading-tight">
       {isLoading ? (
         <span className="shrink-0 text-accent-foreground/80">
-          <div className="size-3 border border-current border-t-transparent rounded-full animate-spin" />
+          <div className="size-3 animate-spin rounded-full border border-current border-t-transparent" />
         </span>
       ) : (
         <span
@@ -115,7 +115,7 @@ export function ToolPart({
 
       <span
         className={cn(
-          "text-foreground/60 font-medium shrink-0",
+          "shrink-0 font-medium text-foreground/60",
           isError && "text-warning-foreground/80",
           isLoading && "shiny-text",
         )}
@@ -125,7 +125,7 @@ export function ToolPart({
       {value && (
         <span
           className={cn(
-            "text-muted-foreground/60 truncate min-w-0",
+            "min-w-0 truncate text-muted-foreground/60",
             isError && "text-warning-foreground/60",
             isLoading && "shiny-text",
           )}
@@ -134,7 +134,7 @@ export function ToolPart({
         </span>
       )}
       {isExpandable && isExpanded && (
-        <span className="shrink-0 text-accent-foreground/60 ml-auto">
+        <span className="ml-auto shrink-0 text-accent-foreground/60">
           <ChevronUp className="size-3" />
         </span>
       )}
@@ -144,7 +144,7 @@ export function ToolPart({
   if (!isExpandable) {
     return (
       <div className="w-full">
-        <div className="h-6 flex items-center">{mainContent}</div>
+        <div className="flex h-6 items-center">{mainContent}</div>
       </div>
     );
   }
@@ -162,17 +162,17 @@ export function ToolPart({
       <CollapsibleContent>
         {isSuccess && (
           <div className="mt-2 text-xs">
-            <div className="p-2 bg-muted/30 rounded-md border max-h-64 overflow-y-auto">
+            <div className="max-h-64 overflow-y-auto rounded-md border bg-muted/30 p-2">
               <ToolPartExpanded part={part} />
             </div>
           </div>
         )}
 
         {isError && (
-          <div className="mt-2 text-xs space-y-2">
-            <div className="p-2 bg-muted/30 rounded-md border max-h-64 overflow-y-auto">
+          <div className="mt-2 space-y-2 text-xs">
+            <div className="max-h-64 overflow-y-auto rounded-md border bg-muted/30 p-2">
               <div className="mb-1 font-semibold">Error:</div>
-              <pre className="whitespace-pre-wrap wrap-break-word font-mono text-xs">
+              <pre className="font-mono text-xs wrap-break-word whitespace-pre-wrap">
                 {isFileNotFound &&
                   `File not found: ${part.output.filePath || ""}`}
                 {!isFileNotFound &&
@@ -180,9 +180,9 @@ export function ToolPart({
                   part.errorText}
               </pre>
             </div>
-            <div className="p-2 bg-muted/30 rounded-md border max-h-64 overflow-y-auto">
+            <div className="max-h-64 overflow-y-auto rounded-md border bg-muted/30 p-2">
               <div className="mb-1 font-semibold">Input:</div>
-              <pre className="whitespace-pre-wrap wrap-break-word font-mono text-xs">
+              <pre className="font-mono text-xs wrap-break-word whitespace-pre-wrap">
                 {JSON.stringify(part.input, null, 2)}
               </pre>
             </div>

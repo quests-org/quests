@@ -148,7 +148,7 @@ export function RestoreVersionModal({
         </div>
 
         {!selectedSessionId && (
-          <div className="p-3 bg-muted rounded-md">
+          <div className="rounded-md bg-muted p-3">
             <p className="text-sm text-muted-foreground">
               A session must be selected to restore a version. Select a session
               from the sidebar first.

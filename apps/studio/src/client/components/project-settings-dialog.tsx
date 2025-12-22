@@ -113,7 +113,7 @@ function ProjectSettingsForm({
         }}
       >
         <div className="grid gap-4 pt-4 pb-8">
-          <div className="flex gap-6 items-center">
+          <div className="flex items-center gap-6">
             <form.Subscribe
               selector={(state) => ({
                 icon: state.values.icon,
@@ -123,7 +123,7 @@ function ProjectSettingsForm({
               {({ icon, theme }) => (
                 <>
                   {project.mode !== "chat" && (
-                    <div className="flex flex-col items-center gap-2 min-w-fit pt-2">
+                    <div className="flex min-w-fit flex-col items-center gap-2 pt-2">
                       <AppIcon background={theme} icon={icon} />
                     </div>
                   )}
@@ -131,7 +131,7 @@ function ProjectSettingsForm({
               )}
             </form.Subscribe>
 
-            <div className="flex-1 grid gap-3">
+            <div className="grid flex-1 gap-3">
               <form.Field
                 name="name"
                 validators={{
@@ -189,7 +189,7 @@ function ProjectSettingsForm({
                             <PopoverTrigger asChild>
                               <Button
                                 aria-expanded={iconPickerOpen}
-                                className="justify-between flex-1"
+                                className="flex-1 justify-between"
                                 disabled={isPending}
                                 role="combobox"
                                 type="button"
@@ -226,9 +226,9 @@ function ProjectSettingsForm({
                                           return (
                                             <CommandItem
                                               className={cn(
-                                                "w-10 h-10 rounded-lg border-2 transition-all hover:scale-105 flex items-center justify-center cursor-pointer p-0",
+                                                "flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg border-2 p-0 transition-all hover:scale-105",
                                                 field.state.value === iconOption
-                                                  ? "border-foreground ring-2 ring-ring bg-accent"
+                                                  ? "border-foreground bg-accent ring-2 ring-ring"
                                                   : "border-muted hover:border-foreground",
                                               )}
                                               key={iconOption}
@@ -274,7 +274,7 @@ function ProjectSettingsForm({
                               >
                                 <div className="flex items-center gap-2">
                                   <div
-                                    className="w-4 h-4 rounded-full"
+                                    className="h-4 w-4 rounded-full"
                                     style={{
                                       background:
                                         field.state.value ??
@@ -285,12 +285,12 @@ function ProjectSettingsForm({
                                 <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                               </Button>
                             </PopoverTrigger>
-                            <PopoverContent className="p-3 w-fit">
+                            <PopoverContent className="w-fit p-3">
                               <div className="grid grid-cols-4 gap-2">
                                 {THEMES.map((themeOption) => (
                                   <button
                                     className={cn(
-                                      "w-8 h-8 rounded-lg border-2 transition-all hover:scale-105",
+                                      "h-8 w-8 rounded-lg border-2 transition-all hover:scale-105",
                                       field.state.value === themeOption
                                         ? "border-foreground ring-2 ring-ring"
                                         : "border-muted hover:border-foreground",

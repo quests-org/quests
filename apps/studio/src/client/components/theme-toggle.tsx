@@ -60,7 +60,7 @@ export function ThemeToggle() {
             setTheme("light");
           }}
         >
-          <Sun className="h-4 w-4 mr-2" />
+          <Sun className="mr-2 h-4 w-4" />
           Light
         </DropdownMenuItem>
         <DropdownMenuItem
@@ -68,7 +68,7 @@ export function ThemeToggle() {
             setTheme("dark");
           }}
         >
-          <Moon className="h-4 w-4 mr-2" />
+          <Moon className="mr-2 h-4 w-4" />
           Dark
         </DropdownMenuItem>
         <DropdownMenuItem
@@ -76,7 +76,7 @@ export function ThemeToggle() {
             setTheme("system");
           }}
         >
-          <Monitor className="h-4 w-4 mr-2" />
+          <Monitor className="mr-2 h-4 w-4" />
           System
         </DropdownMenuItem>
       </DropdownMenuContent>

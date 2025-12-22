@@ -37,7 +37,7 @@ export function AIProviderGuardDialog({
 
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent className="p-6 max-w-md">
+      <DialogContent className="max-w-md p-6">
         <DialogHeader className="sr-only">
           <DialogTitle>Add an AI provider to continue</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
@@ -47,17 +47,17 @@ export function AIProviderGuardDialog({
             <div className="flex size-16 items-center justify-center rounded-md">
               <QuestsAnimatedLogo size={64} />
             </div>
-            <h2 className="text-2xl font-bold text-center">
+            <h2 className="text-center text-2xl font-bold">
               Add an AI provider
             </h2>
-            <p className="text-sm text-muted-foreground text-center max-w-sm">
+            <p className="max-w-sm text-center text-sm text-muted-foreground">
               {description}
             </p>
           </div>
 
-          <div className="flex flex-col gap-4 w-full max-w-sm">
+          <div className="flex w-full max-w-sm flex-col gap-4">
             <form
-              className="flex items-center justify-center w-full"
+              className="flex w-full items-center justify-center"
               onSubmit={handleSignIn}
             >
               <Button className="w-full" type="submit" variant="default">
@@ -91,7 +91,7 @@ export function AIProviderGuardDialog({
             providers={providerConfigs ?? []}
           />
 
-          <p className="text-xs text-muted-foreground/50 text-center max-w-xs">
+          <p className="max-w-xs text-center text-xs text-muted-foreground/50">
             By clicking continue, you agree to our{" "}
             <a
               className="underline"

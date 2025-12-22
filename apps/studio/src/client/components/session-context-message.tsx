@@ -26,10 +26,10 @@ export const ContextMessage = memo(function ContextMessage({
 
   return (
     <div className="w-full">
-      <div className="text-xs text-foreground/70 font-medium mb-1">
+      <div className="mb-1 text-xs font-medium text-foreground/70">
         {roleDisplay} prompt
       </div>
-      <div className="text-sm leading-relaxed prose prose-sm max-w-none dark:prose-invert wrap-break-word">
+      <div className="prose prose-sm max-w-none text-sm leading-relaxed wrap-break-word dark:prose-invert">
         <Markdown markdown={part.text} />
       </div>
     </div>

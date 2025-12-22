@@ -22,7 +22,7 @@ export function AppIcon({
 
   return (
     <div
-      className="rounded-full relative flex items-center justify-center shrink-0 h-12 w-12 shadow-md overflow-hidden"
+      className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full shadow-md"
       style={{
         background,
       }}
@@ -49,7 +49,7 @@ export function AppIcon({
           pointerEvents: "none",
         }}
       />
-      <IconComponent className="h-6 w-6 text-white drop-shadow-md relative z-10" />
+      <IconComponent className="relative z-10 h-6 w-6 text-white drop-shadow-md" />
     </div>
   );
 }
@@ -74,8 +74,8 @@ export function SmallAppIcon({
     return (
       <IconComponent
         className={cn(
-          "text-muted-foreground shrink-0",
-          size === "sm" && "size-4 mx-0.5", // Align with app icons
+          "shrink-0 text-muted-foreground",
+          size === "sm" && "mx-0.5 size-4", // Align with app icons
           size === "md" && "size-5",
           size === "lg" && "size-7",
           size === "xl" && "size-9",
@@ -88,7 +88,7 @@ export function SmallAppIcon({
   return (
     <div
       className={cn(
-        "rounded-full relative flex items-center justify-center shrink-0 shadow-md",
+        "relative flex shrink-0 items-center justify-center rounded-full shadow-md",
         mode === "eval" ? "overflow-visible" : "overflow-hidden",
         size === "sm" && "size-5",
         size === "md" && "size-6",
@@ -101,7 +101,7 @@ export function SmallAppIcon({
     >
       <IconComponent
         className={cn(
-          "text-white drop-shadow-md relative z-10",
+          "relative z-10 text-white drop-shadow-md",
           size === "sm" && "size-3",
           size === "md" && "size-4",
           size === "lg" && "size-[1.125rem]",
@@ -111,7 +111,7 @@ export function SmallAppIcon({
       {mode === "eval" && (
         <FlaskIcon
           className={cn(
-            "text-white not-dark:fill-secondary not-dark:text-secondary-foreground absolute bottom-0 right-0 drop-shadow-md z-20",
+            "absolute right-0 bottom-0 z-20 text-white drop-shadow-md not-dark:fill-secondary not-dark:text-secondary-foreground",
             size === "sm" && "size-2.5",
             size === "md" && "size-3",
             size === "lg" && "size-4",

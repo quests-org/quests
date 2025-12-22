@@ -105,7 +105,7 @@ export function NavUser() {
         >
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
-              className="group-hover:bg-black/10 dark:group-hover:bg-white/10 data-[state=open]:bg-black/10 dark:data-[state=open]:bg-white/10"
+              className="group-hover:bg-black/10 data-[state=open]:bg-black/10 dark:group-hover:bg-white/10 dark:data-[state=open]:bg-white/10"
               size="lg"
             >
               <Avatar className="h-8 w-8 rounded-lg">
@@ -154,7 +154,7 @@ export function NavUser() {
             {isLowOnCredits(subscription) && (
               <div className="px-2 py-1.5">
                 <Button
-                  className="w-full text-xs h-7 font-semibold"
+                  className="h-7 w-full text-xs font-semibold"
                   onClick={onUpgrade}
                   size="sm"
                   variant="brand"

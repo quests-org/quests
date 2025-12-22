@@ -73,9 +73,9 @@ export function ServerExceptionsAlert() {
 
   return (
     <div className="border-b bg-background">
-      <div className="px-3 py-1.5 flex items-center gap-2 bg-muted/30 border-b">
-        <AlertCircle className="size-3.5 text-destructive shrink-0" />
-        <span className="text-xs font-medium text-foreground flex-1">
+      <div className="flex items-center gap-2 border-b bg-muted/30 px-3 py-1.5">
+        <AlertCircle className="size-3.5 shrink-0 text-destructive" />
+        <span className="flex-1 text-xs font-medium text-foreground">
           Server {groupedExceptions.length === 1 ? "Exception" : "Exceptions"}
         </span>
         <Tooltip>
@@ -104,23 +104,23 @@ export function ServerExceptionsAlert() {
               key={exception.id}
               value={exception.id}
             >
-              <AccordionTrigger className="py-1.5 px-3 hover:bg-muted/50 transition-colors gap-2 hover:no-underline data-[state=open]:bg-muted/50 min-w-0">
-                <div className="flex items-center gap-1.5 flex-1 min-w-0">
+              <AccordionTrigger className="min-w-0 gap-2 px-3 py-1.5 transition-colors hover:bg-muted/50 hover:no-underline data-[state=open]:bg-muted/50">
+                <div className="flex min-w-0 flex-1 items-center gap-1.5">
                   {exception.count > 1 && (
                     <Badge
-                      className="px-1 py-0 h-3.5 min-w-[14px] text-[9px] flex items-center justify-center shrink-0 tabular-nums"
+                      className="flex h-3.5 min-w-[14px] shrink-0 items-center justify-center px-1 py-0 text-[9px] tabular-nums"
                       variant="secondary"
                     >
                       {exception.count}
                     </Badge>
                   )}
-                  <span className="font-mono text-[11px] leading-tight truncate text-left text-foreground/90 block overflow-hidden">
+                  <span className="block truncate overflow-hidden text-left font-mono text-[11px] leading-tight text-foreground/90">
                     {exception.firstLine}
                   </span>
                 </div>
               </AccordionTrigger>
-              <AccordionContent className="pt-0 pb-2 px-3">
-                <pre className="text-[10px] leading-snug bg-muted/50 p-1.5 rounded border wrap-break-word whitespace-pre-wrap font-mono text-foreground/80">
+              <AccordionContent className="px-3 pt-0 pb-2">
+                <pre className="rounded border bg-muted/50 p-1.5 font-mono text-[10px] leading-snug wrap-break-word whitespace-pre-wrap text-foreground/80">
                   {exception.content}
                 </pre>
               </AccordionContent>

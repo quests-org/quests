@@ -11,11 +11,11 @@ export default function TabBar() {
   const tabs = useTabs();
 
   return (
-    <div className="flex flex-row min-w-0 flex-1 overflow-hidden items-center">
+    <div className="flex min-w-0 flex-1 flex-row items-center overflow-hidden">
       <Reorder.Group
         as="ul"
         axis="x"
-        className="flex-nowrap flex justify-start items-center min-w-0 flex-1 [-webkit-app-region:drag]"
+        className="flex min-w-0 flex-1 flex-nowrap items-center justify-start [-webkit-app-region:drag]"
         onReorder={(values) => {
           // Extract only the IDs of non-pinned tabs for reordering
           const nonPinnedTabIds = values
@@ -46,14 +46,14 @@ export default function TabBar() {
           />
         ))}
         <motion.button
-          className="flex items-center justify-center hover:bg-muted/60
-            rounded-full h-6 w-6 ml-2 mr-2 shrink-0 [-webkit-app-region:no-drag]"
+          className="mr-2 ml-2 flex h-6
+            w-6 shrink-0 items-center justify-center rounded-full [-webkit-app-region:no-drag] hover:bg-muted/60"
           onClick={() => {
             void addTab({ to: "/new-tab" });
           }}
           whileTap={{ scale: 0.9 }}
         >
-          <Plus className="size-4 opacity-90 hover:opacity-100 text-muted-foreground hover:text-foreground transition-colors" />
+          <Plus className="size-4 text-muted-foreground opacity-90 transition-colors hover:text-foreground hover:opacity-100" />
         </motion.button>
       </Reorder.Group>
     </div>

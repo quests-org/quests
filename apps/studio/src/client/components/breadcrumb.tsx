@@ -19,13 +19,13 @@ export function Breadcrumb({ items }: BreadcrumbProps) {
           {index > 0 && <ChevronRight className="h-4 w-4" />}
           {item.to ? (
             <InternalLink
-              className="hover:text-foreground transition-colors"
+              className="transition-colors hover:text-foreground"
               to={item.to}
             >
               {item.label}
             </InternalLink>
           ) : (
-            <span className="text-foreground font-medium">{item.label}</span>
+            <span className="font-medium text-foreground">{item.label}</span>
           )}
         </div>
       ))}

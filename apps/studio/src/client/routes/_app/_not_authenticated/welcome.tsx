@@ -39,13 +39,13 @@ function FeatureCard({
   return (
     <div className="flex gap-4 rounded-lg bg-muted/50 p-3">
       <div className="shrink-0">
-        <div className="text-4xl font-bold text-foreground/10 leading-none tabular-nums">
+        <div className="text-4xl leading-none font-bold text-foreground/10 tabular-nums">
           {number}
         </div>
       </div>
-      <div className="flex flex-col gap-1 flex-1">
+      <div className="flex flex-1 flex-col gap-1">
         <h3 className="font-semibold">{title}</h3>
-        <p className="text-sm text-muted-foreground leading-relaxed">
+        <p className="text-sm leading-relaxed text-muted-foreground">
           {description}
         </p>
       </div>
@@ -66,18 +66,18 @@ function RouteComponent() {
         </>
       }
     >
-      <div className="max-w-sm w-full">
+      <div className="w-full max-w-sm">
         <div className="flex flex-col items-center gap-6 pb-12">
           <div className="flex flex-col items-center gap-4">
             <div className="flex size-16 items-center justify-center rounded-md">
               <QuestsAnimatedLogo size={64} />
             </div>
-            <h1 className="text-3xl font-bold text-center">
+            <h1 className="text-center text-3xl font-bold">
               Welcome to Quests
             </h1>
           </div>
 
-          <div className="flex flex-col gap-2 w-full">
+          <div className="flex w-full flex-col gap-2">
             <FeatureCard
               description="Sign in to unlock access to hundreds of AI models for free."
               number="1"

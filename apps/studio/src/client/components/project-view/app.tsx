@@ -82,19 +82,19 @@ export function ProjectViewApp({
         />
       </ResizablePanel>
 
-      <ResizableHandle className="bg-transparent data-[separator='hover']:bg-muted-foreground data-[separator='active']:bg-primary/50 transition-all duration-200 data-[separator='hover']:scale-x-[3] focus-visible:ring-0 focus-visible:ring-offset-0" />
+      <ResizableHandle className="bg-transparent transition-all duration-200 focus-visible:ring-0 focus-visible:ring-offset-0 data-[separator='active']:bg-primary/50 data-[separator='hover']:scale-x-[3] data-[separator='hover']:bg-muted-foreground" />
 
       <ResizablePanel>
         <div
           className={cn(
-            "flex-1 flex flex-col p-2 bg-secondary border-t overflow-hidden h-full",
-            !sidebarCollapsed && "border-l rounded-tl-lg",
+            "flex h-full flex-1 flex-col overflow-hidden border-t bg-secondary p-2",
+            !sidebarCollapsed && "rounded-tl-lg border-l",
           )}
         >
-          <div className="flex-1 flex flex-col relative">
+          <div className="relative flex flex-1 flex-col">
             <AppView
               app={project}
-              className="rounded-lg overflow-hidden"
+              className="overflow-hidden rounded-lg"
               shouldReload={!selectedVersion}
             />
 

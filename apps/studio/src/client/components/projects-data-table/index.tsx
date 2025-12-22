@@ -159,7 +159,7 @@ export function ProjectsDataTable<TData, TValue>({
       </div>
 
       <div className="flex items-center justify-between">
-        <div className="text-muted-foreground flex-1 whitespace-nowrap text-sm">
+        <div className="flex-1 text-sm whitespace-nowrap text-muted-foreground">
           {filteredSelectedRowModel.rows.length > 0 ? (
             <>
               {filteredSelectedRowModel.rows.length} of{" "}

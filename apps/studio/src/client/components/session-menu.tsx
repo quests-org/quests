@@ -240,8 +240,8 @@ export function SessionMenu({ project }: SessionMenuProps) {
                   be undone.
                 </p>
                 {sessionToDeleteInfo && (
-                  <div className="mt-3 p-3 bg-muted rounded-md text-sm">
-                    <div className="font-medium mb-2">
+                  <div className="mt-3 rounded-md bg-muted p-3 text-sm">
+                    <div className="mb-2 font-medium">
                       &ldquo;{sessionToDeleteInfo.title}&rdquo;
                     </div>
                     <div className="space-y-1 text-muted-foreground">

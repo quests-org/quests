@@ -43,7 +43,7 @@ export function ErrorCard({
     <Card className="w-full max-w-2xl">
       <CardHeader>
         <CardTitle className="text-xl">{title}</CardTitle>
-        <p className="text-muted-foreground mt-1.5 text-sm">{description}</p>
+        <p className="mt-1.5 text-sm text-muted-foreground">{description}</p>
       </CardHeader>
       <CardContent className="space-y-4">
         <Alert variant="destructive">
@@ -55,10 +55,10 @@ export function ErrorCard({
         </Alert>
         {errorStack && (
           <details className="group">
-            <summary className="text-muted-foreground cursor-pointer text-sm font-medium hover:text-foreground">
+            <summary className="cursor-pointer text-sm font-medium text-muted-foreground hover:text-foreground">
               View stack trace
             </summary>
-            <pre className="text-muted-foreground mt-2 max-h-48 overflow-auto rounded-md bg-muted p-3 text-xs">
+            <pre className="mt-2 max-h-48 overflow-auto rounded-md bg-muted p-3 text-xs text-muted-foreground">
               {errorStack}
             </pre>
           </details>

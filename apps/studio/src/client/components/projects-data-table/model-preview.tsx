@@ -29,7 +29,7 @@ export function ModelPreview({ subdomain }: { subdomain: ProjectSubdomain }) {
     : (selectedModelURI.split("?")[0] ?? "");
 
   return (
-    <span className="flex items-center gap-x-1 text-muted-foreground min-w-0">
+    <span className="flex min-w-0 items-center gap-x-1 text-muted-foreground">
       {matchedModel && (
         <AIProviderIcon
           className="size-3 shrink-0"

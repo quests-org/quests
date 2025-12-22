@@ -85,14 +85,14 @@ export function MessageError({
   };
 
   const mainContent = (
-    <div className="flex items-center gap-2 min-w-0 w-full text-xs leading-tight">
+    <div className="flex w-full min-w-0 items-center gap-2 text-xs leading-tight">
       <span className="shrink-0 text-warning-foreground/80">
         <AlertTriangle className="size-3" />
       </span>
-      <span className="text-warning-foreground/80 font-medium shrink-0">
+      <span className="shrink-0 font-medium text-warning-foreground/80">
         {getErrorTitle()}
       </span>
-      <span className="ml-auto text-warning-foreground/60 truncate text-right min-w-0">
+      <span className="ml-auto min-w-0 truncate text-right text-warning-foreground/60">
         {getErrorTypeLabel()}
       </span>
       {isExpanded && (
@@ -115,10 +115,10 @@ export function MessageError({
 
       <CollapsibleContent>
         <div className="mt-2 text-xs">
-          <div className="p-2 bg-muted/30 rounded-md border max-h-64 overflow-y-auto">
+          <div className="max-h-64 overflow-y-auto rounded-md border bg-muted/30 p-2">
             <div className="mb-2">
               <div className="mb-1 font-semibold">Error:</div>
-              <pre className="whitespace-pre-wrap wrap-break-word font-mono text-xs">
+              <pre className="font-mono text-xs wrap-break-word whitespace-pre-wrap">
                 {error.message}
               </pre>
             </div>
@@ -139,7 +139,7 @@ export function MessageError({
                 {error.responseBody && (
                   <div>
                     <strong>Response:</strong>
-                    <pre className="mt-1 p-2 bg-muted rounded text-xs max-h-32 overflow-y-auto whitespace-pre-wrap wrap-break-word">
+                    <pre className="mt-1 max-h-32 overflow-y-auto rounded bg-muted p-2 text-xs wrap-break-word whitespace-pre-wrap">
                       {error.responseBody}
                     </pre>
                   </div>
@@ -150,7 +150,7 @@ export function MessageError({
             {error.kind === "invalid-tool-input" && (
               <div>
                 <div className="mb-1 font-semibold">Input:</div>
-                <pre className="p-2 bg-muted rounded text-xs max-h-32 overflow-y-auto whitespace-pre-wrap wrap-break-word font-mono border">
+                <pre className="max-h-32 overflow-y-auto rounded border bg-muted p-2 font-mono text-xs wrap-break-word whitespace-pre-wrap">
                   {error.input}
                 </pre>
               </div>

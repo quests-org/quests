@@ -18,9 +18,9 @@ export function ToolContent({
       return (
         <div>
           <SectionHeader>Question:</SectionHeader>
-          <div className="text-sm mb-2">{part.input.question}</div>
+          <div className="mb-2 text-sm">{part.input.question}</div>
           <SectionHeader>Choices:</SectionHeader>
-          <div className="space-y-1 mb-2">
+          <div className="mb-2 space-y-1">
             {part.input.choices.map((choice, index) => (
               <MonoText className="text-xs" key={index}>
                 {choice}
@@ -126,7 +126,7 @@ export function ToolContent({
                 </div>
               ))}
               {matches.length > 10 && (
-                <div className="text-muted-foreground text-xs">
+                <div className="text-xs text-muted-foreground">
                   ... and {matches.length - 10} more matches
                 </div>
               )}
@@ -154,7 +154,7 @@ export function ToolContent({
             <div className="space-y-1">
               {errors.map((error, index) => (
                 <div
-                  className="border-l-2 border-red-300 dark:border-red-600 pl-2 text-xs font-mono"
+                  className="border-l-2 border-red-300 pl-2 font-mono text-xs dark:border-red-600"
                   key={index}
                 >
                   {error}
@@ -162,7 +162,7 @@ export function ToolContent({
               ))}
             </div>
           ) : (
-            <div className="text-muted-foreground text-sm">
+            <div className="text-sm text-muted-foreground">
               No diagnostic errors found in the project.
             </div>
           )}
@@ -180,7 +180,7 @@ export function ToolContent({
                 <MonoText className="text-xs text-muted-foreground">
                   $ git {result.command}
                 </MonoText>
-                <div className="flex items-center gap-2 mb-1">
+                <div className="mb-1 flex items-center gap-2">
                   <Badge
                     variant={
                       result.exitCode === 0 ? "secondary" : "destructive"
@@ -190,12 +190,12 @@ export function ToolContent({
                   </Badge>
                 </div>
                 {result.stdout && (
-                  <CodeBlock className="text-xs text-green-600 dark:text-green-400 whitespace-pre-wrap">
+                  <CodeBlock className="text-xs whitespace-pre-wrap text-green-600 dark:text-green-400">
                     {result.stdout}
                   </CodeBlock>
                 )}
                 {result.stderr && (
-                  <CodeBlock className="text-xs text-red-600 dark:text-red-400 whitespace-pre-wrap">
+                  <CodeBlock className="text-xs whitespace-pre-wrap text-red-600 dark:text-red-400">
                     {result.stderr}
                   </CodeBlock>
                 )}
@@ -209,8 +209,8 @@ export function ToolContent({
       return (
         <div>
           <SectionHeader>Command executed:</SectionHeader>
-          <MonoText className="text-xs mb-2">$ {part.output.command}</MonoText>
-          <div className="flex items-center gap-2 mb-2">
+          <MonoText className="mb-2 text-xs">$ {part.output.command}</MonoText>
+          <div className="mb-2 flex items-center gap-2">
             <Badge
               variant={part.output.exitCode === 0 ? "secondary" : "destructive"}
             >
@@ -229,7 +229,7 @@ export function ToolContent({
           {part.output.stderr && (
             <>
               <div className="mb-1 text-red-600 dark:text-red-400">Error:</div>
-              <CodeBlock className="text-xs whitespace-pre-wrap bg-red-50 dark:bg-red-900/20 p-2 rounded border max-h-32 overflow-y-auto text-red-600 dark:text-red-400">
+              <CodeBlock className="max-h-32 overflow-y-auto rounded border bg-red-50 p-2 text-xs whitespace-pre-wrap text-red-600 dark:bg-red-900/20 dark:text-red-400">
                 {part.output.stderr}
               </CodeBlock>
             </>
@@ -255,7 +255,7 @@ export function ToolContent({
     case "tool-write_file": {
       return (
         <div>
-          <div className="flex items-center gap-2 mb-2">
+          <div className="mb-2 flex items-center gap-2">
             <ToolPartFilePath
               filePath={part.output.filePath}
               label="File written:"
@@ -270,7 +270,7 @@ export function ToolContent({
               ? part.output.content.slice(0, 500) + "\n... (truncated)"
               : part.output.content}
           </ScrollableCodeBlock>
-          <div className="text-muted-foreground text-xs mt-1">
+          <div className="mt-1 text-xs text-muted-foreground">
             {part.output.content.split("\n").length} lines,{" "}
             {part.output.content.length} characters
           </div>

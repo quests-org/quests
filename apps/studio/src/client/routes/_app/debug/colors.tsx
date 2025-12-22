@@ -49,9 +49,9 @@ function RouteComponent() {
       <div className="w-full p-8">
         <div
           className={`
+            grid
             md:grid-cols-2
-            md:gap-4
-            grid lg:grid-cols-10
+            md:gap-4 lg:grid-cols-10
             xl:grid-cols-11 xl:gap-4
           `}
         >
@@ -84,7 +84,7 @@ function RouteComponent() {
                       border border-border
                     `}
                   />
-                  <span className="text-xs font-medium leading-none">
+                  <span className="text-xs leading-none font-medium">
                     {color.name}
                   </span>
                 </div>

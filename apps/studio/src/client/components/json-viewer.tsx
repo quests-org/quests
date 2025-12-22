@@ -92,9 +92,9 @@ export function JsonViewer({
           </DialogTitle>
         </DialogHeader>
         <div className="relative min-w-0">
-          <div className="absolute right-4 top-2 z-20 flex gap-2 pointer-events-auto">
+          <div className="pointer-events-auto absolute top-2 right-4 z-20 flex gap-2">
             <CopyButton
-              className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2"
+              className="inline-flex h-9 items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0"
               onCopy={handleCopy}
             />
             <Button
@@ -107,7 +107,7 @@ export function JsonViewer({
             </Button>
           </div>
           <div className="max-h-[600px] min-w-0 overflow-auto">
-            <pre className="whitespace-pre-wrap break-all rounded-md bg-muted p-4 text-xs text-foreground min-w-0">
+            <pre className="min-w-0 rounded-md bg-muted p-4 text-xs break-all whitespace-pre-wrap text-foreground">
               {displayData}
             </pre>
           </div>

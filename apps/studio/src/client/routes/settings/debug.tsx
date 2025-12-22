@@ -21,7 +21,7 @@ function SafeStorage() {
       <div>
         <h3 className="text-base font-semibold">Secure Storage</h3>
       </div>
-      <div className="bg-muted/50 rounded-lg p-4 space-y-2">
+      <div className="space-y-2 rounded-lg bg-muted/50 p-4">
         <div className="flex items-center justify-between">
           <span className="text-sm text-muted-foreground">
             Encryption Available
@@ -37,13 +37,13 @@ function SafeStorage() {
             <span className="text-sm text-muted-foreground">
               Storage Backend
             </span>
-            <span className="text-sm font-medium font-mono">
+            <span className="font-mono text-sm font-medium">
               {safeStorageInfo.backend}
             </span>
           </div>
         )}
         {safeStorageInfo.backend === "basic_text" && (
-          <div className="mt-3 pt-3 border-t border-border">
+          <div className="mt-3 border-t border-border pt-3">
             <p className="text-xs text-muted-foreground">
               Your API keys are stored with basic encryption. For better
               security, configure a password manager like gnome-libsecret or

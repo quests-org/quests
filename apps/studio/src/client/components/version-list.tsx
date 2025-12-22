@@ -104,14 +104,14 @@ export function VersionList({
           >
             <div
               className={cn(
-                "flex flex-col gap-3 rounded-lg border p-3 transition-colors group",
+                "group flex flex-col gap-3 rounded-lg border p-3 transition-colors",
                 isSelected
                   ? "border-secondary-foreground bg-muted/30 hover:bg-muted/30"
                   : "border-border hover:bg-muted/50",
               )}
             >
               <div className="flex items-start justify-between gap-2">
-                <div className="text-sm font-medium text-foreground line-clamp-2">
+                <div className="line-clamp-2 text-sm font-medium text-foreground">
                   {commit.message}
                 </div>
 
@@ -176,9 +176,9 @@ function getInitials(name: string): string {
 
 function InProgressVersionCard() {
   return (
-    <div className="flex flex-col gap-3 rounded-lg border border-dashed border-muted-foreground/50 p-3 bg-muted/20">
+    <div className="flex flex-col gap-3 rounded-lg border border-dashed border-muted-foreground/50 bg-muted/20 p-3">
       <div className="flex items-start gap-2">
-        <div className="text-sm font-medium text-foreground shiny-text">
+        <div className="shiny-text text-sm font-medium text-foreground">
           Working on your changes...
         </div>
       </div>

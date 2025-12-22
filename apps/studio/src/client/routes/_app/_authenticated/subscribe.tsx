@@ -159,15 +159,15 @@ function SubscribePage() {
 
   return (
     <div className="min-h-screen bg-linear-to-br from-background via-background to-accent/20 p-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-8">
-          <div className="flex justify-center mb-6 mt-6">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-8 text-center">
+          <div className="mt-6 mb-6 flex justify-center">
             <QuestsAnimatedLogo size={64} />
           </div>
-          <h1 className="text-4xl font-bold mb-2 bg-linear-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+          <h1 className="mb-2 bg-linear-to-r from-foreground to-foreground/70 bg-clip-text text-4xl font-bold text-transparent">
             Choose your plan
           </h1>
-          <p className="text-muted-foreground max-w-2xl mx-auto text-sm">
+          <p className="mx-auto max-w-2xl text-sm text-muted-foreground">
             Unlock access to hundreds of the most popular AI models
           </p>
         </div>
@@ -190,7 +190,7 @@ function SubscribePage() {
 
         {plans && (
           <>
-            <div className="flex justify-center mb-6">
+            <div className="mb-6 flex justify-center">
               <Tabs
                 defaultValue="yearly"
                 onValueChange={(value) => {
@@ -202,17 +202,17 @@ function SubscribePage() {
                 }}
                 value={billingCycle}
               >
-                <TabsList className="bg-muted dark:bg-muted text-primary-foreground/50">
+                <TabsList className="bg-muted text-primary-foreground/50 dark:bg-muted">
                   <TabsTrigger
-                    className="dark:data-[state=active]:bg-primary dark:data-[state=active]:text-primary-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                    className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground dark:data-[state=active]:bg-primary dark:data-[state=active]:text-primary-foreground"
                     value="yearly"
                   >
                     Yearly
                     <span
                       className={cn(
-                        "text-xs px-2 py-0.5 rounded-full",
+                        "rounded-full px-2 py-0.5 text-xs",
                         billingCycle === "yearly"
-                          ? "dark:bg-background/20 bg-background/20"
+                          ? "bg-background/20 dark:bg-background/20"
                           : "bg-border",
                       )}
                     >
@@ -220,7 +220,7 @@ function SubscribePage() {
                     </span>
                   </TabsTrigger>
                   <TabsTrigger
-                    className="dark:data-[state=active]:bg-primary dark:data-[state=active]:text-background data-[state=active]:bg-primary data-[state=active]:text-background hover:text-primary-foreground"
+                    className="hover:text-primary-foreground data-[state=active]:bg-primary data-[state=active]:text-background dark:data-[state=active]:bg-primary dark:data-[state=active]:text-background"
                     value="monthly"
                   >
                     Monthly
@@ -229,7 +229,7 @@ function SubscribePage() {
               </Tabs>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+            <div className="mx-auto grid max-w-6xl gap-6 md:grid-cols-3">
               {plans.map((plan) => {
                 const price =
                   billingCycle === "monthly"
@@ -313,12 +313,12 @@ function SubscribePage() {
 
                       <div className="flex items-baseline gap-1">
                         <span className="text-3xl font-medium">${price}</span>
-                        <span className="text-muted-foreground/50 text-xs">
+                        <span className="text-xs text-muted-foreground/50">
                           /month
                         </span>
                       </div>
                       {price > 0 && (
-                        <p className="text-xs text-muted-foreground/50 mt-1">
+                        <p className="mt-1 text-xs text-muted-foreground/50">
                           {billingCycle === "yearly"
                             ? "billed annually"
                             : "billed monthly"}
@@ -326,10 +326,10 @@ function SubscribePage() {
                       )}
                     </div>
 
-                    <ul className="space-y-2 mb-6 flex-1">
+                    <ul className="mb-6 flex-1 space-y-2">
                       {plan.features.map((feature, index) => (
                         <li
-                          className="text-sm text-muted-foreground font-medium"
+                          className="text-sm font-medium text-muted-foreground"
                           key={index}
                         >
                           {feature.text}
@@ -356,7 +356,7 @@ function SubscribePage() {
                         variant={variant}
                       >
                         {showCheckmark && (
-                          <CheckCircle2 className={cn("w-4 h-4")} />
+                          <CheckCircle2 className={cn("h-4 w-4")} />
                         )}
                         {buttonText}
                       </Button>
@@ -366,17 +366,17 @@ function SubscribePage() {
               })}
             </div>
 
-            <div className="max-w-4xl mx-auto mt-12">
-              <Card className="relative p-8 bg-linear-to-br from-violet-100 via-background to-background dark:from-violet-950/30 dark:via-slate-900/20 border border-border/50">
+            <div className="mx-auto mt-12 max-w-4xl">
+              <Card className="relative border border-border/50 bg-linear-to-br from-violet-100 via-background to-background p-8 dark:from-violet-950/30 dark:via-slate-900/20">
                 <div className="text-center">
-                  <h2 className="text-2xl font-bold mb-2 bg-linear-to-r from-violet-600 to-purple-600 dark:from-violet-400 dark:to-purple-400 bg-clip-text text-transparent">
+                  <h2 className="mb-2 bg-linear-to-r from-violet-600 to-purple-600 bg-clip-text text-2xl font-bold text-transparent dark:from-violet-400 dark:to-purple-400">
                     Custom Plans
                   </h2>
-                  <p className="text-muted-foreground mb-6 max-w-xl mx-auto text-sm">
+                  <p className="mx-auto mb-6 max-w-xl text-sm text-muted-foreground">
                     Whether you&apos;re a team, agency, or enterprise,
                     we&apos;ll build a plan that fits your needs.
                   </p>
-                  <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground mb-6">
+                  <div className="mb-6 flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
                     <span>Custom pricing</span>
                     <span>•</span>
                     <span>Priority support SLA</span>
@@ -403,16 +403,16 @@ function SubscribePage() {
 
       {showPlanChangePreview && invoicePreviewData && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-          <div className="bg-card border border-border p-6 rounded-lg shadow-lg max-w-md w-full">
-            <h2 className="text-xl font-bold mb-4">
+          <div className="w-full max-w-md rounded-lg border border-border bg-card p-6 shadow-lg">
+            <h2 className="mb-4 text-xl font-bold">
               {isUpgrade ? "Confirm Upgrade" : "Confirm Downgrade"}
             </h2>
-            <p className="text-muted-foreground mb-4">
+            <p className="mb-4 text-muted-foreground">
               You are {isUpgrade ? "upgrading" : "downgrading"} to the{" "}
               {selectedPlanForChange?.name} plan.
             </p>
 
-            <div className="space-y-2 mb-6">
+            <div className="mb-6 space-y-2">
               <div className="flex justify-between">
                 <span>Amount Due Today:</span>
                 <span className="font-bold">

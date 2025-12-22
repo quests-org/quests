@@ -55,7 +55,7 @@ export function VersionOverlay({
   if (isLoading) {
     return (
       <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-        <div className="text-center space-y-6 px-6 py-8 bg-background/90 rounded-lg border shadow-lg">
+        <div className="space-y-6 rounded-lg border bg-background/90 px-6 py-8 text-center shadow-lg">
           <div className="flex items-center justify-center">
             <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
           </div>
@@ -68,7 +68,7 @@ export function VersionOverlay({
   if (!app) {
     return (
       <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-        <div className="text-center space-y-6 px-6 py-8 bg-background/90 rounded-lg border shadow-lg">
+        <div className="space-y-6 rounded-lg border bg-background/90 px-6 py-8 text-center shadow-lg">
           <p className="text-sm text-muted-foreground">Version not found</p>
           <InternalLink
             allowOpenNewTab={false}
@@ -87,18 +87,18 @@ export function VersionOverlay({
   }
 
   const centerContent = (
-    <div className="flex-1 flex items-center justify-center min-w-0">
+    <div className="flex min-w-0 flex-1 items-center justify-center">
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
             <div
-              className="text-xs file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input flex h-8 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive text-center items-center justify-center whitespace-nowrap overflow-hidden cursor-pointer font-medium"
+              className="flex h-8 w-full min-w-0 cursor-pointer items-center justify-center overflow-hidden rounded-md border border-input bg-transparent px-3 py-1 text-center text-xs font-medium whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none selection:bg-primary selection:text-primary-foreground file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 md:text-xs dark:bg-input/30 dark:aria-invalid:ring-destructive/40"
               style={{
                 backgroundColor: `${hashColor}20`,
                 borderColor: `${hashColor}50`,
               }}
             >
-              <span className="text-ellipsis min-w-0">
+              <span className="min-w-0 text-ellipsis">
                 Viewing Version{" "}
                 <span className="font-mono font-semibold">
                   {versionRef.slice(0, 8)}
@@ -116,7 +116,7 @@ export function VersionOverlay({
           </TooltipTrigger>
           <TooltipContent
             arrowClassName="bg-background fill-background border-b border-r border-border"
-            className="min-w-xs max-w-md p-0 bg-background text-foreground border border-border"
+            className="max-w-md min-w-xs border border-border bg-background p-0 text-foreground"
             side="bottom"
           >
             <GitCommitCard

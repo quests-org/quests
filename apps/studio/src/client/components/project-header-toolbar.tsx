@@ -199,18 +199,18 @@ export function ProjectHeaderToolbar({
 
   return (
     <>
-      <div className="bg-background pl-3 pr-2 py-2 w-full">
+      <div className="w-full bg-background py-2 pr-2 pl-3">
         <div className="flex items-center justify-between">
           <div
             className={cn(
-              "flex items-center gap-2 min-w-0",
+              "flex min-w-0 items-center gap-2",
               !sidebarCollapsed && "w-96 shrink-0 pr-5",
             )}
           >
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
-                  className="font-semibold text-foreground h-auto hover:bg-accent hover:text-accent-foreground gap-2 py-1 has-[>svg]:px-1 min-w-0 max-w-80 justify-start"
+                  className="h-auto max-w-80 min-w-0 justify-start gap-2 py-1 font-semibold text-foreground hover:bg-accent hover:text-accent-foreground has-[>svg]:px-1"
                   variant="ghost"
                 >
                   <SmallAppIcon
@@ -298,7 +298,7 @@ export function ProjectHeaderToolbar({
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
-                        className="gap-1 h-7"
+                        className="h-7 gap-1"
                         size="sm"
                         variant="secondary"
                       >
@@ -396,7 +396,7 @@ export function ProjectHeaderToolbar({
                   >
                     <DropdownMenuTrigger asChild>
                       <Button
-                        className="gap-1 h-7"
+                        className="h-7 gap-1"
                         size="sm"
                         variant="secondary"
                       >

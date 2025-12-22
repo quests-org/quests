@@ -13,7 +13,7 @@ const SkeletonIcon = ({ isPinned = false }: { isPinned?: boolean }) => {
   return (
     <div
       className={cn(
-        "size-5 shrink-0 bg-muted rounded-full",
+        "size-5 shrink-0 rounded-full bg-muted",
         isPinned ? "mr-0" : "mr-1",
       )}
     />
@@ -22,8 +22,8 @@ const SkeletonIcon = ({ isPinned = false }: { isPinned?: boolean }) => {
 
 const SkeletonTitle = () => {
   return (
-    <div className="flex-1 min-w-0">
-      <div className="h-3 bg-muted rounded animate-pulse w-16" />
+    <div className="min-w-0 flex-1">
+      <div className="h-3 w-16 animate-pulse rounded bg-muted" />
     </div>
   );
 };
@@ -54,11 +54,11 @@ export const Tab = ({ isSelected, item, onClick, onRemove }: Props) => {
         y: 0,
       }}
       className={cn(
-        "[-webkit-app-region:no-drag] border-r border-border/50 group",
+        "group border-r border-border/50 [-webkit-app-region:no-drag]",
         isSelected ? "bg-background shadow-sm" : "hover:bg-muted/60",
         "min-w-0",
-        item.pinned ? "px-3" : "max-w-60 w-full pl-4 flex-1",
-        "relative h-svh flex justify-between items-center select-none",
+        item.pinned ? "px-3" : "w-full max-w-60 flex-1 pl-4",
+        "relative flex h-svh items-center justify-between select-none",
       )}
       dragListener={!item.pinned}
       exit={{ opacity: 0, transition: { duration: 0.1 }, y: 20 }}
@@ -78,7 +78,7 @@ export const Tab = ({ isSelected, item, onClick, onRemove }: Props) => {
       title={item.title || ""}
       value={item}
     >
-      <motion.div className="flex items-center flex-1 min-w-0">
+      <motion.div className="flex min-w-0 flex-1 items-center">
         <div className={item.pinned ? "" : "mr-2"}>
           {item.projectMode ? (
             <SmallAppIcon
@@ -123,7 +123,7 @@ export const Tab = ({ isSelected, item, onClick, onRemove }: Props) => {
             )}
           </div>
           <button
-            className="ring-offset-background focus:ring-ring rounded opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none hover:bg-muted hidden group-hover:block"
+            className="hidden rounded opacity-70 ring-offset-background transition-opacity group-hover:block hover:bg-muted hover:opacity-100 focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none"
             onClick={(event) => {
               event.stopPropagation();
               onRemove();

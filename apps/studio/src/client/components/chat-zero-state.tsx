@@ -28,17 +28,17 @@ export function ChatZeroState({
   ).slice(0, 10);
 
   return (
-    <div className="flex justify-center mt-8">
-      <div className="text-center space-y-8">
+    <div className="mt-8 flex justify-center">
+      <div className="space-y-8 text-center">
         <div className="text-muted-foreground/50">No messages yet</div>
         {recentOtherSessions.length > 0 && (
-          <div className="space-y-3 opacity-50 text-xs">
+          <div className="space-y-3 text-xs opacity-50">
             <div>Looking for an old chat?</div>
             <div className="space-y-2">
               {recentOtherSessions.map((session) => (
                 <InternalLink
                   allowOpenNewTab={false}
-                  className="block underline text-xs hover:text-foreground"
+                  className="block text-xs underline hover:text-foreground"
                   key={session.id}
                   params={{ subdomain: project.subdomain }}
                   replace

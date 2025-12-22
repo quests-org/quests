@@ -6,7 +6,7 @@ export function ScrollableCodeBlock({
   children: React.ReactNode;
 }) {
   return (
-    <CodeBlock className="text-xs whitespace-pre-wrap max-h-32 overflow-y-auto bg-background/50 p-2 rounded border">
+    <CodeBlock className="max-h-32 overflow-y-auto rounded border bg-background/50 p-2 text-xs whitespace-pre-wrap">
       {children}
     </CodeBlock>
   );

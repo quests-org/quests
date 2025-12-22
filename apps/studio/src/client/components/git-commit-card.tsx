@@ -41,8 +41,8 @@ export function GitCommitCard({
   const cardContent = (
     <div
       className={cn(
-        "text-card-foreground flex flex-col gap-6 rounded-lg border py-0 shadow-sm overflow-hidden bg-card",
-        "p-3 transition-colors relative",
+        "flex flex-col gap-6 overflow-hidden rounded-lg border bg-card py-0 text-card-foreground shadow-sm",
+        "relative p-3 transition-colors",
         !disableLink &&
           (isSelected
             ? "border-secondary-foreground hover:bg-muted/30"

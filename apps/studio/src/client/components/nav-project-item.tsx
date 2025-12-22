@@ -126,7 +126,7 @@ export const NavProjectItem = memo(function NavProjectItem({
   return (
     <SidebarMenuItem className="group" key={project.subdomain}>
       {isEditing ? (
-        <div className="flex items-center gap-2 h-9 px-2">
+        <div className="flex h-9 items-center gap-2 px-2">
           <SmallAppIcon
             background={project.icon?.background}
             icon={project.icon?.lucide}
@@ -135,7 +135,7 @@ export const NavProjectItem = memo(function NavProjectItem({
           />
           <Input
             autoFocus
-            className="h-7 text-sm -ml-1 pl-1"
+            className="-ml-1 h-7 pl-1 text-sm"
             disabled={isRenameLoading}
             onBlur={() => {
               void handleSaveEdit();
@@ -150,7 +150,7 @@ export const NavProjectItem = memo(function NavProjectItem({
       ) : (
         <SidebarMenuButton
           asChild
-          className="h-9 group-hover:bg-black/10 dark:group-hover:bg-white/10 data-[active=true]:bg-black/15 dark:data-[active=true]:bg-white/15 data-[active=true]:text-foreground data-[active=true]:font-normal"
+          className="h-9 group-hover:bg-black/10 data-[active=true]:bg-black/15 data-[active=true]:font-normal data-[active=true]:text-foreground dark:group-hover:bg-white/10 dark:data-[active=true]:bg-white/15"
           isActive={isActive || undefined}
         >
           <InternalLink
@@ -171,9 +171,9 @@ export const NavProjectItem = memo(function NavProjectItem({
       )}
 
       {!isMenuOpen && !isEditing && (
-        <div className="absolute top-1.5 right-1 flex aspect-square w-5 items-center justify-center rounded-md group-hover:hidden pointer-events-none">
+        <div className="pointer-events-none absolute top-1.5 right-1 flex aspect-square w-5 items-center justify-center rounded-md group-hover:hidden">
           <AppStatusIcon
-            className="size-4 shrink-0 mt-1"
+            className="mt-1 size-4 shrink-0"
             subdomain={project.subdomain}
           />
         </div>

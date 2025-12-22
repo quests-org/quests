@@ -20,8 +20,8 @@ export const Route = createFileRoute("/browser")({
 
 function RouteComponent() {
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="space-y-2 mb-6">
+    <div className="mx-auto max-w-7xl p-6">
+      <div className="mb-6 space-y-2">
         <h1 className="text-2xl font-bold">Browser</h1>
         <p className="text-sm text-muted-foreground">
           Browser functionality coming soon.

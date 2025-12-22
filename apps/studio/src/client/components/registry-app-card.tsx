@@ -39,20 +39,20 @@ export function RegistryAppCard({
           params={{ folderName }}
           to={`/discover/${category}/$folderName`}
         >
-          <div className="overflow-hidden rounded-md border border-border relative">
-            <div className="aspect-video w-full bg-muted flex items-center justify-center relative">
+          <div className="relative overflow-hidden rounded-md border border-border">
+            <div className="relative flex aspect-video w-full items-center justify-center bg-muted">
               {appDetails?.screenshotPath && screenshotDataUrl ? (
                 <>
                   <img
                     alt={`Screenshot of ${title ?? "unknown"} app`}
-                    className="w-full h-full object-cover"
+                    className="h-full w-full object-cover"
                     src={screenshotDataUrl}
                   />
-                  <div className="absolute inset-0 bg-linear-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
+                  <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/20 via-transparent to-transparent" />
                 </>
               ) : (
                 <div className="text-center">
-                  <Package className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
+                  <Package className="mx-auto mb-2 h-8 w-8 text-muted-foreground/50" />
                   <p className="text-xs text-muted-foreground/75">No preview</p>
                 </div>
               )}
@@ -68,17 +68,17 @@ export function RegistryAppCard({
               size="lg"
             />
           )}
-          <div className="space-y-1 flex-1 min-w-0">
+          <div className="min-w-0 flex-1 space-y-1">
             <InternalLink
               params={{ folderName }}
               to={`/discover/${category}/$folderName`}
             >
-              <h3 className="font-medium leading-none text-foreground mb-1">
+              <h3 className="mb-1 leading-none font-medium text-foreground">
                 {title}
               </h3>
             </InternalLink>
             {description && (
-              <p className="text-xs text-muted-foreground line-clamp-2">
+              <p className="line-clamp-2 text-xs text-muted-foreground">
                 {description}
               </p>
             )}

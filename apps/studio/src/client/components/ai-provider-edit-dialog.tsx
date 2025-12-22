@@ -156,7 +156,7 @@ export function AIProviderEditDialog({
               {config.maskedApiKey ? (
                 <div className="relative">
                   <Input
-                    className="font-mono pr-10"
+                    className="pr-10 font-mono"
                     disabled
                     id="api-key"
                     readOnly

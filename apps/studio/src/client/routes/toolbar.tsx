@@ -28,24 +28,24 @@ function ToolbarPage() {
   const isSidebarVisible = sidebarVisibility?.visible ?? true;
 
   return (
-    <div className="h-svh w-full flex items-end inset-shadow-toolbar inset-shadow-(color:--border) bg-secondary [-webkit-app-region:drag] overflow-hidden">
+    <div className="flex h-svh w-full items-end overflow-hidden bg-secondary inset-shadow-toolbar inset-shadow-(color:--border) [-webkit-app-region:drag]">
       <header
         className={cn(
           `
-            flex items-center
-            mr-2
-            w-full flex-1 h-svh
+            mr-2 flex
+            h-svh
+            w-full flex-1 items-center
           `,
           isWindows() && "pr-36",
           isLinux() && "pr-24",
         )}
       >
-        <div className="flex items-center min-w-0 flex-1 h-full">
+        <div className="flex h-full min-w-0 flex-1 items-center">
           {!isSidebarVisible && (
             <div className="flex items-center [-webkit-app-region:no-drag]">
               <div className={cn(isMacOS() ? "ml-20" : "ml-4")} />
               <Button
-                className="shrink-0 size-6 pr-1 text-muted-foreground relative"
+                className="relative size-6 shrink-0 pr-1 text-muted-foreground"
                 onClick={() => {
                   openSidebar({});
                 }}
@@ -55,7 +55,7 @@ function ToolbarPage() {
               >
                 <SidebarIcon />
                 {hasExceptions && (
-                  <span className="absolute top-0.5 right-0.5 size-2 bg-destructive rounded-full" />
+                  <span className="absolute top-0.5 right-0.5 size-2 rounded-full bg-destructive" />
                 )}
               </Button>
               <NavControls />

@@ -75,7 +75,7 @@ export function ProjectActionsCell({
             >
               <div className="relative flex items-center justify-center">
                 <Loader2 className="size-4 animate-spin" />
-                <Square className="size-1.5 fill-current absolute inset-0 m-auto" />
+                <Square className="absolute inset-0 m-auto size-1.5 fill-current" />
               </div>
             </Button>
           </TooltipTrigger>

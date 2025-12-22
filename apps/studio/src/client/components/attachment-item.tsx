@@ -59,9 +59,9 @@ export function AttachmentItem({
   const hasPreview = Boolean(previewUrl);
 
   const imageContent = hasPreview && isImage && previewUrl && (
-    <div className="relative group size-12 shrink-0">
+    <div className="group relative size-12 shrink-0">
       <button
-        className="size-12 rounded-lg overflow-hidden border border-border hover:ring-2 hover:ring-ring transition-all"
+        className="size-12 overflow-hidden rounded-lg border border-border transition-all hover:ring-2 hover:ring-ring"
         onClick={handlePreviewClick}
         type="button"
       >
@@ -69,7 +69,7 @@ export function AttachmentItem({
           alt={filename}
           className={cn(
             "size-12",
-            isSvg ? "object-contain bg-white p-1.5" : "object-cover",
+            isSvg ? "bg-white object-contain p-1.5" : "object-cover",
           )}
           fallbackClassName="size-12 rounded-lg"
           filename={filename}
@@ -78,7 +78,7 @@ export function AttachmentItem({
       </button>
       {onRemove && (
         <button
-          className="absolute -top-1.5 -right-1.5 size-5 rounded-full bg-background border border-border flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-muted"
+          className="absolute -top-1.5 -right-1.5 flex size-5 items-center justify-center rounded-full border border-border bg-background opacity-0 transition-opacity group-hover:opacity-100 hover:bg-muted"
           onClick={onRemove}
           type="button"
         >
@@ -89,9 +89,9 @@ export function AttachmentItem({
   );
 
   const fileContent = (
-    <div className="relative group flex items-center gap-1.5 h-12 px-2.5 rounded-lg bg-muted/50 border border-border max-w-[180px] hover:ring-2 hover:ring-ring transition-all">
+    <div className="group relative flex h-12 max-w-[180px] items-center gap-1.5 rounded-lg border border-border bg-muted/50 px-2.5 transition-all hover:ring-2 hover:ring-ring">
       <button
-        className="flex items-center gap-1.5 min-w-0"
+        className="flex min-w-0 items-center gap-1.5"
         onClick={handlePreviewClick}
         type="button"
       >
@@ -100,7 +100,7 @@ export function AttachmentItem({
           filename={filename}
         />
         <TruncatedText
-          className="text-xs leading-tight text-left"
+          className="text-left text-xs leading-tight"
           maxLength={30}
         >
           {filename}
@@ -108,7 +108,7 @@ export function AttachmentItem({
       </button>
       {onRemove && (
         <button
-          className="absolute -top-1.5 -right-1.5 size-5 rounded-full bg-background border border-border flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-muted"
+          className="absolute -top-1.5 -right-1.5 flex size-5 items-center justify-center rounded-full border border-border bg-background opacity-0 transition-opacity group-hover:opacity-100 hover:bg-muted"
           onClick={onRemove}
           type="button"
         >

@@ -60,7 +60,7 @@ function UsageMetrics() {
             <Label className="inline" htmlFor="usage-metrics">
               Help Quests improve by submitting anonymous{" "}
               <a
-                className="text-blue-600 dark:text-blue-400 hover:underline"
+                className="text-blue-600 hover:underline dark:text-blue-400"
                 href={`${APP_REPO_URL}/blob/main/docs/usage-metrics.md`}
                 rel="noopener noreferrer"
                 target="_blank"

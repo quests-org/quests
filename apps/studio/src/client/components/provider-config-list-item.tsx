@@ -39,22 +39,22 @@ export function ProviderConfigListItem({
   return (
     <div
       className={cn(
-        "rounded-lg border bg-accent/30 p-4 shadow-sm hover:bg-accent/50 transition-colors",
+        "rounded-lg border bg-accent/30 p-4 shadow-sm transition-colors hover:bg-accent/50",
         className,
       )}
     >
       <div className="flex items-start justify-between">
-        <div className="flex items-start gap-3 flex-1 min-w-0">
-          <div className="flex items-center justify-center size-8 shrink-0">
+        <div className="flex min-w-0 flex-1 items-start gap-3">
+          <div className="flex size-8 shrink-0 items-center justify-center">
             <AIProviderIcon type={config.type} />
           </div>
-          <div className="flex-1 min-w-0 space-y-1">
+          <div className="min-w-0 flex-1 space-y-1">
             <h3 className="font-medium text-foreground">{displayName}</h3>
             {showOriginalName && (
               <p className="text-sm text-muted-foreground">{originalName}</p>
             )}
             {config.type === "openai-compatible" && config.baseURL ? (
-              <p className="text-xs text-muted-foreground font-mono">
+              <p className="font-mono text-xs text-muted-foreground">
                 {config.baseURL}
               </p>
             ) : (

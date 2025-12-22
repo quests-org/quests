@@ -45,7 +45,7 @@ function CheckoutPage() {
       <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
         <Card className="w-full max-w-md text-center">
           <CardHeader>
-            <div className="flex justify-center mb-4">
+            <div className="mb-4 flex justify-center">
               <CheckCircle2 className="h-12 w-12 text-green-500" />
             </div>
             <CardTitle className="text-2xl">Payment Successful!</CardTitle>
@@ -75,7 +75,7 @@ function CheckoutPage() {
       <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
         <Card className="w-full max-w-md text-center">
           <CardHeader>
-            <div className="flex justify-center mb-4">
+            <div className="mb-4 flex justify-center">
               <XCircle className="h-12 w-12 text-red-500" />
             </div>
             <CardTitle className="text-2xl">Payment Canceled</CardTitle>
@@ -87,7 +87,7 @@ function CheckoutPage() {
             <p className="text-sm text-muted-foreground">
               If you encountered an issue, please try again or{" "}
               <a
-                className="underline cursor-pointer"
+                className="cursor-pointer underline"
                 href={SUPPORT_URL}
                 rel="noopener noreferrer"
                 target="_blank"

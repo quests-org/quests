@@ -61,7 +61,7 @@ export function VersionCommitMessage({
 
   return (
     <div
-      className={`text-sm text-foreground font-medium text-wrap ${showFullMessage ? "" : "line-clamp-2"}`}
+      className={`text-sm font-medium text-wrap text-foreground ${showFullMessage ? "" : "line-clamp-2"}`}
     >
       {gitRefInfo.commitMessage}
     </div>
@@ -94,17 +94,17 @@ export function VersionFileChanges({
   const hasMoreFiles = gitRefInfo.files.length > maxFiles;
 
   return (
-    <div className="w-full flex flex-col gap-1">
+    <div className="flex w-full flex-col gap-1">
       {filesToShow.map((file) => (
         <div
-          className="flex items-center gap-2 text-xs text-muted-foreground w-full"
+          className="flex w-full items-center gap-2 text-xs text-muted-foreground"
           key={file.filename}
         >
-          <span className="truncate flex-1 font-mono">
+          <span className="flex-1 truncate font-mono">
             {cleanFilePath(file.filename)}
           </span>
 
-          <div className="flex items-center gap-1 shrink-0">
+          <div className="flex shrink-0 items-center gap-1">
             {file.additions > 0 && (
               <span className="text-muted-foreground">+{file.additions}</span>
             )}
@@ -117,7 +117,7 @@ export function VersionFileChanges({
 
       {hasMoreFiles && (
         <button
-          className="text-xs text-muted-foreground hover:text-foreground transition-colors text-left mt-1 cursor-pointer"
+          className="mt-1 cursor-pointer text-left text-xs text-muted-foreground transition-colors hover:text-foreground"
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -145,14 +145,14 @@ export function VersionHeader({
   return (
     <div className="flex items-center gap-1.5">
       <GitCommitVertical
-        className="size-4.5 shrink-0 -ms-1 -me-1"
+        className="-ms-1 -me-1 size-4.5 shrink-0"
         style={{ color: hashColor }}
       />
 
       <div className="flex items-center gap-2">
-        <span className="text-muted-foreground text-sm">Version</span>
+        <span className="text-sm text-muted-foreground">Version</span>
         {isCurrentVersion && (
-          <Badge className="text-xs py-0 px-2" variant="outline">
+          <Badge className="px-2 py-0 text-xs" variant="outline">
             Latest
           </Badge>
         )}
@@ -186,11 +186,11 @@ export function VersionRef({
   return (
     <span className={`inline-flex items-center gap-2 ${className}`}>
       <GitCommitVertical
-        className={`${iconSizeClass} shrink-0 -me-1`}
+        className={`${iconSizeClass} -me-1 shrink-0`}
         style={{ color: hashColor }}
       />
-      <span className="text-xs text-muted-foreground shrink-0">Version</span>
-      <span className="text-xs min-w-0 line-clamp-1">
+      <span className="shrink-0 text-xs text-muted-foreground">Version</span>
+      <span className="line-clamp-1 min-w-0 text-xs">
         {gitRefInfo?.commitMessage || "No commit message"}
       </span>
     </span>
@@ -202,9 +202,9 @@ export function VersionRestoredFooter({
   restoredFromRef,
 }: VersionRestoredFooterProps) {
   return (
-    <div className="pt-2 border-t border-border">
+    <div className="border-t border-border pt-2">
       <div className="flex items-center gap-1">
-        <span className="text-xs text-muted-foreground shrink-0">
+        <span className="shrink-0 text-xs text-muted-foreground">
           Restored from{" "}
         </span>
         <VersionRef

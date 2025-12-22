@@ -132,7 +132,7 @@ export function DiscoverHorizontalSection({
             <p className="text-sm text-muted-foreground">{description}</p>
           </div>
         </div>
-        <div className="text-center py-8">
+        <div className="py-8 text-center">
           <p className="text-sm text-muted-foreground">
             No {category} available yet
           </p>
@@ -149,7 +149,7 @@ export function DiscoverHorizontalSection({
           <p className="text-sm text-muted-foreground">{description}</p>
         </div>
         <InternalLink
-          className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          className="flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
           to={viewAllHref}
         >
           View all
@@ -157,11 +157,11 @@ export function DiscoverHorizontalSection({
         </InternalLink>
       </div>
 
-      <div className="relative group">
+      <div className="group relative">
         {canScrollLeft && (
           <button
             aria-label="Scroll left"
-            className="absolute left-0 ml-[-1rem] top-[36%] -translate-y-1/2 z-10 bg-background/90 backdrop-blur-sm rounded-full p-2 shadow-lg border border-border hover:bg-background transition-all duration-200"
+            className="absolute top-[36%] left-0 z-10 ml-[-1rem] -translate-y-1/2 rounded-full border border-border bg-background/90 p-2 shadow-lg backdrop-blur-sm transition-all duration-200 hover:bg-background"
             onClick={() => {
               scroll("left");
             }}
@@ -171,7 +171,7 @@ export function DiscoverHorizontalSection({
         )}
 
         <div
-          className="overflow-x-auto scrollbar-hide scroll-smooth"
+          className="scrollbar-hide overflow-x-auto scroll-smooth"
           ref={containerRef}
           style={{
             msOverflowStyle: "none",
@@ -179,12 +179,12 @@ export function DiscoverHorizontalSection({
           }}
         >
           <div
-            className="flex gap-4 pb-4 pr-6 sm:pr-8 lg:pr-12"
+            className="flex gap-4 pr-6 pb-4 sm:pr-8 lg:pr-12"
             style={{ width: "max-content" }}
           >
             {items.map((item) => (
               <div
-                className="shrink-0 w-64 sm:w-72 lg:w-80"
+                className="w-64 shrink-0 sm:w-72 lg:w-80"
                 data-card
                 key={item.folderName}
               >
@@ -201,7 +201,7 @@ export function DiscoverHorizontalSection({
         {canScrollRight && (
           <button
             aria-label="Scroll right"
-            className="absolute right-0 mr-[-1rem] top-[36%] -translate-y-1/2 z-10 bg-background/90 backdrop-blur-sm rounded-full p-2 shadow-lg border border-border hover:bg-background transition-all duration-200"
+            className="absolute top-[36%] right-0 z-10 mr-[-1rem] -translate-y-1/2 rounded-full border border-border bg-background/90 p-2 shadow-lg backdrop-blur-sm transition-all duration-200 hover:bg-background"
             onClick={() => {
               scroll("right");
             }}

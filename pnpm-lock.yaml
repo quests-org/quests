@@ -637,8 +637,8 @@ importers:
         specifier: ^4.4.4
         version: 4.4.4(eslint-plugin-import-x@4.16.1(@typescript-eslint/utils@8.40.0(eslint@9.31.0(jiti@2.6.1))(typescript@5.9.2))(eslint-import-resolver-node@0.3.9)(eslint@9.31.0(jiti@2.6.1)))(eslint-plugin-import@2.31.0)(eslint@9.31.0(jiti@2.6.1))
       eslint-plugin-better-tailwindcss:
-        specifier: ^3.7.11
-        version: 3.7.11(eslint@9.31.0(jiti@2.6.1))(tailwindcss@4.1.18)
+        specifier: ^3.8.0
+        version: 3.8.0(eslint@9.31.0(jiti@2.6.1))(tailwindcss@4.1.18)
       eslint-plugin-import-x:
         specifier: ^4.16.1
         version: 4.16.1(@typescript-eslint/utils@8.40.0(eslint@9.31.0(jiti@2.6.1))(typescript@5.9.2))(eslint-import-resolver-node@0.3.9)(eslint@9.31.0(jiti@2.6.1))
@@ -1742,8 +1742,8 @@ packages:
     resolution: {integrity: sha512-78Md3/Rrxh83gCxoUc0EiciuOHsIITzLy53m3d9UyiW8y9Dj2D29FeETqyKA+BRK76tnTp6RXWb3pCay8Oyomg==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@eslint/css-tree@3.6.7':
-    resolution: {integrity: sha512-5nUrHEkMeZ8eTXHj9tlkH+k5gcRdjXiAtQOr+po0W2LRxHZeoVFRX2iqeA+C3Khjs2dRuo84Ntmrakr9xEzCEA==}
+  '@eslint/css-tree@3.6.8':
+    resolution: {integrity: sha512-s0f40zY7dlMp8i0Jf0u6l/aSswS0WRAgkhgETgiCJRcxIWb4S/Sp9uScKHWbkM3BnoFLbJbmOYk5AZUDFVxaLA==}
     engines: {node: ^10 || ^12.20.0 || ^14.13.0 || >=15.0.0}
 
   '@eslint/eslintrc@3.3.1':
@@ -5013,8 +5013,8 @@ packages:
       eslint-import-resolver-webpack:
         optional: true
 
-  eslint-plugin-better-tailwindcss@3.7.11:
-    resolution: {integrity: sha512-A2x5UrBoYLfZLMGvXBq/7epVMKNMxCkDRgRO1w/N1yQbFYM0L1yk6qDZV1l6Otrl0hNuBHSKFG3Uw5TDoSGStA==}
+  eslint-plugin-better-tailwindcss@3.8.0:
+    resolution: {integrity: sha512-bRJVOb47d3ONK4Qb6Zt58ra37E8rMCexWy7RuNgLQZS/Ch92oLRFBupa/s+FB1O9XRdph9ZMCXBiEFKc4gAGTQ==}
     engines: {node: ^20.11.0 || >=21.2.0}
     peerDependencies:
       eslint: ^7.0.0 || ^8.0.0 || ^9.0.0
@@ -9572,7 +9572,7 @@ snapshots:
     dependencies:
       '@types/json-schema': 7.0.15
 
-  '@eslint/css-tree@3.6.7':
+  '@eslint/css-tree@3.6.8':
     dependencies:
       mdn-data: 2.23.0
       source-map-js: 1.2.1
@@ -13247,9 +13247,9 @@ snapshots:
       - supports-color
     optional: true
 
-  eslint-plugin-better-tailwindcss@3.7.11(eslint@9.31.0(jiti@2.6.1))(tailwindcss@4.1.18):
+  eslint-plugin-better-tailwindcss@3.8.0(eslint@9.31.0(jiti@2.6.1))(tailwindcss@4.1.18):
     dependencies:
-      '@eslint/css-tree': 3.6.7
+      '@eslint/css-tree': 3.6.8
       enhanced-resolve: 5.18.3
       eslint: 9.31.0(jiti@2.6.1)
       jiti: 2.6.1

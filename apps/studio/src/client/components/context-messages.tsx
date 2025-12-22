@@ -52,14 +52,14 @@ export const ContextMessages = memo(function ContextMessages({
 
   return (
     <Collapsible
-      className="w-full mb-2"
+      className="mb-2 w-full"
       onOpenChange={setIsExpanded}
       open={isExpanded}
     >
       <div className="flex justify-center">
         <CollapsibleTrigger asChild>
           <Button
-            className="h-5 px-2 text-xs text-muted-foreground/50 hover:text-muted-foreground hover:bg-accent/20 rounded-sm"
+            className="h-5 rounded-sm px-2 text-xs text-muted-foreground/50 hover:bg-accent/20 hover:text-muted-foreground"
             variant="ghost"
           >
             <div className="flex items-center gap-1">
@@ -74,9 +74,9 @@ export const ContextMessages = memo(function ContextMessages({
 
       <CollapsibleContent>
         <div className="group mt-2">
-          <div className="border-l-4 border-muted-foreground/30 pl-4 bg-muted/30 py-2 rounded-r-md">
-            <div className="mb-3 pb-2 pr-4 border-b border-muted-foreground/20">
-              <p className="text-xs italic text-muted-foreground">
+          <div className="rounded-r-md border-l-4 border-muted-foreground/30 bg-muted/30 py-2 pl-4">
+            <div className="mb-3 border-b border-muted-foreground/20 pr-4 pb-2">
+              <p className="text-xs text-muted-foreground italic">
                 Instructions given to the agent explaining how to work in
                 Quests.
               </p>
@@ -88,7 +88,7 @@ export const ContextMessages = memo(function ContextMessages({
 
           <div className="flex justify-end pt-2">
             <CopyButton
-              className="p-1 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded transition-colors disabled:opacity-50 opacity-0 group-hover:opacity-100"
+              className="rounded p-1 text-muted-foreground opacity-0 transition-colors group-hover:opacity-100 hover:bg-muted/50 hover:text-foreground disabled:opacity-50"
               iconSize={12}
               onCopy={handleCopy}
             />

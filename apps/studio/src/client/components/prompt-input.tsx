@@ -416,7 +416,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
     return (
       <>
         <TextareaContainer
-          className={cn("overflow-hidden relative", className)}
+          className={cn("relative overflow-hidden", className)}
           onDragEnter={handleDragEnter}
           onDragLeave={handleDragLeave}
           onDragOver={(e) => {
@@ -437,7 +437,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
           )}
 
           {uploadedFiles.length > 0 && (
-            <div className="flex flex-wrap items-start gap-2 mb-2 max-h-32 overflow-y-auto p-2 -m-2">
+            <div className="-m-2 mb-2 flex max-h-32 flex-wrap items-start gap-2 overflow-y-auto p-2">
               {uploadedFiles.map((file, index) => (
                 <AttachmentItem
                   filename={file.name}
@@ -473,8 +473,8 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
             type="file"
           />
 
-          <div className="flex items-center gap-2 justify-end pt-2">
-            <div className="flex items-center gap-2 flex-1 min-w-0">
+          <div className="flex items-center justify-end gap-2 pt-2">
+            <div className="flex min-w-0 flex-1 items-center gap-2">
               {showAgentPicker && (
                 <AgentPicker
                   disabled={disabled}
@@ -482,7 +482,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
                   value={agentName}
                 />
               )}
-              <div className="flex-1 min-w-0">
+              <div className="min-w-0 flex-1">
                 <ModelPicker
                   disabled={disabled}
                   errors={modelsErrors}
@@ -535,8 +535,8 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
             >
               {isStoppable ? (
                 <div className="relative flex items-center justify-center">
-                  <Loader2 className="size-6 stroke-2 animate-spin" />
-                  <Square className="size-2 fill-current absolute inset-0 m-auto" />
+                  <Loader2 className="size-6 animate-spin stroke-2" />
+                  <Square className="absolute inset-0 m-auto size-2 fill-current" />
                 </div>
               ) : isLoading ? (
                 <Loader2 className="size-4 animate-spin" />

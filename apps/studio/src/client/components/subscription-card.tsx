@@ -9,16 +9,16 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { cva } from "class-variance-authority";
 import { toast } from "sonner";
 
-const planBadgeVariants = cva("text-xs px-2 py-0.5", {
+const planBadgeVariants = cva("px-2 py-0.5 text-xs", {
   defaultVariants: {
     plan: "free",
   },
   variants: {
     plan: {
       basic:
-        "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/30",
+        "bg-emerald-100 text-emerald-800 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-900/30",
       free: "",
-      pro: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30",
+      pro: "bg-blue-100 text-blue-800 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/30",
     },
   },
 });
@@ -57,11 +57,11 @@ export function SubscriptionCard() {
     plan === "Basic" ? "basic" : plan === "Pro" ? "pro" : "free";
 
   return (
-    <Card className="p-4 bg-accent/30 shadow-sm">
+    <Card className="bg-accent/30 p-4 shadow-sm">
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <div className="flex items-center gap-2 mb-1">
+            <div className="mb-1 flex items-center gap-2">
               <h4 className="font-medium">Subscription & Usage</h4>
               <Badge
                 className={cn(planBadgeVariants({ plan: planVariant }))}
@@ -76,7 +76,7 @@ export function SubscriptionCard() {
           </div>
           {!plan && (
             <Button
-              className="shrink-0 font-semibold gap-1.5"
+              className="shrink-0 gap-1.5 font-semibold"
               onClick={() => {
                 void addTab({ to: "/subscribe" });
                 window.close();
@@ -123,7 +123,7 @@ export function SubscriptionCard() {
               )}
               {plan === "Basic" && (
                 <Button
-                  className="shrink-0 font-semibold gap-1.5"
+                  className="shrink-0 gap-1.5 font-semibold"
                   onClick={() => {
                     void addTab({ to: "/subscribe" });
                     window.close();

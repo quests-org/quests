@@ -22,14 +22,14 @@ export function ContactErrorAlert({
     <Alert className={className} variant="destructive">
       <AlertCircle className="size-4" />
       <div className="col-start-2 flex items-center justify-between gap-4">
-        <div className="flex-1 min-w-0">
+        <div className="min-w-0 flex-1">
           <AlertTitle>{title}</AlertTitle>
           <AlertDescription className="flex flex-col gap-2">
             <div>{children}</div>
             <div className="text-xs text-muted-foreground">
               Need help?{" "}
               <EmailLink
-                className="underline hover:no-underline inline"
+                className="inline underline hover:no-underline"
                 email={SUPPORT_EMAIL}
                 subject={subject}
               >

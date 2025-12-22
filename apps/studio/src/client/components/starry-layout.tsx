@@ -8,12 +8,12 @@ export function StarryLayout({
   footer?: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-svh flex-col bg-background overflow-y-auto">
-      <div className="relative z-10 w-full flex flex-1 justify-center items-center py-8">
+    <div className="flex min-h-svh flex-col overflow-y-auto bg-background">
+      <div className="relative z-10 flex w-full flex-1 items-center justify-center py-8">
         {children}
       </div>
       {footer && (
-        <div className="relative z-10 pb-6 text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 hover:[&_a]:text-primary">
+        <div className="relative z-10 pb-6 text-center text-xs text-balance text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 hover:[&_a]:text-primary">
           {footer}
         </div>
       )}

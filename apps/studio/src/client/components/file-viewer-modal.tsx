@@ -178,8 +178,8 @@ export function FileViewerModal() {
       open={state.isOpen}
     >
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-        <DialogPrimitive.Content className="fixed inset-0 z-50 flex items-center justify-center data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0">
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/80 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0" />
+        <DialogPrimitive.Content className="fixed inset-0 z-50 flex items-center justify-center data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0">
           <DialogPrimitive.Title className="sr-only">
             {currentFile.filename}
           </DialogPrimitive.Title>
@@ -187,7 +187,7 @@ export function FileViewerModal() {
             File viewer
           </DialogPrimitive.Description>
           <div
-            className="relative w-full h-full flex flex-col"
+            className="relative flex h-full w-full flex-col"
             onClick={() => {
               closeViewer();
             }}
@@ -204,11 +204,11 @@ export function FileViewerModal() {
               <X className="size-5" />
             </Button>
 
-            <div className="flex-1 min-h-0 px-16 py-16 flex items-center justify-center relative">
+            <div className="relative flex min-h-0 flex-1 items-center justify-center px-16 py-16">
               {hasMultipleFiles && (
                 <>
                   <Button
-                    className="absolute left-4 top-1/2 -translate-y-1/2 z-10 text-white hover:bg-white/10 bg-black/50"
+                    className="absolute top-1/2 left-4 z-10 -translate-y-1/2 bg-black/50 text-white hover:bg-white/10"
                     onClick={(e) => {
                       e.stopPropagation();
                       navigate("prev");
@@ -219,7 +219,7 @@ export function FileViewerModal() {
                     <ChevronLeft className="size-6" />
                   </Button>
                   <Button
-                    className="absolute right-4 top-1/2 -translate-y-1/2 z-10 text-white hover:bg-white/10 bg-black/50"
+                    className="absolute top-1/2 right-4 z-10 -translate-y-1/2 bg-black/50 text-white hover:bg-white/10"
                     onClick={(e) => {
                       e.stopPropagation();
                       navigate("next");
@@ -235,8 +235,8 @@ export function FileViewerModal() {
                 <ImageWithFallback
                   alt={currentFile.filename}
                   className={cn(
-                    "max-w-full max-h-full w-auto h-auto object-contain",
-                    isSvg && "bg-white/90 rounded p-4",
+                    "h-auto max-h-full w-auto max-w-full object-contain",
+                    isSvg && "rounded bg-white/90 p-4",
                   )}
                   fallbackClassName="size-32 rounded-lg"
                   filename={currentFile.filename}
@@ -249,7 +249,7 @@ export function FileViewerModal() {
                 />
               ) : isPdf ? (
                 <iframe
-                  className="max-w-full max-h-full w-full h-full rounded border border-white/10"
+                  className="h-full max-h-full w-full max-w-full rounded border border-white/10"
                   key={currentFile.url}
                   onClick={(e) => {
                     e.stopPropagation();
@@ -260,7 +260,7 @@ export function FileViewerModal() {
                 />
               ) : isVideo ? (
                 <video
-                  className="max-w-full max-h-full rounded border border-white/10"
+                  className="max-h-full max-w-full rounded border border-white/10"
                   controls
                   key={currentFile.url}
                   onClick={(e) => {
@@ -282,12 +282,12 @@ export function FileViewerModal() {
                 />
               ) : (
                 <div
-                  className="flex flex-col items-center justify-center gap-4 p-8 text-center w-full max-w-md"
+                  className="flex w-full max-w-md flex-col items-center justify-center gap-4 p-8 text-center"
                   onClick={(e) => {
                     e.stopPropagation();
                   }}
                 >
-                  <div className="size-32 rounded-lg bg-background flex items-center justify-center">
+                  <div className="flex size-32 items-center justify-center rounded-lg bg-background">
                     <FileIcon
                       className="size-16"
                       filename={currentFile.filename}
@@ -297,7 +297,7 @@ export function FileViewerModal() {
                     <p className="text-sm font-medium text-white">
                       Preview not available
                     </p>
-                    <p className="text-xs text-white/60 mt-1">
+                    <p className="mt-1 text-xs text-white/60">
                       Use the download button below to save this file
                     </p>
                   </div>
@@ -306,7 +306,7 @@ export function FileViewerModal() {
             </div>
 
             <div
-              className="shrink-0 flex flex-col items-center gap-4 px-4 pb-8"
+              className="flex shrink-0 flex-col items-center gap-4 px-4 pb-8"
               onClick={(e) => {
                 e.stopPropagation();
               }}
@@ -318,7 +318,7 @@ export function FileViewerModal() {
                       className={cn(
                         "size-1.5 rounded-full transition-all",
                         index === state.currentIndex
-                          ? "bg-white scale-125"
+                          ? "scale-125 bg-white"
                           : "bg-white/30 hover:bg-white/50",
                       )}
                       key={index}
@@ -331,15 +331,15 @@ export function FileViewerModal() {
                   ))}
                 </div>
               )}
-              <div className="flex flex-col items-center gap-3 text-white max-w-full w-full">
+              <div className="flex w-full max-w-full flex-col items-center gap-3 text-white">
                 <TruncatedText
-                  className="text-sm font-medium text-center px-4"
+                  className="px-4 text-center text-sm font-medium"
                   maxLength={50}
                 >
                   {currentFile.filename}
                 </TruncatedText>
                 {currentFileErrors?.download && (
-                  <Alert className="max-w-2xl w-full" variant="destructive">
+                  <Alert className="w-full max-w-2xl" variant="destructive">
                     <AlertCircle className="size-4" />
                     <AlertTitle>Failed to download file</AlertTitle>
                     <AlertDescription className="whitespace-pre-line">
@@ -349,7 +349,7 @@ export function FileViewerModal() {
                 )}
                 {isDownloadable && (
                   <Button
-                    className="bg-white/10 hover:bg-white/20 text-white"
+                    className="bg-white/10 text-white hover:bg-white/20"
                     onClick={handleDownload}
                     size="sm"
                     variant="ghost"

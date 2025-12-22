@@ -322,7 +322,7 @@ export function SessionStream({
 
           messageElements.unshift(
             <div
-              className="flex flex-wrap items-start gap-2 justify-end"
+              className="flex flex-wrap items-start justify-end gap-2"
               key={`attachments-${message.id}`}
             >
               {files.map((file, index) => (
@@ -439,7 +439,7 @@ export function SessionStream({
         <ChatZeroState project={app} selectedSessionId={sessionId} />
       )}
 
-      <div className="w-full flex flex-col gap-2">
+      <div className="flex w-full flex-col gap-2">
         {contextMessages.length > 0 && (
           <ContextMessages messages={contextMessages} />
         )}
@@ -470,8 +470,8 @@ export function SessionStream({
         )}
 
         {!isAnyAgentAlive && messages.length > 0 && (
-          <div className="mt-4 pt-4 border-t">
-            <div className="text-[10px] flex items-center justify-between text-xs text-muted-foreground/60">
+          <div className="mt-4 border-t pt-4">
+            <div className="flex items-center justify-between text-xs text-[10px] text-muted-foreground/60">
               <span>Total chat usage</span>
               <span>
                 {messages.length}{" "}

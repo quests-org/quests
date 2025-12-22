@@ -84,12 +84,12 @@ export function createColumns({
         const project = row.original;
         const isFavorite = favoriteProjectSubdomains.has(project.subdomain);
         return (
-          <div className="flex items-center gap-x-2 min-w-0">
+          <div className="flex min-w-0 items-center gap-x-2">
             {isFavorite && (
-              <Star className="h-4 w-4 fill-amber-500 text-amber-500 shrink-0" />
+              <Star className="h-4 w-4 shrink-0 fill-amber-500 text-amber-500" />
             )}
             <InternalLink
-              className="flex items-center gap-x-2 min-w-0 flex-1"
+              className="flex min-w-0 flex-1 items-center gap-x-2"
               openInCurrentTab
               params={{ subdomain: project.subdomain }}
               to="/projects/$subdomain"
@@ -100,9 +100,9 @@ export function createColumns({
                 mode={project.mode}
                 size="sm"
               />
-              <span className="font-medium truncate">{project.title}</span>
+              <span className="truncate font-medium">{project.title}</span>
               <AppStatusIcon
-                className="h-4 w-4 shrink-0 ml-auto"
+                className="ml-auto h-4 w-4 shrink-0"
                 subdomain={project.subdomain}
               />
             </InternalLink>

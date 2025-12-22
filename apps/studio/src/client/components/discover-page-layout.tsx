@@ -23,9 +23,9 @@ export function DiscoverPageLayout({
   title,
 }: DiscoverPageLayoutProps) {
   return (
-    <div className="flex-1 mx-auto max-w-4xl">
+    <div className="mx-auto max-w-4xl flex-1">
       {breadcrumbs && (
-        <div className="pt-8 pb-4 mb-4 px-8 sticky top-0 z-10 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
+        <div className="sticky top-0 z-10 mb-4 bg-background/95 px-8 pt-8 pb-4 backdrop-blur supports-backdrop-filter:bg-background/60">
           <Breadcrumb items={breadcrumbs} />
         </div>
       )}
@@ -37,7 +37,7 @@ export function DiscoverPageLayout({
         </div>
       </div>
 
-      <div className="px-6 lg:px-8 mb-20">
+      <div className="mb-20 px-6 lg:px-8">
         <DiscoverItemsGrid
           category={category}
           items={items}

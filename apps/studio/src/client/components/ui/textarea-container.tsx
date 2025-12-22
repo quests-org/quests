@@ -18,7 +18,7 @@ function TextareaContainer({
   return (
     <div
       className={cn(
-        "border-input focus-within:border-ring focus-within:ring-ring/50 relative flex min-h-16 w-full rounded-md border bg-transparent shadow-xs transition-[color,box-shadow] focus-within:ring-[3px] flex-col dark:bg-input/30 px-2 py-2",
+        "relative flex min-h-16 w-full flex-col rounded-md border border-input bg-transparent px-2 py-2 shadow-xs transition-[color,box-shadow] focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50 dark:bg-input/30",
         className,
       )}
       data-slot="textarea-container"
@@ -36,7 +36,7 @@ function TextareaInner({
   return (
     <textarea
       className={cn(
-        "placeholder:text-muted-foreground aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive flex-1 field-sizing-content bg-transparent text-sm outline-none resize-none disabled:cursor-not-allowed disabled:opacity-50 border-0",
+        "field-sizing-content flex-1 resize-none border-0 bg-transparent text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40",
         className,
       )}
       data-slot="textarea"

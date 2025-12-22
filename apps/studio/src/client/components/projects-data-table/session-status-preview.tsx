@@ -143,11 +143,11 @@ function StatusBadge({
   text: string;
 }) {
   return (
-    <div className="inline-flex items-center gap-1.5 min-w-0 max-w-full px-2 py-0.5 rounded-full bg-accent/30">
+    <div className="inline-flex max-w-full min-w-0 items-center gap-1.5 rounded-full bg-accent/30 px-2 py-0.5">
       {Icon && <Icon className="size-3 shrink-0 text-muted-foreground/60" />}
       <span
         className={cn(
-          "text-xs text-muted-foreground truncate wrap-break-word min-w-0",
+          "min-w-0 truncate text-xs wrap-break-word text-muted-foreground",
           animate && "shiny-text",
         )}
       >

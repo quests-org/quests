@@ -115,7 +115,7 @@ function About() {
               className="h-1 w-full"
               value={updateState.progress.percent}
             />
-            <div className="text-xs text-muted-foreground text-right">
+            <div className="text-right text-xs text-muted-foreground">
               {updateState.progress.percent.toFixed(0)}%
             </div>
           </div>
@@ -214,7 +214,7 @@ function About() {
       <div className="space-y-3">
         <div className="rounded-lg border bg-accent/30 p-4 shadow-sm">
           <div className="flex items-start justify-between gap-4">
-            <div className="space-y-1 min-w-0 flex-1">
+            <div className="min-w-0 flex-1 space-y-1">
               <div className="text-sm font-medium">
                 Version{" "}
                 {isLoadingVersion
@@ -222,7 +222,7 @@ function About() {
                   : appVersion?.version || "Unknown"}
               </div>
               <Button
-                className="p-0 h-auto text-blue-600 dark:text-blue-400"
+                className="h-auto p-0 text-blue-600 dark:text-blue-400"
                 onClick={() => {
                   void addTab({ to: "/release-notes" });
                   window.close();
@@ -246,7 +246,7 @@ function About() {
             <div>
               <Button
                 asChild
-                className="px-0! h-auto text-blue-600 dark:text-blue-400"
+                className="h-auto px-0! text-blue-600 dark:text-blue-400"
                 variant="link"
               >
                 <ExternalLink href={APP_REPO_URL}>
@@ -267,7 +267,7 @@ function About() {
             <div>
               <Button
                 asChild
-                className="px-0! h-auto text-blue-600 dark:text-blue-400"
+                className="h-auto px-0! text-blue-600 dark:text-blue-400"
                 variant="link"
               >
                 <ExternalLink href={DISCORD_URL}>

@@ -34,7 +34,7 @@ function SettingsFeaturesPage() {
     <div className="space-y-6">
       <div>
         <h3 className="text-base font-semibold">Feature Flags</h3>
-        <p className="text-sm text-muted-foreground mt-1">
+        <p className="mt-1 text-sm text-muted-foreground">
           Enable or disable experimental features. Changes take effect
           immediately.
         </p>
@@ -51,7 +51,7 @@ function SettingsFeaturesPage() {
             className="flex items-start justify-between gap-4 rounded-lg border bg-accent/30 p-4 shadow-sm"
             key={feature}
           >
-            <div className="space-y-1 flex-1">
+            <div className="flex-1 space-y-1">
               <Label className="text-sm font-medium" htmlFor={feature}>
                 {title}
               </Label>

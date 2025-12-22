@@ -17,21 +17,21 @@ export function UnknownPart({ part }: UnknownPartProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const mainContent = (
-    <div className="flex items-center gap-2 min-w-0 w-full text-xs leading-tight">
+    <div className="flex w-full min-w-0 items-center gap-2 text-xs leading-tight">
       <span className="shrink-0 text-accent-foreground/80">
         <HelpCircle className="size-3" />
       </span>
 
-      <span className="text-foreground/60 font-medium shrink-0">
+      <span className="shrink-0 font-medium text-foreground/60">
         Unknown part
       </span>
 
-      <span className="text-muted-foreground/60 truncate min-w-0">
+      <span className="min-w-0 truncate text-muted-foreground/60">
         {part.type}
       </span>
 
       {isExpanded && (
-        <span className="shrink-0 text-accent-foreground/60 ml-auto">
+        <span className="ml-auto shrink-0 text-accent-foreground/60">
           <ChevronUp className="size-3" />
         </span>
       )}
@@ -50,9 +50,9 @@ export function UnknownPart({ part }: UnknownPartProps) {
 
       <CollapsibleContent>
         <div className="mt-2 text-xs">
-          <div className="p-2 bg-muted/30 rounded-md border max-h-64 overflow-y-auto">
+          <div className="max-h-64 overflow-y-auto rounded-md border bg-muted/30 p-2">
             <div className="mb-1 font-semibold">Unknown Part Data:</div>
-            <pre className="whitespace-pre-wrap wrap-break-word font-mono text-xs">
+            <pre className="font-mono text-xs wrap-break-word whitespace-pre-wrap">
               {JSON.stringify(part, null, 2)}
             </pre>
           </div>

@@ -95,7 +95,7 @@ export function AISetupView({ mode }: { mode: "setup" | "sign-in" }) {
               <h1 className="text-3xl font-bold">
                 {isReady ? readyTitle : title}
               </h1>
-              <p className="text-sm text-muted-foreground text-center max-w-md text-balance">
+              <p className="max-w-md text-center text-sm text-balance text-muted-foreground">
                 {isReady ? readySubtitle : subtitle}
               </p>
               {!isReady && (
@@ -109,7 +109,7 @@ export function AISetupView({ mode }: { mode: "setup" | "sign-in" }) {
                       return (
                         <Tooltip key={providerType}>
                           <TooltipTrigger asChild>
-                            <div className="text-foreground/60 hover:text-foreground transition-colors">
+                            <div className="text-foreground/60 transition-colors hover:text-foreground">
                               <AIProviderIcon
                                 className="size-4"
                                 type={providerType}
@@ -150,9 +150,9 @@ export function AISetupView({ mode }: { mode: "setup" | "sign-in" }) {
                   </ContactErrorAlert>
                 )}
 
-                <div className="flex flex-col items-center gap-3 w-full">
+                <div className="flex w-full flex-col items-center gap-3">
                   <form
-                    className="flex items-center justify-center w-full"
+                    className="flex w-full items-center justify-center"
                     onSubmit={handleContinueClick}
                   >
                     <Button

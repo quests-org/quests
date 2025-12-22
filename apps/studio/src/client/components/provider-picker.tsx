@@ -103,7 +103,7 @@ export function ProviderPicker({
                       className="mr-2 size-5 shrink-0"
                       type={provider.type}
                     />
-                    <div className="flex flex-col gap-y-0.5 flex-1 min-w-0">
+                    <div className="flex min-w-0 flex-1 flex-col gap-y-0.5">
                       <div className="flex items-center gap-2">
                         <span className="font-medium">{provider.name}</span>
                         {provider.tags.length > 0 && (

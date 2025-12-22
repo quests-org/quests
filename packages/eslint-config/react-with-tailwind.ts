@@ -18,8 +18,6 @@ const config: ReturnType<typeof tseslint.config> = tseslint.config(
       ...eslintPluginBetterTailwindcss.configs["recommended-error"]?.rules,
       // Causes formatting infinite loop due to Prettier conflicting
       "better-tailwindcss/enforce-consistent-line-wrapping": "off",
-      // Will enable after Aaron's big PR is merged after 2025-11-20
-      "better-tailwindcss/enforce-consistent-class-order": "off",
       "better-tailwindcss/no-unregistered-classes": [
         "warn",
         {

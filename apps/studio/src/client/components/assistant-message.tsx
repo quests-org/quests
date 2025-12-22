@@ -14,7 +14,7 @@ export const AssistantMessage = memo(function AssistantMessage({
 
   return (
     <div className="group flex flex-col items-start">
-      <div className="text-sm leading-relaxed prose prose-sm max-w-none dark:prose-invert wrap-break-word w-full">
+      <div className="prose prose-sm w-full max-w-none text-sm leading-relaxed wrap-break-word dark:prose-invert">
         <Markdown markdown={messageText} />
       </div>
     </div>

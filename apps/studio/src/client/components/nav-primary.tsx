@@ -31,7 +31,7 @@ export function NavPrimary({
             <SidebarMenuItem className="group" key={item.title}>
               <SidebarMenuButton
                 asChild
-                className="group-hover:bg-black/10 dark:group-hover:bg-white/10 data-[active=true]:bg-black/15 dark:data-[active=true]:bg-white/15 data-[active=true]:text-foreground data-[active=true]:font-normal"
+                className="group-hover:bg-black/10 data-[active=true]:bg-black/15 data-[active=true]:font-normal data-[active=true]:text-foreground dark:group-hover:bg-white/10 dark:data-[active=true]:bg-white/15"
                 isActive={item.isActive}
               >
                 <InternalLink

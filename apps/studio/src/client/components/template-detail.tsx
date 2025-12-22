@@ -105,13 +105,13 @@ export function TemplateDetail({
   const description = appDetails.description;
 
   return (
-    <div className="max-w-4xl mx-auto px-8">
-      <div className="sticky top-0 z-10 pt-8 pb-4 mb-4 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
+    <div className="mx-auto max-w-4xl px-8">
+      <div className="sticky top-0 z-10 mb-4 bg-background/95 pt-8 pb-4 backdrop-blur supports-backdrop-filter:bg-background/60">
         <Breadcrumb items={breadcrumbItems} />
       </div>
 
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-foreground mb-2">{title}</h1>
+        <h1 className="mb-2 text-3xl font-bold text-foreground">{title}</h1>
         {description && (
           <div className="text-sm text-muted-foreground">{description}</div>
         )}
@@ -142,7 +142,7 @@ export function TemplateDetail({
       </div>
 
       {screenshot && (
-        <div className="relative group mb-6">
+        <div className="group relative mb-6">
           <img
             alt={`${title} screenshot`}
             className="w-full rounded-lg border border-border"
@@ -163,7 +163,7 @@ export function TemplateDetail({
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_200px] gap-8">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_200px]">
         <div>
           {appDetails.readme && (
             <div className="prose prose-sm max-w-none prose-neutral dark:prose-invert">
@@ -174,9 +174,9 @@ export function TemplateDetail({
 
         <div className="space-y-6">
           <div>
-            <h3 className="text-sm font-medium mb-2">Source Code</h3>
+            <h3 className="mb-2 text-sm font-medium">Source Code</h3>
             <a
-              className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
               href={`${REGISTRY_REPO_URL}/tree/main/templates/${folderName}`}
               rel="noopener noreferrer"
               target="_blank"
@@ -206,8 +206,8 @@ export function TemplateDetail({
         open={showPreviewDialog}
       >
         <DialogPrimitive.Portal>
-          <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-          <DialogPrimitive.Content className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 max-w-[80vw] w-full max-h-[75vh] h-full flex flex-col p-0 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0">
+          <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/80 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0" />
+          <DialogPrimitive.Content className="fixed top-1/2 left-1/2 z-50 flex h-full max-h-[75vh] w-full max-w-[80vw] -translate-x-1/2 -translate-y-1/2 flex-col p-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0">
             <DialogPrimitive.Title className="sr-only">
               Preview
             </DialogPrimitive.Title>
@@ -215,7 +215,7 @@ export function TemplateDetail({
               App preview
             </DialogPrimitive.Description>
             <Button
-              className="absolute right-[-4%] top-[-5%] z-10 rounded-full size-10"
+              className="absolute top-[-5%] right-[-4%] z-10 size-10 rounded-full"
               onClick={() => {
                 setShowPreviewDialog(false);
               }}
@@ -224,10 +224,10 @@ export function TemplateDetail({
             >
               <X className="size-5" />
             </Button>
-            <div className="flex-1 min-h-0 relative">
+            <div className="relative min-h-0 flex-1">
               <AppView
                 app={appDetails.preview}
-                className="w-full h-full overflow-hidden flex flex-col"
+                className="flex h-full w-full flex-col overflow-hidden"
               />
             </div>
           </DialogPrimitive.Content>

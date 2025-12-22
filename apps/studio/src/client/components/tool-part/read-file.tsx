@@ -67,19 +67,19 @@ export function ToolPartReadFile({
         <div>
           <SectionHeader>File: {cleanFilePath(output.filePath)}</SectionHeader>
           {input.offset !== undefined && input.offset > 0 && (
-            <div className="text-muted-foreground text-xs mb-1">
+            <div className="mb-1 text-xs text-muted-foreground">
               Starting from line {input.offset + 1}
             </div>
           )}
           {input.limit !== undefined && (
-            <div className="text-muted-foreground text-xs mb-1">
+            <div className="mb-1 text-xs text-muted-foreground">
               Reading {input.limit} lines
             </div>
           )}
           {output.content && (
             <ScrollableCodeBlock>{output.content}</ScrollableCodeBlock>
           )}
-          <div className="text-muted-foreground text-xs mt-1">
+          <div className="mt-1 text-xs text-muted-foreground">
             Showing {output.displayedLines} lines
             {output.hasMoreLines && " (truncated)"}
             {output.offset > 0 && ` (offset: ${output.offset})`}
@@ -100,11 +100,11 @@ export function ToolPartReadFile({
             label="Unsupported format:"
           />
           {output.mimeType && (
-            <div className="text-muted-foreground text-xs mt-2">
+            <div className="mt-2 text-xs text-muted-foreground">
               {output.mimeType}
             </div>
           )}
-          <div className="text-destructive text-sm mt-2">{message}</div>
+          <div className="mt-2 text-sm text-destructive">{message}</div>
         </div>
       );
     }

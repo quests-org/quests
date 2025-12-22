@@ -77,18 +77,18 @@ function RouteComponent() {
   }, [router]);
 
   return (
-    <div className="w-full min-h-screen flex-1 flex flex-col items-center relative">
-      <div className="flex items-center justify-center w-full">
+    <div className="relative flex min-h-screen w-full flex-1 flex-col items-center">
+      <div className="flex w-full items-center justify-center">
         <div className="w-full max-w-2xl space-y-8 px-8 pt-36">
           {!hasToken && !isLoadingHasToken && (
-            <div className="flex flex-col items-center gap-y-4 mb-8">
+            <div className="mb-8 flex flex-col items-center gap-y-4">
               <button
-                className="group relative overflow-hidden flex items-center gap-x-4 bg-linear-to-r from-brand/20 via-brand/10 to-brand/20 hover:from-brand/30 hover:via-brand/20 hover:to-brand/30 border border-brand/50 hover:border-brand rounded-2xl px-6 py-4 transition-all duration-300 shadow-lg shadow-brand/10 hover:shadow-xl hover:shadow-brand/20 hover:scale-[1.02]"
+                className="group relative flex items-center gap-x-4 overflow-hidden rounded-2xl border border-brand/50 bg-linear-to-r from-brand/20 via-brand/10 to-brand/20 px-6 py-4 shadow-lg shadow-brand/10 transition-all duration-300 hover:scale-[1.02] hover:border-brand hover:from-brand/30 hover:via-brand/20 hover:to-brand/30 hover:shadow-xl hover:shadow-brand/20"
                 onClick={() => void navigate({ to: "/sign-in" })}
                 type="button"
               >
-                <div className="absolute inset-0 bg-linear-to-r from-transparent via-brand/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                <div className="flex items-center justify-center size-10 rounded-xl bg-brand/20 group-hover:bg-brand/30 transition-colors">
+                <div className="absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-brand/5 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+                <div className="flex size-10 items-center justify-center rounded-xl bg-brand/20 transition-colors group-hover:bg-brand/30">
                   <Gift className="size-5 text-brand" />
                 </div>
                 <div className="flex flex-col items-start gap-y-0.5">
@@ -166,7 +166,7 @@ function RouteComponent() {
               }}
               showAgentPicker
             />
-            <div className="flex items-center justify-end mt-2">
+            <div className="mt-2 flex items-center justify-end">
               <p className="text-xs text-muted-foreground">
                 Hold <Kbd>{isMacOS() ? "⌘" : "Ctrl"}</Kbd> to create in a new
                 tab
@@ -176,8 +176,8 @@ function RouteComponent() {
         </div>
       </div>
 
-      <div className="w-full max-w-6xl px-8 pb-8 flex-1 pt-16">
-        <div className="flex items-center justify-between mb-2">
+      <div className="w-full max-w-6xl flex-1 px-8 pt-16 pb-8">
+        <div className="mb-2 flex items-center justify-between">
           <div>
             <h2 className="text-lg font-medium text-foreground">Discover</h2>
           </div>
@@ -186,13 +186,13 @@ function RouteComponent() {
 
         {hasProjects && (
           <div className="mt-16">
-            <div className="flex items-center justify-between mb-2">
+            <div className="mb-2 flex items-center justify-between">
               <h2 className="text-lg font-medium text-foreground">
                 Recent Projects
               </h2>
               {(projectsData?.projects.length ?? 0) > 4 && (
                 <InternalLink
-                  className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-xs text-muted-foreground transition-colors hover:text-foreground"
                   openInCurrentTab
                   to="/projects"
                 >
@@ -208,7 +208,7 @@ function RouteComponent() {
                   params={{ subdomain: project.subdomain }}
                   to="/projects/$subdomain"
                 >
-                  <Card className="hover:shadow-md transition-shadow py-0">
+                  <Card className="py-0 transition-shadow hover:shadow-md">
                     <CardContent className="flex items-center gap-x-4 py-4">
                       <SmallAppIcon
                         background={project.icon?.background}
@@ -216,9 +216,9 @@ function RouteComponent() {
                         mode={project.mode}
                         size="xl"
                       />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-x-2 mb-1.5">
-                          <h3 className="text-base font-medium text-foreground truncate">
+                      <div className="min-w-0 flex-1">
+                        <div className="mb-1.5 flex items-center gap-x-2">
+                          <h3 className="truncate text-base font-medium text-foreground">
                             {project.title}
                           </h3>
                           <AppStatusIcon
@@ -226,7 +226,7 @@ function RouteComponent() {
                             subdomain={project.subdomain}
                           />
                         </div>
-                        <div className="flex items-center gap-x-1.5 text-xs text-muted-foreground min-w-0">
+                        <div className="flex min-w-0 items-center gap-x-1.5 text-xs text-muted-foreground">
                           <ModelPreview subdomain={project.subdomain} />
                           <span className="shrink-0">·</span>
                           <span className="shrink-0">
@@ -247,25 +247,25 @@ function RouteComponent() {
         )}
       </div>
 
-      <footer className="w-full py-4 px-8">
+      <footer className="w-full px-8 py-4">
         <p className="text-center text-xs text-muted-foreground">
           {PRODUCT_NAME} is{" "}
           <ExternalLink
-            className="hover:text-foreground hover:underline transition-colors"
+            className="transition-colors hover:text-foreground hover:underline"
             href={APP_REPO_URL}
           >
             open source
           </ExternalLink>
           <span className="mx-2">·</span>
           <ExternalLink
-            className="hover:text-foreground hover:underline transition-colors"
+            className="transition-colors hover:text-foreground hover:underline"
             href={DISCORD_URL}
           >
             Join us on Discord
           </ExternalLink>
           <span className="mx-2">·</span>
           <ExternalLink
-            className="hover:text-foreground hover:underline transition-colors"
+            className="transition-colors hover:text-foreground hover:underline"
             href={NEW_ISSUE_URL}
           >
             Report an issue

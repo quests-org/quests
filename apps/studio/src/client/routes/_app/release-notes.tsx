@@ -36,7 +36,7 @@ export const Route = createFileRoute("/_app/release-notes")({
 function ErrorFallback() {
   return (
     <Card>
-      <CardContent className="text-center py-12 space-y-4">
+      <CardContent className="space-y-4 py-12 text-center">
         <p className="text-muted-foreground">Failed to load release notes.</p>
         <Button
           asChild
@@ -79,11 +79,11 @@ function RouteComponent() {
     : null;
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto space-y-6 p-6">
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-3xl font-bold">Release Notes</h1>
-          <p className="text-muted-foreground mt-2">
+          <p className="mt-2 text-muted-foreground">
             Latest updates and changes to Quests
           </p>
         </div>
@@ -127,7 +127,7 @@ function RouteComponent() {
             <Card className="overflow-hidden" key={release.id}>
               <CardHeader className="border-b">
                 <div className="flex items-start justify-between">
-                  <div className="space-y-1 flex-1">
+                  <div className="flex-1 space-y-1">
                     <div className="flex items-center justify-between">
                       <CardTitle className="flex items-center gap-2">
                         {release.name || release.tag_name}
@@ -138,7 +138,7 @@ function RouteComponent() {
                           )}
                       </CardTitle>
                       <ExternalLink
-                        className="inline-flex items-center gap-1 text-sm text-primary hover:text-primary/80 transition-colors shrink-0"
+                        className="inline-flex shrink-0 items-center gap-1 text-sm text-primary transition-colors hover:text-primary/80"
                         href={release.html_url}
                       >
                         View on GitHub
@@ -188,9 +188,9 @@ function RouteComponent() {
           !releasesQuery.isError &&
           releases.length > 0 &&
           hasMoreReleases && (
-            <div className="text-center pt-8 pb-4">
+            <div className="pt-8 pb-4 text-center">
               <ExternalLink
-                className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
                 href={RELEASE_NOTES_URL}
               >
                 View older releases on GitHub
@@ -206,7 +206,7 @@ function RouteComponent() {
 function ZeroState() {
   return (
     <Card>
-      <CardContent className="text-center py-12">
+      <CardContent className="py-12 text-center">
         <p className="text-muted-foreground">No releases found.</p>
       </CardContent>
     </Card>

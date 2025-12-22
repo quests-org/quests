@@ -68,18 +68,18 @@ function SettingsLayout() {
   ];
 
   return (
-    <div className="bg-background h-svh w-full flex flex-col overflow-hidden">
+    <div className="flex h-svh w-full flex-col overflow-hidden bg-background">
       {isLinux() ? (
         <div className="pt-4"></div>
       ) : (
-        <div className="px-6 pt-2 pb-4 [-webkit-app-region:drag] text-center font-semibold shrink-0">
+        <div className="shrink-0 px-6 pt-2 pb-4 text-center font-semibold [-webkit-app-region:drag]">
           Settings
         </div>
       )}
-      <div className="flex-1 flex px-3 min-h-0">
-        <SidebarProvider className="min-h-0 h-full" defaultOpen>
+      <div className="flex min-h-0 flex-1 px-3">
+        <SidebarProvider className="h-full min-h-0" defaultOpen>
           <Sidebar
-            className="bg-transparent h-full shrink-0"
+            className="h-full shrink-0 bg-transparent"
             collapsible="none"
           >
             <SidebarContent>

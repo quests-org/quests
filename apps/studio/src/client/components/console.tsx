@@ -115,7 +115,7 @@ export function Console({
   );
 
   return (
-    <div className="flex h-full w-full flex-col overflow-hidden bg-background relative rounded-b-lg">
+    <div className="relative flex h-full w-full flex-col overflow-hidden rounded-b-lg bg-background">
       <div className="flex h-fit w-full flex-row items-center justify-between border-b border-border bg-background px-2 py-1.5">
         <div className="text-xs">Console</div>
         <div className="flex flex-row items-center gap-1 text-xs">
@@ -146,7 +146,7 @@ export function Console({
       </div>
 
       <div
-        className="flex-1 overflow-y-auto min-h-0 bg-muted/50"
+        className="min-h-0 flex-1 overflow-y-auto bg-muted/50"
         ref={scrollRef}
       >
         <div
@@ -169,7 +169,7 @@ export function Console({
 
       {!isNearBottom && (
         <Button
-          className="absolute left-1/2 -translate-x-1/2 bottom-4 shadow-lg border border-border h-6 w-6 p-0"
+          className="absolute bottom-4 left-1/2 h-6 w-6 -translate-x-1/2 border border-border p-0 shadow-lg"
           onClick={() => scrollToBottom()}
           variant="secondary"
         >
@@ -219,7 +219,7 @@ function ConsoleRow({
   return (
     <div
       className={cn(
-        "group py-px px-1 relative border-l-2",
+        "group relative border-l-2 px-1 py-px",
         index > 0 && "border-t border-border/40",
         line.source === "server"
           ? "border-l-blue-200 dark:border-l-blue-800"
@@ -230,10 +230,10 @@ function ConsoleRow({
       <div className="flex items-start gap-1.5">
         <Badge
           className={cn(
-            "text-[10px] min-w-[52px] px-1 py-0 h-4 flex items-center justify-center shrink-0 mt-0.5",
+            "mt-0.5 flex h-4 min-w-[52px] shrink-0 items-center justify-center px-1 py-0 text-[10px]",
             line.source === "server"
-              ? "text-blue-700 bg-blue-50 border-blue-200 dark:text-blue-300 dark:bg-blue-950/50 dark:border-blue-800"
-              : "text-green-700 bg-green-50 border-green-200 dark:text-green-300 dark:bg-green-950/50 dark:border-green-800",
+              ? "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-950/50 dark:text-blue-300"
+              : "border-green-200 bg-green-50 text-green-700 dark:border-green-800 dark:bg-green-950/50 dark:text-green-300",
           )}
           variant="secondary"
         >
@@ -242,16 +242,16 @@ function ConsoleRow({
 
         {count > 1 && (
           <Badge
-            className="text-[10px] px-1 py-0 h-4 min-w-[16px] flex items-center justify-center shrink-0 tabular-nums mt-0.5"
+            className="mt-0.5 flex h-4 min-w-[16px] shrink-0 items-center justify-center px-1 py-0 text-[10px] tabular-nums"
             variant="secondary"
           >
             {count}
           </Badge>
         )}
 
-        <div className="flex-1 min-w-0">
+        <div className="min-w-0 flex-1">
           {line.source === "server" && line.type === "truncation" ? (
-            <div className="text-muted-foreground italic px-2 py-0.5 rounded-sm shrink overflow-x-auto whitespace-pre-wrap break-all">
+            <div className="shrink overflow-x-auto rounded-sm px-2 py-0.5 break-all whitespace-pre-wrap text-muted-foreground italic">
               {message}
             </div>
           ) : (
@@ -260,10 +260,10 @@ function ConsoleRow({
         </div>
       </div>
 
-      <div className="absolute right-2 top-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+      <div className="absolute top-0.5 right-2 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
         {app.type === "project" && (
           <ConfirmedIconButton
-            className="size-5 bg-background hover:bg-accent! dark:hover:bg-accent! border border-border/50"
+            className="size-5 border border-border/50 bg-background hover:bg-accent! dark:hover:bg-accent!"
             icon={MessageSquare}
             onClick={handleSendToChat}
             successTooltip="Sent to chat!"
@@ -273,7 +273,7 @@ function ConsoleRow({
         )}
 
         <ConfirmedIconButton
-          className="size-5 bg-background hover:bg-accent! dark:hover:bg-accent! border border-border/50"
+          className="size-5 border border-border/50 bg-background hover:bg-accent! dark:hover:bg-accent!"
           icon={Copy}
           onClick={handleCopy}
           successTooltip="Copied!"
@@ -360,7 +360,7 @@ function TruncatedLogLine({
       <div className={styles.message}>
         <CollapsibleTrigger asChild>
           <button
-            className="text-muted-foreground hover:text-foreground transition-colors mr-1 font-mono"
+            className="mr-1 font-mono text-muted-foreground transition-colors hover:text-foreground"
             type="button"
           >
             {isExpanded ? "▼" : "▶"}

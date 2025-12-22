@@ -110,14 +110,14 @@ export function StudioSidebar({
       <SidebarHeader>
         <div
           className={cn(
-            "flex items-center py-1 mt-px",
+            "mt-px flex items-center py-1",
             !isWindows() && isSidebarVisible && "[-webkit-app-region:drag]",
-            isMacOS() ? "pl-20" : "pl-4 justify-end",
+            isMacOS() ? "pl-20" : "justify-end pl-4",
           )}
         >
           <div className="flex items-center [-webkit-app-region:no-drag]">
             <Button
-              className="size-6 text-muted-foreground pr-1"
+              className="size-6 pr-1 text-muted-foreground"
               onClick={() => {
                 void closeSidebar({}).catch((error: unknown) => {
                   logger.error("Error closing sidebar", { error });

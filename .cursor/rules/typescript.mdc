@@ -9,7 +9,7 @@ alwaysApply: false
 - We use non-default exports whenever possible.
 - NEVER add comments for sections of JSX like `{/* Header */}<Header />`
 - Objects, interfaces, types, and other sortable structures are automatically sorted by the perfectionist ESLint plugin
-- DO NOT fix ESLint `perfectionist/*` issues, the editor will automatically fix them when the code is saved.
+- Do not fix "Expected {thing} to come before {thing}" errors from perfectionist, they will be fixed automatically after your work is done.
 - Prefer objects for functions with many parameters.
 - Don't run `tsc` to check for type errors, use your built-in diagnostics tool.
 - `"lib": ["es2023", "DOM", "DOM.Iterable"]` is set, so you can use modern features.

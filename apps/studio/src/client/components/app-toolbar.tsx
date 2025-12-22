@@ -156,7 +156,7 @@ export function AppToolbar({
   return (
     <div
       className={cn(
-        "bg-background flex items-center border-b px-2 py-1.5 gap-1 rounded-t-lg",
+        "flex items-center gap-1 rounded-t-lg border-b bg-background px-2 py-1.5",
         className,
       )}
     >
@@ -197,18 +197,18 @@ export function AppToolbar({
         </Tooltip>
       </div>
 
-      <div className="flex-1 flex items-center gap-1 min-w-0">
+      <div className="flex min-w-0 flex-1 items-center gap-1">
         {centerContent ?? (
-          <div className="flex-1 relative">
+          <div className="relative flex-1">
             <Input
-              className="flex-1 text-center min-w-0 text-xs md:text-xs h-8 font-medium text-muted-foreground pr-7"
+              className="h-8 min-w-0 flex-1 pr-7 text-center text-xs font-medium text-muted-foreground md:text-xs"
               readOnly
               value={app.urls.localhost}
             />
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  className="absolute right-2 top-1/2 -translate-y-1/2 size-4 p-0"
+                  className="absolute top-1/2 right-2 size-4 -translate-y-1/2 p-0"
                   onClick={handleOpenExternalClick}
                   size="icon"
                   variant="ghost"
@@ -261,7 +261,7 @@ function ConsoleBadge({ status }: ConsoleBadgeProps) {
   return (
     <div
       className={cn(
-        "absolute top-1.5 right-1.5 size-1.5 rounded-full ring-2 ring-background animate-in fade-in-0 zoom-in-75 duration-200",
+        "absolute top-1.5 right-1.5 size-1.5 animate-in rounded-full ring-2 ring-background duration-200 fade-in-0 zoom-in-75",
         status === "error" ? "bg-destructive" : "bg-primary",
       )}
     />

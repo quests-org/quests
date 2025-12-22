@@ -68,7 +68,7 @@ export const MessageActionsRow = memo(function MessageActionsRow({
 
   return (
     <Collapsible
-      className="flex flex-col gap-2 mt-2"
+      className="mt-2 flex flex-col gap-2"
       onOpenChange={setIsExpanded}
       open={isExpanded}
     >
@@ -77,7 +77,7 @@ export const MessageActionsRow = memo(function MessageActionsRow({
           <Tooltip>
             <TooltipTrigger asChild>
               <CopyButton
-                className="p-1 rounded hover:text-foreground hover:bg-muted/50 transition-colors disabled:opacity-50 text-muted-foreground"
+                className="rounded p-1 text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground disabled:opacity-50"
                 onCopy={handleCopy}
               />
             </TooltipTrigger>
@@ -87,10 +87,10 @@ export const MessageActionsRow = memo(function MessageActionsRow({
         {sources.length > 0 && (
           <CollapsibleTrigger asChild>
             <Button size="sm" variant="ghost">
-              <div className="flex items-center gap-2 min-w-0">
-                <span className="text-xs font-medium shrink-0">Sources</span>
+              <div className="flex min-w-0 items-center gap-2">
+                <span className="shrink-0 text-xs font-medium">Sources</span>
                 {uniqueUrls.length > 0 && (
-                  <div className="flex items-center gap-1 shrink-0">
+                  <div className="flex shrink-0 items-center gap-1">
                     {uniqueUrls.map((url) => (
                       <img
                         alt=""
@@ -124,7 +124,7 @@ export const MessageActionsRow = memo(function MessageActionsRow({
                       src={faviconUrl}
                     />
                     <ExternalLink
-                      className="text-muted-foreground hover:text-foreground transition-colors"
+                      className="text-muted-foreground transition-colors hover:text-foreground"
                       href={source.url}
                     >
                       {source.title || source.url}
@@ -139,12 +139,12 @@ export const MessageActionsRow = memo(function MessageActionsRow({
                   key={source.metadata.id}
                 >
                   <FileText className="size-4 shrink-0 text-muted-foreground" />
-                  <div className="flex flex-col gap-0.5 min-w-0">
-                    <span className="text-foreground font-medium">
+                  <div className="flex min-w-0 flex-col gap-0.5">
+                    <span className="font-medium text-foreground">
                       {source.title}
                     </span>
                     {(source.filename || source.mediaType) && (
-                      <span className="text-xs text-muted-foreground truncate">
+                      <span className="truncate text-xs text-muted-foreground">
                         {source.filename && source.mediaType
                           ? `${source.filename} • ${source.mediaType}`
                           : source.filename || source.mediaType}

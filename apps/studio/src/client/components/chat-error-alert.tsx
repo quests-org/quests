@@ -22,10 +22,10 @@ export function ChatErrorAlert({
         <Button onClick={onStartNewChat} size="sm" variant="outline">
           Start new chat
         </Button>
-        <div className="text-xs text-center text-muted-foreground">
+        <div className="text-center text-xs text-muted-foreground">
           Think this is a bug?{" "}
           <EmailLink
-            className="underline hover:no-underline inline"
+            className="inline underline hover:no-underline"
             email={SUPPORT_EMAIL}
             subject="Chat Error"
           >

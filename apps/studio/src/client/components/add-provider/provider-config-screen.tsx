@@ -236,7 +236,7 @@ export function ProviderConfigScreen({
                 value={advancedOpen}
               >
                 <AccordionItem className="border-b-0" value="advanced">
-                  <AccordionTrigger className="py-3 text-muted-foreground font-normal text-xs justify-start gap-1.5">
+                  <AccordionTrigger className="justify-start gap-1.5 py-3 text-xs font-normal text-muted-foreground">
                     Advanced
                   </AccordionTrigger>
                   <AccordionContent>

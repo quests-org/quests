@@ -21,10 +21,10 @@ const CodeWithCopy = ({
   children: React.ReactNode;
   content: string;
 }) => (
-  <div className="relative group">
-    <div className="absolute right-1 top-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+  <div className="group relative">
+    <div className="absolute top-1 right-1 z-10 opacity-0 transition-opacity group-hover:opacity-100">
       <CopyButton
-        className="p-1 rounded-md bg-background/80 backdrop-blur-sm hover:bg-muted transition-colors text-muted-foreground hover:text-foreground border border-border/50"
+        className="rounded-md border border-border/50 bg-background/80 p-1 text-muted-foreground backdrop-blur-sm transition-colors hover:bg-muted hover:text-foreground"
         iconSize={12}
         onCopy={async () => {
           await navigator.clipboard.writeText(content);
@@ -71,7 +71,7 @@ export const Markdown = memo(({ markdown, rehypePlugins }: MarkdownProps) => {
             <img
               {...props}
               alt={alt}
-              className={cn("cursor-pointer! rounded-md max-w-full", className)}
+              className={cn("max-w-full cursor-pointer! rounded-md", className)}
               onClick={handleImageClick}
               src={src}
             />

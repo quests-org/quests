@@ -224,10 +224,10 @@ export function AppIFrame({
       />
 
       {shouldShowCover && (
-        <div className="absolute inset-0 flex justify-center pt-8 bg-black/60 backdrop-blur-xs z-40">
-          <div className="bg-background relative z-50 grid w-full max-w-[calc(100%-2rem)] gap-4 rounded-lg border p-6 shadow-lg sm:max-w-sm h-fit mx-4">
+        <div className="absolute inset-0 z-40 flex justify-center bg-black/60 pt-8 backdrop-blur-xs">
+          <div className="relative z-50 mx-4 grid h-fit w-full max-w-[calc(100%-2rem)] gap-4 rounded-lg border bg-background p-6 shadow-lg sm:max-w-sm">
             <button
-              className="ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
+              className="absolute top-4 right-4 rounded-xs opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
               onClick={() => {
                 setCoverState("dismissed");
               }}
@@ -240,7 +240,7 @@ export function AppIFrame({
             <div className="flex flex-col space-y-4 text-center sm:text-left">
               <div className="flex items-center gap-2">
                 <Loader2 className="size-4 animate-spin" />
-                <h3 className="shiny-text text-lg font-semibold leading-6 tracking-tight">
+                <h3 className="shiny-text text-lg leading-6 font-semibold tracking-tight">
                   Agent is working...
                 </h3>
               </div>
@@ -255,8 +255,8 @@ export function AppIFrame({
                 variant="secondary"
               >
                 <div className="relative flex items-center justify-center">
-                  <Circle className="size-4 stroke-2 animate-spin" />
-                  <Square className="size-1.5 fill-current absolute inset-0 m-auto" />
+                  <Circle className="size-4 animate-spin stroke-2" />
+                  <Square className="absolute inset-0 m-auto size-1.5 fill-current" />
                 </div>
                 {stopSessions.isPending ? "Stopping..." : "Stop agent"}
               </Button>

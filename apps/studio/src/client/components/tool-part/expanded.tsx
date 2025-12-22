@@ -17,9 +17,9 @@ export function ToolPartExpanded({
   return (
     <div>
       {explanation && (
-        <div className="mb-3 pb-2 border-b border-muted-foreground/20">
+        <div className="mb-3 border-b border-muted-foreground/20 pb-2">
           <SectionHeader>Explanation:</SectionHeader>
-          <div className="text-sm italic text-muted-foreground">
+          <div className="text-sm text-muted-foreground italic">
             {explanation}
           </div>
         </div>

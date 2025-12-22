@@ -6,8 +6,8 @@ export const Route = createFileRoute("/_app/debug/")({
 
 function RouteComponent() {
   return (
-    <div className="flex items-center justify-center h-full w-full">
-      <p className="text-sm text-muted-foreground mt-48">
+    <div className="flex h-full w-full items-center justify-center">
+      <p className="mt-48 text-sm text-muted-foreground">
         Select a debug page above
       </p>
     </div>

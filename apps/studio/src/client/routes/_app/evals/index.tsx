@@ -275,7 +275,7 @@ function RouteComponent() {
 
   if (modelsIsLoading || evalTemplateGroupsIsLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex min-h-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
@@ -283,7 +283,7 @@ function RouteComponent() {
 
   if (modelsIsError || evalTemplateGroupsIsError) {
     return (
-      <div className="flex items-center justify-center h-full">
+      <div className="flex h-full items-center justify-center">
         <p className="text-sm text-destructive">Failed to load data</p>
       </div>
     );
@@ -293,14 +293,14 @@ function RouteComponent() {
     selectedEvalTemplates.size * selectedModels.size;
 
   return (
-    <div className="flex-1 mx-auto max-w-7xl w-full">
+    <div className="mx-auto w-full max-w-7xl flex-1">
       <div>
-        <div className="mx-auto px-4 pt-10 lg:pt-20 lg:pb-4 sm:px-6 lg:px-8">
+        <div className="mx-auto px-4 pt-10 sm:px-6 lg:px-8 lg:pt-20 lg:pb-4">
           <div className="text-center">
             <h1 className="text-3xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
               Evals
             </h1>
-            <p className="mt-4 text-base leading-7 text-muted-foreground max-w-lg mx-auto">
+            <p className="mx-auto mt-4 max-w-lg text-base leading-7 text-muted-foreground">
               Quickly see how models perform by creating apps for the prompts
               and models you select below.
             </p>
@@ -308,8 +308,8 @@ function RouteComponent() {
         </div>
       </div>
 
-      <div className="px-4 py-12 sm:px-6 lg:px-8 max-w-5xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1fr_350px] gap-6">
+      <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-[1fr_350px]">
           <div className="space-y-6">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
@@ -332,7 +332,7 @@ function RouteComponent() {
                   </Button>
                 </div>
               </div>
-              <div className="border rounded-lg">
+              <div className="rounded-lg border">
                 <Command>
                   <CommandInput placeholder="Search prompts..." />
                   <CommandList className="max-h-96">
@@ -356,19 +356,19 @@ function RouteComponent() {
                                 }}
                                 value={template.name}
                               >
-                                <div className="flex items-start gap-2 flex-1 min-w-0">
+                                <div className="flex min-w-0 flex-1 items-start gap-2">
                                   <Checkbox
                                     checked={selectedEvalTemplates.has(
                                       template.name,
                                     )}
-                                    className="shrink-0 mt-0.5 [&_svg]:text-primary-foreground!"
+                                    className="mt-0.5 shrink-0 [&_svg]:text-primary-foreground!"
                                   />
-                                  <IconComponent className="size-4 text-muted-foreground shrink-0 mt-0.5" />
-                                  <div className="flex-1 min-w-0">
+                                  <IconComponent className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+                                  <div className="min-w-0 flex-1">
                                     <div className="text-sm font-medium">
                                       {template.name}
                                     </div>
-                                    <div className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+                                    <div className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
                                       {isCustom
                                         ? "Write your own custom eval prompt"
                                         : template.userPrompt}
@@ -433,7 +433,7 @@ function RouteComponent() {
                 }}
                 value={selectedProvider}
               >
-                <TabsList className="flex-wrap w-full min-h-9 h-auto gap-1.5">
+                <TabsList className="h-auto min-h-9 w-full flex-wrap gap-1.5">
                   <TabsTrigger value="all">All</TabsTrigger>
                   {availableProviders.map((provider) => {
                     const metadata = providerMetadataMap.get(provider);
@@ -450,7 +450,7 @@ function RouteComponent() {
                 </TabsList>
               </Tabs>
 
-              <div className="border rounded-lg">
+              <div className="rounded-lg border">
                 <Command>
                   <CommandInput placeholder="Search models..." />
                   <CommandList className="max-h-96">
@@ -475,20 +475,20 @@ function RouteComponent() {
                                   }}
                                   value={model.uri}
                                 >
-                                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                                  <div className="flex min-w-0 flex-1 items-center gap-2">
                                     <Checkbox
                                       checked={selectedModels.has(model.uri)}
                                       className="shrink-0 [&_svg]:text-primary-foreground!"
                                     />
                                     <AIProviderIcon
-                                      className="size-4 opacity-90 shrink-0"
+                                      className="size-4 shrink-0 opacity-90"
                                       type={model.params.provider}
                                     />
                                     <span className="truncate text-sm">
                                       {model.name}
                                     </span>
                                   </div>
-                                  <div className="flex items-center gap-1 ml-2">
+                                  <div className="ml-2 flex items-center gap-1">
                                     <ModelBadges model={model} />
                                   </div>
                                 </CommandItem>
@@ -506,7 +506,7 @@ function RouteComponent() {
 
           <div className="space-y-4">
             <div className="sticky top-6">
-              <div className="border rounded-lg p-4 space-y-4 bg-card">
+              <div className="space-y-4 rounded-lg border bg-card p-4">
                 <Button
                   className="w-full"
                   disabled={
@@ -549,11 +549,11 @@ function RouteComponent() {
                 </AlertDialog>
 
                 {totalProjectsToCreate === 0 ? (
-                  <div className="text-center py-2 text-sm text-muted-foreground">
+                  <div className="py-2 text-center text-sm text-muted-foreground">
                     Select prompts and models to begin
                   </div>
                 ) : (
-                  <div className="space-y-3 max-h-64 overflow-y-auto">
+                  <div className="max-h-64 space-y-3 overflow-y-auto">
                     {[...selectedEvalTemplates].map((templateName) => {
                       const template = evalTemplateGroups
                         ?.flatMap((g) => g.templates)
@@ -569,7 +569,7 @@ function RouteComponent() {
                         <div className="space-y-1.5" key={templateName}>
                           <div className="flex items-center gap-1.5">
                             {IconComponent && (
-                              <IconComponent className="size-3.5 text-muted-foreground shrink-0" />
+                              <IconComponent className="size-3.5 shrink-0 text-muted-foreground" />
                             )}
                             <div className="text-sm font-medium">
                               {templateName}
@@ -578,14 +578,14 @@ function RouteComponent() {
                           <div className="flex flex-wrap gap-1.5 pl-5">
                             {selectedModelsList?.map((model) => (
                               <div
-                                className="flex items-center gap-1 bg-muted px-1.5 py-0.5 rounded text-xs"
+                                className="flex items-center gap-1 rounded bg-muted px-1.5 py-0.5 text-xs"
                                 key={model.uri}
                               >
                                 <AIProviderIcon
                                   className="size-3"
                                   type={model.params.provider}
                                 />
-                                <span className="truncate max-w-32">
+                                <span className="max-w-32 truncate">
                                   {model.name}
                                 </span>
                               </div>
@@ -598,7 +598,7 @@ function RouteComponent() {
                 )}
               </div>
               {totalProjectsToCreate > 0 && (
-                <p className="text-xs text-muted-foreground text-center mt-1">
+                <p className="mt-1 text-center text-xs text-muted-foreground">
                   Each prompt-model combination creates a separate app
                 </p>
               )}

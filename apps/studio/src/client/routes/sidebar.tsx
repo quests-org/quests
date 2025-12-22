@@ -18,7 +18,7 @@ export const Route = createFileRoute("/sidebar")({
 function SidebarPage() {
   return (
     <div
-      className="h-screen w-full overflow-hidden flex flex-col border-r border-border overflow-x-hidden select-none"
+      className="flex h-screen w-full flex-col overflow-hidden overflow-x-hidden border-r border-border select-none"
       style={
         {
           "--sidebar-width": "250px",
@@ -27,7 +27,7 @@ function SidebarPage() {
       }
     >
       <SidebarProvider>
-        <div className="flex-1 min-h-0">
+        <div className="min-h-0 flex-1">
           <StudioSidebar className="h-full" disableBackground={isMacOS()} />
         </div>
       </SidebarProvider>

@@ -167,7 +167,7 @@ export async function startAuthCallbackServer() {
 }
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-white/20 h-9 px-4 py-2",
+  "inline-flex h-9 items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium whitespace-nowrap transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-white/20",
   {
     defaultVariants: {
       variant: "default",
