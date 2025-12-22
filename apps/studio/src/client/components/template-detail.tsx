@@ -11,13 +11,14 @@ import { GithubLogo } from "@/client/components/service-icons";
 import { TechStack } from "@/client/components/tech-stack";
 import { Button } from "@/client/components/ui/button";
 import { useDefaultModelURI } from "@/client/hooks/use-default-model-uri";
+import { createUserMessage } from "@/client/lib/create-user-message";
 import { rpcClient } from "@/client/rpc/client";
 import {
   GITHUB_ORG,
   REGISTRY_REPO_NAME,
   REGISTRY_REPO_URL,
 } from "@quests/shared";
-import { StoreId } from "@quests/workspace/client";
+import { StoreId, type Upload } from "@quests/workspace/client";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
@@ -58,37 +59,21 @@ export function TemplateDetail({
   const [showAIProviderGuard, setShowAIProviderGuard] = useState(false);
   const [showPreviewDialog, setShowPreviewDialog] = useState(false);
 
-  const handleCreateProject = (prompt?: string) => {
+  const handleCreateProject = (prompt: string, files?: Upload.Type[]) => {
     if (appDetails && selectedModelURI) {
       const sessionId = StoreId.newSessionId();
-      const messageId = StoreId.newMessageId();
-      const createdAt = new Date();
-      const promptText = prompt?.trim() || "";
+      const { files: mappedFiles, message } = createUserMessage({
+        files,
+        prompt,
+        sessionId,
+      });
 
       saveSelectedModelURI(selectedModelURI);
 
       createProjectMutation.mutate(
         {
-          message: {
-            id: messageId,
-            metadata: {
-              createdAt,
-              sessionId,
-            },
-            parts: [
-              {
-                metadata: {
-                  createdAt,
-                  id: StoreId.newPartId(),
-                  messageId,
-                  sessionId,
-                },
-                text: promptText,
-                type: "text",
-              },
-            ],
-            role: "user",
-          },
+          files: mappedFiles,
+          message,
           mode: "app-builder",
           modelURI: selectedModelURI,
           sessionId,
@@ -143,8 +128,8 @@ export function TemplateDetail({
           isSubmittable={!createProjectMutation.isPending}
           modelURI={selectedModelURI}
           onModelChange={setSelectedModelURI}
-          onSubmit={({ prompt }) => {
-            handleCreateProject(prompt.trim());
+          onSubmit={({ files, prompt }) => {
+            handleCreateProject(prompt.trim(), files);
           }}
           placeholder={`Describe what you want to build with ${title}…`}
           submitButtonContent={
