@@ -19,12 +19,13 @@ export function ToolbarFavoriteAction({
   compact = false,
   project,
 }: ToolbarFavoriteActionProps) {
-  const { data: favoriteProjects } = useQuery(
+  const { data: favoriteProjects, isLoading } = useQuery(
     rpcClient.favorites.live.listProjects.experimental_liveOptions(),
   );
-  const isFavorite = favoriteProjects?.some(
-    (favorite) => favorite.subdomain === project.subdomain,
-  );
+  const isFavorite =
+    favoriteProjects?.some(
+      (favorite) => favorite.subdomain === project.subdomain,
+    ) ?? false;
 
   const { mutateAsync: removeFavorite } = useMutation(
     rpcClient.favorites.remove.mutationOptions(),
@@ -48,6 +49,7 @@ export function ToolbarFavoriteAction({
         <Toggle
           aria-label={isFavorite ? "Unfavorite Project" : "Favorite Project"}
           className={cn(compact && "size-7")}
+          disabled={isLoading}
           onPressedChange={handleToggle}
           pressed={isFavorite}
           size="sm"
