@@ -1,0 +1,7 @@
+---
+alwaysApply: true
+globs: *.test.*
+---
+
+- Use `it.each` for testing repetitive cases.
+- Generate empty `toMatchInlineSnapshot` and allow the test run to fill it in.
