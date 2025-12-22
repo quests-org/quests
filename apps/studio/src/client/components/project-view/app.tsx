@@ -10,9 +10,9 @@ import { VersionOverlay } from "@/client/components/version-overlay";
 import { cn } from "@/client/lib/utils";
 import { type AIGatewayModelURI } from "@quests/ai-gateway/client";
 import { type WorkspaceAppProject } from "@quests/workspace/client";
-import { useAtom } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import { useEffect, useRef } from "react";
-import { type ImperativePanelHandle } from "react-resizable-panels";
+import { usePanelRef } from "react-resizable-panels";
 
 export function ProjectViewApp({
   project,
@@ -23,39 +23,57 @@ export function ProjectViewApp({
   selectedModelURI: AIGatewayModelURI.Type | undefined;
   selectedVersion: string | undefined;
 }) {
-  const [sidebarCollapsed, setSidebarCollapsed] = useAtom(
+  const sidebarCollapsed = useAtomValue(
     projectSidebarCollapsedAtomFamily(project.subdomain),
   );
-  const panelRef = useRef<ImperativePanelHandle>(null);
+  const setSidebarCollapsed = useSetAtom(
+    projectSidebarCollapsedAtomFamily(project.subdomain),
+  );
+  const panelRef = usePanelRef();
+  const lastAtomValueRef = useRef(sidebarCollapsed);
 
   useEffect(() => {
+    // panelRef is not stable, so we need this check to avoid an infinite loop
+    // This may be a bug and fixed in a future version of react-resizable-panels
+    if (lastAtomValueRef.current === sidebarCollapsed) {
+      return;
+    }
+
+    lastAtomValueRef.current = sidebarCollapsed;
+
     const panel = panelRef.current;
     if (!panel) {
       return;
     }
 
-    if (sidebarCollapsed && !panel.isCollapsed()) {
+    if (sidebarCollapsed) {
       panel.collapse();
-    } else if (!sidebarCollapsed && panel.isCollapsed()) {
+    } else {
       panel.expand();
     }
-  }, [sidebarCollapsed]);
+  }, [sidebarCollapsed, panelRef]);
 
   return (
-    <ResizablePanelGroup direction="horizontal">
+    <ResizablePanelGroup orientation="horizontal">
       <ResizablePanel
-        collapsedSize={0}
+        collapsedSize="0px"
         collapsible
-        defaultSize={33}
-        maxSize={50}
-        minSize={33}
-        onCollapse={() => {
-          setSidebarCollapsed(true);
+        defaultSize="24rem"
+        maxSize="50%"
+        minSize="24rem"
+        onResize={() => {
+          const panel = panelRef.current;
+          if (!panel) {
+            return;
+          }
+
+          const isCollapsed = panel.isCollapsed();
+          if (lastAtomValueRef.current !== isCollapsed) {
+            lastAtomValueRef.current = isCollapsed;
+            setSidebarCollapsed(isCollapsed);
+          }
         }}
-        onExpand={() => {
-          setSidebarCollapsed(false);
-        }}
-        ref={panelRef}
+        panelRef={panelRef}
       >
         <ProjectSidebar
           project={project}
@@ -64,9 +82,9 @@ export function ProjectViewApp({
         />
       </ResizablePanel>
 
-      <ResizableHandle className="bg-transparent data-[resize-handle-state='hover']:bg-muted-foreground data-[resize-handle-state='drag']:bg-primary/50 transition-all duration-200 data-[resize-handle-state='hover']:scale-x-[3]" />
+      <ResizableHandle className="bg-transparent data-[separator='hover']:bg-muted-foreground data-[separator='active']:bg-primary/50 transition-all duration-200 data-[separator='hover']:scale-x-[3] focus-visible:ring-0 focus-visible:ring-offset-0" />
 
-      <ResizablePanel defaultSize={67} minSize={50}>
+      <ResizablePanel>
         <div
           className={cn(
             "flex-1 flex flex-col p-2 bg-secondary border-t overflow-hidden h-full",
