@@ -67,6 +67,9 @@ catalogs:
 pnpmfileChecksum: sha256-ZfwGjIvQgPR9mEJg5iihJauZ5iv1Ogj5lI/dgVj7pgI=
 
 patchedDependencies:
+  '@openrouter/ai-sdk-provider':
+    hash: a297df2d985180ba092b245cdc652e6c1f5243feee4ef99c1174591d20d7ebd8
+    path: patches/@openrouter__ai-sdk-provider.patch
   conf@14.0.0:
     hash: 56254a98f20461a96d6b30db95d31a459ca15443a73844e166da79dcb6392d02
     path: patches/conf@14.0.0.patch
@@ -522,7 +525,7 @@ importers:
         version: 2.0.33(zod@4.2.1)
       '@openrouter/ai-sdk-provider':
         specifier: ^1.5.4
-        version: 1.5.4(ai@5.0.97(zod@4.2.1))(zod@4.2.1)
+        version: 1.5.4(patch_hash=a297df2d985180ba092b245cdc652e6c1f5243feee4ef99c1174591d20d7ebd8)(ai@5.0.97(zod@4.2.1))(zod@4.2.1)
       '@quests/shared':
         specifier: workspace:*
         version: link:../shared
@@ -10007,7 +10010,7 @@ snapshots:
   '@open-draft/until@2.1.0':
     optional: true
 
-  '@openrouter/ai-sdk-provider@1.5.4(ai@5.0.97(zod@4.2.1))(zod@4.2.1)':
+  '@openrouter/ai-sdk-provider@1.5.4(patch_hash=a297df2d985180ba092b245cdc652e6c1f5243feee4ef99c1174591d20d7ebd8)(ai@5.0.97(zod@4.2.1))(zod@4.2.1)':
     dependencies:
       '@openrouter/sdk': 0.1.27
       ai: 5.0.97(zod@4.2.1)

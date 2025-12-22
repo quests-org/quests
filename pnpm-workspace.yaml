@@ -38,6 +38,7 @@ onlyBuiltDependencies:
 onlyBuiltDependenciesFile: node_modules/.pnpm-config/@pnpm/plugin-trusted-deps/allow.json
 
 patchedDependencies:
+  "@openrouter/ai-sdk-provider": patches/@openrouter__ai-sdk-provider.patch
   conf@14.0.0: patches/conf@14.0.0.patch
 
 sideEffectsCache: false
