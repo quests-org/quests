@@ -14,6 +14,7 @@ alwaysApply: false
 - Don't run `tsc` to check for type errors, use your built-in diagnostics tool.
 - `"lib": ["es2023", "DOM", "DOM.Iterable"]` is set, so you can use modern features.
 - The `radashi` import is installed. Use it for common lodash-style functions.
+- Avoid redefining types and interfaces in every file, if possible, use an existing type or interface.
 
 ## Tailwind Rules
 
