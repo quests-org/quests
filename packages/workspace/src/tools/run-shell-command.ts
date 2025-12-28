@@ -10,6 +10,7 @@ import type { AppConfig } from "../lib/app-config/types";
 
 import { absolutePathJoin } from "../lib/absolute-path-join";
 import { execaNodeForApp } from "../lib/execa-node-for-app";
+import { filterDebuggerMessages } from "../lib/filter-debugger-messages";
 import { fixRelativePath } from "../lib/fix-relative-path";
 import { pathExists } from "../lib/path-exists";
 import { runNodeModulesBin } from "../lib/run-node-modules-bin";
@@ -462,7 +463,7 @@ export const RunShellCommand = createTool({
         return ok({
           command: input.command,
           exitCode: execResult.exitCode ?? 0,
-          stderr: execResult.stderr,
+          stderr: filterDebuggerMessages(execResult.stderr),
           stdout: execResult.stdout,
         });
       }
@@ -480,7 +481,7 @@ export const RunShellCommand = createTool({
         return ok({
           command: input.command,
           exitCode: execResult.exitCode ?? 0,
-          stderr: execResult.stderr,
+          stderr: filterDebuggerMessages(execResult.stderr),
           stdout: execResult.stdout,
         });
       }

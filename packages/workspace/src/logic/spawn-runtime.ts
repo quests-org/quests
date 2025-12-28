@@ -13,6 +13,7 @@ import {
 import { type AppConfig } from "../lib/app-config/types";
 import { cancelableTimeout, TimeoutError } from "../lib/cancelable-timeout";
 import { execaNodeForApp } from "../lib/execa-node-for-app";
+import { shouldFilterDebuggerMessage } from "../lib/filter-debugger-messages";
 import { getFramework } from "../lib/get-framework";
 import { getPackageManager } from "../lib/get-package-manager";
 import { pathExists } from "../lib/path-exists";
@@ -77,12 +78,7 @@ function sendProcessLogs(
   stderr?.on("data", (data: Buffer) => {
     const message = data.toString().trim();
     if (message) {
-      if (
-        process.env.NODE_ENV === "development" &&
-        (message === "Debugger attached." ||
-          message === "Waiting for the debugger to disconnect...")
-      ) {
-        // Filter debugger messages in development
+      if (shouldFilterDebuggerMessage(message)) {
         return;
       }
       parentRef.send({
