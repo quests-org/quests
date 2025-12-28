@@ -16,7 +16,19 @@ import { runNodeModulesBin } from "../lib/run-node-modules-bin";
 import { BaseInputSchema } from "./base";
 import { createTool } from "./create-tool";
 
-const AVAILABLE_COMMANDS = {
+const FileOperationSchema = z.enum(["mkdir", "mv", "rm"]);
+type FileOperation = z.output<typeof FileOperationSchema>;
+
+const ShellCommandSchema = z.enum(["pnpm", "tsc"]);
+type ShellCommand = z.output<typeof ShellCommandSchema>;
+
+const CommandNameSchema = z.union([FileOperationSchema, ShellCommandSchema]);
+type CommandName = z.output<typeof CommandNameSchema>;
+
+const AVAILABLE_COMMANDS: Record<
+  CommandName,
+  { description: string; example: string; isFileOperation: boolean }
+> = {
   mkdir: {
     description:
       "A limited version of the mkdir command that supports the -p flag for creating parent directories.",
@@ -45,19 +57,7 @@ const AVAILABLE_COMMANDS = {
     example: "tsc",
     isFileOperation: false,
   },
-} as const;
-
-const SHELL_COMMANDS = new Set(
-  Object.entries(AVAILABLE_COMMANDS)
-    .filter(([, config]) => !config.isFileOperation)
-    .map(([command]) => command),
-);
-
-const FILE_OPERATIONS = new Set(
-  Object.entries(AVAILABLE_COMMANDS)
-    .filter(([, config]) => config.isFileOperation)
-    .map(([command]) => command),
-);
+};
 
 type FileOperationResult = Result<
   { command: string; exitCode: number; stderr: string; stdout: string },
@@ -81,7 +81,7 @@ function createSuccess(command: string): {
 }
 
 async function handleFileOperation(
-  command: string,
+  command: FileOperation,
   args: string[],
   appConfig: AppConfig,
 ): Promise<FileOperationResult> {
@@ -94,9 +94,6 @@ async function handleFileOperation(
     }
     case "rm": {
       return handleRmCommand(args, appConfig);
-    }
-    default: {
-      return err(createError(`Unknown file operation: ${command}`));
     }
   }
 }
@@ -397,74 +394,84 @@ export const RunShellCommand = createTool({
       });
     }
 
-    // Handle file operations with Node.js
-    if (FILE_OPERATIONS.has(commandName)) {
-      return await handleFileOperation(commandName, args, appConfig);
-    }
-
-    // Handle allowed shell commands
-    if (!SHELL_COMMANDS.has(commandName)) {
+    const commandValidation = CommandNameSchema.safeParse(commandName);
+    if (!commandValidation.success) {
+      const allCommands = [
+        ...FileOperationSchema.options,
+        ...ShellCommandSchema.options,
+      ];
       return err({
-        message: `Invalid command. The available commands are: ${Object.keys(AVAILABLE_COMMANDS).join(", ")}.`,
+        message: `Invalid command. The available commands are: ${allCommands.join(", ")}.`,
         type: "execute-error",
       });
     }
 
-    if (commandName === "pnpm") {
-      const subcommand = args[0];
-      const secondArg = args[1];
+    const validCommand = commandValidation.data;
 
-      if (subcommand === "dev" || subcommand === "start") {
-        return err({
-          message: `Quests already starts and runs the apps for you. You don't need to run 'pnpm ${subcommand}'.`,
-          type: "execute-error",
-        });
-      }
-
-      if (
-        subcommand === "run" &&
-        (secondArg === "dev" || secondArg === "start")
-      ) {
-        return err({
-          message: `Quests already starts and runs the apps for you. You don't need to run 'pnpm run ${secondArg}'.`,
-          type: "execute-error",
-        });
-      }
-
-      const process = await execaNodeForApp(
-        appConfig,
-        appConfig.workspaceConfig.pnpmBinPath,
-        args,
-        { cancelSignal: signal },
-      );
-      return ok({
-        command: input.command,
-        exitCode: process.exitCode ?? 0,
-        stderr: process.stderr,
-        stdout: process.stdout,
-      });
-    } else if (commandName === "tsc") {
-      const binResult = await runNodeModulesBin(appConfig, "tsc", args, {
-        cancelSignal: signal,
-      });
-      if (binResult.isErr()) {
-        return err({
-          message: binResult.error.message,
-          type: "execute-error",
-        });
-      }
-      const process = await binResult.value;
-      return ok({
-        command: input.command,
-        exitCode: process.exitCode ?? 0,
-        stderr: process.stderr,
-        stdout: process.stdout,
-      });
+    // Handle file operations with Node.js
+    const fileOpValidation = FileOperationSchema.safeParse(validCommand);
+    if (fileOpValidation.success) {
+      return await handleFileOperation(fileOpValidation.data, args, appConfig);
     }
-    return err({
-      message: `Invalid command. The available commands are: ${Object.keys(AVAILABLE_COMMANDS).join(", ")}.`,
-      type: "execute-error",
-    });
+
+    // At this point, TypeScript knows validCommand is a ShellCommand
+    const shellCommand = validCommand as ShellCommand;
+
+    // Handle allowed shell commands
+    switch (shellCommand) {
+      case "pnpm": {
+        const subcommand = args[0];
+        const secondArg = args[1];
+
+        if (subcommand === "dev" || subcommand === "start") {
+          return err({
+            message: `Quests already starts and runs the apps for you. You don't need to run 'pnpm ${subcommand}'.`,
+            type: "execute-error",
+          });
+        }
+
+        if (
+          subcommand === "run" &&
+          (secondArg === "dev" || secondArg === "start")
+        ) {
+          return err({
+            message: `Quests already starts and runs the apps for you. You don't need to run 'pnpm run ${secondArg}'.`,
+            type: "execute-error",
+          });
+        }
+
+        const execResult = await execaNodeForApp(
+          appConfig,
+          appConfig.workspaceConfig.pnpmBinPath,
+          args,
+          { cancelSignal: signal },
+        );
+        return ok({
+          command: input.command,
+          exitCode: execResult.exitCode ?? 0,
+          stderr: execResult.stderr,
+          stdout: execResult.stdout,
+        });
+      }
+      case "tsc": {
+        const binResult = await runNodeModulesBin(appConfig, "tsc", args, {
+          cancelSignal: signal,
+        });
+        if (binResult.isErr()) {
+          return err({
+            message: binResult.error.message,
+            type: "execute-error",
+          });
+        }
+        const execResult = await binResult.value;
+        return ok({
+          command: input.command,
+          exitCode: execResult.exitCode ?? 0,
+          stderr: execResult.stderr,
+          stdout: execResult.stdout,
+        });
+      }
+    }
   },
   inputSchema: BaseInputSchema.extend({
     command: z.string().meta({ description: "The shell command to run" }),
