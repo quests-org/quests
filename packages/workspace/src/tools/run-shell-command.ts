@@ -54,8 +54,12 @@ const AVAILABLE_COMMANDS: Record<
     isFileOperation: true,
   },
   pnpm: {
-    description: "Node.js package manager",
-    examples: ["pnpm add <package-name>"],
+    description:
+      "CLI tool for managing JavaScript packages. Use --allow-build=<package-name> to allow a package to run postinstall scripts if it fails.",
+    examples: [
+      "pnpm add <package-name>",
+      "pnpm --allow-build=<package-name> add <package-name>",
+    ],
     isFileOperation: false,
   },
   rm: {
