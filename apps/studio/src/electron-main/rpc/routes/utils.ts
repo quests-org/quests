@@ -5,6 +5,7 @@ import type {
 } from "@/shared/schemas/editors";
 
 import { captureServerEvent } from "@/electron-main/lib/capture-server-event";
+import { captureServerException } from "@/electron-main/lib/capture-server-exception";
 import {
   clearServerExceptions,
   getServerExceptions,
@@ -252,7 +253,11 @@ const openAppIn = base
 
     try {
       if (input.type === "show-in-folder") {
-        shell.showItemInFolder(appConfig.appDir);
+        const errorMessage = await shell.openPath(appConfig.appDir);
+        if (errorMessage) {
+          captureServerException(errorMessage);
+          shell.showItemInFolder(appConfig.appDir);
+        }
       } else {
         const command = getOpenCommand(input.type, appConfig.appDir, platform);
         await execAsync(command);
