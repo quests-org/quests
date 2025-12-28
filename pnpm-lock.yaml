@@ -834,6 +834,9 @@ importers:
       read-pkg:
         specifier: ^9.0.1
         version: 9.0.1
+      shell-quote:
+        specifier: ^1.8.3
+        version: 1.8.3
       superjson:
         specifier: ^2.2.2
         version: 2.2.2
@@ -880,6 +883,9 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 22.19.2
+      '@types/shell-quote':
+        specifier: ^1.7.5
+        version: 1.7.5
       dotenv:
         specifier: ^16.6.1
         version: 16.6.1
@@ -3497,6 +3503,9 @@ packages:
 
   '@types/semver@7.7.0':
     resolution: {integrity: sha512-k107IF4+Xr7UHjwDc7Cfd6PRQfbdkiRabXGRjo07b4WyPahFBZCZ1sE+BNxYIJPPg73UkfOsVOLwqVc/6ETrIA==}
+
+  '@types/shell-quote@1.7.5':
+    resolution: {integrity: sha512-+UE8GAGRPbJVQDdxi16dgadcBfQ+KG2vgZhV1+3A1XmHbmwcdwhCUwIdy+d3pAGrbvgRoVSjeI9vOWyq376Yzw==}
 
   '@types/sprintf-js@1.1.4':
     resolution: {integrity: sha512-aWK1reDYWxcjgcIIPmQi3u+OQDuYa9b+lr6eIsGWrekJ9vr1NSjr4Eab8oQ1iKuH1ltFHpXGyerAv1a3FMKxzQ==}
@@ -7522,6 +7531,10 @@ packages:
     resolution: {integrity: sha512-s/9q9PEtcRmDTz69+cJ3yYBAe9yGrL7e46gm2bU4pQ9N48ecPK9QrGFnLwYgb4smOHskx4PL7wCNMktW2AoD+g==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
 
+  shell-quote@1.8.3:
+    resolution: {integrity: sha512-ObmnIF4hXNg1BqhnHmgbDETF8dLPCggZWBjkQfhZpbszZnYur5DUljTcCHii5LC3J5E0yeO/1LIMyH+UvHQgyw==}
+    engines: {node: '>= 0.4'}
+
   side-channel-list@1.0.0:
     resolution: {integrity: sha512-FCLHtRD/gnpCiCHEiJLOwdmFP+wzCmDEkc9y7NsYxeF4u7Btsn1ZuwgwJGxImImHicJArLP4R0yX4c2KCrMrTA==}
     engines: {node: '>= 0.4'}
@@ -11395,6 +11408,8 @@ snapshots:
       '@types/node': 25.0.3
 
   '@types/semver@7.7.0': {}
+
+  '@types/shell-quote@1.7.5': {}
 
   '@types/sprintf-js@1.1.4': {}
 
@@ -16372,6 +16387,8 @@ snapshots:
   shell-path@3.1.0:
     dependencies:
       shell-env: 4.0.1
+
+  shell-quote@1.8.3: {}
 
   side-channel-list@1.0.0:
     dependencies:

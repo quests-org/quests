@@ -3,6 +3,8 @@ import { SelectableAppIconsSchema } from "@quests/shared/icons";
 import { dedent } from "radashi";
 import { z } from "zod";
 
+import { isDeveloperMode } from "../stores/preferences";
+
 const EvalTemplateSchema = z.object({
   iconName: SelectableAppIconsSchema,
   name: z.string(),
@@ -11,6 +13,7 @@ const EvalTemplateSchema = z.object({
 });
 
 export const EvalTemplateGroupSchema = z.object({
+  developerOnly: z.boolean().optional(),
   name: z.string(),
   templates: z.array(EvalTemplateSchema),
 });
@@ -29,6 +32,22 @@ const EVAL_TEMPLATE_GROUPS: EvalTemplateGroup[] = [
         name: "Custom",
         systemPrompt: "",
         userPrompt: "",
+      },
+    ],
+  },
+  {
+    developerOnly: true,
+    name: "Shell Commands",
+    templates: [
+      {
+        iconName: "terminal",
+        name: "Pie Chart",
+        userPrompt: "Use a script to create a pie chart on disk",
+      },
+      {
+        iconName: "terminal",
+        name: "Eval a string of code",
+        userPrompt: 'Use tsx -e to log "hello from eval!"',
       },
     ],
   },
@@ -542,5 +561,7 @@ const EVAL_TEMPLATE_GROUPS: EvalTemplateGroup[] = [
 /* cspell:enable */
 
 export function getEvalTemplateGroups(): EvalTemplateGroup[] {
-  return EVAL_TEMPLATE_GROUPS;
+  return EVAL_TEMPLATE_GROUPS.filter(
+    (group) => !group.developerOnly || isDeveloperMode(),
+  );
 }

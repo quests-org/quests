@@ -1,4 +1,4 @@
-import { parseCommandString } from "execa";
+import { envForProviders } from "@quests/ai-gateway";
 import ms from "ms";
 import { err, ok, type Result } from "neverthrow";
 import fs from "node:fs/promises";
@@ -14,13 +14,15 @@ import { filterDebuggerMessages } from "../lib/filter-debugger-messages";
 import { fixRelativePath } from "../lib/fix-relative-path";
 import { pathExists } from "../lib/path-exists";
 import { runNodeModulesBin } from "../lib/run-node-modules-bin";
+import { getWorkspaceServerURL } from "../logic/server/url";
 import { BaseInputSchema } from "./base";
 import { createTool } from "./create-tool";
+import { translateShellCommand } from "./translate-shell-command";
 
-const FileOperationSchema = z.enum(["mkdir", "mv", "rm"]);
+const FileOperationSchema = z.enum(["cp", "mkdir", "mv", "rm"]);
 type FileOperation = z.output<typeof FileOperationSchema>;
 
-const ShellCommandSchema = z.enum(["pnpm", "tsc"]);
+const ShellCommandSchema = z.enum(["pnpm", "tsc", "tsx"]);
 type ShellCommand = z.output<typeof ShellCommandSchema>;
 
 const CommandNameSchema = z.union([FileOperationSchema, ShellCommandSchema]);
@@ -28,34 +30,52 @@ type CommandName = z.output<typeof CommandNameSchema>;
 
 const AVAILABLE_COMMANDS: Record<
   CommandName,
-  { description: string; example: string; isFileOperation: boolean }
+  { description: string; examples: string[]; isFileOperation: boolean }
 > = {
+  cp: {
+    description:
+      "A limited version of the cp command that supports the -r flag for recursive directory copying and can only copy files/directories in the app directory.",
+    examples: [
+      "cp src/file.ts src/file-copy.ts",
+      "cp -r src/components src/components-backup",
+    ],
+    isFileOperation: true,
+  },
   mkdir: {
     description:
       "A limited version of the mkdir command that supports the -p flag for creating parent directories.",
-    example: "mkdir -p src/components/ui",
+    examples: ["mkdir src/utils", "mkdir -p src/components/ui/buttons"],
     isFileOperation: true,
   },
   mv: {
     description:
       "A limited version of the mv command that accepts no flags and can only move files in the app directory.",
-    example: "mv src/old.ts src/new.ts",
+    examples: ["mv src/old.ts src/new.ts"],
     isFileOperation: true,
   },
   pnpm: {
     description: "Node.js package manager",
-    example: "pnpm add <package-name>",
+    examples: ["pnpm add <package-name>"],
     isFileOperation: false,
   },
   rm: {
     description:
       "A limited version of the rm command that supports the -r flag for recursive directory removal and can only remove files/directories in the app directory.",
-    example: "rm temp/cache.json or rm -r temp/",
+    examples: ["rm src/temp.json", "rm -r build/"],
     isFileOperation: true,
   },
   tsc: {
     description: "TypeScript compiler",
-    example: "tsc",
+    examples: ["tsc"],
+    isFileOperation: false,
+  },
+  tsx: {
+    description:
+      "Execute TypeScript files directly. Avoid -e string evaluation except for short one-liners like math, formatting, simple file operations, etc.",
+    examples: [
+      "tsx scripts/setup.ts",
+      'tsx -e "console.log(Math.floor(Date.now() / 1000))"',
+    ],
     isFileOperation: false,
   },
 };
@@ -81,12 +101,121 @@ function createSuccess(command: string): {
   return { command, exitCode: 0, stderr: "", stdout: "" };
 }
 
+async function handleCpCommand(
+  args: string[],
+  appConfig: AppConfig,
+): Promise<FileOperationResult> {
+  if (args.length === 0) {
+    return err(
+      createError(
+        "cp command requires at least 2 arguments: cp [-r] <source> <destination>",
+      ),
+    );
+  }
+
+  let recursive = false;
+  let sourcePath: string;
+  let destPath: string;
+
+  if (args[0] === "-r") {
+    if (args.length !== 3) {
+      return err(
+        createError(
+          "cp -r command requires exactly 2 path arguments: cp -r <source> <destination>",
+        ),
+      );
+    }
+    recursive = true;
+    sourcePath = args[1] ?? "";
+    destPath = args[2] ?? "";
+  } else {
+    if (args.length !== 2) {
+      return err(
+        createError(
+          "cp command requires exactly 2 arguments: cp <source> <destination>",
+        ),
+      );
+    }
+    sourcePath = args[0] ?? "";
+    destPath = args[1] ?? "";
+  }
+
+  if (!sourcePath || !destPath) {
+    return err(
+      createError(
+        "cp command requires valid source and destination path arguments",
+      ),
+    );
+  }
+
+  const fixedSourceResult = validateAndFixPath(sourcePath, "Source");
+  if (fixedSourceResult.isErr()) {
+    return err(fixedSourceResult.error);
+  }
+
+  const fixedDestResult = validateAndFixPath(destPath, "Destination");
+  if (fixedDestResult.isErr()) {
+    return err(fixedDestResult.error);
+  }
+
+  const absoluteSourcePath = absolutePathJoin(
+    appConfig.appDir,
+    fixedSourceResult.value,
+  );
+  const absoluteDestPath = absolutePathJoin(
+    appConfig.appDir,
+    fixedDestResult.value,
+  );
+
+  const sourceExists = await pathExists(absoluteSourcePath);
+  if (!sourceExists) {
+    return err(
+      createError(`cp: cannot stat '${sourcePath}': No such file or directory`),
+    );
+  }
+
+  try {
+    const stats = await fs.stat(absoluteSourcePath);
+
+    if (stats.isDirectory()) {
+      if (!recursive) {
+        return err(
+          createError(
+            `cp: -r not specified; omitting directory '${sourcePath}'`,
+          ),
+        );
+      }
+
+      await fs.cp(absoluteSourcePath, absoluteDestPath, {
+        force: true,
+        recursive: true,
+      });
+      return ok(createSuccess(`cp -r ${sourcePath} ${destPath}`));
+    } else {
+      await fs.copyFile(absoluteSourcePath, absoluteDestPath);
+      const command = recursive
+        ? `cp -r ${sourcePath} ${destPath}`
+        : `cp ${sourcePath} ${destPath}`;
+      return ok(createSuccess(command));
+    }
+  } catch (error) {
+    return err(
+      createError(
+        `cp command failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+      ),
+    );
+  }
+}
+
 async function handleFileOperation(
   command: FileOperation,
   args: string[],
   appConfig: AppConfig,
 ): Promise<FileOperationResult> {
   switch (command) {
+    case "cp": {
+      return handleCpCommand(args, appConfig);
+    }
     case "mkdir": {
       return handleMkdirCommand(args, appConfig);
     }
@@ -380,7 +509,7 @@ export const RunShellCommand = createTool({
       
     Examples:
     ${Object.entries(AVAILABLE_COMMANDS)
-      .map(([, config]) => `- ${config.example}`)
+      .flatMap(([, config]) => config.examples.map((ex) => `- ${ex}`))
       .join("\n")}
     
     File operations (${Object.entries(AVAILABLE_COMMANDS)
@@ -389,17 +518,15 @@ export const RunShellCommand = createTool({
       .join(", ")}) use secure Node.js APIs instead of shell execution.
   `,
   execute: async ({ appConfig, input, signal }) => {
-    const multiCommandPatterns = [/&&/, /\|\|/, /(?:^|[^|])\|(?:[^|]|$)/, /;/];
-    if (multiCommandPatterns.some((pattern) => pattern.test(input.command))) {
+    const parseResult = translateShellCommand(input.command);
+    if (parseResult.isErr()) {
       return err({
-        message:
-          "Only one command can be run at a time. Do not use &&, ||, |, or ; to chain commands. Call this tool multiple times for multiple commands.",
+        message: parseResult.error.message,
         type: "execute-error",
       });
     }
 
-    const parsedCommand = parseCommandString(input.command);
-    const [commandName, ...args] = parsedCommand;
+    const [commandName, ...args] = parseResult.value;
 
     if (!commandName) {
       return err({
@@ -470,6 +597,36 @@ export const RunShellCommand = createTool({
       case "tsc": {
         const binResult = await runNodeModulesBin(appConfig, "tsc", args, {
           cancelSignal: signal,
+        });
+        if (binResult.isErr()) {
+          return err({
+            message: binResult.error.message,
+            type: "execute-error",
+          });
+        }
+        const execResult = await binResult.value;
+        return ok({
+          command: input.command,
+          exitCode: execResult.exitCode ?? 0,
+          stderr: filterDebuggerMessages(execResult.stderr),
+          stdout: execResult.stdout,
+        });
+      }
+      case "tsx": {
+        if (args.length === 0) {
+          return err({
+            message:
+              "tsx command requires a file argument (e.g., tsx scripts/setup.ts). Running tsx without arguments spawns an interactive shell.",
+            type: "execute-error",
+          });
+        }
+        const providerEnv = envForProviders({
+          configs: appConfig.workspaceConfig.getAIProviderConfigs(),
+          workspaceServerURL: getWorkspaceServerURL(),
+        });
+        const binResult = await runNodeModulesBin(appConfig, "tsx", args, {
+          cancelSignal: signal,
+          env: providerEnv,
         });
         if (binResult.isErr()) {
           return err({
