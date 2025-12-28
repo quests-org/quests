@@ -69,23 +69,22 @@ function DeleteWithProgressDialogBody<T>({
   const [messageIndex, setMessageIndex] = useState(0);
 
   useEffect(() => {
-    if (isPending) {
-      const initialTimer = setTimeout(() => {
-        setShowWarning(true);
-      }, 3000);
-
-      const cycleTimer = setInterval(() => {
-        setMessageIndex((prev) => (prev + 1) % PROGRESS_MESSAGES.length);
-      }, 7000);
-
-      return () => {
-        clearTimeout(initialTimer);
-        clearInterval(cycleTimer);
-      };
+    if (!isPending) {
+      return;
     }
-    setShowWarning(false);
-    setMessageIndex(0);
-    return;
+
+    const initialTimer = setTimeout(() => {
+      setShowWarning(true);
+    }, 3000);
+
+    const cycleTimer = setInterval(() => {
+      setMessageIndex((prev) => (prev + 1) % PROGRESS_MESSAGES.length);
+    }, 7000);
+
+    return () => {
+      clearTimeout(initialTimer);
+      clearInterval(cycleTimer);
+    };
   }, [isPending]);
 
   const handleDelete = async () => {

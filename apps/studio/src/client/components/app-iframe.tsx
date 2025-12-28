@@ -4,15 +4,16 @@ import {
 } from "@quests/shared/shim";
 import { type WorkspaceApp } from "@quests/workspace/client";
 import { useMutation } from "@tanstack/react-query";
+import { useMachine } from "@xstate/react";
 import { type atom, useSetAtom } from "jotai";
 import { Circle, Loader2, Square, XIcon } from "lucide-react";
 import ms from "ms";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { ulid } from "ulid";
 
-import { useAppState } from "../hooks/use-app-state";
 import { cn } from "../lib/utils";
+import { appCoverMachine } from "../machines/app-cover-state";
 import { rpcClient } from "../rpc/client";
 import { type ClientLogLine } from "./console";
 import { Button } from "./ui/button";
@@ -30,15 +31,11 @@ export function AppIFrame({
   iframeRef?: React.RefObject<HTMLIFrameElement | null>;
   onOpenConsole?: () => void;
 }) {
-  const [coverState, setCoverState] = useState<
-    "dismissed" | "hidden" | "hiding" | "visible"
-  >("hidden");
   const [refreshKey, setRefreshKey] = useState(0);
-  const wasActiveRef = useRef(false);
   const setClientLogs = useSetAtom(clientLogsAtom);
 
-  const { data: appState } = useAppState({
-    subdomain: app.subdomain,
+  const [state, send] = useMachine(appCoverMachine, {
+    input: { subdomain: app.subdomain },
   });
 
   const stopSessions = useMutation(
@@ -47,10 +44,6 @@ export function AppIFrame({
 
   const openExternalLinkMutation = useMutation(
     rpcClient.utils.openExternalLink.mutationOptions(),
-  );
-
-  const hasRunningSession = (appState?.sessionActors ?? []).some((session) =>
-    session.tags.includes("agent.running"),
   );
 
   useEffect(() => {
@@ -123,29 +116,6 @@ export function AppIFrame({
     };
   }, [iframeRef]);
 
-  // Keep cover visible briefly after session ends to prevent modal being
-  // dismissed right before the app reboots
-  useEffect(() => {
-    if (hasRunningSession) {
-      setCoverState((current) =>
-        current === "dismissed" ? "dismissed" : "visible",
-      );
-      wasActiveRef.current = true;
-    } else if (wasActiveRef.current) {
-      setCoverState((current) =>
-        current === "dismissed" ? "dismissed" : "hiding",
-      );
-      const timeoutId = setTimeout(() => {
-        setCoverState("hidden");
-        wasActiveRef.current = false;
-      }, 2000);
-      return () => {
-        clearTimeout(timeoutId);
-      };
-    }
-    return;
-  }, [hasRunningSession]);
-
   const handleOpenBlockedURI = useCallback(
     (blockedURI: string) => {
       openExternalLinkMutation.mutate(
@@ -197,7 +167,7 @@ export function AppIFrame({
     };
   }, [handleOpenBlockedURI]);
 
-  const shouldShowCover = coverState === "visible" || coverState === "hiding";
+  const shouldShowCover = state.matches("Visible") || state.matches("Hiding");
   // Must contain the url or iframe will be shared and allow navigation between apps
   const iframeKey = `${app.urls.localhost}-${refreshKey}`;
 
@@ -229,7 +199,7 @@ export function AppIFrame({
             <button
               className="absolute top-4 right-4 rounded-xs opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
               onClick={() => {
-                setCoverState("dismissed");
+                send({ type: "dismiss" });
               }}
               type="button"
             >
@@ -249,7 +219,7 @@ export function AppIFrame({
                 className="gap-1.5"
                 disabled={stopSessions.isPending}
                 onClick={() => {
-                  setCoverState("dismissed");
+                  send({ type: "dismiss" });
                   stopSessions.mutate({ subdomain: app.subdomain });
                 }}
                 variant="secondary"

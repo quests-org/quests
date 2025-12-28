@@ -7,12 +7,12 @@ import { useState } from "react";
 
 import {
   getToolDisplayName,
-  getToolIcon,
   getToolStreamingDisplayName,
 } from "../../lib/tool-display";
 import { cn } from "../../lib/utils";
 import { CollapsiblePartTrigger } from "../collapsible-part-trigger";
 import { ReasoningMessage } from "../reasoning-message";
+import { ToolIcon } from "../tool-icon";
 import {
   Collapsible,
   CollapsibleContent,
@@ -29,7 +29,6 @@ export function ToolPart({
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const toolName = getToolNameByType(part.type);
-  const ToolIcon = getToolIcon(toolName);
 
   const isFileNotFound =
     part.state === "output-available" &&
@@ -94,8 +93,6 @@ export function ToolPart({
     );
   }
 
-  const DisplayIcon = isError ? TriangleAlert : ToolIcon;
-
   const mainContent = (
     <div className="flex w-full min-w-0 items-center gap-2 text-xs leading-tight">
       {isLoading ? (
@@ -109,7 +106,11 @@ export function ToolPart({
             isError && "text-warning-foreground/80",
           )}
         >
-          <DisplayIcon className="size-3" />
+          {isError ? (
+            <TriangleAlert className="size-3" />
+          ) : (
+            <ToolIcon className="size-3" toolName={toolName} />
+          )}
         </span>
       )}
 

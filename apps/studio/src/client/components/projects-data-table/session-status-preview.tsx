@@ -6,14 +6,19 @@ import type {
 import { useAppState } from "@/client/hooks/use-app-state";
 import {
   getToolDisplayName,
-  getToolIcon,
   getToolStreamingDisplayName,
+  TOOL_ICONS,
 } from "@/client/lib/tool-display";
 import { cn } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
 import { getToolNameByType } from "@quests/workspace/client";
 import { useQuery } from "@tanstack/react-query";
-import { Brain, GitCommitVertical, MessageSquare } from "lucide-react";
+import {
+  Brain,
+  GitCommitVertical,
+  HelpCircle,
+  MessageSquare,
+} from "lucide-react";
 
 export function SessionStatusPreview({
   subdomain,
@@ -106,7 +111,7 @@ function SessionStatusText({
   } else if (latestPart.type.startsWith("tool-")) {
     const toolPart = latestPart as SessionMessagePart.ToolPart;
     const toolName = getToolNameByType(toolPart.type);
-    Icon = getToolIcon(toolName);
+    Icon = TOOL_ICONS[toolName] ?? HelpCircle;
 
     if (toolPart.state === "output-available") {
       displayText = getToolDisplayName(toolName);

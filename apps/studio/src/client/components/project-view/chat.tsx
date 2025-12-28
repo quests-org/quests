@@ -45,11 +45,9 @@ export function ProjectViewChat({
     subdomain: project.subdomain,
   });
 
-  useEffect(() => {
-    if (initialSelectedModelURI) {
-      setSelectedModelURI(initialSelectedModelURI);
-    }
-  }, [initialSelectedModelURI]);
+  if (initialSelectedModelURI && selectedModelURI !== initialSelectedModelURI) {
+    setSelectedModelURI(initialSelectedModelURI);
+  }
 
   const sessionActors = appState?.sessionActors ?? [];
   const isAgentAlive = sessionActors.some((session) =>

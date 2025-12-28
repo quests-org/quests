@@ -28,7 +28,6 @@ import {
   redirect,
   useNavigate,
 } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
 import { z } from "zod";
 
 const projectSearchSchema = z.object({
@@ -139,21 +138,17 @@ function RouteComponent() {
   const { subdomain } = Route.useParams();
   const { selectedSessionId, selectedVersion, showDelete } = Route.useSearch();
   const navigate = useNavigate();
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  useEffect(() => {
-    if (showDelete) {
-      setShowDeleteDialog(true);
-      void navigate({
-        from: "/projects/$subdomain",
-        params: {
-          subdomain,
-        },
-        replace: true,
-        search: (prev) => ({ ...prev, showDelete: undefined }),
-      });
-    }
-  }, [showDelete, navigate, subdomain]);
+  const handleDeleteDialogChange = (open: boolean) => {
+    void navigate({
+      from: "/projects/$subdomain",
+      params: {
+        subdomain,
+      },
+      replace: true,
+      search: (prev) => ({ ...prev, showDelete: open || undefined }),
+    });
+  };
 
   const {
     data: project,
@@ -200,7 +195,7 @@ function RouteComponent() {
     <div className="flex h-dvh w-full flex-col overflow-hidden">
       <ProjectHeaderToolbar
         onDeleteClick={() => {
-          setShowDeleteDialog(true);
+          handleDeleteDialogChange(true);
         }}
         project={project}
         selectedVersion={selectedVersion}
@@ -224,8 +219,8 @@ function RouteComponent() {
 
       <ProjectDeleteDialog
         navigateOnDelete
-        onOpenChange={setShowDeleteDialog}
-        open={showDeleteDialog}
+        onOpenChange={handleDeleteDialogChange}
+        open={showDelete ?? false}
         project={project}
       />
     </div>

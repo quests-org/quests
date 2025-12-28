@@ -13,7 +13,7 @@ import {
   PanelBottom,
   RotateCw,
 } from "lucide-react";
-import { type ReactNode, useEffect, useMemo, useState } from "react";
+import { type ReactNode, useMemo, useState } from "react";
 
 import { rpcClient } from "../rpc/client";
 import { type ClientLogLine } from "./console";
@@ -69,35 +69,6 @@ export function AppToolbar({
 
   const clientLogs = useAtomValue(clientLogsAtom);
 
-  useEffect(() => {
-    if (isConsoleOpen && (runtimeLogs.length > 0 || clientLogs.length > 0)) {
-      const latestServerLog = runtimeLogs.at(-1);
-      const latestClientLog = clientLogs.at(-1);
-
-      const latestServerLogTimestamp = latestServerLog?.createdAt
-        ? new Date(latestServerLog.createdAt).getTime()
-        : null;
-      const latestClientLogTimestamp = latestClientLog?.createdAt
-        ? latestClientLog.createdAt.getTime()
-        : null;
-
-      const latestTimestamp = Math.max(
-        latestServerLogTimestamp ?? 0,
-        latestClientLogTimestamp ?? 0,
-      );
-
-      if (latestTimestamp > 0 && latestTimestamp !== lastSeenLogTimestamp) {
-        setLastSeenLogTimestamp(latestTimestamp);
-      }
-    }
-  }, [
-    runtimeLogs,
-    clientLogs,
-    isConsoleOpen,
-    lastSeenLogTimestamp,
-    setLastSeenLogTimestamp,
-  ]);
-
   const badgeStatus = useMemo((): "error" | "new" | "none" => {
     if (
       (runtimeLogs.length === 0 && clientLogs.length === 0) ||
@@ -130,7 +101,9 @@ export function AppToolbar({
   }, [runtimeLogs, clientLogs, lastSeenLogTimestamp, isConsoleOpen]);
 
   const handleConsoleToggleWithTracking = () => {
-    if (isConsoleOpen && (runtimeLogs.length > 0 || clientLogs.length > 0)) {
+    if (!isConsoleOpen) {
+      onConsoleToggle();
+    } else if (runtimeLogs.length > 0 || clientLogs.length > 0) {
       const latestServerLog = runtimeLogs.at(-1);
       const latestClientLog = clientLogs.at(-1);
 
@@ -149,8 +122,10 @@ export function AppToolbar({
       if (latestTimestamp > 0) {
         setLastSeenLogTimestamp(latestTimestamp);
       }
+      onConsoleToggle();
+    } else {
+      onConsoleToggle();
     }
-    onConsoleToggle();
   };
 
   return (

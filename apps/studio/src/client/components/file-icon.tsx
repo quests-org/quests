@@ -153,6 +153,8 @@ export function FileIcon({
     );
   }
 
+  // Dynamic creation should be fine because the components have no state
+  // eslint-disable-next-line react-hooks/static-components
   return <Icon className={className} />;
 }
 

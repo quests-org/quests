@@ -14,7 +14,7 @@ import { type ClientAIProviderConfig } from "@/shared/schemas/provider";
 import { useMutation } from "@tanstack/react-query";
 import { useAtomValue } from "jotai";
 import { AlertCircle } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { providerMetadataAtom } from "../atoms/provider-metadata";
 import { AIProviderIcon } from "./ai-provider-icon";
@@ -46,13 +46,14 @@ export function AIProviderEditDialog({
     rpcClient.providerConfig.update.mutationOptions(),
   );
 
-  useEffect(() => {
-    if (open) {
+  const handleOpenChange = (newOpen: boolean) => {
+    if (newOpen) {
       setAPIKey("");
       setDisplayName(config.displayName || "");
       setErrorMessage(null);
     }
-  }, [open, config.displayName]);
+    onOpenChange(newOpen);
+  };
 
   const handleApiKeyChange = (value: string) => {
     setAPIKey(value);
@@ -91,7 +92,7 @@ export function AIProviderEditDialog({
   };
 
   const handleClose = () => {
-    onOpenChange(false);
+    handleOpenChange(false);
   };
 
   const hasChanges = displayName.trim() !== (config.displayName || "");
@@ -101,7 +102,7 @@ export function AIProviderEditDialog({
   }
 
   return (
-    <Dialog onOpenChange={onOpenChange} open={open}>
+    <Dialog onOpenChange={handleOpenChange} open={open}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">

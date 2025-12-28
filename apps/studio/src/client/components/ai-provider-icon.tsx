@@ -37,6 +37,9 @@ export function AIProviderIcon({
   type: AIProviderType;
 }) {
   const Icon = getProviderIcon(type);
+
+  // Dynamic creation should be fine because the components have no state
+  // eslint-disable-next-line react-hooks/static-components
   return <Icon className={className} />;
 }
 

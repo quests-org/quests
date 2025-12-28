@@ -28,7 +28,7 @@ import {
   StarOff,
   TrashIcon,
 } from "lucide-react";
-import { memo, useEffect, useState } from "react";
+import { memo, useState } from "react";
 
 import { AppStatusIcon } from "./app-status-icon";
 
@@ -64,11 +64,9 @@ export const NavProjectItem = memo(function NavProjectItem({
     rpcClient.favorites.add.mutationOptions(),
   );
 
-  useEffect(() => {
-    if (!isEditing) {
-      setEditValue(project.title);
-    }
-  }, [project.title, isEditing]);
+  if (!isEditing && editValue !== project.title) {
+    setEditValue(project.title);
+  }
 
   const handleStartEdit = () => {
     setEditValue(project.title);

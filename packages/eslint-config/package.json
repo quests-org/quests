@@ -31,7 +31,7 @@
     "eslint-plugin-package-json": "^0.18.0",
     "eslint-plugin-perfectionist": "4.4.0",
     "eslint-plugin-react": "^7.37.5",
-    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-hooks": "^7",
     "eslint-plugin-react-refresh": "^0.4.20",
     "eslint-plugin-regexp": "^2.9.0",
     "eslint-plugin-turbo": "^2.5.5",

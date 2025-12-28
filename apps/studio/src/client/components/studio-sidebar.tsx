@@ -103,7 +103,7 @@ export function StudioSidebar({
     return projectsData.projects.filter(
       (project) => !favoriteSubdomains.has(project.subdomain),
     );
-  }, [projectsData?.projects, favorites, favoriteSubdomains]);
+  }, [projectsData, favorites, favoriteSubdomains]);
 
   return (
     <Sidebar collapsible="none" side="left" {...props}>

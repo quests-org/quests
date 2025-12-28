@@ -46,7 +46,7 @@ const TOOL_STREAMING_DISPLAY_NAMES: Record<ToolName, string | undefined> = {
   write_file: "Writing a file",
 };
 
-const TOOL_ICONS: Record<ToolName, LucideIcon | undefined> = {
+export const TOOL_ICONS: Record<ToolName, LucideIcon | undefined> = {
   choose: HelpCircle,
   edit_file: Pencil,
   file_tree: FolderTree,
@@ -63,10 +63,6 @@ const TOOL_ICONS: Record<ToolName, LucideIcon | undefined> = {
 
 export function getToolDisplayName(toolName: ToolName): string {
   return TOOL_DISPLAY_NAMES[toolName] ?? "Unknown tool";
-}
-
-export function getToolIcon(toolName: ToolName): LucideIcon {
-  return TOOL_ICONS[toolName] ?? HelpCircle;
 }
 
 export function getToolStreamingDisplayName(toolName: ToolName): string {

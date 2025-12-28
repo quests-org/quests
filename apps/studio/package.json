@@ -127,6 +127,7 @@
     "@types/react-dom": "catalog:",
     "@types/semver": "^7.7.0",
     "@vitejs/plugin-react": "catalog:",
+    "@xstate/react": "^6.0.0",
     "babel-plugin-react-compiler": "^1.0.0",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
