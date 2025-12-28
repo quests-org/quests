@@ -368,6 +368,10 @@ export const RunShellCommand = createTool({
   description: dedent`
     Run commands in the app folder. All operations are scoped to the current directory.
       
+    IMPORTANT: Only ONE command per invocation. Do not chain commands with &&, ||, ;, or |.
+    If you need to run multiple commands, call this tool multiple times.
+    Note: cd commands are not supported - all commands run in the app directory.
+      
     Available commands:
     ${Object.entries(AVAILABLE_COMMANDS)
       .map(([command, config]) => `- ${command} - ${config.description}`)
@@ -384,6 +388,15 @@ export const RunShellCommand = createTool({
       .join(", ")}) use secure Node.js APIs instead of shell execution.
   `,
   execute: async ({ appConfig, input, signal }) => {
+    const multiCommandPatterns = [/&&/, /\|\|/, /(?:^|[^|])\|(?:[^|]|$)/, /;/];
+    if (multiCommandPatterns.some((pattern) => pattern.test(input.command))) {
+      return err({
+        message:
+          "Only one command can be run at a time. Do not use &&, ||, |, or ; to chain commands. Call this tool multiple times for multiple commands.",
+        type: "execute-error",
+      });
+    }
+
     const parsedCommand = parseCommandString(input.command);
     const [commandName, ...args] = parsedCommand;
 
