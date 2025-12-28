@@ -2,6 +2,7 @@ import { providerMetadataAtom } from "@/client/atoms/provider-metadata";
 import { AIProviderIcon } from "@/client/components/ai-provider-icon";
 import { IconMap } from "@/client/components/app-icons";
 import { ModelBadges } from "@/client/components/model-badges";
+import { NewTabHelpMessage } from "@/client/components/new-tab-help-message";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,6 +25,7 @@ import {
 } from "@/client/components/ui/command";
 import { Tabs, TabsList, TabsTrigger } from "@/client/components/ui/tabs";
 import { Textarea } from "@/client/components/ui/textarea";
+import { useTabActions } from "@/client/hooks/use-tab-actions";
 import { captureClientEvent } from "@/client/lib/capture-client-event";
 import {
   getGroupedModelsEntries,
@@ -40,7 +42,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useAtom, useAtomValue } from "jotai";
 import { atomWithStorage } from "jotai/utils";
-import { Loader2 } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 import { sift } from "radashi";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -81,6 +83,7 @@ export const Route = createFileRoute("/_app/evals/")({
 
 function RouteComponent() {
   const navigate = useNavigate();
+  const { addTab } = useTabActions();
   const { providerMetadataMap } = useAtomValue(providerMetadataAtom);
   const [selectedEvalTemplatesArray, setSelectedEvalTemplatesArray] = useAtom(
     selectedEvalTemplatesAtom,
@@ -163,7 +166,7 @@ function RouteComponent() {
     setSelectedModelsArray([...newSelected]);
   };
 
-  const createEvals = async () => {
+  const createEvals = async (openInNewTab = false) => {
     setShowConfirmDialog(false);
     setIsCreating(true);
 
@@ -223,15 +226,35 @@ function RouteComponent() {
       }
 
       if (createdProjects.length === 1 && createdProjects[0]) {
-        void navigate({
-          params: { subdomain: createdProjects[0].subdomain },
-          to: "/projects/$subdomain",
-        });
+        if (openInNewTab) {
+          void addTab(
+            {
+              params: { subdomain: createdProjects[0].subdomain },
+              to: "/projects/$subdomain",
+            },
+            { select: false },
+          );
+        } else {
+          void navigate({
+            params: { subdomain: createdProjects[0].subdomain },
+            to: "/projects/$subdomain",
+          });
+        }
       } else if (createdProjects.length > 1) {
-        void navigate({
-          search: { filter: "evals" },
-          to: "/projects",
-        });
+        if (openInNewTab) {
+          void addTab(
+            {
+              search: { filter: "evals" },
+              to: "/projects",
+            },
+            { select: false },
+          );
+        } else {
+          void navigate({
+            search: { filter: "evals" },
+            to: "/projects",
+          });
+        }
       }
     } catch (error) {
       const errorMessage =
@@ -242,7 +265,9 @@ function RouteComponent() {
     }
   };
 
-  const handleRunEvals = async () => {
+  const handleRunEvals = async (
+    event?: React.MouseEvent<HTMLButtonElement>,
+  ) => {
     setHasAttemptedSubmit(true);
 
     if (selectedEvalTemplates.size === 0) {
@@ -270,7 +295,10 @@ function RouteComponent() {
       return;
     }
 
-    await createEvals();
+    const openInNewTab = event
+      ? event.ctrlKey || event.metaKey || event.button === 1
+      : false;
+    await createEvals(openInNewTab);
   };
 
   if (modelsIsLoading || evalTemplateGroupsIsLoading) {
@@ -507,22 +535,122 @@ function RouteComponent() {
           <div className="space-y-4">
             <div className="sticky top-6">
               <div className="space-y-4 rounded-lg border bg-card p-4">
-                <Button
-                  className="w-full"
-                  disabled={
-                    selectedEvalTemplates.size === 0 ||
-                    selectedModels.size === 0 ||
-                    isCreating
-                  }
-                  onClick={handleRunEvals}
-                  size="lg"
-                >
-                  {isCreating
-                    ? "Creating..."
-                    : totalProjectsToCreate === 0
-                      ? "Run evals"
-                      : `Run ${totalProjectsToCreate} eval${totalProjectsToCreate === 1 ? "" : "s"}`}
-                </Button>
+                <div className="space-y-2">
+                  <Button
+                    className="w-full"
+                    disabled={
+                      selectedEvalTemplates.size === 0 ||
+                      selectedModels.size === 0 ||
+                      isCreating
+                    }
+                    onAuxClick={(e) => {
+                      if (e.button === 1) {
+                        e.preventDefault();
+                        void handleRunEvals(e);
+                      }
+                    }}
+                    onClick={handleRunEvals}
+                    onMouseDown={(e) => {
+                      if (e.button === 1) {
+                        e.preventDefault();
+                      }
+                    }}
+                    size="lg"
+                  >
+                    {isCreating
+                      ? "Creating..."
+                      : totalProjectsToCreate === 0
+                        ? "Run evals"
+                        : `Run ${totalProjectsToCreate} eval${totalProjectsToCreate === 1 ? "" : "s"}`}
+                  </Button>
+                  <div className="flex items-center justify-center">
+                    <NewTabHelpMessage />
+                  </div>
+                </div>
+
+                {totalProjectsToCreate === 0 ? (
+                  <div className="py-6 text-center text-sm text-muted-foreground">
+                    Select prompts and models to begin
+                  </div>
+                ) : (
+                  <div className="space-y-3 border-t pt-4">
+                    <div className="space-y-2">
+                      <div className="text-xs font-medium text-muted-foreground">
+                        {selectedEvalTemplates.size}{" "}
+                        {selectedEvalTemplates.size === 1
+                          ? "Prompt"
+                          : "Prompts"}
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {[...selectedEvalTemplates].map((templateName) => {
+                          const template = evalTemplateGroups
+                            ?.flatMap((g) => g.templates)
+                            .find((t) => t.name === templateName);
+                          const IconComponent = template
+                            ? IconMap[template.iconName]
+                            : null;
+
+                          return (
+                            <div
+                              className="flex items-center gap-1 rounded-md border bg-muted/50 py-1 pr-1 pl-2"
+                              key={templateName}
+                            >
+                              {IconComponent && (
+                                <IconComponent className="size-3 shrink-0 text-muted-foreground" />
+                              )}
+                              <div className="truncate text-xs">
+                                {templateName}
+                              </div>
+                              <button
+                                className="shrink-0 rounded hover:bg-background"
+                                onClick={() => {
+                                  handleToggleEvalTemplate(templateName);
+                                }}
+                                type="button"
+                              >
+                                <X className="size-3 text-muted-foreground" />
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="text-xs font-medium text-muted-foreground">
+                        {selectedModels.size}{" "}
+                        {selectedModels.size === 1 ? "Model" : "Models"}
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {models
+                          ?.filter((m) => selectedModels.has(m.uri))
+                          .map((model) => (
+                            <div
+                              className="flex items-center gap-1 rounded-md border bg-muted/50 py-1 pr-1 pl-2"
+                              key={model.uri}
+                            >
+                              <AIProviderIcon
+                                className="size-3 shrink-0 opacity-90"
+                                type={model.params.provider}
+                              />
+                              <span className="truncate text-xs">
+                                {model.name}
+                              </span>
+                              <button
+                                className="shrink-0 rounded hover:bg-background"
+                                onClick={() => {
+                                  handleToggleModel(model.uri);
+                                }}
+                                type="button"
+                              >
+                                <X className="size-3 text-muted-foreground" />
+                              </button>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 <AlertDialog
                   onOpenChange={setShowConfirmDialog}
@@ -541,61 +669,16 @@ function RouteComponent() {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={createEvals}>
+                      <AlertDialogAction
+                        onClick={() => {
+                          void createEvals(false);
+                        }}
+                      >
                         Continue
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
-
-                {totalProjectsToCreate === 0 ? (
-                  <div className="py-2 text-center text-sm text-muted-foreground">
-                    Select prompts and models to begin
-                  </div>
-                ) : (
-                  <div className="max-h-64 space-y-3 overflow-y-auto">
-                    {[...selectedEvalTemplates].map((templateName) => {
-                      const template = evalTemplateGroups
-                        ?.flatMap((g) => g.templates)
-                        .find((t) => t.name === templateName);
-                      const IconComponent = template
-                        ? IconMap[template.iconName]
-                        : null;
-                      const selectedModelsList = models?.filter((m) =>
-                        selectedModels.has(m.uri),
-                      );
-
-                      return (
-                        <div className="space-y-1.5" key={templateName}>
-                          <div className="flex items-center gap-1.5">
-                            {IconComponent && (
-                              <IconComponent className="size-3.5 shrink-0 text-muted-foreground" />
-                            )}
-                            <div className="text-sm font-medium">
-                              {templateName}
-                            </div>
-                          </div>
-                          <div className="flex flex-wrap gap-1.5 pl-5">
-                            {selectedModelsList?.map((model) => (
-                              <div
-                                className="flex items-center gap-1 rounded bg-muted px-1.5 py-0.5 text-xs"
-                                key={model.uri}
-                              >
-                                <AIProviderIcon
-                                  className="size-3"
-                                  type={model.params.provider}
-                                />
-                                <span className="max-w-32 truncate">
-                                  {model.name}
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
               </div>
               {totalProjectsToCreate > 0 && (
                 <p className="mt-1 text-center text-xs text-muted-foreground">

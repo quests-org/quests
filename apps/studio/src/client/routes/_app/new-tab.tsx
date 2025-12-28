@@ -4,14 +4,13 @@ import { AppStatusIcon } from "@/client/components/app-status-icon";
 import { NewTabDiscoverHeroCards } from "@/client/components/discover-hero-card";
 import { ExternalLink } from "@/client/components/external-link";
 import { InternalLink } from "@/client/components/internal-link";
+import { NewTabHelpMessage } from "@/client/components/new-tab-help-message";
 import { ModelPreview } from "@/client/components/projects-data-table/model-preview";
 import { PromptInput } from "@/client/components/prompt-input";
 import { Card, CardContent } from "@/client/components/ui/card";
-import { Kbd } from "@/client/components/ui/kbd";
 import { useDefaultModelURI } from "@/client/hooks/use-default-model-uri";
 import { useTabActions } from "@/client/hooks/use-tab-actions";
 import { createUserMessage } from "@/client/lib/create-user-message";
-import { isMacOS } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
 import {
   APP_REPO_URL,
@@ -167,10 +166,7 @@ function RouteComponent() {
               showAgentPicker
             />
             <div className="mt-2 flex items-center justify-end">
-              <p className="text-xs text-muted-foreground">
-                Hold <Kbd>{isMacOS() ? "⌘" : "Ctrl"}</Kbd> to create in a new
-                tab
-              </p>
+              <NewTabHelpMessage />
             </div>
           </div>
         </div>
