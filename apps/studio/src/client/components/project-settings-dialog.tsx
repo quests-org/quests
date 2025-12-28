@@ -26,6 +26,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -105,6 +106,10 @@ function ProjectSettingsForm({
         <DialogTitle>
           {project.mode === "chat" ? "Chat Settings" : "Project Settings"}
         </DialogTitle>
+        <DialogDescription className="sr-only">
+          Configure the settings for your{" "}
+          {project.mode === "chat" ? "chat" : "project"}.
+        </DialogDescription>
       </DialogHeader>
       <form
         onSubmit={(e) => {

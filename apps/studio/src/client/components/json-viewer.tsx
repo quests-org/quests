@@ -4,7 +4,13 @@ import { useCallback, useMemo } from "react";
 
 import { CopyButton } from "./copy-button";
 import { Button } from "./ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "./ui/dialog";
 
 interface JsonViewerProps {
   data: unknown;
@@ -90,6 +96,9 @@ export function JsonViewer({
               </span>
             )}
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            View and download JSON data
+          </DialogDescription>
         </DialogHeader>
         <div className="relative min-w-0">
           <div className="pointer-events-auto absolute top-2 right-4 z-20 flex gap-2">
