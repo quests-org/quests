@@ -2,7 +2,7 @@ import {
   getToolNameByType,
   type SessionMessagePart,
 } from "@quests/workspace/client";
-import { ChevronUp, TriangleAlert } from "lucide-react";
+import { ChevronUp, Loader2, TriangleAlert } from "lucide-react";
 import { useState } from "react";
 
 import {
@@ -95,29 +95,25 @@ export function ToolPart({
 
   const mainContent = (
     <div className="flex w-full min-w-0 items-center gap-2 text-xs leading-tight">
-      {isLoading ? (
-        <span className="shrink-0 text-accent-foreground/80">
-          <div className="size-3 animate-spin rounded-full border border-current border-t-transparent" />
-        </span>
-      ) : (
-        <span
-          className={cn(
-            "shrink-0 text-accent-foreground/80",
-            isError && "text-warning-foreground/80",
-          )}
-        >
-          {isError ? (
-            <TriangleAlert className="size-3" />
-          ) : (
-            <ToolIcon className="size-3" toolName={toolName} />
-          )}
-        </span>
-      )}
+      <span
+        className={cn(
+          "shrink-0 text-accent-foreground/80",
+          isError && "text-warning-foreground/80",
+        )}
+      >
+        {isLoading ? (
+          <Loader2 className="size-3 animate-spin" />
+        ) : isError ? (
+          <TriangleAlert className="size-3" />
+        ) : (
+          <ToolIcon className="size-3" toolName={toolName} />
+        )}
+      </span>
 
       <span
         className={cn(
-          "shrink-0 font-medium text-foreground/60",
-          isError && "text-warning-foreground/80",
+          "shrink-0 font-medium text-foreground/80",
+          isError && "text-warning-foreground",
           isLoading && "shiny-text",
         )}
       >
@@ -126,9 +122,8 @@ export function ToolPart({
       {value && (
         <span
           className={cn(
-            "min-w-0 truncate text-muted-foreground/60",
+            "min-w-0 truncate text-foreground/60",
             isError && "text-warning-foreground/60",
-            isLoading && "shiny-text",
           )}
         >
           {value}
@@ -145,7 +140,7 @@ export function ToolPart({
   if (!isExpandable) {
     return (
       <div className="w-full">
-        <div className="flex h-6 items-center">{mainContent}</div>
+        <div className="flex h-6 items-center px-1">{mainContent}</div>
       </div>
     );
   }
