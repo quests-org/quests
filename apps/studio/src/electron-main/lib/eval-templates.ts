@@ -42,7 +42,7 @@ const EVAL_TEMPLATE_GROUPS: EvalTemplateGroup[] = [
       {
         iconName: "terminal",
         name: "Pie Chart",
-        userPrompt: "Use a script to create a pie chart on disk",
+        userPrompt: "Use `canvas` in a script to create a pie chart on disk",
       },
       {
         iconName: "terminal",
