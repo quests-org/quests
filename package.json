@@ -75,7 +75,7 @@
     "typescript": "catalog:",
     "vitest": "catalog:"
   },
-  "packageManager": "pnpm@10.22.0",
+  "packageManager": "pnpm@10.26.2",
   "engines": {
     "node": ">=22.21.1"
   },

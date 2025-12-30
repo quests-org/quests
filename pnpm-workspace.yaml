@@ -26,14 +26,14 @@ catalog:
 configDependencies:
   "@pnpm/plugin-trusted-deps": 0.1.0+sha512-OK05vSZpezQHcS7Y0T5A25QXDbBRtRq52s76eOkMgp9v8ifNrIR8pjIGqrUFUn0PwKLt2i+U1LPYB+RWi1xjaQ==
 
-onlyBuiltDependencies:
-  - "@parcel/watcher"
-  - "@swc/core"
-  - "@tailwindcss/oxide"
-  - oxc-resolver
-  - core-js
-  - tree-sitter-javascript
-  - unrs-resolver
+allowBuilds:
+  "@parcel/watcher": true
+  "@swc/core": true
+  "@tailwindcss/oxide": true
+  oxc-resolver": true
+  core-js": true
+  tree-sitter-javascript": true
+  unrs-resolver": true
 
 onlyBuiltDependenciesFile: node_modules/.pnpm-config/@pnpm/plugin-trusted-deps/allow.json
 

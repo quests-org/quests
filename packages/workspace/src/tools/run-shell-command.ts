@@ -54,12 +54,8 @@ const AVAILABLE_COMMANDS: Record<
     isFileOperation: true,
   },
   pnpm: {
-    description:
-      "CLI tool for managing JavaScript packages. Use --allow-build=<package-name> to allow a package to run postinstall scripts if it fails.",
-    examples: [
-      "pnpm add <package-name>",
-      "pnpm --allow-build=<package-name> add <package-name>",
-    ],
+    description: "CLI tool for managing JavaScript packages.",
+    examples: ["pnpm add <package-name>"],
     isFileOperation: false,
   },
   rm: {
@@ -681,6 +677,29 @@ export const RunShellCommand = createTool({
 
     if (result.stderr) {
       outputParts.push(`<stderr>`, result.stderr, `</stderr>`);
+    }
+
+    const isPnpmCommand = result.command.startsWith("pnpm ");
+    const hasIgnoredBuildScriptsWarning =
+      result.stdout.includes("Ignored build scripts:") &&
+      result.stdout.includes("Warning");
+
+    if (isPnpmCommand && hasIgnoredBuildScriptsWarning) {
+      outputParts.push(
+        dedent`
+          
+          <quests-system-note>
+          This warning means some packages were not built during installation.
+          If you encounter "Cannot find module" errors or the package doesn't work:
+          
+          1. Read pnpm-workspace.yaml from the workspace root
+          2. Add the package name(s) from the warning to the \`allowBuilds:\` section (e.g., "esbuild: true")
+          3. Run \`pnpm rebuild <package-name>\`
+          
+          All three steps are required. Running rebuild without first modifying pnpm-workspace.yaml will not fix the issue.
+          </quests-system-note>
+        `,
+      );
     }
 
     const output = outputParts.join("\n");

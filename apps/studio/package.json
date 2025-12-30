@@ -78,7 +78,7 @@
     "fix-path": "^5.0.0",
     "hono": "catalog:",
     "ms": "^2.1.3",
-    "pnpm": "^10.13.1",
+    "pnpm": "^10.26.2",
     "posthog-node": "^5.11.2",
     "radashi": "^12.6.0",
     "read-pkg": "^9.0.1",

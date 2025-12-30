@@ -235,8 +235,8 @@ importers:
         specifier: ^2.1.3
         version: 2.1.3
       pnpm:
-        specifier: ^10.13.1
-        version: 10.13.1
+        specifier: ^10.26.2
+        version: 10.26.2
       posthog-node:
         specifier: ^5.11.2
         version: 5.11.2
@@ -7010,8 +7010,8 @@ packages:
     resolution: {integrity: sha512-Nc3IT5yHzflTfbjgqWcCPpo7DaKy4FnpB0l/zCAW0Tc7jxAiuqSxHasntB3D7887LSrA93kDJ9IXovxJYxyLCA==}
     engines: {node: '>=4'}
 
-  pnpm@10.13.1:
-    resolution: {integrity: sha512-N+vxpcejDV+r4MXfRO6NpMllygxa89urKMOhaBtwolYhjQXIHJwNz3Z+9rhVHrW5YAQrntQwDFkkIzY3fgHPrQ==}
+  pnpm@10.26.2:
+    resolution: {integrity: sha512-DjCP8gBfx0EDZvFU9iX2YxqysWsdLnAjhETdaunWMKhILZKkURRN68SSQWiW7Rb3sRSobsaLhASyRDhp5o/9pg==}
     engines: {node: '>=18.12'}
     hasBin: true
 
@@ -7500,14 +7500,14 @@ packages:
     resolution: {integrity: sha512-8I8TjW5KMOKsZQTvoxjuSIa7foAwPWGOts+6o7sgjz41/qMD9VQHEDxi6PBvK2l0MXUmqZyNpUK+T2tQaaElvw==}
     engines: {node: '>=10'}
 
-  seroval-plugins@1.4.0:
-    resolution: {integrity: sha512-zir1aWzoiax6pbBVjoYVd0O1QQXgIL3eVGBMsBsNmM8Ukq90yGaWlfx0AB9dTS8GPqrOrbXn79vmItCUP9U3BQ==}
+  seroval-plugins@1.4.2:
+    resolution: {integrity: sha512-X7p4MEDTi+60o2sXZ4bnDBhgsUYDSkQEvzYZuJyFqWg9jcoPsHts5nrg5O956py2wyt28lUrBxk0M0/wU8URpA==}
     engines: {node: '>=10'}
     peerDependencies:
       seroval: ^1.0
 
-  seroval@1.4.0:
-    resolution: {integrity: sha512-BdrNXdzlofomLTiRnwJTSEAaGKyHHZkbMXIywOh7zlzp4uZnXErEwl9XZ+N1hJSNpeTtNxWvVwN0wUzAIQ4Hpg==}
+  seroval@1.4.2:
+    resolution: {integrity: sha512-N3HEHRCZYn3cQbsC4B5ldj9j+tHdf4JZoYPlcI4rRYu0Xy4qN8MQf1Z08EibzB0WpgRG5BGK08FTrmM66eSzKQ==}
     engines: {node: '>=10'}
 
   set-cookie-parser@2.7.1:
@@ -11209,8 +11209,8 @@ snapshots:
       '@tanstack/history': 1.131.2
       '@tanstack/store': 0.7.7
       cookie-es: 1.2.2
-      seroval: 1.4.0
-      seroval-plugins: 1.4.0(seroval@1.4.0)
+      seroval: 1.4.2
+      seroval-plugins: 1.4.2(seroval@1.4.2)
       tiny-invariant: 1.3.3
       tiny-warning: 1.0.3
 
@@ -11219,8 +11219,8 @@ snapshots:
       '@tanstack/history': 1.139.0
       '@tanstack/store': 0.8.0
       cookie-es: 2.0.0
-      seroval: 1.4.0
-      seroval-plugins: 1.4.0(seroval@1.4.0)
+      seroval: 1.4.2
+      seroval-plugins: 1.4.2(seroval@1.4.2)
       tiny-invariant: 1.3.3
       tiny-warning: 1.0.3
 
@@ -15815,7 +15815,7 @@ snapshots:
 
   pluralize@8.0.0: {}
 
-  pnpm@10.13.1: {}
+  pnpm@10.26.2: {}
 
   possible-typed-array-names@1.1.0: {}
 
@@ -16365,11 +16365,11 @@ snapshots:
       type-fest: 0.13.1
     optional: true
 
-  seroval-plugins@1.4.0(seroval@1.4.0):
+  seroval-plugins@1.4.2(seroval@1.4.2):
     dependencies:
-      seroval: 1.4.0
+      seroval: 1.4.2
 
-  seroval@1.4.0: {}
+  seroval@1.4.2: {}
 
   set-cookie-parser@2.7.1: {}
 
@@ -16545,8 +16545,8 @@ snapshots:
   solid-js@1.9.6:
     dependencies:
       csstype: 3.2.3
-      seroval: 1.4.0
-      seroval-plugins: 1.4.0(seroval@1.4.0)
+      seroval: 1.4.2
+      seroval-plugins: 1.4.2(seroval@1.4.2)
 
   solid-refresh@0.6.3(solid-js@1.9.6):
     dependencies:
