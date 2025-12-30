@@ -42,7 +42,7 @@ export function VersionCommitMessage({
   showFullMessage = false,
   versionRef,
 }: VersionCommitMessageProps) {
-  const { data: gitRefInfo } = useQuery(
+  const { data: gitRefInfo, isLoading } = useQuery(
     rpcClient.workspace.project.git.ref.queryOptions({
       input: {
         gitRef: versionRef,
@@ -50,6 +50,10 @@ export function VersionCommitMessage({
       },
     }),
   );
+
+  if (isLoading) {
+    return <div className="h-5 w-48 animate-pulse rounded bg-muted" />;
+  }
 
   if (!gitRefInfo?.commitMessage) {
     return (
@@ -75,7 +79,7 @@ export function VersionFileChanges({
 }: VersionFileChangesProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const { data: gitRefInfo } = useQuery(
+  const { data: gitRefInfo, isLoading } = useQuery(
     rpcClient.workspace.project.git.ref.queryOptions({
       input: {
         gitRef: versionRef,
@@ -83,6 +87,15 @@ export function VersionFileChanges({
       },
     }),
   );
+
+  if (isLoading) {
+    return (
+      <div className="flex w-full flex-col gap-1">
+        <div className="h-4 w-full animate-pulse rounded bg-muted" />
+        <div className="h-4 w-3/4 animate-pulse rounded bg-muted" />
+      </div>
+    );
+  }
 
   if (!gitRefInfo || gitRefInfo.files.length === 0) {
     return null;
@@ -172,7 +185,7 @@ export function VersionRef({
     return colorHash.hex(versionRef);
   }, [versionRef]);
 
-  const { data: gitRefInfo } = useQuery(
+  const { data: gitRefInfo, isLoading } = useQuery(
     rpcClient.workspace.project.git.ref.queryOptions({
       input: {
         gitRef: versionRef,
@@ -182,6 +195,19 @@ export function VersionRef({
   );
 
   const iconSizeClass = iconSize === "sm" ? "h-4 w-4" : "h-5 w-5";
+
+  if (isLoading) {
+    return (
+      <span className={`inline-flex items-center gap-2 ${className}`}>
+        <GitCommitVertical
+          className={`${iconSizeClass} -me-1 shrink-0`}
+          style={{ color: hashColor }}
+        />
+        <span className="shrink-0 text-xs text-muted-foreground">Version</span>
+        <span className="h-3 w-24 animate-pulse rounded bg-muted" />
+      </span>
+    );
+  }
 
   return (
     <span className={`inline-flex items-center gap-2 ${className}`}>
