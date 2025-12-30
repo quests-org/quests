@@ -63,9 +63,9 @@ jobs:
           BUILDER_PUBLISH_S3_ENDPOINT: ${{ vars.BUILDER_PUBLISH_S3_ENDPOINT }}
           MAIN_VITE_GOOGLE_CLIENT_ID: ${{ vars.MAIN_VITE_GOOGLE_CLIENT_ID }}
           MAIN_VITE_GOOGLE_CLIENT_SECRET: ${{ secrets.MAIN_VITE_GOOGLE_CLIENT_SECRET }}
+          MAIN_VITE_QUESTS_API_BASE_URL: ${{ vars.MAIN_VITE_QUESTS_API_BASE_URL }}
           VITE_POSTHOG_API_HOST: ${{ vars.VITE_POSTHOG_API_HOST }}
           VITE_POSTHOG_API_KEY: ${{ vars.VITE_POSTHOG_API_KEY }}
-          VITE_QUESTS_API_BASE_URL: ${{ vars.VITE_QUESTS_API_BASE_URL }}
 
       - if: matrix.os == 'macos-latest' && env.SKIP_INTEL_MACOS != 'true'
         name: setup-signing
@@ -88,9 +88,9 @@ jobs:
           CSC_LINK: ${{ secrets.CSC_LINK }}
           MAIN_VITE_GOOGLE_CLIENT_ID: ${{ vars.MAIN_VITE_GOOGLE_CLIENT_ID }}
           MAIN_VITE_GOOGLE_CLIENT_SECRET: ${{ secrets.MAIN_VITE_GOOGLE_CLIENT_SECRET }}
+          MAIN_VITE_QUESTS_API_BASE_URL: ${{ vars.MAIN_VITE_QUESTS_API_BASE_URL }}
           VITE_POSTHOG_API_HOST: ${{ vars.VITE_POSTHOG_API_HOST }}
           VITE_POSTHOG_API_KEY: ${{ vars.VITE_POSTHOG_API_KEY }}
-          VITE_QUESTS_API_BASE_URL: ${{ vars.VITE_QUESTS_API_BASE_URL }}
           ARCH: ${{ matrix.arch }}
 
       - if: matrix.os == 'macos-latest' && env.SKIP_INTEL_MACOS != 'true'
@@ -152,9 +152,9 @@ jobs:
           WIN_CERT_PATH: ${{ runner.temp }}\ev-chain.pem
           MAIN_VITE_GOOGLE_CLIENT_ID: ${{ vars.MAIN_VITE_GOOGLE_CLIENT_ID }}
           MAIN_VITE_GOOGLE_CLIENT_SECRET: ${{ secrets.MAIN_VITE_GOOGLE_CLIENT_SECRET }}
+          MAIN_VITE_QUESTS_API_BASE_URL: ${{ vars.MAIN_VITE_QUESTS_API_BASE_URL }}
           VITE_POSTHOG_API_HOST: ${{ vars.VITE_POSTHOG_API_HOST }}
           VITE_POSTHOG_API_KEY: ${{ vars.VITE_POSTHOG_API_KEY }}
-          VITE_QUESTS_API_BASE_URL: ${{ vars.VITE_QUESTS_API_BASE_URL }}
 
       - if: matrix.os == 'windows-latest'
         name: Verify Signatures
