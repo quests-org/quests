@@ -43,7 +43,7 @@ const AVAILABLE_COMMANDS: Record<
   },
   mkdir: {
     description:
-      "A limited version of the mkdir command that supports the -p flag for creating parent directories.",
+      "A limited version of the mkdir command that supports the -p flag for recursive directory creation.",
     examples: ["mkdir src/utils", "mkdir -p src/components/ui/buttons"],
     isFileOperation: true,
   },
