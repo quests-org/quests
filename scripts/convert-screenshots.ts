@@ -2,8 +2,6 @@ import { execSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { createInterface } from "node:readline";
 
-/* eslint-disable no-console */
-
 interface ScreenshotFile {
   path: string;
   size: number;
@@ -179,11 +177,4 @@ async function promptUser(question: string): Promise<string> {
   });
 }
 
-// Run the script
-await main().catch((error: unknown) => {
-  console.error("Error during conversion:", error);
-  // eslint-disable-next-line n/no-process-exit, unicorn/no-process-exit
-  process.exit(1);
-});
-
-/* eslint-enable no-console */
+await main();

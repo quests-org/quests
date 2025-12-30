@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { execSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import path from "node:path";
@@ -261,4 +260,3 @@ try {
   // eslint-disable-next-line n/no-process-exit, unicorn/no-process-exit
   process.exit(1);
 }
-/* eslint-enable no-console */

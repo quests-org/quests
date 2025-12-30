@@ -1,6 +1,5 @@
 import { execSync } from "node:child_process";
 
-/* eslint-disable no-console */
 function main() {
   try {
     console.log("Updating registry submodule...");
@@ -29,7 +28,5 @@ function main() {
     process.exit(1);
   }
 }
-/* eslint-enable no-console */
 
-// Run the script
 main();
