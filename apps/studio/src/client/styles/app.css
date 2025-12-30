@@ -88,7 +88,7 @@ html:has(meta[name="transparent-background"]) body {
   --sidebar-accent-foreground: oklch(50.3% 0.0139 277.7);
   --sidebar-border: oklch(88.8% 0.0093 277.7);
   --sidebar-ring: oklch(0.708 0 0);
-  --warning-foreground: oklch(0.7653 0.175 62.49);
+  --warning-foreground: oklch(0.55 0.175 62.49);
   --brand: oklch(54.6% 0.245 262.881);
   --brand-foreground: oklch(100% 0 0);
 }
