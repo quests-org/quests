@@ -2,6 +2,7 @@
 
 import "dotenv/config";
 import { startAuthCallbackServer } from "@/electron-main/auth/server";
+import { captureServerException } from "@/electron-main/lib/capture-server-exception";
 import {
   initializeElectronLogging,
   logger,
@@ -126,6 +127,7 @@ if (gotTheLock) {
     }
   });
 } else {
+  captureServerException(new Error("Failed to acquire single instance lock"));
   app.quit();
 }
 
