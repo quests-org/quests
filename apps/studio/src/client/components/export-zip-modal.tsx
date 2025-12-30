@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/client/components/ui/dialog";
-import { isMacOS } from "@/client/lib/utils";
+import { getRevealInFolderLabel } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
 import { type ProjectSubdomain } from "@quests/workspace/client";
 import { useMutation } from "@tanstack/react-query";
@@ -44,7 +44,7 @@ export function ExportZipModal({
       onSuccess: (result) => {
         toast.success("Project exported to Downloads", {
           action: {
-            label: isMacOS() ? "Reveal in Finder" : "Open in File Explorer",
+            label: getRevealInFolderLabel(),
             onClick: () => {
               showFileInFolderMutation.mutate({
                 filepath: result.filepath,

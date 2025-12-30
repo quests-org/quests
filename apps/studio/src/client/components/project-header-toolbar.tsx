@@ -9,7 +9,7 @@ import { Button } from "@/client/components/ui/button";
 import { Toggle } from "@/client/components/ui/toggle";
 import { ToolbarFavoriteAction } from "@/client/components/ui/toolbar-favorite-action";
 import { captureClientEvent } from "@/client/lib/capture-client-event";
-import { cn, isMacOS } from "@/client/lib/utils";
+import { cn, getRevealInFolderLabel, isMacOS } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
 import { OpenAppInTypeSchema } from "@/shared/schemas/editors";
 import { type WorkspaceAppProject } from "@quests/workspace/client";
@@ -112,7 +112,7 @@ export function ProjectHeaderToolbar({
       onSuccess: (result) => {
         toast.success(`Screenshot saved to your Downloads folder`, {
           action: {
-            label: isMacOS() ? "Reveal in Finder" : "Open in File Explorer",
+            label: getRevealInFolderLabel(),
             onClick: () => {
               showFileInFolderMutation.mutate({
                 filepath: result.filepath,
@@ -331,9 +331,7 @@ export function ProjectHeaderToolbar({
                         ) : (
                           <FolderOpenIcon className="size-4" />
                         )}
-                        {isMacOS()
-                          ? "Reveal in Finder"
-                          : "Show in file manager"}
+                        {getRevealInFolderLabel()}
                       </DropdownMenuItem>
 
                       {availableEditors.length > 0 && (
