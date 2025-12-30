@@ -154,6 +154,19 @@ const PROVIDER_METADATA: Record<AIProviderType, ProviderMetadataInput> = {
     type: "localai",
     url: addRef("https://localai.io"),
   },
+  minimax: {
+    api: {
+      defaultBaseURL: "https://api.minimax.io/v1",
+      keyFormat: "sk-api-",
+      keyURL: addRef(
+        "https://platform.minimax.io/user-center/basic-information/interface-key",
+      ),
+    },
+    description: "Minimax AI models",
+    name: "Minimax",
+    type: "minimax",
+    url: addRef("https://minimax.com"),
+  },
   mistral: {
     api: {
       defaultBaseURL: "https://api.mistral.ai/v1",

@@ -7,6 +7,7 @@ export const AIProviderTypeSchema = z.enum([
   "deepinfra",
   "deepseek",
   "fireworks",
+  "minimax",
   "google",
   "groq",
   "huggingface",

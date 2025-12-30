@@ -11,6 +11,7 @@ import { Hyperbolic } from "@/client/components/icons/hyperbolic";
 import { Jan } from "@/client/components/icons/jan";
 import { LMStudio } from "@/client/components/icons/lmstudio";
 import { LocalAI } from "@/client/components/icons/localai";
+import { Minimax } from "@/client/components/icons/minimax";
 import { Mistral } from "@/client/components/icons/mistral";
 import { Novita } from "@/client/components/icons/novita";
 import { Perplexity } from "@/client/components/icons/perplexity";
@@ -60,6 +61,7 @@ const PROVIDER_ICON_MAP: Record<
   jan: Jan,
   lmstudio: LMStudio,
   localai: LocalAI,
+  minimax: Minimax,
   mistral: Mistral,
   novita: Novita,
   ollama: SiOllama,
