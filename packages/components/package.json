@@ -30,11 +30,11 @@
   "devDependencies": {
     "@quests/eslint-config": "workspace:*",
     "@quests/typescript-config": "workspace:*",
-    "@tailwindcss/vite": "^4.1.10",
+    "@tailwindcss/vite": "^4.1.18",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",
-    "tailwindcss": "^4.1.10",
+    "tailwindcss": "^4.1.18",
     "vite": "catalog:"
   },
   "engines": {
