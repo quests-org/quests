@@ -184,12 +184,14 @@ function prependBinDirectoryToPath(binDir: string): void {
 async function setupNodeLink(binDir: string): Promise<void> {
   const isWindows = process.platform === "win32";
   const nodeExePath = process.execPath;
-  const linkPath = path.join(binDir, isWindows ? "node.exe" : "node");
 
   try {
-    await (isWindows
-      ? createNodeShim(binDir, nodeExePath)
-      : fs.symlink(nodeExePath, linkPath));
+    if (isWindows) {
+      await createNodeShim(binDir, nodeExePath);
+    } else {
+      const linkPath = path.join(binDir, "node");
+      await fs.symlink(nodeExePath, linkPath);
+    }
   } catch (error) {
     captureServerException(error, {
       scopes: ["studio"],
