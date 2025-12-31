@@ -38,4 +38,4 @@ patchedDependencies:
 
 sideEffectsCache: false
 
-verifyDepsBeforeRun: warn
+verifyDepsBeforeRun: error
