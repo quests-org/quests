@@ -11,9 +11,10 @@ export async function filterIgnoredFiles({
 }: {
   ignore: Ignore;
   rootDir: AbsolutePath;
-}) {
+}): Promise<{ emptyDirs: string[]; files: string[] }> {
   const files = await fs.readdir(rootDir, { withFileTypes: true });
   const results: string[] = [];
+  const emptyDirs: string[] = [];
 
   for (const file of files) {
     const fullPath = absolutePathJoin(rootDir, file.name);
@@ -26,12 +27,24 @@ export async function filterIgnoredFiles({
 
     if (!ignore.ignores(relativePath)) {
       if (file.isDirectory()) {
-        const subFiles = await filterIgnoredFiles({
-          ignore,
-          rootDir: fullPath,
-        });
-        results.push(
-          ...subFiles.map((subFile) => path.join(file.name, subFile)),
+        const { emptyDirs: subEmptyDirs, files: subFiles } =
+          await filterIgnoredFiles({
+            ignore,
+            rootDir: fullPath,
+          });
+
+        if (subFiles.length === 0) {
+          // Directory has no visible files, mark it as empty
+          emptyDirs.push(file.name);
+        } else {
+          results.push(
+            ...subFiles.map((subFile) => path.join(file.name, subFile)),
+          );
+        }
+
+        // Add subdirectory empty dirs with proper path
+        emptyDirs.push(
+          ...subEmptyDirs.map((emptyDir) => path.join(file.name, emptyDir)),
         );
       } else {
         results.push(file.name);
@@ -39,5 +52,5 @@ export async function filterIgnoredFiles({
     }
   }
 
-  return results;
+  return { emptyDirs, files: results };
 }

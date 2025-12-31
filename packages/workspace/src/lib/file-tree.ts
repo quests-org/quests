@@ -32,9 +32,9 @@ export function fileTree(
           ),
       );
 
-      const files = yield* safeFilterIgnoredFiles();
+      const { emptyDirs, files } = yield* safeFilterIgnoredFiles();
 
-      return ok(generateTreeString(files));
+      return ok(generateTreeString(files, emptyDirs));
     },
   );
 }
