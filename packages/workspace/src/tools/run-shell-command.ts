@@ -692,9 +692,14 @@ export const RunShellCommand = createTool({
           This warning means some packages were not built during installation.
           If you encounter "Cannot find module" errors or the package doesn't work:
           
-          1. Read pnpm-workspace.yaml from the workspace root
-          2. Add the package name(s) from the warning to the \`allowBuilds:\` section (e.g., "esbuild: true")
-          3. Run \`pnpm rebuild <package-name>\`
+          1. Read pnpm-workspace.yaml from the workspace root.
+          2. Add the package names from the warning to the \`allowBuilds\` mapping.
+          \`\`\`yaml
+          allowBuilds:
+            esbuild: true
+            sharp: true
+          \`\`\`
+          3. Run \`pnpm rebuild <package-name>\` for each package you added.
           
           All three steps are required. Running rebuild without first modifying pnpm-workspace.yaml will not fix the issue.
           </quests-system-note>
