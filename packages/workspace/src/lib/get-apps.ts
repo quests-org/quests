@@ -38,9 +38,9 @@ import {
   isSandboxSubdomain,
   isVersionSubdomain,
 } from "./is-app";
+import { getProjectConfig } from "./project-config";
 import { projectModeForSubdomain } from "./project-mode-for-subdomain";
 import { projectSubdomainForSubdomain } from "./project-subdomain-for-subdomain";
-import { getQuestManifest } from "./quest-manifest";
 import { urlsForSubdomain } from "./url-for-subdomain";
 
 // Type mapping for generic subdomain to workspace app type conversion
@@ -298,7 +298,7 @@ async function computeAppTitle(
   folderName: string,
 ): Promise<string> {
   try {
-    const questManifest = await getQuestManifest(appDir);
+    const questManifest = await getProjectConfig(appDir);
     return questManifest?.name ?? folderName;
   } catch {
     return folderName;
@@ -336,7 +336,7 @@ async function workspaceApp({
     }
 
     const title = await computeAppTitle(appDir, rawFolderName);
-    const questsConfig = await getQuestManifest(appDir);
+    const questsConfig = await getProjectConfig(appDir);
 
     const projectApp: WorkspaceAppProject = {
       ...(await getAppDirTimestamps(appDir)),

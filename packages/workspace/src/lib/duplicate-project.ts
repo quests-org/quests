@@ -13,9 +13,9 @@ import { TypedError } from "./errors";
 import { git } from "./git";
 import { GitCommands } from "./git/commands";
 import { pathExists } from "./path-exists";
+import { getProjectConfig, updateProjectConfig } from "./project-config";
 import { projectModeForSubdomain } from "./project-mode-for-subdomain";
 import { getProjectState, setProjectState } from "./project-state-store";
-import { getQuestManifest, updateQuestManifest } from "./quest-manifest";
 
 interface DuplicateProjectOptions {
   keepHistory: boolean;
@@ -92,7 +92,7 @@ export async function duplicateProject(
       { signal },
     );
 
-    const sourceManifest = await getQuestManifest(sourceConfig.appDir);
+    const sourceManifest = await getProjectConfig(sourceConfig.appDir);
     const sourceName = sourceManifest?.name || sourceConfig.subdomain;
     const duplicateName = `Copy of ${sourceName}`;
 
@@ -124,7 +124,7 @@ export async function duplicateProject(
       yield* git(GitCommands.init(), projectConfig.appDir, { signal });
     }
 
-    const existingManifest = await getQuestManifest(projectConfig.appDir);
+    const existingManifest = await getProjectConfig(projectConfig.appDir);
     const currentTheme = existingManifest?.icon?.background;
 
     // Pick a random theme that's different from the current one
@@ -133,7 +133,7 @@ export async function duplicateProject(
       : THEMES;
     const randomTheme = draw(availableThemes) ?? DEFAULT_THEME_GRADIENT;
 
-    await updateQuestManifest(projectConfig.appDir, {
+    await updateProjectConfig(projectConfig.appDir, {
       icon: {
         background: randomTheme,
         lucide: existingManifest?.icon?.lucide,

@@ -1,8 +1,9 @@
+import { PROJECT_CONFIG_FILE_NAME } from "@quests/shared";
 import { ok, ResultAsync } from "neverthrow";
 import fs from "node:fs/promises";
 import path from "node:path";
 
-import { APP_PRIVATE_FOLDER, QUEST_MANIFEST_FILE_NAME } from "../constants";
+import { APP_PRIVATE_FOLDER } from "../constants";
 import { type AbsolutePath } from "../schemas/paths";
 import { TypedError } from "./errors";
 import { getIgnore } from "./get-ignore";
@@ -29,7 +30,7 @@ export function copyProject({
     .andThen((ignore) => {
       if (isTemplate) {
         // New projects will generate their own title and icon
-        ignore.add(QUEST_MANIFEST_FILE_NAME);
+        ignore.add(PROJECT_CONFIG_FILE_NAME);
         // Screenshots can confuse the agent
         ignore.add("screenshot.*");
       }

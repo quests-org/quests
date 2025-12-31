@@ -1,7 +1,10 @@
+import { openFileViewerAtom } from "@/client/atoms/file-viewer";
+import { getAssetUrl } from "@/client/lib/asset-utils";
 import { cleanFilePath } from "@/client/lib/file-utils";
 import { type ProjectSubdomain } from "@quests/workspace/client";
 import { useQuery } from "@tanstack/react-query";
 import ColorHash from "color-hash";
+import { useSetAtom } from "jotai";
 import { GitCommitVertical } from "lucide-react";
 import { useMemo, useState } from "react";
 
@@ -15,6 +18,7 @@ interface VersionCommitMessageProps {
 }
 
 interface VersionFileChangesProps {
+  assetBaseURL?: string;
   maxFiles?: number;
   projectSubdomain: ProjectSubdomain;
   versionRef: string;
@@ -73,11 +77,13 @@ export function VersionCommitMessage({
 }
 
 export function VersionFileChanges({
+  assetBaseURL,
   maxFiles = 3,
   projectSubdomain,
   versionRef,
 }: VersionFileChangesProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const openFileViewer = useSetAtom(openFileViewerAtom);
 
   const { data: gitRefInfo, isLoading } = useQuery(
     rpcClient.workspace.project.git.ref.queryOptions({
@@ -106,27 +112,67 @@ export function VersionFileChanges({
     : gitRefInfo.files.slice(0, maxFiles);
   const hasMoreFiles = gitRefInfo.files.length > maxFiles;
 
+  const handleFileClick = (file: (typeof gitRefInfo.files)[0]) => {
+    if (file.status === "deleted" || !assetBaseURL) {
+      return;
+    }
+
+    const clickableFiles = gitRefInfo.files.filter(
+      (f) => f.status !== "deleted",
+    );
+    const clickedFileIndex = clickableFiles.findIndex(
+      (f) => f.filename === file.filename,
+    );
+
+    openFileViewer({
+      currentIndex: clickedFileIndex,
+      files: clickableFiles.map((f) => ({
+        filename: f.filename,
+        filePath: f.filename,
+        mimeType: f.mimeType,
+        size: 0,
+        url: getAssetUrl({ assetBase: assetBaseURL, filePath: f.filename }),
+      })),
+    });
+  };
+
   return (
     <div className="flex w-full flex-col gap-1">
-      {filesToShow.map((file) => (
-        <div
-          className="flex w-full items-center gap-2 text-xs text-muted-foreground"
-          key={file.filename}
-        >
-          <span className="flex-1 truncate font-mono">
-            {cleanFilePath(file.filename)}
-          </span>
+      {filesToShow.map((file) => {
+        const isDeleted = file.status === "deleted";
+        const isClickable = !isDeleted && assetBaseURL;
 
-          <div className="flex shrink-0 items-center gap-1">
-            {file.additions > 0 && (
-              <span className="text-muted-foreground">+{file.additions}</span>
-            )}
-            {file.deletions > 0 && (
-              <span className="text-muted-foreground">-{file.deletions}</span>
-            )}
-          </div>
-        </div>
-      ))}
+        return (
+          <button
+            className={`flex w-full items-center gap-2 text-left text-xs text-muted-foreground ${
+              isClickable ? "transition-colors hover:text-foreground" : ""
+            }`}
+            disabled={!isClickable}
+            key={file.filename}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (isClickable) {
+                handleFileClick(file);
+              }
+            }}
+            type="button"
+          >
+            <span className="flex-1 truncate font-mono">
+              {cleanFilePath(file.filename)}
+            </span>
+
+            <div className="flex shrink-0 items-center gap-1">
+              {file.additions > 0 && (
+                <span className="text-muted-foreground">+{file.additions}</span>
+              )}
+              {file.deletions > 0 && (
+                <span className="text-muted-foreground">-{file.deletions}</span>
+              )}
+            </div>
+          </button>
+        );
+      })}
 
       {hasMoreFiles && (
         <button

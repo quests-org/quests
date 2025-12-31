@@ -1,156 +1,165 @@
 import type { ComponentType } from "react";
 
 import {
-  BsFileEarmark,
-  BsFileEarmarkExcel,
+  BsFileBinary,
+  BsFileCode,
   BsFileEarmarkMusic,
   BsFileEarmarkPlay,
   BsFileEarmarkPpt,
   BsFileEarmarkRichtext,
   BsFileEarmarkSpreadsheet,
   BsFileEarmarkWord,
+  BsFileText,
+  BsFiletypeAac,
+  BsFiletypeAi,
+  BsFiletypeBmp,
+  BsFiletypeCs,
+  BsFiletypeCss,
+  BsFiletypeCsv,
+  BsFiletypeDoc,
+  BsFiletypeDocx,
+  BsFiletypeExe,
+  BsFiletypeGif,
+  BsFiletypeHeic,
+  BsFiletypeHtml,
+  BsFiletypeJava,
+  BsFiletypeJpg,
+  BsFiletypeJs,
+  BsFiletypeJson,
+  BsFiletypeJsx,
+  BsFiletypeKey,
+  BsFiletypeM4P,
+  BsFiletypeMd,
+  BsFiletypeMdx,
+  BsFiletypeMov,
+  BsFiletypeMp3,
+  BsFiletypeMp4,
+  BsFiletypeOtf,
+  BsFiletypePdf,
+  BsFiletypePhp,
+  BsFiletypePng,
+  BsFiletypePpt,
+  BsFiletypePptx,
+  BsFiletypePsd,
+  BsFiletypePy,
+  BsFiletypeRaw,
+  BsFiletypeRb,
+  BsFiletypeSass,
+  BsFiletypeScss,
+  BsFiletypeSh,
+  BsFiletypeSql,
+  BsFiletypeSvg,
+  BsFiletypeTiff,
+  BsFiletypeTsx,
+  BsFiletypeTtf,
+  BsFiletypeTxt,
+  BsFiletypeWav,
+  BsFiletypeWoff,
+  BsFiletypeXls,
+  BsFiletypeXlsx,
+  BsFiletypeXml,
+  BsFiletypeYml,
 } from "react-icons/bs";
-import {
-  SiCss3,
-  SiDocker,
-  SiGit,
-  SiGnubash,
-  SiGraphql,
-  SiHtml5,
-  SiJavascript,
-  SiJson,
-  SiMarkdown,
-  SiPython,
-  SiReact,
-  SiRust,
-  SiSass,
-  SiSvelte,
-  SiSvg,
-  SiTypescript,
-  SiVuedotjs,
-  SiYaml,
-} from "react-icons/si";
-import { VscFilePdf, VscFileZip } from "react-icons/vsc";
+import { VscFileZip } from "react-icons/vsc";
 
 type IconComponent = ComponentType<{ className?: string }>;
 
 const EXTENSION_ICON_MAP: Record<string, IconComponent> = {
-  // cspell:ignore gnubash, flac
+  // cspell:ignore flac
   "7z": VscFileZip,
-  aac: BsFileEarmarkMusic,
+  aac: BsFiletypeAac,
+  ai: BsFiletypeAi,
   avi: BsFileEarmarkPlay,
-  bash: SiGnubash,
-  css: SiCss3,
-  csv: BsFileEarmarkSpreadsheet,
-  doc: BsFileEarmarkWord,
-  dockerfile: SiDocker,
-  docx: BsFileEarmarkWord,
+  bash: BsFiletypeSh,
+  bmp: BsFiletypeBmp,
+  cs: BsFiletypeCs,
+  css: BsFiletypeCss,
+  csv: BsFiletypeCsv,
+  doc: BsFiletypeDoc,
+  docx: BsFiletypeDocx,
   epub: BsFileEarmarkRichtext,
+  exe: BsFiletypeExe,
   flac: BsFileEarmarkMusic,
-  gitignore: SiGit,
-  gql: SiGraphql,
-  graphql: SiGraphql,
+  gif: BsFiletypeGif,
   gz: VscFileZip,
-  htm: SiHtml5,
-  html: SiHtml5,
-  js: SiJavascript,
-  json: SiJson,
-  jsx: SiReact,
-  key: BsFileEarmarkPpt,
-  m4a: BsFileEarmarkMusic,
-  md: SiMarkdown,
-  mdx: SiMarkdown,
-  mjs: SiJavascript,
+  heic: BsFiletypeHeic,
+  htm: BsFiletypeHtml,
+  html: BsFiletypeHtml,
+  java: BsFiletypeJava,
+  jpeg: BsFiletypeJpg,
+  jpg: BsFiletypeJpg,
+  js: BsFiletypeJs,
+  json: BsFiletypeJson,
+  jsx: BsFiletypeJsx,
+  key: BsFiletypeKey,
+  m4a: BsFiletypeM4P,
+  md: BsFiletypeMd,
+  mdx: BsFiletypeMdx,
+  mjs: BsFiletypeJs,
   mkv: BsFileEarmarkPlay,
-  mov: BsFileEarmarkPlay,
-  mp3: BsFileEarmarkMusic,
-  mp4: BsFileEarmarkPlay,
+  mov: BsFiletypeMov,
+  mp3: BsFiletypeMp3,
+  mp4: BsFiletypeMp4,
   numbers: BsFileEarmarkSpreadsheet,
   odf: BsFileEarmarkRichtext,
   odp: BsFileEarmarkPpt,
   ods: BsFileEarmarkSpreadsheet,
   odt: BsFileEarmarkWord,
   ogg: BsFileEarmarkMusic,
+  otf: BsFiletypeOtf,
   pages: BsFileEarmarkWord,
-  pdf: VscFilePdf,
-  ppt: BsFileEarmarkPpt,
-  pptx: BsFileEarmarkPpt,
-  py: SiPython,
+  pdf: BsFiletypePdf,
+  php: BsFiletypePhp,
+  png: BsFiletypePng,
+  ppt: BsFiletypePpt,
+  pptx: BsFiletypePptx,
+  psd: BsFiletypePsd,
+  py: BsFiletypePy,
   rar: VscFileZip,
-  rs: SiRust,
+  raw: BsFiletypeRaw,
+  rb: BsFiletypeRb,
   rtf: BsFileEarmarkRichtext,
-  sass: SiSass,
-  scss: SiSass,
-  sh: SiGnubash,
-  svelte: SiSvelte,
-  svg: SiSvg,
+  sass: BsFiletypeSass,
+  scss: BsFiletypeScss,
+  sh: BsFiletypeSh,
+  sql: BsFiletypeSql,
+  svg: BsFiletypeSvg,
   tar: VscFileZip,
-  ts: SiTypescript,
+  tiff: BsFiletypeTiff,
+  ts: BsFiletypeTsx,
   tsv: BsFileEarmarkSpreadsheet,
-  tsx: SiReact,
-  txt: BsFileEarmarkRichtext,
-  vue: SiVuedotjs,
-  wav: BsFileEarmarkMusic,
+  tsx: BsFiletypeTsx,
+  ttf: BsFiletypeTtf,
+  txt: BsFiletypeTxt,
+  wav: BsFiletypeWav,
   webm: BsFileEarmarkPlay,
-  xls: BsFileEarmarkExcel,
-  xlsx: BsFileEarmarkExcel,
-  yaml: SiYaml,
-  yml: SiYaml,
+  woff: BsFiletypeWoff,
+  xls: BsFiletypeXls,
+  xlsx: BsFiletypeXlsx,
+  xml: BsFiletypeXml,
+  yaml: BsFiletypeYml,
+  yml: BsFiletypeYml,
   zip: VscFileZip,
 };
 
 const FILENAME_ICON_MAP: Record<string, IconComponent> = {
-  ".gitignore": SiGit,
-  dockerfile: SiDocker,
+  ".gitignore": BsFileCode,
+  dockerfile: BsFileCode,
 };
 
 export function FileIcon({
   className = "size-5",
   filename,
+  mimeType,
 }: {
   className?: string;
   filename: string;
+  mimeType?: string;
 }) {
-  const Icon = getFileIcon(filename);
-  const ext = getFileExtension(filename);
+  const Icon = getFileIcon(filename, mimeType);
 
   if (Icon === null) {
-    if (!ext) {
-      return <BsFileEarmark className={className} />;
-    }
-
-    return (
-      <svg
-        className={className}
-        fill="none"
-        viewBox="0 0 24 24"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <rect
-          className="fill-muted stroke-border"
-          height="20"
-          rx="2"
-          strokeWidth="1.5"
-          width="16"
-          x="4"
-          y="2"
-        />
-        <text
-          className="fill-muted-foreground"
-          style={{
-            fontSize: "6px",
-            fontWeight: 600,
-            letterSpacing: "-0.3px",
-            textTransform: "uppercase",
-          }}
-          textAnchor="middle"
-          x="12"
-          y="14"
-        >
-          {ext.slice(0, 4)}
-        </text>
-      </svg>
-    );
+    return <BsFileBinary className={className} />;
   }
 
   // Dynamic creation should be fine because the components have no state
@@ -167,7 +176,10 @@ function getFileExtension(filename: string): string {
   return lowerName.slice(lastDotIndex + 1);
 }
 
-function getFileIcon(filename: string): IconComponent | null {
+function getFileIcon(
+  filename: string,
+  mimeType?: string,
+): IconComponent | null {
   const lowerName = filename.toLowerCase();
 
   if (FILENAME_ICON_MAP[lowerName]) {
@@ -175,5 +187,15 @@ function getFileIcon(filename: string): IconComponent | null {
   }
 
   const ext = getFileExtension(filename);
-  return EXTENSION_ICON_MAP[ext] ?? null;
+  const extIcon = EXTENSION_ICON_MAP[ext];
+
+  if (extIcon) {
+    return extIcon;
+  }
+
+  if (mimeType === "text/plain") {
+    return BsFileText;
+  }
+
+  return null;
 }

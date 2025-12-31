@@ -1,3 +1,4 @@
+import { PROJECT_CONFIG_FILE_NAME } from "@quests/shared";
 import fs from "node:fs/promises";
 
 import { type AppDir } from "../schemas/paths";
@@ -8,12 +9,12 @@ import { pathExists } from "./path-exists";
 
 export async function getAppDirTimestamps(appDir: AppDir) {
   const privateDir = getAppPrivateDir(appDir);
-  const questManifestPath = absolutePathJoin(appDir, "quest-manifest.json");
+  const projectConfigPath = absolutePathJoin(appDir, PROJECT_CONFIG_FILE_NAME);
   const srcFolder = absolutePathJoin(appDir, "src");
   const paths = [
     privateDir, // Changes when agent changes
     srcFolder, // Changes when code changes
-    questManifestPath, // Changes when app name/icon changes
+    projectConfigPath, // Changes when app name/icon changes
   ];
 
   for (const path of paths) {

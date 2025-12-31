@@ -1,7 +1,7 @@
 import { AppIconsSchema } from "@quests/shared/icons";
 import { z } from "zod";
 
-export const QuestManifestSchema = z.object({
+export const ProjectConfigSchema = z.object({
   description: z.string().optional(),
   icon: z
     .object({
@@ -13,4 +13,4 @@ export const QuestManifestSchema = z.object({
   name: z.string(),
 });
 
-export type QuestManifest = z.output<typeof QuestManifestSchema>;
+export type ProjectConfig = z.output<typeof ProjectConfigSchema>;

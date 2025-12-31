@@ -4,8 +4,10 @@ import { z } from "zod";
 
 import { type ProjectSubdomain } from "../schemas/subdomains";
 import { type WorkspaceConfig } from "../types";
+import { absolutePathJoin } from "./absolute-path-join";
 import { createAppConfig } from "./app-config/create";
 import { TypedError } from "./errors";
+import { getMimeType } from "./get-mime-type";
 import { git } from "./git";
 import { GitCommands } from "./git/commands";
 
@@ -16,6 +18,7 @@ export const GitRefInfoSchema = z.object({
       additions: z.number(),
       deletions: z.number(),
       filename: z.string(),
+      mimeType: z.string(),
       status: z.enum(["added", "deleted", "modified"]),
     }),
   ),
@@ -142,10 +145,14 @@ export async function getGitRefInfo(
         status = "deleted";
       }
 
+      const filePath = absolutePathJoin(projectConfig.appDir, filename);
+      const mimeType = await getMimeType(filePath);
+
       files.push({
         additions,
         deletions,
         filename,
+        mimeType,
         status,
       });
 

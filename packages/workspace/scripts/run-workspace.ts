@@ -7,7 +7,6 @@ import {
 } from "@quests/ai-gateway";
 import { AIProviderConfigIdSchema } from "@quests/shared";
 import { execa } from "execa";
-import mime from "mime";
 import path from "node:path";
 import readline from "node:readline";
 import { ulid } from "ulid";
@@ -136,21 +135,25 @@ const FAKE_FILES = {
   audio: {
     content: "UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=",
     filename: "sample.wav",
+    mimeType: "audio/wav",
   },
   image: {
     content:
       "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
     filename: "sample.png",
+    mimeType: "image/png",
   },
   pdf: {
     content:
       "JVBERi0xLjQKJeLjz9MKMSAwIG9iago8PC9UeXBlL0NhdGFsb2cvUGFnZXMgMiAwIFI+PgplbmRvYmoKMiAwIG9iago8PC9UeXBlL1BhZ2VzL0tpZHNbMyAwIFJdL0NvdW50IDE+PgplbmRvYmoKMyAwIG9iago8PC9UeXBlL1BhZ2UvTWVkaWFCb3hbMCAwIDMgM10+PgplbmRvYmoKeHJlZgowIDQKMDAwMDAwMDAwMCA2NTUzNSBmCjAwMDAwMDAwMTAgMDAwMDAgbgowMDAwMDAwMDUzIDAwMDAwIG4KMDAwMDAwMDEwMiAwMDAwMCBuCnRyYWlsZXIKPDwvU2l6ZSA0L1Jvb3QgMSAwIFI+PgpzdGFydHhyZWYKMTQ5CiUlRU9G",
     filename: "sample.pdf",
+    mimeType: "application/pdf",
   },
   text: {
     // cspell:disable-next-line
     content: "VGhpcyBpcyBhIHNhbXBsZSB0ZXh0IGZpbGUu",
     filename: "sample.txt",
+    mimeType: "text/plain",
   },
 };
 
@@ -162,7 +165,7 @@ function extractFilePrefix(input: string) {
         return {
           files: Object.values(FAKE_FILES).map((file) => ({
             ...file,
-            mimeType: mime.getType(file.filename) ?? "application/octet-stream",
+            mimeType: file.mimeType,
             size: Buffer.from(file.content, "base64").length,
           })),
           text: input.slice(prefix.length).trim(),
@@ -173,9 +176,7 @@ function extractFilePrefix(input: string) {
         files: [
           {
             ...FAKE_FILES[type],
-            mimeType:
-              mime.getType(FAKE_FILES[type].filename) ??
-              "application/octet-stream",
+            mimeType: FAKE_FILES[type].mimeType,
             size: Buffer.from(FAKE_FILES[type].content, "base64").length,
           },
         ],

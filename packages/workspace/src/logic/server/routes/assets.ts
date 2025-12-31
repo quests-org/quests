@@ -1,10 +1,10 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import mime from "mime";
 import fs from "node:fs/promises";
-import path from "node:path";
 
+import { absolutePathJoin } from "../../../lib/absolute-path-join";
 import { createAppConfig } from "../../../lib/app-config/create";
+import { getMimeType } from "../../../lib/get-mime-type";
 import { APPS_SERVER_API_PATH } from "../constants";
 import { type WorkspaceServerEnv } from "../types";
 import { uriDetailsForHost } from "../uri-details-for-host";
@@ -32,11 +32,11 @@ app.get("/assets/*", async (c) => {
     return c.notFound();
   }
 
-  const fullPath = path.join(appConfig.appDir, assetPath);
+  const fullPath = absolutePathJoin(appConfig.appDir, assetPath);
 
   try {
     const fileBuffer = await fs.readFile(fullPath);
-    const contentType = mime.getType(fullPath) ?? "application/octet-stream";
+    const contentType = await getMimeType(fullPath);
 
     return c.body(fileBuffer, 200, {
       "Content-Type": contentType,

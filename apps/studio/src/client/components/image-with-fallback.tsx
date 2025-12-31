@@ -8,6 +8,7 @@ export function ImageWithFallback({
   className,
   fallbackClassName,
   filename,
+  mimeType,
   onError,
   src,
   ...props
@@ -19,6 +20,7 @@ export function ImageWithFallback({
   className?: string;
   fallbackClassName?: string;
   filename: string;
+  mimeType?: string;
   onError?: () => void;
   src: string;
 }) {
@@ -38,8 +40,9 @@ export function ImageWithFallback({
         )}
       >
         <FileIcon
-          className="size-6 text-muted-foreground"
+          className="size-[70%] text-muted-foreground"
           filename={filename}
+          mimeType={mimeType}
         />
       </div>
     );

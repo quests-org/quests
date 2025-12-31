@@ -15,6 +15,7 @@ interface AttachmentItemProps {
   filename: string;
   filePath?: string;
   gallery?: FileViewerFile[];
+  imageClassName?: string;
   mimeType?: string;
   onRemove?: () => void;
   previewUrl?: string;
@@ -25,6 +26,7 @@ export function AttachmentItem({
   filename,
   filePath,
   gallery,
+  imageClassName,
   mimeType,
   onRemove,
   previewUrl,
@@ -59,9 +61,12 @@ export function AttachmentItem({
   const hasPreview = Boolean(previewUrl);
 
   const imageContent = hasPreview && isImage && previewUrl && (
-    <div className="group relative size-12 shrink-0">
+    <div className={cn("group relative size-12 shrink-0", imageClassName)}>
       <button
-        className="size-12 overflow-hidden rounded-lg border border-border transition-all hover:ring-2 hover:ring-ring"
+        className={cn(
+          "size-12 overflow-hidden rounded-lg border border-border transition-all hover:ring-2 hover:ring-ring",
+          imageClassName,
+        )}
         onClick={handlePreviewClick}
         type="button"
       >
@@ -70,8 +75,9 @@ export function AttachmentItem({
           className={cn(
             "size-12",
             isSvg ? "bg-white object-contain p-1.5" : "object-cover",
+            imageClassName,
           )}
-          fallbackClassName="size-12 rounded-lg"
+          fallbackClassName={cn("size-12 rounded-lg", imageClassName)}
           filename={filename}
           src={previewUrl}
         />
@@ -98,6 +104,7 @@ export function AttachmentItem({
         <FileIcon
           className="size-5 shrink-0 text-muted-foreground"
           filename={filename}
+          mimeType={mimeType}
         />
         <TruncatedText
           className="text-left text-xs leading-tight"

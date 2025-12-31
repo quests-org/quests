@@ -1,7 +1,6 @@
 import { type ProjectMode } from "@quests/shared";
 
 export const APP_PRIVATE_FOLDER = ".quests";
-export const QUEST_MANIFEST_FILE_NAME = "quests.json";
 export const WORKSPACE_FOLDER = "workspace";
 export const PREVIEWS_FOLDER = "previews";
 export const PROJECTS_FOLDER = "projects";

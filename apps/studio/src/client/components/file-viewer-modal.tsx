@@ -15,41 +15,29 @@ import {
   Download,
   X,
 } from "lucide-react";
-import { useEffect, useMemo, useReducer } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-import { FileIcon } from "./file-icon";
+import { AudioViewer } from "./audio-viewer";
+import { FilePreviewFallback } from "./file-preview-fallback";
 import { ImageWithFallback } from "./image-with-fallback";
+import { PdfViewer } from "./pdf-viewer";
+import { TextFileViewer } from "./text-file-viewer";
 import { TruncatedText } from "./truncated-text";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { Button } from "./ui/button";
-
-type ErrorAction =
-  | { error: "download"; message: string; type: "SET"; url: string }
-  | { error: "download" | "image" | "load"; type: "CLEAR"; url: string }
-  | { error: "image" | "load"; type: "SET"; url: string }
-  | { type: "RESET" };
-
-type FileErrors = Record<
-  string,
-  {
-    download?: string;
-    image?: boolean;
-    load?: boolean;
-  }
->;
+import { VideoViewer } from "./video-viewer";
 
 export function FileViewerModal() {
   const state = useAtomValue(fileViewerAtom);
   const closeViewer = useSetAtom(closeFileViewerAtom);
   const navigate = useSetAtom(navigateFileViewerAtom);
-  const [fileErrors, dispatch] = useReducer(fileErrorsReducer, {});
+  const [downloadError, setDownloadError] = useState<
+    undefined | { message: string; url: string }
+  >(undefined);
   const router = useRouter();
 
   const currentFile = state.files[state.currentIndex];
   const hasMultipleFiles = state.files.length > 1;
-  const currentFileErrors = currentFile
-    ? fileErrors[currentFile.url]
-    : undefined;
 
   const isDownloadable = useMemo(() => {
     // We can't assume a file is downloadable via fetch due to CORS restrictions
@@ -110,7 +98,7 @@ export function FileViewerModal() {
 
   const handleDownload = async () => {
     try {
-      dispatch({ error: "download", type: "CLEAR", url: currentFile.url });
+      setDownloadError(undefined);
       if (currentFile.url.startsWith("data:")) {
         const link = document.createElement("a");
         link.href = currentFile.url;
@@ -121,7 +109,6 @@ export function FileViewerModal() {
       } else {
         const response = await fetch(currentFile.url);
         if (!response.ok) {
-          dispatch({ error: "load", type: "SET", url: currentFile.url });
           throw new Error(`Failed to fetch file: ${response.statusText}`);
         }
         const blob = await response.blob();
@@ -135,43 +122,29 @@ export function FileViewerModal() {
         URL.revokeObjectURL(url);
       }
     } catch (error) {
-      dispatch({ error: "load", type: "SET", url: currentFile.url });
       const errorMessage =
         error instanceof Error
           ? error.message
           : "An unknown error occurred while downloading the file";
-      dispatch({
-        error: "download",
+      setDownloadError({
         message: `${errorMessage}\n\nFile: ${currentFile.filePath ?? currentFile.url}`,
-        type: "SET",
         url: currentFile.url,
       });
     }
   };
 
-  const hasLoadError = currentFileErrors?.load ?? false;
-
+  const isPlaintext = currentFile.mimeType === "text/plain";
   const isImage =
-    (currentFile.mimeType?.startsWith("image/") || !currentFile.mimeType) &&
-    !currentFileErrors?.image;
+    currentFile.mimeType?.startsWith("image/") || !currentFile.mimeType;
   const isSvg = currentFile.mimeType === "image/svg+xml";
-  const isPdf = currentFile.mimeType === "application/pdf" && !hasLoadError;
-  const isVideo = currentFile.mimeType?.startsWith("video/") && !hasLoadError;
-  const isAudio = currentFile.mimeType?.startsWith("audio/") && !hasLoadError;
-
-  const handleMediaError = () => {
-    dispatch({ error: "load", type: "SET", url: currentFile.url });
-  };
-
-  const handleImageError = () => {
-    dispatch({ error: "image", type: "SET", url: currentFile.url });
-  };
+  const isPdf = currentFile.mimeType === "application/pdf";
+  const isVideo = currentFile.mimeType?.startsWith("video/");
+  const isAudio = currentFile.mimeType?.startsWith("audio/");
 
   return (
     <DialogPrimitive.Root
       onOpenChange={(open) => {
         if (!open) {
-          dispatch({ type: "RESET" });
           closeViewer();
         }
       }}
@@ -188,14 +161,15 @@ export function FileViewerModal() {
           </DialogPrimitive.Description>
           <div
             className="relative flex h-full w-full flex-col"
-            onClick={() => {
-              closeViewer();
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                closeViewer();
+              }
             }}
           >
             <Button
               className="absolute top-4 right-4 z-10 text-white hover:bg-white/10"
-              onClick={(e) => {
-                e.stopPropagation();
+              onClick={() => {
                 closeViewer();
               }}
               size="icon"
@@ -204,13 +178,19 @@ export function FileViewerModal() {
               <X className="size-5" />
             </Button>
 
-            <div className="relative flex min-h-0 flex-1 items-center justify-center px-16 py-16">
+            <div
+              className="relative flex min-h-0 flex-1 items-center justify-center px-16 py-16"
+              onClick={(e) => {
+                if (e.target === e.currentTarget) {
+                  closeViewer();
+                }
+              }}
+            >
               {hasMultipleFiles && (
                 <>
                   <Button
                     className="absolute top-1/2 left-4 z-10 -translate-y-1/2 bg-black/50 text-white hover:bg-white/10"
-                    onClick={(e) => {
-                      e.stopPropagation();
+                    onClick={() => {
                       navigate("prev");
                     }}
                     size="icon"
@@ -220,8 +200,7 @@ export function FileViewerModal() {
                   </Button>
                   <Button
                     className="absolute top-1/2 right-4 z-10 -translate-y-1/2 bg-black/50 text-white hover:bg-white/10"
-                    onClick={(e) => {
-                      e.stopPropagation();
+                    onClick={() => {
                       navigate("next");
                     }}
                     size="icon"
@@ -231,86 +210,60 @@ export function FileViewerModal() {
                   </Button>
                 </>
               )}
-              {isImage ? (
-                <ImageWithFallback
-                  alt={currentFile.filename}
-                  className={cn(
-                    "h-auto max-h-full w-auto max-w-full object-contain",
-                    isSvg && "rounded bg-white/90 p-4",
-                  )}
-                  fallbackClassName="size-32 rounded-lg"
-                  filename={currentFile.filename}
-                  key={currentFile.url}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                  }}
-                  onError={handleImageError}
-                  src={currentFile.url}
-                />
-              ) : isPdf ? (
-                <iframe
-                  className="h-full max-h-full w-full max-w-full rounded border border-white/10"
-                  key={currentFile.url}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                  }}
-                  onError={handleMediaError}
-                  src={currentFile.url}
-                  title={currentFile.filename}
-                />
-              ) : isVideo ? (
-                <video
-                  className="max-h-full max-w-full rounded border border-white/10"
-                  controls
-                  key={currentFile.url}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                  }}
-                  onError={handleMediaError}
-                  src={currentFile.url}
-                />
-              ) : isAudio ? (
-                <audio
-                  className="w-full max-w-2xl"
-                  controls
-                  key={currentFile.url}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                  }}
-                  onError={handleMediaError}
-                  src={currentFile.url}
-                />
-              ) : (
-                <div
-                  className="flex w-full max-w-md flex-col items-center justify-center gap-4 p-8 text-center"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                  }}
-                >
-                  <div className="flex size-32 items-center justify-center rounded-lg bg-background">
-                    <FileIcon
-                      className="size-16"
-                      filename={currentFile.filename}
-                    />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-white">
-                      Preview not available
-                    </p>
-                    <p className="mt-1 text-xs text-white/60">
-                      Use the download button below to save this file
-                    </p>
-                  </div>
-                </div>
-              )}
+              <div
+                className="flex size-full items-center justify-center"
+                key={currentFile.url}
+                onClick={(e) => {
+                  if (e.target === e.currentTarget) {
+                    closeViewer();
+                  }
+                }}
+              >
+                {isPlaintext ? (
+                  <TextFileViewer
+                    filename={currentFile.filename}
+                    mimeType={currentFile.mimeType}
+                    onBackgroundClick={closeViewer}
+                    url={currentFile.url}
+                  />
+                ) : isImage ? (
+                  <ImageWithFallback
+                    alt={currentFile.filename}
+                    className={cn(
+                      "h-auto max-h-full w-auto max-w-full object-contain",
+                      isSvg && "rounded bg-white/90 p-4",
+                    )}
+                    fallbackClassName="size-32 rounded-lg"
+                    filename={currentFile.filename}
+                    mimeType={currentFile.mimeType}
+                    onClick={closeViewer}
+                    src={currentFile.url}
+                  />
+                ) : isPdf ? (
+                  <PdfViewer
+                    filename={currentFile.filename}
+                    url={currentFile.url}
+                  />
+                ) : isVideo ? (
+                  <VideoViewer
+                    filename={currentFile.filename}
+                    url={currentFile.url}
+                  />
+                ) : isAudio ? (
+                  <AudioViewer
+                    filename={currentFile.filename}
+                    url={currentFile.url}
+                  />
+                ) : (
+                  <FilePreviewFallback
+                    filename={currentFile.filename}
+                    mimeType={currentFile.mimeType}
+                  />
+                )}
+              </div>
             </div>
 
-            <div
-              className="flex shrink-0 flex-col items-center gap-4 px-4 pb-8"
-              onClick={(e) => {
-                e.stopPropagation();
-              }}
-            >
+            <div className="flex shrink-0 flex-col items-center gap-4 px-4 pb-8">
               {hasMultipleFiles && (
                 <div className="flex items-center gap-1.5 py-2">
                   {state.files.map((_, index) => (
@@ -322,8 +275,7 @@ export function FileViewerModal() {
                           : "bg-white/30 hover:bg-white/50",
                       )}
                       key={index}
-                      onClick={(e) => {
-                        e.stopPropagation();
+                      onClick={() => {
                         navigate(index);
                       }}
                       type="button"
@@ -338,12 +290,12 @@ export function FileViewerModal() {
                 >
                   {currentFile.filename}
                 </TruncatedText>
-                {currentFileErrors?.download && (
+                {downloadError?.url === currentFile.url && (
                   <Alert className="w-full max-w-2xl" variant="destructive">
                     <AlertCircle className="size-4" />
                     <AlertTitle>Failed to download file</AlertTitle>
                     <AlertDescription className="whitespace-pre-line">
-                      {currentFileErrors.download}
+                      {downloadError.message}
                     </AlertDescription>
                   </Alert>
                 )}
@@ -371,35 +323,4 @@ export function FileViewerModal() {
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>
   );
-}
-
-function fileErrorsReducer(
-  errors: FileErrors,
-  action: ErrorAction,
-): FileErrors {
-  switch (action.type) {
-    case "CLEAR": {
-      const { [action.error]: _, ...rest } = errors[action.url] ?? {};
-      if (Object.keys(rest).length === 0) {
-        const { [action.url]: __, ...remaining } = errors;
-        return remaining;
-      }
-      return { ...errors, [action.url]: rest };
-    }
-    case "RESET": {
-      return {};
-    }
-    case "SET": {
-      return {
-        ...errors,
-        [action.url]: {
-          ...errors[action.url],
-          [action.error]: action.error === "download" ? action.message : true,
-        },
-      };
-    }
-    default: {
-      return errors;
-    }
-  }
 }

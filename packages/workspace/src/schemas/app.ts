@@ -1,7 +1,7 @@
 import { ProjectModeSchema } from "@quests/shared";
 import { z } from "zod";
 
-import { QuestManifestSchema } from "./quest-manifest";
+import { ProjectConfigSchema } from "./project-config";
 import {
   PreviewSubdomainSchema,
   ProjectSubdomainSchema,
@@ -11,9 +11,9 @@ import {
 
 const WorkspaceAppBaseSchema = z.object({
   createdAt: z.date(),
-  description: QuestManifestSchema.shape.description.optional(),
+  description: ProjectConfigSchema.shape.description.optional(),
   folderName: z.string(),
-  icon: QuestManifestSchema.shape.icon.optional(),
+  icon: ProjectConfigSchema.shape.icon.optional(),
   title: z.string(),
   updatedAt: z.date(),
   urls: z.object({

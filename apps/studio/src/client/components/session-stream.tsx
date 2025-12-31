@@ -20,7 +20,6 @@ import { ChatErrorAlert } from "./chat-error-alert";
 import { ChatZeroState } from "./chat-zero-state";
 import { ContextMessages } from "./context-messages";
 import { FileAttachmentCard } from "./file-attachment-card";
-import { GitCommitCard } from "./git-commit-card";
 import { MessageActionsRow } from "./message-actions-row";
 import { MessageError } from "./message-error";
 import { ReasoningMessage } from "./reasoning-message";
@@ -31,19 +30,20 @@ import { Button } from "./ui/button";
 import { UnknownPart } from "./unknown-part";
 import { UsageSummary } from "./usage-summary";
 import { UserMessage } from "./user-message";
+import { VersionAndFilesCard } from "./version-and-files-card";
 export type FilterMode = "chat" | "versions";
 
 interface SessionEventListProps {
-  app: WorkspaceAppProject;
   onContinue: () => void;
+  project: WorkspaceAppProject;
   selectedVersion?: string;
   sessionId: StoreId.Session;
   showMessageActions?: boolean;
 }
 
 export function SessionStream({
-  app,
   onContinue,
+  project,
   selectedVersion,
   sessionId,
   showMessageActions = true,
@@ -56,11 +56,11 @@ export function SessionStream({
     rpcClient.workspace.message.live.listWithParts.experimental_liveOptions({
       input: {
         sessionId,
-        subdomain: app.subdomain,
+        subdomain: project.subdomain,
       },
     }),
   );
-  const { data: appState } = useAppState({ subdomain: app.subdomain });
+  const { data: appState } = useAppState({ subdomain: project.subdomain });
   const navigate = useNavigate();
 
   const createEmptySessionMutation = useMutation(
@@ -69,7 +69,7 @@ export function SessionStream({
 
   const handleNewSession = () => {
     createEmptySessionMutation.mutate(
-      { subdomain: app.subdomain },
+      { subdomain: project.subdomain },
       {
         onError: () => {
           toast.error("Failed to create new chat");
@@ -77,7 +77,7 @@ export function SessionStream({
         onSuccess: (result) => {
           void navigate({
             params: {
-              subdomain: app.subdomain,
+              subdomain: project.subdomain,
             },
             replace: true,
             search: (prev) => ({
@@ -174,14 +174,15 @@ export function SessionStream({
         const lastGitCommitPart = gitCommitParts.at(-1);
         const isLastVersion = lastGitCommitPart?.data.ref === part.data.ref;
         return (
-          <GitCommitCard
+          <VersionAndFilesCard
+            assetBaseURL={project.urls.assetBase}
             isLastGitCommit={isLastVersion}
             isSelected={
               selectedVersion === part.data.ref ||
               (isLastVersion && !selectedVersion)
             }
             key={part.metadata.id}
-            projectSubdomain={app.subdomain}
+            projectSubdomain={project.subdomain}
             restoredFromRef={part.data.restoredFromRef}
             versionRef={part.data.ref}
           />
@@ -244,9 +245,10 @@ export function SessionStream({
       return <UnknownPart key={partIndex} part={_exhaustiveCheck} />;
     },
     [
+      project.urls.assetBase,
+      project.subdomain,
       gitCommitParts,
       selectedVersion,
-      app.subdomain,
       isAnyAgentRunning,
       lastMessageId,
     ],
@@ -330,7 +332,7 @@ export function SessionStream({
                   file={file}
                   files={files}
                   key={`${fileAttachmentsPart.metadata.id}-${index}`}
-                  projectSubdomain={app.subdomain}
+                  projectSubdomain={project.subdomain}
                 />
               ))}
             </div>,
@@ -380,7 +382,7 @@ export function SessionStream({
     isAnyAgentRunning,
     showMessageActions,
     onContinue,
-    app.subdomain,
+    project.subdomain,
   ]);
 
   const shouldShowErrorRecoveryPrompt = useMemo(() => {
@@ -436,7 +438,7 @@ export function SessionStream({
       )}
 
       {!isActive && !error && !isLoading && messages.length === 0 && (
-        <ChatZeroState project={app} selectedSessionId={sessionId} />
+        <ChatZeroState project={project} selectedSessionId={sessionId} />
       )}
 
       <div className="flex w-full flex-col gap-2">

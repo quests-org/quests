@@ -24,12 +24,12 @@ import { getApp, getProjects } from "../../../lib/get-apps";
 import { getWorkspaceAppForSubdomain } from "../../../lib/get-workspace-app-for-subdomain";
 import { importProject as importProjectLib } from "../../../lib/import-project";
 import { pathExists } from "../../../lib/path-exists";
+import {
+  getProjectConfig,
+  updateProjectConfig,
+} from "../../../lib/project-config";
 import { projectModeForSubdomain } from "../../../lib/project-mode-for-subdomain";
 import { setProjectState } from "../../../lib/project-state-store";
-import {
-  getQuestManifest,
-  updateQuestManifest,
-} from "../../../lib/quest-manifest";
 import { trashProject } from "../../../lib/trash-project";
 import { writeUploadedFiles } from "../../../lib/write-uploaded-files";
 import { getWorkspaceServerURL } from "../../../logic/server/url";
@@ -182,7 +182,7 @@ const create = base
         selectedModelURI: modelURI,
       });
 
-      await updateQuestManifest(projectConfig.appDir, {
+      await updateProjectConfig(projectConfig.appDir, {
         name: defaultProjectName(message),
       });
 
@@ -198,7 +198,7 @@ const create = base
           });
 
           if (titleResult.isOk()) {
-            await updateQuestManifest(projectConfig.appDir, {
+            await updateProjectConfig(projectConfig.appDir, {
               name: titleResult.value,
             });
             publisher.publish("project.updated", {
@@ -353,7 +353,7 @@ const createFromEval = base
         .getOrDefault(model.modelId);
       const projectName = `${evalName} - ${modelId}`;
       const randomTheme = draw(THEMES) ?? DEFAULT_THEME_GRADIENT;
-      await updateQuestManifest(projectConfig.appDir, {
+      await updateProjectConfig(projectConfig.appDir, {
         icon: {
           background: randomTheme,
           lucide: iconName,
@@ -541,7 +541,7 @@ const update = base
       subdomain: input.subdomain,
       workspaceConfig: context.workspaceConfig,
     });
-    await updateQuestManifest(projectConfig.appDir, {
+    await updateProjectConfig(projectConfig.appDir, {
       icon: input.icon,
       name: input.name,
     });
@@ -581,7 +581,7 @@ const exportZip = base
         workspaceConfig: context.workspaceConfig,
       });
 
-      const manifest = await getQuestManifest(appConfig.appDir);
+      const manifest = await getProjectConfig(appConfig.appDir);
       const projectName = manifest?.name ?? input.subdomain;
 
       const safeName = projectName

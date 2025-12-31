@@ -22,3 +22,4 @@ export const SUPPORT_URL = "https://quests.dev/support";
 export const AI_GATEWAY_API_KEY_NOT_NEEDED = "NOT_NEEDED";
 export const SALES_EMAIL = "hello@quests.dev";
 export const SUPPORT_EMAIL = "support@quests.dev";
+export const PROJECT_CONFIG_FILE_NAME = "quests.json";

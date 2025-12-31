@@ -172,8 +172,8 @@ export function ProjectSidebar({
             />
           ) : selectedSessionId ? (
             <SessionStream
-              app={project}
               onContinue={handleContinue}
+              project={project}
               selectedVersion={selectedVersion}
               sessionId={selectedSessionId}
               showMessageActions={false}

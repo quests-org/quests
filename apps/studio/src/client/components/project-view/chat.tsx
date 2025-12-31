@@ -90,8 +90,8 @@ export function ProjectViewChat({
             <div className="flex flex-col gap-4" ref={contentRef}>
               {selectedSessionId && (
                 <SessionStream
-                  app={project}
                   onContinue={handleContinue}
+                  project={project}
                   sessionId={selectedSessionId}
                   showMessageActions
                 />

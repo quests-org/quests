@@ -1,4 +1,5 @@
 import { type FileViewerFile } from "@/client/atoms/file-viewer";
+import { getAssetUrl } from "@/client/lib/asset-utils";
 import {
   type ProjectSubdomain,
   type SessionMessageDataPart,
@@ -29,14 +30,17 @@ export function FileAttachmentCard({
     return null;
   }
 
-  const assetUrl = getAssetUrl(app.urls.assetBase, file.filePath);
+  const assetUrl = getAssetUrl({
+    assetBase: app.urls.assetBase,
+    filePath: file.filePath,
+  });
 
   const gallery: FileViewerFile[] = files.map((f) => ({
     filename: f.filename,
     filePath: f.filePath,
     mimeType: f.mimeType,
     size: f.size,
-    url: getAssetUrl(app.urls.assetBase, f.filePath),
+    url: getAssetUrl({ assetBase: app.urls.assetBase, filePath: f.filePath }),
   }));
 
   return (
@@ -49,9 +53,4 @@ export function FileAttachmentCard({
       size={file.size}
     />
   );
-}
-
-function getAssetUrl(assetBase: string, filePath: string): string {
-  const cleanPath = filePath.startsWith("./") ? filePath.slice(2) : filePath;
-  return `${assetBase}/${cleanPath}`;
 }

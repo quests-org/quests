@@ -1,8 +1,9 @@
+import { PROJECT_CONFIG_FILE_NAME } from "@quests/shared";
 import { errAsync, ok, safeTry } from "neverthrow";
 import path from "node:path";
 import { ulid } from "ulid";
 
-import { PROJECTS_FOLDER, QUEST_MANIFEST_FILE_NAME } from "../constants";
+import { PROJECTS_FOLDER } from "../constants";
 import { AbsolutePathSchema, AppDirSchema } from "../schemas/paths";
 import { ProjectSubdomainSchema } from "../schemas/subdomains";
 import { absolutePathJoin } from "./absolute-path-join";
@@ -40,13 +41,13 @@ export async function importProject(
 
     const questManifestPath = absolutePathJoin(
       sourcePath,
-      QUEST_MANIFEST_FILE_NAME,
+      PROJECT_CONFIG_FILE_NAME,
     );
     const hasQuestManifest = await pathExists(questManifestPath);
     if (!hasQuestManifest) {
       return errAsync(
         new TypedError.NotFound(
-          `Source directory does not contain ${QUEST_MANIFEST_FILE_NAME}`,
+          `Source directory does not contain ${PROJECT_CONFIG_FILE_NAME}`,
         ),
       );
     }

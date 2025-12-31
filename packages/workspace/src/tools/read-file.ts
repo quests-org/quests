@@ -1,7 +1,7 @@
 // Adapted from
 // https://github.com/sst/opencode/blob/dev/packages/opencode/src/tool/read.ts
+import { fileTypeFromFile } from "file-type";
 import { isBinaryFile } from "isbinaryfile";
-import mime from "mime";
 import ms from "ms";
 import { err, ok } from "neverthrow";
 import fs from "node:fs/promises";
@@ -205,7 +205,8 @@ export const ReadFile = createTool({
       });
     }
 
-    const mimeType = mime.getType(absolutePath);
+    const fileType = await fileTypeFromFile(absolutePath);
+    const mimeType = fileType?.mime;
 
     if (mimeType?.startsWith("image/")) {
       return handleMediaFile({
