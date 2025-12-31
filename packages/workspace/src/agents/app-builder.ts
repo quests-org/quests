@@ -1,9 +1,11 @@
 import { err, ok, safeTry } from "neverthrow";
 import { dedent, pick } from "radashi";
+import { readPackage } from "read-pkg";
 
 import { APP_NAME, WEBSITE_URL } from "../constants";
 import { TypedError } from "../lib/errors";
 import { fileTree } from "../lib/file-tree";
+import { formatPackageDependencies } from "../lib/format-package-dependencies";
 import { getCurrentDate } from "../lib/get-current-date";
 import { getSystemInfo } from "../lib/get-system-info";
 import { git } from "../lib/git";
@@ -131,6 +133,18 @@ export const appBuilderAgent = setupAgent({
       "AGENTS.md",
     );
 
+    let packageJsonSummary: null | string = null;
+    try {
+      const pkg = await readPackage({ cwd: appConfig.appDir });
+      packageJsonSummary = formatPackageDependencies(pkg);
+    } catch {
+      appConfig.workspaceConfig.captureException(
+        new TypedError.FileSystem(
+          "Failed to read package.json for agent context",
+        ),
+      );
+    }
+
     const userMessageId = StoreId.newMessageId();
     const userMessage: SessionMessage.ContextWithParts = {
       id: userMessageId,
@@ -174,6 +188,16 @@ export const appBuilderAgent = setupAgent({
               The AGENTS.md file provides detailed context and instructions specifically for coding agents.
               ${agentsContent}
               </agents_md>
+            `
+                : ""
+            }
+
+            ${
+              packageJsonSummary
+                ? dedent`
+              <installed_dependencies>
+              ${packageJsonSummary}
+              </installed_dependencies>
             `
                 : ""
             }
