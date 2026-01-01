@@ -54,8 +54,9 @@ const AVAILABLE_COMMANDS: Record<
     isFileOperation: true,
   },
   pnpm: {
-    description: "CLI tool for managing JavaScript packages.",
-    examples: ["pnpm add <package-name>"],
+    description:
+      "CLI tool for managing JavaScript packages. You can also use it to search for packages.",
+    examples: ["pnpm add <package-name>", "pnpm search <package-name>"],
     isFileOperation: false,
   },
   rm: {
