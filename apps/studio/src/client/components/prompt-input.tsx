@@ -42,6 +42,7 @@ interface UploadedFile {
 }
 
 const MAX_PASTE_TEXT_LENGTH = 5000;
+const MAX_FILE_PREVIEW_SIZE = 10 * 1024 * 1024;
 
 const AGENT_PLACEHOLDER_MAP: Record<AgentName, string> = {
   "app-builder": "Describe the app you want to create…",
@@ -156,6 +157,30 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
       }
     }, [autoFocus, adjustHeight]);
 
+    const processFiles = (files: File[] | FileList) => {
+      for (const file of files) {
+        const shouldCreatePreview =
+          file.size <= MAX_FILE_PREVIEW_SIZE && file.type.startsWith("image/");
+
+        const reader = new FileReader();
+        reader.addEventListener("load", () => {
+          const dataUrl = reader.result as string;
+          const base64 = dataUrl.split(",")[1] ?? "";
+          setUploadedFiles((prev) => [
+            ...prev,
+            {
+              content: base64,
+              mimeType: file.type,
+              name: file.name,
+              previewUrl: shouldCreatePreview ? dataUrl : undefined,
+              size: file.size,
+            },
+          ]);
+        });
+        reader.readAsDataURL(file);
+      }
+    };
+
     const handleDragEnter = (e: React.DragEvent) => {
       e.preventDefault();
       e.stopPropagation();
@@ -198,24 +223,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
         return;
       }
 
-      for (const file of files) {
-        const reader = new FileReader();
-        reader.addEventListener("load", () => {
-          const dataUrl = reader.result as string;
-          const base64 = dataUrl.split(",")[1] ?? "";
-          setUploadedFiles((prev) => [
-            ...prev,
-            {
-              content: base64,
-              mimeType: file.type,
-              name: file.name,
-              previewUrl: dataUrl,
-              size: file.size,
-            },
-          ]);
-        });
-        reader.readAsDataURL(file);
-      }
+      processFiles(files);
     };
 
     const removeUploadedFile = (index: number) => {
@@ -228,24 +236,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
         return;
       }
 
-      for (const file of files) {
-        const reader = new FileReader();
-        reader.addEventListener("load", () => {
-          const dataUrl = reader.result as string;
-          const base64 = dataUrl.split(",")[1] ?? "";
-          setUploadedFiles((prev) => [
-            ...prev,
-            {
-              content: base64,
-              mimeType: file.type,
-              name: file.name,
-              previewUrl: dataUrl,
-              size: file.size,
-            },
-          ]);
-        });
-        reader.readAsDataURL(file);
-      }
+      processFiles(files);
 
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
@@ -291,8 +282,6 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
               ? uploadedFiles.map((f) => ({
                   content: f.content,
                   filename: f.name,
-                  mimeType: f.mimeType,
-                  size: f.size,
                 }))
               : undefined,
           modelURI,
@@ -351,25 +340,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
 
       if (files.length > 0) {
         e.preventDefault();
-
-        for (const file of files) {
-          const reader = new FileReader();
-          reader.addEventListener("load", () => {
-            const dataUrl = reader.result as string;
-            const base64 = dataUrl.split(",")[1] ?? "";
-            setUploadedFiles((prev) => [
-              ...prev,
-              {
-                content: base64,
-                mimeType: file.type,
-                name: file.name,
-                previewUrl: dataUrl,
-                size: file.size,
-              },
-            ]);
-          });
-          reader.readAsDataURL(file);
-        }
+        processFiles(files);
         return;
       }
 

@@ -7,6 +7,7 @@ import { type SessionMessageDataPart } from "../schemas/session/message-data-par
 import { type Upload } from "../schemas/upload";
 import { absolutePathJoin } from "./absolute-path-join";
 import { TypedError } from "./errors";
+import { getMimeType } from "./get-mime-type";
 import { git } from "./git";
 import { GitCommands } from "./git/commands";
 
@@ -56,11 +57,21 @@ export async function writeUploadedFiles(
           ),
       );
 
+      const mimeType = await getMimeType(filePath);
+      const stats = yield* ResultAsync.fromPromise(
+        fs.stat(filePath),
+        (error) =>
+          new TypedError.FileSystem(
+            error instanceof Error ? error.message : "Unknown error",
+            { cause: error },
+          ),
+      );
+
       fileMetadata.push({
         filename: uniqueFilename,
         filePath: RelativePathSchema.parse(relativePath),
-        mimeType: file.mimeType,
-        size: file.size,
+        mimeType,
+        size: stats.size,
       });
     }
 
