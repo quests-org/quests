@@ -8,19 +8,13 @@ import { formatBytes } from "@quests/workspace/client";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { useRouter } from "@tanstack/react-router";
 import { useAtomValue, useSetAtom } from "jotai";
-import {
-  AlertCircle,
-  ChevronLeft,
-  ChevronRight,
-  Download,
-  X,
-} from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { ChevronLeft, ChevronRight, Download, X } from "lucide-react";
+import { useEffect, useMemo } from "react";
+import { toast } from "sonner";
 
 import { FileIcon } from "./file-icon";
 import { FileViewer } from "./file-viewer";
 import { ImageWithFallback } from "./image-with-fallback";
-import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 
@@ -28,9 +22,6 @@ export function FileViewerModal() {
   const state = useAtomValue(fileViewerAtom);
   const closeViewer = useSetAtom(closeFileViewerAtom);
   const navigate = useSetAtom(navigateFileViewerAtom);
-  const [downloadError, setDownloadError] = useState<
-    undefined | { message: string; url: string }
-  >(undefined);
   const router = useRouter();
 
   const currentFile = state.files[state.currentIndex];
@@ -95,7 +86,6 @@ export function FileViewerModal() {
 
   const handleDownload = async () => {
     try {
-      setDownloadError(undefined);
       if (currentFile.url.startsWith("data:")) {
         const link = document.createElement("a");
         link.href = currentFile.url;
@@ -123,9 +113,11 @@ export function FileViewerModal() {
         error instanceof Error
           ? error.message
           : "An unknown error occurred while downloading the file";
-      setDownloadError({
-        message: `${errorMessage}\n\nFile: ${currentFile.filePath ?? currentFile.url}`,
-        url: currentFile.url,
+      toast.error("Failed to download file", {
+        closeButton: true,
+        description: `${errorMessage}\n\nFile: ${currentFile.filePath ?? currentFile.url}`,
+        duration: 10_000,
+        richColors: true,
       });
     }
   };
@@ -161,31 +153,6 @@ export function FileViewerModal() {
               }
             }}
           >
-            {downloadError?.url === currentFile.url && (
-              <div className="flex shrink-0 justify-center px-4 pt-4">
-                <Alert
-                  className="relative w-full max-w-2xl"
-                  variant="destructive"
-                >
-                  <AlertCircle className="size-4" />
-                  <AlertTitle>Failed to download file</AlertTitle>
-                  <AlertDescription className="whitespace-pre-line">
-                    {downloadError.message}
-                  </AlertDescription>
-                  <Button
-                    className="absolute top-2 right-2"
-                    onClick={() => {
-                      setDownloadError(undefined);
-                    }}
-                    size="icon"
-                    variant="ghost"
-                  >
-                    <X className="size-4" />
-                  </Button>
-                </Alert>
-              </div>
-            )}
-
             {isImage && (
               <div className="absolute top-4 right-4 left-4 z-10 flex items-center justify-center gap-2 text-white">
                 <div className="flex items-center gap-2 rounded bg-black/50 px-3 py-1.5">
