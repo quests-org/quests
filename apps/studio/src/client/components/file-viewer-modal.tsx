@@ -17,14 +17,12 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
-import { AudioViewer } from "./audio-viewer";
-import { FilePreviewFallback } from "./file-preview-fallback";
+import { FileIcon } from "./file-icon";
+import { FileViewer } from "./file-viewer";
 import { ImageWithFallback } from "./image-with-fallback";
-import { PdfViewer } from "./pdf-viewer";
-import { TextFileViewer } from "./text-file-viewer";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
+import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
-import { VideoViewer } from "./video-viewer";
 
 export function FileViewerModal() {
   const state = useAtomValue(fileViewerAtom);
@@ -132,12 +130,10 @@ export function FileViewerModal() {
     }
   };
 
-  const isText = currentFile.mimeType?.startsWith("text/");
+  const hasExtension = currentFile.filename.includes(".");
   const isImage =
-    currentFile.mimeType?.startsWith("image/") || !currentFile.mimeType;
-  const isPdf = currentFile.mimeType === "application/pdf";
-  const isVideo = currentFile.mimeType?.startsWith("video/");
-  const isAudio = currentFile.mimeType?.startsWith("audio/");
+    currentFile.mimeType?.startsWith("image/") ||
+    (!currentFile.mimeType && !hasExtension);
 
   return (
     <DialogPrimitive.Root
@@ -165,16 +161,73 @@ export function FileViewerModal() {
               }
             }}
           >
-            <Button
-              className="absolute top-4 right-4 z-10 text-white hover:bg-white/10"
-              onClick={() => {
-                closeViewer();
-              }}
-              size="icon"
-              variant="ghost"
-            >
-              <X className="size-5" />
-            </Button>
+            {downloadError?.url === currentFile.url && (
+              <div className="flex shrink-0 justify-center px-4 pt-4">
+                <Alert
+                  className="relative w-full max-w-2xl"
+                  variant="destructive"
+                >
+                  <AlertCircle className="size-4" />
+                  <AlertTitle>Failed to download file</AlertTitle>
+                  <AlertDescription className="whitespace-pre-line">
+                    {downloadError.message}
+                  </AlertDescription>
+                  <Button
+                    className="absolute top-2 right-2"
+                    onClick={() => {
+                      setDownloadError(undefined);
+                    }}
+                    size="icon"
+                    variant="ghost"
+                  >
+                    <X className="size-4" />
+                  </Button>
+                </Alert>
+              </div>
+            )}
+
+            {isImage && (
+              <div className="absolute top-4 right-4 left-4 z-10 flex items-center justify-center gap-2 text-white">
+                <div className="flex items-center gap-2 rounded bg-black/50 px-3 py-1.5">
+                  <FileIcon
+                    className="size-4 shrink-0"
+                    filename={currentFile.filename}
+                    mimeType={currentFile.mimeType}
+                  />
+                  <span className="truncate text-xs">
+                    {currentFile.filePath ?? currentFile.filename}
+                  </span>
+                  {typeof currentFile.size === "number" &&
+                    currentFile.size > 0 && (
+                      <Badge className="bg-white/10 text-white hover:bg-white/20">
+                        {formatBytes(currentFile.size)}
+                      </Badge>
+                    )}
+                </div>
+                <div className="absolute right-0 flex items-center gap-1">
+                  {isDownloadable && (
+                    <Button
+                      className="text-white hover:bg-white/10"
+                      onClick={handleDownload}
+                      size="sm"
+                      variant="ghost"
+                    >
+                      <Download className="size-4" />
+                    </Button>
+                  )}
+                  <Button
+                    className="text-white hover:bg-white/10"
+                    onClick={() => {
+                      closeViewer();
+                    }}
+                    size="sm"
+                    variant="ghost"
+                  >
+                    <X className="size-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
 
             <div
               className="relative flex min-h-0 flex-1 items-center justify-center px-16 py-16"
@@ -217,49 +270,53 @@ export function FileViewerModal() {
                   }
                 }}
               >
-                {isText ? (
-                  <TextFileViewer
-                    filename={currentFile.filename}
-                    mimeType={currentFile.mimeType}
-                    onBackgroundClick={closeViewer}
-                    url={currentFile.url}
-                  />
-                ) : isImage ? (
+                {isImage ? (
                   <ImageWithFallback
                     alt={currentFile.filename}
                     className="h-auto max-h-full w-auto max-w-full rounded bg-white/90 object-contain p-4"
+                    fallback={
+                      <div className="flex w-full max-w-md flex-col items-center justify-center gap-4 p-8 text-center">
+                        <div className="flex size-32 items-center justify-center rounded-lg bg-background">
+                          <FileIcon
+                            className="size-16"
+                            filename={currentFile.filename}
+                            mimeType={currentFile.mimeType}
+                          />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-white">
+                            Failed to load image
+                          </p>
+                          <p className="mt-1 text-xs text-white/60">
+                            The image could not be displayed
+                            {isDownloadable &&
+                              " — try downloading it to view locally"}
+                          </p>
+                        </div>
+                      </div>
+                    }
                     fallbackClassName="size-32 rounded-lg"
                     filename={currentFile.filename}
                     mimeType={currentFile.mimeType}
                     onClick={closeViewer}
                     src={currentFile.url}
                   />
-                ) : isPdf ? (
-                  <PdfViewer
-                    filename={currentFile.filename}
-                    url={currentFile.url}
-                  />
-                ) : isVideo ? (
-                  <VideoViewer
-                    filename={currentFile.filename}
-                    url={currentFile.url}
-                  />
-                ) : isAudio ? (
-                  <AudioViewer
-                    filename={currentFile.filename}
-                    url={currentFile.url}
-                  />
                 ) : (
-                  <FilePreviewFallback
+                  <FileViewer
                     filename={currentFile.filename}
+                    filePath={currentFile.filePath}
+                    fileSize={currentFile.size}
                     mimeType={currentFile.mimeType}
+                    onClose={closeViewer}
+                    onDownload={isDownloadable ? handleDownload : undefined}
+                    url={currentFile.url}
                   />
                 )}
               </div>
             </div>
 
-            <div className="flex shrink-0 flex-col items-center gap-4 px-4 pb-8">
-              {hasMultipleFiles && (
+            {hasMultipleFiles && (
+              <div className="flex shrink-0 justify-center px-4 pb-8">
                 <div className="flex items-center gap-1.5 py-2">
                   {state.files.map((_, index) => (
                     <button
@@ -277,39 +334,8 @@ export function FileViewerModal() {
                     />
                   ))}
                 </div>
-              )}
-              <div className="flex w-full max-w-full flex-col items-center gap-3 text-white">
-                <span className="truncate px-4 text-center text-sm font-medium">
-                  {currentFile.filename}
-                </span>
-                {downloadError?.url === currentFile.url && (
-                  <Alert className="w-full max-w-2xl" variant="destructive">
-                    <AlertCircle className="size-4" />
-                    <AlertTitle>Failed to download file</AlertTitle>
-                    <AlertDescription className="whitespace-pre-line">
-                      {downloadError.message}
-                    </AlertDescription>
-                  </Alert>
-                )}
-                {isDownloadable && (
-                  <Button
-                    className="bg-white/10 text-white hover:bg-white/20"
-                    onClick={handleDownload}
-                    size="sm"
-                    variant="ghost"
-                  >
-                    <Download className="size-4" />
-                    Download
-                    {typeof currentFile.size === "number" &&
-                      currentFile.size > 0 && (
-                        <span className="text-white/60">
-                          ({formatBytes(currentFile.size)})
-                        </span>
-                      )}
-                  </Button>
-                )}
               </div>
-            </div>
+            )}
           </div>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>

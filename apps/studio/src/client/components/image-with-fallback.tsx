@@ -6,6 +6,7 @@ import { FileIcon } from "./file-icon";
 export function ImageWithFallback({
   alt,
   className,
+  fallback,
   fallbackClassName,
   filename,
   mimeType,
@@ -18,6 +19,7 @@ export function ImageWithFallback({
 > & {
   alt: string;
   className?: string;
+  fallback?: React.ReactNode;
   fallbackClassName?: string;
   filename: string;
   mimeType?: string;
@@ -32,6 +34,10 @@ export function ImageWithFallback({
   };
 
   if (hasError) {
+    if (fallback) {
+      return <>{fallback}</>;
+    }
+
     return (
       <div
         className={cn(
