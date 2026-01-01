@@ -71,10 +71,7 @@ export function AttachmentItem({
       >
         <ImageWithFallback
           alt={filename}
-          className={cn(
-            "size-12 bg-white object-contain p-1.5",
-            imageClassName,
-          )}
+          className={cn("size-12 bg-white object-cover", imageClassName)}
           fallbackClassName={cn("size-12 rounded-lg", imageClassName)}
           filename={filename}
           src={previewUrl}
