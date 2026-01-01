@@ -5,7 +5,6 @@ import { useState } from "react";
 import { cn } from "../lib/utils";
 import { FileIcon } from "./file-icon";
 import { Markdown } from "./markdown";
-import { TruncatedText } from "./truncated-text";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { Button } from "./ui/button";
 import { Tabs, TabsList, TabsTrigger } from "./ui/tabs";
@@ -116,12 +115,9 @@ export function TextFileViewer({
             filename={filename}
             mimeType={mimeType}
           />
-          <TruncatedText
-            className="text-xs text-muted-foreground"
-            maxLength={60}
-          >
+          <span className="truncate text-xs text-muted-foreground">
             {filename}
-          </TruncatedText>
+          </span>
           {hasPreview && (
             <Tabs
               className="ml-auto"

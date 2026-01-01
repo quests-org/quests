@@ -22,7 +22,6 @@ import { FilePreviewFallback } from "./file-preview-fallback";
 import { ImageWithFallback } from "./image-with-fallback";
 import { PdfViewer } from "./pdf-viewer";
 import { TextFileViewer } from "./text-file-viewer";
-import { TruncatedText } from "./truncated-text";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { Button } from "./ui/button";
 import { VideoViewer } from "./video-viewer";
@@ -280,12 +279,9 @@ export function FileViewerModal() {
                 </div>
               )}
               <div className="flex w-full max-w-full flex-col items-center gap-3 text-white">
-                <TruncatedText
-                  className="px-4 text-center text-sm font-medium"
-                  maxLength={50}
-                >
+                <span className="truncate px-4 text-center text-sm font-medium">
                   {currentFile.filename}
-                </TruncatedText>
+                </span>
                 {downloadError?.url === currentFile.url && (
                   <Alert className="w-full max-w-2xl" variant="destructive">
                     <AlertCircle className="size-4" />
