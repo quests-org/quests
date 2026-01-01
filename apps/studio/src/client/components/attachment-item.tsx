@@ -9,6 +9,7 @@ import { X } from "lucide-react";
 import { FileIcon } from "./file-icon";
 import { ImageWithFallback } from "./image-with-fallback";
 import { TruncatedText } from "./truncated-text";
+import { Button } from "./ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 interface AttachmentItemProps {
@@ -61,13 +62,11 @@ export function AttachmentItem({
 
   const imageContent = hasPreview && isImage && previewUrl && (
     <div className={cn("group relative size-12 shrink-0", imageClassName)}>
-      <button
-        className={cn(
-          "size-12 overflow-hidden rounded-lg border border-border transition-all hover:ring-2 hover:ring-ring",
-          imageClassName,
-        )}
+      <Button
+        className={cn("size-12 overflow-hidden p-0", imageClassName)}
         onClick={handlePreviewClick}
         type="button"
+        variant="outline"
       >
         <ImageWithFallback
           alt={filename}
@@ -79,46 +78,52 @@ export function AttachmentItem({
           filename={filename}
           src={previewUrl}
         />
-      </button>
+      </Button>
       {onRemove && (
-        <button
-          className="absolute -top-1.5 -right-1.5 flex size-5 items-center justify-center rounded-full border border-border bg-background opacity-0 transition-opacity group-hover:opacity-100 hover:bg-muted"
+        <Button
+          className="absolute -top-1.5 -right-1.5 opacity-0 transition-opacity group-hover:opacity-100"
           onClick={onRemove}
+          size="icon-sm"
           type="button"
+          variant="ghost-destructive"
         >
-          <X className="size-3" />
-        </button>
+          <X />
+        </Button>
       )}
     </div>
   );
 
   const fileContent = (
-    <div className="group relative flex h-12 max-w-[180px] items-center gap-1.5 rounded-lg border border-border bg-muted/50 px-2.5 transition-all hover:ring-2 hover:ring-ring">
-      <button
-        className="flex min-w-0 items-center gap-1.5"
+    <div className="group relative h-12 max-w-[180px]">
+      <Button
+        className="h-full w-full justify-start overflow-hidden bg-muted/50 px-2.5"
         onClick={handlePreviewClick}
+        size="sm"
         type="button"
+        variant="outline"
       >
         <FileIcon
-          className="size-5 shrink-0 text-muted-foreground"
+          className="size-5 text-muted-foreground"
           filename={filename}
           mimeType={mimeType}
         />
         <TruncatedText
-          className="text-left text-xs leading-tight"
+          className="min-w-0 overflow-hidden text-left text-xs leading-tight text-ellipsis"
           maxLength={30}
         >
           {filename}
         </TruncatedText>
-      </button>
+      </Button>
       {onRemove && (
-        <button
-          className="absolute -top-1.5 -right-1.5 flex size-5 items-center justify-center rounded-full border border-border bg-background opacity-0 transition-opacity group-hover:opacity-100 hover:bg-muted"
+        <Button
+          className="absolute -top-1.5 -right-1.5 opacity-0 transition-opacity group-hover:opacity-100"
           onClick={onRemove}
+          size="icon-sm"
           type="button"
+          variant="ghost-destructive"
         >
-          <X className="size-3" />
-        </button>
+          <X />
+        </Button>
       )}
     </div>
   );
