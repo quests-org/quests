@@ -1,6 +1,5 @@
 import { type SessionMessagePart } from "@quests/workspace/client";
 
-import { cleanFilePath } from "../../lib/file-utils";
 import { AttachmentItem } from "../attachment-item";
 import { CodeBlock } from "./code-block";
 import { ToolPartFilePath } from "./file-path";
@@ -27,7 +26,7 @@ export function ToolPartReadFile({
       const filename = output.filePath.split("/").pop() || output.filePath;
       return (
         <div>
-          <SectionHeader>Read {cleanFilePath(output.filePath)}</SectionHeader>
+          <SectionHeader>Read {output.filePath}</SectionHeader>
           <AttachmentItem
             filename={filename}
             filePath={output.filePath}
@@ -65,7 +64,7 @@ export function ToolPartReadFile({
     case "exists": {
       return (
         <div>
-          <SectionHeader>File: {cleanFilePath(output.filePath)}</SectionHeader>
+          <SectionHeader>File: {output.filePath}</SectionHeader>
           {input.offset !== undefined && input.offset > 0 && (
             <div className="mb-1 text-xs text-muted-foreground">
               Starting from line {input.offset + 1}

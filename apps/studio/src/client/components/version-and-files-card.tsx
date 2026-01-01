@@ -51,14 +51,11 @@ export function VersionAndFilesCard({
     const outsideSrc: typeof gitRefInfo.files = [];
 
     for (const file of gitRefInfo.files) {
-      if (file.status === "deleted" || shouldFilterFile(file.filename)) {
+      if (file.status === "deleted" || shouldFilterFile(file.filePath)) {
         continue;
       }
 
-      if (
-        file.filename.startsWith("src/") ||
-        file.filename.startsWith("src\\")
-      ) {
+      if (file.filePath.startsWith("src/")) {
         inSrc.push(file);
       } else {
         outsideSrc.push(file);
@@ -148,26 +145,26 @@ export function VersionAndFilesCard({
           {imageFiles.map((file) => {
             const assetUrl = getAssetUrl({
               assetBase: assetBaseURL,
-              filePath: file.filename,
+              filePath: file.filePath,
             });
             const gallery: FileViewerFile[] = imageFiles.map((f) => ({
               filename: f.filename,
-              filePath: f.filename,
+              filePath: f.filePath,
               mimeType: f.mimeType,
               size: 0,
               url: getAssetUrl({
                 assetBase: assetBaseURL,
-                filePath: f.filename,
+                filePath: f.filePath,
               }),
             }));
 
             return (
               <AttachmentItem
                 filename={file.filename}
-                filePath={file.filename}
+                filePath={file.filePath}
                 gallery={gallery}
                 imageClassName="h-auto w-full"
-                key={file.filename}
+                key={file.filePath}
                 mimeType={file.mimeType}
                 previewUrl={assetUrl}
               />
@@ -181,25 +178,25 @@ export function VersionAndFilesCard({
           {otherFiles.map((file) => {
             const assetUrl = getAssetUrl({
               assetBase: assetBaseURL,
-              filePath: file.filename,
+              filePath: file.filePath,
             });
             const gallery: FileViewerFile[] = otherFiles.map((f) => ({
               filename: f.filename,
-              filePath: f.filename,
+              filePath: f.filePath,
               mimeType: f.mimeType,
               size: 0,
               url: getAssetUrl({
                 assetBase: assetBaseURL,
-                filePath: f.filename,
+                filePath: f.filePath,
               }),
             }));
 
             return (
               <AttachmentItem
                 filename={file.filename}
-                filePath={file.filename}
+                filePath={file.filePath}
                 gallery={gallery}
-                key={file.filename}
+                key={file.filePath}
                 mimeType={file.mimeType}
                 previewUrl={assetUrl}
               />
@@ -222,10 +219,6 @@ function shouldFilterFile(filename: string): boolean {
   ];
 
   if (filteredFiles.some((filtered) => baseName === filtered.toLowerCase())) {
-    return true;
-  }
-
-  if (filename.startsWith("uploads/")) {
     return true;
   }
 

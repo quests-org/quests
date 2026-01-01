@@ -1,5 +1,6 @@
 import ms from "ms";
 import { err, ok } from "neverthrow";
+import path from "node:path";
 import { z } from "zod";
 
 import { type ProjectSubdomain } from "../schemas/subdomains";
@@ -18,6 +19,7 @@ export const GitRefInfoSchema = z.object({
       additions: z.number(),
       deletions: z.number(),
       filename: z.string(),
+      filePath: z.string(),
       mimeType: z.string(),
       status: z.enum(["added", "deleted", "modified"]),
     }),
@@ -125,7 +127,7 @@ export async function getGitRefInfo(
         continue;
       }
 
-      const [additionsStr, deletionsStr, filename = ""] = parts;
+      const [additionsStr, deletionsStr, filePath = ""] = parts;
 
       const additions =
         additionsStr === "-" ? 0 : Number.parseInt(additionsStr ?? "0", 10);
@@ -145,13 +147,15 @@ export async function getGitRefInfo(
         status = "deleted";
       }
 
-      const filePath = absolutePathJoin(projectConfig.appDir, filename);
-      const mimeType = await getMimeType(filePath);
+      const absoluteFilePath = absolutePathJoin(projectConfig.appDir, filePath);
+      const mimeType = await getMimeType(absoluteFilePath);
+      const filename = path.basename(filePath);
 
       files.push({
         additions,
         deletions,
         filename,
+        filePath,
         mimeType,
         status,
       });

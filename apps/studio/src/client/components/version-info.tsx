@@ -1,6 +1,5 @@
 import { openFileViewerAtom } from "@/client/atoms/file-viewer";
 import { getAssetUrl } from "@/client/lib/asset-utils";
-import { cleanFilePath } from "@/client/lib/file-utils";
 import { type ProjectSubdomain } from "@quests/workspace/client";
 import { useQuery } from "@tanstack/react-query";
 import ColorHash from "color-hash";
@@ -121,17 +120,17 @@ export function VersionFileChanges({
       (f) => f.status !== "deleted",
     );
     const clickedFileIndex = clickableFiles.findIndex(
-      (f) => f.filename === file.filename,
+      (f) => f.filePath === file.filePath,
     );
 
     openFileViewer({
       currentIndex: clickedFileIndex,
       files: clickableFiles.map((f) => ({
         filename: f.filename,
-        filePath: f.filename,
+        filePath: f.filePath,
         mimeType: f.mimeType,
         size: 0,
-        url: getAssetUrl({ assetBase: assetBaseURL, filePath: f.filename }),
+        url: getAssetUrl({ assetBase: assetBaseURL, filePath: f.filePath }),
       })),
     });
   };
@@ -148,7 +147,7 @@ export function VersionFileChanges({
               isClickable ? "transition-colors hover:text-foreground" : ""
             }`}
             disabled={!isClickable}
-            key={file.filename}
+            key={file.filePath}
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -158,9 +157,7 @@ export function VersionFileChanges({
             }}
             type="button"
           >
-            <span className="flex-1 truncate font-mono">
-              {cleanFilePath(file.filename)}
-            </span>
+            <span className="flex-1 truncate font-mono">{file.filePath}</span>
 
             <div className="flex shrink-0 items-center gap-1">
               {file.additions > 0 && (

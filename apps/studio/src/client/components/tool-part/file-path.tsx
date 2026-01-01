@@ -1,4 +1,3 @@
-import { cleanFilePath } from "../../lib/file-utils";
 import { MonoText } from "./mono-text";
 import { SectionHeader } from "./section-header";
 
@@ -12,7 +11,7 @@ export function ToolPartFilePath({
   return (
     <div>
       <SectionHeader>{label}</SectionHeader>
-      <MonoText>{cleanFilePath(filePath)}</MonoText>
+      <MonoText>{filePath}</MonoText>
     </div>
   );
 }

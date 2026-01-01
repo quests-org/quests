@@ -189,8 +189,8 @@ export function ToolPart({
   );
 }
 
-function cleanFilePath(filePath: string): string {
-  return filePath.replace(/^(?:\.\/)?src\//, "");
+function filenameFromFilePath(filePath: string): string {
+  return filePath.split("/").pop() || filePath;
 }
 
 function getToolInputDescription(
@@ -205,9 +205,7 @@ function getToolInputDescription(
       return part.input.question;
     }
     case "tool-edit_file": {
-      return part.input.filePath
-        ? cleanFilePath(part.input.filePath)
-        : undefined;
+      return filenameFromFilePath(part.input.filePath);
     }
     case "tool-file_tree": {
       return undefined;
@@ -219,7 +217,7 @@ function getToolInputDescription(
       return part.input.pattern;
     }
     case "tool-read_file": {
-      return cleanFilePath(part.input.filePath);
+      return filenameFromFilePath(part.input.filePath);
     }
     case "tool-run_diagnostics": {
       return undefined;
@@ -238,7 +236,7 @@ function getToolInputDescription(
       return undefined;
     }
     case "tool-write_file": {
-      return cleanFilePath(part.input.filePath);
+      return filenameFromFilePath(part.input.filePath);
     }
     default: {
       const _exhaustiveCheck: never = part;
@@ -259,9 +257,7 @@ function getToolOutputDescription(
       return part.output.selectedChoice || "answered";
     }
     case "tool-edit_file": {
-      return part.output.filePath
-        ? cleanFilePath(part.output.filePath)
-        : "file edited";
+      return filenameFromFilePath(part.output.filePath) || "file edited";
     }
     case "tool-file_tree": {
       return part.output.tree
@@ -281,30 +277,7 @@ function getToolOutputDescription(
         : `${matches.length} matches found`;
     }
     case "tool-read_file": {
-      const filePath = part.output.filePath
-        ? cleanFilePath(part.output.filePath)
-        : undefined;
-
-      switch (part.output.state) {
-        case "audio": {
-          return filePath || "audio read";
-        }
-        case "does-not-exist": {
-          return filePath ?? "file missing";
-        }
-        case "exists": {
-          return filePath || "file read";
-        }
-        case "image": {
-          return filePath || "image read";
-        }
-        case "pdf": {
-          return filePath || "PDF read";
-        }
-        default: {
-          return filePath || "file read";
-        }
-      }
+      return filenameFromFilePath(part.output.filePath) || "file missing";
     }
     case "tool-run_diagnostics": {
       const errorCount = part.output.errors.length;
@@ -326,9 +299,7 @@ function getToolOutputDescription(
       return "";
     }
     case "tool-write_file": {
-      return part.output.filePath
-        ? cleanFilePath(part.output.filePath)
-        : "file written";
+      return filenameFromFilePath(part.output.filePath) || "file written";
     }
     default: {
       const _exhaustiveCheck: never = part;

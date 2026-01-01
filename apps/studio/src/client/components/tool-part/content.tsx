@@ -17,9 +17,9 @@ export function ToolContent({
     case "tool-choose": {
       return (
         <div>
-          <SectionHeader>Question:</SectionHeader>
+          <SectionHeader>Question</SectionHeader>
           <div className="mb-2 text-sm">{part.input.question}</div>
-          <SectionHeader>Choices:</SectionHeader>
+          <SectionHeader>Choices</SectionHeader>
           <div className="mb-2 space-y-1">
             {part.input.choices.map((choice, index) => (
               <MonoText className="text-xs" key={index}>
@@ -27,7 +27,7 @@ export function ToolContent({
               </MonoText>
             ))}
           </div>
-          <SectionHeader>Selected choice:</SectionHeader>
+          <SectionHeader>Selected choice</SectionHeader>
           <MonoText className="font-semibold">
             {part.output.selectedChoice}
           </MonoText>
@@ -39,17 +39,17 @@ export function ToolContent({
         <div>
           <ToolPartFilePath
             filePath={part.output.filePath}
-            label="File edited:"
+            label="File edited"
           />
           {part.input.oldString && (
             <div className="mt-2">
-              <SectionHeader>Search pattern:</SectionHeader>
+              <SectionHeader>Search pattern</SectionHeader>
               <ScrollableCodeBlock>{part.input.oldString}</ScrollableCodeBlock>
             </div>
           )}
           {part.input.newString && (
             <div className="mt-2">
-              <SectionHeader>Replacement:</SectionHeader>
+              <SectionHeader>Replacement</SectionHeader>
               <ScrollableCodeBlock>{part.input.newString}</ScrollableCodeBlock>
             </div>
           )}
@@ -64,7 +64,7 @@ export function ToolContent({
     case "tool-file_tree": {
       return (
         <div>
-          <SectionHeader>Directory structure:</SectionHeader>
+          <SectionHeader>Directory structure</SectionHeader>
           <CodeBlock>{part.output.tree}</CodeBlock>
         </div>
       );
@@ -77,7 +77,7 @@ export function ToolContent({
             Pattern:{" "}
             <MonoText className="inline">{part.input.pattern}</MonoText>
           </SectionHeader>
-          <SectionHeader>Found {files.length} files:</SectionHeader>
+          <SectionHeader>Found {files.length} files</SectionHeader>
           {files.length > 0 ? (
             <div className="space-y-1">
               {files.map((file, index) => (
@@ -173,7 +173,7 @@ export function ToolContent({
       const results = part.output.results;
       return (
         <div>
-          <SectionHeader>Git commands executed:</SectionHeader>
+          <SectionHeader>Git commands executed</SectionHeader>
           <div className="space-y-2">
             {results.map((result, index) => (
               <div className="border-l-2 border-accent/30 pl-2" key={index}>
@@ -208,7 +208,7 @@ export function ToolContent({
     case "tool-run_shell_command": {
       return (
         <div>
-          <SectionHeader>Command executed:</SectionHeader>
+          <SectionHeader>Command executed</SectionHeader>
           <MonoText className="mb-2 text-xs">$ {part.output.command}</MonoText>
           <div className="mb-2 flex items-center gap-2">
             <Badge
@@ -222,13 +222,13 @@ export function ToolContent({
           </div>
           {part.output.stdout && (
             <>
-              <SectionHeader>Output:</SectionHeader>
+              <SectionHeader>Output</SectionHeader>
               <ScrollableCodeBlock>{part.output.stdout}</ScrollableCodeBlock>
             </>
           )}
           {part.output.stderr && (
             <>
-              <div className="mb-1 text-red-600 dark:text-red-400">Error:</div>
+              <div className="mb-1 text-red-600 dark:text-red-400">Error</div>
               <CodeBlock className="max-h-32 overflow-y-auto rounded border bg-red-50 p-2 text-xs whitespace-pre-wrap text-red-600 dark:bg-red-900/20 dark:text-red-400">
                 {part.output.stderr}
               </CodeBlock>
@@ -240,7 +240,7 @@ export function ToolContent({
     case "tool-think": {
       return (
         <div>
-          <SectionHeader>Thought:</SectionHeader>
+          <SectionHeader>Thought</SectionHeader>
           <div className="text-sm italic">{part.output.thought}</div>
         </div>
       );
@@ -255,21 +255,18 @@ export function ToolContent({
     case "tool-write_file": {
       return (
         <div>
-          <div className="mb-2 flex items-center gap-2">
-            <ToolPartFilePath
-              filePath={part.output.filePath}
-              label="File written:"
-            />
-            {part.output.isNewFile && (
-              <Badge variant="secondary">New file</Badge>
-            )}
+          <ToolPartFilePath
+            filePath={part.output.filePath}
+            label={part.output.isNewFile ? "New file written" : "File written"}
+          />
+          <div className="mt-2">
+            <SectionHeader>Content preview</SectionHeader>
+            <ScrollableCodeBlock>
+              {part.output.content.length > 500
+                ? part.output.content.slice(0, 500) + "\n... (truncated)"
+                : part.output.content}
+            </ScrollableCodeBlock>
           </div>
-          <SectionHeader>Content preview:</SectionHeader>
-          <ScrollableCodeBlock>
-            {part.output.content.length > 500
-              ? part.output.content.slice(0, 500) + "\n... (truncated)"
-              : part.output.content}
-          </ScrollableCodeBlock>
           <div className="mt-1 text-xs text-muted-foreground">
             {part.output.content.split("\n").length} lines,{" "}
             {part.output.content.length} characters
