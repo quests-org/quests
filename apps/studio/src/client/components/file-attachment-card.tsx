@@ -3,6 +3,7 @@ import { getAssetUrl } from "@/client/lib/asset-utils";
 import {
   type ProjectSubdomain,
   type SessionMessageDataPart,
+  type StoreId,
 } from "@quests/workspace/client";
 import { useQuery } from "@tanstack/react-query";
 
@@ -12,12 +13,14 @@ import { AttachmentItem } from "./attachment-item";
 interface FileAttachmentCardProps {
   file: SessionMessageDataPart.FileAttachmentDataPart;
   files: SessionMessageDataPart.FileAttachmentDataPart[];
+  messageId: StoreId.Message;
   projectSubdomain: ProjectSubdomain;
 }
 
 export function FileAttachmentCard({
   file,
   files,
+  messageId,
   projectSubdomain,
 }: FileAttachmentCardProps) {
   const { data: app } = useQuery(
@@ -33,6 +36,7 @@ export function FileAttachmentCard({
   const assetUrl = getAssetUrl({
     assetBase: app.urls.assetBase,
     filePath: file.filePath,
+    messageId,
   });
 
   const gallery: FileViewerFile[] = files.map((f) => ({
@@ -40,7 +44,11 @@ export function FileAttachmentCard({
     filePath: f.filePath,
     mimeType: f.mimeType,
     size: f.size,
-    url: getAssetUrl({ assetBase: app.urls.assetBase, filePath: f.filePath }),
+    url: getAssetUrl({
+      assetBase: app.urls.assetBase,
+      filePath: f.filePath,
+      messageId,
+    }),
   }));
 
   return (

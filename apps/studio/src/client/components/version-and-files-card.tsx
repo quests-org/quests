@@ -2,7 +2,7 @@ import { type FileViewerFile } from "@/client/atoms/file-viewer";
 import { getAssetUrl } from "@/client/lib/asset-utils";
 import { cn } from "@/client/lib/utils";
 import { PROJECT_CONFIG_FILE_NAME } from "@quests/shared";
-import { type ProjectSubdomain } from "@quests/workspace/client";
+import { type ProjectSubdomain, type StoreId } from "@quests/workspace/client";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
@@ -20,6 +20,7 @@ interface VersionCardProps {
   assetBaseURL: string;
   isLastGitCommit?: boolean;
   isSelected?: boolean;
+  messageId: StoreId.Message;
   projectSubdomain: ProjectSubdomain;
   restoredFromRef?: string;
   versionRef: string;
@@ -29,6 +30,7 @@ export function VersionAndFilesCard({
   assetBaseURL,
   isLastGitCommit = false,
   isSelected = false,
+  messageId,
   projectSubdomain,
   restoredFromRef,
   versionRef,
@@ -126,6 +128,7 @@ export function VersionAndFilesCard({
 
             <VersionFileChanges
               assetBaseURL={assetBaseURL}
+              messageId={messageId}
               projectSubdomain={projectSubdomain}
               versionRef={versionRef}
             />
@@ -146,6 +149,7 @@ export function VersionAndFilesCard({
             const assetUrl = getAssetUrl({
               assetBase: assetBaseURL,
               filePath: file.filePath,
+              messageId,
             });
             const gallery: FileViewerFile[] = imageFiles.map((f) => ({
               filename: f.filename,
@@ -155,6 +159,7 @@ export function VersionAndFilesCard({
               url: getAssetUrl({
                 assetBase: assetBaseURL,
                 filePath: f.filePath,
+                messageId,
               }),
             }));
 
@@ -179,6 +184,7 @@ export function VersionAndFilesCard({
             const assetUrl = getAssetUrl({
               assetBase: assetBaseURL,
               filePath: file.filePath,
+              messageId,
             });
             const gallery: FileViewerFile[] = otherFiles.map((f) => ({
               filename: f.filename,
@@ -188,6 +194,7 @@ export function VersionAndFilesCard({
               url: getAssetUrl({
                 assetBase: assetBaseURL,
                 filePath: f.filePath,
+                messageId,
               }),
             }));
 
