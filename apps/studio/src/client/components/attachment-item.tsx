@@ -118,7 +118,7 @@ export function AttachmentItem({
         >
           <div className="flex items-center gap-2">
             <p>{filename}</p>
-            {size && <Badge variant="default">{formatBytes(size)}</Badge>}
+            {size && <Badge variant="secondary">{formatBytes(size)}</Badge>}
           </div>
         </TooltipContent>
       </Tooltip>
@@ -146,7 +146,7 @@ export function AttachmentItem({
         >
           <div className="flex items-center gap-2">
             <p>{filename}</p>
-            {size && <Badge variant="default">{formatBytes(size)}</Badge>}
+            {size && <Badge variant="secondary">{formatBytes(size)}</Badge>}
           </div>
         </TooltipContent>
       </Tooltip>
