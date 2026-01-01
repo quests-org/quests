@@ -133,7 +133,7 @@ export function FileViewerModal() {
     }
   };
 
-  const isPlaintext = currentFile.mimeType === "text/plain";
+  const isText = currentFile.mimeType?.startsWith("text/");
   const isImage =
     currentFile.mimeType?.startsWith("image/") || !currentFile.mimeType;
   const isPdf = currentFile.mimeType === "application/pdf";
@@ -218,7 +218,7 @@ export function FileViewerModal() {
                   }
                 }}
               >
-                {isPlaintext ? (
+                {isText ? (
                   <TextFileViewer
                     filename={currentFile.filename}
                     mimeType={currentFile.mimeType}

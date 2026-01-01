@@ -1,12 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
-import { Check, Copy, Loader2 } from "lucide-react";
+import { Check, Code2, Copy, Eye, Loader2 } from "lucide-react";
 import { useState } from "react";
 
+import { cn } from "../lib/utils";
 import { FileIcon } from "./file-icon";
 import { Markdown } from "./markdown";
 import { TruncatedText } from "./truncated-text";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { Button } from "./ui/button";
+import { Tabs, TabsList, TabsTrigger } from "./ui/tabs";
 
 export function TextFileViewer({
   filename,
@@ -20,7 +22,11 @@ export function TextFileViewer({
   url: string;
 }) {
   const [copied, setCopied] = useState(false);
+  const [viewMode, setViewMode] = useState<"preview" | "raw">("preview");
+
   const isMarkdown = /\.(?:md|markdown|mdown|mkd|mdx)$/i.test(filename);
+  const isHtml = /\.html?$/i.test(filename);
+  const hasPreview = isMarkdown || isHtml;
 
   const { data, error, isLoading } = useQuery({
     queryFn: async () => {
@@ -87,6 +93,8 @@ export function TextFileViewer({
     return null;
   }
 
+  const showRawContent = viewMode === "raw" || !hasPreview;
+
   return (
     <div
       className="flex size-full items-center justify-center"
@@ -96,7 +104,12 @@ export function TextFileViewer({
         }
       }}
     >
-      <div className="flex max-h-[70vh] w-full max-w-4xl flex-col overflow-hidden rounded border border-white/10 bg-background">
+      <div
+        className={cn(
+          "flex h-[70vh] w-full flex-col overflow-hidden rounded border border-white/10 bg-background",
+          !isHtml && "max-w-4xl",
+        )}
+      >
         <div className="flex shrink-0 items-center gap-2 border-b border-white/10 bg-muted/30 px-4 py-2">
           <FileIcon
             className="size-4 shrink-0"
@@ -109,12 +122,27 @@ export function TextFileViewer({
           >
             {filename}
           </TruncatedText>
-          <Button
-            className="ml-auto"
-            onClick={handleCopy}
-            size="sm"
-            variant="ghost"
-          >
+          {hasPreview && (
+            <Tabs
+              className="ml-auto"
+              onValueChange={(value) => {
+                setViewMode(value as "preview" | "raw");
+              }}
+              value={viewMode}
+            >
+              <TabsList>
+                <TabsTrigger value="preview">
+                  <Eye className="size-4" />
+                  Preview
+                </TabsTrigger>
+                <TabsTrigger value="raw">
+                  <Code2 className="size-4" />
+                  Code
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          )}
+          <Button onClick={handleCopy} size="sm" variant="ghost">
             {copied ? (
               <Check className="size-4" />
             ) : (
@@ -122,11 +150,24 @@ export function TextFileViewer({
             )}
           </Button>
         </div>
-        <div className="min-h-0 flex-1 overflow-auto">
-          {isMarkdown ? (
+        <div className="relative min-h-0 flex-1 overflow-auto">
+          {showRawContent ? (
+            <pre className="p-8 text-sm text-foreground">{data}</pre>
+          ) : isMarkdown ? (
             <div className="prose p-8 prose-invert">
               <Markdown markdown={data} />
             </div>
+          ) : isHtml ? (
+            <iframe
+              allow="accelerometer; autoplay; camera; clipboard-read; clipboard-write; display-capture; encrypted-media; fullscreen; geolocation; gyroscope; microphone; midi; payment; usb; xr-spatial-tracking"
+              className="absolute inset-0 size-full border-0 bg-white"
+              sandbox="allow-downloads allow-forms allow-modals allow-pointer-lock allow-popups allow-scripts allow-presentation"
+              srcDoc={data}
+              style={{
+                WebkitMaskImage: "-webkit-radial-gradient(white, black)",
+              }}
+              title={filename}
+            />
           ) : (
             <pre className="p-8 text-sm text-foreground">{data}</pre>
           )}
