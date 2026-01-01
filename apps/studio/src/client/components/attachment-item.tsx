@@ -8,7 +8,6 @@ import { X } from "lucide-react";
 
 import { FileIcon } from "./file-icon";
 import { ImageWithFallback } from "./image-with-fallback";
-import { TruncatedText } from "./truncated-text";
 import { Button } from "./ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
@@ -81,48 +80,55 @@ export function AttachmentItem({
       </Button>
       {onRemove && (
         <Button
-          className="absolute -top-1.5 -right-1.5 opacity-0 transition-opacity group-hover:opacity-100"
+          className="absolute -top-2 -right-2 size-5 rounded-full bg-background opacity-0 shadow-sm transition-opacity group-hover:opacity-100 hover:bg-muted"
           onClick={onRemove}
           size="icon-sm"
           type="button"
-          variant="ghost-destructive"
+          variant="ghost"
         >
-          <X />
+          <X className="size-3" />
         </Button>
       )}
     </div>
   );
 
   const fileContent = (
-    <div className="group relative h-12 max-w-[180px]">
-      <Button
-        className="h-full w-full justify-start overflow-hidden bg-muted/50 px-2.5"
-        onClick={handlePreviewClick}
-        size="sm"
-        type="button"
-        variant="outline"
-      >
-        <FileIcon
-          className="size-5 text-muted-foreground"
-          filename={filename}
-          mimeType={mimeType}
-        />
-        <TruncatedText
-          className="min-w-0 overflow-hidden text-left text-xs leading-tight text-ellipsis"
-          maxLength={30}
+    <div className="group relative h-12 min-w-0">
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            className="h-full w-full justify-start gap-x-2 overflow-hidden bg-muted/50 px-2.5"
+            onClick={handlePreviewClick}
+            size="sm"
+            type="button"
+            variant="outline"
+          >
+            <FileIcon
+              className="size-5 shrink-0 text-muted-foreground"
+              filename={filename}
+              mimeType={mimeType}
+            />
+            <span className="min-w-0 truncate text-left text-xs leading-tight">
+              {filename}
+            </span>
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent
+          className="max-w-[min(500px,90vw)] wrap-break-word"
+          collisionPadding={10}
         >
-          {filename}
-        </TruncatedText>
-      </Button>
+          <p>{filename}</p>
+        </TooltipContent>
+      </Tooltip>
       {onRemove && (
         <Button
-          className="absolute -top-1.5 -right-1.5 opacity-0 transition-opacity group-hover:opacity-100"
+          className="absolute -top-2 -right-2 size-5 rounded-full bg-background opacity-0 shadow-sm transition-opacity group-hover:opacity-100 hover:bg-muted"
           onClick={onRemove}
           size="icon-sm"
           type="button"
-          variant="ghost-destructive"
+          variant="ghost"
         >
-          <X />
+          <X className="size-3" />
         </Button>
       )}
     </div>
