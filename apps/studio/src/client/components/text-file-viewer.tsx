@@ -60,7 +60,7 @@ export function TextFileViewer({
           }
         }}
       >
-        <Loader2 className="size-8 animate-spin text-white/60" />
+        <Loader2 className="size-8 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -106,11 +106,11 @@ export function TextFileViewer({
     >
       <div
         className={cn(
-          "flex h-[70vh] w-full flex-col overflow-hidden rounded border border-white/10 bg-background",
+          "flex h-[70vh] w-full flex-col overflow-hidden rounded border border-border bg-background",
           !isHtml && "max-w-4xl",
         )}
       >
-        <div className="flex shrink-0 items-center gap-2 border-b border-white/10 bg-muted/30 px-4 py-2">
+        <div className="flex shrink-0 items-center gap-2 border-b border-border bg-muted/30 px-4 py-2">
           <FileIcon
             className="size-4 shrink-0"
             filename={filename}
@@ -154,18 +154,15 @@ export function TextFileViewer({
           {showRawContent ? (
             <pre className="p-8 text-sm text-foreground">{data}</pre>
           ) : isMarkdown ? (
-            <div className="prose p-8 prose-invert">
+            <div className="prose prose-sm max-w-none p-8 dark:prose-invert">
               <Markdown markdown={data} />
             </div>
           ) : isHtml ? (
             <iframe
               allow="accelerometer; autoplay; camera; clipboard-read; clipboard-write; display-capture; encrypted-media; fullscreen; geolocation; gyroscope; microphone; midi; payment; usb; xr-spatial-tracking"
-              className="absolute inset-0 size-full border-0 bg-white"
+              className="absolute inset-0 size-full border-0 bg-background"
               sandbox="allow-downloads allow-forms allow-modals allow-pointer-lock allow-popups allow-scripts allow-presentation"
               srcDoc={data}
-              style={{
-                WebkitMaskImage: "-webkit-radial-gradient(white, black)",
-              }}
               title={filename}
             />
           ) : (
