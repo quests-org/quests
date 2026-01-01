@@ -155,6 +155,7 @@ export function VersionAndFilesCard({
               filename: f.filename,
               filePath: f.filePath,
               mimeType: f.mimeType,
+              projectSubdomain,
               size: 0,
               url: getAssetUrl({
                 assetBase: assetBaseURL,
@@ -190,6 +191,7 @@ export function VersionAndFilesCard({
               filename: f.filename,
               filePath: f.filePath,
               mimeType: f.mimeType,
+              projectSubdomain,
               size: 0,
               url: getAssetUrl({
                 assetBase: assetBaseURL,

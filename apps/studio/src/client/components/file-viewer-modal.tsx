@@ -12,6 +12,7 @@ import { ChevronLeft, ChevronRight, Download, X } from "lucide-react";
 import { useEffect, useMemo } from "react";
 import { toast } from "sonner";
 
+import { FileActionsMenu } from "./file-actions-menu";
 import { FileIcon } from "./file-icon";
 import { FileViewer } from "./file-viewer";
 import { ImageWithFallback } from "./image-with-fallback";
@@ -122,6 +123,34 @@ export function FileViewerModal() {
     }
   };
 
+  const handleCopyImage = async () => {
+    try {
+      const response = await fetch(currentFile.url);
+      const blob = await response.blob();
+
+      if (blob.type.includes("svg") || blob.type.includes("xml")) {
+        const text = await blob.text();
+        await navigator.clipboard.writeText(text);
+      } else {
+        try {
+          await navigator.clipboard.write([
+            new ClipboardItem({ [blob.type]: blob }),
+          ]);
+        } catch {
+          const text = await blob.text();
+          await navigator.clipboard.writeText(text);
+        }
+      }
+    } catch {
+      toast.error("Failed to copy image", {
+        closeButton: true,
+        description: "The image could not be copied to clipboard",
+        duration: 5000,
+        richColors: true,
+      });
+    }
+  };
+
   const hasExtension = currentFile.filename.includes(".");
   const isImage =
     currentFile.mimeType?.startsWith("image/") ||
@@ -182,6 +211,11 @@ export function FileViewerModal() {
                       <Download className="size-4" />
                     </Button>
                   )}
+                  <FileActionsMenu
+                    filePath={currentFile.filePath}
+                    onCopy={isDownloadable ? handleCopyImage : undefined}
+                    projectSubdomain={currentFile.projectSubdomain}
+                  />
                   <Button
                     className="text-white hover:bg-white/10"
                     onClick={() => {
@@ -276,6 +310,7 @@ export function FileViewerModal() {
                     mimeType={currentFile.mimeType}
                     onClose={closeViewer}
                     onDownload={isDownloadable ? handleDownload : undefined}
+                    projectSubdomain={currentFile.projectSubdomain}
                     url={currentFile.url}
                   />
                 )}

@@ -43,6 +43,7 @@ export function FileAttachmentCard({
     filename: f.filename,
     filePath: f.filePath,
     mimeType: f.mimeType,
+    projectSubdomain,
     size: f.size,
     url: getAssetUrl({
       assetBase: app.urls.assetBase,

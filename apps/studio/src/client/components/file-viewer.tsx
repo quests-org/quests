@@ -1,9 +1,10 @@
-import { formatBytes } from "@quests/workspace/client";
+import { formatBytes, type ProjectSubdomain } from "@quests/workspace/client";
 import { useQuery } from "@tanstack/react-query";
 import { cva } from "class-variance-authority";
-import { Check, Code2, Copy, Download, Eye, Loader2, X } from "lucide-react";
+import { Code2, Download, Eye, Loader2, X } from "lucide-react";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 
+import { FileActionsMenu } from "./file-actions-menu";
 import { FileIcon } from "./file-icon";
 import { FilePreviewFallback } from "./file-preview-fallback";
 import { Markdown } from "./markdown";
@@ -40,6 +41,7 @@ export function FileViewer({
   mimeType,
   onClose,
   onDownload,
+  projectSubdomain,
   url,
 }: {
   filename: string;
@@ -48,9 +50,9 @@ export function FileViewer({
   mimeType?: string;
   onClose: () => void;
   onDownload?: () => void;
+  projectSubdomain?: ProjectSubdomain;
   url: string;
 }) {
-  const [copied, setCopied] = useState(false);
   const [viewMode, setViewMode] = useState<"preview" | "raw">("preview");
   const [mediaLoadError, setMediaLoadError] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -92,10 +94,6 @@ export function FileViewer({
       return;
     }
     await navigator.clipboard.writeText(textContent);
-    setCopied(true);
-    setTimeout(() => {
-      setCopied(false);
-    }, 2000);
   };
 
   const displayPath = filePath ?? filename;
@@ -116,19 +114,30 @@ export function FileViewer({
 
   const toolbarActions: ReactNode[] = [];
 
-  if (isText && textContent) {
-    toolbarActions.push(
-      <Button key="copy" onClick={handleCopy} size="sm" variant="ghost">
-        {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
-      </Button>,
-    );
-  }
-
   if (onDownload) {
     toolbarActions.push(
       <Button key="download" onClick={onDownload} size="sm" variant="ghost">
         <Download className="size-4" />
       </Button>,
+    );
+  }
+
+  if (isText && textContent) {
+    toolbarActions.push(
+      <FileActionsMenu
+        filePath={filePath}
+        key="actions"
+        onCopy={handleCopy}
+        projectSubdomain={projectSubdomain}
+      />,
+    );
+  } else if (filePath) {
+    toolbarActions.push(
+      <FileActionsMenu
+        filePath={filePath}
+        key="actions"
+        projectSubdomain={projectSubdomain}
+      />,
     );
   }
 

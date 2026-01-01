@@ -409,6 +409,35 @@ const showFileInFolder = base
     }
   });
 
+const showProjectFileInFolder = base
+  .errors({
+    FILE_NOT_FOUND: {
+      message: "File not found",
+    },
+  })
+  .input(
+    z.object({
+      filePath: z.string(),
+      subdomain: ProjectSubdomainSchema,
+    }),
+  )
+  .handler(async ({ context, errors, input }) => {
+    const snapshot = context.workspaceRef.getSnapshot();
+    const appConfig = createAppConfig({
+      subdomain: input.subdomain,
+      workspaceConfig: snapshot.context.config,
+    });
+
+    const fullPath = path.join(appConfig.appDir, input.filePath);
+
+    try {
+      await fs.access(fullPath);
+      shell.showItemInFolder(fullPath);
+    } catch {
+      throw errors.FILE_NOT_FOUND();
+    }
+  });
+
 const exportZip = base
   .input(
     z.object({
@@ -537,5 +566,6 @@ export const utils = {
   openAppIn,
   openExternalLink,
   showFileInFolder,
+  showProjectFileInFolder,
   takeScreenshot,
 };

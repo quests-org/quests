@@ -1,9 +1,11 @@
+import { type ProjectSubdomain } from "@quests/workspace/client";
 import { atom } from "jotai";
 
 export interface FileViewerFile {
   filename: string;
   filePath?: string;
   mimeType?: string;
+  projectSubdomain?: ProjectSubdomain;
   size?: number;
   url: string;
 }
