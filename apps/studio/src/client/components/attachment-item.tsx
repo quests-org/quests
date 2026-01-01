@@ -3,11 +3,13 @@ import {
   openFileViewerAtom,
 } from "@/client/atoms/file-viewer";
 import { cn } from "@/client/lib/utils";
+import { formatBytes } from "@quests/workspace/client";
 import { useSetAtom } from "jotai";
 import { X } from "lucide-react";
 
 import { FileIcon } from "./file-icon";
 import { ImageWithFallback } from "./image-with-fallback";
+import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
@@ -117,7 +119,10 @@ export function AttachmentItem({
           className="max-w-[min(500px,90vw)] wrap-break-word"
           collisionPadding={10}
         >
-          <p>{filename}</p>
+          <div className="flex items-center gap-2">
+            <p>{filename}</p>
+            {size && <Badge variant="default">{formatBytes(size)}</Badge>}
+          </div>
         </TooltipContent>
       </Tooltip>
       {onRemove && (
@@ -142,7 +147,10 @@ export function AttachmentItem({
           className="max-w-[min(500px,90vw)] wrap-break-word"
           collisionPadding={10}
         >
-          <p>{filename}</p>
+          <div className="flex items-center gap-2">
+            <p>{filename}</p>
+            {size && <Badge variant="default">{formatBytes(size)}</Badge>}
+          </div>
         </TooltipContent>
       </Tooltip>
     );
