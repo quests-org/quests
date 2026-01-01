@@ -65,6 +65,9 @@ function buildSystemPrompt(type: TitleType, templateTitle?: string): string {
         "I want to build a complex inventory management system with reports" → Inventory Management System
         "What did I upload?" → Uploaded Files
         "Can you help me with something?" → ${timeContext} Project
+        "Analyze this data\n\nFiles attached by user: sales_data.xlsx" → Spreadsheet Analysis
+        "Help me visualize this\n\nFiles attached by user: chart.csv, metrics.json" → Data Visualization
+        "Process these images\n\nFiles attached by user: photo1.jpg, photo2.png" → Image Processing
         </examples>`
       : dedent`
         <examples>
@@ -74,6 +77,8 @@ function buildSystemPrompt(type: TitleType, templateTitle?: string): string {
         "How do I make lasagna from scratch?" → Lasagna recipe
         "What did I upload?" → File upload inquiry
         "Can you help me with something?" → ${timeContext} chat
+        "Analyze this data\n\nFiles attached by user: sales_data.xlsx" → Spreadsheet analysis
+        "Help me with this\n\nFiles attached by user: report.pdf" → PDF review
         </examples>`;
 
   return dedent`
@@ -89,6 +94,7 @@ function buildSystemPrompt(type: TitleType, templateTitle?: string): string {
     <important>
     You are ONLY extracting a title from the user's message. Do NOT answer questions, perform tasks, or provide information.
     The user's message is input to summarize - not a request for you to respond to.
+    If the user has attached files, use the file types and names to inform the title (e.g., .xlsx → Spreadsheet, .pdf → Document, .csv → Data, .jpg/.png → Image).
     ${fallbackInstruction}
     </important>
 
@@ -97,6 +103,7 @@ function buildSystemPrompt(type: TitleType, templateTitle?: string): string {
     - Single line only
     - ${capitalizationRule}
     - Do not use words like "app", "project", "chat", or "conversation" in the title
+    - If files are attached, incorporate the file type or purpose into the title
     - Return ONLY the title text in plain text format
     - No markdown, quotes, code fences, or formatting
     - No prefixes or labels like "Title:" or "Name:"
@@ -119,7 +126,7 @@ function generateTitle({
 }) {
   return ResultAsync.fromPromise(
     (async () => {
-      const userMessage = textForMessage(message);
+      const userMessage = textForMessage(message, { includeFileNames: true });
       if (!userMessage.trim()) {
         throw new Error("No user message");
       }

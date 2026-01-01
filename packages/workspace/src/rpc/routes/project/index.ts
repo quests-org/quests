@@ -190,41 +190,6 @@ const create = base
         subdomain: projectConfig.subdomain,
       });
 
-      if (mode === "chat") {
-        void (async () => {
-          const titleResult = await generateChatTitle({
-            message,
-            model,
-          });
-
-          if (titleResult.isOk()) {
-            await updateProjectConfig(projectConfig.appDir, {
-              name: titleResult.value,
-            });
-            publisher.publish("project.updated", {
-              subdomain: projectConfig.subdomain,
-            });
-          }
-        })().catch(context.workspaceConfig.captureException);
-      } else {
-        generateProjectTitleAndIcon({
-          message,
-          model,
-          onUpdate: () => {
-            publisher.publish("project.updated", {
-              subdomain: projectConfig.subdomain,
-            });
-          },
-          projectConfig,
-          templateName,
-          workspaceConfig: context.workspaceConfig,
-        }).catch(context.workspaceConfig.captureException);
-      }
-
-      publisher.publish("project.updated", {
-        subdomain: projectConfig.subdomain,
-      });
-
       let messageWithFiles = message;
       if (files && files.length > 0) {
         const uploadResult = await writeUploadedFiles(
@@ -255,6 +220,41 @@ const create = base
           parts: [...message.parts, fileAttachmentsPart],
         };
       }
+
+      if (mode === "chat") {
+        void (async () => {
+          const titleResult = await generateChatTitle({
+            message: messageWithFiles,
+            model,
+          });
+
+          if (titleResult.isOk()) {
+            await updateProjectConfig(projectConfig.appDir, {
+              name: titleResult.value,
+            });
+            publisher.publish("project.updated", {
+              subdomain: projectConfig.subdomain,
+            });
+          }
+        })().catch(context.workspaceConfig.captureException);
+      } else {
+        generateProjectTitleAndIcon({
+          message: messageWithFiles,
+          model,
+          onUpdate: () => {
+            publisher.publish("project.updated", {
+              subdomain: projectConfig.subdomain,
+            });
+          },
+          projectConfig,
+          templateName,
+          workspaceConfig: context.workspaceConfig,
+        }).catch(context.workspaceConfig.captureException);
+      }
+
+      publisher.publish("project.updated", {
+        subdomain: projectConfig.subdomain,
+      });
 
       context.workspaceRef.send({
         type: "createSession",
