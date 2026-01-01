@@ -1,3 +1,4 @@
+import { ok, ResultAsync, safeTry } from "neverthrow";
 import fs from "node:fs/promises";
 import path from "node:path";
 
@@ -5,6 +6,9 @@ import { type AbsolutePath, RelativePathSchema } from "../schemas/paths";
 import { type SessionMessageDataPart } from "../schemas/session/message-data-part";
 import { type Upload } from "../schemas/upload";
 import { absolutePathJoin } from "./absolute-path-join";
+import { TypedError } from "./errors";
+import { git } from "./git";
+import { GitCommands } from "./git/commands";
 
 const UPLOADS_FOLDER = "uploads";
 
@@ -12,33 +16,64 @@ export async function writeUploadedFiles(
   appDir: AbsolutePath,
   files: Upload.Type[],
 ) {
-  if (files.length === 0) {
-    return { files: [] };
-  }
+  return safeTry(async function* () {
+    if (files.length === 0) {
+      return ok({ files: [] });
+    }
 
-  const uploadsDir = absolutePathJoin(appDir, UPLOADS_FOLDER);
-  await fs.mkdir(uploadsDir, { recursive: true });
+    const uploadsDir = absolutePathJoin(appDir, UPLOADS_FOLDER);
+    yield* ResultAsync.fromPromise(
+      fs.mkdir(uploadsDir, { recursive: true }),
+      (error) =>
+        new TypedError.FileSystem(
+          error instanceof Error ? error.message : "Unknown error",
+          { cause: error },
+        ),
+    );
 
-  const fileMetadata: SessionMessageDataPart.FileAttachmentDataPart[] = [];
+    const fileMetadata: SessionMessageDataPart.FileAttachmentDataPart[] = [];
 
-  for (const file of files) {
-    const sanitized = sanitizeFilename(file.filename);
-    const uniqueFilename = await getUniqueFilename(uploadsDir, sanitized);
+    for (const file of files) {
+      const sanitized = sanitizeFilename(file.filename);
+      const uniqueFilename = yield* ResultAsync.fromPromise(
+        getUniqueFilename(uploadsDir, sanitized),
+        (error) =>
+          new TypedError.FileSystem(
+            error instanceof Error ? error.message : "Unknown error",
+            { cause: error },
+          ),
+      );
 
-    const relativePath = `./${UPLOADS_FOLDER}/${uniqueFilename}`;
-    const filePath = absolutePathJoin(appDir, relativePath);
-    const buffer = Buffer.from(file.content, "base64");
-    await fs.writeFile(filePath, buffer);
+      const relativePath = `./${UPLOADS_FOLDER}/${uniqueFilename}`;
+      const filePath = absolutePathJoin(appDir, relativePath);
+      const buffer = Buffer.from(file.content, "base64");
+      yield* ResultAsync.fromPromise(
+        fs.writeFile(filePath, buffer),
+        (error) =>
+          new TypedError.FileSystem(
+            error instanceof Error ? error.message : "Unknown error",
+            { cause: error },
+          ),
+      );
 
-    fileMetadata.push({
-      filename: uniqueFilename,
-      filePath: RelativePathSchema.parse(relativePath),
-      mimeType: file.mimeType,
-      size: file.size,
-    });
-  }
+      fileMetadata.push({
+        filename: uniqueFilename,
+        filePath: RelativePathSchema.parse(relativePath),
+        mimeType: file.mimeType,
+        size: file.size,
+      });
+    }
 
-  return { files: fileMetadata };
+    const commitMessage =
+      files.length === 1
+        ? `Uploaded ${fileMetadata[0]?.filename ?? "file"}`
+        : `Uploaded ${files.length} files`;
+
+    yield* git(GitCommands.addAll(), appDir, {});
+    yield* git(GitCommands.commitWithAuthor(commitMessage), appDir, {});
+
+    return ok({ files: fileMetadata });
+  });
 }
 
 async function getUniqueFilename(

@@ -76,9 +76,14 @@ const create = base
       if (files && files.length > 0) {
         const uploadResult = await writeUploadedFiles(appConfig.appDir, files);
 
+        if (uploadResult.isErr()) {
+          context.workspaceConfig.captureException(uploadResult.error);
+          throw toORPCError(uploadResult.error, errors);
+        }
+
         const fileAttachmentsPart = {
           data: {
-            files: uploadResult.files,
+            files: uploadResult.value.files,
           },
           metadata: {
             createdAt: new Date(),

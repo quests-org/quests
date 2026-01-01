@@ -177,9 +177,14 @@ const createWithMessage = base
         input.files,
       );
 
+      if (uploadResult.isErr()) {
+        context.workspaceConfig.captureException(uploadResult.error);
+        throw toORPCError(uploadResult.error, errors);
+      }
+
       const fileAttachmentsPart = {
         data: {
-          files: uploadResult.files,
+          files: uploadResult.value.files,
         },
         metadata: {
           createdAt: new Date(),
