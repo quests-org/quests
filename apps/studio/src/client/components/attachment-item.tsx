@@ -57,7 +57,6 @@ export function AttachmentItem({
   };
 
   const isImage = mimeType?.startsWith("image/");
-  const isSvg = mimeType === "image/svg+xml";
   const hasPreview = Boolean(previewUrl);
 
   const imageContent = hasPreview && isImage && previewUrl && (
@@ -73,8 +72,7 @@ export function AttachmentItem({
         <ImageWithFallback
           alt={filename}
           className={cn(
-            "size-12",
-            isSvg ? "bg-white object-contain p-1.5" : "object-cover",
+            "size-12 bg-white object-contain p-1.5",
             imageClassName,
           )}
           fallbackClassName={cn("size-12 rounded-lg", imageClassName)}

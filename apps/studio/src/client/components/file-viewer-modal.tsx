@@ -136,7 +136,6 @@ export function FileViewerModal() {
   const isPlaintext = currentFile.mimeType === "text/plain";
   const isImage =
     currentFile.mimeType?.startsWith("image/") || !currentFile.mimeType;
-  const isSvg = currentFile.mimeType === "image/svg+xml";
   const isPdf = currentFile.mimeType === "application/pdf";
   const isVideo = currentFile.mimeType?.startsWith("video/");
   const isAudio = currentFile.mimeType?.startsWith("audio/");
@@ -229,10 +228,7 @@ export function FileViewerModal() {
                 ) : isImage ? (
                   <ImageWithFallback
                     alt={currentFile.filename}
-                    className={cn(
-                      "h-auto max-h-full w-auto max-w-full object-contain",
-                      isSvg && "rounded bg-white/90 p-4",
-                    )}
+                    className="h-auto max-h-full w-auto max-w-full rounded bg-white/90 object-contain p-4"
                     fallbackClassName="size-32 rounded-lg"
                     filename={currentFile.filename}
                     mimeType={currentFile.mimeType}
