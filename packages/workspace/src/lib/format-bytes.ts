@@ -8,5 +8,5 @@ export function formatBytes(bytes: number): string {
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   const unit = sizes[i] ?? sizes.at(-1) ?? "B";
 
-  return `${Number.parseFloat((bytes / k ** i).toFixed(1))}${unit}`;
+  return `${Number.parseFloat((bytes / k ** i).toFixed(1))} ${unit}`;
 }
