@@ -97,9 +97,8 @@
       "dependsOn": ["@quests/shim-client#build"],
       "outputs": ["dist/**", "out/**"]
     },
-    "check:unused": {
-      "dependsOn": ["^check:unused"]
-    },
+    "check:unused": { "dependsOn": ["^check:unused"] },
+    "//#check:unused": {},
     "//#check:electron-node-version": {},
     "check:electron-node-version": {
       "dependsOn": ["^check:electron-node-version"]
@@ -134,7 +133,9 @@
     "check:build": {
       "dependsOn": ["^check:build"]
     },
+    "//#check:build": {},
     "test:ci": {},
+    "//#test:ci": {},
     "dev": {
       "cache": false,
       "persistent": true,
