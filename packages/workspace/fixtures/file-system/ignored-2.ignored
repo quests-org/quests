@@ -1,0 +1,25 @@
+# SHOULD BE IGNORED ALSO
+This is a test file for grep functionality.
+
+It contains multiple lines with various patterns to test:
+- async functions
+- regular expressions
+- file system operations
+- error handling
+
+The grep tests will look for:
+1. Specific keywords like "async" and "function"
+2. Regular expressions like "test.*file"
+3. Error messages and patterns
+
+This file should help verify that the grep implementation:
+- Finds all matches in a file
+- Handles multiple matches correctly
+- Returns empty array when no matches found
+- Properly handles special characters
+
+Some example patterns to search for:
+async function testGrep() {
+  console.log("Testing grep functionality");
+  throw new Error("Test error message");
+}
