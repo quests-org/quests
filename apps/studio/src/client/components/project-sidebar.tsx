@@ -155,7 +155,7 @@ export function ProjectSidebar({
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>New chat</p>
+                <p>New chat in this project</p>
               </TooltipContent>
             </Tooltip>
             <SessionMenu project={project} />

@@ -1,7 +1,7 @@
 import { StoreId, type WorkspaceAppProject } from "@quests/workspace/client";
 import { skipToken, useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate, useSearch } from "@tanstack/react-router";
-import { Bug, History, MoreVertical, TrashIcon } from "lucide-react";
+import { Bug, MessageCircle, MoreVertical, TrashIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -173,8 +173,8 @@ export function SessionMenu({ project }: SessionMenuProps) {
           <DropdownMenuSub>
             <DropdownMenuSubTrigger>
               <div className="flex items-center gap-2">
-                <History className="h-4 w-4" />
-                History
+                <MessageCircle className="size-4" />
+                Other chats
               </div>
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent>
