@@ -12,6 +12,7 @@ import { absolutePathJoin } from "../lib/absolute-path-join";
 import { execaNodeForApp } from "../lib/execa-node-for-app";
 import { filterDebuggerMessages } from "../lib/filter-debugger-messages";
 import { fixRelativePath } from "../lib/fix-relative-path";
+import { listFiles } from "../lib/list-files";
 import { pathExists } from "../lib/path-exists";
 import { runNodeModulesBin } from "../lib/run-node-modules-bin";
 import { getWorkspaceServerURL } from "../logic/server/url";
@@ -19,7 +20,7 @@ import { BaseInputSchema } from "./base";
 import { createTool } from "./create-tool";
 import { translateShellCommand } from "./translate-shell-command";
 
-const FileOperationSchema = z.enum(["cp", "mkdir", "mv", "rm"]);
+const FileOperationSchema = z.enum(["cp", "ls", "mkdir", "mv", "rm"]);
 type FileOperation = z.output<typeof FileOperationSchema>;
 
 const ShellCommandSchema = z.enum(["pnpm", "tsc", "tsx"]);
@@ -41,6 +42,12 @@ const AVAILABLE_COMMANDS: Record<
     ],
     isFileOperation: true,
   },
+  ls: {
+    description:
+      "A limited version of the ls command that lists directory contents. Supports the -a flag to show hidden files.",
+    examples: ["ls", "ls src", "ls -a src/components"],
+    isFileOperation: true,
+  },
   mkdir: {
     description:
       "A limited version of the mkdir command that supports the -p flag for recursive directory creation.",
@@ -54,9 +61,8 @@ const AVAILABLE_COMMANDS: Record<
     isFileOperation: true,
   },
   pnpm: {
-    description:
-      "CLI tool for managing JavaScript packages. You can also use it to search for packages.",
-    examples: ["pnpm add <package-name>", "pnpm search <package-name>"],
+    description: "CLI tool for managing JavaScript packages.",
+    examples: ["pnpm add <package-name>"],
     isFileOperation: false,
   },
   rm: {
@@ -217,6 +223,9 @@ async function handleFileOperation(
     case "cp": {
       return handleCpCommand(args, appConfig);
     }
+    case "ls": {
+      return handleLsCommand(args, appConfig);
+    }
     case "mkdir": {
       return handleMkdirCommand(args, appConfig);
     }
@@ -226,6 +235,73 @@ async function handleFileOperation(
     case "rm": {
       return handleRmCommand(args, appConfig);
     }
+  }
+}
+
+async function handleLsCommand(
+  args: string[],
+  appConfig: AppConfig,
+): Promise<FileOperationResult> {
+  let showHidden = false;
+  let targetPath = ".";
+
+  if (args.length > 0) {
+    if (args[0] === "-a") {
+      showHidden = true;
+      targetPath = args[1] ?? ".";
+    } else {
+      targetPath = args[0] ?? ".";
+    }
+  }
+
+  const fixedPathResult = validateAndFixPath(targetPath, "Path");
+  if (fixedPathResult.isErr()) {
+    return err(fixedPathResult.error);
+  }
+
+  const absolutePath = absolutePathJoin(
+    appConfig.appDir,
+    fixedPathResult.value,
+  );
+
+  const exists = await pathExists(absolutePath);
+  if (!exists) {
+    return err(
+      createError(
+        `ls: cannot access '${targetPath}': No such file or directory`,
+      ),
+    );
+  }
+
+  try {
+    const stats = await fs.stat(absolutePath);
+
+    if (!stats.isDirectory()) {
+      return ok({
+        command: showHidden ? `ls -a ${targetPath}` : `ls ${targetPath}`,
+        exitCode: 0,
+        stderr: "",
+        stdout: path.basename(absolutePath),
+      });
+    }
+
+    const result = await listFiles(appConfig.appDir, {
+      hidden: showHidden,
+      searchPath: fixedPathResult.value,
+    });
+
+    return ok({
+      command: showHidden ? `ls -a ${targetPath}` : `ls ${targetPath}`,
+      exitCode: 0,
+      stderr: "",
+      stdout: result.files.join("\n"),
+    });
+  } catch (error) {
+    return err(
+      createError(
+        `ls command failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+      ),
+    );
   }
 }
 
@@ -497,12 +573,17 @@ function validateArgCount(
 
 export const RunShellCommand = createTool({
   description: dedent`
-    Run commands in the app folder. All operations are scoped to the current directory.
-      
-    IMPORTANT: Only ONE command per invocation. Do not chain commands with &&, ||, ;, or |.
-    If you need to run multiple commands, call this tool multiple times.
-    Note: cd commands are not supported - all commands run in the app directory.
-      
+    Execute specific whitelisted commands in the app folder. This is NOT a general shell.
+    
+    CONSTRAINTS:
+    - Only ONE command per invocation
+    - NO shell operators: no &&, ||, ;, |, >, <, 2>&1
+    - NO command chaining or piping
+    - NO cd commands (all run in app directory)
+    - Only these exact commands are allowed: ${Object.keys(AVAILABLE_COMMANDS).join(", ")}
+    
+    If you need multiple operations, call this tool multiple times.
+    
     Available commands:
     ${Object.entries(AVAILABLE_COMMANDS)
       .map(([command, config]) => `- ${command} - ${config.description}`)
@@ -592,7 +673,7 @@ export const RunShellCommand = createTool({
           command: input.command,
           exitCode: execResult.exitCode ?? 0,
           stderr: filterDebuggerMessages(execResult.stderr),
-          stdout: execResult.stdout,
+          stdout: filterDebuggerMessages(execResult.stdout),
         });
       }
       case "tsc": {
@@ -610,7 +691,7 @@ export const RunShellCommand = createTool({
           command: input.command,
           exitCode: execResult.exitCode ?? 0,
           stderr: filterDebuggerMessages(execResult.stderr),
-          stdout: execResult.stdout,
+          stdout: filterDebuggerMessages(execResult.stdout),
         });
       }
       case "tsx": {
@@ -640,7 +721,7 @@ export const RunShellCommand = createTool({
           command: input.command,
           exitCode: execResult.exitCode ?? 0,
           stderr: filterDebuggerMessages(execResult.stderr),
-          stdout: execResult.stdout,
+          stdout: filterDebuggerMessages(execResult.stdout),
         });
       }
     }

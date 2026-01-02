@@ -17,6 +17,7 @@ import { pathExists } from "../lib/path-exists";
 import { RelativePathSchema } from "../schemas/paths";
 import { BaseInputSchema } from "./base";
 import { createTool } from "./create-tool";
+import { RunShellCommand } from "./run-shell-command";
 
 const DEFAULT_READ_LIMIT = 2000;
 const MAX_LINE_LENGTH = 2000;
@@ -104,7 +105,8 @@ export const ReadFile = createTool({
     Reads a file from the app directory. You can access any file directly by using this tool.
 
     Usage:
-    - The ${INPUT_PARAMS.filePath} parameter must be a relative path. E.g. ./src/client/app.tsx
+    - The ${INPUT_PARAMS.filePath} parameter must be a relative path to a file. E.g. ./src/client/app.tsx
+    - This tool does NOT support reading directories. To list directory contents, use the ${RunShellCommand.name} tool with the 'ls' command instead.
     - By default, it reads up to ${DEFAULT_READ_LIMIT} lines starting from the beginning of the file.
     - You can optionally specify a line ${INPUT_PARAMS.offset} and ${INPUT_PARAMS.limit} (especially handy for long files), but it's recommended to read the whole file by not providing these parameters.
     - When using ${INPUT_PARAMS.limit}, avoid using too small of a limit (< 100), which can lead to tons of tokens being used.
