@@ -1,11 +1,9 @@
 import { err, ok, safeTry } from "neverthrow";
 import { dedent, pick } from "radashi";
-import { readPackage } from "read-pkg";
 
 import { APP_NAME, WEBSITE_URL } from "../constants";
 import { TypedError } from "../lib/errors";
 import { fileTree } from "../lib/file-tree";
-import { formatPackageDependencies } from "../lib/format-package-dependencies";
 import { getCurrentDate } from "../lib/get-current-date";
 import { getSystemInfo } from "../lib/get-system-info";
 import { git } from "../lib/git";
@@ -133,17 +131,10 @@ export const appBuilderAgent = setupAgent({
       "AGENTS.md",
     );
 
-    let packageJsonSummary: null | string = null;
-    try {
-      const pkg = await readPackage({ cwd: appConfig.appDir });
-      packageJsonSummary = formatPackageDependencies(pkg);
-    } catch {
-      appConfig.workspaceConfig.captureException(
-        new TypedError.FileSystem(
-          "Failed to read package.json for agent context",
-        ),
-      );
-    }
+    const packageJsonContent = await readFileWithAnyCase(
+      appConfig.appDir,
+      "package.json",
+    );
 
     const userMessageId = StoreId.newMessageId();
     const userMessage: SessionMessage.ContextWithParts = {
@@ -172,7 +163,7 @@ export const appBuilderAgent = setupAgent({
             ${fileTreeResult.match(
               (tree) => dedent`
                 <project_layout>
-                Below is a snapshot of the current workspace's file structure at the start of the conversation. This snapshot will NOT update during the conversation. It skips over .gitignore patterns.
+                This is the current project directory structure. All files and folders shown below exist right now. This structure will not update during the conversation, but should be considered accurate at the start.
                 \`\`\`plaintext
                 ${tree}
                 \`\`\`
@@ -193,11 +184,14 @@ export const appBuilderAgent = setupAgent({
             }
 
             ${
-              packageJsonSummary
+              packageJsonContent
                 ? dedent`
-              <installed_dependencies>
-              ${packageJsonSummary}
-              </installed_dependencies>
+              <package_json>
+              This is the package.json file from the project root as of the start of the conversation.
+              \`\`\`json
+              ${packageJsonContent}
+              \`\`\`
+              </package_json>
             `
                 : ""
             }
@@ -206,7 +200,7 @@ export const appBuilderAgent = setupAgent({
               envVariableNames.length > 0
                 ? dedent`
               <env_variables>
-              The following environment variables injected into the runtime are available:
+              The following environment variables are available for the app and scripts.
               ${envVariableNames.map((n) => `- ${n}`).join("\n")}
               </env_variables>
             `
