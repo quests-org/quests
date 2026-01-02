@@ -1,11 +1,11 @@
+import { createContextMenu } from "@/electron-main/lib/context-menu";
 import { getBackgroundColor } from "@/electron-main/lib/theme-utils";
 import { publisher } from "@/electron-main/rpc/publisher";
 import { type StudioPath } from "@/shared/studio-path";
-import { BrowserWindow, Menu, shell } from "electron";
+import { BrowserWindow, shell } from "electron";
 import path from "node:path";
 
 import { studioURL } from "../lib/urls";
-import { isDeveloperMode } from "../stores/preferences";
 
 let settingsWindow: BrowserWindow | null = null;
 
@@ -91,17 +91,5 @@ export function openSettingsWindow(
     studioURL(settingsPath) + (queryString ? `?${queryString}` : "");
   void settingsWindow.loadURL(fullUrl);
 
-  if (isDeveloperMode()) {
-    settingsWindow.webContents.on("context-menu", (_, props) => {
-      const menu = Menu.buildFromTemplate([
-        {
-          click: () => {
-            settingsWindow?.webContents.inspectElement(props.x, props.y);
-          },
-          label: "Inspect Element",
-        },
-      ]);
-      menu.popup({ window: settingsWindow ?? undefined });
-    });
-  }
+  createContextMenu({ window: settingsWindow });
 }

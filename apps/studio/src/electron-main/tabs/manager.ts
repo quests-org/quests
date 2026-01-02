@@ -1,3 +1,4 @@
+import { createContextMenu } from "@/electron-main/lib/context-menu";
 import { logger } from "@/electron-main/lib/electron-logger";
 import { getSidebarWidth } from "@/electron-main/lib/sidebar";
 import { getBackgroundColor } from "@/electron-main/lib/theme-utils";
@@ -17,13 +18,12 @@ import {
 } from "@/shared/tabs";
 import { type ProjectMode } from "@quests/shared";
 import { type IconName } from "@quests/shared/icons";
-import { type BaseWindow, Menu, shell, WebContentsView } from "electron";
+import { type BaseWindow, shell, WebContentsView } from "electron";
 import { type LogFunctions } from "electron-log";
 import Store from "electron-store";
 import path from "node:path";
 
 import { unsafe_studioURL } from "../lib/urls";
-import { isDeveloperMode } from "../stores/preferences";
 
 interface TabStore {
   root?: TabState;
@@ -320,59 +320,7 @@ export class TabsManager {
 
       resolve(newContentView);
 
-      newContentView.webContents.on("context-menu", (_, props) => {
-        const menuTemplate: Electron.MenuItemConstructorOptions[] = [];
-
-        menuTemplate.push(
-          {
-            label: "Cut",
-            role: "cut",
-          },
-          {
-            label: "Copy",
-            role: "copy",
-          },
-          {
-            label: "Paste",
-            role: "paste",
-          },
-          {
-            type: "separator",
-          },
-          {
-            label: "Select All",
-            role: "selectAll",
-          },
-          {
-            type: "separator",
-          },
-          {
-            label: "Undo",
-            role: "undo",
-          },
-          {
-            label: "Redo",
-            role: "redo",
-          },
-        );
-
-        if (isDeveloperMode()) {
-          if (menuTemplate.length > 0) {
-            menuTemplate.push({
-              type: "separator",
-            });
-          }
-          menuTemplate.push({
-            click: () => {
-              newContentView.webContents.inspectElement(props.x, props.y);
-            },
-            label: "Inspect Element",
-          });
-        }
-
-        const menu = Menu.buildFromTemplate(menuTemplate);
-        menu.popup({ window: this.baseWindow });
-      });
+      createContextMenu({ window: newContentView });
 
       newContentView.setBackgroundColor(getBackgroundColor());
 

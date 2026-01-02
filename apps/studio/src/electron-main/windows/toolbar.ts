@@ -1,5 +1,6 @@
+import { createContextMenu } from "@/electron-main/lib/context-menu";
 import { getMainWindow } from "@/electron-main/windows/main/instance";
-import { type BaseWindow, Menu, shell, WebContentsView } from "electron";
+import { type BaseWindow, shell, WebContentsView } from "electron";
 import path from "node:path";
 
 import { getSidebarWidth } from "../lib/sidebar";
@@ -34,26 +35,7 @@ export function createToolbar({
       return { action: "deny" };
     });
 
-    toolbarView.webContents.on("context-menu", (_, props) => {
-      const menu = Menu.buildFromTemplate([
-        {
-          click: () => {
-            toolbarView?.webContents.openDevTools({
-              mode: "detach",
-              title: "DevTools - Toolbar",
-            });
-          },
-          label: "Open DevTools in New Window",
-        },
-        {
-          click: () => {
-            toolbarView?.webContents.inspectElement(props.x, props.y);
-          },
-          label: "Inspect Element",
-        },
-      ]);
-      menu.popup({ window: baseWindow, x: props.x, y: props.y });
-    });
+    createContextMenu({ inspectInNewWindow: true, window: toolbarView });
 
     const bounds = baseWindow.getContentBounds();
     const sidebarWidth = getSidebarWidth();
