@@ -12,6 +12,7 @@ import { TypedError } from "./errors";
 import { folderNameForSubdomain } from "./folder-name-for-subdomain";
 import { git } from "./git";
 import { GitCommands } from "./git/commands";
+import { ensureGitRepo } from "./git/ensure-git-repo";
 import { pathExists } from "./path-exists";
 
 interface ImportProjectOptions {
@@ -83,11 +84,12 @@ export async function importProject(
       targetDir: projectDir,
     });
 
-    const gitDir = absolutePathJoin(projectDir, ".git");
-    const hasGitRepo = await pathExists(gitDir);
+    const ensureResult = yield* ensureGitRepo({
+      appDir: projectDir,
+      signal,
+    });
 
-    if (!hasGitRepo) {
-      yield* git(GitCommands.init(), projectDir, { signal });
+    if (ensureResult.created) {
       yield* git(GitCommands.addAll(), projectDir, { signal });
       // If "import" is used literally at the end of a string, it will cause an
       // unterminated string literal error with Electron Vite.

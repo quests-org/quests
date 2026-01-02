@@ -10,6 +10,7 @@ import { copyProject } from "./copy-project";
 import { TypedError } from "./errors";
 import { git } from "./git";
 import { GitCommands } from "./git/commands";
+import { ensureGitRepo } from "./git/ensure-git-repo";
 
 export async function createProjectApp(
   {
@@ -69,7 +70,7 @@ export async function createProjectApp(
       targetDir: projectConfig.appDir,
     });
 
-    yield* git(GitCommands.init(), projectConfig.appDir, { signal });
+    yield* ensureGitRepo({ appDir: projectConfig.appDir, signal });
     yield* git(GitCommands.addAll(), projectConfig.appDir, { signal });
     yield* git(
       GitCommands.commitWithAuthor(

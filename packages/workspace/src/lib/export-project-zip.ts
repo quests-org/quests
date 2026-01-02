@@ -9,6 +9,7 @@ import { type AppDir } from "../schemas/paths";
 import { absolutePathJoin } from "./absolute-path-join";
 import { git } from "./git";
 import { GitCommands } from "./git/commands";
+import { ensureGitRepo } from "./git/ensure-git-repo";
 import { pathExists } from "./path-exists";
 
 interface ExportProjectZipOptions {
@@ -23,28 +24,19 @@ export function exportProjectZip({
   outputPath,
 }: ExportProjectZipOptions) {
   return safeTry(async function* () {
-    const sourceGitDir = absolutePathJoin(appDir, ".git");
-    const hasGitRepo = await pathExists(sourceGitDir);
+    const ensureResult = yield* ensureGitRepo({ appDir });
 
-    if (hasGitRepo) {
-      const statusResult = yield* git(GitCommands.status(), appDir, {});
+    const statusResult = yield* git(GitCommands.status(), appDir, {});
 
-      if (statusResult.stdout.toString("utf8").trim() !== "") {
-        yield* git(GitCommands.addAll(), appDir, {});
-        yield* git(
-          GitCommands.commitWithAuthor("Auto-commit before export"),
-          appDir,
-          {},
-        );
-      }
-    } else {
-      yield* git(GitCommands.init(), appDir, {});
+    if (
+      ensureResult.created ||
+      statusResult.stdout.toString("utf8").trim() !== ""
+    ) {
       yield* git(GitCommands.addAll(), appDir, {});
-      yield* git(
-        GitCommands.commitWithAuthor("Initial commit before export"),
-        appDir,
-        {},
-      );
+      const commitMessage = ensureResult.created
+        ? "Initial commit before export"
+        : "Auto-commit before export";
+      yield* git(GitCommands.commitWithAuthor(commitMessage), appDir, {});
     }
 
     let needsReset = false;

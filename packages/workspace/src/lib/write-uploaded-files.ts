@@ -10,6 +10,7 @@ import { TypedError } from "./errors";
 import { getMimeType } from "./get-mime-type";
 import { git } from "./git";
 import { GitCommands } from "./git/commands";
+import { ensureGitRepo } from "./git/ensure-git-repo";
 
 const UPLOADS_FOLDER = "uploads";
 
@@ -74,6 +75,8 @@ export async function writeUploadedFiles(
         size: stats.size,
       });
     }
+
+    yield* ensureGitRepo({ appDir });
 
     const commitMessage =
       files.length === 1

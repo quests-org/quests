@@ -12,6 +12,7 @@ import { getAppPrivateDir, sessionStorePath } from "./app-dir-utils";
 import { TypedError } from "./errors";
 import { git } from "./git";
 import { GitCommands } from "./git/commands";
+import { ensureGitRepo } from "./git/ensure-git-repo";
 import { pathExists } from "./path-exists";
 import { getProjectConfig, updateProjectConfig } from "./project-config";
 import { projectModeForSubdomain } from "./project-mode-for-subdomain";
@@ -56,31 +57,25 @@ export async function duplicateProject(
       );
     }
 
-    const sourceGitDir = absolutePathJoin(sourceConfig.appDir, ".git");
-    const hasGitRepo = await pathExists(sourceGitDir);
+    const ensureResult = yield* ensureGitRepo({
+      appDir: sourceConfig.appDir,
+      signal,
+    });
 
-    if (hasGitRepo) {
-      const statusResult = yield* git(
-        GitCommands.status(),
-        sourceConfig.appDir,
-        {
-          signal,
-        },
-      );
+    const statusResult = yield* git(GitCommands.status(), sourceConfig.appDir, {
+      signal,
+    });
 
-      if (statusResult.stdout.toString("utf8").trim() !== "") {
-        yield* git(GitCommands.addAll(), sourceConfig.appDir, { signal });
-        yield* git(
-          GitCommands.commitWithAuthor("Auto-commit before duplicate"),
-          sourceConfig.appDir,
-          { signal },
-        );
-      }
-    } else {
-      yield* git(GitCommands.init(), sourceConfig.appDir, { signal });
+    if (
+      ensureResult.created ||
+      statusResult.stdout.toString("utf8").trim() !== ""
+    ) {
       yield* git(GitCommands.addAll(), sourceConfig.appDir, { signal });
+      const commitMessage = ensureResult.created
+        ? "Initial commit"
+        : "Auto-commit before duplicate";
       yield* git(
-        GitCommands.commitWithAuthor("Initial commit"),
+        GitCommands.commitWithAuthor(commitMessage),
         sourceConfig.appDir,
         { signal },
       );
@@ -121,7 +116,7 @@ export async function duplicateProject(
         });
       }
 
-      yield* git(GitCommands.init(), projectConfig.appDir, { signal });
+      yield* ensureGitRepo({ appDir: projectConfig.appDir, signal });
     }
 
     const existingManifest = await getProjectConfig(projectConfig.appDir);

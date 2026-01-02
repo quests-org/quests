@@ -8,6 +8,7 @@ import { getCurrentDate } from "../lib/get-current-date";
 import { getSystemInfo } from "../lib/get-system-info";
 import { git } from "../lib/git";
 import { GitCommands } from "../lib/git/commands";
+import { ensureGitRepo } from "../lib/git/ensure-git-repo";
 import { isToolPart } from "../lib/is-tool-part";
 import { readFileWithAnyCase } from "../lib/read-file-with-any-case";
 import { Store } from "../lib/store";
@@ -217,8 +218,7 @@ export const appBuilderAgent = setupAgent({
   },
   onFinish: async ({ appConfig, parentMessageId, sessionId, signal }) => {
     const result = await safeTry(async function* () {
-      // Repo should be initialized by now, but just in case
-      yield* git(GitCommands.init(), appConfig.appDir, { signal });
+      yield* ensureGitRepo({ appDir: appConfig.appDir, signal });
       const status = yield* git(GitCommands.status(), appConfig.appDir, {
         signal,
       });
