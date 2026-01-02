@@ -6,7 +6,6 @@ import {
 import fs from "node:fs/promises";
 import { z } from "zod";
 
-import { AgentNameSchema } from "../agents/types";
 import { type AbsolutePath, type AppDir } from "../schemas/paths";
 import { absolutePathJoin } from "./absolute-path-join";
 import { getAppPrivateDir } from "./app-dir-utils";
@@ -17,14 +16,12 @@ const StoredProjectStateSchema = z
   // Relaxed schema for backwards compatibility
   .object({
     promptDraft: z.string().optional(),
-    selectedAgentName: AgentNameSchema.optional().default("app-builder"),
     selectedModelURI: z.string().optional(),
   })
-  .default({ selectedAgentName: "app-builder" });
+  .default(() => ({}));
 
 export const ProjectStateSchema = z.object({
   promptDraft: z.string().optional(),
-  selectedAgentName: AgentNameSchema.optional().default("app-builder"),
   selectedModelURI: AIGatewayModelURI.Schema.optional(),
 });
 
