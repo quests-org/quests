@@ -46,6 +46,11 @@ const EVAL_TEMPLATE_GROUPS: EvalTemplateGroup[] = [
       },
       {
         iconName: "terminal",
+        name: "Bar Chart",
+        userPrompt: "Create a demo bar chart SVG in the output folder",
+      },
+      {
+        iconName: "terminal",
         name: "Eval a string of code",
         userPrompt: 'Use tsx -e to log "hello from eval!"',
       },
