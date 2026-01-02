@@ -6,10 +6,13 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/client/components/ui/resizable";
+import { Spinner } from "@/client/components/ui/spinner";
 import { VersionOverlay } from "@/client/components/version-overlay";
 import { cn } from "@/client/lib/utils";
+import { rpcClient } from "@/client/rpc/client";
 import { type AIGatewayModelURI } from "@quests/ai-gateway/client";
 import { type WorkspaceAppProject } from "@quests/workspace/client";
+import { useQuery } from "@tanstack/react-query";
 import { useAtomValue, useSetAtom } from "jotai";
 import { useEffect, useRef } from "react";
 import { usePanelRef } from "react-resizable-panels";
@@ -23,6 +26,14 @@ export function ProjectViewApp({
   selectedModelURI: AIGatewayModelURI.Type | undefined;
   selectedVersion: string | undefined;
 }) {
+  const { data: hasModifications } = useQuery(
+    rpcClient.workspace.project.git.hasAppModifications.live.check.experimental_liveOptions(
+      {
+        input: { projectSubdomain: project.subdomain },
+      },
+    ),
+  );
+
   const sidebarCollapsed = useAtomValue(
     projectSidebarCollapsedAtomFamily(project.subdomain),
   );
@@ -31,6 +42,8 @@ export function ProjectViewApp({
   );
   const panelRef = usePanelRef();
   const lastAtomValueRef = useRef(sidebarCollapsed);
+
+  const showAppView = hasModifications === true;
 
   useEffect(() => {
     // panelRef is not stable, so we need this check to avoid an infinite loop
@@ -52,6 +65,28 @@ export function ProjectViewApp({
       panel.expand();
     }
   }, [sidebarCollapsed, panelRef]);
+
+  if (typeof hasModifications !== "boolean") {
+    return (
+      <div className="flex h-full w-full items-center justify-center">
+        <Spinner />
+      </div>
+    );
+  }
+
+  if (!showAppView) {
+    return (
+      <div className="flex h-full w-full items-start justify-center border-t">
+        <div className="flex h-full w-full max-w-3xl flex-col bg-background">
+          <ProjectSidebar
+            project={project}
+            selectedModelURI={selectedModelURI}
+            selectedVersion={selectedVersion}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <ResizablePanelGroup orientation="horizontal">

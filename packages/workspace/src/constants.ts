@@ -28,6 +28,9 @@ export const APP_STATUSES = [
 ] as const;
 
 export const GIT_AUTHOR = { email: "agent@quests.dev", name: "Quests Agent" };
+export const GIT_TRAILER_INITIAL_COMMIT = "Quests-Initial-Commit";
+export const GIT_TRAILER_TEMPLATE = "Quests-Template";
+export const APP_SOURCE_FOLDER = "src/";
 export const WEBSITE_URL = "https://quests.dev";
 export const APP_NAME = "Quests";
 

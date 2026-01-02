@@ -1,7 +1,11 @@
 import { errAsync, ok, ResultAsync, safeTry } from "neverthrow";
 import fs from "node:fs/promises";
 
-import { REGISTRY_TEMPLATES_FOLDER } from "../constants";
+import {
+  GIT_TRAILER_INITIAL_COMMIT,
+  GIT_TRAILER_TEMPLATE,
+  REGISTRY_TEMPLATES_FOLDER,
+} from "../constants";
 import { type WorkspaceConfig } from "../types";
 import { absolutePathJoin } from "./absolute-path-join";
 import { type AppConfigProject } from "./app-config/types";
@@ -74,7 +78,7 @@ export async function createProjectApp(
     yield* git(GitCommands.addAll(), projectConfig.appDir, { signal });
     yield* git(
       GitCommands.commitWithAuthor(
-        `Project created from ${templateName} template`,
+        `Project created from ${templateName} template\n\n${GIT_TRAILER_INITIAL_COMMIT}: true\n${GIT_TRAILER_TEMPLATE}: ${templateName}`,
       ),
       projectConfig.appDir,
       { signal },

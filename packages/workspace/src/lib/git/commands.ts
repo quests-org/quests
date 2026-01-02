@@ -1,4 +1,4 @@
-import { GIT_AUTHOR } from "../../constants";
+import { GIT_AUTHOR, GIT_TRAILER_INITIAL_COMMIT } from "../../constants";
 import { type RelativePath } from "../../schemas/paths";
 
 export namespace GitCommands {
@@ -55,12 +55,28 @@ export namespace GitCommands {
     return ["diff", "--stat", `${ref}~1`, ref];
   }
 
+  export function findInitialCommit() {
+    return [
+      "log",
+      "--format=%H",
+      `--grep=^${GIT_TRAILER_INITIAL_COMMIT}: true$`,
+      "--all",
+      "--reverse",
+      "-n",
+      "1",
+    ];
+  }
+
   export function getCommitMessage(ref: string) {
     return ["log", "--format=%s", "-n", "1", ref];
   }
 
   export function init() {
     return ["init"];
+  }
+
+  export function logPathSinceCommit(commitRef: string, path: string) {
+    return ["log", "--format=%H", `${commitRef}..HEAD`, "--", path];
   }
 
   export function logWithDetails(limit?: number) {
@@ -85,6 +101,10 @@ export namespace GitCommands {
 
   export function status() {
     return ["status", "--porcelain"];
+  }
+
+  export function statusPath(path: string) {
+    return ["status", "--porcelain", "--", path];
   }
 
   export function verifyCommitRef(ref: string) {
