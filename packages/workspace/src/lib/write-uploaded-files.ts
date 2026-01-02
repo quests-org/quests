@@ -2,6 +2,7 @@ import { ok, ResultAsync, safeTry } from "neverthrow";
 import fs from "node:fs/promises";
 import path from "node:path";
 
+import { UPLOADS_FOLDER } from "../constants";
 import { type AbsolutePath, RelativePathSchema } from "../schemas/paths";
 import { type SessionMessageDataPart } from "../schemas/session/message-data-part";
 import { type Upload } from "../schemas/upload";
@@ -11,8 +12,6 @@ import { getMimeType } from "./get-mime-type";
 import { git } from "./git";
 import { GitCommands } from "./git/commands";
 import { ensureGitRepo } from "./git/ensure-git-repo";
-
-const UPLOADS_FOLDER = "uploads";
 
 export async function writeUploadedFiles(
   appDir: AbsolutePath,
