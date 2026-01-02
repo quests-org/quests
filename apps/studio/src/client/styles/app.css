@@ -218,3 +218,8 @@ a.cursor-pointer {
 .shiny-text.disabled {
   animation: none;
 }
+
+[data-sonner-toast] {
+  /* Fixes hover for toast growing to full height of screen */
+  height: auto !important;
+}
