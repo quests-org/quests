@@ -1,3 +1,4 @@
+import type { WorkspaceAppProject } from "@quests/workspace/client";
 import type {
   ColumnDef,
   ColumnFiltersState,
@@ -35,7 +36,7 @@ import {
 } from "@tanstack/react-table";
 import * as React from "react";
 
-export function ProjectsDataTable<TData, TValue>({
+export function ProjectsDataTable({
   bulkActions,
   columns,
   data,
@@ -43,8 +44,8 @@ export function ProjectsDataTable<TData, TValue>({
   rowSelection,
 }: {
   bulkActions?: React.ReactNode;
-  columns: ColumnDef<TData, TValue>[];
-  data: TData[];
+  columns: ColumnDef<WorkspaceAppProject>[];
+  data: WorkspaceAppProject[];
   onRowSelectionChange: OnChangeFn<RowSelectionState>;
   rowSelection: RowSelectionState;
 }) {
@@ -56,13 +57,14 @@ export function ProjectsDataTable<TData, TValue>({
     React.useState<VisibilityState>({});
 
   // eslint-disable-next-line react-hooks/incompatible-library
-  const table = useReactTable({
+  const table = useReactTable<WorkspaceAppProject>({
     columns,
     data,
     enableRowSelection: true,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+    getRowId: (row) => row.subdomain,
     getSortedRowModel: getSortedRowModel(),
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,

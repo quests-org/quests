@@ -162,12 +162,11 @@ function RouteComponent() {
   const selectedProjects = useMemo(() => {
     return Object.keys(rowSelection)
       .filter((key) => rowSelection[key])
-      .map((key) => {
-        const index = Number.parseInt(key);
-        return filteredProjects[index];
+      .map((subdomain) => {
+        return projects.find((p) => p.subdomain === subdomain);
       })
       .filter((p): p is WorkspaceAppProject => p !== undefined);
-  }, [rowSelection, filteredProjects]);
+  }, [projects, rowSelection]);
 
   const hasRunningAgents = useMemo(() => {
     if (!appStates || selectedProjects.length === 0) {
