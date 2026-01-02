@@ -87,6 +87,17 @@ export async function writeUploadedFiles(
       const filePaths = fileMetadata.map((file) => file.filePath);
       yield* git(GitCommands.addFiles(filePaths), appDir, {});
       yield* git(GitCommands.commitWithAuthor(commitMessage), appDir, {});
+
+      const commitRefResult = yield* git(
+        GitCommands.revParse("HEAD"),
+        appDir,
+        {},
+      );
+      const commitRef = commitRefResult.stdout.toString("utf8").trim();
+
+      for (const file of fileMetadata) {
+        file.gitRef = commitRef;
+      }
     }
 
     return ok({ files: fileMetadata });
