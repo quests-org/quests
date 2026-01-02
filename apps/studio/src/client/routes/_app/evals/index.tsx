@@ -242,13 +242,25 @@ function RouteComponent() {
         }
       } else if (createdProjects.length > 1) {
         if (openInNewTab) {
-          void addTab(
-            {
-              search: { filter: "evals" },
-              to: "/projects",
-            },
-            { select: false },
-          );
+          if (createdProjects.length <= 4) {
+            for (const project of createdProjects) {
+              void addTab(
+                {
+                  params: { subdomain: project.subdomain },
+                  to: "/projects/$subdomain",
+                },
+                { select: false },
+              );
+            }
+          } else {
+            void addTab(
+              {
+                search: { filter: "evals" },
+                to: "/projects",
+              },
+              { select: false },
+            );
+          }
         } else {
           void navigate({
             search: { filter: "evals" },
