@@ -30,7 +30,6 @@
     "turbo:test": "turbo run test test:ci"
   },
   "dependencies": {
-    "@file-type/xml": "^0.4.4",
     "@hono/node-server": "^1.18.1",
     "@netlify/build-info": "^10.0.9",
     "@orpc/server": "catalog:",
