@@ -10,19 +10,17 @@ import { useQuery } from "@tanstack/react-query";
 import { rpcClient } from "../rpc/client";
 import { AttachmentItem } from "./attachment-item";
 
-interface FileAttachmentCardProps {
-  file: SessionMessageDataPart.FileAttachmentDataPart;
+interface FileAttachmentsCardProps {
   files: SessionMessageDataPart.FileAttachmentDataPart[];
   messageId: StoreId.Message;
   projectSubdomain: ProjectSubdomain;
 }
 
-export function FileAttachmentCard({
-  file,
+export function FileAttachmentsCard({
   files,
   messageId,
   projectSubdomain,
-}: FileAttachmentCardProps) {
+}: FileAttachmentsCardProps) {
   const { data: app } = useQuery(
     rpcClient.workspace.project.bySubdomain.queryOptions({
       input: { subdomain: projectSubdomain },
@@ -32,12 +30,6 @@ export function FileAttachmentCard({
   if (!app) {
     return null;
   }
-
-  const assetUrl = getAssetUrl({
-    assetBase: app.urls.assetBase,
-    filePath: file.filePath,
-    messageId,
-  });
 
   const gallery: FileViewerFile[] = files.map((f) => ({
     filename: f.filename,
@@ -53,13 +45,26 @@ export function FileAttachmentCard({
   }));
 
   return (
-    <AttachmentItem
-      filename={file.filename}
-      filePath={file.filePath}
-      gallery={gallery}
-      mimeType={file.mimeType}
-      previewUrl={assetUrl}
-      size={file.size}
-    />
+    <div className="flex flex-wrap items-start justify-end gap-2">
+      {files.map((file) => {
+        const assetUrl = getAssetUrl({
+          assetBase: app.urls.assetBase,
+          filePath: file.filePath,
+          messageId,
+        });
+
+        return (
+          <AttachmentItem
+            filename={file.filename}
+            filePath={file.filePath}
+            gallery={gallery}
+            key={file.filePath}
+            mimeType={file.mimeType}
+            previewUrl={assetUrl}
+            size={file.size}
+          />
+        );
+      })}
+    </div>
   );
 }

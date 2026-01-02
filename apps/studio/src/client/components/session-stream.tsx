@@ -19,7 +19,7 @@ import { AssistantMessage } from "./assistant-message";
 import { ChatErrorAlert } from "./chat-error-alert";
 import { ChatZeroState } from "./chat-zero-state";
 import { ContextMessages } from "./context-messages";
-import { FileAttachmentCard } from "./file-attachment-card";
+import { FileAttachmentsCard } from "./file-attachments-card";
 import { MessageActionsRow } from "./message-actions-row";
 import { MessageError } from "./message-error";
 import { ReasoningMessage } from "./reasoning-message";
@@ -324,20 +324,12 @@ export function SessionStream({
           const files = fileAttachmentsPart.data.files;
 
           messageElements.unshift(
-            <div
-              className="flex flex-wrap items-start justify-end gap-2"
+            <FileAttachmentsCard
+              files={files}
               key={`attachments-${message.id}`}
-            >
-              {files.map((file, index) => (
-                <FileAttachmentCard
-                  file={file}
-                  files={files}
-                  key={`${fileAttachmentsPart.metadata.id}-${index}`}
-                  messageId={message.id}
-                  projectSubdomain={project.subdomain}
-                />
-              ))}
-            </div>,
+              messageId={message.id}
+              projectSubdomain={project.subdomain}
+            />,
           );
         }
       }
