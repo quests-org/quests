@@ -17,6 +17,7 @@ const UPLOADS_FOLDER = "uploads";
 export async function writeUploadedFiles(
   appDir: AbsolutePath,
   files: Upload.Type[],
+  options?: { skipCommit?: boolean },
 ) {
   return safeTry(async function* () {
     if (files.length === 0) {
@@ -76,16 +77,18 @@ export async function writeUploadedFiles(
       });
     }
 
-    yield* ensureGitRepo({ appDir });
+    if (!options?.skipCommit) {
+      yield* ensureGitRepo({ appDir });
 
-    const commitMessage =
-      files.length === 1
-        ? `Uploaded ${fileMetadata[0]?.filename ?? "file"}`
-        : `Uploaded ${files.length} files`;
+      const commitMessage =
+        files.length === 1
+          ? `Uploaded ${fileMetadata[0]?.filename ?? "file"}`
+          : `Uploaded ${files.length} files`;
 
-    const filePaths = fileMetadata.map((file) => file.filePath);
-    yield* git(GitCommands.addFiles(filePaths), appDir, {});
-    yield* git(GitCommands.commitWithAuthor(commitMessage), appDir, {});
+      const filePaths = fileMetadata.map((file) => file.filePath);
+      yield* git(GitCommands.addFiles(filePaths), appDir, {});
+      yield* git(GitCommands.commitWithAuthor(commitMessage), appDir, {});
+    }
 
     return ok({ files: fileMetadata });
   });
