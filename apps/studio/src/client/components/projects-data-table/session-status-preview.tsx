@@ -1,7 +1,4 @@
-import type {
-  ProjectSubdomain,
-  SessionMessagePart,
-} from "@quests/workspace/client";
+import type { ProjectSubdomain } from "@quests/workspace/client";
 
 import { useAppState } from "@/client/hooks/use-app-state";
 import {
@@ -11,7 +8,7 @@ import {
 } from "@/client/lib/tool-display";
 import { cn } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
-import { getToolNameByType } from "@quests/workspace/client";
+import { getToolNameByType, isToolPart } from "@quests/workspace/client";
 import { useQuery } from "@tanstack/react-query";
 import {
   Brain,
@@ -108,14 +105,13 @@ function SessionStatusText({
   } else if (latestPart.type === "data-gitCommit") {
     displayText = "Version";
     Icon = GitCommitVertical;
-  } else if (latestPart.type.startsWith("tool-")) {
-    const toolPart = latestPart as SessionMessagePart.ToolPart;
-    const toolName = getToolNameByType(toolPart.type);
+  } else if (isToolPart(latestPart)) {
+    const toolName = getToolNameByType(latestPart.type);
     Icon = TOOL_ICONS[toolName] ?? HelpCircle;
 
-    if (toolPart.state === "output-available") {
+    if (latestPart.state === "output-available") {
       displayText = getToolDisplayName(toolName);
-    } else if (toolPart.state === "output-error") {
+    } else if (latestPart.state === "output-error") {
       displayText = "Error";
     } else {
       displayText = getToolStreamingDisplayName(toolName);
