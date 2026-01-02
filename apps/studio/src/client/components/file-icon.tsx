@@ -17,6 +17,8 @@ import {
 } from "react-icons/bs";
 import { VscFileZip } from "react-icons/vsc";
 
+import { isTextMimeType } from "../lib/is-text-mime-type";
+
 type IconComponent = ComponentType<{ className?: string }>;
 
 const EXTENSION_ICON_MAP: Record<string, IconComponent> = {
@@ -148,8 +150,8 @@ function getFileIcon(
     return extIcon;
   }
 
-  if (mimeType === "text/plain") {
-    return BsFileText;
+  if (mimeType && isTextMimeType({ filename, mimeType })) {
+    return mimeType === "text/plain" ? BsFileText : BsFileCode;
   }
 
   return null;

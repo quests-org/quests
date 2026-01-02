@@ -7,6 +7,7 @@ import {
   TextareaContainer,
   TextareaInner,
 } from "@/client/components/ui/textarea-container";
+import { getClientMimeType } from "@/client/lib/get-client-mime-type";
 import { cn, isMacOS } from "@/client/lib/utils";
 import { type AIGatewayModelURI } from "@quests/ai-gateway/client";
 import {
@@ -159,8 +160,12 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
 
     const processFiles = (files: File[] | FileList) => {
       for (const file of files) {
+        const mimeType = getClientMimeType({
+          filename: file.name,
+          mimeType: file.type,
+        });
         const shouldCreatePreview =
-          file.size <= MAX_FILE_PREVIEW_SIZE && file.type.startsWith("image/");
+          file.size <= MAX_FILE_PREVIEW_SIZE && mimeType.startsWith("image/");
 
         const reader = new FileReader();
         reader.addEventListener("load", () => {
@@ -170,7 +175,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
             ...prev,
             {
               content: base64,
-              mimeType: file.type,
+              mimeType,
               name: file.name,
               previewUrl: shouldCreatePreview ? dataUrl : undefined,
               size: file.size,

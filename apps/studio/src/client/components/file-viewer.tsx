@@ -4,6 +4,7 @@ import { cva } from "class-variance-authority";
 import { Code2, Download, Eye, Loader2, X } from "lucide-react";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 
+import { isTextMimeType } from "../lib/is-text-mime-type";
 import { FileActionsMenu } from "./file-actions-menu";
 import { FileIcon } from "./file-icon";
 import { FilePreviewFallback } from "./file-preview-fallback";
@@ -61,7 +62,7 @@ export function FileViewer({
     contentRef.current?.scrollTo({ behavior: "instant", top: 0 });
   }, [viewMode]);
 
-  const isText = mimeType?.startsWith("text/");
+  const isText = isTextMimeType({ filename, mimeType });
   const isPdf = mimeType === "application/pdf";
   const isVideo = mimeType?.startsWith("video/");
   const isAudio = mimeType?.startsWith("audio/");
