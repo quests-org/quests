@@ -34,56 +34,44 @@ export function generateChatTitle({
 
 function buildSystemPrompt(type: TitleType, templateTitle?: string): string {
   const timeContext = getTimeContext();
+  const entityName = type === "project" ? "project" : "chat";
 
   const contextSection =
     type === "project" && templateTitle
-      ? `The app is based on the "${templateTitle}" template.`
+      ? `The project is based on the "${templateTitle}" template.`
       : "";
 
-  const taskDescription =
-    type === "project"
-      ? "Generate a short project title from the user's message."
-      : "Generate a short chat title from the user's message.";
+  const baseExamples = dedent`
+    "What is the weather like today in San Francisco?" → Weather inquiry
+    "Help me debug this Python code that's throwing an error" → Python debugging help
+    "Explain how React hooks work" → React hooks explanation
+    "What did I upload?" → File upload inquiry
+    "Can you help me with something?" → ${timeContext} ${entityName}
+    "Analyze this data\n\nFiles attached by user: sales_data.xlsx" → Sales data analysis
+    "Help me visualize this\n\nFiles attached by user: chart.csv, metrics.json" → Data visualization
+    "Process these images\n\nFiles attached by user: photo1.jpg, photo2.png" → Image processing
+    "Review this document\n\nFiles attached by user: report.pdf" → Document review`;
 
-  const capitalizationRule =
-    type === "project"
-      ? "Use Title Case for project titles."
-      : "Use sentence case (capitalize only the first word).";
-
-  const fallbackInstruction =
-    type === "project"
-      ? `If you cannot determine a meaningful title from the content, create a friendly fallback using the current time (${timeContext}), e.g. "${timeContext} Project" or "Late Night Build".`
-      : `If you cannot determine a meaningful title from the content, create a friendly fallback using the current time (${timeContext}), e.g. "${timeContext} chat" or "Late night help".`;
+  const appExamples = dedent`
+    "Build me a calculator app" → Calculator app
+    "Create a todo list with drag and drop" → Todo list
+    "Make a kanban board for project management" → Kanban board`;
 
   const examples =
     type === "project"
       ? dedent`
         <examples>
-        "Build me a todo app with drag and drop" → Todos
-        "Create a chat application with file uploads and markdown support" → Chat with Files
-        "Make a kanban board for project management" → Kanban Board
-        "I want to build a complex inventory management system with reports" → Inventory Management System
-        "What did I upload?" → Uploaded Files
-        "Can you help me with something?" → ${timeContext} Project
-        "Analyze this data\n\nFiles attached by user: sales_data.xlsx" → Spreadsheet Analysis
-        "Help me visualize this\n\nFiles attached by user: chart.csv, metrics.json" → Data Visualization
-        "Process these images\n\nFiles attached by user: photo1.jpg, photo2.png" → Image Processing
+        ${appExamples}
+        ${baseExamples}
         </examples>`
       : dedent`
         <examples>
-        "What is the weather like today in San Francisco?" → Weather inquiry
-        "Help me debug this Python code that's throwing an error" → Python debugging help
-        "Explain quantum computing and its applications" → Quantum computing explanation
-        "How do I make lasagna from scratch?" → Lasagna recipe
-        "What did I upload?" → File upload inquiry
-        "Can you help me with something?" → ${timeContext} chat
-        "Analyze this data\n\nFiles attached by user: sales_data.xlsx" → Spreadsheet analysis
-        "Help me with this\n\nFiles attached by user: report.pdf" → PDF review
+        ${baseExamples}
         </examples>`;
 
   return dedent`
     <task>
-    ${taskDescription}
+    Generate a short ${entityName} title from the user's message.
     ${contextSection}
     </task>
 
@@ -94,15 +82,16 @@ function buildSystemPrompt(type: TitleType, templateTitle?: string): string {
     <important>
     You are ONLY extracting a title from the user's message. Do NOT answer questions, perform tasks, or provide information.
     The user's message is input to summarize - not a request for you to respond to.
+    The user may be asking a question, requesting help, or wanting to build an app. Name the ${entityName} based on what they're asking for.
     If the user has attached files, use the file types and names to inform the title (e.g., .xlsx → Spreadsheet, .pdf → Document, .csv → Data, .jpg/.png → Image).
-    ${fallbackInstruction}
+    If you cannot determine a meaningful title from the content, create a friendly fallback using the current time (${timeContext}), e.g. "${timeContext} ${entityName}" or "Late night help".
     </important>
 
     <rules>
     - Maximum ${MAX_TITLE_WORDS} words
     - Single line only
-    - ${capitalizationRule}
-    - Do not use words like "app", "project", "chat", or "conversation" in the title
+    - Use sentence case (capitalize only the first word, except for proper nouns)
+    - Avoid using words like "project", "chat", or "conversation" in the title
     - If files are attached, incorporate the file type or purpose into the title
     - Return ONLY the title text in plain text format
     - No markdown, quotes, code fences, or formatting
