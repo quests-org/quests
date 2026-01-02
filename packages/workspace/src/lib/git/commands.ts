@@ -1,8 +1,13 @@
 import { GIT_AUTHOR } from "../../constants";
+import { type RelativePath } from "../../schemas/paths";
 
 export namespace GitCommands {
   export function addAll() {
     return ["add", "."];
+  }
+
+  export function addFiles(files: RelativePath[]) {
+    return ["add", ...files];
   }
 
   export function archiveZip(outputPath: string) {

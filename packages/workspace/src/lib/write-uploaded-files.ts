@@ -80,7 +80,8 @@ export async function writeUploadedFiles(
         ? `Uploaded ${fileMetadata[0]?.filename ?? "file"}`
         : `Uploaded ${files.length} files`;
 
-    yield* git(GitCommands.addAll(), appDir, {});
+    const filePaths = fileMetadata.map((file) => file.filePath);
+    yield* git(GitCommands.addFiles(filePaths), appDir, {});
     yield* git(GitCommands.commitWithAuthor(commitMessage), appDir, {});
 
     return ok({ files: fileMetadata });
