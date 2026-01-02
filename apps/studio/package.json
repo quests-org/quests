@@ -146,7 +146,7 @@
     "react-dom": "catalog:",
     "react-icons": "^5.5.0",
     "react-markdown": "^10.1.0",
-    "react-resizable-panels": "^4.0.14",
+    "react-resizable-panels": "^4.2.0",
     "rehype-raw": "^7.0.0",
     "remark-gfm": "^4.0.1",
     "remend": "^1.0.1",
