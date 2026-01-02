@@ -4,6 +4,7 @@ import { cn } from "@/client/lib/utils";
 import { PROJECT_CONFIG_FILE_NAME } from "@quests/shared";
 import { type ProjectSubdomain, type StoreId } from "@quests/workspace/client";
 import { useQuery } from "@tanstack/react-query";
+import { fork } from "radashi";
 import { useMemo } from "react";
 
 import { rpcClient } from "../rpc/client";
@@ -67,22 +68,19 @@ export function VersionAndFilesCard({
     return { filesInSrc: inSrc, filesOutsideSrc: outsideSrc };
   }, [gitRefInfo]);
 
-  const { imageFiles, otherFiles } = useMemo(() => {
-    const images: typeof filesOutsideSrc = [];
-    const others: typeof filesOutsideSrc = [];
-
-    for (const file of filesOutsideSrc) {
-      if (file.mimeType.startsWith("image/")) {
-        images.push(file);
-      } else {
-        others.push(file);
-      }
-    }
-
-    return { imageFiles: images, otherFiles: others };
+  const { htmlFiles, imageFiles, otherFiles } = useMemo(() => {
+    const [html, nonHtml] = fork(
+      filesOutsideSrc,
+      (f) => f.mimeType === "text/html",
+    );
+    const [images, others] = fork(nonHtml, (f) =>
+      f.mimeType.startsWith("image/"),
+    );
+    return { htmlFiles: html, imageFiles: images, otherFiles: others };
   }, [filesOutsideSrc]);
 
   const hasFilesInSrc = filesInSrc.length > 0;
+  const hasHtmlFiles = htmlFiles.length > 0;
   const hasImages = imageFiles.length > 0;
   const hasOtherFiles = otherFiles.length > 0;
 
@@ -95,7 +93,7 @@ export function VersionAndFilesCard({
     );
   }
 
-  if (!hasFilesInSrc && !hasImages && !hasOtherFiles) {
+  if (!hasFilesInSrc && !hasHtmlFiles && !hasImages && !hasOtherFiles) {
     return null;
   }
 
@@ -140,6 +138,43 @@ export function VersionAndFilesCard({
               />
             )}
           </div>
+        </div>
+      )}
+
+      {hasHtmlFiles && (
+        <div className="grid grid-cols-2 gap-2">
+          {htmlFiles.map((file) => {
+            const assetUrl = getAssetUrl({
+              assetBase: assetBaseURL,
+              filePath: file.filePath,
+              messageId,
+            });
+            const gallery: FileViewerFile[] = htmlFiles.map((f) => ({
+              filename: f.filename,
+              filePath: f.filePath,
+              mimeType: f.mimeType,
+              projectSubdomain,
+              size: 0,
+              url: getAssetUrl({
+                assetBase: assetBaseURL,
+                filePath: f.filePath,
+                messageId,
+              }),
+            }));
+
+            return (
+              <AttachmentItem
+                filename={file.filename}
+                filePath={file.filePath}
+                gallery={gallery}
+                imageClassName="h-auto w-full"
+                key={file.filePath}
+                mimeType={file.mimeType}
+                previewUrl={assetUrl}
+                showHtmlIframe
+              />
+            );
+          })}
         </div>
       )}
 

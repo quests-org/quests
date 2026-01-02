@@ -9,6 +9,7 @@ import { FileActionsMenu } from "./file-actions-menu";
 import { FileIcon } from "./file-icon";
 import { FilePreviewFallback } from "./file-preview-fallback";
 import { Markdown } from "./markdown";
+import { SandboxedHtmlIframe } from "./sandboxed-html-iframe";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
@@ -225,11 +226,9 @@ export function FileViewer({
               <Markdown markdown={textContent} />
             </div>
           ) : isHtml ? (
-            <iframe
-              allow="accelerometer; autoplay; camera; clipboard-read; clipboard-write; display-capture; encrypted-media; fullscreen; geolocation; gyroscope; microphone; midi; payment; usb; xr-spatial-tracking"
+            <SandboxedHtmlIframe
               className="absolute inset-0 size-full border-0 bg-background"
-              sandbox="allow-downloads allow-forms allow-modals allow-pointer-lock allow-popups allow-scripts allow-presentation"
-              srcDoc={textContent}
+              src={url}
               title={filename}
             />
           ) : (
