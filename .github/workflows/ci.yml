@@ -85,6 +85,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive # Some tests use the registry
       - uses: ./.github/actions/setup-ripgrep-cache
       - uses: ./.github/actions/prepare
         with:
