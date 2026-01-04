@@ -1,6 +1,5 @@
 import { type FileViewerFile } from "@/client/atoms/file-viewer";
 import { type ProjectSubdomain } from "@quests/workspace/client";
-import { fork } from "radashi";
 import { useMemo } from "react";
 
 import { AttachmentItem } from "./attachment-item";
@@ -20,11 +19,27 @@ interface FilesGridProps {
 
 export function FilesGrid({ files }: FilesGridProps) {
   const { htmlFiles, imageFiles, otherFiles } = useMemo(() => {
-    const [html, nonHtml] = fork(files, (f) => f.mimeType === "text/html");
-    const [images, others] = fork(nonHtml, (f) =>
-      f.mimeType.startsWith("image/"),
-    );
-    return { htmlFiles: html, imageFiles: images, otherFiles: others };
+    const categorized: {
+      htmlFiles: FileItem[];
+      imageFiles: FileItem[];
+      otherFiles: FileItem[];
+    } = {
+      htmlFiles: [],
+      imageFiles: [],
+      otherFiles: [],
+    };
+
+    for (const file of files) {
+      if (file.mimeType === "text/html") {
+        categorized.htmlFiles.push(file);
+      } else if (file.mimeType.startsWith("image/")) {
+        categorized.imageFiles.push(file);
+      } else {
+        categorized.otherFiles.push(file);
+      }
+    }
+
+    return categorized;
   }, [files]);
 
   const allFiles: FileViewerFile[] = useMemo(
@@ -34,7 +49,7 @@ export function FilesGrid({ files }: FilesGridProps) {
         filePath: f.filePath,
         mimeType: f.mimeType,
         projectSubdomain: f.projectSubdomain,
-        size: f.size ?? 0,
+        size: f.size,
         url: f.previewUrl,
       })),
     [files],

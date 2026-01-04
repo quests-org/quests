@@ -77,7 +77,6 @@ export function VersionAndFilesCard({
         messageId,
       }),
       projectSubdomain,
-      size: 0,
     }));
   }, [filesOutsideSrc, assetBaseURL, messageId, projectSubdomain]);
 
