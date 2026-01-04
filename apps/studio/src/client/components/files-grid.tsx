@@ -67,7 +67,7 @@ export function FilesGrid({ files }: FilesGridProps) {
               filename={file.filename}
               filePath={file.filePath}
               gallery={allFiles}
-              imageClassName="h-auto w-full"
+              imageClassName="aspect-square h-auto w-full object-contain"
               key={file.filePath}
               mimeType={file.mimeType}
               previewUrl={file.previewUrl}
