@@ -1,7 +1,7 @@
 import { featuresAtom } from "@/client/atoms/features";
 import { Label } from "@/client/components/ui/label";
 import { Switch } from "@/client/components/ui/switch";
-import { vanillaRpcClient } from "@/client/rpc/client";
+import { rpcClient } from "@/client/rpc/client";
 import { FEATURE_METADATA, type FeatureName } from "@/shared/features";
 import { createFileRoute } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
@@ -24,7 +24,7 @@ function SettingsFeaturesPage() {
     setOptimisticFeatures((prev) => ({ ...prev, [feature]: enabled }));
 
     try {
-      await vanillaRpcClient.features.setEnabled({ enabled, feature });
+      await rpcClient.features.setEnabled.call({ enabled, feature });
     } catch {
       setOptimisticFeatures(features);
     }

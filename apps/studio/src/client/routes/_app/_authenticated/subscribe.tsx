@@ -5,7 +5,7 @@ import { Card } from "@/client/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/client/components/ui/tabs";
 import { captureClientEvent } from "@/client/lib/capture-client-event";
 import { cn } from "@/client/lib/utils";
-import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
+import { rpcClient } from "@/client/rpc/client";
 import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
 import { QuestsAnimatedLogo } from "@quests/components/animated-logo";
 import { SALES_EMAIL } from "@quests/shared";
@@ -343,11 +343,9 @@ function SubscribePage() {
                         disabled={isButtonDisabled}
                         onClick={async () => {
                           if (buttonText === "Current Plan") {
-                            void vanillaRpcClient.preferences.openSettingsWindow(
-                              {
-                                tab: "General",
-                              },
-                            );
+                            void rpcClient.preferences.openSettingsWindow.call({
+                              tab: "General",
+                            });
                           } else {
                             await handleSubscribe(plan);
                           }

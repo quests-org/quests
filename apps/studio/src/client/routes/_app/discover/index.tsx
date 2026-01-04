@@ -1,5 +1,5 @@
 import { DiscoverHorizontalSection } from "@/client/components/discover-horizontal-section";
-import { vanillaRpcClient } from "@/client/rpc/client";
+import { rpcClient } from "@/client/rpc/client";
 import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
 import { createFileRoute } from "@tanstack/react-router";
 
@@ -18,8 +18,8 @@ export const Route = createFileRoute("/_app/discover/")({
   }),
   loader: async () => {
     const [apps, templates] = await Promise.all([
-      vanillaRpcClient.workspace.registry.template.listApps(),
-      vanillaRpcClient.workspace.registry.template.listTemplates(),
+      rpcClient.workspace.registry.template.listApps.call(),
+      rpcClient.workspace.registry.template.listTemplates.call(),
     ]);
     return {
       apps,

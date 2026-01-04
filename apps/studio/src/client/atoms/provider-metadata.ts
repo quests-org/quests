@@ -1,6 +1,6 @@
 import { atomWithoutSuspense } from "@/client/lib/atom-without-suspense";
 import { logger } from "@/client/lib/logger";
-import { vanillaRpcClient } from "@/client/rpc/client";
+import { rpcClient } from "@/client/rpc/client";
 import {
   type ProviderMetadata,
   RECOMMENDED_TAG,
@@ -26,7 +26,7 @@ const defaultProviderMetadata: ProviderMetadataData = {
 
 const baseProviderMetadataAtom = atom(async () => {
   try {
-    const list = await vanillaRpcClient.providerConfig.metadata.list();
+    const list = await rpcClient.providerConfig.metadata.list.call();
     const metadataMap = new Map(list.map((item) => [item.type, item]));
 
     return {

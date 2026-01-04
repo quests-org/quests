@@ -27,6 +27,7 @@
     "check:unused-words": "cspell-check-unused-words",
     "check:workspace": "pnpm run -r --parallel check",
     "dev:studio": "turbo run dev --filter=@quests/studio --filter=@quests/shim-client --ui tui",
+    "fix:format": "prettier --write .",
     "fix:unused": "knip --fix",
     "fix:unused-words": "cspell-check-unused-words --fix",
     "format": "prettier --write \"**/*.{ts,tsx,md,json,css,mjs,js}\"",

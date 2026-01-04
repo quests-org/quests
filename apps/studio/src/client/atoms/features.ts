@@ -2,7 +2,7 @@ import type { Features } from "@/shared/features";
 
 import { atomWithoutSuspense } from "@/client/lib/atom-without-suspense";
 import { logger } from "@/client/lib/logger";
-import { vanillaRpcClient } from "@/client/rpc/client";
+import { rpcClient } from "@/client/rpc/client";
 import { atomWithRefresh } from "jotai/utils";
 
 const defaultFeatures: Features = {
@@ -10,7 +10,7 @@ const defaultFeatures: Features = {
 };
 
 async function listen(setAtom: () => void) {
-  const iterator = await vanillaRpcClient.features.live.getAll();
+  const iterator = await rpcClient.features.live.getAll.call();
   for await (const _payload of iterator) {
     setAtom();
   }
@@ -18,7 +18,7 @@ async function listen(setAtom: () => void) {
 
 const baseFeaturesAtom = atomWithRefresh(async () => {
   try {
-    return await vanillaRpcClient.features.getAll();
+    return await rpcClient.features.getAll.call();
   } catch (error) {
     logger.error(`Error fetching features`, error);
     return defaultFeatures;

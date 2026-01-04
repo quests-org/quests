@@ -6,7 +6,7 @@ import { Label } from "@/client/components/ui/label";
 import { Progress } from "@/client/components/ui/progress";
 import { useTabActions } from "@/client/hooks/use-tab-actions";
 import { isLinux } from "@/client/lib/utils";
-import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
+import { rpcClient } from "@/client/rpc/client";
 import { APP_REPO_URL, DISCORD_URL } from "@quests/shared";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
@@ -18,7 +18,7 @@ export const Route = createFileRoute("/settings/")({
 
 const handleInstallUpdate = () => {
   try {
-    void vanillaRpcClient.preferences.quitAndInstall();
+    void rpcClient.preferences.quitAndInstall.call();
   } catch {
     // Handle error silently as per original implementation
   }

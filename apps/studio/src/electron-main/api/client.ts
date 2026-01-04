@@ -40,9 +40,9 @@ const RPC_LINK = new RPCLink({
   url: API_RPC_BASE_URL,
 });
 
-export const vanillaAPIRPCClient: ContractRouterClient<typeof contract> =
+const baseClient: ContractRouterClient<typeof contract> =
   createORPCClient(RPC_LINK);
-export const apiRPCClient = createTanstackQueryUtils(vanillaAPIRPCClient);
+export const apiRPCClient = createTanstackQueryUtils(baseClient);
 
 export type Subscription = Outputs["users"]["getSubscriptionStatus"];
 type Outputs = InferContractRouterOutputs<typeof contract>;

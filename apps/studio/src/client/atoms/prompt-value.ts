@@ -6,7 +6,7 @@ import { atom } from "jotai";
 import { atomFamily, atomWithStorage } from "jotai/utils";
 import { debounce } from "radashi";
 
-import { vanillaRpcClient } from "../rpc/client";
+import { rpcClient } from "../rpc/client";
 
 export type PromptValueAtomKey =
   | "$$new-tab$$"
@@ -17,7 +17,7 @@ const createProjectPromptStorage = (subdomain: ProjectSubdomain) => {
   let lastValue: string | undefined;
 
   const save = debounce({ delay: 1000 }, async (newValue: string) => {
-    await vanillaRpcClient.workspace.project.state.set({
+    await rpcClient.workspace.project.state.set.call({
       state: { promptDraft: newValue },
       subdomain,
     });
@@ -46,8 +46,8 @@ const createProjectPromptStorage = (subdomain: ProjectSubdomain) => {
       initialValue: string,
     ) => {
       let isCancelled = false;
-      vanillaRpcClient.workspace.project.state
-        .get({ subdomain })
+      rpcClient.workspace.project.state.get
+        .call({ subdomain })
         .then((state) => {
           if (isCancelled) {
             return;

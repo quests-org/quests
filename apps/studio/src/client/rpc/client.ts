@@ -18,9 +18,8 @@ const link = new RPCLink({
 
 clientPort.start();
 
-export const vanillaRpcClient: RouterClient<typeof router> =
-  createORPCClient(link);
-export const rpcClient = createTanstackQueryUtils(vanillaRpcClient, {
+const baseClient: RouterClient<typeof router> = createORPCClient(link);
+export const rpcClient = createTanstackQueryUtils(baseClient, {
   // retry: 3 below are to because our default retry is 0 because most RPC calls
   // are local and won't fix if we retry. These requests ARE remote.
   experimental_defaults: {

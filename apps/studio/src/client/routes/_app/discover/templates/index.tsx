@@ -1,5 +1,5 @@
 import { DiscoverPageLayout } from "@/client/components/discover-page-layout";
-import { vanillaRpcClient } from "@/client/rpc/client";
+import { rpcClient } from "@/client/rpc/client";
 import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
 import { createFileRoute } from "@tanstack/react-router";
 
@@ -18,7 +18,7 @@ export const Route = createFileRoute("/_app/discover/templates/")({
   }),
   loader: async () => {
     const templates =
-      await vanillaRpcClient.workspace.registry.template.listTemplates();
+      await rpcClient.workspace.registry.template.listTemplates.call();
     return {
       templates,
     };

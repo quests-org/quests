@@ -5,7 +5,7 @@ import { Bug, MessageCircle, MoreVertical, TrashIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { rpcClient, vanillaRpcClient } from "../rpc/client";
+import { rpcClient } from "../rpc/client";
 import { JsonViewer } from "./json-viewer";
 import { Button } from "./ui/button";
 import {
@@ -82,7 +82,7 @@ export function SessionMenu({ project }: SessionMenuProps) {
 
     try {
       const result =
-        await vanillaRpcClient.workspace.session.byIdWithMessagesAndParts({
+        await rpcClient.workspace.session.byIdWithMessagesAndParts.call({
           sessionId: selectedSessionId,
           subdomain: project.subdomain,
         });

@@ -1,6 +1,6 @@
 import type { AppSubdomain } from "@quests/workspace/client";
 
-import { vanillaRpcClient } from "@/client/rpc/client";
+import { rpcClient } from "@/client/rpc/client";
 import { fromCallback, setup } from "xstate";
 
 interface AppCoverContext {
@@ -22,7 +22,7 @@ export const appCoverMachine = setup({
 
       async function subscribe() {
         const iterator =
-          await vanillaRpcClient.workspace.app.state.live.bySubdomain({
+          await rpcClient.workspace.app.state.live.bySubdomain.call({
             subdomain: input.subdomain,
           });
 

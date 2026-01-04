@@ -1,4 +1,4 @@
-import { vanillaRpcClient } from "@/client/rpc/client";
+import { rpcClient } from "@/client/rpc/client";
 import { type AIGatewayModelURI } from "@quests/ai-gateway/client";
 
 export async function migrateSelectedModel() {
@@ -14,7 +14,7 @@ export async function migrateSelectedModel() {
       // Must cast b/c we can't use the schema on the client.
       const parsed = JSON.parse(oldValue) as AIGatewayModelURI.Type;
       if (typeof parsed === "string") {
-        await vanillaRpcClient.preferences.setDefaultModelURI({
+        await rpcClient.preferences.setDefaultModelURI.call({
           modelURI: parsed,
         });
       }

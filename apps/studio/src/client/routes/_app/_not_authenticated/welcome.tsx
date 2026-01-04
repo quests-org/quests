@@ -1,7 +1,7 @@
 import { ExternalLink } from "@/client/components/external-link";
 import { StarryLayout } from "@/client/components/starry-layout";
 import { Button } from "@/client/components/ui/button";
-import { vanillaRpcClient } from "@/client/rpc/client";
+import { rpcClient } from "@/client/rpc/client";
 import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
 import { QuestsAnimatedLogo } from "@quests/components/animated-logo";
 import { APP_REPO_URL, DISCORD_URL } from "@quests/shared";
@@ -9,7 +9,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_app/_not_authenticated/welcome")({
   beforeLoad: async () => {
-    await vanillaRpcClient.sidebar.close();
+    await rpcClient.sidebar.close.call();
   },
   component: RouteComponent,
   head: () => {

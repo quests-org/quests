@@ -1,4 +1,4 @@
-import { type RPCInput, vanillaRpcClient } from "@/client/rpc/client";
+import { rpcClient, type RPCInput } from "@/client/rpc/client";
 import { type StudioPath } from "@/shared/studio-path";
 import {
   type ParsedLocation,
@@ -36,12 +36,13 @@ export function useTabActions() {
         opts: ToOptions<RegisteredRouter, TFrom, TTo, TMaskFrom, TMaskTo>,
         options?: Omit<RPCInput["tabs"]["add"], "appPath">,
       ) => {
-        return vanillaRpcClient.tabs.add({
+        return rpcClient.tabs.add.call({
           ...options,
           appPath: buildUrlPath(opts),
         });
       },
-      closeTab: vanillaRpcClient.tabs.close,
+      closeTab: (input: RPCInput["tabs"]["close"]) =>
+        rpcClient.tabs.close.call(input),
       navigateTab: <
         TTo extends string | undefined,
         TFrom extends string = string,
@@ -51,13 +52,15 @@ export function useTabActions() {
         opts: ToOptions<RegisteredRouter, TFrom, TTo, TMaskFrom, TMaskTo>,
         options?: Omit<RPCInput["tabs"]["navigate"], "appPath">,
       ) => {
-        return vanillaRpcClient.tabs.navigate({
+        return rpcClient.tabs.navigate.call({
           ...options,
           appPath: buildUrlPath(opts),
         });
       },
-      reorderTabs: vanillaRpcClient.tabs.reorder,
-      selectTab: vanillaRpcClient.tabs.select,
+      reorderTabs: (input: RPCInput["tabs"]["reorder"]) =>
+        rpcClient.tabs.reorder.call(input),
+      selectTab: (input: RPCInput["tabs"]["select"]) =>
+        rpcClient.tabs.select.call(input),
     };
   }, [router]);
 }

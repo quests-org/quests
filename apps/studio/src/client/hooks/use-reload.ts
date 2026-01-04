@@ -1,4 +1,4 @@
-import { vanillaRpcClient } from "@/client/rpc/client";
+import { rpcClient } from "@/client/rpc/client";
 import { useEffect } from "react";
 
 export function useReload(onReload: () => void) {
@@ -6,7 +6,7 @@ export function useReload(onReload: () => void) {
     let isCancelled = false;
 
     async function subscribeToReload() {
-      const subscription = await vanillaRpcClient.utils.live.reload();
+      const subscription = await rpcClient.utils.live.reload.call();
 
       for await (const _ of subscription) {
         if (isCancelled) {

@@ -1,5 +1,5 @@
 import { Progress } from "@/client/components/ui/progress";
-import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
+import { rpcClient } from "@/client/rpc/client";
 import { useQuery } from "@tanstack/react-query";
 import { Download } from "lucide-react";
 import { useEffect, useRef } from "react";
@@ -68,7 +68,7 @@ export function useUpdateNotifications() {
             label: "Install now",
             onClick: () => {
               try {
-                void vanillaRpcClient.preferences.quitAndInstall();
+                void rpcClient.preferences.quitAndInstall.call();
               } catch {
                 toast.error("Failed to install update. Please try again.");
               }

@@ -1,7 +1,7 @@
 import { FAUX_STUDIO_URL } from "@quests/shared";
 import { type CaptureResult, posthog } from "posthog-js";
 
-import { vanillaRpcClient } from "../rpc/client";
+import { rpcClient } from "../rpc/client";
 
 const API_KEY = import.meta.env.VITE_POSTHOG_API_KEY;
 const API_HOST = import.meta.env.VITE_POSTHOG_API_HOST;
@@ -32,8 +32,8 @@ async function initTelemetry() {
     return null;
   }
 
-  const { id: distinctID } = await vanillaRpcClient.telemetry.getId();
-  const { version } = await vanillaRpcClient.preferences.getAppVersion();
+  const { id: distinctID } = await rpcClient.telemetry.getId.call();
+  const { version } = await rpcClient.preferences.getAppVersion.call();
 
   const telemetry = posthog.init(API_KEY, {
     api_host: API_HOST,
@@ -88,7 +88,7 @@ async function initTelemetry() {
   telemetry.register({ version });
 
   async function handleUsageMetricsUpdates() {
-    const subscription = await vanillaRpcClient.preferences.live.get();
+    const subscription = await rpcClient.preferences.live.get.call();
     for await (const { enableUsageMetrics } of subscription) {
       if (enableUsageMetrics) {
         if (telemetry.has_opted_out_capturing()) {

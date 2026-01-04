@@ -5,7 +5,7 @@ import { ProjectViewApp } from "@/client/components/project-view/app";
 import { ProjectViewChat } from "@/client/components/project-view/chat";
 import { useProjectRouteSync } from "@/client/hooks/use-project-route-sync";
 import { migrateProjectSubdomain } from "@/client/lib/migrate-project-subdomain";
-import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
+import { rpcClient } from "@/client/rpc/client";
 import {
   META_TAG_ICON_BACKGROUND,
   META_TAG_LUCIDE_ICON,
@@ -59,7 +59,7 @@ export const Route = createFileRoute("/_app/projects/$subdomain/")({
   },
   beforeLoad: async ({ params, search }) => {
     const [error, sessions, isDefined] = await safe(
-      vanillaRpcClient.workspace.session.list({
+      rpcClient.workspace.session.list.call({
         subdomain: params.subdomain,
       }),
     );
@@ -106,7 +106,7 @@ export const Route = createFileRoute("/_app/projects/$subdomain/")({
   component: RouteComponent,
   head: async ({ params }) => {
     const project = await safe(
-      vanillaRpcClient.workspace.project.bySubdomain({
+      rpcClient.workspace.project.bySubdomain.call({
         subdomain: params.subdomain,
       }),
     );

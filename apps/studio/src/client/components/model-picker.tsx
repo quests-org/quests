@@ -17,7 +17,7 @@ import {
   groupAndFilterModels,
 } from "@/client/lib/group-models";
 import { cn } from "@/client/lib/utils";
-import { type RPCOutput, vanillaRpcClient } from "@/client/rpc/client";
+import { rpcClient, type RPCOutput } from "@/client/rpc/client";
 import {
   type AIGatewayModel,
   type AIGatewayModelURI,
@@ -200,11 +200,11 @@ export function ModelPicker({
                       className="h-6 px-2 text-xs"
                       onClick={() => {
                         if (hasQuestsProviderError) {
-                          void vanillaRpcClient.preferences.openSettingsWindow({
+                          void rpcClient.preferences.openSettingsWindow.call({
                             tab: "General",
                           });
                         } else {
-                          void vanillaRpcClient.preferences.openSettingsWindow({
+                          void rpcClient.preferences.openSettingsWindow.call({
                             showNewProviderDialog: false,
                             tab: "Providers",
                           });

@@ -4,7 +4,7 @@ import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { vanillaRpcClient } from "../rpc/client";
+import { rpcClient } from "../rpc/client";
 import { GitCommitCard } from "./git-commit-card";
 import { Button } from "./ui/button";
 import {
@@ -49,7 +49,7 @@ export function RestoreVersionModal({
     setIsRestoring(true);
     try {
       const [error, data, isDefined] = await safe(
-        vanillaRpcClient.workspace.project.version.restore({
+        rpcClient.workspace.project.version.restore.call({
           gitRef: versionRef,
           projectSubdomain,
           sessionId: selectedSessionId,

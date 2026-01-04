@@ -18,7 +18,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
-import { vanillaRpcClient } from "../rpc/client";
+import { rpcClient } from "../rpc/client";
 
 function nullishToUndefined<T>(val: null | T): T | undefined {
   return val ?? undefined;
@@ -62,10 +62,10 @@ export function DevTools() {
 
     async function subscribeToDebugEvents() {
       const subscriptions = await Promise.all([
-        vanillaRpcClient.debug.live.openDebugPage(),
-        vanillaRpcClient.debug.live.openRouterDevtools(),
-        vanillaRpcClient.debug.live.openQueryDevtools(),
-        vanillaRpcClient.debug.live.openAnalyticsToolbar(),
+        rpcClient.debug.live.openDebugPage.call(),
+        rpcClient.debug.live.openRouterDevtools.call(),
+        rpcClient.debug.live.openQueryDevtools.call(),
+        rpcClient.debug.live.openAnalyticsToolbar.call(),
       ]);
 
       const [debugPageSub, routerSub, querySub, analyticsSub] = subscriptions;

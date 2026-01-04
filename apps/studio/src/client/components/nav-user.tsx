@@ -25,7 +25,7 @@ import { captureClientEvent } from "@/client/lib/capture-client-event";
 import { getInitials } from "@/client/lib/get-initials";
 import { isLowOnCredits } from "@/client/lib/is-low-on-credits";
 import { signOut } from "@/client/lib/sign-out";
-import { rpcClient, vanillaRpcClient } from "@/client/rpc/client";
+import { rpcClient } from "@/client/rpc/client";
 import { useQuery } from "@tanstack/react-query";
 import {
   ChevronsUpDown,
@@ -74,7 +74,7 @@ export function NavUser() {
           <SidebarMenuButton
             className="group-hover:bg-black/10 dark:group-hover:bg-white/10"
             onClick={() => {
-              void vanillaRpcClient.preferences.openSettingsWindow({
+              void rpcClient.preferences.openSettingsWindow.call({
                 tab: "General",
               });
             }}
@@ -168,7 +168,7 @@ export function NavUser() {
             <DropdownMenuGroup>
               <DropdownMenuItem
                 onClick={() => {
-                  void vanillaRpcClient.preferences.openSettingsWindow({
+                  void rpcClient.preferences.openSettingsWindow.call({
                     tab: "General",
                   });
                 }}
@@ -180,7 +180,7 @@ export function NavUser() {
               {providerConfigs?.length === 0 && (
                 <DropdownMenuItem
                   onClick={() => {
-                    void vanillaRpcClient.preferences.openSettingsWindow({
+                    void rpcClient.preferences.openSettingsWindow.call({
                       showNewProviderDialog: true,
                       tab: "Providers",
                     });
