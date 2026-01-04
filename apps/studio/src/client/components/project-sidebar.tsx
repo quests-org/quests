@@ -297,7 +297,7 @@ export function ProjectSidebar({
                 );
               }
             }}
-            placeholder="Describe your changes…"
+            placeholder="Type, paste, or drop some files here…"
             ref={promptInputRef}
           />
         </div>
