@@ -59,17 +59,20 @@ const EDITOR_ICON_MAP: Record<
 };
 
 interface ProjectHeaderToolbarProps {
+  hasAppModifications: boolean;
   onDeleteClick: () => void;
   project: WorkspaceAppProject;
   selectedVersion?: string;
 }
 
 export function ProjectHeaderToolbar({
+  hasAppModifications,
   onDeleteClick,
   project,
   selectedVersion,
 }: ProjectHeaderToolbarProps) {
   const isChat = project.mode === "chat";
+  const canCollapseChat = !isChat && hasAppModifications;
   const { data: preferences } = useQuery(
     rpcClient.preferences.live.get.experimental_liveOptions(),
   );
@@ -255,7 +258,7 @@ export function ProjectHeaderToolbar({
 
             {!sidebarCollapsed && <div className="flex-1" />}
 
-            {!isChat && (
+            {canCollapseChat && (
               <Toggle
                 aria-label={sidebarCollapsed ? "Show sidebar" : "Hide sidebar"}
                 onPressedChange={() => {
@@ -402,17 +405,19 @@ export function ProjectHeaderToolbar({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <>
-                        <DropdownMenuItem onClick={handleCopyScreenshot}>
-                          <Clipboard className="h-4 w-4" />
-                          Copy screenshot
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={handleTakeScreenshot}>
-                          <Save className="h-4 w-4" />
-                          Save screenshot
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                      </>
+                      {hasAppModifications && (
+                        <>
+                          <DropdownMenuItem onClick={handleCopyScreenshot}>
+                            <Clipboard className="h-4 w-4" />
+                            Copy screenshot
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={handleTakeScreenshot}>
+                            <Save className="h-4 w-4" />
+                            Save screenshot
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                        </>
+                      )}
                       <DropdownMenuItem
                         onClick={() => {
                           setExportZipModalOpen(true);

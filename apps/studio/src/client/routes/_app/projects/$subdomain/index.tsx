@@ -174,8 +174,18 @@ function RouteComponent() {
     }),
   );
 
-  // Both queries must be loaded before rendering
-  const isLoading = isProjectLoading || isProjectStateLoading;
+  const { data: hasAppModifications, isLoading: isAppModificationsLoading } =
+    useQuery(
+      rpcClient.workspace.project.git.hasAppModifications.live.check.experimental_liveOptions(
+        {
+          input: { projectSubdomain: subdomain },
+        },
+      ),
+    );
+
+  // Wait for project and projectState to load successfully
+  const isLoading =
+    isProjectLoading || isProjectStateLoading || isAppModificationsLoading;
   const error = projectError ?? projectStateError;
 
   if (isLoading) {
@@ -191,9 +201,15 @@ function RouteComponent() {
     return null;
   }
 
+  // Wait for hasAppModifications to resolve before rendering (but ignore errors)
+  if (typeof hasAppModifications !== "boolean") {
+    return null;
+  }
+
   return (
     <div className="flex h-dvh w-full flex-col overflow-hidden">
       <ProjectHeaderToolbar
+        hasAppModifications={hasAppModifications}
         onDeleteClick={() => {
           handleDeleteDialogChange(true);
         }}
@@ -210,6 +226,7 @@ function RouteComponent() {
           />
         ) : (
           <ProjectViewApp
+            hasAppModifications={hasAppModifications}
             project={project}
             selectedModelURI={projectState.selectedModelURI}
             selectedVersion={selectedVersion}
