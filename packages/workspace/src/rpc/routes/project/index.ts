@@ -11,7 +11,6 @@ import { mergeGenerators } from "@quests/shared/merge-generators";
 import { draw } from "radashi";
 import { z } from "zod";
 
-import { DEFAULT_TEMPLATE_NAME } from "../../../constants";
 import { createAppConfig } from "../../../lib/app-config/create";
 import { newProjectConfig } from "../../../lib/app-config/new";
 import { createProjectApp } from "../../../lib/create-project-app";
@@ -44,6 +43,8 @@ import { publisher } from "../../publisher";
 import { projectGit } from "./git";
 import { projectState } from "./state";
 import { projectVersion } from "./version";
+
+const DEFAULT_TEMPLATE_NAME = "basic";
 
 const bySubdomain = base
   .input(z.object({ subdomain: ProjectSubdomainSchema }))
@@ -487,7 +488,7 @@ const importProject = base
     const result = await importProjectLib(
       {
         sourcePath,
-        workspaceFolder: context.workspaceConfig.rootDir,
+        workspaceConfig: context.workspaceConfig,
       },
       { signal },
     );

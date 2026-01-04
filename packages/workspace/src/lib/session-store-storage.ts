@@ -6,7 +6,6 @@ import { type DatabaseSync } from "node:sqlite";
 import { createStorage } from "unstorage";
 import dbDriver from "unstorage/drivers/db0";
 
-import { SESSIONS_TABLE_NAME } from "../constants";
 import { type AppSubdomain } from "../schemas/subdomains";
 import { type AppConfig } from "./app-config/types";
 import { sessionStorePath } from "./app-dir-utils";
@@ -80,7 +79,7 @@ export function getSessionsStoreStorage(appConfig: AppConfig) {
       const storage = createStorage({
         driver: dbDriver({
           database,
-          tableName: SESSIONS_TABLE_NAME,
+          tableName: "sessions",
         }),
       });
 

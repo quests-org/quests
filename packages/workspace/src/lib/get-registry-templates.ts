@@ -1,7 +1,6 @@
 import fs from "node:fs/promises";
 import { z } from "zod";
 
-import { REGISTRY_TEMPLATES_FOLDER } from "../constants";
 import { AppDirSchema } from "../schemas/paths";
 import { SubdomainPartSchema } from "../schemas/subdomain-part";
 import {
@@ -39,10 +38,7 @@ async function getRegistryTemplatesImpl(
   workspaceConfig: WorkspaceConfig,
   folderNames?: string[],
 ): Promise<RegistryTemplate[]> {
-  const registryTemplatesDir = absolutePathJoin(
-    workspaceConfig.registryDir,
-    REGISTRY_TEMPLATES_FOLDER,
-  );
+  const registryTemplatesDir = workspaceConfig.templatesDir;
 
   if (!(await pathExists(registryTemplatesDir))) {
     return [];

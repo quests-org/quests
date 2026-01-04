@@ -33,6 +33,9 @@ const workspaceConfig: WorkspaceConfig = {
   projectsDir: WorkspaceDirSchema.parse(projectsDir),
   registryDir: WorkspaceDirSchema.parse("/tmp/registry"),
   rootDir: WorkspaceDirSchema.parse(absoluteWorkspaceDir),
+  templatesDir: WorkspaceDirSchema.parse(
+    path.join(absoluteWorkspaceDir, "registry", "templates"),
+  ),
   trashItem: () => Promise.resolve(),
 };
 

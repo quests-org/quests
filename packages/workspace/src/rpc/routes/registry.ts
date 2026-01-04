@@ -4,7 +4,6 @@ import path from "node:path";
 import { last, sift } from "radashi";
 import { z } from "zod";
 
-import { REGISTRY_TEMPLATES_FOLDER } from "../../constants";
 import { absolutePathJoin } from "../../lib/absolute-path-join";
 import { TypedError } from "../../lib/errors";
 import {
@@ -122,13 +121,8 @@ const packageJson = base
   .input(z.object({ folderName: z.string() }))
   .output(PackageJsonSchema.nullable())
   .handler(async ({ context, input }) => {
-    const templatesDir = absolutePathJoin(
-      context.workspaceConfig.registryDir,
-      REGISTRY_TEMPLATES_FOLDER,
-    );
-
-    const packageJsonPath = path.join(
-      templatesDir,
+    const packageJsonPath = absolutePathJoin(
+      context.workspaceConfig.templatesDir,
       input.folderName,
       "package.json",
     );

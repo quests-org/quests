@@ -1,16 +1,12 @@
 import { type ProjectMode } from "@quests/shared";
 
-export const APP_PRIVATE_FOLDER = ".quests";
-export const WORKSPACE_FOLDER = "workspace";
-export const PREVIEWS_FOLDER = "previews";
-export const PROJECTS_FOLDER = "projects";
-export const SANDBOXES_FOLDER = "sandboxes";
-export const REGISTRY_TEMPLATES_FOLDER = "templates";
-export const OUTPUT_FOLDER = "output";
-export const UPLOADS_FOLDER = "uploads";
+export const APP_FOLDER_NAMES = {
+  output: "output",
+  private: ".quests",
+  src: "src",
+  uploads: "uploads",
+} as const;
 export const SESSIONS_DB_FILE_NAME = "sessions.db";
-export const SESSIONS_TABLE_NAME = "sessions";
-export const DEFAULT_TEMPLATE_NAME = "basic";
 export const PROJECT_SUBDOMAIN_MODE_PREFIXES: Record<ProjectMode, string> = {
   "app-builder": "",
   chat: "chat",
@@ -28,9 +24,10 @@ export const APP_STATUSES = [
 ] as const;
 
 export const GIT_AUTHOR = { email: "agent@quests.dev", name: "Quests Agent" };
-export const GIT_TRAILER_INITIAL_COMMIT = "Quests-Initial-Commit";
-export const GIT_TRAILER_TEMPLATE = "Quests-Template";
-export const APP_SOURCE_FOLDER = "src/";
+export const GIT_TRAILERS = {
+  initialCommit: "Quests-Initial-Commit",
+  template: "Quests-Template",
+};
 export const WEBSITE_URL = "https://quests.dev";
 export const APP_NAME = "Quests";
 

@@ -1,7 +1,7 @@
 import { okAsync, safeTry } from "neverthrow";
 
 import {
-  APP_PRIVATE_FOLDER,
+  APP_FOLDER_NAMES,
   GIT_AUTHOR,
   SESSIONS_DB_FILE_NAME,
 } from "../constants";
@@ -44,14 +44,14 @@ export function exportProjectZip({
     if (includeChat) {
       const sessionsDbPath = absolutePathJoin(
         appDir,
-        APP_PRIVATE_FOLDER,
+        APP_FOLDER_NAMES.private,
         SESSIONS_DB_FILE_NAME,
       );
       const sessionsDbExists = await pathExists(sessionsDbPath);
 
       if (sessionsDbExists) {
         yield* git(
-          ["add", "-f", `${APP_PRIVATE_FOLDER}/${SESSIONS_DB_FILE_NAME}`],
+          ["add", "-f", `${APP_FOLDER_NAMES.private}/${SESSIONS_DB_FILE_NAME}`],
           appDir,
           {},
         );
@@ -80,7 +80,11 @@ export function exportProjectZip({
     if (needsReset) {
       yield* git(["reset", "--soft", "HEAD~1"], appDir, {});
       yield* git(
-        ["reset", "HEAD", `${APP_PRIVATE_FOLDER}/${SESSIONS_DB_FILE_NAME}`],
+        [
+          "reset",
+          "HEAD",
+          `${APP_FOLDER_NAMES.private}/${SESSIONS_DB_FILE_NAME}`,
+        ],
         appDir,
         {},
       );

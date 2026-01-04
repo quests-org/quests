@@ -8,7 +8,6 @@ import {
   type CaptureExceptionFunction,
 } from "@quests/shared";
 import ms from "ms";
-import path from "node:path";
 import invariant from "tiny-invariant";
 import {
   type ActorRefFrom,
@@ -22,7 +21,7 @@ import {
 
 import { AGENTS } from "../../agents/constants";
 import { type AgentName } from "../../agents/types";
-import { PREVIEWS_FOLDER, PROJECTS_FOLDER } from "../../constants";
+import { absolutePathJoin } from "../../lib/absolute-path-join";
 import { createAppConfig } from "../../lib/app-config/create";
 import { type AppConfig } from "../../lib/app-config/types";
 import { createAssignEventError } from "../../lib/assign-event-error";
@@ -209,6 +208,8 @@ export const workspaceMachine = setup({
   },
 }).createMachine({
   context: ({ input, self, spawn }) => {
+    const registryDir = AbsolutePathSchema.parse(input.registryDir);
+    const rootDir = WorkspaceDirSchema.parse(input.rootDir);
     const workspaceConfig: WorkspaceConfig = {
       captureEvent: input.captureEvent,
       captureException: input.captureException,
@@ -216,14 +217,11 @@ export const workspaceMachine = setup({
       nodeExecEnv: input.nodeExecEnv,
       pnpmBinPath: AbsolutePathSchema.parse(input.pnpmBinPath),
       previewCacheTimeMs: input.previewCacheTimeMs,
-      previewsDir: AbsolutePathSchema.parse(
-        path.join(input.rootDir, PREVIEWS_FOLDER),
-      ),
-      projectsDir: AbsolutePathSchema.parse(
-        path.join(input.rootDir, PROJECTS_FOLDER),
-      ),
+      previewsDir: absolutePathJoin(rootDir, "previews"),
+      projectsDir: absolutePathJoin(rootDir, "projects"),
       registryDir: AbsolutePathSchema.parse(input.registryDir),
-      rootDir: WorkspaceDirSchema.parse(input.rootDir),
+      rootDir,
+      templatesDir: absolutePathJoin(registryDir, "templates"),
       trashItem: input.trashItem,
     };
     return {

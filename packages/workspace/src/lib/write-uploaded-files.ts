@@ -2,7 +2,7 @@ import { ok, ResultAsync, safeTry } from "neverthrow";
 import fs from "node:fs/promises";
 import path from "node:path";
 
-import { UPLOADS_FOLDER } from "../constants";
+import { APP_FOLDER_NAMES } from "../constants";
 import { type AbsolutePath, RelativePathSchema } from "../schemas/paths";
 import { type SessionMessageDataPart } from "../schemas/session/message-data-part";
 import { type Upload } from "../schemas/upload";
@@ -23,7 +23,7 @@ export async function writeUploadedFiles(
       return ok({ files: [] });
     }
 
-    const uploadsDir = absolutePathJoin(appDir, UPLOADS_FOLDER);
+    const uploadsDir = absolutePathJoin(appDir, APP_FOLDER_NAMES.uploads);
     yield* ResultAsync.fromPromise(
       fs.mkdir(uploadsDir, { recursive: true }),
       (error) =>
@@ -46,7 +46,7 @@ export async function writeUploadedFiles(
           ),
       );
 
-      const relativePath = `./${UPLOADS_FOLDER}/${uniqueFilename}`;
+      const relativePath = `./${APP_FOLDER_NAMES.uploads}/${uniqueFilename}`;
       const filePath = absolutePathJoin(appDir, relativePath);
       const buffer = Buffer.from(file.content, "base64");
       yield* ResultAsync.fromPromise(

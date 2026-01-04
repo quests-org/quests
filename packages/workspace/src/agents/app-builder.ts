@@ -1,12 +1,7 @@
 import { err, ok, safeTry } from "neverthrow";
 import { dedent, pick } from "radashi";
 
-import {
-  APP_NAME,
-  OUTPUT_FOLDER,
-  UPLOADS_FOLDER,
-  WEBSITE_URL,
-} from "../constants";
+import { APP_FOLDER_NAMES, APP_NAME, WEBSITE_URL } from "../constants";
 import { TypedError } from "../lib/errors";
 import { fileTree } from "../lib/file-tree";
 import { getCurrentDate } from "../lib/get-current-date";
@@ -125,10 +120,10 @@ export const appBuilderAgent = setupAgent({
           - Do NOT attempt to start, restart, or interact with development servers - this is handled automatically by the system
           
           ## User Uploads
-          Files the user uploads for the agent are stored in \`./${UPLOADS_FOLDER}/\` and are served at \`/uploads/*\`.
+          Files the user uploads for the agent are stored in \`./${APP_FOLDER_NAMES.uploads}/\` and are served at \`/uploads/*\`.
 
           ## Output Directory
-          Files in \`./${OUTPUT_FOLDER}/\` are automatically shown to the user in the conversation. The user can click them to view or download. Built-in preview for: images, HTML, plaintext, markdown, audio, video, PDFs.
+          Files in \`./${APP_FOLDER_NAMES.output}/\` are automatically shown to the user in the conversation. The user can click them to view or download. Built-in preview for: images, HTML, plaintext, markdown, audio, video, PDFs.
           `.trim(),
           type: "text",
         },

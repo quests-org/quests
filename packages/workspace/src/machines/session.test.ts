@@ -24,7 +24,6 @@ import {
 import { AGENTS } from "../agents/constants";
 import { setupAgent } from "../agents/create-agent";
 import { type AnyAgent } from "../agents/types";
-import { REGISTRY_TEMPLATES_FOLDER } from "../constants";
 import { type AppConfig } from "../lib/app-config/types";
 import { Store } from "../lib/store";
 import { type RelativePath } from "../schemas/paths";
@@ -331,12 +330,10 @@ describe("sessionMachine", () => {
             "test.txt": "Hello, world!",
           },
         },
-        [MOCK_WORKSPACE_DIRS.registry]: {
-          [REGISTRY_TEMPLATES_FOLDER]: {
-            basic: {
-              "file-from-basic.txt": "from basic",
-              "package.json": "{}",
-            },
+        [MOCK_WORKSPACE_DIRS.templates]: {
+          basic: {
+            "file-from-basic.txt": "from basic",
+            "package.json": "{}",
           },
         },
       });

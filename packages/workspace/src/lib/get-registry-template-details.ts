@@ -2,7 +2,6 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { z } from "zod";
 
-import { REGISTRY_TEMPLATES_FOLDER } from "../constants";
 import { WorkspaceAppPreviewSchema } from "../schemas/app";
 import { AppDirSchema } from "../schemas/paths";
 import { ProjectConfigSchema } from "../schemas/project-config";
@@ -28,12 +27,10 @@ export async function getRegistryTemplateDetails(
   folderName: string,
   workspaceConfig: WorkspaceConfig,
 ): Promise<null | RegistryTemplateDetails> {
-  const templatesDir = absolutePathJoin(
-    workspaceConfig.registryDir,
-    REGISTRY_TEMPLATES_FOLDER,
+  const templateDir = absolutePathJoin(
+    workspaceConfig.templatesDir,
+    folderName,
   );
-
-  const templateDir = path.resolve(templatesDir, folderName);
 
   const templateDirExists = await fs
     .stat(templateDir)

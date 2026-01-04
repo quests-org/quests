@@ -1,22 +1,17 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
-import {
-  APP_PRIVATE_FOLDER,
-  REGISTRY_TEMPLATES_FOLDER,
-  SANDBOXES_FOLDER,
-  SESSIONS_DB_FILE_NAME,
-} from "../constants";
+import { APP_FOLDER_NAMES, SESSIONS_DB_FILE_NAME } from "../constants";
 import { type AbsolutePath, type AppDir } from "../schemas/paths";
 import { type WorkspaceConfig } from "../types";
 import { absolutePathJoin } from "./absolute-path-join";
 
 export function getAppPrivateDir(appDir: AppDir): AbsolutePath {
-  return absolutePathJoin(appDir, APP_PRIVATE_FOLDER);
+  return absolutePathJoin(appDir, APP_FOLDER_NAMES.private);
 }
 
 export function getSandboxesDir(appDir: AppDir): AbsolutePath {
-  return absolutePathJoin(getAppPrivateDir(appDir), SANDBOXES_FOLDER);
+  return absolutePathJoin(getAppPrivateDir(appDir), "sandboxes");
 }
 
 export function isRunnable(appDir: AppDir): Promise<boolean> {
@@ -33,12 +28,9 @@ export function registryAppExists({
   folderName: string;
   workspaceConfig: WorkspaceConfig;
 }): Promise<boolean> {
-  const registryAppsDir = absolutePathJoin(
-    absolutePathJoin(workspaceConfig.registryDir, REGISTRY_TEMPLATES_FOLDER),
-    folderName,
-  );
+  const appDir = absolutePathJoin(workspaceConfig.templatesDir, folderName);
   return fs
-    .access(registryAppsDir)
+    .access(appDir)
     .then(() => true)
     .catch(() => false);
 }
@@ -55,8 +47,7 @@ export function templateExists({
   workspaceConfig: WorkspaceConfig;
 }): Promise<boolean> {
   const templateDir = absolutePathJoin(
-    workspaceConfig.registryDir,
-    REGISTRY_TEMPLATES_FOLDER,
+    workspaceConfig.templatesDir,
     folderName,
   );
   return fs

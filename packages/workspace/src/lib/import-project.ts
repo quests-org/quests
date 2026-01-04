@@ -1,11 +1,10 @@
 import { PROJECT_CONFIG_FILE_NAME } from "@quests/shared";
 import { errAsync, ok, safeTry } from "neverthrow";
-import path from "node:path";
 import { ulid } from "ulid";
 
-import { PROJECTS_FOLDER } from "../constants";
 import { AbsolutePathSchema, AppDirSchema } from "../schemas/paths";
 import { ProjectSubdomainSchema } from "../schemas/subdomains";
+import { type WorkspaceConfig } from "../types";
 import { absolutePathJoin } from "./absolute-path-join";
 import { copyProject } from "./copy-project";
 import { TypedError } from "./errors";
@@ -17,19 +16,15 @@ import { pathExists } from "./path-exists";
 
 interface ImportProjectOptions {
   sourcePath: string;
-  workspaceFolder: string;
+  workspaceConfig: WorkspaceConfig;
 }
 
 export async function importProject(
-  {
-    sourcePath: rawSourcePath,
-    workspaceFolder: rawWorkspaceFolder,
-  }: ImportProjectOptions,
+  { sourcePath: rawSourcePath, workspaceConfig }: ImportProjectOptions,
   { signal }: { signal?: AbortSignal } = {},
 ) {
   return safeTry(async function* () {
     const sourcePath = AbsolutePathSchema.parse(rawSourcePath);
-    const workspaceFolder = AbsolutePathSchema.parse(rawWorkspaceFolder);
 
     const sourceExists = await pathExists(sourcePath);
     if (!sourceExists) {
@@ -65,8 +60,9 @@ export async function importProject(
     }
     const folderName = folderNameResult.value;
 
-    const projectsDir = absolutePathJoin(workspaceFolder, PROJECTS_FOLDER);
-    const projectDir = AppDirSchema.parse(path.join(projectsDir, folderName));
+    const projectDir = AppDirSchema.parse(
+      absolutePathJoin(workspaceConfig.projectsDir, folderName),
+    );
 
     const projectExists = await pathExists(projectDir);
     if (projectExists) {

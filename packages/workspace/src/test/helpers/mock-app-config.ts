@@ -8,6 +8,7 @@ export const MOCK_WORKSPACE_DIRS = {
   previews: `${MOCK_WORKSPACE_DIR}/previews`,
   projects: `${MOCK_WORKSPACE_DIR}/projects`,
   registry: `${MOCK_WORKSPACE_DIR}/registry`,
+  templates: `${MOCK_WORKSPACE_DIR}/registry/templates`,
 } as const;
 
 export function createMockAppConfig(subdomain: AppSubdomain) {
@@ -28,6 +29,7 @@ export function createMockAppConfig(subdomain: AppSubdomain) {
       projectsDir: AbsolutePathSchema.parse(MOCK_WORKSPACE_DIRS.projects),
       registryDir: AbsolutePathSchema.parse(MOCK_WORKSPACE_DIRS.registry),
       rootDir: WorkspaceDirSchema.parse(MOCK_WORKSPACE_DIR),
+      templatesDir: AbsolutePathSchema.parse(MOCK_WORKSPACE_DIRS.templates),
       trashItem: () => Promise.resolve(),
     },
   });

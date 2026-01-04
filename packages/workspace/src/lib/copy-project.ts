@@ -3,7 +3,7 @@ import { ok, ResultAsync } from "neverthrow";
 import fs from "node:fs/promises";
 import path from "node:path";
 
-import { APP_PRIVATE_FOLDER } from "../constants";
+import { APP_FOLDER_NAMES } from "../constants";
 import { type AbsolutePath } from "../schemas/paths";
 import { TypedError } from "./errors";
 import { getIgnore } from "./get-ignore";
@@ -46,7 +46,7 @@ export function copyProject({
             }
             if (
               includePrivateFolder &&
-              relativePath.startsWith(APP_PRIVATE_FOLDER)
+              relativePath.startsWith(APP_FOLDER_NAMES.private)
             ) {
               return true;
             }

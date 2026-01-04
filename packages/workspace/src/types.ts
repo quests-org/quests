@@ -20,5 +20,6 @@ export interface WorkspaceConfig {
   projectsDir: AbsolutePath;
   registryDir: AbsolutePath;
   rootDir: WorkspaceDir;
+  templatesDir: AbsolutePath;
   trashItem: (path: AbsolutePath) => Promise<void>;
 }

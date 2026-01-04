@@ -1,4 +1,4 @@
-import { GIT_AUTHOR, GIT_TRAILER_INITIAL_COMMIT } from "../../constants";
+import { GIT_AUTHOR, GIT_TRAILERS } from "../../constants";
 import { type RelativePath } from "../../schemas/paths";
 
 export namespace GitCommands {
@@ -59,7 +59,7 @@ export namespace GitCommands {
     return [
       "log",
       "--format=%H",
-      `--grep=^${GIT_TRAILER_INITIAL_COMMIT}: true$`,
+      `--grep=^${GIT_TRAILERS.initialCommit}: true$`,
       "--all",
       "--reverse",
       "-n",

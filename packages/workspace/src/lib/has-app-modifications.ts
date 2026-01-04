@@ -1,6 +1,6 @@
 import { ok, safeTry } from "neverthrow";
 
-import { APP_SOURCE_FOLDER } from "../constants";
+import { APP_FOLDER_NAMES } from "../constants";
 import { type ProjectSubdomain } from "../schemas/subdomains";
 import { type WorkspaceConfig } from "../types";
 import { createAppConfig } from "./app-config/create";
@@ -19,7 +19,7 @@ export async function hasAppModifications(
 
     // Step 1: Check for uncommitted changes in src/ directory
     const statusResult = yield* git(
-      GitCommands.statusPath(APP_SOURCE_FOLDER),
+      GitCommands.statusPath(`${APP_FOLDER_NAMES.src}/`),
       projectConfig.appDir,
       { signal: AbortSignal.timeout(10_000) },
     );
@@ -45,7 +45,10 @@ export async function hasAppModifications(
 
     // Step 3: Check for commits modifying src/ since the initial commit
     const logResult = yield* git(
-      GitCommands.logPathSinceCommit(initialCommitHash, APP_SOURCE_FOLDER),
+      GitCommands.logPathSinceCommit(
+        initialCommitHash,
+        `${APP_FOLDER_NAMES.src}/`,
+      ),
       projectConfig.appDir,
       { signal: AbortSignal.timeout(10_000) },
     );
