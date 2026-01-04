@@ -80,7 +80,8 @@ export const Route = createFileRoute("/_app/projects/$subdomain/")({
         // eslint-disable-next-line @typescript-eslint/only-throw-error
         throw notFound();
       }
-      throw error;
+      // Allow route to load if not defined or not a NOT_FOUND error
+      return;
     }
 
     // If no session is selected, get sessions and redirect to the newest one
@@ -174,16 +175,17 @@ function RouteComponent() {
     }),
   );
 
-  const { data: hasAppModifications, isLoading: isAppModificationsLoading } =
-    useQuery(
-      rpcClient.workspace.project.git.hasAppModifications.live.check.experimental_liveOptions(
-        {
-          input: { projectSubdomain: subdomain },
-        },
-      ),
-    );
+  const {
+    data: hasAppModifications = true,
+    isLoading: isAppModificationsLoading,
+  } = useQuery(
+    rpcClient.workspace.project.git.hasAppModifications.live.check.experimental_liveOptions(
+      {
+        input: { projectSubdomain: subdomain },
+      },
+    ),
+  );
 
-  // Wait for project and projectState to load successfully
   const isLoading =
     isProjectLoading || isProjectStateLoading || isAppModificationsLoading;
   const error = projectError ?? projectStateError;
@@ -198,11 +200,6 @@ function RouteComponent() {
 
   // Should never happen since both queries are required to load successfully
   if (!project || !projectState) {
-    return null;
-  }
-
-  // Wait for hasAppModifications to resolve before rendering (but ignore errors)
-  if (typeof hasAppModifications !== "boolean") {
     return null;
   }
 
