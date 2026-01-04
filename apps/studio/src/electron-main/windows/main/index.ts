@@ -98,7 +98,10 @@ export async function createMainWindow() {
     mainWindow.maximize();
   }
 
-  createContextMenu({ inspectInNewWindow: true, window: mainWindow });
+  createContextMenu({
+    inspectInNewWindow: true,
+    windowOrWebContentsView: mainWindow,
+  });
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
     void shell.openExternal(details.url);

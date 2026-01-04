@@ -320,7 +320,7 @@ export class TabsManager {
 
       resolve(newContentView);
 
-      createContextMenu({ window: newContentView });
+      createContextMenu({ windowOrWebContentsView: newContentView });
 
       newContentView.setBackgroundColor(getBackgroundColor());
 

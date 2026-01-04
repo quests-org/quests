@@ -1,16 +1,15 @@
-import contextMenu, { type Options } from "electron-context-menu";
+import { type BrowserWindow, type WebContentsView } from "electron";
+import contextMenu from "electron-context-menu";
 
 import { isDeveloperMode } from "../stores/preferences";
 
 export function createContextMenu({
   inspectInNewWindow = false,
-  window,
+  windowOrWebContentsView,
 }: {
   inspectInNewWindow?: boolean;
-  window: Options["window"];
+  windowOrWebContentsView: BrowserWindow | WebContentsView;
 }) {
-  const webContents =
-    window && "webContents" in window ? window.webContents : undefined;
   return contextMenu({
     menu: (defaultActions, parameters) => {
       const menuItems = [];
@@ -66,8 +65,13 @@ export function createContextMenu({
         if (inspectInNewWindow) {
           menuItems.push({
             click: () => {
-              webContents?.openDevTools({ mode: "detach" });
-              webContents?.inspectElement(parameters.x, parameters.y);
+              windowOrWebContentsView.webContents.openDevTools({
+                mode: "detach",
+              });
+              windowOrWebContentsView.webContents.inspectElement(
+                parameters.x,
+                parameters.y,
+              );
             },
             label: "Inspect Element in New Window",
           });
@@ -78,6 +82,6 @@ export function createContextMenu({
 
       return menuItems;
     },
-    window,
+    window: windowOrWebContentsView,
   });
 }

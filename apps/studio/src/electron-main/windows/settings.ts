@@ -91,5 +91,5 @@ export function openSettingsWindow(
     studioURL(settingsPath) + (queryString ? `?${queryString}` : "");
   void settingsWindow.loadURL(fullUrl);
 
-  createContextMenu({ window: settingsWindow });
+  createContextMenu({ windowOrWebContentsView: settingsWindow });
 }

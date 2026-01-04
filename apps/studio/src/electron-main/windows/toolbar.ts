@@ -35,7 +35,10 @@ export function createToolbar({
       return { action: "deny" };
     });
 
-    createContextMenu({ inspectInNewWindow: true, window: toolbarView });
+    createContextMenu({
+      inspectInNewWindow: true,
+      windowOrWebContentsView: toolbarView,
+    });
 
     const bounds = baseWindow.getContentBounds();
     const sidebarWidth = getSidebarWidth();
