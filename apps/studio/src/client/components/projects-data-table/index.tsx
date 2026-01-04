@@ -49,6 +49,7 @@ export function ProjectsDataTable({
   onRowSelectionChange: OnChangeFn<RowSelectionState>;
   rowSelection: RowSelectionState;
 }) {
+  "use no memo"; // for useReactTable, see https://github.com/TanStack/table/issues/6137
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     [],
