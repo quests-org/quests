@@ -1,3 +1,5 @@
+import { cn } from "../lib/utils";
+
 export function SandboxedHtmlIframe({
   className,
   htmlContent,
@@ -14,7 +16,7 @@ export function SandboxedHtmlIframe({
   return (
     <iframe
       allow="accelerometer; autoplay; camera; clipboard-read; clipboard-write; display-capture; encrypted-media; fullscreen; geolocation; gyroscope; microphone; midi; payment; usb; xr-spatial-tracking"
-      className={className}
+      className={cn("bg-white", className)}
       sandbox="allow-downloads allow-forms allow-modals allow-pointer-lock allow-popups allow-scripts allow-presentation"
       src={src}
       srcDoc={htmlContent}
