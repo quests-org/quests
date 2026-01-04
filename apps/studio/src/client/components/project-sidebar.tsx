@@ -87,8 +87,10 @@ export function ProjectSidebar({
     createEmptySession.mutate(
       { subdomain: project.subdomain },
       {
-        onError: () => {
-          toast.error("Failed to create new chat");
+        onError: (error) => {
+          toast.error("Failed to create new chat", {
+            description: error.message,
+          });
         },
         onSuccess: (result) => {
           void navigate({

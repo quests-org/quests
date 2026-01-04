@@ -50,7 +50,7 @@ export function SessionStream({
 }: SessionEventListProps) {
   const {
     data: messages = [],
-    error,
+    error: messageError,
     isLoading,
   } = useQuery(
     rpcClient.workspace.message.live.listWithParts.experimental_liveOptions({
@@ -71,8 +71,10 @@ export function SessionStream({
     createEmptySessionMutation.mutate(
       { subdomain: project.subdomain },
       {
-        onError: () => {
-          toast.error("Failed to create new chat");
+        onError: (error) => {
+          toast.error("Failed to create new chat", {
+            description: error.message,
+          });
         },
         onSuccess: (result) => {
           void navigate({
@@ -424,14 +426,14 @@ export function SessionStream({
           <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
         </div>
       )}
-      {error && (
+      {messageError && (
         <ChatErrorAlert
-          message={`Failed to load messages: ${error.message || "Unknown error occurred"}`}
+          message={`Failed to load messages: ${messageError.message || "Unknown error occurred"}`}
           onStartNewChat={handleNewSession}
         />
       )}
 
-      {!isActive && !error && !isLoading && messages.length === 0 && (
+      {!isActive && !messageError && !isLoading && messages.length === 0 && (
         <ChatZeroState project={project} selectedSessionId={sessionId} />
       )}
 
