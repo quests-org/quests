@@ -3,7 +3,6 @@ import {
   Brain,
   Eye,
   FilePlus,
-  FolderTree,
   GitBranch,
   HelpCircle,
   List,
@@ -19,7 +18,6 @@ import {
 const TOOL_DISPLAY_NAMES: Record<ToolName, string | undefined> = {
   choose: "Answered",
   edit_file: "Edited",
-  file_tree: "Listed files",
   glob: "Searched files",
   grep: "Searched text",
   read_file: "Read",
@@ -34,7 +32,6 @@ const TOOL_DISPLAY_NAMES: Record<ToolName, string | undefined> = {
 const TOOL_STREAMING_DISPLAY_NAMES: Record<ToolName, string | undefined> = {
   choose: "Answering",
   edit_file: "Editing a file",
-  file_tree: "Listing files",
   glob: "Searching files",
   grep: "Searching text",
   read_file: "Reading",
@@ -49,7 +46,6 @@ const TOOL_STREAMING_DISPLAY_NAMES: Record<ToolName, string | undefined> = {
 export const TOOL_ICONS: Record<ToolName, LucideIcon | undefined> = {
   choose: HelpCircle,
   edit_file: Pencil,
-  file_tree: FolderTree,
   glob: List,
   grep: Search,
   read_file: Eye,

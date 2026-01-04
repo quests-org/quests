@@ -207,9 +207,6 @@ function getToolInputDescription(
     case "tool-edit_file": {
       return filenameFromFilePath(part.input.filePath);
     }
-    case "tool-file_tree": {
-      return undefined;
-    }
     case "tool-glob": {
       return part.input.pattern;
     }
@@ -258,11 +255,6 @@ function getToolOutputDescription(
     }
     case "tool-edit_file": {
       return filenameFromFilePath(part.output.filePath) || "file edited";
-    }
-    case "tool-file_tree": {
-      return part.output.tree
-        ? truncateText(part.output.tree, 50)
-        : "files listed";
     }
     case "tool-glob": {
       const files = part.output.files;

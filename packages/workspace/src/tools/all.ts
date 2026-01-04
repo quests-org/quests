@@ -5,7 +5,6 @@ import type { AnyAgentTool, ToolName } from "./types";
 
 import { Choose } from "./choose";
 import { EditFile } from "./edit-file";
-import { FileTree } from "./file-tree";
 import { Glob } from "./glob";
 import { Grep } from "./grep";
 import { ReadFile } from "./read-file";
@@ -19,7 +18,6 @@ import { WriteFile } from "./write-file";
 export const TOOLS = {
   Choose,
   EditFile,
-  FileTree,
   Glob,
   Grep,
   ReadFile,
@@ -36,7 +34,6 @@ export type InternalToolName = keyof typeof TOOLS;
 export const TOOLS_BY_NAME = {
   [TOOLS.Choose.name]: TOOLS.Choose,
   [TOOLS.EditFile.name]: TOOLS.EditFile,
-  [TOOLS.FileTree.name]: TOOLS.FileTree,
   [TOOLS.Glob.name]: TOOLS.Glob,
   [TOOLS.Grep.name]: TOOLS.Grep,
   [TOOLS.ReadFile.name]: TOOLS.ReadFile,

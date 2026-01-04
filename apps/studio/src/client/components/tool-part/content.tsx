@@ -61,14 +61,6 @@ export function ToolContent({
         </div>
       );
     }
-    case "tool-file_tree": {
-      return (
-        <div>
-          <SectionHeader>Directory structure</SectionHeader>
-          <CodeBlock>{part.output.tree}</CodeBlock>
-        </div>
-      );
-    }
     case "tool-glob": {
       const files = part.output.files;
       return (
