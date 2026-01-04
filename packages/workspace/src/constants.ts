@@ -3,6 +3,7 @@ import { type ProjectMode } from "@quests/shared";
 export const APP_FOLDER_NAMES = {
   output: "output",
   private: ".quests",
+  scripts: "scripts",
   src: "src",
   uploads: "uploads",
 } as const;

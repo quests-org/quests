@@ -1,7 +1,12 @@
 import { err, ok, safeTry } from "neverthrow";
 import { dedent, pick } from "radashi";
+import { readPackage } from "read-pkg";
 
 import { APP_FOLDER_NAMES, APP_NAME, WEBSITE_URL } from "../constants";
+import {
+  buildStaticFileServingInstructions,
+  detectStaticFileServing,
+} from "../lib/detect-static-file-serving";
 import { TypedError } from "../lib/errors";
 import { fileTree } from "../lib/file-tree";
 import { getCurrentDate } from "../lib/get-current-date";
@@ -31,7 +36,6 @@ function formatCommitMessage(text: string): string {
 export const appBuilderAgent = setupAgent({
   agentTools: pick(TOOLS, [
     "EditFile",
-    // "FileTree", will be re-added as list / ls tool
     "Glob",
     "Grep",
     "ReadFile",
@@ -44,6 +48,18 @@ export const appBuilderAgent = setupAgent({
 }).create(({ agentTools, name }) => ({
   getMessages: async ({ appConfig, envVariableNames, sessionId }) => {
     const now = getCurrentDate();
+
+    const packageJson = await readPackage({ cwd: appConfig.appDir }).catch(
+      () => null,
+    );
+
+    const hasTsx = Boolean(
+      packageJson?.dependencies?.tsx || packageJson?.devDependencies?.tsx,
+    );
+    const servedFolders = await detectStaticFileServing(appConfig.appDir);
+    const staticFileServingInstructions =
+      buildStaticFileServingInstructions(servedFolders);
+
     const systemMessageId = StoreId.newMessageId();
     const systemMessage: SessionMessage.ContextWithParts = {
       id: systemMessageId,
@@ -118,12 +134,14 @@ export const appBuilderAgent = setupAgent({
           - When you make code changes, the user will see the updated versions automatically in their running application
           - You are working within a Git repository where commits happen automatically after each round of your code edits
           - Do NOT attempt to start, restart, or interact with development servers - this is handled automatically by the system
-          
-          ## User Uploads
-          Files the user uploads for the agent are stored in \`./${APP_FOLDER_NAMES.uploads}/\` and are served at \`/uploads/*\`.
+          - ${hasTsx ? `The \`tsx\` CLI tool is installed for running scripts, e.g. \`tsx ${APP_FOLDER_NAMES.scripts}/example.ts\`.` : ""}
 
-          ## Output Directory
-          Files in \`./${APP_FOLDER_NAMES.output}/\` are automatically shown to the user in the conversation. The user can click them to view or download. Built-in preview for: images, HTML, plaintext, markdown, audio, video, PDFs.
+          ## Important Folders
+          - Place scripts in the \`${APP_FOLDER_NAMES.scripts}/\` directory.
+          - Files the user uploads for the agent are stored in \`./${APP_FOLDER_NAMES.uploads}/\`.
+          - Files in \`./${APP_FOLDER_NAMES.output}/\` are automatically shown to the user in the conversation. The user can click them to view or download. Built-in preview for: images, HTML, plaintext, markdown, audio, video, PDFs, and more.
+          
+          ${staticFileServingInstructions}
           `.trim(),
           type: "text",
         },
