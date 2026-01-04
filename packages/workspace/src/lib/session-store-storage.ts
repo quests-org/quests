@@ -10,16 +10,17 @@ import { type AppSubdomain } from "../schemas/subdomains";
 import { type AppConfig } from "./app-config/types";
 import { sessionStorePath } from "./app-dir-utils";
 import { TypedError } from "./errors";
+import { type WrappedStorage, wrapStorage } from "./wrap-storage";
 
 // Avoids possible SQLite database lock errors if we create the same storage
 // multiple times.
-const STORAGE_CACHE = new Map<AppSubdomain, ReturnType<typeof createStorage>>();
+const STORAGE_CACHE = new Map<AppSubdomain, WrappedStorage>();
 
 // Maps storage instances to their underlying database instances for proper cleanup
 // We have to do this because Unstorage doesn't call `database.close()` with
 // their db0 driver currently.
 const STORAGE_TO_DATABASE = new WeakMap<
-  ReturnType<typeof createStorage>,
+  WrappedStorage,
   Database<Connector<DatabaseSync>>
 >();
 
@@ -83,9 +84,11 @@ export function getSessionsStoreStorage(appConfig: AppConfig) {
         }),
       });
 
-      STORAGE_TO_DATABASE.set(storage, database);
-      STORAGE_CACHE.set(appConfig.subdomain, storage);
-      return ok(storage);
+      const wrappedStorage = wrapStorage(storage);
+
+      STORAGE_TO_DATABASE.set(wrappedStorage, database);
+      STORAGE_CACHE.set(appConfig.subdomain, wrappedStorage);
+      return ok(wrappedStorage);
     })
     .orTee(() => {
       STORAGE_CACHE.delete(appConfig.subdomain);

@@ -21,7 +21,7 @@ export namespace Store {
     return safeTry(async function* () {
       const storage = yield* getSessionsStoreStorage(appConfig);
 
-      const messageKeys = await storage.getKeys(StorageKey.MESSAGES_KEY, {
+      const messageKeys = yield* storage.getKeys(StorageKey.MESSAGES_KEY, {
         signal,
       });
 
@@ -38,7 +38,7 @@ export namespace Store {
     return safeTry(async function* () {
       const storage = yield* getSessionsStoreStorage(appConfig);
 
-      const messageKeys = await storage.getKeys(
+      const messageKeys = yield* storage.getKeys(
         StorageKey.messages(sessionId),
         { signal },
       );
@@ -143,7 +143,7 @@ export namespace Store {
     return safeTry(async function* () {
       const storage = yield* getSessionsStoreStorage(appConfig);
 
-      const partKeys = await storage.getKeys(
+      const partKeys = yield* storage.getKeys(
         StorageKey.parts(sessionId, messageId),
         { signal },
       );
@@ -256,7 +256,7 @@ export namespace Store {
     return safeTry(async function* () {
       const storage = yield* getSessionsStoreStorage(appConfig);
 
-      const sessionKeys = await storage.getKeys(StorageKey.sessions(), {
+      const sessionKeys = yield* storage.getKeys(StorageKey.sessions(), {
         signal,
       });
 
@@ -277,12 +277,12 @@ export namespace Store {
         signal,
       });
       for (const partId of partIds) {
-        await storage.removeItem(
+        yield* storage.removeItem(
           StorageKey.part(sessionId, messageId, partId),
           { signal },
         );
       }
-      await storage.removeItem(StorageKey.message(sessionId, messageId), {
+      yield* storage.removeItem(StorageKey.message(sessionId, messageId), {
         signal,
       });
       publisher.publish("message.removed", {
@@ -302,7 +302,7 @@ export namespace Store {
     return safeTry(async function* () {
       const storage = yield* getSessionsStoreStorage(appConfig);
 
-      await storage.removeItem(StorageKey.session(sessionId), { signal });
+      yield* storage.removeItem(StorageKey.session(sessionId), { signal });
 
       const messageIds = yield* getMessageIds(sessionId, appConfig, {
         signal,
@@ -312,12 +312,12 @@ export namespace Store {
           signal,
         });
         for (const partId of partIds) {
-          await storage.removeItem(
+          yield* storage.removeItem(
             StorageKey.part(sessionId, messageId, partId),
             { signal },
           );
         }
-        await storage.removeItem(StorageKey.message(sessionId, messageId), {
+        yield* storage.removeItem(StorageKey.message(sessionId, messageId), {
           signal,
         });
       }

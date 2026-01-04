@@ -1,15 +1,15 @@
-import { err, ResultAsync } from "neverthrow";
+import { err } from "neverthrow";
 import superjson from "superjson";
-import { type Storage } from "unstorage";
 import { z } from "zod";
 
 import { TypedError } from "./errors";
+import { type WrappedStorage } from "./wrap-storage";
 
 export function setParsedStorageItem<T>(
   key: string,
   value: T,
   schema: z.ZodType<T>,
-  storage: Storage,
+  storage: WrappedStorage,
   { signal }: { signal?: AbortSignal } = {},
 ) {
   const result = schema.safeParse(value);
@@ -23,8 +23,5 @@ export function setParsedStorageItem<T>(
 
   const serialized = superjson.stringify(result.data);
 
-  return ResultAsync.fromPromise(
-    storage.setItemRaw(key, serialized, { signal }),
-    (error) => new TypedError.Storage("Storage error", { cause: error }),
-  ).map(() => result.data);
+  return storage.setItemRaw(key, serialized, { signal }).map(() => result.data);
 }

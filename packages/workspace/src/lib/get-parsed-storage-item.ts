@@ -1,20 +1,17 @@
-import { err, ok, ResultAsync } from "neverthrow";
+import { err, ok } from "neverthrow";
 import superjson from "superjson";
-import { type Storage } from "unstorage";
 import { z } from "zod";
 
 import { TypedError } from "./errors";
+import { type WrappedStorage } from "./wrap-storage";
 
 export function getParsedStorageItem<T>(
   key: string,
   schema: z.ZodType<T>,
-  storage: Storage,
+  storage: WrappedStorage,
   { signal }: { signal?: AbortSignal } = {},
 ) {
-  return ResultAsync.fromPromise(
-    storage.getItemRaw<unknown>(key, { signal }),
-    (error) => new TypedError.Storage("Storage error", { cause: error }),
-  ).andThen((rawItem) => {
+  return storage.getItemRaw(key, { signal }).andThen((rawItem) => {
     if (!rawItem) {
       return err(new TypedError.NotFound(`Item ${key} not found`));
     }
