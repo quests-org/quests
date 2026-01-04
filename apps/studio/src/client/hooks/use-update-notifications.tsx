@@ -65,7 +65,7 @@ export function useUpdateNotifications() {
         toast.dismiss(DOWNLOAD_TOAST_ID);
         toast.info("Update is ready to install", {
           action: {
-            label: "Install Now",
+            label: "Install now",
             onClick: () => {
               try {
                 void vanillaRpcClient.preferences.quitAndInstall();

@@ -62,7 +62,7 @@ function CheckoutPage() {
                 void navigate({ to: "/" });
               }}
             >
-              Get Started
+              Get started
             </Button>
           </CardFooter>
         </Card>
@@ -104,7 +104,7 @@ function CheckoutPage() {
                 void navigate({ to: "/subscribe" });
               }}
             >
-              Try Again
+              Try again
             </Button>
           </CardFooter>
         </Card>

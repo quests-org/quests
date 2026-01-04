@@ -174,7 +174,7 @@ function About() {
         return (
           <Button onClick={handleInstallUpdate}>
             <Download className="h-4 w-4" />
-            Install Now
+            Install now
           </Button>
         );
       }
@@ -186,7 +186,7 @@ function About() {
             }}
             variant="outline"
           >
-            Download Manually
+            Download manually
           </Button>
         );
       }
