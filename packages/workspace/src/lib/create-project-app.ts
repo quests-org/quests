@@ -1,7 +1,7 @@
 import { errAsync, ok, ResultAsync, safeTry } from "neverthrow";
 import fs from "node:fs/promises";
 
-import { GIT_TRAILERS } from "../constants";
+import { APP_FOLDER_NAMES, GIT_TRAILERS } from "../constants";
 import { type WorkspaceConfig } from "../types";
 import { absolutePathJoin } from "./absolute-path-join";
 import { type AppConfigProject } from "./app-config/types";
@@ -68,6 +68,26 @@ export async function createProjectApp(
       sourceDir: templateDir,
       targetDir: projectConfig.appDir,
     });
+
+    // Create standard directories so they appear in the file tree. Avoids agent
+    // spending a tool call to create them.
+    const standardDirs = [
+      APP_FOLDER_NAMES.scripts,
+      APP_FOLDER_NAMES.output,
+      APP_FOLDER_NAMES.uploads,
+    ];
+    for (const dirName of standardDirs) {
+      yield* ResultAsync.fromPromise(
+        fs.mkdir(absolutePathJoin(projectConfig.appDir, dirName), {
+          recursive: true,
+        }),
+        (error) =>
+          new TypedError.FileSystem(
+            error instanceof Error ? error.message : "Unknown error",
+            { cause: error },
+          ),
+      );
+    }
 
     yield* ensureGitRepo({ appDir: projectConfig.appDir, signal });
     yield* git(GitCommands.addAll(), projectConfig.appDir, { signal });
