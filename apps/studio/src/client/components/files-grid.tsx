@@ -18,15 +18,17 @@ interface FilesGridProps {
 }
 
 export function FilesGrid({ files }: FilesGridProps) {
-  const { htmlFiles, imageFiles, otherFiles } = useMemo(() => {
+  const { htmlFiles, imageFiles, otherFiles, pdfFiles } = useMemo(() => {
     const categorized: {
       htmlFiles: FileItem[];
       imageFiles: FileItem[];
       otherFiles: FileItem[];
+      pdfFiles: FileItem[];
     } = {
       htmlFiles: [],
       imageFiles: [],
       otherFiles: [],
+      pdfFiles: [],
     };
 
     for (const file of files) {
@@ -34,6 +36,8 @@ export function FilesGrid({ files }: FilesGridProps) {
         categorized.htmlFiles.push(file);
       } else if (file.mimeType.startsWith("image/")) {
         categorized.imageFiles.push(file);
+      } else if (file.mimeType === "application/pdf") {
+        categorized.pdfFiles.push(file);
       } else {
         categorized.otherFiles.push(file);
       }
@@ -86,6 +90,24 @@ export function FilesGrid({ files }: FilesGridProps) {
               key={file.filePath}
               mimeType={file.mimeType}
               previewUrl={file.previewUrl}
+              size={file.size}
+            />
+          ))}
+        </div>
+      )}
+
+      {pdfFiles.length > 0 && (
+        <div className="grid grid-cols-2 gap-2">
+          {pdfFiles.map((file) => (
+            <AttachmentItem
+              filename={file.filename}
+              filePath={file.filePath}
+              gallery={allFiles}
+              imageClassName="h-auto w-full"
+              key={file.filePath}
+              mimeType={file.mimeType}
+              previewUrl={file.previewUrl}
+              showPdfIframe
               size={file.size}
             />
           ))}

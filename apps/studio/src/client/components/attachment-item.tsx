@@ -23,6 +23,7 @@ interface AttachmentItemProps {
   onRemove?: () => void;
   previewUrl?: string;
   showHtmlIframe?: boolean;
+  showPdfIframe?: boolean;
   size?: number;
 }
 
@@ -35,12 +36,15 @@ export function AttachmentItem({
   onRemove,
   previewUrl,
   showHtmlIframe = false,
+  showPdfIframe = false,
   size,
 }: AttachmentItemProps) {
   const openFileViewer = useSetAtom(openFileViewerAtom);
 
   const isHtml = mimeType === "text/html";
+  const isPdf = mimeType === "application/pdf";
   const shouldShowHtmlIframe = showHtmlIframe && isHtml && previewUrl;
+  const shouldShowPdfIframe = showPdfIframe && isPdf && previewUrl;
 
   const handlePreviewClick = () => {
     if (previewUrl) {
@@ -88,6 +92,41 @@ export function AttachmentItem({
         <SandboxedHtmlIframe
           className="absolute top-0 left-0 h-[300%] w-[300%] origin-top-left border-0"
           src={previewUrl}
+          style={{ transform: "scale(0.333)" }}
+          title={filename}
+        />
+        <button
+          className="absolute inset-0 size-full"
+          onClick={handlePreviewClick}
+          type="button"
+        />
+      </div>
+    </div>
+  );
+
+  const pdfIframeContent = shouldShowPdfIframe && (
+    <div
+      className={cn(
+        "group relative overflow-hidden rounded-lg border border-border bg-background",
+        imageClassName,
+      )}
+    >
+      <div className="flex items-center gap-2 border-b border-border bg-muted/30 px-2.5 py-1.5">
+        <FileIcon
+          className="size-4 shrink-0 text-muted-foreground"
+          filename={filename}
+          mimeType={mimeType}
+        />
+        <span className="min-w-0 truncate text-xs text-muted-foreground">
+          {filename}
+        </span>
+      </div>
+      <div className="relative aspect-video w-full overflow-hidden">
+        <iframe
+          className="absolute top-0 left-0 h-[300%] w-[300%] origin-top-left border-0 bg-background"
+          // Hide toolbar and navigation panes and fit to page
+          // cspell:ignore navpanes
+          src={`${previewUrl}#toolbar=0&navpanes=0&view=Fit`}
           style={{ transform: "scale(0.333)" }}
           title={filename}
         />
@@ -196,6 +235,23 @@ export function AttachmentItem({
     return (
       <Tooltip>
         <TooltipTrigger asChild>{htmlIframeContent}</TooltipTrigger>
+        <TooltipContent
+          className="max-w-[min(500px,90vw)] wrap-break-word"
+          collisionPadding={10}
+        >
+          <div className="flex items-center gap-2">
+            <p>{filename}</p>
+            {size && <Badge variant="secondary">{formatBytes(size)}</Badge>}
+          </div>
+        </TooltipContent>
+      </Tooltip>
+    );
+  }
+
+  if (pdfIframeContent) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>{pdfIframeContent}</TooltipTrigger>
         <TooltipContent
           className="max-w-[min(500px,90vw)] wrap-break-word"
           collisionPadding={10}
