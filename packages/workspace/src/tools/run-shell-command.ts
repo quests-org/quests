@@ -44,7 +44,7 @@ const AVAILABLE_COMMANDS: Record<
   },
   ls: {
     description:
-      "A limited version of the ls command that lists directory contents. Supports the -a flag to show hidden files.",
+      "A limited version of the ls command that lists directory contents. Supports the -a flag to show hidden files. Unknown flags will be ignored with a warning.",
     examples: ["ls", "ls src", "ls -a src/components"],
     isFileOperation: true,
   },
@@ -242,17 +242,36 @@ async function handleLsCommand(
   args: string[],
   appConfig: AppConfig,
 ): Promise<FileOperationResult> {
+  const KNOWN_FLAGS = new Set(["-a"]);
+  const warnings: string[] = [];
+
   let showHidden = false;
   let targetPath = ".";
+  const flags: string[] = [];
+  const pathArgs: string[] = [];
 
-  if (args.length > 0) {
-    if (args[0] === "-a") {
-      showHidden = true;
-      targetPath = args[1] ?? ".";
+  for (const arg of args) {
+    if (arg.startsWith("-")) {
+      flags.push(arg);
     } else {
-      targetPath = args[0] ?? ".";
+      pathArgs.push(arg);
     }
   }
+
+  for (const flag of flags) {
+    if (KNOWN_FLAGS.has(flag)) {
+      if (flag === "-a") {
+        showHidden = true;
+      }
+    } else {
+      warnings.push(
+        `ls: unknown flag '${flag}' ignored (supported flags: ${[...KNOWN_FLAGS].join(", ")})`,
+      );
+    }
+  }
+
+  // Get target path (first non-flag argument or default to ".")
+  targetPath = pathArgs[0] ?? ".";
 
   const fixedPathResult = validateAndFixPath(targetPath, "Path");
   if (fixedPathResult.isErr()) {
@@ -276,11 +295,16 @@ async function handleLsCommand(
   try {
     const stats = await fs.stat(absolutePath);
 
+    const flagStr = flags.length > 0 ? ` ${flags.join(" ")}` : "";
+    const pathStr = targetPath === "." ? "" : ` ${targetPath}`;
+    const commandStr = `ls${flagStr}${pathStr}`.trim();
+    const stderr = warnings.length > 0 ? warnings.join("\n") : "";
+
     if (!stats.isDirectory()) {
       return ok({
-        command: showHidden ? `ls -a ${targetPath}` : `ls ${targetPath}`,
+        command: commandStr,
         exitCode: 0,
-        stderr: "",
+        stderr,
         stdout: path.basename(absolutePath),
       });
     }
@@ -291,9 +315,9 @@ async function handleLsCommand(
     });
 
     return ok({
-      command: showHidden ? `ls -a ${targetPath}` : `ls ${targetPath}`,
+      command: commandStr,
       exitCode: 0,
-      stderr: "",
+      stderr,
       stdout: result.files.join("\n"),
     });
   } catch (error) {
