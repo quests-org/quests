@@ -1,4 +1,3 @@
-import { agentNameAtom } from "@/client/atoms/agent-name";
 import { SmallAppIcon } from "@/client/components/app-icon";
 import { AppStatusIcon } from "@/client/components/app-status-icon";
 import { NewTabDiscoverHeroCards } from "@/client/components/discover-hero-card";
@@ -26,7 +25,6 @@ import {
   useRouter,
 } from "@tanstack/react-router";
 import { formatDistanceToNow } from "date-fns";
-import { useAtom } from "jotai";
 import { Gift } from "lucide-react";
 import { useEffect } from "react";
 import { toast } from "sonner";
@@ -45,7 +43,6 @@ export const Route = createFileRoute("/_app/new-tab")({
 function RouteComponent() {
   const [selectedModelURI, setSelectedModelURI, saveSelectedModelURI] =
     useDefaultModelURI();
-  const [agentName, setAgentName] = useAtom(agentNameAtom);
   const { data: hasToken, isLoading: isLoadingHasToken } = useQuery(
     rpcClient.auth.live.hasToken.experimental_liveOptions(),
   );
@@ -103,17 +100,16 @@ function RouteComponent() {
           )}
           <div>
             <PromptInput
-              agentName={agentName}
+              agentName="app-builder"
               allowOpenInNewTab
               atomKey="$$new-tab$$"
               autoFocus
               autoResizeMaxHeight={300}
               isLoading={createProjectMutation.isPending}
               modelURI={selectedModelURI}
-              onAgentChange={setAgentName}
               onModelChange={setSelectedModelURI}
               onSubmit={({
-                agentName: submitAgentName,
+                agentName,
                 files,
                 modelURI,
                 openInNewTab,
@@ -132,14 +128,14 @@ function RouteComponent() {
                   {
                     files: mappedFiles,
                     message,
-                    mode: submitAgentName === "chat" ? "chat" : "app-builder",
+                    mode: agentName === "chat" ? "chat" : "app-builder",
                     modelURI,
                     sessionId,
                   },
                   {
                     onError: (error) => {
                       toast.error(
-                        `There was an error starting your ${submitAgentName === "chat" ? "chat" : "project"}: ${error.message}`,
+                        `There was an error starting your project: ${error.message}`,
                       );
                     },
                     onSuccess: ({ subdomain }) => {
@@ -163,7 +159,7 @@ function RouteComponent() {
                   },
                 );
               }}
-              showAgentPicker
+              placeholder="Type, paste, or drop some files here…"
             />
             <div className="mt-2 flex items-center justify-end">
               <NewTabHelpMessage />

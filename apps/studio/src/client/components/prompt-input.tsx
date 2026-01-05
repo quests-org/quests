@@ -1,4 +1,3 @@
-import { AgentPicker } from "@/client/components/agent-picker";
 import { AIProviderGuardDialog } from "@/client/components/ai-provider-guard-dialog";
 import { AttachmentItem } from "@/client/components/attachment-item";
 import { ModelPicker } from "@/client/components/model-picker";
@@ -46,11 +45,6 @@ interface UploadedFile {
 const MAX_PASTE_TEXT_LENGTH = 5000;
 const MAX_FILE_PREVIEW_SIZE = 10 * 1024 * 1024;
 
-const AGENT_PLACEHOLDER_MAP: Record<AgentName, string> = {
-  "app-builder": "Describe the app you want to create…",
-  chat: "Start a conversation…",
-};
-
 interface PromptInputProps {
   agentName: AgentName;
   allowOpenInNewTab?: boolean;
@@ -63,7 +57,6 @@ interface PromptInputProps {
   isStoppable?: boolean;
   isSubmittable?: boolean;
   modelURI?: AIGatewayModelURI.Type;
-  onAgentChange?: (agentName: AgentName) => void;
   onModelChange: (modelURI: AIGatewayModelURI.Type) => void;
   onStop?: () => void;
   onSubmit: (value: {
@@ -74,7 +67,6 @@ interface PromptInputProps {
     prompt: string;
   }) => void;
   placeholder?: string;
-  showAgentPicker?: boolean;
   submitButtonContent?: React.ReactNode;
 }
 
@@ -96,12 +88,10 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
       isStoppable = false,
       isSubmittable = true,
       modelURI,
-      onAgentChange,
       onModelChange,
       onStop,
       onSubmit,
       placeholder,
-      showAgentPicker = false,
       submitButtonContent,
     },
     ref,
@@ -363,8 +353,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
             <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed border-primary bg-primary/5 backdrop-blur-sm">
               <Upload className="size-8 text-primary" />
               <span className="text-sm font-medium text-primary">
-                Drop files to add to the{" "}
-                {agentName === "chat" ? "chat" : "project"}
+                Drop files to add to the project
               </span>
             </div>
           )}
@@ -393,7 +382,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             onPaste={handlePaste}
-            placeholder={placeholder ?? AGENT_PLACEHOLDER_MAP[agentName]}
+            placeholder={placeholder}
             ref={textareaInnerRef}
             value={value}
           />
@@ -408,13 +397,6 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
 
           <div className="flex items-center justify-end gap-2 pt-2">
             <div className="flex min-w-0 flex-1 items-center gap-2">
-              {showAgentPicker && (
-                <AgentPicker
-                  disabled={disabled}
-                  onChange={onAgentChange}
-                  value={agentName}
-                />
-              )}
               <div className="min-w-0 flex-1">
                 <ModelPicker
                   disabled={disabled}
