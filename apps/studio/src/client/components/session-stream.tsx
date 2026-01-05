@@ -93,14 +93,10 @@ export function SessionStream({
     );
   };
 
-  const isAnyAgentRunning = (appState?.sessionActors ?? []).some(
+  const isAgentRunning = (appState?.sessionActors ?? []).some(
     (s) => s.sessionId === sessionId && s.tags.includes("agent.running"),
   );
-  const isAnyActorActive =
-    appState?.checkoutVersionRefActor.status === "active" ||
-    appState?.createPreviewRefActor.status === "active";
-  const isActive = isAnyAgentRunning || isAnyActorActive;
-  const isAnyAgentAlive = (appState?.sessionActors ?? []).some((s) =>
+  const isAgentAlive = (appState?.sessionActors ?? []).some((s) =>
     s.tags.includes("agent.alive"),
   );
 
@@ -200,7 +196,7 @@ export function SessionStream({
         return (
           <ToolPart
             isLoading={
-              isAnyAgentRunning &&
+              isAgentRunning &&
               lastMessageId === part.metadata.messageId &&
               (part.state === "input-streaming" ||
                 part.state === "input-available")
@@ -217,7 +213,7 @@ export function SessionStream({
             createdAt={part.metadata.createdAt}
             endedAt={part.metadata.endedAt}
             isLoading={
-              isAnyAgentRunning &&
+              isAgentRunning &&
               lastMessageId === part.metadata.messageId &&
               part.state === "streaming"
             }
@@ -252,7 +248,7 @@ export function SessionStream({
       project.subdomain,
       gitCommitParts,
       selectedVersion,
-      isAnyAgentRunning,
+      isAgentRunning,
       lastMessageId,
     ],
   );
@@ -357,11 +353,11 @@ export function SessionStream({
         const isLastMessage = messageIndex === regularMessages.length - 1;
         messageElements.push(
           <MessageError
-            defaultExpanded={isLastMessage && !isAnyAgentRunning}
+            defaultExpanded={isLastMessage && !isAgentRunning}
             key={`error-${message.id}`}
             message={message}
             onContinue={onContinue}
-            showUpgradeAlertIfApplicable={isLastMessage && !isAnyAgentRunning}
+            showUpgradeAlertIfApplicable={isLastMessage && !isAgentRunning}
           />,
         );
       }
@@ -375,14 +371,14 @@ export function SessionStream({
   }, [
     regularMessages,
     renderChatPart,
-    isAnyAgentRunning,
+    isAgentRunning,
     showMessageActions,
     onContinue,
     project.subdomain,
   ]);
 
   const shouldShowErrorRecoveryPrompt = useMemo(() => {
-    if (messages.length === 0 || isAnyAgentRunning) {
+    if (messages.length === 0 || isAgentRunning) {
       return false;
     }
 
@@ -404,10 +400,10 @@ export function SessionStream({
         m.metadata.error.kind !== "invalid-tool-input" &&
         m.metadata.error.kind !== "no-such-tool",
     );
-  }, [messages, isAnyAgentRunning]);
+  }, [messages, isAgentRunning]);
 
   const shouldShowContinueButton = useMemo(() => {
-    if (messages.length === 0 || isAnyAgentRunning) {
+    if (messages.length === 0 || isAgentRunning) {
       return false;
     }
 
@@ -417,7 +413,7 @@ export function SessionStream({
       lastMessage.role === "assistant" &&
       lastMessage.metadata.finishReason === "max-steps"
     );
-  }, [messages, isAnyAgentRunning]);
+  }, [messages, isAgentRunning]);
 
   return (
     <>
@@ -433,9 +429,12 @@ export function SessionStream({
         />
       )}
 
-      {!isActive && !messageError && !isLoading && messages.length === 0 && (
-        <ChatZeroState project={project} selectedSessionId={sessionId} />
-      )}
+      {!isAgentRunning &&
+        !messageError &&
+        !isLoading &&
+        messages.length === 0 && (
+          <ChatZeroState project={project} selectedSessionId={sessionId} />
+        )}
 
       <div className="flex w-full flex-col gap-2">
         {contextMessages.length > 0 && (
@@ -443,7 +442,7 @@ export function SessionStream({
         )}
         <div className="flex flex-col gap-2">{chatElements}</div>
 
-        {isActive && (
+        {isAgentRunning && (
           <div className="flex justify-center py-4">
             <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
           </div>
@@ -467,7 +466,7 @@ export function SessionStream({
           </Alert>
         )}
 
-        {!isAnyAgentAlive && messages.length > 0 && (
+        {!isAgentAlive && messages.length > 0 && (
           <div className="mt-4 border-t pt-4">
             <div className="flex items-center justify-between text-xs text-[10px] text-muted-foreground/60">
               <span>Total chat usage</span>

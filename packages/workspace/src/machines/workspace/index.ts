@@ -27,6 +27,7 @@ import { type AppConfig } from "../../lib/app-config/types";
 import { createAssignEventError } from "../../lib/assign-event-error";
 import { isProjectSubdomain } from "../../lib/is-app";
 import { logUnhandledEvent } from "../../lib/log-unhandled-event";
+import { observeSessionActor } from "../../lib/observe-actor-state";
 import {
   checkoutVersionLogic,
   type CheckoutVersionParentEvent,
@@ -37,6 +38,7 @@ import {
 } from "../../logic/create-preview";
 import { workspaceServerLogic } from "../../logic/server";
 import { type WorkspaceServerParentEvent } from "../../logic/server/types";
+import { publisher } from "../../rpc/publisher";
 import {
   type AbsolutePath,
   AbsolutePathSchema,
@@ -140,24 +142,39 @@ export const workspaceMachine = setup({
           AppSubdomain,
           ActorRefFrom<typeof sessionMachine>[]
         >();
+        const newSessionObservers = new Map(context.sessionObservers);
 
         for (const [
           sessionSubdomain,
           refs,
         ] of context.sessionRefsBySubdomain.entries()) {
-          if (sessionSubdomain === subdomain) {
+          const shouldRemove =
+            sessionSubdomain === subdomain ||
+            (isProjectSubdomain(subdomain) &&
+              sessionSubdomain.endsWith(subdomain));
+
+          if (shouldRemove) {
+            for (const ref of refs) {
+              const sessionSnapshot = ref.getSnapshot();
+              const sessionId = sessionSnapshot.context.sessionId;
+              const observer = newSessionObservers.get(sessionId);
+              if (observer) {
+                observer();
+                newSessionObservers.delete(sessionId);
+              }
+              publisher.publish("appState.session.removed", {
+                sessionId,
+                subdomain: sessionSubdomain,
+              });
+            }
             continue;
           }
-          if (
-            isProjectSubdomain(subdomain) &&
-            sessionSubdomain.endsWith(subdomain)
-          ) {
-            continue;
-          }
+
           newsessionRefsBySubdomain.set(sessionSubdomain, refs);
         }
 
         return {
+          sessionObservers: newSessionObservers,
           sessionRefsBySubdomain: newsessionRefsBySubdomain,
         };
       },
@@ -230,6 +247,7 @@ export const workspaceMachine = setup({
       config: workspaceConfig,
       createPreviewRefs: new Map(),
       runtimeRefs: new Map(),
+      sessionObservers: new Map(),
       sessionRefsBySubdomain: new Map(),
       workspaceServerRef: spawn("workspaceServerLogic", {
         input: {
@@ -453,13 +471,32 @@ export const workspaceMachine = setup({
               sessionId,
             },
           });
+
+          const unsubscribe = observeSessionActor({
+            actor: sessionMachineRef,
+            sessionId,
+            subdomain: appConfig.subdomain,
+          });
+
           const existingSessionActorRefs =
             context.sessionRefsBySubdomain.get(appConfig.subdomain) ?? [];
 
-          // Garbage collect done sessions
+          // Garbage collect done sessions and their observers
           const activeSessionActorRefs = existingSessionActorRefs.filter(
-            (ref) => ref.getSnapshot().status !== "done",
+            (ref) => {
+              const isDone = ref.getSnapshot().status === "done";
+              if (isDone) {
+                const sessionSnapshot = ref.getSnapshot();
+                const doneSessionId = sessionSnapshot.context.sessionId;
+                const observer = context.sessionObservers.get(doneSessionId);
+                if (observer) {
+                  observer();
+                }
+              }
+              return !isDone;
+            },
           );
+
           const newsessionRefsBySubdomain = new Map(
             context.sessionRefsBySubdomain,
           );
@@ -467,7 +504,17 @@ export const workspaceMachine = setup({
             ...activeSessionActorRefs,
             sessionMachineRef,
           ]);
+
+          const newSessionObservers = new Map(context.sessionObservers);
+          newSessionObservers.set(sessionId, unsubscribe);
+
+          publisher.publish("appState.session.added", {
+            sessionId,
+            subdomain: appConfig.subdomain,
+          });
+
           return {
+            sessionObservers: newSessionObservers,
             sessionRefsBySubdomain: newsessionRefsBySubdomain,
           };
         });

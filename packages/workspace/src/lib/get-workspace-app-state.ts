@@ -29,34 +29,8 @@ export async function getWorkspaceAppState({
 
   const workspaceAppState: WorkspaceAppState = {
     app,
-    checkoutVersionRefActor: { status: "does-not-exist" },
-    createPreviewRefActor: { status: "does-not-exist" },
     sessionActors,
   };
-
-  if (workspaceAppState.app.type === "version") {
-    const checkoutVersionRef = context.checkoutVersionRefs.get(
-      workspaceAppState.app.subdomain,
-    );
-    if (checkoutVersionRef) {
-      const checkoutSnapshot = checkoutVersionRef.getSnapshot();
-      workspaceAppState.checkoutVersionRefActor = {
-        status: checkoutSnapshot.status,
-      };
-    }
-  }
-
-  if (workspaceAppState.app.type === "preview") {
-    const createPreviewRef = context.createPreviewRefs.get(
-      workspaceAppState.app.subdomain,
-    );
-    if (createPreviewRef) {
-      const previewSnapshot = createPreviewRef.getSnapshot();
-      workspaceAppState.createPreviewRefActor = {
-        status: previewSnapshot.status,
-      };
-    }
-  }
 
   return ok(workspaceAppState);
 }

@@ -9,6 +9,18 @@ import {
 } from "../schemas/subdomains";
 
 export const publisher = new EventPublisher<{
+  "appState.session.added": {
+    sessionId: StoreId.Session;
+    subdomain: AppSubdomain;
+  };
+  "appState.session.removed": {
+    sessionId: StoreId.Session;
+    subdomain: AppSubdomain;
+  };
+  "appState.session.tagsChanged": {
+    sessionId: StoreId.Session;
+    subdomain: AppSubdomain;
+  };
   "message.removed": {
     messageId: StoreId.Message;
     sessionId: StoreId.Session;

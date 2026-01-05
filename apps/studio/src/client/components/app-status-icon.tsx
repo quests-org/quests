@@ -2,6 +2,7 @@ import { type AppSubdomain } from "@quests/workspace/client";
 import { Check, Loader2, Pause } from "lucide-react";
 
 import { useAppState } from "../hooks/use-app-state";
+import { cn } from "../lib/utils";
 
 interface AppStatusIconProps {
   className?: string;
@@ -20,16 +21,16 @@ export function AppStatusIcon({
 
   switch (true) {
     case tags.includes("agent.paused"): {
-      return <Pause className={`${className} text-warning-foreground`} />;
+      return <Pause className={cn(className, "text-warning-foreground")} />;
     }
-    case appState?.checkoutVersionRefActor.status === "active":
-    case appState?.createPreviewRefActor.status === "active":
     case tags.includes("agent.running"): {
-      return <Loader2 className={`${className} animate-spin`} />;
+      return <Loader2 className={cn(className, "animate-spin")} />;
     }
     case tags.includes("agent.done"): {
       return (
-        <Check className={`${className} text-green-600 dark:text-green-400`} />
+        <Check
+          className={cn(className, "text-green-600 dark:text-green-400")}
+        />
       );
     }
     default: {

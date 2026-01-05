@@ -1,4 +1,5 @@
-import { call, eventIterator } from "@orpc/server";
+import { eventIterator } from "@orpc/server";
+import { mergeGenerators } from "@quests/shared/merge-generators";
 import { isEqual } from "radashi";
 import { z } from "zod";
 
@@ -30,10 +31,25 @@ const bySubdomain = base
     let previousState = await getOrThrow();
     yield previousState;
 
-    for await (const _payload of publisher.subscribe(
-      "workspaceActor.snapshot",
-      { signal },
-    )) {
+    const relevantEvents = [
+      "appState.session.added",
+      "appState.session.removed",
+      "appState.session.tagsChanged",
+    ] as const;
+
+    const subscriptions = relevantEvents.map((eventName) =>
+      publisher.subscribe(eventName, { signal }),
+    );
+
+    for await (const payload of mergeGenerators(subscriptions)) {
+      if (
+        "subdomain" in payload &&
+        payload.subdomain !== input.subdomain &&
+        !payload.subdomain.endsWith(input.subdomain)
+      ) {
+        continue;
+      }
+
       const currentState = await getOrThrow();
 
       if (!isEqual(currentState, previousState)) {
@@ -67,22 +83,8 @@ const bySubdomains = base
   });
 
 export const appState = {
-  bySubdomain,
   bySubdomains,
   live: {
     bySubdomain,
-    bySubdomains: base
-      .input(z.object({ subdomains: AppSubdomainSchema.array() }))
-      .output(eventIterator(WorkspaceAppStateSchema.array()))
-      .handler(async function* ({ context, input, signal }) {
-        yield call(bySubdomains, input, { context, signal });
-
-        for await (const _payload of publisher.subscribe(
-          "workspaceActor.snapshot",
-          { signal },
-        )) {
-          yield call(bySubdomains, input, { context, signal });
-        }
-      }),
   },
 };

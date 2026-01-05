@@ -1,10 +1,7 @@
 import { getAIProviderConfigs } from "@/electron-main/lib/get-ai-provider-configs";
 import { is } from "@electron-toolkit/utils";
 import { aiGatewayApp } from "@quests/ai-gateway";
-import {
-  workspaceMachine,
-  workspacePublisher,
-} from "@quests/workspace/electron";
+import { workspaceMachine } from "@quests/workspace/electron";
 import { app, shell } from "electron";
 import ms from "ms";
 import path from "node:path";
@@ -113,11 +110,6 @@ export function createWorkspaceActor() {
     },
   });
   actor.start();
-
-  actor.subscribe((snapshot) => {
-    // TODO: Move this into workspace itself
-    workspacePublisher.publish("workspaceActor.snapshot", snapshot);
-  });
 
   const snapshot = actor.getSnapshot();
   if (snapshot.status === "error") {
