@@ -3,7 +3,6 @@ import {
   fileViewerAtom,
   navigateFileViewerAtom,
 } from "@/client/atoms/file-viewer";
-import { cn } from "@/client/lib/utils";
 import { formatBytes } from "@quests/workspace/client";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { useRouter } from "@tanstack/react-router";
@@ -14,6 +13,7 @@ import { toast } from "sonner";
 
 import { FileActionsMenu } from "./file-actions-menu";
 import { FileIcon } from "./file-icon";
+import { FileThumbnail } from "./file-thumbnail";
 import { FileViewer } from "./file-viewer";
 import { ImageWithFallback } from "./image-with-fallback";
 import { Badge } from "./ui/badge";
@@ -80,6 +80,23 @@ export function FileViewerModal() {
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [state.isOpen, hasMultipleFiles, navigate]);
+
+  useEffect(() => {
+    if (!state.isOpen || !hasMultipleFiles) {
+      return;
+    }
+
+    const thumbnail = document.querySelector(
+      `#thumbnail-${state.currentIndex}`,
+    );
+    if (thumbnail) {
+      thumbnail.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "center",
+      });
+    }
+  }, [state.currentIndex, state.isOpen, hasMultipleFiles]);
 
   if (!currentFile) {
     return null;
@@ -319,21 +336,25 @@ export function FileViewerModal() {
 
             {hasMultipleFiles && (
               <div className="flex shrink-0 justify-center px-4 pb-8">
-                <div className="flex items-center gap-1.5 py-2">
-                  {state.files.map((_, index) => (
-                    <button
-                      className={cn(
-                        "size-1.5 rounded-full transition-all",
-                        index === state.currentIndex
-                          ? "scale-125 bg-white"
-                          : "bg-white/30 hover:bg-white/50",
-                      )}
+                <div className="flex gap-x-2 overflow-x-auto px-1 py-2">
+                  {state.files.map((file, index) => (
+                    <div
+                      className="shrink-0"
+                      id={`thumbnail-${index}`}
                       key={index}
-                      onClick={() => {
-                        navigate(index);
-                      }}
-                      type="button"
-                    />
+                    >
+                      <FileThumbnail
+                        filename={file.filename}
+                        isSelected={index === state.currentIndex}
+                        mimeType={file.mimeType}
+                        onClick={() => {
+                          navigate(index);
+                        }}
+                        previewUrl={file.url}
+                        showTooltip
+                        size={file.size}
+                      />
+                    </div>
                   ))}
                 </div>
               </div>

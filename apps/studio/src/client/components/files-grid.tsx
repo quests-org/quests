@@ -1,8 +1,8 @@
 import { type FileViewerFile } from "@/client/atoms/file-viewer";
 import { type ProjectSubdomain } from "@quests/workspace/client";
-import { useMemo } from "react";
 
 import { AttachmentItem } from "./attachment-item";
+import { FilePreviewCard } from "./file-preview-card";
 
 export interface FileItem {
   filename: string;
@@ -18,96 +18,44 @@ interface FilesGridProps {
 }
 
 export function FilesGrid({ files }: FilesGridProps) {
-  const { htmlFiles, imageFiles, otherFiles, pdfFiles } = useMemo(() => {
-    const categorized: {
-      htmlFiles: FileItem[];
-      imageFiles: FileItem[];
-      otherFiles: FileItem[];
-      pdfFiles: FileItem[];
-    } = {
-      htmlFiles: [],
-      imageFiles: [],
-      otherFiles: [],
-      pdfFiles: [],
-    };
+  const allFiles: FileViewerFile[] = files.map((f) => ({
+    filename: f.filename,
+    filePath: f.filePath,
+    mimeType: f.mimeType,
+    projectSubdomain: f.projectSubdomain,
+    size: f.size,
+    url: f.previewUrl,
+  }));
 
-    for (const file of files) {
-      if (file.mimeType === "text/html") {
-        categorized.htmlFiles.push(file);
-      } else if (file.mimeType.startsWith("image/")) {
-        categorized.imageFiles.push(file);
-      } else if (file.mimeType === "application/pdf") {
-        categorized.pdfFiles.push(file);
-      } else {
-        categorized.otherFiles.push(file);
-      }
+  const richPreviewFiles: FileItem[] = [];
+  const otherFiles: FileItem[] = [];
+
+  for (const file of files) {
+    const isImage = file.mimeType.startsWith("image/");
+    const isHtml = file.mimeType === "text/html";
+    const isPdf = file.mimeType === "application/pdf";
+    const isVideo = file.mimeType.startsWith("video/");
+    const isAudio = file.mimeType.startsWith("audio/");
+
+    if (isImage || isHtml || isPdf || isVideo || isAudio) {
+      richPreviewFiles.push(file);
+    } else {
+      otherFiles.push(file);
     }
-
-    return categorized;
-  }, [files]);
-
-  const allFiles: FileViewerFile[] = useMemo(
-    () =>
-      files.map((f) => ({
-        filename: f.filename,
-        filePath: f.filePath,
-        mimeType: f.mimeType,
-        projectSubdomain: f.projectSubdomain,
-        size: f.size,
-        url: f.previewUrl,
-      })),
-    [files],
-  );
+  }
 
   return (
     <div className="flex flex-col gap-2">
-      {htmlFiles.length > 0 && (
+      {richPreviewFiles.length > 0 && (
         <div className="grid grid-cols-2 gap-2">
-          {htmlFiles.map((file) => (
-            <AttachmentItem
+          {richPreviewFiles.map((file) => (
+            <FilePreviewCard
               filename={file.filename}
               filePath={file.filePath}
               gallery={allFiles}
-              imageClassName="h-auto w-full"
               key={file.filePath}
               mimeType={file.mimeType}
               previewUrl={file.previewUrl}
-              showHtmlIframe
-              size={file.size}
-            />
-          ))}
-        </div>
-      )}
-
-      {imageFiles.length > 0 && (
-        <div className="grid grid-cols-2 gap-2">
-          {imageFiles.map((file) => (
-            <AttachmentItem
-              filename={file.filename}
-              filePath={file.filePath}
-              gallery={allFiles}
-              imageClassName="aspect-square h-auto w-full object-contain"
-              key={file.filePath}
-              mimeType={file.mimeType}
-              previewUrl={file.previewUrl}
-              size={file.size}
-            />
-          ))}
-        </div>
-      )}
-
-      {pdfFiles.length > 0 && (
-        <div className="grid grid-cols-2 gap-2">
-          {pdfFiles.map((file) => (
-            <AttachmentItem
-              filename={file.filename}
-              filePath={file.filePath}
-              gallery={allFiles}
-              imageClassName="h-auto w-full"
-              key={file.filePath}
-              mimeType={file.mimeType}
-              previewUrl={file.previewUrl}
-              showPdfIframe
               size={file.size}
             />
           ))}
