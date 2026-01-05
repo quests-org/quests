@@ -8,6 +8,7 @@ import {
   TextareaInner,
 } from "@/client/components/ui/textarea-container";
 import { getClientMimeType } from "@/client/lib/get-client-mime-type";
+import { useWindowFileDrop } from "@/client/lib/use-window-file-drop";
 import { cn, isMacOS } from "@/client/lib/utils";
 import { type AIGatewayModelURI } from "@quests/ai-gateway/client";
 import {
@@ -106,12 +107,10 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
     ref,
   ) => {
     const [showAIProviderGuard, setShowAIProviderGuard] = useState(false);
-    const [isDragging, setIsDragging] = useState(false);
     const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
     const textareaRef = useRef<HTMLDivElement>(null);
     const textareaInnerRef = useRef<HTMLTextAreaElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const dragCounterRef = useRef(0);
     const [value, setValue] = useAtom(promptValueAtomFamily(atomKey));
 
     useImperativeHandle(ref, () => ({
@@ -186,50 +185,14 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
       }
     };
 
-    const handleDragEnter = (e: React.DragEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      dragCounterRef.current++;
-      if (e.dataTransfer.types.includes("Files")) {
-        setIsDragging(true);
-      }
-    };
-
-    const handleDragLeave = (e: React.DragEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      dragCounterRef.current--;
-      if (dragCounterRef.current === 0) {
-        setIsDragging(false);
-      }
-    };
-
-    const handleDrop = (e: React.DragEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setIsDragging(false);
-      dragCounterRef.current = 0;
-
-      const items = [...e.dataTransfer.items];
-      const files = e.dataTransfer.files;
-
-      let hasFolders = false;
-      for (const item of items) {
-        if (item.webkitGetAsEntry()?.isDirectory) {
-          hasFolders = true;
-          break;
-        }
-      }
-
-      if (hasFolders) {
-        toast.error(
-          "Folders cannot be uploaded. Please select individual files.",
-        );
-        return;
-      }
-
-      processFiles(files);
-    };
+    const { isDragging } = useWindowFileDrop({
+      onFilesDropped: processFiles,
+      onFolderDropAttempt: () => {
+        toast.error("Folders aren't supported", {
+          description: "However, you can drop multiple files at once.",
+        });
+      },
+    });
 
     const removeUploadedFile = (index: number) => {
       setUploadedFiles((prev) => prev.filter((_, i) => i !== index));
@@ -393,12 +356,6 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
       <>
         <TextareaContainer
           className={cn("relative overflow-hidden", className)}
-          onDragEnter={handleDragEnter}
-          onDragLeave={handleDragLeave}
-          onDragOver={(e) => {
-            e.preventDefault();
-          }}
-          onDrop={handleDrop}
           ref={textareaRef}
           style={{ maxHeight: `${autoResizeMaxHeight}px` }}
         >
