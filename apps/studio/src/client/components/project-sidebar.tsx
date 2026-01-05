@@ -204,7 +204,7 @@ export function ProjectSidebar({
       )}
 
       {filterMode === "chat" && (
-        <div className="p-4" ref={bottomSectionRef}>
+        <div className="px-2 pb-4" ref={bottomSectionRef}>
           <PromptInput
             agentName="app-builder"
             atomKey={project.subdomain}
