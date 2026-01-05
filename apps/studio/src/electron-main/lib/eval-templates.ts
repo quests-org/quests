@@ -20,7 +20,7 @@ export const EvalTemplateGroupSchema = z.object({
 
 type EvalTemplateGroup = z.output<typeof EvalTemplateGroupSchema>;
 
-const SVG_SYSTEM_PROMPT = `Create an SVG matching the following description inline in ./src/client/app.tsx.`;
+const SVG_SYSTEM_PROMPT = "Create an SVG matching the following description";
 
 /* cspell:disable */
 const EVAL_TEMPLATE_GROUPS: EvalTemplateGroup[] = [
@@ -406,67 +406,63 @@ const EVAL_TEMPLATE_GROUPS: EvalTemplateGroup[] = [
       {
         iconName: "grid",
         name: "Tic-Tac-Toe Winning Move",
-        systemPrompt: SVG_SYSTEM_PROMPT,
         userPrompt:
           "Show a tic-tac-toe board (3x3 grid) where X is about to win with three in a row diagonally. Display X's and O's clearly with the winning diagonal highlighted or emphasized.",
       },
       {
         iconName: "grid",
         name: "Checkers Triple Jump",
-        systemPrompt: SVG_SYSTEM_PROMPT,
         userPrompt:
           "Show a checkers board in a state where a red king is positioned to make a triple jump over black pieces. Include the 8x8 grid, alternating colors, and show the pieces with crowns for kings.",
       },
       {
         iconName: "grid",
         name: "Chess Endgame Position",
-        systemPrompt: SVG_SYSTEM_PROMPT,
         userPrompt:
           "Show a chess board (8x8 alternating light and dark squares) with an endgame position: a white king and queen on one side, a black king on the other, with the black king in check. Display pieces with distinct colors (white pieces in cream/white, black pieces in dark gray/black) and use classic chess piece symbols or silhouettes.",
       },
       {
         iconName: "home",
         name: "Monopoly Bankruptcy Scenario",
-        systemPrompt: SVG_SYSTEM_PROMPT,
         userPrompt:
           "Show a Monopoly board where one player is on the verge of bankruptcy, with properties owned by different players (use colors for ownership), hotels on Boardwalk and Park Place, and player tokens on specific spaces like 'Go to Jail.'",
       },
       {
         iconName: "grid",
         name: "Scrabble High-Score Word Placement",
-        systemPrompt: SVG_SYSTEM_PROMPT,
         userPrompt:
           "Show a Scrabble board with tiles forming high-scoring words like 'QUIXOTIC' across a triple word score, intersecting with other words. Show the 15x15 grid, premium squares in colors, and letter tiles with values.",
       },
       {
         iconName: "grid",
         name: "Battleship Sunken Fleet",
-        systemPrompt: SVG_SYSTEM_PROMPT,
         userPrompt:
           "Depict a Battleship game board (10x10 grid) where one player's fleet is mostly sunk, showing hits (red pegs), misses (white pegs), and remaining ships partially hidden. Include labels for rows (A-J) and columns (1-10).",
       },
       {
         iconName: "grid",
         name: "Minesweeper Flagged Minefield",
-        systemPrompt: SVG_SYSTEM_PROMPT,
         userPrompt:
           "Show a Minesweeper board (16x16 grid) with several cells revealed showing numbers (1-8), flags on suspected mines, and one hidden mine exposed for demonstration. Use gray for unrevealed, colors for numbers.",
       },
       {
         iconName: "grid",
         name: "Connect Four Winning Diagonal",
-        systemPrompt: SVG_SYSTEM_PROMPT,
         userPrompt:
           "Represent a Connect Four board (7x6 grid) with red and yellow discs, showing a winning diagonal for red while yellow has a potential but blocked win. Include the frame and slots.",
       },
       {
         iconName: "grid",
         name: "Crossword Puzzle Intersection",
-        systemPrompt: SVG_SYSTEM_PROMPT,
         userPrompt:
           "Show a crossword puzzle grid (15x15) partially filled in, with black squares forming the pattern, numbered cells, and several completed words intersecting both horizontally and vertically.",
       },
-    ],
+    ].map((template) =>
+      EvalTemplateSchema.parse({
+        ...template,
+        systemPrompt: SVG_SYSTEM_PROMPT,
+      }),
+    ),
   },
   {
     name: "Influencer Evals",
