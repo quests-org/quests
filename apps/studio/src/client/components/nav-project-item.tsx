@@ -28,7 +28,7 @@ import {
   StarOff,
   TrashIcon,
 } from "lucide-react";
-import { memo, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 
 import { AppStatusIcon } from "./app-status-icon";
 
@@ -52,6 +52,7 @@ export const NavProjectItem = memo(function NavProjectItem({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(project.title);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const { isPending: isRenameLoading, mutateAsync: renameProject } =
     useMutation(rpcClient.workspace.project.update.mutationOptions());
@@ -72,6 +73,13 @@ export const NavProjectItem = memo(function NavProjectItem({
     setEditValue(project.title);
     setIsEditing(true);
   };
+
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [isEditing]);
 
   const handleCancelEdit = () => {
     setIsEditing(false);
@@ -132,7 +140,6 @@ export const NavProjectItem = memo(function NavProjectItem({
             size="sm"
           />
           <Input
-            autoFocus
             className="-ml-1 h-7 pl-1 text-sm"
             disabled={isRenameLoading}
             onBlur={() => {
@@ -142,6 +149,7 @@ export const NavProjectItem = memo(function NavProjectItem({
               setEditValue(e.target.value);
             }}
             onKeyDown={handleKeyDown}
+            ref={inputRef}
             value={editValue}
           />
         </div>
@@ -152,9 +160,9 @@ export const NavProjectItem = memo(function NavProjectItem({
           isActive={isActive || undefined}
         >
           <InternalLink
+            onDoubleClick={handleStartEdit}
             openInCurrentTab
             params={{ subdomain: project.subdomain }}
-            title={project.title}
             to="/projects/$subdomain"
           >
             <SmallAppIcon
@@ -163,7 +171,7 @@ export const NavProjectItem = memo(function NavProjectItem({
               mode={project.mode}
               size="sm"
             />
-            <span onDoubleClick={handleStartEdit}>{project.title}</span>
+            <span>{project.title}</span>
           </InternalLink>
         </SidebarMenuButton>
       )}
