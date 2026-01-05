@@ -20,6 +20,7 @@ import path from "node:path";
 import icon from "../../../../resources/icon.png?asset";
 
 let toolbar: Electron.CrossProcessExports.WebContentsView | null = null;
+let wasWindowBlurred = false;
 
 export async function createMainWindow() {
   const boundsState = windowStateStore.get("bounds");
@@ -62,12 +63,18 @@ export async function createMainWindow() {
 
   mainWindow.on("resize", saveState);
   mainWindow.on("move", saveState);
+  mainWindow.on("blur", () => {
+    wasWindowBlurred = true;
+  });
   mainWindow.on("focus", () => {
     publisher.publish("window.focus-changed", null);
-    // Required or the sidebar will always be focused instead when the user
-    // brings the window back to focus
-    const tabsManager = getTabsManager();
-    tabsManager?.focusCurrentTab();
+    // Only focus current tab if the user was away from the app entirely,
+    // not when switching between web contents views within the app
+    if (wasWindowBlurred) {
+      const tabsManager = getTabsManager();
+      tabsManager?.focusCurrentTab();
+      wasWindowBlurred = false;
+    }
   });
   mainWindow.on("ready-to-show", () => {
     const window = getMainWindow();
