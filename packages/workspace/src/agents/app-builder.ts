@@ -183,6 +183,7 @@ export const appBuilderAgent = setupAgent({
           text: dedent`
             <system_info>
             Operating system: ${getSystemInfo()}
+            Current date: ${now.toLocaleDateString("en-US", { day: "numeric", month: "long", weekday: "long", year: "numeric" })}
             </system_info>
 
             ${fileTreeResult.match(
