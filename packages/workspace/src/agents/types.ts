@@ -1,5 +1,4 @@
 import { type AIGatewayLanguageModel } from "@quests/ai-gateway";
-import { z } from "zod";
 
 import type { InternalToolName } from "../tools/all";
 import type { AnyAgentTool } from "../tools/types";
@@ -7,8 +6,6 @@ import type { AnyAgentTool } from "../tools/types";
 import { type AppConfig } from "../lib/app-config/types";
 import { type SessionMessage } from "../schemas/session/message";
 import { type StoreId } from "../schemas/store-id";
-
-export const AgentNameSchema = z.enum(["chat", "app-builder"]);
 
 export interface Agent<T extends AgentTools> {
   agentTools: T;
@@ -40,7 +37,7 @@ export interface Agent<T extends AgentTools> {
   }) => Promise<boolean>;
 }
 
-export type AgentName = z.output<typeof AgentNameSchema>;
+export type AgentName = "main";
 
 export type AgentTools = Partial<Record<InternalToolName, AnyAgentTool>>;
 

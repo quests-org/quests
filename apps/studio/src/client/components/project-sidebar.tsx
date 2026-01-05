@@ -74,7 +74,6 @@ export function ProjectSidebar({
   );
 
   const { handleContinue } = useContinueSession({
-    agentName: "app-builder",
     modelURI: selectedModelURI,
     onSuccess: () => {
       setFilterMode("chat");
@@ -206,7 +205,6 @@ export function ProjectSidebar({
       {filterMode === "chat" && (
         <div className="px-2 pb-4" ref={bottomSectionRef}>
           <PromptInput
-            agentName="app-builder"
             atomKey={project.subdomain}
             autoFocus
             isLoading={
@@ -219,7 +217,7 @@ export function ProjectSidebar({
             onStop={() => {
               stopSessions.mutate({ subdomain: project.subdomain });
             }}
-            onSubmit={({ agentName, files, modelURI, prompt }) => {
+            onSubmit={({ files, modelURI, prompt }) => {
               const targetSessionId =
                 selectedSessionId ?? StoreId.newSessionId();
 
@@ -239,7 +237,6 @@ export function ProjectSidebar({
               if (selectedSessionId) {
                 createMessage.mutate(
                   {
-                    agentName,
                     files: mappedFiles,
                     message,
                     modelURI,
@@ -269,7 +266,6 @@ export function ProjectSidebar({
               } else {
                 createSessionWithMessage.mutate(
                   {
-                    agentName: "app-builder",
                     files: mappedFiles,
                     message,
                     modelURI,

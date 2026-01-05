@@ -19,8 +19,7 @@ import {
   type SnapshotFrom,
 } from "xstate";
 
-import { AGENTS } from "../../agents/constants";
-import { type AgentName } from "../../agents/types";
+import { mainAgent } from "../../agents/main";
 import { absolutePathJoin } from "../../lib/absolute-path-join";
 import { createAppConfig } from "../../lib/app-config/create";
 import { type AppConfig } from "../../lib/app-config/types";
@@ -61,7 +60,6 @@ export type WorkspaceEvent =
   | {
       type: "addMessage";
       value: {
-        agentName: AgentName;
         message: SessionMessage.UserWithParts;
         model: AIGatewayLanguageModel;
         sessionId: StoreId.Session;
@@ -71,7 +69,6 @@ export type WorkspaceEvent =
   | {
       type: "createSession";
       value: {
-        agentName: AgentName;
         message: SessionMessage.UserWithParts;
         model: AIGatewayLanguageModel;
         sessionId: StoreId.Session;
@@ -89,7 +86,6 @@ export type WorkspaceEvent =
   | {
       type: "internal.spawnSession";
       value: {
-        agentName: AgentName;
         appConfig: AppConfig;
         message: SessionMessage.UserWithParts;
         model: AIGatewayLanguageModel;
@@ -309,7 +305,6 @@ export const workspaceMachine = setup({
           return {
             type: "internal.spawnSession",
             value: {
-              agentName: event.value.agentName,
               appConfig,
               message: event.value.message,
               model: event.value.model,
@@ -346,7 +341,6 @@ export const workspaceMachine = setup({
         return {
           type: "internal.spawnSession",
           value: {
-            agentName: event.value.agentName,
             appConfig,
             message: event.value.message,
             model: event.value.model,
@@ -443,25 +437,11 @@ export const workspaceMachine = setup({
     ],
     "internal.spawnSession": {
       actions: enqueueActions(({ enqueue, event }) => {
-        // Boot the runtime if it's not already running to ensure packages are
-        // installed for the agent to use.
-        if (event.value.agentName !== "chat") {
-          enqueue.raise({
-            type: "heartbeat",
-            value: {
-              appConfig: event.value.appConfig,
-              createdAt: Date.now(),
-              shouldCreate: false,
-            },
-          });
-        }
-
         enqueue.assign(({ context, self, spawn }) => {
-          const { agentName, appConfig, message, model, sessionId } =
-            event.value;
+          const { appConfig, message, model, sessionId } = event.value;
           const sessionMachineRef = spawn("sessionMachine", {
             input: {
-              agent: AGENTS[agentName],
+              agent: mainAgent,
               appConfig,
               baseLLMRetryDelayMs: ms("1 second"),
               llmRequestChunkTimeoutMs: ms("5 minutes"),

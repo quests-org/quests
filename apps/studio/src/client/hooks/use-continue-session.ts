@@ -1,20 +1,14 @@
 import { rpcClient } from "@/client/rpc/client";
 import { type AIGatewayModelURI } from "@quests/ai-gateway/client";
-import {
-  type AgentName,
-  type ProjectSubdomain,
-  StoreId,
-} from "@quests/workspace/client";
+import { type ProjectSubdomain, StoreId } from "@quests/workspace/client";
 import { useMutation } from "@tanstack/react-query";
 
 export function useContinueSession({
-  agentName,
   modelURI,
   onSuccess,
   sessionId,
   subdomain,
 }: {
-  agentName: AgentName;
   modelURI: AIGatewayModelURI.Type | undefined;
   onSuccess?: () => void;
   sessionId: StoreId.Session | undefined;
@@ -34,7 +28,6 @@ export function useContinueSession({
 
     createMessage.mutate(
       {
-        agentName,
         message: {
           id: messageId,
           metadata: {

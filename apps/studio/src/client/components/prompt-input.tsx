@@ -10,10 +10,7 @@ import { getClientMimeType } from "@/client/lib/get-client-mime-type";
 import { useWindowFileDrop } from "@/client/lib/use-window-file-drop";
 import { cn, isMacOS } from "@/client/lib/utils";
 import { type AIGatewayModelURI } from "@quests/ai-gateway/client";
-import {
-  type AgentName,
-  type Upload as UploadType,
-} from "@quests/workspace/client";
+import { type Upload as UploadType } from "@quests/workspace/client";
 import { useQuery } from "@tanstack/react-query";
 import { useAtom } from "jotai";
 import { ArrowUp, Loader2, Paperclip, Square, Upload } from "lucide-react";
@@ -46,7 +43,6 @@ const MAX_PASTE_TEXT_LENGTH = 5000;
 const MAX_FILE_PREVIEW_SIZE = 10 * 1024 * 1024;
 
 interface PromptInputProps {
-  agentName: AgentName;
   allowOpenInNewTab?: boolean;
   atomKey: PromptValueAtomKey;
   autoFocus?: boolean;
@@ -60,7 +56,6 @@ interface PromptInputProps {
   onModelChange: (modelURI: AIGatewayModelURI.Type) => void;
   onStop?: () => void;
   onSubmit: (value: {
-    agentName: AgentName;
     files?: UploadType.Type[];
     modelURI: AIGatewayModelURI.Type;
     openInNewTab?: boolean;
@@ -77,7 +72,6 @@ interface PromptInputRef {
 export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
   (
     {
-      agentName,
       allowOpenInNewTab = false,
       atomKey,
       autoFocus = false,
@@ -234,7 +228,6 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
             : trimmedPrompt;
 
         onSubmit({
-          agentName,
           files:
             uploadedFiles.length > 0
               ? uploadedFiles.map((f) => ({
@@ -253,7 +246,6 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
         }
       },
       [
-        agentName,
         allowOpenInNewTab,
         modelURI,
         onSubmit,

@@ -100,7 +100,6 @@ function RouteComponent() {
           )}
           <div>
             <PromptInput
-              agentName="app-builder"
               allowOpenInNewTab
               atomKey="$$new-tab$$"
               autoFocus
@@ -108,13 +107,7 @@ function RouteComponent() {
               isLoading={createProjectMutation.isPending}
               modelURI={selectedModelURI}
               onModelChange={setSelectedModelURI}
-              onSubmit={({
-                agentName,
-                files,
-                modelURI,
-                openInNewTab,
-                prompt,
-              }) => {
+              onSubmit={({ files, modelURI, openInNewTab, prompt }) => {
                 const sessionId = StoreId.newSessionId();
                 const { files: mappedFiles, message } = createUserMessage({
                   files,
@@ -128,7 +121,7 @@ function RouteComponent() {
                   {
                     files: mappedFiles,
                     message,
-                    mode: agentName === "chat" ? "chat" : "app-builder",
+                    mode: "app-builder",
                     modelURI,
                     sessionId,
                   },

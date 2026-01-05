@@ -3,7 +3,6 @@ import { AIGatewayModelURI } from "@quests/ai-gateway";
 import { mergeGenerators } from "@quests/shared/merge-generators";
 import { z } from "zod";
 
-import { AgentNameSchema } from "../../agents/types";
 import { createAppConfig } from "../../lib/app-config/create";
 import { createMessage } from "../../lib/create-message";
 import { generateSessionTitle } from "../../lib/generate-session-title";
@@ -145,7 +144,6 @@ const create = base
 const createWithMessage = base
   .input(
     z.object({
-      agentName: AgentNameSchema,
       files: z.array(Upload.Schema).optional(),
       message: SessionMessage.UserSchemaWithParts,
       modelURI: AIGatewayModelURI.Schema,
@@ -204,7 +202,6 @@ const createWithMessage = base
     context.workspaceRef.send({
       type: "createSession",
       value: {
-        agentName: input.agentName,
         message: messageWithFiles,
         model,
         sessionId: input.sessionId,

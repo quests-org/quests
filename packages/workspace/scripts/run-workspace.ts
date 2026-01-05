@@ -240,7 +240,6 @@ rl.on("line", (input) => {
       void call(
         messageRoute.create,
         {
-          agentName: project.mode === "chat" ? "chat" : "app-builder",
           files,
           message,
           modelURI,

@@ -3,7 +3,6 @@ import { AIGatewayModelURI } from "@quests/ai-gateway";
 import { mergeGenerators } from "@quests/shared/merge-generators";
 import { z } from "zod";
 
-import { AgentNameSchema } from "../../agents/types";
 import { createAppConfig } from "../../lib/app-config/create";
 import { createMessage } from "../../lib/create-message";
 import { resolveModel } from "../../lib/resolve-model";
@@ -46,7 +45,6 @@ const listWithParts = base
 const create = base
   .input(
     z.object({
-      agentName: AgentNameSchema,
       files: z.array(Upload.Schema).optional(),
       message: SessionMessage.UserSchemaWithParts,
       modelURI: AIGatewayModelURI.Schema,
@@ -59,7 +57,7 @@ const create = base
     async ({
       context,
       errors,
-      input: { agentName, files, message, modelURI, sessionId, subdomain },
+      input: { files, message, modelURI, sessionId, subdomain },
     }) => {
       const model = await resolveModel(modelURI, context, errors);
 
@@ -103,7 +101,6 @@ const create = base
       context.workspaceRef.send({
         type: "addMessage",
         value: {
-          agentName,
           message: messageWithFiles,
           model,
           sessionId,

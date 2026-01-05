@@ -1,4 +1,3 @@
-export type { AgentName } from "./agents/types";
 export { GIT_AUTHOR, MAX_PROMPT_STORAGE_LENGTH } from "./constants";
 export { formatBytes } from "./lib/format-bytes";
 export { getToolNameByType } from "./lib/get-tool-name-by-type";

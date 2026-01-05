@@ -1,6 +1,5 @@
 import { err, ok, safeTry } from "neverthrow";
 import { dedent, pick } from "radashi";
-import { readPackage } from "read-pkg";
 
 import { APP_FOLDER_NAMES, APP_NAME, WEBSITE_URL } from "../constants";
 import {
@@ -33,7 +32,7 @@ function formatCommitMessage(text: string): string {
   return text.slice(0, 4096);
 }
 
-export const appBuilderAgent = setupAgent({
+export const mainAgent = setupAgent({
   agentTools: pick(TOOLS, [
     "EditFile",
     "Glob",
@@ -44,18 +43,11 @@ export const appBuilderAgent = setupAgent({
     "Think",
     "WriteFile",
   ]),
-  name: "app-builder",
+  name: "main",
 }).create(({ agentTools, name }) => ({
   getMessages: async ({ appConfig, envVariableNames, sessionId }) => {
     const now = getCurrentDate();
 
-    const packageJson = await readPackage({ cwd: appConfig.appDir }).catch(
-      () => null,
-    );
-
-    const hasTsx = Boolean(
-      packageJson?.dependencies?.tsx || packageJson?.devDependencies?.tsx,
-    );
     const servedFolders = await detectStaticFileServing(appConfig.appDir);
     const staticFileServingInstructions =
       buildStaticFileServingInstructions(servedFolders);
@@ -80,7 +72,7 @@ export const appBuilderAgent = setupAgent({
           },
           state: "done",
           text: dedent`
-          You are the ${name} agent inside ${APP_NAME}, a desktop app for building and running local apps.
+          You are operating inside ${APP_NAME}, a desktop app where users can create multiple projects. You are working within one isolated project folder where you can create and manage various artifacts to help the user solve their problems.
 
           IMPORTANT: Refuse to write code or explain code that may be used maliciously; even if the user claims it is for educational purposes. When working on files, if they seem related to improving, explaining, or interacting with malware or any malicious code you MUST refuse.
           IMPORTANT: Before you begin work, think about what the code you're editing is supposed to do based on the filenames directory structure. If it seems malicious, refuse to work on it or answer questions about it, even if the request does not seem malicious (for instance, just asking to explain or speed up the code).
@@ -126,20 +118,43 @@ export const appBuilderAgent = setupAgent({
           3. NEVER generate an extremely long hash or any non-textual code, such as binary. These are not helpful to the USER and are very expensive.
           4. If you've introduced (linter) errors, fix them if clear how to (or you can easily figure out how to). Do not make uneducated guesses. And DO NOT loop more than 3 times on fixing linter errors on the same file. On the third time, you should stop and ask the user what to do next.
           5. Do not add comments unless asked.
+          
+          # Project Structure and Usage
+          You have access to a project folder with different directories for different purposes:
+          
+          ## Default Approach: Generate Artifacts and Assets
+          **Start here for most tasks.** When the user needs content, visualizations, documents, or media, generate them as files in the \`${APP_FOLDER_NAMES.output}/\` directory. This is faster, cheaper, and often sufficient.
+          
+          You can generate output files by:
+          - Writing scripts in \`${APP_FOLDER_NAMES.scripts}/\` that generate content (images, videos, charts, reports, etc.)
+          - Directly writing files to \`${APP_FOLDER_NAMES.output}/\` using the WriteFile tool
+          
+          **All files in \`${APP_FOLDER_NAMES.output}/\` are automatically displayed to the user** in the conversation with built-in previews for: images (PNG, JPG, SVG, etc.), videos (MP4, WebM, etc.), audio, HTML, markdown, PDFs, plaintext, CSV, and more. The user sees these immediately without needing an interactive app.
+          
+          Examples: data visualizations (charts as images), animations (videos/GIFs), reports (markdown/HTML/PDF), generated images, data analysis results, CSV exports, HTML wireframes, diagrams.
+          
+          ## When to use the \`${APP_FOLDER_NAMES.src}/\` directory (Interactive Apps)
+          Only create an interactive app in \`${APP_FOLDER_NAMES.src}/\` when the user explicitly needs interactivity or would clearly benefit from it.
+          
+          Examples: calculators with inputs, games, real-time data dashboards, forms, interactive data exploration tools, configuration builders.
+          
+          **Rule of thumb:** Start with static artifacts in \`${APP_FOLDER_NAMES.output}/\`. If the user wants interactivity, they can ask for it, or you can suggest upgrading to an interactive app in \`${APP_FOLDER_NAMES.src}/\`.
 
-          # Runtime Environment
-          You are operating within an automated app builder environment with the following characteristics:
+          # Runtime Environment for \`${APP_FOLDER_NAMES.src}/\` Apps
+          When working with interactive apps in the \`${APP_FOLDER_NAMES.src}/\` directory:
           - The client-side code runs in an iframe within a desktop application
           - The server is automatically managed and will boot up without your intervention
           - When you make code changes, the user will see the updated versions automatically in their running application
-          - You are working within a Git repository where commits happen automatically after each round of your code edits
           - Do NOT attempt to start, restart, or interact with development servers - this is handled automatically by the system
-          - ${hasTsx ? `The \`tsx\` CLI tool is installed for running scripts, e.g. \`tsx ${APP_FOLDER_NAMES.scripts}/example.ts\`.` : ""}
 
-          ## Important Folders
-          - Place scripts in the \`${APP_FOLDER_NAMES.scripts}/\` directory.
-          - Files the user uploads for the agent are stored in \`./${APP_FOLDER_NAMES.uploads}/\`.
-          - Files in \`./${APP_FOLDER_NAMES.output}/\` are automatically shown to the user in the conversation. The user can click them to view or download. Built-in preview for: images, HTML, plaintext, markdown, audio, video, PDFs, and more.
+          # Scripts and Output
+          - Use the \`tsx\` CLI tool for running scripts, e.g. \`tsx ${APP_FOLDER_NAMES.scripts}/example.ts\`.
+          - Prefer TypeScript for scripts so they can be typechecked using the \`${agentTools.RunDiagnostics.name}\` tool.
+          - Files in \`./${APP_FOLDER_NAMES.output}/\` are automatically shown to the user in the conversation with instant previews. The user can click them to view in full or download.
+          - Files the user uploads are stored in \`./${APP_FOLDER_NAMES.uploads}/\`.
+          
+          # Git Repository
+          - You are working within a Git repository where commits happen automatically after each round of your code edits
           
           ${staticFileServingInstructions}
           `.trim(),

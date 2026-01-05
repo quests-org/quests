@@ -55,7 +55,6 @@ export function ProjectViewChat({
   );
 
   const { handleContinue } = useContinueSession({
-    agentName: "chat",
     modelURI: selectedModelURI,
     sessionId: selectedSessionId,
     subdomain: project.subdomain,
@@ -118,7 +117,6 @@ export function ProjectViewChat({
             ref={bottomSectionRef}
           >
             <PromptInput
-              agentName="chat"
               atomKey={project.subdomain}
               autoFocus
               isLoading={createMessage.isPending}
@@ -129,7 +127,7 @@ export function ProjectViewChat({
               onStop={() => {
                 stopSessions.mutate({ subdomain: project.subdomain });
               }}
-              onSubmit={({ agentName, files, modelURI, prompt }) => {
+              onSubmit={({ files, modelURI, prompt }) => {
                 if (!selectedSessionId) {
                   return;
                 }
@@ -149,7 +147,6 @@ export function ProjectViewChat({
 
                 createMessage.mutate(
                   {
-                    agentName,
                     files: mappedFiles,
                     message,
                     modelURI,

@@ -74,10 +74,8 @@ export namespace SessionMessage {
   const ContextMetadataSchema = BaseMetadataSchema.extend({
     agentName: z
       .custom<AgentName>()
-      // Migrate legacy "code" agent name to "app-builder"
-      .transform((value) =>
-        (value as string) === "code" ? "app-builder" : value,
-      ),
+      // Migrate legacy "code" agent name
+      .transform((value) => ((value as string) === "code" ? "main" : value)),
     realRole: z.enum(["system", "user", "assistant"]),
   });
   const SystemMetadataSchema = BaseMetadataSchema;
