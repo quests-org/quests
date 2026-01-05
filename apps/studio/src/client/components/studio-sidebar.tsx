@@ -25,7 +25,7 @@ import {
   SidebarIcon,
   Telescope,
 } from "lucide-react";
-import * as React from "react";
+import { useMemo } from "react";
 
 export function StudioSidebar({
   ...props
@@ -42,7 +42,7 @@ export function StudioSidebar({
 
   const matches = useMatchesForPathname(selectedTab?.pathname ?? "");
 
-  const primaryNavItems = React.useMemo(
+  const primaryNavItems = useMemo(
     () => [
       {
         icon: PlusIcon,
@@ -90,12 +90,12 @@ export function StudioSidebar({
     rpcClient.sidebar.close.mutationOptions(),
   );
 
-  const favoriteSubdomains = React.useMemo(
+  const favoriteSubdomains = useMemo(
     () => new Set(favorites?.map((r) => r.subdomain) ?? []),
     [favorites],
   );
 
-  const filteredProjects = React.useMemo(() => {
+  const filteredProjects = useMemo(() => {
     if (!projectsData?.projects || !favorites?.length) {
       return projectsData?.projects ?? [];
     }

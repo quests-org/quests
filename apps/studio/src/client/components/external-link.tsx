@@ -4,7 +4,7 @@ import { rpcClient } from "@/client/rpc/client";
 import { isDefinedError } from "@orpc/client";
 import { addRef } from "@quests/shared";
 import { useMutation } from "@tanstack/react-query";
-import * as React from "react";
+import { useCallback } from "react";
 import { toast } from "sonner";
 
 export function ExternalLink(
@@ -31,7 +31,7 @@ export function ExternalLink(
     }),
   );
 
-  const handleClick = React.useCallback(
+  const handleClick = useCallback(
     async (event: React.MouseEvent<HTMLAnchorElement>) => {
       event.preventDefault();
       const url = event.currentTarget.href;

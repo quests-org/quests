@@ -34,7 +34,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import * as React from "react";
+import { useState } from "react";
 
 export function ProjectsDataTable({
   bulkActions,
@@ -50,12 +50,9 @@ export function ProjectsDataTable({
   rowSelection: RowSelectionState;
 }) {
   "use no memo"; // for useReactTable, see https://github.com/TanStack/table/issues/6137
-  const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    [],
-  );
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable<WorkspaceAppProject>({
