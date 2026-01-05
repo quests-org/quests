@@ -1,5 +1,4 @@
 pnpm-lock.yaml
-worker-configuration.d.ts
 registry/
 *.local/
 **/.wrangler
