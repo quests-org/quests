@@ -47,18 +47,20 @@ export function FilesGrid({ files }: FilesGridProps) {
   return (
     <div className="flex flex-col gap-2">
       {richPreviewFiles.length > 0 && (
-        <div className="grid grid-cols-2 gap-2">
-          {richPreviewFiles.map((file) => (
-            <FilePreviewCard
-              filename={file.filename}
-              filePath={file.filePath}
-              gallery={allFiles}
-              key={file.filePath}
-              mimeType={file.mimeType}
-              previewUrl={file.previewUrl}
-              size={file.size}
-            />
-          ))}
+        <div className="@container">
+          <div className="grid grid-cols-1 gap-2 @sm:grid-cols-2 @2xl:grid-cols-3">
+            {richPreviewFiles.map((file) => (
+              <FilePreviewCard
+                filename={file.filename}
+                filePath={file.filePath}
+                gallery={allFiles}
+                key={file.filePath}
+                mimeType={file.mimeType}
+                previewUrl={file.previewUrl}
+                size={file.size}
+              />
+            ))}
+          </div>
         </div>
       )}
 
