@@ -1,4 +1,3 @@
-import { type FileViewerFile } from "@/client/atoms/file-viewer";
 import { getAssetUrl } from "@/client/lib/get-asset-url";
 import {
   type ProjectSubdomain,
@@ -7,7 +6,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 
 import { rpcClient } from "../rpc/client";
-import { AttachmentItem } from "./attachment-item";
+import { FilesGrid } from "./files-grid";
 
 interface FileAttachmentsCardProps {
   files: SessionMessageDataPart.FileAttachmentDataPart[];
@@ -28,43 +27,19 @@ export function FileAttachmentsCard({
     return null;
   }
 
-  const gallery: FileViewerFile[] = files.map((f) => ({
-    filename: f.filename,
-    filePath: f.filePath,
-    mimeType: f.mimeType,
-    projectSubdomain,
-    size: f.size,
-    url: getAssetUrl({
+  const fileItems = files.map((file) => ({
+    filename: file.filename,
+    filePath: file.filePath,
+    mimeType: file.mimeType,
+    previewUrl: getAssetUrl({
       assetBase: app.urls.assetBase,
-      filePath: f.filePath,
-      versionRef: f.gitRef,
+      filePath: file.filePath,
+      versionRef: file.gitRef,
     }),
-    versionRef: f.gitRef,
+    projectSubdomain,
+    size: file.size,
+    versionRef: file.gitRef,
   }));
 
-  return (
-    <div className="flex flex-wrap items-start justify-end gap-2">
-      {files.map((file) => {
-        const assetUrl = getAssetUrl({
-          assetBase: app.urls.assetBase,
-          filePath: file.filePath,
-          versionRef: file.gitRef,
-        });
-
-        return (
-          <AttachmentItem
-            filename={file.filename}
-            filePath={file.filePath}
-            gallery={gallery}
-            key={file.filePath}
-            mimeType={file.mimeType}
-            previewUrl={assetUrl}
-            projectSubdomain={projectSubdomain}
-            size={file.size}
-            versionRef={file.gitRef}
-          />
-        );
-      })}
-    </div>
-  );
+  return <FilesGrid files={fileItems} />;
 }
