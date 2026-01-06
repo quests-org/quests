@@ -78,7 +78,7 @@ export function FilePreviewCard({
     return (
       <Tooltip>
         <TooltipTrigger asChild>
-          <div className="group relative overflow-hidden rounded-lg border border-border bg-background">
+          <div className="group relative overflow-hidden rounded-lg border border-border bg-background @sm:col-span-2">
             <PreviewHeader filename={filename} mimeType={mimeType} />
             <div className="p-2">
               <audio className="w-full" controls src={previewUrl} />
