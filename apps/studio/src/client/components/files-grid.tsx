@@ -1,8 +1,12 @@
-import { type FileViewerFile } from "@/client/atoms/file-viewer";
+import {
+  type FileViewerFile,
+  openFileViewerAtom,
+} from "@/client/atoms/file-viewer";
 import { type ProjectSubdomain } from "@quests/workspace/client";
+import { useSetAtom } from "jotai";
 
-import { AttachmentItem } from "./attachment-item";
 import { FilePreviewCard } from "./file-preview-card";
+import { FileThumbnail } from "./file-thumbnail";
 
 export interface FileItem {
   filename: string;
@@ -19,6 +23,8 @@ interface FilesGridProps {
 }
 
 export function FilesGrid({ files }: FilesGridProps) {
+  const openFileViewer = useSetAtom(openFileViewerAtom);
+
   const allFiles: FileViewerFile[] = files.map((f) => ({
     filename: f.filename,
     filePath: f.filePath,
@@ -28,6 +34,14 @@ export function FilesGrid({ files }: FilesGridProps) {
     url: f.previewUrl,
     versionRef: f.versionRef,
   }));
+
+  const handleFileClick = (file: FileItem) => {
+    const currentIndex = allFiles.findIndex((f) => f.url === file.previewUrl);
+    openFileViewer({
+      currentIndex: currentIndex === -1 ? 0 : currentIndex,
+      files: allFiles,
+    });
+  };
 
   const richPreviewFiles: FileItem[] = [];
   const otherFiles: FileItem[] = [];
@@ -56,9 +70,11 @@ export function FilesGrid({ files }: FilesGridProps) {
               <FilePreviewCard
                 filename={file.filename}
                 filePath={file.filePath}
-                gallery={allFiles}
                 key={file.filePath}
                 mimeType={file.mimeType}
+                onClick={() => {
+                  handleFileClick(file);
+                }}
                 previewUrl={file.previewUrl}
                 projectSubdomain={file.projectSubdomain}
                 size={file.size}
@@ -73,13 +89,17 @@ export function FilesGrid({ files }: FilesGridProps) {
         <div className="flex flex-wrap items-start gap-2">
           {otherFiles.map((file) => (
             <div className="h-12 min-w-0" key={file.filePath}>
-              <AttachmentItem
+              <FileThumbnail
                 filename={file.filename}
                 filePath={file.filePath}
-                gallery={allFiles}
                 mimeType={file.mimeType}
+                onClick={() => {
+                  handleFileClick(file);
+                }}
                 previewUrl={file.previewUrl}
+                projectSubdomain={file.projectSubdomain}
                 size={file.size}
+                versionRef={file.versionRef}
               />
             </div>
           ))}

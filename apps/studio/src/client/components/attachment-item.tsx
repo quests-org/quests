@@ -2,6 +2,7 @@ import {
   type FileViewerFile,
   openFileViewerAtom,
 } from "@/client/atoms/file-viewer";
+import { type ProjectSubdomain } from "@quests/workspace/client";
 import { useSetAtom } from "jotai";
 
 import { FileThumbnail } from "./file-thumbnail";
@@ -13,7 +14,9 @@ interface AttachmentItemProps {
   mimeType?: string;
   onRemove?: () => void;
   previewUrl?: string;
+  projectSubdomain?: ProjectSubdomain;
   size?: number;
+  versionRef?: string;
 }
 
 export function AttachmentItem({
@@ -23,7 +26,9 @@ export function AttachmentItem({
   mimeType,
   onRemove,
   previewUrl,
+  projectSubdomain,
   size,
+  versionRef,
 }: AttachmentItemProps) {
   const openFileViewer = useSetAtom(openFileViewerAtom);
 
@@ -52,12 +57,14 @@ export function AttachmentItem({
   return (
     <FileThumbnail
       filename={filename}
+      filePath={filePath}
       mimeType={mimeType}
       onClick={handlePreviewClick}
       onRemove={onRemove}
       previewUrl={previewUrl}
-      showTooltip
+      projectSubdomain={projectSubdomain}
       size={size}
+      versionRef={versionRef}
     />
   );
 }

@@ -364,14 +364,16 @@ export function FileViewerModal() {
                     >
                       <FileThumbnail
                         filename={file.filename}
+                        filePath={file.filePath}
                         isSelected={index === state.currentIndex}
                         mimeType={file.mimeType}
                         onClick={() => {
                           navigate(index);
                         }}
                         previewUrl={file.url}
-                        showTooltip
+                        projectSubdomain={file.projectSubdomain}
                         size={file.size}
+                        versionRef={file.versionRef}
                       />
                     </div>
                   ))}

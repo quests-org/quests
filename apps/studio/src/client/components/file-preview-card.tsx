@@ -1,11 +1,6 @@
-import {
-  type FileViewerFile,
-  openFileViewerAtom,
-} from "@/client/atoms/file-viewer";
 import { getAssetUrl } from "@/client/lib/get-asset-url";
 import { type ProjectSubdomain } from "@quests/workspace/client";
 import { useQuery } from "@tanstack/react-query";
-import { useSetAtom } from "jotai";
 import { Loader2, Play } from "lucide-react";
 import { useRef, useState } from "react";
 
@@ -15,13 +10,14 @@ import { ImageWithFallback } from "./image-with-fallback";
 import { Markdown } from "./markdown";
 import { SandboxedHtmlIframe } from "./sandboxed-html-iframe";
 import { Badge } from "./ui/badge";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 interface FilePreviewCardProps {
   assetBaseUrl?: string;
   filename: string;
   filePath?: string;
-  gallery?: FileViewerFile[];
   mimeType: string;
+  onClick?: () => void;
   previewUrl: string;
   projectSubdomain?: ProjectSubdomain;
   size?: number;
@@ -32,14 +28,12 @@ export function FilePreviewCard({
   assetBaseUrl,
   filename,
   filePath,
-  gallery,
   mimeType,
+  onClick,
   previewUrl,
   projectSubdomain,
-  size,
   versionRef,
 }: FilePreviewCardProps) {
-  const openFileViewer = useSetAtom(openFileViewerAtom);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoProgress, setVideoProgress] = useState(0);
   const [timeRemaining, setTimeRemaining] = useState<null | number>(null);
@@ -55,28 +49,6 @@ export function FilePreviewCard({
   const isVideo = mimeType.startsWith("video/");
   const isAudio = mimeType.startsWith("audio/");
   const isMarkdown = mimeType === "text/markdown";
-
-  const handlePreviewClick = () => {
-    const files = gallery ?? [
-      {
-        filename,
-        filePath,
-        mimeType,
-        projectSubdomain,
-        size,
-        url: finalPreviewUrl,
-        versionRef,
-      },
-    ];
-    const currentIndex = gallery
-      ? gallery.findIndex((f) => f.url === finalPreviewUrl)
-      : 0;
-
-    openFileViewer({
-      currentIndex: currentIndex === -1 ? 0 : currentIndex,
-      files,
-    });
-  };
 
   const handleMouseEnter = () => {
     if (isVideo && videoRef.current) {
@@ -98,11 +70,17 @@ export function FilePreviewCard({
           filename={filename}
           filePath={filePath}
           mimeType={mimeType}
+          onClick={onClick}
           projectSubdomain={projectSubdomain}
           versionRef={versionRef}
         />
-        <div className="p-2">
+        <div className="relative p-2">
           <audio className="w-full" controls src={finalPreviewUrl} />
+          <button
+            className="absolute inset-0 size-full"
+            onClick={onClick}
+            type="button"
+          />
         </div>
       </div>
     );
@@ -115,6 +93,7 @@ export function FilePreviewCard({
           filename={filename}
           filePath={filePath}
           mimeType={mimeType}
+          onClick={onClick}
           projectSubdomain={projectSubdomain}
           versionRef={versionRef}
         />
@@ -123,12 +102,12 @@ export function FilePreviewCard({
             <MarkdownPreview url={finalPreviewUrl} />
           </div>
           <div className="pointer-events-none absolute right-0 bottom-0 left-0 h-16 bg-linear-to-t from-background to-transparent" />
+          <button
+            className="absolute inset-0 size-full"
+            onClick={onClick}
+            type="button"
+          />
         </div>
-        <button
-          className="absolute inset-0 size-full"
-          onClick={handlePreviewClick}
-          type="button"
-        />
       </div>
     );
   }
@@ -143,6 +122,7 @@ export function FilePreviewCard({
         filename={filename}
         filePath={filePath}
         mimeType={mimeType}
+        onClick={onClick}
         projectSubdomain={projectSubdomain}
         versionRef={versionRef}
       />
@@ -219,12 +199,12 @@ export function FilePreviewCard({
             </div>
           </>
         )}
+        <button
+          className="absolute inset-0 size-full"
+          onClick={onClick}
+          type="button"
+        />
       </div>
-      <button
-        className="absolute inset-0 size-full"
-        onClick={handlePreviewClick}
-        type="button"
-      />
     </div>
   );
 }
@@ -277,25 +257,44 @@ function PreviewHeader({
   filename,
   filePath,
   mimeType,
+  onClick,
   projectSubdomain,
   versionRef,
 }: {
   filename: string;
   filePath?: string;
   mimeType: string;
+  onClick?: () => void;
   projectSubdomain?: ProjectSubdomain;
   versionRef: string;
 }) {
   return (
-    <div className="flex items-center gap-2 border-b border-border bg-muted/30 px-2.5 py-1.5">
+    <button
+      className="flex w-full items-center gap-2 border-b border-border bg-muted/30 px-2.5 py-1.5 text-left"
+      onClick={onClick}
+      type="button"
+    >
       <FileIcon
         className="size-4 shrink-0 text-muted-foreground"
         filename={filename}
         mimeType={mimeType}
       />
-      <span className="min-w-0 truncate text-xs text-muted-foreground">
-        {filename}
-      </span>
+      {filePath ? (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="min-w-0 truncate text-xs text-muted-foreground">
+              {filename}
+            </span>
+          </TooltipTrigger>
+          <TooltipContent>
+            <span className="break-all">{filePath}</span>
+          </TooltipContent>
+        </Tooltip>
+      ) : (
+        <span className="min-w-0 truncate text-xs text-muted-foreground">
+          {filename}
+        </span>
+      )}
       {filePath && projectSubdomain && versionRef && (
         <FileVersionBadge
           className="ml-auto shrink-0 text-[10px]"
@@ -304,6 +303,6 @@ function PreviewHeader({
           versionRef={versionRef}
         />
       )}
-    </div>
+    </button>
   );
 }

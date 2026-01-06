@@ -59,7 +59,9 @@ export function FileAttachmentsCard({
             key={file.filePath}
             mimeType={file.mimeType}
             previewUrl={assetUrl}
+            projectSubdomain={projectSubdomain}
             size={file.size}
+            versionRef={file.gitRef}
           />
         );
       })}
