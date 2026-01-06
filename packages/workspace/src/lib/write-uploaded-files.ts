@@ -58,7 +58,7 @@ export async function writeUploadedFiles(
           ),
       );
 
-      const mimeType = await getMimeType(filePath);
+      const mimeType = await getMimeType(buffer, uniqueFilename);
       const stats = yield* ResultAsync.fromPromise(
         fs.stat(filePath),
         (error) =>

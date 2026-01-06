@@ -5,7 +5,6 @@ import { z } from "zod";
 
 import { type ProjectSubdomain } from "../schemas/subdomains";
 import { type WorkspaceConfig } from "../types";
-import { absolutePathJoin } from "./absolute-path-join";
 import { createAppConfig } from "./app-config/create";
 import { TypedError } from "./errors";
 import { getMimeType } from "./get-mime-type";
@@ -147,9 +146,20 @@ export async function getGitRefInfo(
         status = "deleted";
       }
 
-      const absoluteFilePath = absolutePathJoin(projectConfig.appDir, filePath);
-      const mimeType = await getMimeType(absoluteFilePath);
       const filename = path.basename(filePath);
+
+      let mimeType = "application/octet-stream";
+      if (status !== "deleted") {
+        const fileBufferResult = await git(
+          GitCommands.showFile(gitRef, filePath),
+          projectConfig.appDir,
+          { signal: AbortSignal.timeout(ms("5 seconds")) },
+        );
+
+        if (fileBufferResult.isOk()) {
+          mimeType = await getMimeType(fileBufferResult.value.stdout, filename);
+        }
+      }
 
       files.push({
         additions,
