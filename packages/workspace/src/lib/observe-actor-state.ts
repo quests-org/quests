@@ -1,3 +1,4 @@
+import { alphabetical, isEqual } from "radashi";
 import { type ActorRefFrom } from "xstate";
 
 import { type sessionMachine } from "../machines/session";
@@ -17,12 +18,9 @@ export function observeSessionActor({
   let previousTags: string[] = [];
 
   const subscription = actor.subscribe((snapshot) => {
-    const currentTags = [...snapshot.tags];
+    const currentTags = alphabetical([...snapshot.tags], (tag) => tag);
 
-    if (
-      currentTags.length !== previousTags.length ||
-      !currentTags.every((tag, index) => tag === previousTags[index])
-    ) {
+    if (!isEqual(currentTags, previousTags)) {
       publisher.publish("appState.session.tagsChanged", {
         sessionId,
         subdomain,
