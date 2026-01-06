@@ -11,7 +11,7 @@ export function SandboxedHtmlIframe({
   className?: string;
   htmlContent?: string;
   restrictInteractive?: boolean;
-  src?: string;
+  src: string;
   style?: React.CSSProperties;
   title: string;
 }) {

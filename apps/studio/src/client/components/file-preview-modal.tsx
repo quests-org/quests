@@ -68,11 +68,7 @@ export function FilePreviewModal() {
           >
             <div className="absolute top-4 right-4 left-4 z-10 flex items-center justify-center gap-2 text-white">
               <div className="flex items-center gap-2 rounded bg-black/50 px-3 py-1.5">
-                <FileIcon
-                  className="size-4 shrink-0"
-                  filename={file.name}
-                  mimeType={file.mimeType}
-                />
+                <FileIcon className="size-4 shrink-0" filename={file.name} />
                 <span className="truncate text-xs">{file.name}</span>
                 {/* eslint-disable-next-line unicorn/explicit-length-check */}
                 {file.size && (
@@ -118,8 +114,8 @@ export function FilePreviewModal() {
                         <div className="flex size-32 items-center justify-center rounded-lg bg-background">
                           <FileIcon
                             className="size-16"
+                            fallbackExtension="jpg"
                             filename={file.name}
-                            mimeType={file.mimeType}
                           />
                         </div>
                         <div>
@@ -134,18 +130,13 @@ export function FilePreviewModal() {
                     }
                     fallbackClassName="size-32 rounded-lg"
                     filename={file.name}
-                    mimeType={file.mimeType}
                     onClick={closePreview}
                     src={file.url}
                   />
                 ) : (
                   <div className="flex w-full max-w-md flex-col items-center justify-center gap-4 p-8 text-center">
                     <div className="flex size-32 items-center justify-center rounded-lg bg-background">
-                      <FileIcon
-                        className="size-16"
-                        filename={file.name}
-                        mimeType={file.mimeType}
-                      />
+                      <FileIcon className="size-16" filename={file.name} />
                     </div>
                     <div>
                       <p className="text-sm font-medium text-white">

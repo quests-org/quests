@@ -9,7 +9,6 @@ export function ImageWithFallback({
   fallback,
   fallbackClassName,
   filename,
-  mimeType,
   onError,
   src,
   ...props
@@ -22,7 +21,6 @@ export function ImageWithFallback({
   fallback?: React.ReactNode;
   fallbackClassName?: string;
   filename: string;
-  mimeType?: string;
   onError?: () => void;
   src: string;
 }) {
@@ -44,8 +42,8 @@ export function ImageWithFallback({
       >
         <FileIcon
           className="size-[70%] text-muted-foreground"
+          fallbackExtension="jpg"
           filename={filename}
-          mimeType={mimeType}
         />
       </div>
     );

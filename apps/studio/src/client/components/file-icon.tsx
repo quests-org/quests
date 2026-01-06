@@ -13,11 +13,8 @@ import {
   BsFileEarmarkText,
   BsFileEarmarkWord,
   BsFilePdf,
-  BsFileText,
 } from "react-icons/bs";
 import { VscFileZip } from "react-icons/vsc";
-
-import { isTextMimeType } from "../lib/is-text-mime-type";
 
 type IconComponent = ComponentType<{ className?: string }>;
 
@@ -38,6 +35,7 @@ const EXTENSION_ICON_MAP: Record<string, IconComponent> = {
   exe: BsFileBinary,
   flac: BsFileEarmarkMusic,
   gif: BsFileEarmarkImage,
+  gml: BsFileCode,
   gz: VscFileZip,
   heic: BsFileEarmarkImage,
   htm: BsFileCode,
@@ -49,6 +47,7 @@ const EXTENSION_ICON_MAP: Record<string, IconComponent> = {
   json: BsFileCode,
   jsx: BsFileCode,
   key: BsFileEarmarkPpt,
+  kml: BsFileCode,
   m4a: BsFileEarmarkMusic,
   md: BsFileEarmarkText,
   mdx: BsFileCode,
@@ -75,6 +74,7 @@ const EXTENSION_ICON_MAP: Record<string, IconComponent> = {
   rar: VscFileZip,
   raw: BsFileEarmarkImage,
   rb: BsFileCode,
+  rss: BsFileCode,
   rtf: BsFileEarmarkRichtext,
   sass: BsFileCode,
   scss: BsFileCode,
@@ -91,6 +91,7 @@ const EXTENSION_ICON_MAP: Record<string, IconComponent> = {
   wav: BsFileEarmarkMusic,
   webm: BsFileEarmarkPlay,
   woff: BsFileEarmarkFont,
+  xhtml: BsFileCode,
   xls: BsFileEarmarkSpreadsheet,
   xlsx: BsFileEarmarkSpreadsheet,
   xml: BsFileCode,
@@ -106,14 +107,14 @@ const FILENAME_ICON_MAP: Record<string, IconComponent> = {
 
 export function FileIcon({
   className = "size-5",
+  fallbackExtension,
   filename,
-  mimeType,
 }: {
   className?: string;
+  fallbackExtension?: string;
   filename: string;
-  mimeType?: string;
 }) {
-  const Icon = getFileIcon(filename, mimeType);
+  const Icon = getFileIcon({ fallbackExtension, filename });
 
   if (Icon === null) {
     return <BsFileBinary className={className} />;
@@ -133,10 +134,13 @@ function getFileExtension(filename: string): string {
   return lowerName.slice(lastDotIndex + 1);
 }
 
-function getFileIcon(
-  filename: string,
-  mimeType?: string,
-): IconComponent | null {
+function getFileIcon({
+  fallbackExtension,
+  filename,
+}: {
+  fallbackExtension?: string;
+  filename: string;
+}): IconComponent | null {
   const lowerName = filename.toLowerCase();
 
   if (FILENAME_ICON_MAP[lowerName]) {
@@ -150,8 +154,8 @@ function getFileIcon(
     return extIcon;
   }
 
-  if (mimeType && isTextMimeType(mimeType)) {
-    return mimeType === "text/plain" ? BsFileText : BsFileCode;
+  if (fallbackExtension) {
+    return EXTENSION_ICON_MAP[fallbackExtension.toLowerCase()] ?? null;
   }
 
   return null;

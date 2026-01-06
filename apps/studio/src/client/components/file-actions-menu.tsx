@@ -1,6 +1,6 @@
 import { rpcClient } from "@/client/rpc/client";
 import { type ProjectSubdomain } from "@quests/workspace/client";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Check, Copy, FolderOpen, MoreVertical } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -19,12 +19,26 @@ export function FileActionsMenu({
   filePath,
   onCopy,
   projectSubdomain,
+  versionRef,
 }: {
-  filePath?: string;
+  filePath: string;
   onCopy?: () => Promise<void> | void;
-  projectSubdomain?: ProjectSubdomain;
+  projectSubdomain: ProjectSubdomain;
+  versionRef: string;
 }) {
   const [copied, setCopied] = useState(false);
+
+  const { data: versionRefs } = useQuery(
+    rpcClient.workspace.project.git.fileVersionRefs.queryOptions({
+      input: {
+        filePath,
+        projectSubdomain,
+      },
+    }),
+  );
+
+  const isLatestVersion =
+    !versionRefs || versionRefs.length === 0 || versionRefs[0] === versionRef;
 
   const showProjectFileInFolderMutation = useMutation(
     rpcClient.utils.showProjectFileInFolder.mutationOptions({
@@ -57,21 +71,17 @@ export function FileActionsMenu({
   };
 
   const handleRevealInFolder = () => {
-    if (!filePath || !projectSubdomain) {
-      return;
-    }
-
     showProjectFileInFolderMutation.mutate({
       filePath,
       subdomain: projectSubdomain,
     });
   };
 
-  if (!onCopy && !filePath) {
+  if (!onCopy && !isLatestVersion) {
     return null;
   }
 
-  const hasRevealOption = filePath && projectSubdomain;
+  const hasRevealOption = isLatestVersion;
 
   return (
     <DropdownMenu>

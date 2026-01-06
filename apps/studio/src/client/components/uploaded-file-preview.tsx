@@ -69,7 +69,6 @@ export function UploadedFilePreview({
           <FileIcon
             className="size-5 shrink-0 text-muted-foreground"
             filename={filename}
-            mimeType={mimeType}
           />
           <span className="min-w-0 truncate text-xs">{filename}</span>
         </Button>

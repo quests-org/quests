@@ -10,7 +10,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 export function FilePreviewListItem({
   filename,
   filePath,
-  isSelected,
+  isSelected = false,
   mimeType,
   onClick,
   projectSubdomain,
@@ -48,6 +48,7 @@ export function FilePreviewListItem({
             className="size-12 bg-white object-cover"
             fallbackClassName="size-12 rounded-lg"
             filename={filename}
+            mimeType={mimeType}
             src={url}
           />
         </Button>

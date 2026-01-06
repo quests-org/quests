@@ -213,7 +213,6 @@ export function ProjectFileViewerModal() {
                   <FileIcon
                     className="size-4 shrink-0"
                     filename={currentFile.filename}
-                    mimeType={currentFile.mimeType}
                   />
                   <span className="truncate text-xs">
                     {currentFile.filePath}
@@ -248,6 +247,7 @@ export function ProjectFileViewerModal() {
                     filePath={currentFile.filePath}
                     onCopy={isDownloadable ? handleCopyImage : undefined}
                     projectSubdomain={currentFile.projectSubdomain}
+                    versionRef={currentFile.versionRef}
                   />
                   <Button
                     className="text-white hover:bg-white/10"
@@ -317,8 +317,8 @@ export function ProjectFileViewerModal() {
                         <div className="flex size-32 items-center justify-center rounded-lg bg-background">
                           <FileIcon
                             className="size-16"
+                            fallbackExtension="jpg"
                             filename={currentFile.filename}
-                            mimeType={currentFile.mimeType}
                           />
                         </div>
                         <div>
@@ -326,16 +326,14 @@ export function ProjectFileViewerModal() {
                             Failed to load image
                           </p>
                           <p className="mt-1 text-xs text-white/60">
-                            The image could not be displayed
-                            {isDownloadable &&
-                              " — try downloading it to view locally"}
+                            The image could not be displayed.
+                            {isDownloadable && " Try downloading it."}
                           </p>
                         </div>
                       </div>
                     }
                     fallbackClassName="size-32 rounded-lg"
                     filename={currentFile.filename}
-                    mimeType={currentFile.mimeType}
                     onClick={closeViewer}
                     src={currentFile.url}
                   />

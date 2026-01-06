@@ -94,16 +94,17 @@ export function FileViewer({
   versionRef,
 }: {
   filename: string;
-  filePath?: string;
-  mimeType?: string;
+  filePath: string;
+  mimeType: string;
   onClose: () => void;
   onDownload?: () => void;
-  projectSubdomain?: ProjectSubdomain;
+  projectSubdomain: ProjectSubdomain;
   url: string;
-  versionRef?: string;
+  versionRef: string;
 }) {
   const [viewMode, setViewMode] = useState<"preview" | "raw">("preview");
   const [mediaLoadError, setMediaLoadError] = useState(false);
+  const [mediaErrorType, setMediaErrorType] = useState<string | undefined>();
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -112,8 +113,8 @@ export function FileViewer({
 
   const isText = isTextMimeType(mimeType);
   const isPdf = mimeType === "application/pdf";
-  const isVideo = mimeType?.startsWith("video/");
-  const isAudio = mimeType?.startsWith("audio/");
+  const isVideo = mimeType.startsWith("video/");
+  const isAudio = mimeType.startsWith("audio/");
 
   const isMarkdown =
     isText && /\.(?:md|markdown|mdown|mkd|mdx)$/i.test(filename);
@@ -135,8 +136,6 @@ export function FileViewer({
       });
     }
   };
-
-  const displayPath = filePath ?? filename;
 
   const getFileType = () => {
     if (isAudio) {
@@ -176,23 +175,27 @@ export function FileViewer({
     );
   }
 
-  if (isText) {
-    toolbarActions.push(
-      <FileActionsMenu
-        filePath={filePath}
-        key="actions"
-        onCopy={handleCopy}
-        projectSubdomain={projectSubdomain}
-      />,
-    );
-  } else if (filePath) {
-    toolbarActions.push(
-      <FileActionsMenu
-        filePath={filePath}
-        key="actions"
-        projectSubdomain={projectSubdomain}
-      />,
-    );
+  if (filePath && projectSubdomain && versionRef) {
+    if (isText) {
+      toolbarActions.push(
+        <FileActionsMenu
+          filePath={filePath}
+          key="actions"
+          onCopy={handleCopy}
+          projectSubdomain={projectSubdomain}
+          versionRef={versionRef}
+        />,
+      );
+    } else {
+      toolbarActions.push(
+        <FileActionsMenu
+          filePath={filePath}
+          key="actions"
+          projectSubdomain={projectSubdomain}
+          versionRef={versionRef}
+        />,
+      );
+    }
   }
 
   toolbarActions.push(
@@ -209,13 +212,9 @@ export function FileViewer({
       })}
     >
       <div className="flex shrink-0 items-center gap-2 border-b border-border bg-muted/30 px-4 py-2">
-        <FileIcon
-          className="size-4 shrink-0"
-          filename={filename}
-          mimeType={mimeType}
-        />
+        <FileIcon className="size-4 shrink-0" filename={filename} />
         <span className="truncate text-xs text-muted-foreground">
-          {displayPath}
+          {filePath}
         </span>
         {filePath && projectSubdomain && versionRef && (
           <FileVersionBadge
@@ -251,7 +250,10 @@ export function FileViewer({
       <div className="relative min-h-0 flex-1 overflow-auto" ref={contentRef}>
         {mediaLoadError ? (
           <div className="flex size-full items-center justify-center">
-            <FilePreviewFallback filename={filename} mimeType={mimeType} />
+            <FilePreviewFallback
+              fallbackExtension={mediaErrorType}
+              filename={filename}
+            />
           </div>
         ) : isMarkdown && viewMode === "preview" ? (
           <TextView url={url}>
@@ -279,6 +281,7 @@ export function FileViewer({
             key={url}
             onError={() => {
               setMediaLoadError(true);
+              setMediaErrorType("pdf");
             }}
             src={url}
             title={filename}
@@ -290,6 +293,7 @@ export function FileViewer({
             key={url}
             onError={() => {
               setMediaLoadError(true);
+              setMediaErrorType("mp4");
             }}
             src={url}
           />
@@ -301,13 +305,14 @@ export function FileViewer({
               key={url}
               onError={() => {
                 setMediaLoadError(true);
+                setMediaErrorType("mp3");
               }}
               src={url}
             />
           </div>
         ) : (
           <div className="flex size-full items-center justify-center">
-            <FilePreviewFallback filename={filename} mimeType={mimeType} />
+            <FilePreviewFallback fallbackExtension="bin" filename={filename} />
           </div>
         )}
       </div>

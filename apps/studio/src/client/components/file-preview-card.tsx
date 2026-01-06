@@ -276,7 +276,6 @@ function PreviewHeader({
       <FileIcon
         className="size-4 shrink-0 text-muted-foreground"
         filename={filename}
-        mimeType={mimeType}
       />
       {filePath ? (
         <Tooltip>
