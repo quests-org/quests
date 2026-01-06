@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { cva } from "class-variance-authority";
 import { Code2, Download, Eye, Loader2, X } from "lucide-react";
 import { type ReactNode, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 import { isTextMimeType } from "../lib/is-text-mime-type";
 import { FileActionsMenu } from "./file-actions-menu";
@@ -15,6 +16,51 @@ import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { Button } from "./ui/button";
 import { Tabs, TabsList, TabsTrigger } from "./ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
+
+function TextView({
+  children,
+  url,
+}: {
+  children: (text: string) => ReactNode;
+  url: string;
+}) {
+  const { data, error, isLoading } = useQuery({
+    queryFn: async () => {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch file: ${response.statusText}`);
+      }
+      return response.text();
+    },
+    queryKey: ["text-file", url],
+    retry: false, // Ensures fast failure
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex size-full items-center justify-center">
+        <Loader2 className="size-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex size-full items-center justify-center p-8">
+        <Alert className="max-w-2xl" variant="destructive">
+          <AlertTitle>Failed to load file</AlertTitle>
+          <AlertDescription>
+            {error instanceof Error
+              ? error.message
+              : "An unknown error occurred"}
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+
+  return <>{children(data ?? "")}</>;
+}
 
 const fileViewerVariants = cva(
   "flex w-full flex-col overflow-hidden rounded border border-border bg-background",
@@ -76,33 +122,23 @@ export function FileViewer({
   const isHtml = isText && /\.html?$/i.test(filename);
   const hasPreview = isMarkdown || isHtml;
 
-  const {
-    data: textContent,
-    error: fetchError,
-    isLoading,
-  } = useQuery({
-    enabled: isText,
-    queryFn: async () => {
+  const handleCopy = async () => {
+    try {
       const response = await fetch(url);
       if (!response.ok) {
         throw new Error(`Failed to fetch file: ${response.statusText}`);
       }
-      return response.text();
-    },
-    queryKey: ["text-file", url],
-    // Ensures quick failure
-    retry: false,
-  });
-
-  const handleCopy = async () => {
-    if (!textContent) {
-      return;
+      const text = await response.text();
+      await navigator.clipboard.writeText(text);
+    } catch (error) {
+      toast.error("Failed to copy", {
+        description:
+          error instanceof Error ? error.message : "An unknown error occurred",
+      });
     }
-    await navigator.clipboard.writeText(textContent);
   };
 
   const displayPath = filePath ?? filename;
-  const showRawContent = !isText || viewMode === "raw" || !hasPreview;
 
   const getFileType = () => {
     if (isAudio) {
@@ -140,7 +176,7 @@ export function FileViewer({
     );
   }
 
-  if (isText && textContent) {
+  if (isText) {
     toolbarActions.push(
       <FileActionsMenu
         filePath={filePath}
@@ -165,18 +201,10 @@ export function FileViewer({
     </Button>,
   );
 
-  if (isLoading) {
-    return (
-      <div className="flex size-full items-center justify-center">
-        <Loader2 className="size-8 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
-
   return (
     <div
       className={fileViewerVariants({
-        error: !!fetchError,
+        error: false,
         fileType: getFileType(),
       })}
     >
@@ -221,39 +249,30 @@ export function FileViewer({
       </div>
 
       <div className="relative min-h-0 flex-1 overflow-auto" ref={contentRef}>
-        {fetchError ? (
-          <div className="flex size-full items-center justify-center p-8">
-            <Alert className="max-w-2xl" variant="destructive">
-              <AlertTitle>Failed to load file</AlertTitle>
-              <AlertDescription>
-                {fetchError instanceof Error
-                  ? fetchError.message
-                  : "An unknown error occurred"}
-                {"\n\n"}
-                File: {filename}
-              </AlertDescription>
-            </Alert>
-          </div>
-        ) : mediaLoadError ? (
+        {mediaLoadError ? (
           <div className="flex size-full items-center justify-center">
             <FilePreviewFallback filename={filename} mimeType={mimeType} />
           </div>
-        ) : isText && textContent ? (
-          showRawContent ? (
-            <pre className="p-8 text-sm text-foreground">{textContent}</pre>
-          ) : isMarkdown ? (
-            <div className="prose prose-sm max-w-none p-8 dark:prose-invert">
-              <Markdown markdown={textContent} />
-            </div>
-          ) : isHtml ? (
-            <SandboxedHtmlIframe
-              className="absolute inset-0 size-full border-0 bg-background"
-              src={url}
-              title={filename}
-            />
-          ) : (
-            <pre className="p-8 text-sm text-foreground">{textContent}</pre>
-          )
+        ) : isMarkdown && viewMode === "preview" ? (
+          <TextView url={url}>
+            {(text) => (
+              <div className="prose prose-sm max-w-none p-8 dark:prose-invert">
+                <Markdown markdown={text} />
+              </div>
+            )}
+          </TextView>
+        ) : isHtml && viewMode === "preview" ? (
+          <SandboxedHtmlIframe
+            className="absolute inset-0 size-full border-0 bg-background"
+            src={url}
+            title={filename}
+          />
+        ) : isText ? (
+          <TextView url={url}>
+            {(text) => (
+              <pre className="p-8 text-sm text-foreground">{text}</pre>
+            )}
+          </TextView>
         ) : isPdf ? (
           <iframe
             className="absolute inset-0 size-full border-0"

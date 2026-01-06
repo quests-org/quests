@@ -3,6 +3,7 @@ import { type ProjectSubdomain } from "@quests/workspace/client";
 import { useMutation } from "@tanstack/react-query";
 import { Check, Copy, FolderOpen, MoreVertical } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 import { getRevealInFolderLabel } from "../lib/utils";
 import { Button } from "./ui/button";
@@ -26,18 +27,33 @@ export function FileActionsMenu({
   const [copied, setCopied] = useState(false);
 
   const showProjectFileInFolderMutation = useMutation(
-    rpcClient.utils.showProjectFileInFolder.mutationOptions(),
+    rpcClient.utils.showProjectFileInFolder.mutationOptions({
+      onError: (error) => {
+        const label = getRevealInFolderLabel();
+        const lowercasedLabel = label.charAt(0).toLowerCase() + label.slice(1);
+        toast.error(`Failed to ${lowercasedLabel}`, {
+          description: error.message,
+        });
+      },
+    }),
   );
 
   const handleCopy = async () => {
     if (!onCopy) {
       return;
     }
-    await onCopy();
-    setCopied(true);
-    setTimeout(() => {
-      setCopied(false);
-    }, 2000);
+    try {
+      await onCopy();
+      setCopied(true);
+      setTimeout(() => {
+        setCopied(false);
+      }, 2000);
+    } catch (error) {
+      toast.error("Failed to copy", {
+        description:
+          error instanceof Error ? error.message : "An unknown error occurred",
+      });
+    }
   };
 
   const handleRevealInFolder = () => {
