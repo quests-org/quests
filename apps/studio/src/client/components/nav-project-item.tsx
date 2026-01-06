@@ -21,8 +21,8 @@ import {
 import { useMutation } from "@tanstack/react-query";
 import {
   ArrowUpRight,
+  Copy,
   Edit2,
-  ExternalLinkIcon,
   MoreHorizontal,
   Star,
   StarOff,
@@ -56,10 +56,6 @@ export const NavProjectItem = memo(function NavProjectItem({
 
   const { isPending: isRenameLoading, mutateAsync: renameProject } =
     useMutation(rpcClient.workspace.project.update.mutationOptions());
-
-  const openExternalLinkMutation = useMutation(
-    rpcClient.utils.openExternalLink.mutationOptions(),
-  );
 
   const { mutateAsync: addFavorite } = useMutation(
     rpcClient.favorites.add.mutationOptions(),
@@ -119,10 +115,6 @@ export const NavProjectItem = memo(function NavProjectItem({
       e.preventDefault();
       handleCancelEdit();
     }
-  };
-
-  const handleOpenExternalClick = () => {
-    openExternalLinkMutation.mutate({ url: project.urls.localRedirect });
   };
 
   const handleAddFavorite = async () => {
@@ -206,11 +198,18 @@ export const NavProjectItem = memo(function NavProjectItem({
               <ArrowUpRight className="text-muted-foreground" />
               <span>Open in new tab</span>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleOpenExternalClick}>
-              <ExternalLinkIcon className="text-muted-foreground" />
-              <span>Open in external browser</span>
-            </DropdownMenuItem>
             <DropdownMenuSeparator />
+            <InternalLink
+              openInCurrentTab
+              params={{ subdomain: project.subdomain }}
+              search={{ showDuplicate: true }}
+              to="/projects/$subdomain"
+            >
+              <DropdownMenuItem>
+                <Copy className="text-muted-foreground" />
+                <span>Duplicate</span>
+              </DropdownMenuItem>
+            </InternalLink>
             <DropdownMenuItem onClick={handleStartEdit}>
               <Edit2 className="text-muted-foreground" />
               <span>Rename</span>

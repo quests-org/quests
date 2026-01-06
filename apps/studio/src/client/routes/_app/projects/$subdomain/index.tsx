@@ -1,4 +1,5 @@
 import { promptValueAtomFamily } from "@/client/atoms/prompt-value";
+import { DuplicateProjectModal } from "@/client/components/duplicate-project-modal";
 import { ProjectDeleteDialog } from "@/client/components/project-delete-dialog";
 import { ProjectHeaderToolbar } from "@/client/components/project-header-toolbar";
 import { ProjectViewApp } from "@/client/components/project-view/app";
@@ -34,6 +35,7 @@ const projectSearchSchema = z.object({
   selectedSessionId: StoreId.SessionSchema.optional(),
   selectedVersion: z.string().optional(),
   showDelete: z.boolean().optional(),
+  showDuplicate: z.boolean().optional(),
 });
 
 function title(project?: WorkspaceAppProject) {
@@ -137,7 +139,8 @@ export const Route = createFileRoute("/_app/projects/$subdomain/")({
 
 function RouteComponent() {
   const { subdomain } = Route.useParams();
-  const { selectedSessionId, selectedVersion, showDelete } = Route.useSearch();
+  const { selectedSessionId, selectedVersion, showDelete, showDuplicate } =
+    Route.useSearch();
   const navigate = useNavigate();
 
   const handleDeleteDialogChange = (open: boolean) => {
@@ -148,6 +151,17 @@ function RouteComponent() {
       },
       replace: true,
       search: (prev) => ({ ...prev, showDelete: open || undefined }),
+    });
+  };
+
+  const handleDuplicateDialogChange = (open: boolean) => {
+    void navigate({
+      from: "/projects/$subdomain",
+      params: {
+        subdomain,
+      },
+      replace: true,
+      search: (prev) => ({ ...prev, showDuplicate: open || undefined }),
     });
   };
 
@@ -207,9 +221,6 @@ function RouteComponent() {
     <div className="flex h-dvh w-full flex-col overflow-hidden">
       <ProjectHeaderToolbar
         hasAppModifications={hasAppModifications}
-        onDeleteClick={() => {
-          handleDeleteDialogChange(true);
-        }}
         project={project}
         selectedVersion={selectedVersion}
       />
@@ -236,6 +247,16 @@ function RouteComponent() {
         onOpenChange={handleDeleteDialogChange}
         open={showDelete ?? false}
         project={project}
+      />
+
+      <DuplicateProjectModal
+        isChat={project.mode === "chat"}
+        isOpen={showDuplicate ?? false}
+        onClose={() => {
+          handleDuplicateDialogChange(false);
+        }}
+        projectName={project.title}
+        projectSubdomain={project.subdomain}
       />
     </div>
   );

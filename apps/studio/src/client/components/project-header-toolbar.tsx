@@ -34,7 +34,6 @@ import { toast } from "sonner";
 
 import { projectIframeRefAtom } from "../atoms/project";
 import { projectSidebarCollapsedAtomFamily } from "../atoms/project-sidebar";
-import { DuplicateProjectModal } from "./duplicate-project-modal";
 import { ExportZipModal } from "./export-zip-modal";
 import { RestoreVersionModal } from "./restore-version-modal";
 import { CMD, Cursor, ITerm, MacOSTerminal, VSCode } from "./service-icons";
@@ -60,14 +59,12 @@ const EDITOR_ICON_MAP: Record<
 
 interface ProjectHeaderToolbarProps {
   hasAppModifications: boolean;
-  onDeleteClick: () => void;
   project: WorkspaceAppProject;
   selectedVersion?: string;
 }
 
 export function ProjectHeaderToolbar({
   hasAppModifications,
-  onDeleteClick,
   project,
   selectedVersion,
 }: ProjectHeaderToolbarProps) {
@@ -83,7 +80,6 @@ export function ProjectHeaderToolbar({
   );
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
   const [restoreModalOpen, setRestoreModalOpen] = useState(false);
-  const [duplicateModalOpen, setDuplicateModalOpen] = useState(false);
   const [exportZipModalOpen, setExportZipModalOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -229,7 +225,11 @@ export function ProjectHeaderToolbar({
               <DropdownMenuContent align="end" side="bottom">
                 <DropdownMenuItem
                   onClick={() => {
-                    setDuplicateModalOpen(true);
+                    void navigate({
+                      from: "/projects/$subdomain",
+                      params: { subdomain: project.subdomain },
+                      search: (prev) => ({ ...prev, showDuplicate: true }),
+                    });
                   }}
                 >
                   <Copy className="h-4 w-4" />
@@ -247,7 +247,13 @@ export function ProjectHeaderToolbar({
                 <DropdownMenuSeparator />
 
                 <DropdownMenuItem
-                  onSelect={onDeleteClick}
+                  onSelect={() => {
+                    void navigate({
+                      from: "/projects/$subdomain",
+                      params: { subdomain: project.subdomain },
+                      search: (prev) => ({ ...prev, showDelete: true }),
+                    });
+                  }}
                   variant="destructive"
                 >
                   <TrashIcon />
@@ -455,16 +461,6 @@ export function ProjectHeaderToolbar({
           versionRef={selectedVersion}
         />
       )}
-
-      <DuplicateProjectModal
-        isChat={isChat}
-        isOpen={duplicateModalOpen}
-        onClose={() => {
-          setDuplicateModalOpen(false);
-        }}
-        projectName={project.title}
-        projectSubdomain={project.subdomain}
-      />
 
       <ExportZipModal
         isOpen={exportZipModalOpen}
