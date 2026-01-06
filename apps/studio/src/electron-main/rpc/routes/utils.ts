@@ -522,6 +522,13 @@ const live = {
       };
     }
   }),
+  openProjectLauncher: base.handler(async function* ({ signal }) {
+    for await (const _ of publisher.subscribe("app.open-project-launcher", {
+      signal,
+    })) {
+      yield;
+    }
+  }),
   reload: base.handler(async function* ({ context, signal }) {
     for await (const payload of publisher.subscribe("app.reload", {
       signal,

@@ -8,6 +8,12 @@ import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { lazy, Suspense } from "react";
 
+const ProjectLauncher = lazy(() =>
+  import("@/client/components/project-launcher").then((module) => ({
+    default: module.ProjectLauncher,
+  })),
+);
+
 export const Route = createFileRoute("/_app")({
   component: RouteComponent,
 });
@@ -35,6 +41,9 @@ function RouteComponent() {
         </Suspense>
       )}
 
+      <Suspense fallback={null}>
+        <ProjectLauncher />
+      </Suspense>
       <ProjectFileViewerModal />
       <FilePreviewModal />
       <Toaster position="top-center" />

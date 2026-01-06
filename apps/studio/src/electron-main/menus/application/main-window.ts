@@ -39,6 +39,13 @@ export function createMainWindowMenu(): MenuItemConstructorOptions[] {
         label: "New Project",
       },
       {
+        accelerator: "CmdOrCtrl+K",
+        click: () => {
+          publisher.publish("app.open-project-launcher", null);
+        },
+        label: "Go to Project...",
+      },
+      {
         accelerator: "CmdOrCtrl+W",
         click: () => {
           const tabsManager = getTabsManager();
