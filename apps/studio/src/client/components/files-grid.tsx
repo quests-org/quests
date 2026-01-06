@@ -38,8 +38,9 @@ export function FilesGrid({ files }: FilesGridProps) {
     const isPdf = file.mimeType === "application/pdf";
     const isVideo = file.mimeType.startsWith("video/");
     const isAudio = file.mimeType.startsWith("audio/");
+    const isMarkdown = file.mimeType === "text/markdown";
 
-    if (isImage || isHtml || isPdf || isVideo || isAudio) {
+    if (isImage || isHtml || isPdf || isVideo || isAudio || isMarkdown) {
       richPreviewFiles.push(file);
     } else {
       otherFiles.push(file);

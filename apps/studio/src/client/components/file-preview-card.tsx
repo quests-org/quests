@@ -4,13 +4,15 @@ import {
 } from "@/client/atoms/file-viewer";
 import { getAssetUrl } from "@/client/lib/get-asset-url";
 import { type ProjectSubdomain } from "@quests/workspace/client";
+import { useQuery } from "@tanstack/react-query";
 import { useSetAtom } from "jotai";
-import { Play } from "lucide-react";
+import { Loader2, Play } from "lucide-react";
 import { useRef, useState } from "react";
 
 import { FileIcon } from "./file-icon";
 import { FileVersionBadge } from "./file-version-badge";
 import { ImageWithFallback } from "./image-with-fallback";
+import { Markdown } from "./markdown";
 import { SandboxedHtmlIframe } from "./sandboxed-html-iframe";
 import { Badge } from "./ui/badge";
 
@@ -52,6 +54,7 @@ export function FilePreviewCard({
   const isPdf = mimeType === "application/pdf";
   const isVideo = mimeType.startsWith("video/");
   const isAudio = mimeType.startsWith("audio/");
+  const isMarkdown = mimeType === "text/markdown";
 
   const handlePreviewClick = () => {
     const files = gallery ?? [
@@ -101,6 +104,31 @@ export function FilePreviewCard({
         <div className="p-2">
           <audio className="w-full" controls src={finalPreviewUrl} />
         </div>
+      </div>
+    );
+  }
+
+  if (isMarkdown) {
+    return (
+      <div className="group relative overflow-hidden rounded-lg border border-border bg-background @sm:col-span-2">
+        <PreviewHeader
+          filename={filename}
+          filePath={filePath}
+          mimeType={mimeType}
+          projectSubdomain={projectSubdomain}
+          versionRef={versionRef}
+        />
+        <div className="relative w-full overflow-hidden">
+          <div className="max-h-64 overflow-hidden bg-background">
+            <MarkdownPreview url={finalPreviewUrl} />
+          </div>
+          <div className="pointer-events-none absolute right-0 bottom-0 left-0 h-16 bg-linear-to-t from-background to-transparent" />
+        </div>
+        <button
+          className="absolute inset-0 size-full"
+          onClick={handlePreviewClick}
+          type="button"
+        />
       </div>
     );
   }
@@ -205,6 +233,44 @@ function formatTime(seconds: number): string {
   const mins = Math.floor(seconds / 60);
   const secs = Math.floor(seconds % 60);
   return `${mins}:${secs.toString().padStart(2, "0")}`;
+}
+
+function MarkdownPreview({ url }: { url: string }) {
+  const { data, error, isLoading } = useQuery({
+    queryFn: async () => {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch file: ${response.statusText}`);
+      }
+      return response.text();
+    },
+    queryKey: ["markdown-preview", url],
+    retry: false,
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex size-full items-center justify-center">
+        <Loader2 className="size-4 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex size-full items-center justify-center p-4">
+        <p className="text-xs text-muted-foreground">Failed to load preview</p>
+      </div>
+    );
+  }
+
+  const truncatedContent = data ? data.split("\n").slice(0, 10).join("\n") : "";
+
+  return (
+    <div className="prose prose-sm size-full overflow-hidden p-3 text-xs dark:prose-invert prose-headings:text-sm prose-h1:text-base prose-h2:text-sm prose-h3:text-sm">
+      <Markdown markdown={truncatedContent} />
+    </div>
+  );
 }
 
 function PreviewHeader({
