@@ -9,6 +9,7 @@ import { ChevronLeft, ChevronRight, Download, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
+import { downloadProjectFile } from "../lib/download-project-file";
 import { FileActionsMenu } from "./file-actions-menu";
 import { FileIcon } from "./file-icon";
 import { FilePreviewListItem } from "./file-preview-list-item";
@@ -110,26 +111,28 @@ export function ProjectFileViewerModal() {
   const handleDownload = async () => {
     try {
       if (currentFile.url.startsWith("data:")) {
-        const link = document.createElement("a");
-        link.href = currentFile.url;
-        link.download = currentFile.filename;
-        document.body.append(link);
-        link.click();
-        link.remove();
+        const response = await fetch(currentFile.url);
+        const blob = await response.blob();
+        await downloadProjectFile({
+          blob,
+          filename: currentFile.filename,
+          filePath: currentFile.filePath,
+          projectSubdomain: currentFile.projectSubdomain,
+          versionRef: currentFile.versionRef,
+        });
       } else {
         const response = await fetch(currentFile.url);
         if (!response.ok) {
           throw new Error(`Failed to fetch file: ${response.statusText}`);
         }
         const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = currentFile.filename;
-        document.body.append(link);
-        link.click();
-        link.remove();
-        URL.revokeObjectURL(url);
+        await downloadProjectFile({
+          blob,
+          filename: currentFile.filename,
+          filePath: currentFile.filePath,
+          projectSubdomain: currentFile.projectSubdomain,
+          versionRef: currentFile.versionRef,
+        });
       }
     } catch (error) {
       const errorMessage =
