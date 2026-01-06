@@ -1,9 +1,11 @@
 import { call, eventIterator } from "@orpc/server";
 import { z } from "zod";
 
+import { getFileVersionRefs } from "../../../lib/get-file-version-refs";
 import { getGitCommits, GitCommitsSchema } from "../../../lib/get-git-commits";
 import { getGitRefInfo, GitRefInfoSchema } from "../../../lib/get-git-ref-info";
 import { hasAppModifications } from "../../../lib/has-app-modifications";
+import { RelativePathSchema } from "../../../schemas/paths";
 import { ProjectSubdomainSchema } from "../../../schemas/subdomains";
 import { base, toORPCError } from "../../base";
 import { publisher } from "../../publisher";
@@ -103,8 +105,33 @@ const hasAppModificationsEndpoint = base
     return result.value;
   });
 
+const fileVersionRefs = base
+  .input(
+    z.object({
+      filePath: RelativePathSchema,
+      projectSubdomain: ProjectSubdomainSchema,
+    }),
+  )
+  .output(z.array(z.string()))
+  .handler(
+    async ({ context, errors, input: { filePath, projectSubdomain } }) => {
+      const result = await getFileVersionRefs(
+        projectSubdomain,
+        filePath,
+        context.workspaceConfig,
+      );
+
+      if (result.isErr()) {
+        throw toORPCError(result.error, errors);
+      }
+
+      return result.value;
+    },
+  );
+
 export const projectGit = {
   commits,
+  fileVersionRefs,
   hasAppModifications: {
     check: hasAppModificationsEndpoint,
     live: {

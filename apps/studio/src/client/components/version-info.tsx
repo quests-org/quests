@@ -136,6 +136,7 @@ export function VersionFileChanges({
           filePath: f.filePath,
           versionRef,
         }),
+        versionRef,
       })),
     });
   };

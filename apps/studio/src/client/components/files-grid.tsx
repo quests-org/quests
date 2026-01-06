@@ -11,6 +11,7 @@ export interface FileItem {
   previewUrl: string;
   projectSubdomain?: ProjectSubdomain;
   size?: number;
+  versionRef: string;
 }
 
 interface FilesGridProps {
@@ -25,6 +26,7 @@ export function FilesGrid({ files }: FilesGridProps) {
     projectSubdomain: f.projectSubdomain,
     size: f.size,
     url: f.previewUrl,
+    versionRef: f.versionRef,
   }));
 
   const richPreviewFiles: FileItem[] = [];
@@ -57,7 +59,9 @@ export function FilesGrid({ files }: FilesGridProps) {
                 key={file.filePath}
                 mimeType={file.mimeType}
                 previewUrl={file.previewUrl}
+                projectSubdomain={file.projectSubdomain}
                 size={file.size}
+                versionRef={file.versionRef}
               />
             ))}
           </div>

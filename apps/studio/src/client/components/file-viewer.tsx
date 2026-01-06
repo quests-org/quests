@@ -8,12 +8,13 @@ import { isTextMimeType } from "../lib/is-text-mime-type";
 import { FileActionsMenu } from "./file-actions-menu";
 import { FileIcon } from "./file-icon";
 import { FilePreviewFallback } from "./file-preview-fallback";
+import { FileVersionBadge } from "./file-version-badge";
 import { Markdown } from "./markdown";
 import { SandboxedHtmlIframe } from "./sandboxed-html-iframe";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
-import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Tabs, TabsList, TabsTrigger } from "./ui/tabs";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 const fileViewerVariants = cva(
   "flex w-full flex-col overflow-hidden rounded border border-border bg-background",
@@ -45,6 +46,7 @@ export function FileViewer({
   onDownload,
   projectSubdomain,
   url,
+  versionRef,
 }: {
   filename: string;
   filePath?: string;
@@ -54,6 +56,7 @@ export function FileViewer({
   onDownload?: () => void;
   projectSubdomain?: ProjectSubdomain;
   url: string;
+  versionRef?: string;
 }) {
   const [viewMode, setViewMode] = useState<"preview" | "raw">("preview");
   const [mediaLoadError, setMediaLoadError] = useState(false);
@@ -117,10 +120,23 @@ export function FileViewer({
   const toolbarActions: ReactNode[] = [];
 
   if (onDownload) {
-    toolbarActions.push(
+    const downloadButton = (
       <Button key="download" onClick={onDownload} size="sm" variant="ghost">
         <Download className="size-4" />
-      </Button>,
+      </Button>
+    );
+
+    toolbarActions.push(
+      typeof fileSize === "number" && fileSize > 0 ? (
+        <Tooltip key="download">
+          <TooltipTrigger asChild>{downloadButton}</TooltipTrigger>
+          <TooltipContent>
+            <p>Download ({formatBytes(fileSize)})</p>
+          </TooltipContent>
+        </Tooltip>
+      ) : (
+        downloadButton
+      ),
     );
   }
 
@@ -173,8 +189,12 @@ export function FileViewer({
         <span className="truncate text-xs text-muted-foreground">
           {displayPath}
         </span>
-        {typeof fileSize === "number" && fileSize > 0 && (
-          <Badge variant="secondary">{formatBytes(fileSize)}</Badge>
+        {filePath && projectSubdomain && versionRef && (
+          <FileVersionBadge
+            filePath={filePath}
+            projectSubdomain={projectSubdomain}
+            versionRef={versionRef}
+          />
         )}
         <div className="ml-auto flex items-center gap-1">
           {isText && hasPreview && (

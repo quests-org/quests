@@ -75,6 +75,10 @@ export namespace GitCommands {
     return ["init"];
   }
 
+  export function logFileAllRefs(filePath: string) {
+    return ["log", "--format=%H", "--reverse", "--all", "--", filePath];
+  }
+
   export function logPathSinceCommit(commitRef: string, path: string) {
     return ["log", "--format=%H", `${commitRef}..HEAD`, "--", path];
   }

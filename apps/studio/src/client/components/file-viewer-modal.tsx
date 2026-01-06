@@ -14,10 +14,11 @@ import { toast } from "sonner";
 import { FileActionsMenu } from "./file-actions-menu";
 import { FileIcon } from "./file-icon";
 import { FileThumbnail } from "./file-thumbnail";
+import { FileVersionBadge } from "./file-version-badge";
 import { FileViewer } from "./file-viewer";
 import { ImageWithFallback } from "./image-with-fallback";
-import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 export function FileViewerModal() {
   const state = useAtomValue(fileViewerAtom);
@@ -210,23 +211,40 @@ export function FileViewerModal() {
                   <span className="truncate text-xs">
                     {currentFile.filePath ?? currentFile.filename}
                   </span>
-                  {typeof currentFile.size === "number" &&
-                    currentFile.size > 0 && (
-                      <Badge className="bg-white/10 text-white hover:bg-white/20">
-                        {formatBytes(currentFile.size)}
-                      </Badge>
+                  {currentFile.filePath &&
+                    currentFile.projectSubdomain &&
+                    currentFile.versionRef && (
+                      <FileVersionBadge
+                        className="bg-white/10 text-white hover:bg-white/20"
+                        filePath={currentFile.filePath}
+                        projectSubdomain={currentFile.projectSubdomain}
+                        versionRef={currentFile.versionRef}
+                      />
                     )}
                 </div>
                 <div className="absolute right-0 flex items-center gap-1">
                   {isDownloadable && (
-                    <Button
-                      className="text-white hover:bg-white/10"
-                      onClick={handleDownload}
-                      size="sm"
-                      variant="ghost"
-                    >
-                      <Download className="size-4" />
-                    </Button>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          className="text-white hover:bg-white/10"
+                          onClick={handleDownload}
+                          size="sm"
+                          tabIndex={-1}
+                          variant="ghost"
+                        >
+                          <Download className="size-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>
+                          Download
+                          {typeof currentFile.size === "number" &&
+                            currentFile.size > 0 &&
+                            ` (${formatBytes(currentFile.size)})`}
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
                   )}
                   <FileActionsMenu
                     filePath={currentFile.filePath}
@@ -329,6 +347,7 @@ export function FileViewerModal() {
                     onDownload={isDownloadable ? handleDownload : undefined}
                     projectSubdomain={currentFile.projectSubdomain}
                     url={currentFile.url}
+                    versionRef={currentFile.versionRef}
                   />
                 )}
               </div>

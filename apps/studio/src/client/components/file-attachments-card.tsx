@@ -39,6 +39,7 @@ export function FileAttachmentsCard({
       filePath: f.filePath,
       versionRef: f.gitRef,
     }),
+    versionRef: f.gitRef,
   }));
 
   return (

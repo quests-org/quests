@@ -8,6 +8,7 @@ export interface FileViewerFile {
   projectSubdomain?: ProjectSubdomain;
   size?: number;
   url: string;
+  versionRef?: string;
 }
 
 interface FileViewerState {
