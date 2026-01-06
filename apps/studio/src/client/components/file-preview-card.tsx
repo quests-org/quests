@@ -65,7 +65,7 @@ export function FilePreviewCard({
 
   if (isAudio) {
     return (
-      <div className="group relative overflow-hidden rounded-lg border border-border bg-background @sm:col-span-2">
+      <div className="group relative overflow-hidden rounded-lg border border-border bg-background">
         <PreviewHeader
           filename={filename}
           filePath={filePath}
@@ -88,7 +88,7 @@ export function FilePreviewCard({
 
   if (isMarkdown) {
     return (
-      <div className="group relative overflow-hidden rounded-lg border border-border bg-background @sm:col-span-2">
+      <div className="group relative overflow-hidden rounded-lg border border-border bg-background">
         <PreviewHeader
           filename={filename}
           filePath={filePath}

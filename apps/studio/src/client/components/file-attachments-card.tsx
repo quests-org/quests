@@ -41,5 +41,5 @@ export function FileAttachmentsCard({
     versionRef: file.gitRef,
   }));
 
-  return <FilesGrid files={fileItems} />;
+  return <FilesGrid alignEnd files={fileItems} />;
 }
