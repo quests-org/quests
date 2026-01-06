@@ -72,7 +72,7 @@
     "prettier-plugin-sql": "^0.19.2",
     "tailwindcss": "^4.1.18",
     "tsx": "^4.20.3",
-    "turbo": "^2.5.8",
+    "turbo": "^2.7.3",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },
