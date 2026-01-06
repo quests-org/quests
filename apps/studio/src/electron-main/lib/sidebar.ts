@@ -15,10 +15,6 @@ export function getSidebarWidth() {
   return sidebarVisible ? sidebarWidth : 0;
 }
 
-export function hideSidebar() {
-  sidebarVisible = false;
-}
-
 export function setSidebarVisible({
   tabsManager,
   visible,
@@ -48,10 +44,6 @@ export function setSidebarVisible({
   tabsManager?.focusCurrentTab();
 }
 
-export function showSidebar() {
-  sidebarVisible = true;
-}
-
 export function toggleSidebar({
   tabsManager,
   workspaceConfig,
@@ -61,4 +53,12 @@ export function toggleSidebar({
 }) {
   const newVisibility = !getSidebarVisible();
   setSidebarVisible({ tabsManager, visible: newVisibility, workspaceConfig });
+}
+
+function hideSidebar() {
+  sidebarVisible = false;
+}
+
+function showSidebar() {
+  sidebarVisible = true;
 }
