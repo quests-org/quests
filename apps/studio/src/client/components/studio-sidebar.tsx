@@ -133,8 +133,8 @@ export function StudioSidebar({
         </div>
       </SidebarHeader>
       <ServerExceptionsAlert />
+      <NavPrimary items={primaryNavItems} />
       <SidebarContent>
-        <NavPrimary items={primaryNavItems} />
         {favorites && favorites.length > 0 && (
           <NavProjects
             favoriteSubdomains={favoriteSubdomains}
