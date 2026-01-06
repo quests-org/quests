@@ -20,6 +20,7 @@ alwaysApply: false
 - Array#reduce() usually results in hard-to-read and less performant code. Instead, prefer .map, .filter, or a for-of loop.
 - Don't define return types unless necessary.
 - Use the `cn` helper from `@/client/lib/utils` for class name merging.
+- Avoid making component props and object properties optional unless necessary.
 
 ## Tailwind Rules
 
