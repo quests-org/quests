@@ -3,9 +3,9 @@ import { err, ok } from "neverthrow";
 
 import { absolutePathJoin } from "./absolute-path-join";
 import { type AppConfig } from "./app-config/types";
+import { ensurePnpmShim } from "./ensure-pnpm-shim";
 import { TypedError } from "./errors";
 import { execaNodeForApp } from "./execa-node-for-app";
-import { readPNPMShim } from "./read-pnpm-shim";
 
 export async function runNodeModulesBin<
   OptionsType extends Omit<Options, "cwd"> = Omit<Options, "cwd">,
@@ -16,7 +16,9 @@ export async function runNodeModulesBin<
     ".bin",
     bin,
   );
-  const binPathResult = await readPNPMShim(shimPath);
+  const binPathResult = await ensurePnpmShim(appConfig, shimPath, {
+    cancelSignal: options?.cancelSignal,
+  });
 
   if (binPathResult.isErr()) {
     return err(binPathResult.error);

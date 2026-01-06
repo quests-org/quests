@@ -9,6 +9,7 @@ export namespace TypedError {
     | NoChanges
     | NotFound
     | Parse
+    | ShimNotFound
     | Storage
     | Unknown;
 
@@ -43,6 +44,10 @@ export namespace TypedError {
 
   export class Parse extends Error {
     readonly type = `${PREFIX}-parse-error`;
+  }
+
+  export class ShimNotFound extends Error {
+    readonly type = `${PREFIX}-shim-not-found-error`;
   }
 
   export class Storage extends Error {

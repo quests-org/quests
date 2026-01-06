@@ -1,4 +1,4 @@
-import { err, ok, type Result } from "neverthrow";
+import { err, ok } from "neverthrow";
 import fs from "node:fs/promises";
 import path from "node:path";
 
@@ -7,9 +7,7 @@ import { TypedError } from "./errors";
 
 const SHEBANG = "#!/bin/sh";
 
-export async function readPNPMShim(
-  shimPath: AbsolutePath,
-): Promise<Result<string, TypedError.FileSystem | TypedError.Parse>> {
+export async function readPNPMShim(shimPath: AbsolutePath) {
   const isWindows = process.platform === "win32";
   const shimFilePath = isWindows ? `${shimPath}.cmd` : shimPath;
 
@@ -30,6 +28,13 @@ export async function readPNPMShim(
 
     return ok(resolveShimTarget(shimFilePath, relativePath));
   } catch (error) {
+    if (error instanceof Error && "code" in error && error.code === "ENOENT") {
+      return err(
+        new TypedError.ShimNotFound(`Shim file not found at ${shimFilePath}`, {
+          cause: error,
+        }),
+      );
+    }
     return err(
       new TypedError.FileSystem(`Failed to read shim file at ${shimFilePath}`, {
         cause: error,
