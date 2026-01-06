@@ -112,7 +112,7 @@ export function FileViewer({
     contentRef.current?.scrollTo({ behavior: "instant", top: 0 });
   }, [viewMode]);
 
-  const isText = isTextMimeType({ filename, mimeType });
+  const isText = isTextMimeType(mimeType);
   const isPdf = mimeType === "application/pdf";
   const isVideo = mimeType?.startsWith("video/");
   const isAudio = mimeType?.startsWith("audio/");

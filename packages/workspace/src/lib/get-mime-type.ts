@@ -1,29 +1,25 @@
-import { TEXT_EXTENSION_MIME_MAP } from "@quests/shared";
-import { fileTypeFromBuffer } from "file-type";
-import { isBinaryFile } from "isbinaryfile";
+import mime from "mime-types";
 import path from "node:path";
 
-export async function getMimeType(
-  buffer: Buffer,
-  filename: string,
-): Promise<string> {
-  try {
-    const ext = path.extname(filename).toLowerCase();
-    const possibleTextMimeType = ext ? TEXT_EXTENSION_MIME_MAP[ext] : undefined;
+const CODE_EXTENSION_OVERRIDES: Record<string, string> = {
+  ".cjs": "text/javascript",
+  ".cts": "text/typescript",
+  ".jsx": "text/jsx",
+  ".mjs": "text/javascript",
+  ".mts": "text/typescript",
+  ".ts": "text/typescript",
+  ".tsx": "text/tsx",
+};
 
-    const fileType = await fileTypeFromBuffer(buffer);
+export function getMimeType(filenameOrFilePath: string) {
+  const ext = path.extname(filenameOrFilePath).toLowerCase();
 
-    if (fileType?.mime) {
-      return possibleTextMimeType ?? fileType.mime;
-    }
-
-    const isBinary = await isBinaryFile(buffer);
-    if (isBinary) {
-      return "application/octet-stream";
-    }
-
-    return possibleTextMimeType ?? "text/plain";
-  } catch {
-    return "application/octet-stream";
+  const override = CODE_EXTENSION_OVERRIDES[ext];
+  if (override) {
+    return override;
   }
+
+  const mimeType = mime.lookup(filenameOrFilePath);
+
+  return mimeType || "application/octet-stream";
 }

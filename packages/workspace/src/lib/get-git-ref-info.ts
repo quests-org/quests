@@ -147,19 +147,7 @@ export async function getGitRefInfo(
       }
 
       const filename = path.basename(filePath);
-
-      let mimeType = "application/octet-stream";
-      if (status !== "deleted") {
-        const fileBufferResult = await git(
-          GitCommands.showFile(gitRef, filePath),
-          projectConfig.appDir,
-          { signal: AbortSignal.timeout(ms("5 seconds")) },
-        );
-
-        if (fileBufferResult.isOk()) {
-          mimeType = await getMimeType(fileBufferResult.value.stdout, filename);
-        }
-      }
+      const mimeType = getMimeType(filename);
 
       files.push({
         additions,

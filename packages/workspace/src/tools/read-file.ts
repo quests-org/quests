@@ -1,6 +1,5 @@
 // Adapted from
 // https://github.com/sst/opencode/blob/dev/packages/opencode/src/tool/read.ts
-import { fileTypeFromFile } from "file-type";
 import { isBinaryFile } from "isbinaryfile";
 import ms from "ms";
 import { err, ok } from "neverthrow";
@@ -13,6 +12,7 @@ import { absolutePathJoin } from "../lib/absolute-path-join";
 import { addLineNumbers } from "../lib/add-line-numbers";
 import { fixRelativePath } from "../lib/fix-relative-path";
 import { formatBytes } from "../lib/format-bytes";
+import { getMimeType } from "../lib/get-mime-type";
 import { pathExists } from "../lib/path-exists";
 import { RelativePathSchema } from "../schemas/paths";
 import { BaseInputSchema } from "./base";
@@ -207,10 +207,9 @@ export const ReadFile = createTool({
       });
     }
 
-    const fileType = await fileTypeFromFile(absolutePath);
-    const mimeType = fileType?.mime;
+    const mimeType = getMimeType(absolutePath);
 
-    if (mimeType?.startsWith("image/")) {
+    if (mimeType.startsWith("image/")) {
       return handleMediaFile({
         absolutePath,
         fixedPath,
@@ -230,7 +229,7 @@ export const ReadFile = createTool({
       });
     }
 
-    if (mimeType?.startsWith("audio/")) {
+    if (mimeType.startsWith("audio/")) {
       return handleMediaFile({
         absolutePath,
         fixedPath,
@@ -240,7 +239,7 @@ export const ReadFile = createTool({
       });
     }
 
-    if (mimeType?.startsWith("video/")) {
+    if (mimeType.startsWith("video/")) {
       return handleMediaFile({
         absolutePath,
         fixedPath,
@@ -252,7 +251,7 @@ export const ReadFile = createTool({
 
     return ok({
       filePath: fixedPath,
-      mimeType: mimeType ?? undefined,
+      mimeType,
       reason: "binary-file" as const,
       state: "unsupported-format" as const,
     });

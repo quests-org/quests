@@ -61,7 +61,7 @@ app.get("/assets/*", async (c) => {
     }
   }
 
-  const contentType = await getMimeType(fileBuffer, assetPath);
+  const contentType = getMimeType(assetPath);
 
   return c.body(fileBuffer, 200, {
     "Content-Type": contentType,

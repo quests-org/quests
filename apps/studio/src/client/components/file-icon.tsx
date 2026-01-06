@@ -150,7 +150,7 @@ function getFileIcon(
     return extIcon;
   }
 
-  if (mimeType && isTextMimeType({ filename, mimeType })) {
+  if (mimeType && isTextMimeType(mimeType)) {
     return mimeType === "text/plain" ? BsFileText : BsFileCode;
   }
 

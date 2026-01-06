@@ -24,14 +24,3 @@ export const SALES_EMAIL = "hello@quests.dev";
 export const SUPPORT_EMAIL = "support@quests.dev";
 export const PROJECT_CONFIG_FILE_NAME = "quests.json";
 export const VERSION_REF_QUERY_PARAM = "versionRef";
-
-export const TEXT_EXTENSION_MIME_MAP: Record<string, string> = {
-  ".gml": "application/gml+xml",
-  ".htm": "text/html",
-  ".html": "text/html",
-  ".kml": "application/vnd.google-earth.kml+xml",
-  ".rss": "application/rss+xml",
-  ".svg": "image/svg+xml",
-  ".xhtml": "application/xhtml+xml",
-  ".xml": "application/xml",
-};
