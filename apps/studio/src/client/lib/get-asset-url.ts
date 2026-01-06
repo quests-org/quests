@@ -1,3 +1,5 @@
+import { VERSION_REF_QUERY_PARAM } from "@quests/shared";
+
 export function getAssetUrl({
   assetBase,
   filePath,
@@ -11,7 +13,7 @@ export function getAssetUrl({
   const baseUrl = `${assetBase}/${cleanPath}`;
 
   if (versionRef) {
-    return `${baseUrl}?versionRef=${versionRef}`;
+    return `${baseUrl}?${VERSION_REF_QUERY_PARAM}=${versionRef}`;
   }
 
   return baseUrl;

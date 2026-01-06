@@ -1,3 +1,4 @@
+import { VERSION_REF_QUERY_PARAM } from "@quests/shared";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import ms from "ms";
@@ -36,7 +37,7 @@ app.get("/assets/*", async (c) => {
   }
 
   const fullPath = absolutePathJoin(appConfig.appDir, assetPath);
-  const versionRef = c.req.query("versionRef");
+  const versionRef = c.req.query(VERSION_REF_QUERY_PARAM);
 
   let fileBuffer: Buffer;
 
