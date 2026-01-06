@@ -1,3 +1,4 @@
+import { toggleSidebar } from "@/electron-main/lib/sidebar";
 import { publisher } from "@/electron-main/rpc/publisher";
 import { isDeveloperMode } from "@/electron-main/stores/preferences";
 import { getTabsManager } from "@/electron-main/tabs";
@@ -160,6 +161,14 @@ export function createMainWindowMenu(): MenuItemConstructorOptions[] {
           }
         },
         label: "Reload App",
+      },
+      { type: "separator" as const },
+      {
+        accelerator: "CmdOrCtrl+B",
+        click: () => {
+          toggleSidebar({ tabsManager: getTabsManager() });
+        },
+        label: "Toggle Sidebar",
       },
       { type: "separator" as const },
       {

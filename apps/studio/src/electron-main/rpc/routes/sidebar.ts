@@ -1,40 +1,26 @@
 import {
   getSidebarVisible,
-  hideSidebar,
-  showSidebar,
+  setSidebarVisible,
 } from "@/electron-main/lib/sidebar";
 import { base } from "@/electron-main/rpc/base";
 import { publisher } from "@/electron-main/rpc/publisher";
-import { updateToolbarForSidebarChange } from "@/electron-main/windows/toolbar";
 
 const close = base.handler(({ context }) => {
-  hideSidebar();
-  updateToolbarForSidebarChange();
-  context.tabsManager?.updateTabsForSidebarChange();
-
-  const sidebarVisibilityPayload = { visible: false };
-
-  publisher.publish("sidebar.visibility-updated", sidebarVisibilityPayload);
-
-  context.workspaceConfig.captureEvent("app.sidebar_closed");
-
-  context.tabsManager?.focusCurrentTab();
+  setSidebarVisible({
+    tabsManager: context.tabsManager,
+    visible: false,
+    workspaceConfig: context.workspaceConfig,
+  });
 
   return true;
 });
 
 const open = base.handler(({ context }) => {
-  showSidebar();
-  updateToolbarForSidebarChange();
-  context.tabsManager?.updateTabsForSidebarChange();
-
-  const sidebarVisibilityPayload = { visible: true };
-
-  publisher.publish("sidebar.visibility-updated", sidebarVisibilityPayload);
-
-  context.workspaceConfig.captureEvent("app.sidebar_opened");
-
-  context.tabsManager?.focusCurrentTab();
+  setSidebarVisible({
+    tabsManager: context.tabsManager,
+    visible: true,
+    workspaceConfig: context.workspaceConfig,
+  });
 
   return true;
 });
