@@ -1,4 +1,4 @@
-import { getAssetUrl } from "@/client/lib/asset-utils";
+import { getAssetUrl } from "@/client/lib/get-asset-url";
 import { cn } from "@/client/lib/utils";
 import { PROJECT_CONFIG_FILE_NAME } from "@quests/shared";
 import { type ProjectSubdomain } from "@quests/workspace/client";
@@ -16,7 +16,7 @@ import {
 import { ViewIndicator } from "./view-indicator";
 
 interface VersionCardProps {
-  assetBaseURL: string;
+  assetBaseUrl: string;
   isLastGitCommit?: boolean;
   isSelected?: boolean;
   projectSubdomain: ProjectSubdomain;
@@ -25,7 +25,7 @@ interface VersionCardProps {
 }
 
 export function VersionAndFilesCard({
-  assetBaseURL,
+  assetBaseUrl,
   isLastGitCommit = false,
   isSelected = false,
   projectSubdomain,
@@ -70,13 +70,13 @@ export function VersionAndFilesCard({
       filePath: file.filePath,
       mimeType: file.mimeType,
       previewUrl: getAssetUrl({
-        assetBase: assetBaseURL,
+        assetBase: assetBaseUrl,
         filePath: file.filePath,
         versionRef,
       }),
       projectSubdomain,
     }));
-  }, [filesOutsideSrc, assetBaseURL, versionRef, projectSubdomain]);
+  }, [filesOutsideSrc, assetBaseUrl, versionRef, projectSubdomain]);
 
   const hasFilesInSrc = filesInSrc.length > 0;
   const hasFilesOutsideSrc = fileItems.length > 0;
@@ -122,7 +122,7 @@ export function VersionAndFilesCard({
             />
 
             <VersionFileChanges
-              assetBaseURL={assetBaseURL}
+              assetBaseUrl={assetBaseUrl}
               projectSubdomain={projectSubdomain}
               versionRef={versionRef}
             />

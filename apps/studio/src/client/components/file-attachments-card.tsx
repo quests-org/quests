@@ -1,5 +1,5 @@
 import { type FileViewerFile } from "@/client/atoms/file-viewer";
-import { getAssetUrl } from "@/client/lib/asset-utils";
+import { getAssetUrl } from "@/client/lib/get-asset-url";
 import {
   type ProjectSubdomain,
   type SessionMessageDataPart,

@@ -1,5 +1,5 @@
 import { openFileViewerAtom } from "@/client/atoms/file-viewer";
-import { getAssetUrl } from "@/client/lib/asset-utils";
+import { getAssetUrl } from "@/client/lib/get-asset-url";
 import { type ProjectSubdomain } from "@quests/workspace/client";
 import { useQuery } from "@tanstack/react-query";
 import ColorHash from "color-hash";
@@ -17,7 +17,7 @@ interface VersionCommitMessageProps {
 }
 
 interface VersionFileChangesProps {
-  assetBaseURL?: string;
+  assetBaseUrl?: string;
   maxFiles?: number;
   projectSubdomain: ProjectSubdomain;
   versionRef: string;
@@ -76,7 +76,7 @@ export function VersionCommitMessage({
 }
 
 export function VersionFileChanges({
-  assetBaseURL,
+  assetBaseUrl,
   maxFiles = 3,
   projectSubdomain,
   versionRef,
@@ -112,7 +112,7 @@ export function VersionFileChanges({
   const hasMoreFiles = gitRefInfo.files.length > maxFiles;
 
   const handleFileClick = (file: (typeof gitRefInfo.files)[0]) => {
-    if (file.status === "deleted" || !assetBaseURL) {
+    if (file.status === "deleted" || !assetBaseUrl) {
       return;
     }
 
@@ -132,7 +132,7 @@ export function VersionFileChanges({
         projectSubdomain,
         size: 0,
         url: getAssetUrl({
-          assetBase: assetBaseURL,
+          assetBase: assetBaseUrl,
           filePath: f.filePath,
           versionRef,
         }),
@@ -144,7 +144,7 @@ export function VersionFileChanges({
     <div className="flex w-full flex-col gap-1">
       {filesToShow.map((file) => {
         const isDeleted = file.status === "deleted";
-        const isClickable = !isDeleted && assetBaseURL;
+        const isClickable = !isDeleted && assetBaseUrl;
 
         return (
           <button

@@ -173,7 +173,7 @@ export function SessionStream({
         const isLastVersion = lastGitCommitPart?.data.ref === part.data.ref;
         return (
           <VersionAndFilesCard
-            assetBaseURL={project.urls.assetBase}
+            assetBaseUrl={project.urls.assetBase}
             isLastGitCommit={isLastVersion}
             isSelected={
               selectedVersion === part.data.ref ||
