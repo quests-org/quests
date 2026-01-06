@@ -157,7 +157,13 @@ export function FileViewer({
 
   if (onDownload) {
     const downloadButton = (
-      <Button key="download" onClick={onDownload} size="sm" variant="ghost">
+      <Button
+        key="download"
+        onClick={onDownload}
+        size="sm"
+        tabIndex={-1}
+        variant="ghost"
+      >
         <Download className="size-4" />
       </Button>
     );
