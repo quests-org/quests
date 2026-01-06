@@ -2,6 +2,7 @@ import { promptValueAtomFamily } from "@/client/atoms/prompt-value";
 import { DuplicateProjectModal } from "@/client/components/duplicate-project-modal";
 import { ProjectDeleteDialog } from "@/client/components/project-delete-dialog";
 import { ProjectHeaderToolbar } from "@/client/components/project-header-toolbar";
+import { ProjectSettingsDialog } from "@/client/components/project-settings-dialog";
 import { ProjectViewApp } from "@/client/components/project-view/app";
 import { ProjectViewChat } from "@/client/components/project-view/chat";
 import { useProjectRouteSync } from "@/client/hooks/use-project-route-sync";
@@ -36,6 +37,7 @@ const projectSearchSchema = z.object({
   selectedVersion: z.string().optional(),
   showDelete: z.boolean().optional(),
   showDuplicate: z.boolean().optional(),
+  showSettings: z.boolean().optional(),
 });
 
 function title(project?: WorkspaceAppProject) {
@@ -139,8 +141,13 @@ export const Route = createFileRoute("/_app/projects/$subdomain/")({
 
 function RouteComponent() {
   const { subdomain } = Route.useParams();
-  const { selectedSessionId, selectedVersion, showDelete, showDuplicate } =
-    Route.useSearch();
+  const {
+    selectedSessionId,
+    selectedVersion,
+    showDelete,
+    showDuplicate,
+    showSettings,
+  } = Route.useSearch();
   const navigate = useNavigate();
 
   const handleDeleteDialogChange = (open: boolean) => {
@@ -162,6 +169,17 @@ function RouteComponent() {
       },
       replace: true,
       search: (prev) => ({ ...prev, showDuplicate: open || undefined }),
+    });
+  };
+
+  const handleSettingsDialogChange = (open: boolean) => {
+    void navigate({
+      from: "/projects/$subdomain",
+      params: {
+        subdomain,
+      },
+      replace: true,
+      search: (prev) => ({ ...prev, showSettings: open || undefined }),
     });
   };
 
@@ -257,6 +275,12 @@ function RouteComponent() {
         }}
         projectName={project.title}
         projectSubdomain={project.subdomain}
+      />
+
+      <ProjectSettingsDialog
+        onOpenChange={handleSettingsDialogChange}
+        open={showSettings ?? false}
+        project={project}
       />
     </div>
   );
