@@ -18,6 +18,7 @@ alwaysApply: false
 - Prefer inline type declarations when they are short and not exported.
 - Prefer object types for functions with identical parameters, e.g. `({ a, b }: { a: number, b: number }) => number` instead of `(a: number, b: number) => number`.
 - Array#reduce() usually results in hard-to-read and less performant code. Instead, prefer .map, .filter, or a for-of loop.
+- Don't define return types unless necessary.
 
 ## Tailwind Rules
 
