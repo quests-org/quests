@@ -120,6 +120,7 @@ export function FilePreviewCard({
             {isHtml && (
               <SandboxedHtmlIframe
                 className="absolute top-0 left-0 h-[300%] w-[300%] origin-top-left border-0"
+                restrictInteractive
                 src={previewUrl}
                 style={{ transform: "scale(0.333)" }}
                 title={filename}
@@ -127,7 +128,7 @@ export function FilePreviewCard({
             )}
             {isPdf && (
               <iframe
-                className="absolute top-0 left-0 h-[300%] w-[300%] origin-top-left border-0 bg-background"
+                className="absolute top-0 left-0 h-[300%] w-[300%] origin-top-left border-0"
                 // cspell:ignore navpanes
                 src={`${previewUrl}#toolbar=0&navpanes=0&view=Fit`}
                 style={{ transform: "scale(0.333)" }}
