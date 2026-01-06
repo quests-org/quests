@@ -3,7 +3,7 @@ import { type TabState } from "@/shared/tabs";
 import { EventPublisher } from "@orpc/server";
 
 interface PublisherEvents {
-  "app.open-project-launcher": null;
+  "app.open-project-launcher": { webContentsId: number };
   "app.reload": { webContentsId: number };
   "auth.sign-in-error": {
     error: {
