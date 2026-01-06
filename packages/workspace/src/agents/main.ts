@@ -151,6 +151,7 @@ export const mainAgent = setupAgent({
           - Use the \`tsx\` CLI tool for running scripts, e.g. \`tsx ${APP_FOLDER_NAMES.scripts}/example.ts\`.
           - Prefer TypeScript for scripts so they can be typechecked using the \`${agentTools.RunDiagnostics.name}\` tool.
           - Files in \`./${APP_FOLDER_NAMES.output}/\` are automatically shown to the user in the conversation with instant previews. The user can click them to view in full or download.
+          - **For longer text outputs** (reports, documentation, analyses, summaries, etc.), create markdown files in \`./${APP_FOLDER_NAMES.output}/\` instead of outputting text directly. This makes it easier for the user to read, save, and modify the content.
           - Files the user uploads are stored in \`./${APP_FOLDER_NAMES.uploads}/\`.
           
           # Git Repository
