@@ -7,15 +7,6 @@ import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
-interface UploadedFilePreviewProps {
-  filename: string;
-  mimeType?: string;
-  onClick?: () => void;
-  onRemove?: () => void;
-  size?: number;
-  url?: string;
-}
-
 export function UploadedFilePreview({
   filename,
   mimeType,
@@ -23,7 +14,14 @@ export function UploadedFilePreview({
   onRemove,
   size,
   url,
-}: UploadedFilePreviewProps) {
+}: {
+  filename: string;
+  mimeType?: string;
+  onClick?: () => void;
+  onRemove?: () => void;
+  size?: number;
+  url?: string;
+}) {
   const isImage = mimeType?.startsWith("image/");
   const hasPreview = Boolean(url);
 

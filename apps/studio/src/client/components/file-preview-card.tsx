@@ -68,7 +68,6 @@ export function FilePreviewCard({
         <PreviewHeader
           filename={filename}
           filePath={filePath}
-          mimeType={mimeType}
           onClick={onClick}
           projectSubdomain={projectSubdomain}
           versionRef={versionRef}
@@ -91,7 +90,6 @@ export function FilePreviewCard({
         <PreviewHeader
           filename={filename}
           filePath={filePath}
-          mimeType={mimeType}
           onClick={onClick}
           projectSubdomain={projectSubdomain}
           versionRef={versionRef}
@@ -120,7 +118,6 @@ export function FilePreviewCard({
       <PreviewHeader
         filename={filename}
         filePath={filePath}
-        mimeType={mimeType}
         onClick={onClick}
         projectSubdomain={projectSubdomain}
         versionRef={versionRef}
@@ -255,14 +252,12 @@ function MarkdownPreview({ url }: { url: string }) {
 function PreviewHeader({
   filename,
   filePath,
-  mimeType,
   onClick,
   projectSubdomain,
   versionRef,
 }: {
   filename: string;
   filePath?: string;
-  mimeType: string;
   onClick?: () => void;
   projectSubdomain?: ProjectSubdomain;
   versionRef: string;

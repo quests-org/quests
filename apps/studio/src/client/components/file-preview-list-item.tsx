@@ -48,7 +48,6 @@ export function FilePreviewListItem({
             className="size-12 bg-white object-cover"
             fallbackClassName="size-12 rounded-lg"
             filename={filename}
-            mimeType={mimeType}
             src={url}
           />
         </Button>
@@ -70,7 +69,6 @@ export function FilePreviewListItem({
           <FileIcon
             className="size-5 shrink-0 text-muted-foreground"
             filename={filename}
-            mimeType={mimeType}
           />
           <span className="min-w-0 truncate text-left text-xs leading-tight">
             {filename}
