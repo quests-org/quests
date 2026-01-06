@@ -95,6 +95,10 @@ export namespace GitCommands {
     return ["rev-parse", ref];
   }
 
+  export function showFile(ref: string, filePath: string) {
+    return ["show", `${ref}:${filePath}`];
+  }
+
   export function showNumstat(ref: string) {
     return ["show", "--numstat", "--format=", ref];
   }
