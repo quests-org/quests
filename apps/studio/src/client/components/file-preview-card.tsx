@@ -18,9 +18,8 @@ interface FilePreviewCardProps {
   filePath?: string;
   mimeType: string;
   onClick?: () => void;
-  previewUrl: string;
   projectSubdomain?: ProjectSubdomain;
-  size?: number;
+  url: string;
   versionRef: string;
 }
 
@@ -30,18 +29,18 @@ export function FilePreviewCard({
   filePath,
   mimeType,
   onClick,
-  previewUrl,
   projectSubdomain,
+  url,
   versionRef,
 }: FilePreviewCardProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoProgress, setVideoProgress] = useState(0);
   const [timeRemaining, setTimeRemaining] = useState<null | number>(null);
 
-  const finalPreviewUrl =
+  const finalUrl =
     assetBaseUrl && filePath && versionRef
       ? getAssetUrl({ assetBase: assetBaseUrl, filePath, versionRef })
-      : previewUrl;
+      : url;
 
   const isImage = mimeType.startsWith("image/");
   const isHtml = mimeType === "text/html";
@@ -75,7 +74,7 @@ export function FilePreviewCard({
           versionRef={versionRef}
         />
         <div className="relative p-2">
-          <audio className="w-full" controls src={finalPreviewUrl} />
+          <audio className="w-full" controls src={finalUrl} />
           <button
             className="absolute inset-0 size-full"
             onClick={onClick}
@@ -99,7 +98,7 @@ export function FilePreviewCard({
         />
         <div className="relative w-full overflow-hidden">
           <div className="max-h-64 overflow-hidden bg-background">
-            <MarkdownPreview url={finalPreviewUrl} />
+            <MarkdownPreview url={finalUrl} />
           </div>
           <div className="pointer-events-none absolute right-0 bottom-0 left-0 h-16 bg-linear-to-t from-background to-transparent" />
           <button
@@ -134,7 +133,7 @@ export function FilePreviewCard({
               className="max-h-full max-w-full bg-white object-contain"
               fallbackClassName="size-full"
               filename={filename}
-              src={finalPreviewUrl}
+              src={finalUrl}
             />
           </div>
         )}
@@ -142,7 +141,7 @@ export function FilePreviewCard({
           <SandboxedHtmlIframe
             className="absolute top-0 left-0 h-[300%] w-[300%] origin-top-left border-0"
             restrictInteractive
-            src={finalPreviewUrl}
+            src={finalUrl}
             style={{ transform: "scale(0.333)" }}
             title={filename}
           />
@@ -151,7 +150,7 @@ export function FilePreviewCard({
           <iframe
             className="absolute top-0 left-0 h-[300%] w-[300%] origin-top-left border-0"
             // cspell:ignore navpanes
-            src={`${finalPreviewUrl}#toolbar=0&navpanes=0&view=Fit`}
+            src={`${finalUrl}#toolbar=0&navpanes=0&view=Fit`}
             style={{ transform: "scale(0.333)" }}
             title={filename}
           />
@@ -174,7 +173,7 @@ export function FilePreviewCard({
                 setTimeRemaining(remaining);
               }}
               ref={videoRef}
-              src={finalPreviewUrl}
+              src={finalUrl}
             />
             <div className="absolute inset-0 flex items-center justify-center bg-black/20 transition-opacity group-hover:opacity-0">
               <div className="rounded-full bg-white/90 p-4 shadow-lg">

@@ -1,4 +1,7 @@
-import { openFileViewerAtom } from "@/client/atoms/file-viewer";
+import {
+  openProjectFileViewerAtom,
+  type ProjectFileViewerFile,
+} from "@/client/atoms/project-file-viewer";
 import { getAssetUrl } from "@/client/lib/get-asset-url";
 import { type ProjectSubdomain } from "@quests/workspace/client";
 import { useQuery } from "@tanstack/react-query";
@@ -82,7 +85,7 @@ export function VersionFileChanges({
   versionRef,
 }: VersionFileChangesProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const openFileViewer = useSetAtom(openFileViewerAtom);
+  const openFileViewer = useSetAtom(openProjectFileViewerAtom);
 
   const { data: gitRefInfo, isLoading } = useQuery(
     rpcClient.workspace.project.git.ref.queryOptions({
@@ -123,21 +126,22 @@ export function VersionFileChanges({
       (f) => f.filePath === file.filePath,
     );
 
+    const projectFiles: ProjectFileViewerFile[] = clickableFiles.map((f) => ({
+      filename: f.filename,
+      filePath: f.filePath,
+      mimeType: f.mimeType,
+      projectSubdomain,
+      url: getAssetUrl({
+        assetBase: assetBaseUrl,
+        filePath: f.filePath,
+        versionRef,
+      }),
+      versionRef,
+    }));
+
     openFileViewer({
       currentIndex: clickedFileIndex,
-      files: clickableFiles.map((f) => ({
-        filename: f.filename,
-        filePath: f.filePath,
-        mimeType: f.mimeType,
-        projectSubdomain,
-        size: 0,
-        url: getAssetUrl({
-          assetBase: assetBaseUrl,
-          filePath: f.filePath,
-          versionRef,
-        }),
-        versionRef,
-      })),
+      files: projectFiles,
     });
   };
 

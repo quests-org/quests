@@ -1,51 +1,41 @@
 import {
-  type FileViewerFile,
-  openFileViewerAtom,
-} from "@/client/atoms/file-viewer";
-import { type ProjectSubdomain } from "@quests/workspace/client";
+  openProjectFileViewerAtom,
+  type ProjectFileViewerFile,
+} from "@/client/atoms/project-file-viewer";
 import { useSetAtom } from "jotai";
 
 import { FilePreviewCard } from "./file-preview-card";
-import { FileThumbnail } from "./file-thumbnail";
-
-export interface FileItem {
-  filename: string;
-  filePath: string;
-  mimeType: string;
-  previewUrl: string;
-  projectSubdomain?: ProjectSubdomain;
-  size?: number;
-  versionRef: string;
-}
+import { FilePreviewListItem } from "./file-preview-list-item";
 
 interface FilesGridProps {
   alignEnd?: boolean;
-  files: FileItem[];
+  files: ProjectFileViewerFile[];
 }
 
 export function FilesGrid({ alignEnd = false, files }: FilesGridProps) {
-  const openFileViewer = useSetAtom(openFileViewerAtom);
+  const openFileViewer = useSetAtom(openProjectFileViewerAtom);
 
-  const allFiles: FileViewerFile[] = files.map((f) => ({
+  const allFiles: ProjectFileViewerFile[] = files.map((f) => ({
     filename: f.filename,
     filePath: f.filePath,
     mimeType: f.mimeType,
     projectSubdomain: f.projectSubdomain,
-    size: f.size,
-    url: f.previewUrl,
+    url: f.url,
     versionRef: f.versionRef,
   }));
 
-  const handleFileClick = (file: FileItem) => {
-    const currentIndex = allFiles.findIndex((f) => f.url === file.previewUrl);
+  const handleFileClick = (file: ProjectFileViewerFile) => {
+    const currentIndex = allFiles.findIndex((f) => f.url === file.url);
     openFileViewer({
       currentIndex: currentIndex === -1 ? 0 : currentIndex,
       files: allFiles,
     });
   };
 
-  const richPreviewFiles: (FileItem & { shouldSpanTwo?: boolean })[] = [];
-  const otherFiles: FileItem[] = [];
+  const richPreviewFiles: (ProjectFileViewerFile & {
+    shouldSpanTwo?: boolean;
+  })[] = [];
+  const otherFiles: ProjectFileViewerFile[] = [];
 
   for (const file of files) {
     const isImage = file.mimeType.startsWith("image/");
@@ -88,9 +78,8 @@ export function FilesGrid({ alignEnd = false, files }: FilesGridProps) {
                   onClick={() => {
                     handleFileClick(file);
                   }}
-                  previewUrl={file.previewUrl}
                   projectSubdomain={file.projectSubdomain}
-                  size={file.size}
+                  url={file.url}
                   versionRef={file.versionRef}
                 />
               </div>
@@ -103,16 +92,15 @@ export function FilesGrid({ alignEnd = false, files }: FilesGridProps) {
         <div className="flex flex-wrap items-start gap-2">
           {otherFiles.map((file) => (
             <div className="h-12 min-w-0" key={file.filePath}>
-              <FileThumbnail
+              <FilePreviewListItem
                 filename={file.filename}
                 filePath={file.filePath}
                 mimeType={file.mimeType}
                 onClick={() => {
                   handleFileClick(file);
                 }}
-                previewUrl={file.previewUrl}
                 projectSubdomain={file.projectSubdomain}
-                size={file.size}
+                url={file.url}
                 versionRef={file.versionRef}
               />
             </div>

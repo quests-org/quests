@@ -40,10 +40,7 @@ export function ImageWithFallback({
 
     return (
       <div
-        className={cn(
-          "flex items-center justify-center bg-muted",
-          fallbackClassName,
-        )}
+        className={cn("flex items-center justify-center", fallbackClassName)}
       >
         <FileIcon
           className="size-[70%] text-muted-foreground"

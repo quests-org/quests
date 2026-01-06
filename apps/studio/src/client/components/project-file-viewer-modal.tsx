@@ -1,33 +1,37 @@
 import {
-  closeFileViewerAtom,
-  fileViewerAtom,
-  navigateFileViewerAtom,
-} from "@/client/atoms/file-viewer";
-import { formatBytes } from "@quests/workspace/client";
+  closeProjectFileViewerAtom,
+  projectFileViewerAtom,
+} from "@/client/atoms/project-file-viewer";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { useRouter } from "@tanstack/react-router";
 import { useAtomValue, useSetAtom } from "jotai";
 import { ChevronLeft, ChevronRight, Download, X } from "lucide-react";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { FileActionsMenu } from "./file-actions-menu";
 import { FileIcon } from "./file-icon";
-import { FileThumbnail } from "./file-thumbnail";
+import { FilePreviewListItem } from "./file-preview-list-item";
 import { FileVersionBadge } from "./file-version-badge";
 import { FileViewer } from "./file-viewer";
 import { ImageWithFallback } from "./image-with-fallback";
 import { Button } from "./ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
-export function FileViewerModal() {
-  const state = useAtomValue(fileViewerAtom);
-  const closeViewer = useSetAtom(closeFileViewerAtom);
-  const navigate = useSetAtom(navigateFileViewerAtom);
+export function ProjectFileViewerModal() {
+  const state = useAtomValue(projectFileViewerAtom);
+  const closeViewer = useSetAtom(closeProjectFileViewerAtom);
   const router = useRouter();
+  const [currentIndex, setCurrentIndex] = useState(0);
 
-  const currentFile = state.files[state.currentIndex];
+  const currentFile = state.files[currentIndex];
   const hasMultipleFiles = state.files.length > 1;
+
+  useEffect(() => {
+    if (state.isOpen) {
+      setCurrentIndex(state.currentIndex);
+    }
+  }, [state.isOpen, state.currentIndex]);
 
   const isDownloadable = useMemo(() => {
     // We can't assume a file is downloadable via fetch due to CORS restrictions
@@ -69,10 +73,12 @@ export function FileViewerModal() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "ArrowLeft") {
         e.preventDefault();
-        navigate("prev");
+        setCurrentIndex((prev) =>
+          prev === 0 ? state.files.length - 1 : prev - 1,
+        );
       } else if (e.key === "ArrowRight") {
         e.preventDefault();
-        navigate("next");
+        setCurrentIndex((prev) => (prev + 1) % state.files.length);
       }
     };
 
@@ -80,16 +86,14 @@ export function FileViewerModal() {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [state.isOpen, hasMultipleFiles, navigate]);
+  }, [state.isOpen, hasMultipleFiles, state.files.length]);
 
   useEffect(() => {
     if (!state.isOpen || !hasMultipleFiles) {
       return;
     }
 
-    const thumbnail = document.querySelector(
-      `#thumbnail-${state.currentIndex}`,
-    );
+    const thumbnail = document.querySelector(`#thumbnail-${currentIndex}`);
     if (thumbnail) {
       thumbnail.scrollIntoView({
         behavior: "smooth",
@@ -97,7 +101,7 @@ export function FileViewerModal() {
         inline: "center",
       });
     }
-  }, [state.currentIndex, state.isOpen, hasMultipleFiles]);
+  }, [currentIndex, state.isOpen, hasMultipleFiles]);
 
   if (!currentFile) {
     return null;
@@ -134,7 +138,7 @@ export function FileViewerModal() {
           : "An unknown error occurred while downloading the file";
       toast.error("Failed to download file", {
         closeButton: true,
-        description: `${errorMessage}\n\nFile: ${currentFile.filePath ?? currentFile.url}`,
+        description: `${errorMessage}\n\nFile: ${currentFile.filePath}`,
         duration: 10_000,
         richColors: true,
       });
@@ -171,7 +175,7 @@ export function FileViewerModal() {
 
   const hasExtension = currentFile.filename.includes(".");
   const isImage =
-    currentFile.mimeType?.startsWith("image/") ||
+    currentFile.mimeType.startsWith("image/") ||
     (!currentFile.mimeType && !hasExtension);
 
   return (
@@ -209,18 +213,14 @@ export function FileViewerModal() {
                     mimeType={currentFile.mimeType}
                   />
                   <span className="truncate text-xs">
-                    {currentFile.filePath ?? currentFile.filename}
+                    {currentFile.filePath}
                   </span>
-                  {currentFile.filePath &&
-                    currentFile.projectSubdomain &&
-                    currentFile.versionRef && (
-                      <FileVersionBadge
-                        className="bg-white/10 text-white hover:bg-white/20"
-                        filePath={currentFile.filePath}
-                        projectSubdomain={currentFile.projectSubdomain}
-                        versionRef={currentFile.versionRef}
-                      />
-                    )}
+                  <FileVersionBadge
+                    className="bg-white/10 text-white hover:bg-white/20"
+                    filePath={currentFile.filePath}
+                    projectSubdomain={currentFile.projectSubdomain}
+                    versionRef={currentFile.versionRef}
+                  />
                 </div>
                 <div className="absolute right-0 flex items-center gap-1">
                   {isDownloadable && (
@@ -237,12 +237,7 @@ export function FileViewerModal() {
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>
-                          Download
-                          {typeof currentFile.size === "number" &&
-                            currentFile.size > 0 &&
-                            ` (${formatBytes(currentFile.size)})`}
-                        </p>
+                        <p>Download</p>
                       </TooltipContent>
                     </Tooltip>
                   )}
@@ -278,7 +273,9 @@ export function FileViewerModal() {
                   <Button
                     className="absolute top-1/2 left-4 z-10 -translate-y-1/2 bg-black/50 text-white hover:bg-white/10"
                     onClick={() => {
-                      navigate("prev");
+                      setCurrentIndex((prev) =>
+                        prev === 0 ? state.files.length - 1 : prev - 1,
+                      );
                     }}
                     size="icon"
                     variant="ghost"
@@ -288,7 +285,9 @@ export function FileViewerModal() {
                   <Button
                     className="absolute top-1/2 right-4 z-10 -translate-y-1/2 bg-black/50 text-white hover:bg-white/10"
                     onClick={() => {
-                      navigate("next");
+                      setCurrentIndex(
+                        (prev) => (prev + 1) % state.files.length,
+                      );
                     }}
                     size="icon"
                     variant="ghost"
@@ -309,7 +308,7 @@ export function FileViewerModal() {
                 {isImage ? (
                   <ImageWithFallback
                     alt={currentFile.filename}
-                    className="h-auto max-h-full w-auto max-w-full rounded bg-white/90 object-contain p-4"
+                    className="h-auto max-h-full w-auto max-w-full rounded bg-white/90 object-contain"
                     fallback={
                       <div className="flex w-full max-w-md flex-col items-center justify-center gap-4 p-8 text-center">
                         <div className="flex size-32 items-center justify-center rounded-lg bg-background">
@@ -341,7 +340,6 @@ export function FileViewerModal() {
                   <FileViewer
                     filename={currentFile.filename}
                     filePath={currentFile.filePath}
-                    fileSize={currentFile.size}
                     mimeType={currentFile.mimeType}
                     onClose={closeViewer}
                     onDownload={isDownloadable ? handleDownload : undefined}
@@ -362,17 +360,16 @@ export function FileViewerModal() {
                       id={`thumbnail-${index}`}
                       key={index}
                     >
-                      <FileThumbnail
+                      <FilePreviewListItem
                         filename={file.filename}
                         filePath={file.filePath}
-                        isSelected={index === state.currentIndex}
+                        isSelected={index === currentIndex}
                         mimeType={file.mimeType}
                         onClick={() => {
-                          navigate(index);
+                          setCurrentIndex(index);
                         }}
-                        previewUrl={file.url}
                         projectSubdomain={file.projectSubdomain}
-                        size={file.size}
+                        url={file.url}
                         versionRef={file.versionRef}
                       />
                     </div>

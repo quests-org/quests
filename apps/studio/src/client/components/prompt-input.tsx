@@ -1,17 +1,18 @@
+import { openFilePreviewAtom } from "@/client/atoms/file-preview";
 import { AIProviderGuardDialog } from "@/client/components/ai-provider-guard-dialog";
-import { AttachmentItem } from "@/client/components/attachment-item";
 import { ModelPicker } from "@/client/components/model-picker";
 import { Button } from "@/client/components/ui/button";
 import {
   TextareaContainer,
   TextareaInner,
 } from "@/client/components/ui/textarea-container";
+import { UploadedFilePreview } from "@/client/components/uploaded-file-preview";
 import { useWindowFileDrop } from "@/client/lib/use-window-file-drop";
 import { cn, isMacOS } from "@/client/lib/utils";
 import { type AIGatewayModelURI } from "@quests/ai-gateway/client";
 import { type Upload as UploadType } from "@quests/workspace/client";
 import { useQuery } from "@tanstack/react-query";
-import { useAtom } from "jotai";
+import { useAtom, useSetAtom } from "jotai";
 import { ArrowUp, Loader2, Paperclip, Square, Upload } from "lucide-react";
 import {
   forwardRef,
@@ -34,8 +35,8 @@ interface UploadedFile {
   content: string;
   mimeType: string;
   name: string;
-  previewUrl?: string;
   size: number;
+  url?: string;
 }
 
 const MAX_PASTE_TEXT_LENGTH = 5000;
@@ -91,6 +92,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
   ) => {
     const [showAIProviderGuard, setShowAIProviderGuard] = useState(false);
     const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+    const openFilePreview = useSetAtom(openFilePreviewAtom);
     const textareaRef = useRef<HTMLDivElement>(null);
     const textareaInnerRef = useRef<HTMLTextAreaElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -155,8 +157,8 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
               content: base64,
               mimeType: file.type,
               name: file.name,
-              previewUrl: shouldCreatePreview ? dataUrl : undefined,
               size: file.size,
+              url: shouldCreatePreview ? dataUrl : undefined,
             },
           ]);
         });
@@ -348,15 +350,25 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
           {uploadedFiles.length > 0 && (
             <div className="-m-2 mb-2 flex max-h-32 flex-wrap items-start gap-2 overflow-y-auto p-2">
               {uploadedFiles.map((file, index) => (
-                <AttachmentItem
+                <UploadedFilePreview
                   filename={file.name}
                   key={`${file.name}-${index}`}
                   mimeType={file.mimeType}
+                  onClick={() => {
+                    if (file.url) {
+                      openFilePreview({
+                        mimeType: file.mimeType,
+                        name: file.name,
+                        size: file.size,
+                        url: file.url,
+                      });
+                    }
+                  }}
                   onRemove={() => {
                     removeUploadedFile(index);
                   }}
-                  previewUrl={file.previewUrl}
                   size={file.size}
+                  url={file.url}
                 />
               ))}
             </div>

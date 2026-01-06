@@ -5,8 +5,9 @@ import { type ProjectSubdomain } from "@quests/workspace/client";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
+import { type ProjectFileViewerFile } from "../atoms/project-file-viewer";
 import { rpcClient } from "../rpc/client";
-import { type FileItem, FilesGrid } from "./files-grid";
+import { FilesGrid } from "./files-grid";
 import {
   VersionCommitMessage,
   VersionFileChanges,
@@ -64,17 +65,17 @@ export function VersionAndFilesCard({
     return { filesInSrc: inSrc, filesOutsideSrc: outsideSrc };
   }, [gitRefInfo]);
 
-  const fileItems: FileItem[] = useMemo(() => {
+  const fileItems: ProjectFileViewerFile[] = useMemo(() => {
     return filesOutsideSrc.map((file) => ({
       filename: file.filename,
       filePath: file.filePath,
       mimeType: file.mimeType,
-      previewUrl: getAssetUrl({
+      projectSubdomain,
+      url: getAssetUrl({
         assetBase: assetBaseUrl,
         filePath: file.filePath,
         versionRef,
       }),
-      projectSubdomain,
       versionRef,
     }));
   }, [filesOutsideSrc, assetBaseUrl, versionRef, projectSubdomain]);

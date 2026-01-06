@@ -1,4 +1,4 @@
-import { openFileViewerAtom } from "@/client/atoms/file-viewer";
+import { openFilePreviewAtom } from "@/client/atoms/file-preview";
 import { useSetAtom } from "jotai";
 import { memo, useCallback } from "react";
 import ReactMarkdown from "react-markdown";
@@ -36,19 +36,20 @@ const CodeWithCopy = ({
 );
 
 export const Markdown = memo(({ markdown, rehypePlugins }: MarkdownProps) => {
-  const openFileViewer = useSetAtom(openFileViewerAtom);
+  const openFilePreview = useSetAtom(openFilePreviewAtom);
 
   const handleImageClick = useCallback(
     (event: React.MouseEvent<HTMLImageElement>) => {
       const src = event.currentTarget.src;
       const alt = event.currentTarget.alt || "image";
       if (src) {
-        openFileViewer({
-          files: [{ filename: alt, url: src }],
+        openFilePreview({
+          name: alt,
+          url: src,
         });
       }
     },
-    [openFileViewer],
+    [openFilePreview],
   );
 
   return (

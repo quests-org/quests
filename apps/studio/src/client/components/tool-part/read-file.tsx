@@ -1,6 +1,5 @@
 import { type SessionMessagePart } from "@quests/workspace/client";
 
-import { AttachmentItem } from "../attachment-item";
 import { CodeBlock } from "./code-block";
 import { ToolPartFilePath } from "./file-path";
 import { MonoText } from "./mono-text";
@@ -22,27 +21,16 @@ export function ToolPartReadFile({
     case "image":
     case "pdf":
     case "video": {
-      const dataUrl = `data:${output.mimeType};base64,${output.base64Data}`;
-      const filename = output.filePath.split("/").pop() || output.filePath;
       return (
         <div>
-          <SectionHeader>Read {output.filePath}</SectionHeader>
-          <AttachmentItem
-            filename={filename}
-            filePath={output.filePath}
-            mimeType={output.mimeType}
-            previewUrl={dataUrl}
-          />
+          <ToolPartFilePath filePath={output.filePath} label="Read file" />
         </div>
       );
     }
     case "does-not-exist": {
       return (
         <div>
-          <ToolPartFilePath
-            filePath={output.filePath}
-            label="File not found:"
-          />
+          <ToolPartFilePath filePath={output.filePath} label="File not found" />
           {output.suggestions.length > 0 && (
             <div className="mt-2">
               <SectionHeader>Suggestions:</SectionHeader>
@@ -96,7 +84,7 @@ export function ToolPartReadFile({
         <div>
           <ToolPartFilePath
             filePath={output.filePath}
-            label="Unsupported format:"
+            label="Unsupported format"
           />
           {output.mimeType && (
             <div className="mt-2 text-xs text-muted-foreground">

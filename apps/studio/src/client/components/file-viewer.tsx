@@ -1,4 +1,4 @@
-import { formatBytes, type ProjectSubdomain } from "@quests/workspace/client";
+import { type ProjectSubdomain } from "@quests/workspace/client";
 import { useQuery } from "@tanstack/react-query";
 import { cva } from "class-variance-authority";
 import { Code2, Download, Eye, Loader2, X } from "lucide-react";
@@ -86,7 +86,6 @@ const fileViewerVariants = cva(
 export function FileViewer({
   filename,
   filePath,
-  fileSize,
   mimeType,
   onClose,
   onDownload,
@@ -96,7 +95,6 @@ export function FileViewer({
 }: {
   filename: string;
   filePath?: string;
-  fileSize?: number;
   mimeType?: string;
   onClose: () => void;
   onDownload?: () => void;
@@ -169,16 +167,12 @@ export function FileViewer({
     );
 
     toolbarActions.push(
-      typeof fileSize === "number" && fileSize > 0 ? (
-        <Tooltip key="download">
-          <TooltipTrigger asChild>{downloadButton}</TooltipTrigger>
-          <TooltipContent>
-            <p>Download ({formatBytes(fileSize)})</p>
-          </TooltipContent>
-        </Tooltip>
-      ) : (
-        downloadButton
-      ),
+      <Tooltip key="download">
+        <TooltipTrigger asChild>{downloadButton}</TooltipTrigger>
+        <TooltipContent>
+          <p>Download</p>
+        </TooltipContent>
+      </Tooltip>,
     );
   }
 

@@ -31,13 +31,13 @@ export function FileAttachmentsCard({
     filename: file.filename,
     filePath: file.filePath,
     mimeType: file.mimeType,
-    previewUrl: getAssetUrl({
+    projectSubdomain,
+    size: file.size,
+    url: getAssetUrl({
       assetBase: app.urls.assetBase,
       filePath: file.filePath,
       versionRef: file.gitRef,
     }),
-    projectSubdomain,
-    size: file.size,
     versionRef: file.gitRef,
   }));
 
