@@ -92,13 +92,15 @@ export function FilePreviewCard({
       <PreviewHeader filename={filename} mimeType={mimeType} />
       <div className="relative aspect-video w-full overflow-hidden">
         {isImage && (
-          <ImageWithFallback
-            alt={filename}
-            className="size-full bg-white object-contain"
-            fallbackClassName="size-full"
-            filename={filename}
-            src={previewUrl}
-          />
+          <div className="flex size-full items-center justify-center">
+            <ImageWithFallback
+              alt={filename}
+              className="max-h-full max-w-full bg-white object-contain"
+              fallbackClassName="size-full"
+              filename={filename}
+              src={previewUrl}
+            />
+          </div>
         )}
         {isHtml && (
           <SandboxedHtmlIframe
