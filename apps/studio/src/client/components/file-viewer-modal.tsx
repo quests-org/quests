@@ -358,7 +358,7 @@ export function FileViewerModal() {
                 <div className="flex gap-x-2 overflow-x-auto px-1 py-2">
                   {state.files.map((file, index) => (
                     <div
-                      className="shrink-0"
+                      className="max-w-48 shrink-0"
                       id={`thumbnail-${index}`}
                       key={index}
                     >
