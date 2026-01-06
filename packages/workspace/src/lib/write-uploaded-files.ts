@@ -13,10 +13,14 @@ import { git } from "./git";
 import { GitCommands } from "./git/commands";
 import { ensureGitRepo } from "./git/ensure-git-repo";
 
+type FileAttachmentWithoutRef = Omit<
+  SessionMessageDataPart.FileAttachmentDataPart,
+  "gitRef"
+>;
+
 export async function writeUploadedFiles(
   appDir: AbsolutePath,
   files: Upload.Type[],
-  options?: { skipCommit?: boolean },
 ) {
   return safeTry(async function* () {
     if (files.length === 0) {
@@ -33,7 +37,7 @@ export async function writeUploadedFiles(
         ),
     );
 
-    const fileMetadata: SessionMessageDataPart.FileAttachmentDataPart[] = [];
+    const fileInfos: FileAttachmentWithoutRef[] = [];
 
     for (const file of files) {
       const sanitized = sanitizeFilename(file.filename);
@@ -68,7 +72,7 @@ export async function writeUploadedFiles(
           ),
       );
 
-      fileMetadata.push({
+      fileInfos.push({
         filename: uniqueFilename,
         filePath: RelativePathSchema.parse(relativePath),
         mimeType,
@@ -76,29 +80,29 @@ export async function writeUploadedFiles(
       });
     }
 
-    if (!options?.skipCommit) {
-      yield* ensureGitRepo({ appDir });
+    yield* ensureGitRepo({ appDir });
 
-      const commitMessage =
-        files.length === 1
-          ? `Uploaded ${fileMetadata[0]?.filename ?? "file"}`
-          : `Uploaded ${files.length} files`;
+    const commitMessage =
+      files.length === 1
+        ? `Uploaded ${fileInfos[0]?.filename ?? "file"}`
+        : `Uploaded ${files.length} files`;
 
-      const filePaths = fileMetadata.map((file) => file.filePath);
-      yield* git(GitCommands.addFiles(filePaths), appDir, {});
-      yield* git(GitCommands.commitWithAuthor(commitMessage), appDir, {});
+    const filePaths = fileInfos.map((file) => file.filePath);
+    yield* git(GitCommands.addFiles(filePaths), appDir, {});
+    yield* git(GitCommands.commitWithAuthor(commitMessage), appDir, {});
 
-      const commitRefResult = yield* git(
-        GitCommands.revParse("HEAD"),
-        appDir,
-        {},
-      );
-      const commitRef = commitRefResult.stdout.toString("utf8").trim();
+    const commitRefResult = yield* git(
+      GitCommands.revParse("HEAD"),
+      appDir,
+      {},
+    );
+    const gitRef = commitRefResult.stdout.toString("utf8").trim();
 
-      for (const file of fileMetadata) {
-        file.gitRef = commitRef;
-      }
-    }
+    const fileMetadata: SessionMessageDataPart.FileAttachmentDataPart[] =
+      fileInfos.map((file) => ({
+        ...file,
+        gitRef,
+      }));
 
     return ok({ files: fileMetadata });
   });

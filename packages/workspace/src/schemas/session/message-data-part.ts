@@ -17,7 +17,7 @@ export namespace SessionMessageDataPart {
   export const FileAttachmentDataPartSchema = z.object({
     filename: z.string(),
     filePath: RelativePathSchema,
-    gitRef: z.string().optional(),
+    gitRef: z.string(),
     mimeType: z.string(),
     size: z.number(),
   });

@@ -196,7 +196,6 @@ const create = base
         const uploadResult = await writeUploadedFiles(
           projectConfig.appDir,
           files,
-          { skipCommit: mode === "chat" },
         );
 
         if (uploadResult.isErr()) {
