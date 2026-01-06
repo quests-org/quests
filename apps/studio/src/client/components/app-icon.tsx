@@ -104,7 +104,7 @@ export function SmallAppIcon({
           "relative z-10 text-white drop-shadow-md",
           size === "sm" && "size-3",
           size === "md" && "size-4",
-          size === "lg" && "size-[1.125rem]",
+          size === "lg" && "size-4.5",
           size === "xl" && "size-5",
         )}
       />
