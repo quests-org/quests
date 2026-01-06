@@ -12,19 +12,27 @@ import { Command as CommandPrimitive } from "cmdk";
 import { SearchIcon } from "lucide-react";
 import * as React from "react";
 
+const CommandContext = React.createContext<{
+  listRef: null | React.RefObject<HTMLDivElement | null>;
+}>({ listRef: null });
+
 function Command({
   className,
   ...props
 }: React.ComponentProps<typeof CommandPrimitive>) {
+  const listRef = React.useRef<HTMLDivElement>(null);
+
   return (
-    <CommandPrimitive
-      className={cn(
-        "flex h-full w-full flex-col overflow-hidden rounded-md bg-popover text-popover-foreground",
-        className,
-      )}
-      data-slot="command"
-      {...props}
-    />
+    <CommandContext.Provider value={{ listRef }}>
+      <CommandPrimitive
+        className={cn(
+          "flex h-full w-full flex-col overflow-hidden rounded-md bg-popover text-popover-foreground",
+          className,
+        )}
+        data-slot="command"
+        {...props}
+      />
+    </CommandContext.Provider>
   );
 }
 
@@ -51,7 +59,7 @@ function CommandDialog({
         className={cn("overflow-hidden p-0", className)}
         showCloseButton={showCloseButton}
       >
-        <Command className="**:data-[slot=command-input-wrapper]:h-12 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group]]:px-2 [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:h-5 [&_[cmdk-item]_svg]:w-5">
+        <Command className="**:data-[slot=command-input-wrapper]:h-12 [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 **:[[cmdk-group-heading]]:px-2 **:[[cmdk-group-heading]]:font-medium **:[[cmdk-group-heading]]:text-muted-foreground **:[[cmdk-group]]:px-2 **:[[cmdk-input]]:h-12 **:[[cmdk-item]]:px-2 **:[[cmdk-item]]:py-3">
           {children}
         </Command>
       </DialogContent>
@@ -78,7 +86,7 @@ function CommandGroup({
   return (
     <CommandPrimitive.Group
       className={cn(
-        "overflow-hidden p-1 text-foreground [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground",
+        "overflow-hidden p-1 text-foreground **:[[cmdk-group-heading]]:px-2 **:[[cmdk-group-heading]]:py-1.5 **:[[cmdk-group-heading]]:text-xs **:[[cmdk-group-heading]]:font-medium **:[[cmdk-group-heading]]:text-muted-foreground",
         className,
       )}
       data-slot="command-group"
@@ -90,10 +98,22 @@ function CommandGroup({
 function CommandInput({
   className,
   containerClassName,
+  onValueChange,
   ...props
 }: React.ComponentProps<typeof CommandPrimitive.Input> & {
   containerClassName?: string;
 }) {
+  const { listRef } = React.useContext(CommandContext);
+
+  const handleValueChange = (value: string) => {
+    onValueChange?.(value);
+    // Ensures the list is scrolled to the top when the value changes
+    // See: https://github.com/dip/cmdk/issues/374
+    setTimeout(() => {
+      listRef?.current?.scrollTo({ behavior: "instant", top: 0 });
+    }, 0);
+  };
+
   return (
     <div
       className={cn(
@@ -109,6 +129,7 @@ function CommandInput({
           className,
         )}
         data-slot="command-input"
+        onValueChange={handleValueChange}
         {...props}
       />
     </div>
@@ -135,6 +156,8 @@ function CommandList({
   className,
   ...props
 }: React.ComponentProps<typeof CommandPrimitive.List>) {
+  const { listRef } = React.useContext(CommandContext);
+
   return (
     <CommandPrimitive.List
       className={cn(
@@ -142,6 +165,7 @@ function CommandList({
         className,
       )}
       data-slot="command-list"
+      ref={listRef}
       {...props}
     />
   );
