@@ -1,3 +1,4 @@
+import { cn } from "@/client/lib/utils";
 import { formatBytes } from "@quests/workspace/client";
 import { X } from "lucide-react";
 
@@ -34,7 +35,11 @@ export function FileThumbnail({
       return (
         <div className="group relative size-12 shrink-0">
           <Button
-            className={`size-12 overflow-hidden p-0 ${isSelected ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : ""}`}
+            className={cn(
+              "size-12 overflow-hidden p-0",
+              isSelected &&
+                "ring-2 ring-primary ring-offset-2 ring-offset-background",
+            )}
             onClick={onClick}
             type="button"
             variant="outline"
@@ -65,9 +70,12 @@ export function FileThumbnail({
     return (
       <div className="group relative h-12 min-w-0">
         <Button
-          className={`h-full w-full justify-start gap-x-2 overflow-hidden bg-muted/50 px-2.5 ${isSelected ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : ""}`}
+          className={cn(
+            "h-full w-full justify-start gap-x-2 overflow-hidden bg-background!",
+            isSelected &&
+              "ring-2 ring-primary ring-offset-2 ring-offset-background",
+          )}
           onClick={onClick}
-          size="sm"
           type="button"
           variant="outline"
         >
