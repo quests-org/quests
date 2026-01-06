@@ -80,46 +80,15 @@ export function UsageSummary({ messages }: UsageSummaryProps) {
 
   const timing = useMemo(() => {
     let totalMsToFinish = 0;
-    let totalMsToFirstChunk = 0;
-    let totalCompletionTokens = 0;
-    let totalCompletionTime = 0;
-    let requestCount = 0;
 
     for (const message of messages) {
-      if (message.role === "assistant") {
-        if (message.metadata.msToFinish) {
-          totalMsToFinish += message.metadata.msToFinish;
-          requestCount++;
-        }
-        if (message.metadata.msToFirstChunk) {
-          totalMsToFirstChunk += message.metadata.msToFirstChunk;
-        }
-        if (
-          message.metadata.completionTokensPerSecond &&
-          message.metadata.msToFinish
-        ) {
-          const outputTokens = message.metadata.usage?.outputTokens || 0;
-          if (outputTokens > 0) {
-            totalCompletionTokens += outputTokens;
-            totalCompletionTime += message.metadata.msToFinish;
-          }
-        }
+      if (message.role === "assistant" && message.metadata.msToFinish) {
+        totalMsToFinish += message.metadata.msToFinish;
       }
     }
 
-    const totalMsToFinishDuration = totalMsToFinish;
-    const avgMsToFirstChunk =
-      requestCount > 0 ? totalMsToFirstChunk / requestCount : 0;
-    const avgTokensPerSecond =
-      totalCompletionTime > 0
-        ? (totalCompletionTokens / totalCompletionTime) * 1000
-        : 0;
-
     return {
-      avgMsToFirstChunk,
-      avgTokensPerSecond,
-      requestCount,
-      totalMsToFinishDuration,
+      totalMsToFinishDuration: totalMsToFinish,
     };
   }, [messages]);
 
@@ -209,30 +178,14 @@ export function UsageSummary({ messages }: UsageSummaryProps) {
             </div>
           )}
 
-          {timing.requestCount > 0 && (
+          {timing.totalMsToFinishDuration > 0 && (
             <div className="space-y-1">
               <div className="font-medium">Performance</div>
               <div className="space-y-1 pl-2 text-muted-foreground/60 tabular-nums">
-                {timing.avgTokensPerSecond > 0 && (
-                  <div className="flex justify-between">
-                    <span>Avg speed:</span>
-                    <span>{Math.round(timing.avgTokensPerSecond)} tok/s</span>
-                  </div>
-                )}
-                {timing.avgMsToFirstChunk > 0 && (
-                  <div className="flex justify-between">
-                    <span>Avg time to first token:</span>
-                    <span>{formatDuration(timing.avgMsToFirstChunk)}</span>
-                  </div>
-                )}
-                {timing.totalMsToFinishDuration > 0 && (
-                  <div className="flex justify-between">
-                    <span>Total duration:</span>
-                    <span>
-                      {formatDuration(timing.totalMsToFinishDuration)}
-                    </span>
-                  </div>
-                )}
+                <div className="flex justify-between">
+                  <span>Total duration:</span>
+                  <span>{formatDuration(timing.totalMsToFinishDuration)}</span>
+                </div>
               </div>
             </div>
           )}

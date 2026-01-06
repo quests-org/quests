@@ -254,25 +254,8 @@ export function SessionStream({
 
   const { chatElements } = useMemo(() => {
     const newChatElements: React.ReactNode[] = [];
-    let lastSummaryEndIndex = 0;
 
     for (const [messageIndex, message] of regularMessages.entries()) {
-      if (message.role === "user" && messageIndex > 0) {
-        const messagesForSummary = regularMessages.slice(
-          lastSummaryEndIndex,
-          messageIndex,
-        );
-        if (messagesForSummary.length > 0) {
-          newChatElements.push(
-            <UsageSummary
-              key={`usage-before-${message.id}`}
-              messages={messagesForSummary}
-            />,
-          );
-          lastSummaryEndIndex = messageIndex;
-        }
-      }
-
       const messageElements: React.ReactNode[] = [];
       const seenSourceIds = new Set<string>();
       const sources: (
