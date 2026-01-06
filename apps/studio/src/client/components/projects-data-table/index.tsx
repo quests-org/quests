@@ -85,6 +85,7 @@ export function ProjectsDataTable({
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-x-2">
         <Input
+          autoFocus
           className="max-w-sm"
           onChange={(event) => titleColumn?.setFilterValue(event.target.value)}
           placeholder="Filter projects..."
