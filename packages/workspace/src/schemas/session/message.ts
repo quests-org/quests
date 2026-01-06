@@ -138,6 +138,7 @@ export namespace SessionMessage {
   const AssistantSchemaWithParts = AssistantSchema.extend({
     parts: z.array(SessionMessagePart.CoercedSchema),
   });
+  export type AssistantWithParts = z.output<typeof AssistantSchemaWithParts>;
 
   export const UserSchema = z.object({
     id: StoreId.MessageSchema,

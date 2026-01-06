@@ -16,11 +16,11 @@ import { toast } from "sonner";
 import { useAppState } from "../hooks/use-app-state";
 import { rpcClient } from "../rpc/client";
 import { AssistantMessage } from "./assistant-message";
+import { AssistantMessagesFooter } from "./assistant-messages-footer";
 import { ChatErrorAlert } from "./chat-error-alert";
 import { ChatZeroState } from "./chat-zero-state";
 import { ContextMessages } from "./context-messages";
 import { FileAttachmentsCard } from "./file-attachments-card";
-import { MessageActionsRow } from "./message-actions-row";
 import { MessageError } from "./message-error";
 import { ReasoningMessage } from "./reasoning-message";
 import { ContextMessage } from "./session-context-message";
@@ -38,7 +38,6 @@ interface SessionEventListProps {
   project: WorkspaceAppProject;
   selectedVersion?: string;
   sessionId: StoreId.Session;
-  showMessageActions?: boolean;
 }
 
 export function SessionStream({
@@ -46,7 +45,6 @@ export function SessionStream({
   project,
   selectedVersion,
   sessionId,
-  showMessageActions = true,
 }: SessionEventListProps) {
   const {
     data: messages = [],
@@ -254,6 +252,7 @@ export function SessionStream({
 
   const { chatElements } = useMemo(() => {
     const newChatElements: React.ReactNode[] = [];
+    let lastFooterIndex = 0;
 
     for (const [messageIndex, message] of regularMessages.entries()) {
       const messageElements: React.ReactNode[] = [];
@@ -262,8 +261,6 @@ export function SessionStream({
         | SessionMessagePart.SourceDocumentPart
         | SessionMessagePart.SourceUrlPart
       )[] = [];
-      let assistantTextContent = "";
-      let isAssistantMessageDone = false;
 
       const fileAttachments: SessionMessagePart.Type[] = [];
 
@@ -279,10 +276,6 @@ export function SessionStream({
           sources.push(part);
           continue;
         }
-        if (part.type === "text" && message.role === "assistant") {
-          assistantTextContent += part.text;
-          isAssistantMessageDone = part.state === "done";
-        }
 
         if (message.role === "user" && part.type === "data-fileAttachments") {
           fileAttachments.push(part);
@@ -293,6 +286,37 @@ export function SessionStream({
         if (rendered) {
           messageElements.push(rendered);
         }
+      }
+
+      const nextMessage = regularMessages[messageIndex + 1];
+      const isLastInConsecutiveGroup =
+        message.role === "assistant" &&
+        (!nextMessage || nextMessage.role !== "assistant");
+
+      if (isLastInConsecutiveGroup) {
+        const assistantMessagesForFooter = regularMessages.slice(
+          lastFooterIndex,
+          messageIndex + 1,
+        );
+        const assistantMessages = assistantMessagesForFooter.filter(
+          (m) => m.role === "assistant",
+        );
+
+        const isLastMessageGroup = messageIndex === regularMessages.length - 1;
+        const shouldRenderFooter =
+          assistantMessages.length > 0 &&
+          (!isLastMessageGroup || !isAgentRunning);
+
+        if (shouldRenderFooter) {
+          messageElements.push(
+            <AssistantMessagesFooter
+              key={`actions-${message.id}`}
+              messages={assistantMessages}
+            />,
+          );
+        }
+
+        lastFooterIndex = messageIndex + 1;
       }
 
       if (message.role === "user" && fileAttachments.length > 0) {
@@ -311,17 +335,6 @@ export function SessionStream({
             />,
           );
         }
-      }
-
-      if (message.role === "assistant" && isAssistantMessageDone) {
-        messageElements.push(
-          <MessageActionsRow
-            key={`actions-${message.id}`}
-            messageText={assistantTextContent}
-            showActions={showMessageActions}
-            sources={sources}
-          />,
-        );
       }
 
       if (
@@ -353,7 +366,6 @@ export function SessionStream({
     regularMessages,
     renderChatPart,
     isAgentRunning,
-    showMessageActions,
     onContinue,
     project.subdomain,
   ]);
@@ -449,13 +461,6 @@ export function SessionStream({
 
         {!isAgentAlive && messages.length > 0 && (
           <div className="mt-4 border-t pt-4">
-            <div className="flex items-center justify-between text-xs text-[10px] text-muted-foreground/60">
-              <span>Total chat usage</span>
-              <span>
-                {messages.length}{" "}
-                {messages.length === 1 ? "message" : "messages"}
-              </span>
-            </div>
             <UsageSummary messages={messages} />
           </div>
         )}

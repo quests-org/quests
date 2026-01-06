@@ -92,7 +92,6 @@ export function ProjectViewChat({
                   onContinue={handleContinue}
                   project={project}
                   sessionId={selectedSessionId}
-                  showMessageActions
                 />
               )}
             </div>

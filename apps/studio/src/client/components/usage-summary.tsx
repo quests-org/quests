@@ -1,50 +1,14 @@
 import { formatNumber } from "@/client/lib/format-number";
-import { formatDuration } from "@/client/lib/format-time";
 import { type SessionMessage } from "@quests/workspace/client";
-import { ChevronDown } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "./ui/collapsible";
+import { UsageStatsTooltip } from "./usage-stats-tooltip";
 
 interface UsageSummaryProps {
   messages: SessionMessage.WithParts[];
 }
 
 export function UsageSummary({ messages }: UsageSummaryProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
-
-  const modelsUsed = useMemo(() => {
-    const modelMap = new Map<string, { label: string; providerId?: string }>();
-
-    for (const message of messages) {
-      if (
-        message.role === "assistant" &&
-        message.metadata.modelId &&
-        !message.metadata.synthetic
-      ) {
-        const modelId = message.metadata.modelId;
-        const providerId = message.metadata.providerId;
-
-        modelMap.set(modelId, {
-          label: modelId,
-          providerId,
-        });
-      }
-    }
-
-    return [...modelMap.entries()]
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([modelId, data]) => ({
-        id: modelId,
-        label: data.label,
-        provider: data.providerId,
-      }));
-  }, [messages]);
-
   const usage = useMemo(() => {
     const totals: SessionMessage.Usage = {
       cachedInputTokens: 0,
@@ -92,105 +56,34 @@ export function UsageSummary({ messages }: UsageSummaryProps) {
     };
   }, [messages]);
 
-  if (usage.totalTokens === 0 && modelsUsed.length === 0) {
+  if (usage.totalTokens === 0) {
     return null;
   }
 
   return (
-    <Collapsible
-      className="py-2 text-[10px] text-muted-foreground"
-      onOpenChange={setIsExpanded}
-      open={isExpanded}
-    >
-      <CollapsibleTrigger asChild>
-        <button className="flex w-full items-center justify-between gap-2 text-muted-foreground/60 transition-colors hover:text-muted-foreground">
-          <div className="flex w-full min-w-0 items-center justify-between">
-            <div className="flex min-w-0 items-center gap-2">
-              {modelsUsed.length > 0 && (
-                <span className="truncate">
-                  {modelsUsed.map((m) => m.label).join(", ")}
-                </span>
-              )}
-            </div>
-            {usage.totalTokens > 0 && (
-              <span className="whitespace-nowrap tabular-nums">
-                {formatNumber(usage.totalTokens)}{" "}
-                {usage.totalTokens === 1 ? "token" : "tokens"}
-              </span>
-            )}
-          </div>
-          <ChevronDown
-            className={`size-3 transition-transform ${isExpanded ? "rotate-180" : ""}`}
-          />
-        </button>
-      </CollapsibleTrigger>
-
-      <CollapsibleContent>
-        <div className="mt-2 space-y-2 text-muted-foreground/80">
-          {modelsUsed.length > 0 && (
-            <div className="space-y-1">
-              <div className="font-medium">Models</div>
-              <div className="pl-2 text-muted-foreground/60">
-                {modelsUsed.map((model) => (
-                  <div key={model.id}>
-                    {model.provider
-                      ? `${model.provider}/${model.id}`
-                      : model.id}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
+    <div className="flex w-full items-center gap-2 py-2 text-[10px] text-muted-foreground/60">
+      <UsageStatsTooltip
+        stats={{
+          cachedInputTokens: usage.cachedInputTokens,
+          inputTokens: usage.inputTokens,
+          outputTokens: usage.outputTokens,
+          reasoningTokens: usage.reasoningTokens,
+          totalDuration: timing.totalMsToFinishDuration,
+          totalTokens: usage.totalTokens,
+        }}
+      >
+        <div className="ml-auto flex items-center gap-2 transition-colors hover:text-muted-foreground">
+          <span className="whitespace-nowrap">
+            {messages.length} {messages.length === 1 ? "message" : "messages"}
+          </span>
           {usage.totalTokens > 0 && (
-            <div className="space-y-1">
-              <div className="font-medium">Token Usage</div>
-              <div className="space-y-1 pl-2 text-muted-foreground/60 tabular-nums">
-                {usage.inputTokens > 0 && (
-                  <div className="flex justify-between">
-                    <span>Input:</span>
-                    <span>{formatNumber(usage.inputTokens)}</span>
-                  </div>
-                )}
-                {usage.outputTokens > 0 && (
-                  <div className="flex justify-between">
-                    <span>Output:</span>
-                    <span>{formatNumber(usage.outputTokens)}</span>
-                  </div>
-                )}
-                {usage.reasoningTokens > 0 && (
-                  <div className="flex justify-between">
-                    <span>Reasoning:</span>
-                    <span>{formatNumber(usage.reasoningTokens)}</span>
-                  </div>
-                )}
-                {usage.cachedInputTokens > 0 && (
-                  <div className="flex justify-between">
-                    <span>Cached:</span>
-                    <span>{formatNumber(usage.cachedInputTokens)}</span>
-                  </div>
-                )}
-                <div className="flex justify-between border-t border-muted pt-1 font-medium">
-                  <span>Total:</span>
-                  <span>{formatNumber(usage.totalTokens)}</span>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {timing.totalMsToFinishDuration > 0 && (
-            <div className="space-y-1">
-              <div className="font-medium">Performance</div>
-              <div className="space-y-1 pl-2 text-muted-foreground/60 tabular-nums">
-                <div className="flex justify-between">
-                  <span>Total duration:</span>
-                  <span>{formatDuration(timing.totalMsToFinishDuration)}</span>
-                </div>
-              </div>
-            </div>
+            <span className="whitespace-nowrap tabular-nums">
+              {formatNumber(usage.totalTokens)}{" "}
+              {usage.totalTokens === 1 ? "token" : "tokens"}
+            </span>
           )}
         </div>
-      </CollapsibleContent>
-    </Collapsible>
+      </UsageStatsTooltip>
+    </div>
   );
 }

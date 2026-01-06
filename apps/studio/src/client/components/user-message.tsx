@@ -5,23 +5,16 @@ import { memo, useState } from "react";
 
 import { CopyButton } from "./copy-button";
 import { Markdown } from "./markdown";
+import { RelativeTime } from "./relative-time";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "./ui/collapsible";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 interface UserMessageProps {
   part: SessionMessagePart.TextPart;
-}
-
-function formatDate(date: Date) {
-  return date.toLocaleDateString(undefined, {
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    month: "short",
-  });
 }
 
 export const UserMessage = memo(function UserMessage({
@@ -47,12 +40,20 @@ export const UserMessage = memo(function UserMessage({
           </div>
         </div>
         <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100">
-          <span>{formatDate(part.metadata.createdAt)}</span>
-          <CopyButton
-            className="rounded p-1 transition-colors hover:bg-muted/50 hover:text-foreground disabled:opacity-50"
-            iconSize={12}
-            onCopy={handleCopy}
+          <RelativeTime
+            className="cursor-default"
+            date={part.metadata.createdAt}
           />
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <CopyButton
+                className="rounded p-1 transition-colors hover:bg-muted/50 hover:text-foreground disabled:opacity-50"
+                iconSize={12}
+                onCopy={handleCopy}
+              />
+            </TooltipTrigger>
+            <TooltipContent>Copy message</TooltipContent>
+          </Tooltip>
         </div>
       </div>
     );
@@ -94,12 +95,20 @@ export const UserMessage = memo(function UserMessage({
         </CollapsibleContent>
       </Collapsible>
       <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100">
-        <span>{formatDate(part.metadata.createdAt)}</span>
-        <CopyButton
-          className="rounded p-1 transition-colors hover:bg-muted/50 hover:text-foreground disabled:opacity-50"
-          iconSize={12}
-          onCopy={handleCopy}
+        <RelativeTime
+          className="cursor-default"
+          date={part.metadata.createdAt}
         />
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <CopyButton
+              className="rounded p-1 transition-colors hover:bg-muted/50 hover:text-foreground disabled:opacity-50"
+              iconSize={12}
+              onCopy={handleCopy}
+            />
+          </TooltipTrigger>
+          <TooltipContent>Copy message</TooltipContent>
+        </Tooltip>
       </div>
     </div>
   );

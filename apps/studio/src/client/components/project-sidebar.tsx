@@ -177,7 +177,6 @@ export function ProjectSidebar({
               project={project}
               selectedVersion={selectedVersion}
               sessionId={selectedSessionId}
-              showMessageActions={false}
             />
           ) : (
             <ChatZeroState
