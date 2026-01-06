@@ -3,6 +3,7 @@ import { AppStatusIcon } from "@/client/components/app-status-icon";
 import { NewTabDiscoverHeroCards } from "@/client/components/discover-hero-card";
 import { ExternalLink } from "@/client/components/external-link";
 import { InternalLink } from "@/client/components/internal-link";
+import { LauncherCTA } from "@/client/components/launcher-cta";
 import { NewTabHelpMessage } from "@/client/components/new-tab-help-message";
 import { ModelPreview } from "@/client/components/projects-data-table/model-preview";
 import { PromptInput } from "@/client/components/prompt-input";
@@ -171,19 +172,22 @@ function RouteComponent() {
 
         {hasProjects && (
           <div className="mt-16">
-            <div className="mb-2 flex items-center justify-between">
-              <h2 className="text-lg font-medium text-foreground">
-                Recent Projects
-              </h2>
-              {(projectsData?.projects.length ?? 0) > 4 && (
-                <InternalLink
-                  className="text-xs text-muted-foreground transition-colors hover:text-foreground"
-                  openInCurrentTab
-                  to="/projects"
-                >
-                  View all
-                </InternalLink>
-              )}
+            <div className="mb-4 flex items-center justify-between">
+              <div className="flex items-center gap-x-4">
+                <h2 className="text-lg font-medium text-foreground">
+                  Recent Projects
+                </h2>
+                {(projectsData?.projects.length ?? 0) > 4 && (
+                  <InternalLink
+                    className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+                    openInCurrentTab
+                    to="/projects"
+                  >
+                    View all
+                  </InternalLink>
+                )}
+              </div>
+              <LauncherCTA />
             </div>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {recentProjects.map((project) => (

@@ -6,6 +6,7 @@ import type { RowSelectionState } from "@tanstack/react-table";
 
 import { DeleteWithProgressDialog } from "@/client/components/delete-with-progress-dialog";
 import { InternalLink } from "@/client/components/internal-link";
+import { LauncherCTA } from "@/client/components/launcher-cta";
 import { ProjectDeleteDialog } from "@/client/components/project-delete-dialog";
 import { ProjectSettingsDialog } from "@/client/components/project-settings-dialog";
 import { ProjectsDataTable } from "@/client/components/projects-data-table";
@@ -345,10 +346,11 @@ function RouteComponent() {
     <div className="mx-auto w-full max-w-7xl flex-1">
       <div>
         <div className="mx-auto px-4 pt-10 sm:px-6 lg:px-8 lg:pt-20 lg:pb-4">
-          <div className="text-center">
+          <div className="flex flex-col items-center gap-y-4 text-center">
             <h1 className="text-3xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
               Your Projects
             </h1>
+            <LauncherCTA />
           </div>
         </div>
       </div>
