@@ -1,7 +1,7 @@
 import { getAssetUrl } from "@/client/lib/asset-utils";
 import { cn } from "@/client/lib/utils";
 import { PROJECT_CONFIG_FILE_NAME } from "@quests/shared";
-import { type ProjectSubdomain, type StoreId } from "@quests/workspace/client";
+import { type ProjectSubdomain } from "@quests/workspace/client";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
@@ -19,7 +19,6 @@ interface VersionCardProps {
   assetBaseURL: string;
   isLastGitCommit?: boolean;
   isSelected?: boolean;
-  messageId: StoreId.Message;
   projectSubdomain: ProjectSubdomain;
   restoredFromRef?: string;
   versionRef: string;
@@ -29,7 +28,6 @@ export function VersionAndFilesCard({
   assetBaseURL,
   isLastGitCommit = false,
   isSelected = false,
-  messageId,
   projectSubdomain,
   restoredFromRef,
   versionRef,
@@ -74,11 +72,11 @@ export function VersionAndFilesCard({
       previewUrl: getAssetUrl({
         assetBase: assetBaseURL,
         filePath: file.filePath,
-        messageId,
+        versionRef,
       }),
       projectSubdomain,
     }));
-  }, [filesOutsideSrc, assetBaseURL, messageId, projectSubdomain]);
+  }, [filesOutsideSrc, assetBaseURL, versionRef, projectSubdomain]);
 
   const hasFilesInSrc = filesInSrc.length > 0;
   const hasFilesOutsideSrc = fileItems.length > 0;
@@ -125,7 +123,6 @@ export function VersionAndFilesCard({
 
             <VersionFileChanges
               assetBaseURL={assetBaseURL}
-              messageId={messageId}
               projectSubdomain={projectSubdomain}
               versionRef={versionRef}
             />

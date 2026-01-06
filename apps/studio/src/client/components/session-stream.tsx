@@ -180,7 +180,6 @@ export function SessionStream({
               (isLastVersion && !selectedVersion)
             }
             key={part.metadata.id}
-            messageId={message.id}
             projectSubdomain={project.subdomain}
             restoredFromRef={part.data.restoredFromRef}
             versionRef={part.data.ref}
@@ -325,7 +324,6 @@ export function SessionStream({
             <FileAttachmentsCard
               files={files}
               key={`attachments-${message.id}`}
-              messageId={message.id}
               projectSubdomain={project.subdomain}
             />,
           );

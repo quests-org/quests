@@ -1,6 +1,6 @@
 import { openFileViewerAtom } from "@/client/atoms/file-viewer";
 import { getAssetUrl } from "@/client/lib/asset-utils";
-import { type ProjectSubdomain, type StoreId } from "@quests/workspace/client";
+import { type ProjectSubdomain } from "@quests/workspace/client";
 import { useQuery } from "@tanstack/react-query";
 import ColorHash from "color-hash";
 import { useSetAtom } from "jotai";
@@ -19,7 +19,6 @@ interface VersionCommitMessageProps {
 interface VersionFileChangesProps {
   assetBaseURL?: string;
   maxFiles?: number;
-  messageId?: StoreId.Message;
   projectSubdomain: ProjectSubdomain;
   versionRef: string;
 }
@@ -79,7 +78,6 @@ export function VersionCommitMessage({
 export function VersionFileChanges({
   assetBaseURL,
   maxFiles = 3,
-  messageId,
   projectSubdomain,
   versionRef,
 }: VersionFileChangesProps) {
@@ -136,7 +134,7 @@ export function VersionFileChanges({
         url: getAssetUrl({
           assetBase: assetBaseURL,
           filePath: f.filePath,
-          messageId,
+          versionRef,
         }),
       })),
     });

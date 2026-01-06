@@ -1,17 +1,17 @@
 export function getAssetUrl({
   assetBase,
   filePath,
-  messageId,
+  versionRef,
 }: {
   assetBase: string;
   filePath: string;
-  messageId?: string;
+  versionRef?: string;
 }): string {
   const cleanPath = filePath.startsWith("./") ? filePath.slice(2) : filePath;
   const baseUrl = `${assetBase}/${cleanPath}`;
 
-  if (messageId) {
-    return `${baseUrl}?messageId=${messageId}`;
+  if (versionRef) {
+    return `${baseUrl}?versionRef=${versionRef}`;
   }
 
   return baseUrl;
