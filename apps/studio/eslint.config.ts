@@ -16,6 +16,7 @@ export default [
     "templates",
     "dist",
     "bin",
+    ".tmp",
   ]),
   ...baseConfig,
   {
