@@ -1,8 +1,10 @@
 import { getSettingsWindow } from "@/electron-main/windows/settings";
 import { type MenuItemConstructorOptions } from "electron";
 
+import { isDeveloperMode } from "../stores/preferences";
 import {
   createAppMenu,
+  createDevToolsMenu,
   createEditMenu,
   createHelpMenu,
   createWindowMenu,
@@ -48,5 +50,6 @@ export function createSettingsWindowMenu(): MenuItemConstructorOptions[] {
     viewMenu,
     createWindowMenu(),
     createHelpMenu(),
+    ...(isDeveloperMode() ? createDevToolsMenu() : []),
   ];
 }

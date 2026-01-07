@@ -9,7 +9,7 @@ import {
 } from "@/electron-main/lib/electron-logger";
 import { setupDBusEnvironment } from "@/electron-main/lib/setup-dbus-env";
 import { StudioAppUpdater } from "@/electron-main/lib/update";
-import { createApplicationMenu } from "@/electron-main/menus/application";
+import { createApplicationMenu } from "@/electron-main/menus";
 import { getTabsManager } from "@/electron-main/tabs";
 import {
   createMainWindow,
