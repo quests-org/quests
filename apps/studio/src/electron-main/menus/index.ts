@@ -14,6 +14,10 @@ export function createApplicationMenu(): void {
   void publisher.subscribe("window.focus-changed", () => {
     updateApplicationMenu();
   });
+
+  void publisher.subscribe("sidebar.visibility-updated", () => {
+    updateApplicationMenu();
+  });
 }
 
 function getFocusedWindowType(): "main" | "settings" | null {

@@ -1,4 +1,4 @@
-import { toggleSidebar } from "@/electron-main/lib/sidebar";
+import { getSidebarVisible, toggleSidebar } from "@/electron-main/lib/sidebar";
 import { publisher } from "@/electron-main/rpc/publisher";
 import { isDeveloperMode } from "@/electron-main/stores/preferences";
 import { getTabsManager } from "@/electron-main/tabs";
@@ -106,7 +106,7 @@ export function createMainWindowMenu(): MenuItemConstructorOptions[] {
         click: () => {
           toggleSidebar({ tabsManager: getTabsManager() });
         },
-        label: "Toggle Sidebar",
+        label: getSidebarVisible() ? "Hide Sidebar" : "Show Sidebar",
       },
       { type: "separator" as const },
       { role: "togglefullscreen" as const },
