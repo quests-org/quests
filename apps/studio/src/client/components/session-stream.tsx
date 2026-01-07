@@ -129,6 +129,18 @@ export function SessionStream({
     return lastMessage?.id;
   }, [regularMessages]);
 
+  const lastPartId = useMemo((): StoreId.Part | undefined => {
+    if (regularMessages.length === 0) {
+      return;
+    }
+    const lastMessage = regularMessages.at(-1);
+    if (!lastMessage) {
+      return;
+    }
+    const lastPart = lastMessage.parts.at(-1);
+    return lastPart?.metadata.id;
+  }, [regularMessages]);
+
   const renderChatPart = useCallback(
     (
       part: SessionMessagePart.Type,
@@ -194,7 +206,7 @@ export function SessionStream({
           <ToolPart
             isLoading={
               isAgentRunning &&
-              lastMessageId === part.metadata.messageId &&
+              lastPartId === part.metadata.id &&
               (part.state === "input-streaming" ||
                 part.state === "input-available")
             }
@@ -211,7 +223,7 @@ export function SessionStream({
             endedAt={part.metadata.endedAt}
             isLoading={
               isAgentRunning &&
-              lastMessageId === part.metadata.messageId &&
+              lastPartId === part.metadata.id &&
               part.state === "streaming"
             }
             key={part.metadata.id}
@@ -246,7 +258,7 @@ export function SessionStream({
       gitCommitParts,
       selectedVersion,
       isAgentRunning,
-      lastMessageId,
+      lastPartId,
     ],
   );
 
@@ -407,6 +419,39 @@ export function SessionStream({
       lastMessage.metadata.finishReason === "max-steps"
     );
   }, [messages, isAgentRunning]);
+
+  const hasActiveLoadingState = useMemo(() => {
+    if (!isAgentRunning || regularMessages.length === 0) {
+      return false;
+    }
+
+    const lastMessage = regularMessages.at(-1);
+    if (!lastMessage || lastMessage.id !== lastMessageId) {
+      return false;
+    }
+
+    const lastPart = lastMessage.parts.at(-1);
+    if (!lastPart) {
+      return false;
+    }
+
+    if (lastPart.type === "text" && lastPart.state !== "done") {
+      return true;
+    }
+
+    if (isToolPart(lastPart)) {
+      return (
+        lastPart.state === "input-streaming" ||
+        lastPart.state === "input-available"
+      );
+    }
+
+    if (lastPart.type === "reasoning" && lastPart.state === "streaming") {
+      return true;
+    }
+
+    return false;
+  }, [isAgentRunning, regularMessages, lastMessageId]);
 
   return (
     <>
