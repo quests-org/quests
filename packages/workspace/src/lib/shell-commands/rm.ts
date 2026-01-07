@@ -9,14 +9,24 @@ import { pathExists } from "../path-exists";
 import { type FileOperationResult } from "./types";
 import { shellSuccess, validateNoGlobs } from "./utils";
 
+const USAGE = "usage: rm [-f] [-r] file ...";
+
+export const RM_COMMAND = {
+  description: USAGE,
+  examples: [
+    "rm src/temp.json",
+    "rm -r build/",
+    "rm file1.txt file2.txt file3.txt",
+    "rm -rf dist/ build/",
+  ],
+};
+
 export async function rmCommand(
   args: string[],
   appConfig: AppConfig,
 ): Promise<FileOperationResult> {
   if (args.length === 0) {
-    return executeError(
-      "rm command requires at least 1 argument: rm [-r] [-f] <file|directory> [<file|directory> ...]",
-    );
+    return executeError(`rm command requires at least 1 argument\n${USAGE}`);
   }
 
   let recursive = false;
@@ -50,12 +60,12 @@ export async function rmCommand(
 
   if (targetPaths.length === 0) {
     return executeError(
-      "rm command requires at least 1 path argument after flags",
+      `rm command requires at least 1 path argument after flags\n${USAGE}`,
     );
   }
 
   if (targetPaths.some((p) => !p)) {
-    return executeError("rm command requires valid path arguments");
+    return executeError(`rm command requires valid path arguments\n${USAGE}`);
   }
 
   const globValidation = validateNoGlobs(targetPaths, "rm");

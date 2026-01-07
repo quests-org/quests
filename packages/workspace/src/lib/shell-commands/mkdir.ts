@@ -8,14 +8,19 @@ import { executeError } from "../execute-error";
 import { type FileOperationResult } from "./types";
 import { shellSuccess, validateNoGlobs } from "./utils";
 
+const USAGE = "usage: mkdir [-p] directory_name ...";
+
+export const MKDIR_COMMAND = {
+  description: USAGE,
+  examples: ["mkdir src/utils", "mkdir -p src/components/ui/buttons"],
+};
+
 export async function mkdirCommand(
   args: string[],
   appConfig: AppConfig,
 ): Promise<FileOperationResult> {
   if (args.length === 0) {
-    return executeError(
-      "mkdir command requires at least 1 argument: mkdir [-p] <directory> [<directory> ...]",
-    );
+    return executeError(`mkdir command requires at least 1 argument\n${USAGE}`);
   }
 
   let recursive = false;
@@ -24,7 +29,7 @@ export async function mkdirCommand(
   if (args[0] === "-p") {
     if (args.length < 2) {
       return executeError(
-        "mkdir -p command requires at least 1 path argument: mkdir -p <directory> [<directory> ...]",
+        `mkdir -p command requires at least 1 path argument\n${USAGE}`,
       );
     }
     recursive = true;
@@ -34,7 +39,9 @@ export async function mkdirCommand(
   }
 
   if (directoryPaths.length === 0 || directoryPaths.some((p) => !p)) {
-    return executeError("mkdir command requires valid path arguments");
+    return executeError(
+      `mkdir command requires valid path arguments\n${USAGE}`,
+    );
   }
 
   const globValidation = validateNoGlobs(directoryPaths, "mkdir");

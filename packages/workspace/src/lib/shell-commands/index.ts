@@ -1,6 +1,6 @@
-export { cpCommand } from "./cp";
-export { lsCommand } from "./ls";
-export { mkdirCommand } from "./mkdir";
-export { mvCommand } from "./mv";
-export { rmCommand } from "./rm";
+export { CP_COMMAND, cpCommand } from "./cp";
+export { LS_COMMAND, lsCommand } from "./ls";
+export { MKDIR_COMMAND, mkdirCommand } from "./mkdir";
+export { MV_COMMAND, mvCommand } from "./mv";
+export { RM_COMMAND, rmCommand } from "./rm";
 export type { FileOperationResult } from "./types";

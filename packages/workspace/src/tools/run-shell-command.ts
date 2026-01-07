@@ -11,11 +11,16 @@ import { executeError } from "../lib/execute-error";
 import { filterDebuggerMessages } from "../lib/filter-debugger-messages";
 import { runNodeModulesBin } from "../lib/run-node-modules-bin";
 import {
+  CP_COMMAND,
   cpCommand,
   type FileOperationResult,
+  LS_COMMAND,
   lsCommand,
+  MKDIR_COMMAND,
   mkdirCommand,
+  MV_COMMAND,
   mvCommand,
+  RM_COMMAND,
   rmCommand,
 } from "../lib/shell-commands";
 import { getWorkspaceServerURL } from "../logic/server/url";
@@ -36,38 +41,19 @@ const AVAILABLE_COMMANDS: Record<
   { description: string; examples: string[]; isFileOperation: boolean }
 > = {
   cp: {
-    description:
-      "A limited version of the cp command that supports the -r flag for recursive directory copying. Supports multiple sources when destination is a directory.",
-    examples: [
-      "cp src/file.ts src/file-copy.ts",
-      "cp -r src/components src/components-backup",
-      "cp file1.txt file2.txt file3.txt dest-dir/",
-    ],
+    ...CP_COMMAND,
     isFileOperation: true,
   },
   ls: {
-    description:
-      "A limited version of the ls command that lists directory contents. Supports the -a flag to show hidden files. Unknown flags will be ignored with a warning.",
-    examples: ["ls", "ls src", "ls -a src/components"],
+    ...LS_COMMAND,
     isFileOperation: true,
   },
   mkdir: {
-    description:
-      "A limited version of the mkdir command that supports the -p flag for recursive directory creation.",
-    examples: [
-      "mkdir src/utils",
-      "mkdir -p src/components/ui/buttons",
-      "mkdir folder1 folder2",
-    ],
+    ...MKDIR_COMMAND,
     isFileOperation: true,
   },
   mv: {
-    description:
-      "A limited version of the mv command that accepts no flags. Supports multiple sources when destination is a directory.",
-    examples: [
-      "mv src/old.ts src/new.ts",
-      "mv file1.txt file2.txt file3.txt dest-dir/",
-    ],
+    ...MV_COMMAND,
     isFileOperation: true,
   },
   pnpm: {
@@ -76,14 +62,7 @@ const AVAILABLE_COMMANDS: Record<
     isFileOperation: false,
   },
   rm: {
-    description:
-      "A limited version of the rm command that supports the -r flag for recursive directory removal and -f flag to ignore nonexistent files. Supports multiple paths as arguments.",
-    examples: [
-      "rm src/temp.json",
-      "rm -r build/",
-      "rm file1.txt file2.txt file3.txt",
-      "rm -rf dist/ build/",
-    ],
+    ...RM_COMMAND,
     isFileOperation: true,
   },
   tsc: {

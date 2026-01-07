@@ -21,6 +21,10 @@ describe("lsCommand", () => {
           folder: {
             "nested.txt": "nested",
           },
+          folder2: {
+            "another.txt": "another",
+            "file.txt": "file",
+          },
         },
       },
     });
@@ -40,7 +44,8 @@ describe("lsCommand", () => {
         "stderr": "",
         "stdout": "file1.txt
       file2.txt
-      folder",
+      folder
+      folder2",
       }
     `);
   });
@@ -69,7 +74,8 @@ describe("lsCommand", () => {
         "stdout": ".hidden
       file1.txt
       file2.txt
-      folder",
+      folder
+      folder2",
       }
     `);
   });
@@ -100,6 +106,24 @@ describe("lsCommand", () => {
     `);
   });
 
+  it("lists multiple directories", async () => {
+    const result = await lsCommand(["folder", "folder2"], appConfig);
+
+    expect(result._unsafeUnwrap()).toMatchInlineSnapshot(`
+      {
+        "command": "ls folder folder2",
+        "exitCode": 0,
+        "stderr": "",
+        "stdout": "folder:
+      nested.txt
+
+      folder2:
+      another.txt
+      file.txt",
+      }
+    `);
+  });
+
   it("warns about unknown flags", async () => {
     const result = await lsCommand(["-l"], appConfig);
 
@@ -110,7 +134,8 @@ describe("lsCommand", () => {
         "stderr": "ls: unknown flag '-l' ignored (supported flags: -a)",
         "stdout": "file1.txt
       file2.txt
-      folder",
+      folder
+      folder2",
       }
     `);
   });

@@ -10,14 +10,19 @@ import { pathExists } from "../path-exists";
 import { type FileOperationResult } from "./types";
 import { shellSuccess, validateNoGlobs } from "./utils";
 
+const USAGE = "usage: mv source target\n       mv source ... directory";
+
+export const MV_COMMAND = {
+  description: USAGE,
+  examples: ["mv src/old.ts src/new.ts", "mv file1.txt file2.txt dest-dir/"],
+};
+
 export async function mvCommand(
   args: string[],
   appConfig: AppConfig,
 ): Promise<FileOperationResult> {
   if (args.length < 2) {
-    return executeError(
-      "mv command requires at least 2 arguments: mv <source> [...sources] <destination>",
-    );
+    return executeError(`mv command requires at least 2 arguments\n${USAGE}`);
   }
 
   const sourcePaths = args.slice(0, -1);
@@ -25,7 +30,7 @@ export async function mvCommand(
 
   if (sourcePaths.length === 0 || !destPath) {
     return executeError(
-      "mv command requires valid source and destination path arguments",
+      `mv command requires valid source and destination path arguments\n${USAGE}`,
     );
   }
 

@@ -77,7 +77,8 @@ describe("rmCommand", () => {
 
     expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
       {
-        "message": "rm command requires at least 1 argument: rm [-r] [-f] <file|directory> [<file|directory> ...]",
+        "message": "rm command requires at least 1 argument
+      usage: rm [-f] [-r] file ...",
         "type": "execute-error",
       }
     `);
@@ -88,7 +89,8 @@ describe("rmCommand", () => {
 
     expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
       {
-        "message": "rm command requires at least 1 path argument after flags",
+        "message": "rm command requires at least 1 path argument after flags
+      usage: rm [-f] [-r] file ...",
         "type": "execute-error",
       }
     `);
@@ -132,7 +134,8 @@ describe("rmCommand", () => {
 
     expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
       {
-        "message": "rm command requires valid path arguments",
+        "message": "rm command requires valid path arguments
+      usage: rm [-f] [-r] file ...",
         "type": "execute-error",
       }
     `);

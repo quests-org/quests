@@ -10,14 +10,23 @@ import { pathExists } from "../path-exists";
 import { type FileOperationResult } from "./types";
 import { shellSuccess, validateNoGlobs } from "./utils";
 
+const USAGE =
+  "usage: cp [-r] source_file target_file\n       cp [-r] source_file ... target_directory";
+
+export const CP_COMMAND = {
+  description: USAGE,
+  examples: [
+    "cp src/file.ts src/file-copy.ts",
+    "cp -r src/components src/components-backup",
+  ],
+};
+
 export async function cpCommand(
   args: string[],
   appConfig: AppConfig,
 ): Promise<FileOperationResult> {
   if (args.length < 2) {
-    return executeError(
-      "cp command requires at least 2 arguments: cp [-r] <source> [...sources] <destination>",
-    );
+    return executeError(`cp command requires at least 2 arguments\n${USAGE}`);
   }
 
   let recursive = false;
@@ -27,7 +36,7 @@ export async function cpCommand(
   if (args[0] === "-r") {
     if (args.length < 3) {
       return executeError(
-        "cp -r command requires at least 2 path arguments: cp -r <source> [...sources] <destination>",
+        `cp -r command requires at least 2 path arguments\n${USAGE}`,
       );
     }
     recursive = true;
@@ -40,7 +49,7 @@ export async function cpCommand(
 
   if (sourcePaths.length === 0 || !destPath) {
     return executeError(
-      "cp command requires valid source and destination path arguments",
+      `cp command requires valid source and destination path arguments\n${USAGE}`,
     );
   }
 

@@ -77,7 +77,8 @@ describe("mkdirCommand", () => {
 
     expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
       {
-        "message": "mkdir command requires at least 1 argument: mkdir [-p] <directory> [<directory> ...]",
+        "message": "mkdir command requires at least 1 argument
+      usage: mkdir [-p] directory_name ...",
         "type": "execute-error",
       }
     `);
@@ -88,7 +89,8 @@ describe("mkdirCommand", () => {
 
     expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
       {
-        "message": "mkdir -p command requires at least 1 path argument: mkdir -p <directory> [<directory> ...]",
+        "message": "mkdir -p command requires at least 1 path argument
+      usage: mkdir [-p] directory_name ...",
         "type": "execute-error",
       }
     `);
@@ -99,7 +101,8 @@ describe("mkdirCommand", () => {
 
     expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
       {
-        "message": "mkdir command requires valid path arguments",
+        "message": "mkdir command requires valid path arguments
+      usage: mkdir [-p] directory_name ...",
         "type": "execute-error",
       }
     `);

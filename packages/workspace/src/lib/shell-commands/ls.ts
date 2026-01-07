@@ -12,6 +12,13 @@ import { pathExists } from "../path-exists";
 import { type FileOperationResult } from "./types";
 import { validateNoGlobs } from "./utils";
 
+const USAGE = "usage: ls [-a] [file ...]";
+
+export const LS_COMMAND = {
+  description: USAGE,
+  examples: ["ls", "ls src", "ls -a src/components"],
+};
+
 export async function lsCommand(
   args: string[],
   appConfig: AppConfig,
@@ -20,7 +27,6 @@ export async function lsCommand(
   const warnings: string[] = [];
 
   let showHidden = false;
-  let targetPath = ".";
   const flags: string[] = [];
   const pathArgs: string[] = [];
 
@@ -44,61 +50,73 @@ export async function lsCommand(
     }
   }
 
-  targetPath = pathArgs[0] ?? ".";
+  const targetPaths = pathArgs.length > 0 ? pathArgs : ["."];
 
-  const globValidation = validateNoGlobs([targetPath], "ls");
+  const globValidation = validateNoGlobs(targetPaths, "ls");
   if (globValidation.isErr()) {
     return globValidation;
   }
 
-  const fixedPathResult = ensureRelativePath(targetPath);
-  if (fixedPathResult.isErr()) {
-    return fixedPathResult;
-  }
+  const flagStr = flags.length > 0 ? ` ${flags.join(" ")}` : "";
+  const pathStr =
+    targetPaths.length === 1 && targetPaths[0] === "."
+      ? ""
+      : ` ${targetPaths.join(" ")}`;
+  const commandStr = `ls${flagStr}${pathStr}`.trim();
 
-  const absolutePath = absolutePathJoin(
-    appConfig.appDir,
-    fixedPathResult.value,
-  );
+  const outputs: string[] = [];
 
-  const exists = await pathExists(absolutePath);
-  if (!exists) {
-    return executeError(
-      `ls: cannot access '${targetPath}': No such file or directory`,
-    );
-  }
-
-  try {
-    const stats = await fs.stat(absolutePath);
-
-    const flagStr = flags.length > 0 ? ` ${flags.join(" ")}` : "";
-    const pathStr = targetPath === "." ? "" : ` ${targetPath}`;
-    const commandStr = `ls${flagStr}${pathStr}`.trim();
-    const stderr = warnings.length > 0 ? warnings.join("\n") : "";
-
-    if (!stats.isDirectory()) {
-      return ok({
-        command: commandStr,
-        exitCode: 0,
-        stderr,
-        stdout: path.basename(absolutePath),
-      });
+  for (const [index, targetPath] of targetPaths.entries()) {
+    const fixedPathResult = ensureRelativePath(targetPath);
+    if (fixedPathResult.isErr()) {
+      return fixedPathResult;
     }
 
-    const result = await listFiles(appConfig.appDir, {
-      hidden: showHidden,
-      searchPath: fixedPathResult.value,
-    });
-
-    return ok({
-      command: commandStr,
-      exitCode: 0,
-      stderr,
-      stdout: result.files.join("\n"),
-    });
-  } catch (error) {
-    return executeError(
-      `ls command failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+    const absolutePath = absolutePathJoin(
+      appConfig.appDir,
+      fixedPathResult.value,
     );
+
+    const exists = await pathExists(absolutePath);
+    if (!exists) {
+      return executeError(
+        `ls: cannot access '${targetPath}': No such file or directory`,
+      );
+    }
+
+    try {
+      const stats = await fs.stat(absolutePath);
+
+      if (stats.isDirectory()) {
+        const result = await listFiles(appConfig.appDir, {
+          hidden: showHidden,
+          searchPath: fixedPathResult.value,
+        });
+
+        if (targetPaths.length > 1) {
+          if (index > 0) {
+            outputs.push("");
+          }
+          outputs.push(`${targetPath}:`, result.files.join("\n"));
+        } else {
+          outputs.push(result.files.join("\n"));
+        }
+      } else {
+        outputs.push(path.basename(absolutePath));
+      }
+    } catch (error) {
+      return executeError(
+        `ls command failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
+    }
   }
+
+  const stderr = warnings.length > 0 ? warnings.join("\n") : "";
+
+  return ok({
+    command: commandStr,
+    exitCode: 0,
+    stderr,
+    stdout: outputs.join("\n"),
+  });
 }

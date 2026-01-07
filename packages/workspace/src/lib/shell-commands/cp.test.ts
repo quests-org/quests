@@ -55,7 +55,9 @@ describe("cpCommand", () => {
 
     expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
       {
-        "message": "cp command requires at least 2 arguments: cp [-r] <source> [...sources] <destination>",
+        "message": "cp command requires at least 2 arguments
+      usage: cp [-r] source_file target_file
+             cp [-r] source_file ... target_directory",
         "type": "execute-error",
       }
     `);
@@ -66,7 +68,9 @@ describe("cpCommand", () => {
 
     expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
       {
-        "message": "cp command requires at least 2 arguments: cp [-r] <source> [...sources] <destination>",
+        "message": "cp command requires at least 2 arguments
+      usage: cp [-r] source_file target_file
+             cp [-r] source_file ... target_directory",
         "type": "execute-error",
       }
     `);
@@ -121,7 +125,9 @@ describe("cpCommand", () => {
 
     expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
       {
-        "message": "cp -r command requires at least 2 path arguments: cp -r <source> [...sources] <destination>",
+        "message": "cp -r command requires at least 2 path arguments
+      usage: cp [-r] source_file target_file
+             cp [-r] source_file ... target_directory",
         "type": "execute-error",
       }
     `);

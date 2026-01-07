@@ -88,7 +88,9 @@ describe("mvCommand", () => {
 
     expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
       {
-        "message": "mv command requires at least 2 arguments: mv <source> [...sources] <destination>",
+        "message": "mv command requires at least 2 arguments
+      usage: mv source target
+             mv source ... directory",
         "type": "execute-error",
       }
     `);
@@ -99,7 +101,9 @@ describe("mvCommand", () => {
 
     expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
       {
-        "message": "mv command requires at least 2 arguments: mv <source> [...sources] <destination>",
+        "message": "mv command requires at least 2 arguments
+      usage: mv source target
+             mv source ... directory",
         "type": "execute-error",
       }
     `);
