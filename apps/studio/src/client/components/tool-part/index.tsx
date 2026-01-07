@@ -16,6 +16,7 @@ import {
   CollapsibleTrigger,
 } from "../ui/collapsible";
 import { ToolPartExpanded } from "./expanded";
+import { StreamingContent } from "./streaming-content";
 
 export function ToolPart({
   isLoading,
@@ -69,6 +70,11 @@ export function ToolPart({
       value = getToolInputValue(part);
     }
   }
+
+  const hasStreamableContent =
+    (part.state === "input-streaming" || part.state === "input-available") &&
+    isLoading &&
+    (part.type === "tool-write_file" || part.type === "tool-edit_file");
 
   if (toolName === "think") {
     const text =
@@ -134,10 +140,19 @@ export function ToolPart({
     </div>
   );
 
-  if (!isExpandable) {
+  if (!isExpandable && !hasStreamableContent) {
     return (
       <div className="w-full">
         <div className="flex h-6 items-center px-1">{mainContent}</div>
+      </div>
+    );
+  }
+
+  if (hasStreamableContent) {
+    return (
+      <div className="w-full">
+        <div className="flex h-6 items-center px-1">{mainContent}</div>
+        <StreamingContent part={part} />
       </div>
     );
   }
