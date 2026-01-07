@@ -5,10 +5,7 @@ import {
 import { ChevronUp, Loader2, TriangleAlert } from "lucide-react";
 import { useState } from "react";
 
-import {
-  getToolDisplayName,
-  getToolStreamingDisplayName,
-} from "../../lib/tool-display";
+import { getToolLabel, getToolStreamingLabel } from "../../lib/tool-display";
 import { cn } from "../../lib/utils";
 import { CollapsiblePartTrigger } from "../collapsible-part-trigger";
 import { ReasoningMessage } from "../reasoning-message";
@@ -43,21 +40,21 @@ export function ToolPart({
 
   switch (part.state) {
     case "input-available": {
-      label = getToolStreamingDisplayName(toolName);
-      value = getToolInputDescription(part) || "";
+      value = getToolInputValue(part) || "";
+      label = getToolStreamingLabel(toolName, !!value);
       break;
     }
     case "input-streaming": {
-      label = getToolStreamingDisplayName(toolName);
-      value = "";
+      value = getToolInputValue(part) || "";
+      label = getToolStreamingLabel(toolName, !!value);
       break;
     }
     case "output-available": {
       if (part.type === "tool-think") {
-        label = getToolDisplayName(toolName);
+        label = getToolLabel(toolName);
         value = truncateText(part.output.thought, 80);
       } else {
-        label = isFileNotFound ? "Read failed" : getToolDisplayName(toolName);
+        label = isFileNotFound ? "Read failed" : getToolLabel(toolName);
         value = getToolOutputDescription(part);
       }
       break;
@@ -68,8 +65,8 @@ export function ToolPart({
       break;
     }
     default: {
-      label = getToolDisplayName(toolName);
-      value = getToolInputDescription(part);
+      label = getToolLabel(toolName);
+      value = getToolInputValue(part);
     }
   }
 
@@ -193,8 +190,11 @@ function filenameFromFilePath(filePath: string): string {
   return filePath.split("/").pop() || filePath;
 }
 
-function getToolInputDescription(
-  part: Extract<SessionMessagePart.ToolPart, { state: "input-available" }>,
+function getToolInputValue(
+  part: Extract<
+    SessionMessagePart.ToolPart,
+    { state: "input-available" | "input-streaming" }
+  >,
 ): string | undefined {
   if (!part.input) {
     return undefined;
@@ -205,7 +205,9 @@ function getToolInputDescription(
       return part.input.question;
     }
     case "tool-edit_file": {
-      return filenameFromFilePath(part.input.filePath);
+      return part.input.filePath
+        ? filenameFromFilePath(part.input.filePath)
+        : undefined;
     }
     case "tool-glob": {
       return part.input.pattern;
@@ -214,7 +216,9 @@ function getToolInputDescription(
       return part.input.pattern;
     }
     case "tool-read_file": {
-      return filenameFromFilePath(part.input.filePath);
+      return part.input.filePath
+        ? filenameFromFilePath(part.input.filePath)
+        : undefined;
     }
     case "tool-run_diagnostics": {
       return undefined;
@@ -229,7 +233,9 @@ function getToolInputDescription(
       return undefined;
     }
     case "tool-write_file": {
-      return filenameFromFilePath(part.input.filePath);
+      return part.input.filePath
+        ? filenameFromFilePath(part.input.filePath)
+        : undefined;
     }
     default: {
       const _exhaustiveCheck: never = part;

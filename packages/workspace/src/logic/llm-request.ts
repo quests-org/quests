@@ -10,6 +10,7 @@ import {
   InvalidToolInputError,
   LoadAPIKeyError,
   NoSuchToolError,
+  parsePartialJson,
   streamText,
 } from "ai";
 import { fromPromise } from "xstate";
@@ -155,6 +156,7 @@ export const llmRequestLogic = fromPromise<
   }
 
   const toolCalls: Record<string, SessionMessagePart.ToolPart> = {};
+  const toolCallInputText: Record<string, string> = {};
   try {
     const startTimestampMs = getCurrentDate().getTime();
     const result = streamText({
@@ -477,7 +479,20 @@ export const llmRequestLogic = fromPromise<
           break;
         }
         case "tool-input-delta": {
-          // No deltas for now
+          const toolCall = toolCalls[part.id];
+          if (toolCall && toolCall.state === "input-streaming") {
+            toolCallInputText[part.id] =
+              (toolCallInputText[part.id] || "") + part.delta;
+            const { value: partialArgs } = await parsePartialJson(
+              toolCallInputText[part.id],
+            );
+            const updatedPart: SessionMessagePart.ToolPart = {
+              ...toolCall,
+              input: partialArgs as never,
+            };
+            toolCalls[part.id] = updatedPart;
+            await scopedStore.savePart(updatedPart);
+          }
           break;
         }
         case "tool-input-end": {

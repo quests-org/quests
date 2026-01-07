@@ -2,8 +2,8 @@ import type { ProjectSubdomain } from "@quests/workspace/client";
 
 import { useAppState } from "@/client/hooks/use-app-state";
 import {
-  getToolDisplayName,
-  getToolStreamingDisplayName,
+  getToolLabel,
+  getToolStreamingLabel,
   TOOL_ICONS,
 } from "@/client/lib/tool-display";
 import { cn } from "@/client/lib/utils";
@@ -110,11 +110,11 @@ function SessionStatusText({
     Icon = TOOL_ICONS[toolName] ?? HelpCircle;
 
     if (latestPart.state === "output-available") {
-      displayText = getToolDisplayName(toolName);
+      displayText = getToolLabel(toolName);
     } else if (latestPart.state === "output-error") {
       displayText = "Error";
     } else {
-      displayText = getToolStreamingDisplayName(toolName);
+      displayText = getToolStreamingLabel(toolName, false);
       shouldAnimate = isAgentAlive;
     }
   } else if (latestPart.type === "reasoning") {
