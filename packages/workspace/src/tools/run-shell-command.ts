@@ -36,10 +36,11 @@ const AVAILABLE_COMMANDS: Record<
 > = {
   cp: {
     description:
-      "A limited version of the cp command that supports the -r flag for recursive directory copying and can only copy files/directories in the app directory.",
+      "A limited version of the cp command that supports the -r flag for recursive directory copying. Supports multiple sources when destination is a directory.",
     examples: [
       "cp src/file.ts src/file-copy.ts",
       "cp -r src/components src/components-backup",
+      "cp file1.txt file2.txt file3.txt dest-dir/",
     ],
     isFileOperation: true,
   },
@@ -61,8 +62,11 @@ const AVAILABLE_COMMANDS: Record<
   },
   mv: {
     description:
-      "A limited version of the mv command that accepts no flags and can only move files in the app directory.",
-    examples: ["mv src/old.ts src/new.ts"],
+      "A limited version of the mv command that accepts no flags. Supports multiple sources when destination is a directory.",
+    examples: [
+      "mv src/old.ts src/new.ts",
+      "mv file1.txt file2.txt file3.txt dest-dir/",
+    ],
     isFileOperation: true,
   },
   pnpm: {
@@ -72,11 +76,12 @@ const AVAILABLE_COMMANDS: Record<
   },
   rm: {
     description:
-      "A limited version of the rm command that supports the -r flag for recursive directory removal and can only remove files/directories in the app directory. Supports multiple paths as arguments.",
+      "A limited version of the rm command that supports the -r flag for recursive directory removal and -f flag to ignore nonexistent files. Supports multiple paths as arguments.",
     examples: [
       "rm src/temp.json",
       "rm -r build/",
       "rm file1.txt file2.txt file3.txt",
+      "rm -rf dist/ build/",
     ],
     isFileOperation: true,
   },
@@ -122,13 +127,16 @@ async function handleFileOperation(
 
 export const RunShellCommand = createTool({
   description: dedent`
-    Execute specific whitelisted commands in the app folder. This is NOT a general shell.
+    Execute specific whitelisted commands in the project folder. This is NOT a general shell.
+    
+    All commands operate in the project directory by default. All paths must be relative to the project root.
     
     CONSTRAINTS:
     - Only ONE command per invocation
     - NO shell operators: no &&, ||, ;, |, >, <, 2>&1
     - NO command chaining or piping
-    - NO cd commands (all run in app directory)
+    - NO cd commands (all run in project directory)
+    - NO glob patterns: no *, ?, [], {}, etc. - specify exact file/directory names
     - Only these exact commands are allowed: ${Object.keys(AVAILABLE_COMMANDS).join(", ")}
     
     If you need multiple operations, call this tool multiple times.

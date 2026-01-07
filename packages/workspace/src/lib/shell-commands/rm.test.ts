@@ -77,7 +77,7 @@ describe("rmCommand", () => {
 
     expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
       {
-        "message": "rm command requires at least 1 argument: rm [-r] <file|directory> [<file|directory> ...]",
+        "message": "rm command requires at least 1 argument: rm [-r] [-f] <file|directory> [<file|directory> ...]",
         "type": "execute-error",
       }
     `);
@@ -88,7 +88,7 @@ describe("rmCommand", () => {
 
     expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
       {
-        "message": "rm -r command requires at least 1 path argument: rm -r <directory> [<directory> ...]",
+        "message": "rm command requires at least 1 path argument after flags",
         "type": "execute-error",
       }
     `);
@@ -133,6 +133,77 @@ describe("rmCommand", () => {
     expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
       {
         "message": "rm command requires valid path arguments",
+        "type": "execute-error",
+      }
+    `);
+  });
+
+  it("removes file with -f flag when file exists", async () => {
+    const result = await rmCommand(["-f", "file.txt"], appConfig);
+
+    expect(result.isOk()).toBe(true);
+
+    expect(await readDirSorted(appConfig.appDir)).toMatchInlineSnapshot(`
+      [
+        "file1.txt",
+        "file2.txt",
+        "folder",
+      ]
+    `);
+  });
+
+  it("succeeds with -f flag when file does not exist", async () => {
+    const result = await rmCommand(["-f", "nonexistent.txt"], appConfig);
+
+    expect(result.isOk()).toBe(true);
+
+    expect(await readDirSorted(appConfig.appDir)).toMatchInlineSnapshot(`
+      [
+        "file.txt",
+        "file1.txt",
+        "file2.txt",
+        "folder",
+      ]
+    `);
+  });
+
+  it("removes directory with -rf flag", async () => {
+    const result = await rmCommand(["-rf", "folder"], appConfig);
+
+    expect(result.isOk()).toBe(true);
+
+    expect(await readDirSorted(appConfig.appDir)).toMatchInlineSnapshot(`
+      [
+        "file.txt",
+        "file1.txt",
+        "file2.txt",
+      ]
+    `);
+  });
+
+  it("removes multiple files with -f flag, skipping nonexistent ones", async () => {
+    const result = await rmCommand(
+      ["-f", "file.txt", "nonexistent.txt", "folder/nested.txt"],
+      appConfig,
+    );
+
+    expect(result.isOk()).toBe(true);
+
+    expect(await readDirSorted(appConfig.appDir)).toMatchInlineSnapshot(`
+      [
+        "file1.txt",
+        "file2.txt",
+        "folder",
+      ]
+    `);
+  });
+
+  it("errors when glob pattern is used", async () => {
+    const result = await rmCommand(["test*.txt"], appConfig);
+
+    expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
+      {
+        "message": "rm: glob patterns are not supported. Found glob pattern in 'test*.txt'. Please specify exact file or directory names.",
         "type": "execute-error",
       }
     `);

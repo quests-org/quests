@@ -55,7 +55,7 @@ describe("cpCommand", () => {
 
     expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
       {
-        "message": "cp command requires at least 2 arguments: cp [-r] <source> <destination>",
+        "message": "cp command requires at least 2 arguments: cp [-r] <source> [...sources] <destination>",
         "type": "execute-error",
       }
     `);
@@ -66,7 +66,7 @@ describe("cpCommand", () => {
 
     expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
       {
-        "message": "cp command requires exactly 2 arguments: cp <source> <destination>",
+        "message": "cp command requires at least 2 arguments: cp [-r] <source> [...sources] <destination>",
         "type": "execute-error",
       }
     `);
@@ -110,7 +110,7 @@ describe("cpCommand", () => {
 
     expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
       {
-        "message": "cp command failed: ENOENT, no such file or directory '/tmp/workspace/projects/test/absolute/path'",
+        "message": "cp command failed for 'file.txt': ENOENT, no such file or directory '/tmp/workspace/projects/test/absolute/path'",
         "type": "execute-error",
       }
     `);
@@ -121,7 +121,48 @@ describe("cpCommand", () => {
 
     expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
       {
-        "message": "cp -r command requires exactly 2 path arguments: cp -r <source> <destination>",
+        "message": "cp -r command requires at least 2 path arguments: cp -r <source> [...sources] <destination>",
+        "type": "execute-error",
+      }
+    `);
+  });
+
+  it("copies multiple files to a directory", async () => {
+    const result = await cpCommand(
+      ["file.txt", "folder/nested.txt", "folder"],
+      appConfig,
+    );
+
+    expect(result.isOk()).toBe(true);
+
+    expect(await readDirSorted(appConfig.appDir)).toMatchInlineSnapshot(`
+      [
+        "file.txt",
+        "folder",
+      ]
+    `);
+  });
+
+  it("errors when copying multiple files to non-directory", async () => {
+    const result = await cpCommand(
+      ["file.txt", "folder/nested.txt", "nonexistent.txt"],
+      appConfig,
+    );
+
+    expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
+      {
+        "message": "cp: target 'nonexistent.txt' is not a directory",
+        "type": "execute-error",
+      }
+    `);
+  });
+
+  it("errors when glob pattern is used", async () => {
+    const result = await cpCommand(["test*.txt", "dest.txt"], appConfig);
+
+    expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
+      {
+        "message": "cp: glob patterns are not supported. Found glob pattern in 'test*.txt'. Please specify exact file or directory names.",
         "type": "execute-error",
       }
     `);

@@ -88,7 +88,7 @@ describe("mvCommand", () => {
 
     expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
       {
-        "message": "mv command requires exactly 2 arguments: mv <source> <destination>",
+        "message": "mv command requires at least 2 arguments: mv <source> [...sources] <destination>",
         "type": "execute-error",
       }
     `);
@@ -99,7 +99,7 @@ describe("mvCommand", () => {
 
     expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
       {
-        "message": "mv command requires exactly 2 arguments: mv <source> <destination>",
+        "message": "mv command requires at least 2 arguments: mv <source> [...sources] <destination>",
         "type": "execute-error",
       }
     `);
@@ -147,6 +147,76 @@ describe("mvCommand", () => {
     expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
       {
         "message": "mv: cannot move 'file.txt' to '/absolute/path': No such file or directory",
+        "type": "execute-error",
+      }
+    `);
+  });
+
+  it("moves multiple files to a directory", async () => {
+    mockFs({
+      [MOCK_WORKSPACE_DIRS.projects]: {
+        [appConfig.folderName]: {
+          "file1.txt": "content1",
+          "file2.txt": "content2",
+          "file3.txt": "content3",
+          folder: {},
+        },
+      },
+    });
+
+    const result = await mvCommand(
+      ["file1.txt", "file2.txt", "file3.txt", "folder"],
+      appConfig,
+    );
+
+    expect(result.isOk()).toBe(true);
+
+    expect(await readDirSorted(appConfig.appDir)).toMatchInlineSnapshot(`
+      [
+        "folder",
+      ]
+    `);
+
+    expect(await readDirSorted(path.join(appConfig.appDir, "folder")))
+      .toMatchInlineSnapshot(`
+      [
+        "file1.txt",
+        "file2.txt",
+        "file3.txt",
+      ]
+    `);
+  });
+
+  it("errors when moving multiple files to non-directory", async () => {
+    mockFs({
+      [MOCK_WORKSPACE_DIRS.projects]: {
+        [appConfig.folderName]: {
+          "file1.txt": "content1",
+          "file2.txt": "content2",
+          "target.txt": "target",
+        },
+      },
+    });
+
+    const result = await mvCommand(
+      ["file1.txt", "file2.txt", "target.txt"],
+      appConfig,
+    );
+
+    expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
+      {
+        "message": "mv: target 'target.txt' is not a directory",
+        "type": "execute-error",
+      }
+    `);
+  });
+
+  it("errors when glob pattern is used", async () => {
+    const result = await mvCommand(["test*.txt", "dest.txt"], appConfig);
+
+    expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
+      {
+        "message": "mv: glob patterns are not supported. Found glob pattern in 'test*.txt'. Please specify exact file or directory names.",
         "type": "execute-error",
       }
     `);

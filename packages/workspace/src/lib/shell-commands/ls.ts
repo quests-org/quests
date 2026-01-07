@@ -8,7 +8,8 @@ import { absolutePathJoin } from "../absolute-path-join";
 import { ensureRelativePath } from "../ensure-relative-path";
 import { listFiles } from "../list-files";
 import { pathExists } from "../path-exists";
-import { createError, type FileOperationResult } from "./types";
+import { type FileOperationResult } from "./types";
+import { executeError, validateNoGlobs } from "./utils";
 
 export async function lsCommand(
   args: string[],
@@ -44,6 +45,11 @@ export async function lsCommand(
 
   targetPath = pathArgs[0] ?? ".";
 
+  const globValidation = validateNoGlobs([targetPath], "ls");
+  if (globValidation.isErr()) {
+    return globValidation;
+  }
+
   const fixedPathResult = ensureRelativePath(targetPath);
   if (fixedPathResult.isErr()) {
     return fixedPathResult;
@@ -56,7 +62,7 @@ export async function lsCommand(
 
   const exists = await pathExists(absolutePath);
   if (!exists) {
-    return createError(
+    return executeError(
       `ls: cannot access '${targetPath}': No such file or directory`,
     );
   }
@@ -90,7 +96,7 @@ export async function lsCommand(
       stdout: result.files.join("\n"),
     });
   } catch (error) {
-    return createError(
+    return executeError(
       `ls command failed: ${error instanceof Error ? error.message : "Unknown error"}`,
     );
   }

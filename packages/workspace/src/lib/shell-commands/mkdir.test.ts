@@ -115,4 +115,32 @@ describe("mkdirCommand", () => {
       }
     `);
   });
+
+  it("creates multiple nested directories with -p flag", async () => {
+    const result = await mkdirCommand(
+      ["-p", "nested1/deep1", "nested2/deep2"],
+      appConfig,
+    );
+
+    expect(result.isOk()).toBe(true);
+
+    expect(await readDirSorted(appConfig.appDir)).toMatchInlineSnapshot(`
+      [
+        "existing",
+        "nested1",
+        "nested2",
+      ]
+    `);
+  });
+
+  it("errors when glob pattern is used", async () => {
+    const result = await mkdirCommand(["test*"], appConfig);
+
+    expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
+      {
+        "message": "mkdir: glob patterns are not supported. Found glob pattern in 'test*'. Please specify exact file or directory names.",
+        "type": "execute-error",
+      }
+    `);
+  });
 });

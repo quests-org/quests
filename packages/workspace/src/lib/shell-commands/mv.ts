@@ -6,34 +6,32 @@ import type { AppConfig } from "../app-config/types";
 import { absolutePathJoin } from "../absolute-path-join";
 import { ensureRelativePath } from "../ensure-relative-path";
 import { pathExists } from "../path-exists";
-import { createError, createSuccess, type FileOperationResult } from "./types";
-import { validateArgCount } from "./utils";
+import { type FileOperationResult } from "./types";
+import { executeError, shellSuccess, validateNoGlobs } from "./utils";
 
 export async function mvCommand(
   args: string[],
   appConfig: AppConfig,
 ): Promise<FileOperationResult> {
-  const argsResult = validateArgCount(
-    "mv",
-    args,
-    2,
-    "mv <source> <destination>",
-  );
-  if (argsResult.isErr()) {
-    return argsResult;
-  }
-
-  const [sourcePath, destPath] = argsResult.value;
-
-  if (!sourcePath || !destPath) {
-    return createError(
-      "mv command requires exactly 2 arguments: mv <source> <destination>",
+  if (args.length < 2) {
+    return executeError(
+      "mv command requires at least 2 arguments: mv <source> [...sources] <destination>",
     );
   }
 
-  const fixedSourceResult = ensureRelativePath(sourcePath);
-  if (fixedSourceResult.isErr()) {
-    return fixedSourceResult;
+  const sourcePaths = args.slice(0, -1);
+  const destPath = args.at(-1) ?? "";
+
+  if (sourcePaths.length === 0 || !destPath) {
+    return executeError(
+      "mv command requires valid source and destination path arguments",
+    );
+  }
+
+  const allPaths = [...sourcePaths, destPath];
+  const globValidation = validateNoGlobs(allPaths, "mv");
+  if (globValidation.isErr()) {
+    return globValidation;
   }
 
   const fixedDestResult = ensureRelativePath(destPath);
@@ -41,41 +39,67 @@ export async function mvCommand(
     return fixedDestResult;
   }
 
-  const absoluteSourcePath = absolutePathJoin(
-    appConfig.appDir,
-    fixedSourceResult.value,
-  );
   const absoluteDestPath = absolutePathJoin(
     appConfig.appDir,
     fixedDestResult.value,
   );
 
-  const sourceExists = await pathExists(absoluteSourcePath);
-  if (!sourceExists) {
-    return createError(
-      `mv: cannot stat '${sourcePath}': No such file or directory`,
-    );
-  }
-
-  const destDir = path.dirname(absoluteDestPath);
+  let destIsDirectory = false;
   try {
-    await fs.access(destDir);
+    const destStats = await fs.stat(absoluteDestPath);
+    destIsDirectory = destStats.isDirectory();
   } catch {
-    return createError(
-      `mv: cannot move '${sourcePath}' to '${destPath}': No such file or directory`,
-    );
+    destIsDirectory = false;
   }
 
-  if (absoluteSourcePath === absoluteDestPath) {
-    return createSuccess(`mv ${sourcePath} ${destPath}`);
+  if (sourcePaths.length > 1 && !destIsDirectory) {
+    return executeError(`mv: target '${destPath}' is not a directory`);
   }
 
-  try {
-    await fs.rename(absoluteSourcePath, absoluteDestPath);
-    return createSuccess(`mv ${sourcePath} ${destPath}`);
-  } catch (error) {
-    return createError(
-      `mv command failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+  for (const sourcePath of sourcePaths) {
+    const fixedSourceResult = ensureRelativePath(sourcePath);
+    if (fixedSourceResult.isErr()) {
+      return fixedSourceResult;
+    }
+
+    const absoluteSourcePath = absolutePathJoin(
+      appConfig.appDir,
+      fixedSourceResult.value,
     );
+
+    const sourceExists = await pathExists(absoluteSourcePath);
+    if (!sourceExists) {
+      return executeError(
+        `mv: cannot stat '${sourcePath}': No such file or directory`,
+      );
+    }
+
+    const finalDestPath = destIsDirectory
+      ? path.join(absoluteDestPath, path.basename(absoluteSourcePath))
+      : absoluteDestPath;
+
+    const destDir = path.dirname(finalDestPath);
+    try {
+      await fs.access(destDir);
+    } catch {
+      return executeError(
+        `mv: cannot move '${sourcePath}' to '${destPath}': No such file or directory`,
+      );
+    }
+
+    if (absoluteSourcePath === finalDestPath) {
+      continue;
+    }
+
+    try {
+      await fs.rename(absoluteSourcePath, finalDestPath);
+    } catch (error) {
+      return executeError(
+        `mv command failed for '${sourcePath}': ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
+    }
   }
+
+  const pathsStr = [...sourcePaths, destPath].join(" ");
+  return shellSuccess(`mv ${pathsStr}`);
 }

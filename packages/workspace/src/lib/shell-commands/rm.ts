@@ -5,35 +5,61 @@ import type { AppConfig } from "../app-config/types";
 import { absolutePathJoin } from "../absolute-path-join";
 import { ensureRelativePath } from "../ensure-relative-path";
 import { pathExists } from "../path-exists";
-import { createError, createSuccess, type FileOperationResult } from "./types";
+import { type FileOperationResult } from "./types";
+import { executeError, shellSuccess, validateNoGlobs } from "./utils";
 
 export async function rmCommand(
   args: string[],
   appConfig: AppConfig,
 ): Promise<FileOperationResult> {
   if (args.length === 0) {
-    return createError(
-      "rm command requires at least 1 argument: rm [-r] <file|directory> [<file|directory> ...]",
+    return executeError(
+      "rm command requires at least 1 argument: rm [-r] [-f] <file|directory> [<file|directory> ...]",
     );
   }
 
   let recursive = false;
-  let targetPaths: string[];
+  let force = false;
+  const targetPaths: string[] = [];
 
-  if (args[0] === "-r") {
-    if (args.length < 2) {
-      return createError(
-        "rm -r command requires at least 1 path argument: rm -r <directory> [<directory> ...]",
-      );
+  for (const arg of args) {
+    switch (arg) {
+      case "-f": {
+        force = true;
+
+        break;
+      }
+      case "-fr":
+      case "-rf": {
+        recursive = true;
+        force = true;
+
+        break;
+      }
+      case "-r": {
+        recursive = true;
+
+        break;
+      }
+      default: {
+        targetPaths.push(arg);
+      }
     }
-    recursive = true;
-    targetPaths = args.slice(1);
-  } else {
-    targetPaths = args;
   }
 
-  if (targetPaths.length === 0 || targetPaths.some((p) => !p)) {
-    return createError("rm command requires valid path arguments");
+  if (targetPaths.length === 0) {
+    return executeError(
+      "rm command requires at least 1 path argument after flags",
+    );
+  }
+
+  if (targetPaths.some((p) => !p)) {
+    return executeError("rm command requires valid path arguments");
+  }
+
+  const globValidation = validateNoGlobs(targetPaths, "rm");
+  if (globValidation.isErr()) {
+    return globValidation;
   }
 
   for (const targetPath of targetPaths) {
@@ -49,7 +75,10 @@ export async function rmCommand(
 
     const exists = await pathExists(absolutePath);
     if (!exists) {
-      return createError(
+      if (force) {
+        continue;
+      }
+      return executeError(
         `rm: cannot remove '${targetPath}': No such file or directory`,
       );
     }
@@ -59,7 +88,7 @@ export async function rmCommand(
 
       if (stats.isDirectory()) {
         if (!recursive) {
-          return createError(
+          return executeError(
             `rm: cannot remove '${targetPath}': Is a directory`,
           );
         }
@@ -69,13 +98,24 @@ export async function rmCommand(
         await fs.unlink(absolutePath);
       }
     } catch (error) {
-      return createError(
+      if (force) {
+        continue;
+      }
+      return executeError(
         `rm command failed for '${targetPath}': ${error instanceof Error ? error.message : "Unknown error"}`,
       );
     }
   }
 
   const pathsStr = targetPaths.join(" ");
-  const command = recursive ? `rm -r ${pathsStr}` : `rm ${pathsStr}`;
-  return createSuccess(command);
+  const flags = [];
+  if (recursive) {
+    flags.push("-r");
+  }
+  if (force) {
+    flags.push("-f");
+  }
+  const flagsStr = flags.length > 0 ? `${flags.join(" ")} ` : "";
+  const command = `rm ${flagsStr}${pathsStr}`;
+  return shellSuccess(command);
 }

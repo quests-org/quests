@@ -136,4 +136,15 @@ describe("lsCommand", () => {
       }
     `);
   });
+
+  it("errors when glob pattern is used", async () => {
+    const result = await lsCommand(["test*"], appConfig);
+
+    expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
+      {
+        "message": "ls: glob patterns are not supported. Found glob pattern in 'test*'. Please specify exact file or directory names.",
+        "type": "execute-error",
+      }
+    `);
+  });
 });
