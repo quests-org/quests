@@ -4,3 +4,4 @@ alwaysApply: true
 ---
 
 - Only add comments for very complex code or if asked by the user.
+- Do NOT remove comments that are already present.
