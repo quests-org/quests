@@ -9,7 +9,6 @@ import {
   createDevToolsMenu,
   createEditMenu,
   createHelpMenu,
-  createWindowMenu,
 } from "./utils";
 
 export function createMainWindowMenu(): MenuItemConstructorOptions[] {
@@ -38,19 +37,7 @@ export function createMainWindowMenu(): MenuItemConstructorOptions[] {
         },
         label: "New Project",
       },
-      {
-        accelerator: "CmdOrCtrl+K",
-        click: () => {
-          const tabsManager = getTabsManager();
-          const currentTab = tabsManager?.getCurrentTab();
-          if (currentTab) {
-            publisher.publish("app.open-project-launcher", {
-              webContentsId: currentTab.webView.webContents.id,
-            });
-          }
-        },
-        label: "Go to Project...",
-      },
+      { type: "separator" as const },
       {
         accelerator: "CmdOrCtrl+W",
         click: () => {
@@ -62,82 +49,6 @@ export function createMainWindowMenu(): MenuItemConstructorOptions[] {
         },
         label: "Close Tab",
       },
-      { type: "separator" as const },
-      {
-        accelerator: "CmdOrCtrl+1",
-        click: () => {
-          const tabsManager = getTabsManager();
-          tabsManager?.selectTabByIndex({ index: 0 });
-        },
-        label: "Switch to Tab 1",
-      },
-      {
-        accelerator: "CmdOrCtrl+2",
-        click: () => {
-          const tabsManager = getTabsManager();
-          tabsManager?.selectTabByIndex({ index: 1 });
-        },
-        label: "Switch to Tab 2",
-      },
-      {
-        accelerator: "CmdOrCtrl+3",
-        click: () => {
-          const tabsManager = getTabsManager();
-          tabsManager?.selectTabByIndex({ index: 2 });
-        },
-        label: "Switch to Tab 3",
-      },
-      {
-        accelerator: "CmdOrCtrl+4",
-        click: () => {
-          const tabsManager = getTabsManager();
-          tabsManager?.selectTabByIndex({ index: 3 });
-        },
-        label: "Switch to Tab 4",
-      },
-      {
-        accelerator: "CmdOrCtrl+5",
-        click: () => {
-          const tabsManager = getTabsManager();
-          tabsManager?.selectTabByIndex({ index: 4 });
-        },
-        label: "Switch to Tab 5",
-      },
-      {
-        accelerator: "CmdOrCtrl+6",
-        click: () => {
-          const tabsManager = getTabsManager();
-          tabsManager?.selectTabByIndex({ index: 5 });
-        },
-        label: "Switch to Tab 6",
-      },
-      {
-        accelerator: "CmdOrCtrl+7",
-        click: () => {
-          const tabsManager = getTabsManager();
-          tabsManager?.selectTabByIndex({ index: 6 });
-        },
-        label: "Switch to Tab 7",
-      },
-      {
-        accelerator: "CmdOrCtrl+8",
-        click: () => {
-          const tabsManager = getTabsManager();
-          tabsManager?.selectTabByIndex({ index: 7 });
-        },
-        label: "Switch to Tab 8",
-      },
-      {
-        accelerator: "CmdOrCtrl+9",
-        click: () => {
-          const tabsManager = getTabsManager();
-          const state = tabsManager?.getState();
-          if (state?.tabs.length) {
-            tabsManager?.selectTabByIndex({ index: state.tabs.length - 1 });
-          }
-        },
-        label: "Switch to Last Tab",
-      },
     ],
   };
 
@@ -145,6 +56,20 @@ export function createMainWindowMenu(): MenuItemConstructorOptions[] {
     label: "View",
     role: "viewMenu" as const,
     submenu: [
+      {
+        accelerator: "CmdOrCtrl+K",
+        click: () => {
+          const tabsManager = getTabsManager();
+          const currentTab = tabsManager?.getCurrentTab();
+          if (currentTab) {
+            publisher.publish("app.open-project-launcher", {
+              webContentsId: currentTab.webView.webContents.id,
+            });
+          }
+        },
+        label: "Show Command Menu",
+      },
+      { type: "separator" as const },
       {
         accelerator: "CmdOrCtrl+[",
         click: () => {
@@ -173,7 +98,7 @@ export function createMainWindowMenu(): MenuItemConstructorOptions[] {
             });
           }
         },
-        label: "Reload App",
+        label: "Reload Page",
       },
       { type: "separator" as const },
       {
@@ -184,6 +109,14 @@ export function createMainWindowMenu(): MenuItemConstructorOptions[] {
         label: "Toggle Sidebar",
       },
       { type: "separator" as const },
+      { role: "togglefullscreen" as const },
+    ],
+  };
+
+  const windowMenu: MenuItemConstructorOptions = {
+    label: "Window",
+    role: "windowMenu" as const,
+    submenu: [
       {
         accelerator: "CmdOrCtrl+0",
         click: () => {
@@ -208,7 +141,94 @@ export function createMainWindowMenu(): MenuItemConstructorOptions[] {
         label: "Zoom Out",
       },
       { type: "separator" as const },
-      { role: "togglefullscreen" as const },
+      { role: "minimize" as const },
+      { role: "zoom" as const },
+      { type: "separator" as const },
+      { role: "front" as const },
+      {
+        accelerator: "CmdOrCtrl+1",
+        click: () => {
+          const tabsManager = getTabsManager();
+          tabsManager?.selectTabByIndex({ index: 0 });
+        },
+        label: "Switch to Tab 1",
+        visible: false,
+      },
+      {
+        accelerator: "CmdOrCtrl+2",
+        click: () => {
+          const tabsManager = getTabsManager();
+          tabsManager?.selectTabByIndex({ index: 1 });
+        },
+        label: "Switch to Tab 2",
+        visible: false,
+      },
+      {
+        accelerator: "CmdOrCtrl+3",
+        click: () => {
+          const tabsManager = getTabsManager();
+          tabsManager?.selectTabByIndex({ index: 2 });
+        },
+        label: "Switch to Tab 3",
+        visible: false,
+      },
+      {
+        accelerator: "CmdOrCtrl+4",
+        click: () => {
+          const tabsManager = getTabsManager();
+          tabsManager?.selectTabByIndex({ index: 3 });
+        },
+        label: "Switch to Tab 4",
+        visible: false,
+      },
+      {
+        accelerator: "CmdOrCtrl+5",
+        click: () => {
+          const tabsManager = getTabsManager();
+          tabsManager?.selectTabByIndex({ index: 4 });
+        },
+        label: "Switch to Tab 5",
+        visible: false,
+      },
+      {
+        accelerator: "CmdOrCtrl+6",
+        click: () => {
+          const tabsManager = getTabsManager();
+          tabsManager?.selectTabByIndex({ index: 5 });
+        },
+        label: "Switch to Tab 6",
+        visible: false,
+      },
+      {
+        accelerator: "CmdOrCtrl+7",
+        click: () => {
+          const tabsManager = getTabsManager();
+          tabsManager?.selectTabByIndex({ index: 6 });
+        },
+        label: "Switch to Tab 7",
+        visible: false,
+      },
+      {
+        accelerator: "CmdOrCtrl+8",
+        click: () => {
+          const tabsManager = getTabsManager();
+          tabsManager?.selectTabByIndex({ index: 7 });
+        },
+        label: "Switch to Tab 8",
+        visible: false,
+      },
+      {
+        accelerator: "CmdOrCtrl+9",
+        click: () => {
+          const tabsManager = getTabsManager();
+          const state = tabsManager?.getState();
+          if (state?.tabs.length) {
+            tabsManager?.selectTabByIndex({ index: state.tabs.length - 1 });
+          }
+        },
+        label: "Switch to Last Tab",
+        visible: false,
+      },
     ],
   };
 
@@ -217,7 +237,7 @@ export function createMainWindowMenu(): MenuItemConstructorOptions[] {
     fileMenu,
     createEditMenu(),
     viewMenu,
-    createWindowMenu(),
+    windowMenu,
     createHelpMenu(),
     ...(isDeveloperMode() ? createDevToolsMenu() : []),
   ];
