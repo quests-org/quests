@@ -960,7 +960,7 @@ describe("llmRequestLogic", () => {
               "type": "step-start",
             },
             {
-              "errorText": "Model tried to call unavailable tool 'non_existent_tool'. Available tools: choose, edit_file, glob, grep, read_file, run_diagnostics, run_git_commands, run_shell_command, think, unavailable, write_file.",
+              "errorText": "Model tried to call unavailable tool 'non_existent_tool'. Available tools: choose, edit_file, glob, grep, read_file, run_diagnostics, run_shell_command, think, unavailable, write_file.",
               "input": undefined,
               "metadata": {
                 "createdAt": 2013-08-31T12:00:04.000Z,
@@ -1044,7 +1044,7 @@ describe("llmRequestLogic", () => {
               "type": "step-start",
             },
             {
-              "errorText": "Model tried to call unavailable tool 'non_existent_tool'. Available tools: choose, edit_file, glob, grep, read_file, run_diagnostics, run_git_commands, run_shell_command, think, unavailable, write_file.",
+              "errorText": "Model tried to call unavailable tool 'non_existent_tool'. Available tools: choose, edit_file, glob, grep, read_file, run_diagnostics, run_shell_command, think, unavailable, write_file.",
               "input": undefined,
               "metadata": {
                 "createdAt": 2013-08-31T12:00:04.000Z,
@@ -1123,7 +1123,7 @@ describe("llmRequestLogic", () => {
               "type": "step-start",
             },
             {
-              "errorText": "Model tried to call unavailable tool 'non_existent_tool'. Available tools: choose, edit_file, glob, grep, read_file, run_diagnostics, run_git_commands, run_shell_command, think, unavailable, write_file.",
+              "errorText": "Model tried to call unavailable tool 'non_existent_tool'. Available tools: choose, edit_file, glob, grep, read_file, run_diagnostics, run_shell_command, think, unavailable, write_file.",
               "input": {
                 "filePath": "test.txt",
               },

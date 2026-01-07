@@ -161,42 +161,6 @@ export function ToolContent({
         </div>
       );
     }
-    case "tool-run_git_commands": {
-      const results = part.output.results;
-      return (
-        <div>
-          <SectionHeader>Git commands executed</SectionHeader>
-          <div className="space-y-2">
-            {results.map((result, index) => (
-              <div className="border-l-2 border-accent/30 pl-2" key={index}>
-                <MonoText className="text-xs text-muted-foreground">
-                  $ git {result.command}
-                </MonoText>
-                <div className="mb-1 flex items-center gap-2">
-                  <Badge
-                    variant={
-                      result.exitCode === 0 ? "secondary" : "destructive"
-                    }
-                  >
-                    Exit code: {result.exitCode}
-                  </Badge>
-                </div>
-                {result.stdout && (
-                  <CodeBlock className="text-xs whitespace-pre-wrap text-green-600 dark:text-green-400">
-                    {result.stdout}
-                  </CodeBlock>
-                )}
-                {result.stderr && (
-                  <CodeBlock className="text-xs whitespace-pre-wrap text-red-600 dark:text-red-400">
-                    {result.stderr}
-                  </CodeBlock>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      );
-    }
     case "tool-run_shell_command": {
       return (
         <div>

@@ -9,7 +9,6 @@ import { Glob } from "./glob";
 import { Grep } from "./grep";
 import { ReadFile } from "./read-file";
 import { RunDiagnostics } from "./run-diagnostics";
-import { RunGitCommands } from "./run-git-commands";
 import { RunShellCommand } from "./run-shell-command";
 import { Think } from "./think";
 import { Unavailable } from "./unavailable";
@@ -22,7 +21,6 @@ export const TOOLS = {
   Grep,
   ReadFile,
   RunDiagnostics,
-  RunGitCommands,
   RunShellCommand,
   Think,
   Unavailable,
@@ -38,7 +36,6 @@ export const TOOLS_BY_NAME = {
   [TOOLS.Grep.name]: TOOLS.Grep,
   [TOOLS.ReadFile.name]: TOOLS.ReadFile,
   [TOOLS.RunDiagnostics.name]: TOOLS.RunDiagnostics,
-  [TOOLS.RunGitCommands.name]: TOOLS.RunGitCommands,
   [TOOLS.RunShellCommand.name]: TOOLS.RunShellCommand,
   [TOOLS.Think.name]: TOOLS.Think,
   [TOOLS.Unavailable.name]: TOOLS.Unavailable,

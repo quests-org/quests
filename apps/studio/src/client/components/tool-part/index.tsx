@@ -219,10 +219,6 @@ function getToolInputDescription(
     case "tool-run_diagnostics": {
       return undefined;
     }
-    case "tool-run_git_commands": {
-      const commands = part.input.commands;
-      return commands.join(", ");
-    }
     case "tool-run_shell_command": {
       return part.input.command;
     }
@@ -276,13 +272,6 @@ function getToolOutputDescription(
       return errorCount > 0
         ? `${errorCount} error${errorCount === 1 ? "" : "s"} found`
         : "no errors found";
-    }
-    case "tool-run_git_commands": {
-      const results = part.output.results;
-      return (
-        results.map((result) => result.command).join(", ") ||
-        "git commands executed"
-      );
     }
     case "tool-run_shell_command": {
       return part.output.command || "command executed";
