@@ -3,7 +3,7 @@ import { err, ok } from "neverthrow";
 import { dedent } from "radashi";
 import { z } from "zod";
 
-import { fixRelativePath } from "../lib/fix-relative-path";
+import { ensureRelativePath } from "../lib/ensure-relative-path";
 import { grep } from "../lib/grep";
 import { BaseInputSchema } from "./base";
 import { createTool } from "./create-tool";
@@ -31,14 +31,11 @@ export const Grep = createTool({
 
     // Handle optional path parameter
     if (input.path) {
-      const fixedPath = fixRelativePath(input.path);
-      if (!fixedPath) {
-        return err({
-          message: `Path is not relative: ${input.path}`,
-          type: "execute-error",
-        });
+      const fixedPathResult = ensureRelativePath(input.path);
+      if (fixedPathResult.isErr()) {
+        return err(fixedPathResult.error);
       }
-      searchPath = fixedPath;
+      searchPath = fixedPathResult.value;
     }
 
     const result = await grep(appConfig.appDir, input.pattern, {

@@ -1,20 +1,22 @@
 import { envForProviders } from "@quests/ai-gateway";
 import ms from "ms";
-import { err, ok, type Result } from "neverthrow";
-import fs from "node:fs/promises";
-import path from "node:path";
+import { err, ok } from "neverthrow";
 import { dedent } from "radashi";
 import { z } from "zod";
 
 import type { AppConfig } from "../lib/app-config/types";
 
-import { absolutePathJoin } from "../lib/absolute-path-join";
 import { execaNodeForApp } from "../lib/execa-node-for-app";
 import { filterDebuggerMessages } from "../lib/filter-debugger-messages";
-import { fixRelativePath } from "../lib/fix-relative-path";
-import { listFiles } from "../lib/list-files";
-import { pathExists } from "../lib/path-exists";
 import { runNodeModulesBin } from "../lib/run-node-modules-bin";
+import {
+  cpCommand,
+  type FileOperationResult,
+  lsCommand,
+  mkdirCommand,
+  mvCommand,
+  rmCommand,
+} from "../lib/shell-commands";
 import { getWorkspaceServerURL } from "../logic/server/url";
 import { BaseInputSchema } from "./base";
 import { createTool } from "./create-tool";
@@ -27,10 +29,9 @@ const ShellCommandSchema = z.enum(["pnpm", "tsc", "tsx"]);
 type ShellCommand = z.output<typeof ShellCommandSchema>;
 
 const CommandNameSchema = z.union([FileOperationSchema, ShellCommandSchema]);
-type CommandName = z.output<typeof CommandNameSchema>;
 
 const AVAILABLE_COMMANDS: Record<
-  CommandName,
+  FileOperation | ShellCommand,
   { description: string; examples: string[]; isFileOperation: boolean }
 > = {
   cp: {
@@ -51,7 +52,11 @@ const AVAILABLE_COMMANDS: Record<
   mkdir: {
     description:
       "A limited version of the mkdir command that supports the -p flag for recursive directory creation.",
-    examples: ["mkdir src/utils", "mkdir -p src/components/ui/buttons"],
+    examples: [
+      "mkdir src/utils",
+      "mkdir -p src/components/ui/buttons",
+      "mkdir folder1 folder2",
+    ],
     isFileOperation: true,
   },
   mv: {
@@ -67,8 +72,12 @@ const AVAILABLE_COMMANDS: Record<
   },
   rm: {
     description:
-      "A limited version of the rm command that supports the -r flag for recursive directory removal and can only remove files/directories in the app directory.",
-    examples: ["rm src/temp.json", "rm -r build/"],
+      "A limited version of the rm command that supports the -r flag for recursive directory removal and can only remove files/directories in the app directory. Supports multiple paths as arguments.",
+    examples: [
+      "rm src/temp.json",
+      "rm -r build/",
+      "rm file1.txt file2.txt file3.txt",
+    ],
     isFileOperation: true,
   },
   tsc: {
@@ -87,133 +96,6 @@ const AVAILABLE_COMMANDS: Record<
   },
 };
 
-type FileOperationResult = Result<
-  { command: string; exitCode: number; stderr: string; stdout: string },
-  { message: string; type: "execute-error" }
->;
-
-function createError(message: string): {
-  message: string;
-  type: "execute-error";
-} {
-  return { message, type: "execute-error" };
-}
-
-function createSuccess(command: string): {
-  command: string;
-  exitCode: number;
-  stderr: string;
-  stdout: string;
-} {
-  return { command, exitCode: 0, stderr: "", stdout: "" };
-}
-
-async function handleCpCommand(
-  args: string[],
-  appConfig: AppConfig,
-): Promise<FileOperationResult> {
-  if (args.length === 0) {
-    return err(
-      createError(
-        "cp command requires at least 2 arguments: cp [-r] <source> <destination>",
-      ),
-    );
-  }
-
-  let recursive = false;
-  let sourcePath: string;
-  let destPath: string;
-
-  if (args[0] === "-r") {
-    if (args.length !== 3) {
-      return err(
-        createError(
-          "cp -r command requires exactly 2 path arguments: cp -r <source> <destination>",
-        ),
-      );
-    }
-    recursive = true;
-    sourcePath = args[1] ?? "";
-    destPath = args[2] ?? "";
-  } else {
-    if (args.length !== 2) {
-      return err(
-        createError(
-          "cp command requires exactly 2 arguments: cp <source> <destination>",
-        ),
-      );
-    }
-    sourcePath = args[0] ?? "";
-    destPath = args[1] ?? "";
-  }
-
-  if (!sourcePath || !destPath) {
-    return err(
-      createError(
-        "cp command requires valid source and destination path arguments",
-      ),
-    );
-  }
-
-  const fixedSourceResult = validateAndFixPath(sourcePath, "Source");
-  if (fixedSourceResult.isErr()) {
-    return err(fixedSourceResult.error);
-  }
-
-  const fixedDestResult = validateAndFixPath(destPath, "Destination");
-  if (fixedDestResult.isErr()) {
-    return err(fixedDestResult.error);
-  }
-
-  const absoluteSourcePath = absolutePathJoin(
-    appConfig.appDir,
-    fixedSourceResult.value,
-  );
-  const absoluteDestPath = absolutePathJoin(
-    appConfig.appDir,
-    fixedDestResult.value,
-  );
-
-  const sourceExists = await pathExists(absoluteSourcePath);
-  if (!sourceExists) {
-    return err(
-      createError(`cp: cannot stat '${sourcePath}': No such file or directory`),
-    );
-  }
-
-  try {
-    const stats = await fs.stat(absoluteSourcePath);
-
-    if (stats.isDirectory()) {
-      if (!recursive) {
-        return err(
-          createError(
-            `cp: -r not specified; omitting directory '${sourcePath}'`,
-          ),
-        );
-      }
-
-      await fs.cp(absoluteSourcePath, absoluteDestPath, {
-        force: true,
-        recursive: true,
-      });
-      return ok(createSuccess(`cp -r ${sourcePath} ${destPath}`));
-    } else {
-      await fs.copyFile(absoluteSourcePath, absoluteDestPath);
-      const command = recursive
-        ? `cp -r ${sourcePath} ${destPath}`
-        : `cp ${sourcePath} ${destPath}`;
-      return ok(createSuccess(command));
-    }
-  } catch (error) {
-    return err(
-      createError(
-        `cp command failed: ${error instanceof Error ? error.message : "Unknown error"}`,
-      ),
-    );
-  }
-}
-
 async function handleFileOperation(
   command: FileOperation,
   args: string[],
@@ -221,378 +103,21 @@ async function handleFileOperation(
 ): Promise<FileOperationResult> {
   switch (command) {
     case "cp": {
-      return handleCpCommand(args, appConfig);
+      return cpCommand(args, appConfig);
     }
     case "ls": {
-      return handleLsCommand(args, appConfig);
+      return lsCommand(args, appConfig);
     }
     case "mkdir": {
-      return handleMkdirCommand(args, appConfig);
+      return mkdirCommand(args, appConfig);
     }
     case "mv": {
-      return handleMvCommand(args, appConfig);
+      return mvCommand(args, appConfig);
     }
     case "rm": {
-      return handleRmCommand(args, appConfig);
+      return rmCommand(args, appConfig);
     }
   }
-}
-
-async function handleLsCommand(
-  args: string[],
-  appConfig: AppConfig,
-): Promise<FileOperationResult> {
-  const KNOWN_FLAGS = new Set(["-a"]);
-  const warnings: string[] = [];
-
-  let showHidden = false;
-  let targetPath = ".";
-  const flags: string[] = [];
-  const pathArgs: string[] = [];
-
-  for (const arg of args) {
-    if (arg.startsWith("-")) {
-      flags.push(arg);
-    } else {
-      pathArgs.push(arg);
-    }
-  }
-
-  for (const flag of flags) {
-    if (KNOWN_FLAGS.has(flag)) {
-      if (flag === "-a") {
-        showHidden = true;
-      }
-    } else {
-      warnings.push(
-        `ls: unknown flag '${flag}' ignored (supported flags: ${[...KNOWN_FLAGS].join(", ")})`,
-      );
-    }
-  }
-
-  // Get target path (first non-flag argument or default to ".")
-  targetPath = pathArgs[0] ?? ".";
-
-  const fixedPathResult = validateAndFixPath(targetPath, "Path");
-  if (fixedPathResult.isErr()) {
-    return err(fixedPathResult.error);
-  }
-
-  const absolutePath = absolutePathJoin(
-    appConfig.appDir,
-    fixedPathResult.value,
-  );
-
-  const exists = await pathExists(absolutePath);
-  if (!exists) {
-    return err(
-      createError(
-        `ls: cannot access '${targetPath}': No such file or directory`,
-      ),
-    );
-  }
-
-  try {
-    const stats = await fs.stat(absolutePath);
-
-    const flagStr = flags.length > 0 ? ` ${flags.join(" ")}` : "";
-    const pathStr = targetPath === "." ? "" : ` ${targetPath}`;
-    const commandStr = `ls${flagStr}${pathStr}`.trim();
-    const stderr = warnings.length > 0 ? warnings.join("\n") : "";
-
-    if (!stats.isDirectory()) {
-      return ok({
-        command: commandStr,
-        exitCode: 0,
-        stderr,
-        stdout: path.basename(absolutePath),
-      });
-    }
-
-    const result = await listFiles(appConfig.appDir, {
-      hidden: showHidden,
-      searchPath: fixedPathResult.value,
-    });
-
-    return ok({
-      command: commandStr,
-      exitCode: 0,
-      stderr,
-      stdout: result.files.join("\n"),
-    });
-  } catch (error) {
-    return err(
-      createError(
-        `ls command failed: ${error instanceof Error ? error.message : "Unknown error"}`,
-      ),
-    );
-  }
-}
-
-async function handleMkdirCommand(
-  args: string[],
-  appConfig: AppConfig,
-): Promise<FileOperationResult> {
-  if (args.length === 0) {
-    return err(
-      createError(
-        "mkdir command requires at least 1 argument: mkdir [-p] <directory>",
-      ),
-    );
-  }
-
-  let recursive = false;
-  let directoryPath: string;
-
-  // Check for -p flag
-  if (args[0] === "-p") {
-    recursive = true;
-    if (args.length < 2 || !args[1]) {
-      return err(
-        createError(
-          "mkdir command with -p flag requires a directory argument: mkdir -p <directory>",
-        ),
-      );
-    }
-    directoryPath = args[1];
-  } else {
-    if (args.length !== 1 || !args[0]) {
-      return err(
-        createError(
-          "mkdir command requires exactly 1 argument: mkdir <directory>",
-        ),
-      );
-    }
-    directoryPath = args[0];
-  }
-
-  if (!directoryPath) {
-    return err(createError("mkdir command requires a directory path"));
-  }
-
-  const fixedPathResult = validateAndFixPath(directoryPath, "Directory");
-  if (fixedPathResult.isErr()) {
-    return err(fixedPathResult.error);
-  }
-
-  const absolutePath = absolutePathJoin(
-    appConfig.appDir,
-    fixedPathResult.value,
-  );
-
-  try {
-    await fs.mkdir(absolutePath, { recursive });
-    const command = recursive
-      ? `mkdir -p ${directoryPath}`
-      : `mkdir ${directoryPath}`;
-    return ok(createSuccess(command));
-  } catch (error) {
-    return err(
-      createError(
-        `mkdir command failed: ${error instanceof Error ? error.message : "Unknown error"}`,
-      ),
-    );
-  }
-}
-
-async function handleMvCommand(
-  args: string[],
-  appConfig: AppConfig,
-): Promise<FileOperationResult> {
-  const argsResult = validateArgCount(
-    "mv",
-    args,
-    2,
-    "mv <source> <destination>",
-  );
-  if (argsResult.isErr()) {
-    return err(argsResult.error);
-  }
-
-  const [sourcePath, destPath] = argsResult.value;
-
-  if (!sourcePath || !destPath) {
-    return err(
-      createError(
-        "mv command requires exactly 2 arguments: mv <source> <destination>",
-      ),
-    );
-  }
-
-  const fixedSourceResult = validateAndFixPath(sourcePath, "Source");
-  if (fixedSourceResult.isErr()) {
-    return err(fixedSourceResult.error);
-  }
-
-  const fixedDestResult = validateAndFixPath(destPath, "Destination");
-  if (fixedDestResult.isErr()) {
-    return err(fixedDestResult.error);
-  }
-
-  const absoluteSourcePath = absolutePathJoin(
-    appConfig.appDir,
-    fixedSourceResult.value,
-  );
-  const absoluteDestPath = absolutePathJoin(
-    appConfig.appDir,
-    fixedDestResult.value,
-  );
-
-  const sourceExists = await pathExists(absoluteSourcePath);
-  if (!sourceExists) {
-    return err(
-      createError(`mv: cannot stat '${sourcePath}': No such file or directory`),
-    );
-  }
-
-  const destDir = path.dirname(absoluteDestPath);
-  try {
-    await fs.access(destDir);
-  } catch {
-    return err(
-      createError(
-        `mv: cannot move '${sourcePath}' to '${destPath}': No such file or directory`,
-      ),
-    );
-  }
-
-  if (absoluteSourcePath === absoluteDestPath) {
-    return ok(createSuccess(`mv ${sourcePath} ${destPath}`));
-  }
-
-  try {
-    await fs.rename(absoluteSourcePath, absoluteDestPath);
-    return ok(createSuccess(`mv ${sourcePath} ${destPath}`));
-  } catch (error) {
-    return err(
-      createError(
-        `mv command failed: ${error instanceof Error ? error.message : "Unknown error"}`,
-      ),
-    );
-  }
-}
-
-async function handleRmCommand(
-  args: string[],
-  appConfig: AppConfig,
-): Promise<FileOperationResult> {
-  if (args.length === 0) {
-    return err(
-      createError(
-        "rm command requires at least 1 argument: rm [-r] <file|directory>",
-      ),
-    );
-  }
-
-  let recursive = false;
-  let targetPath: string;
-
-  // Parse flags and arguments
-  if (args[0] === "-r") {
-    if (args.length !== 2) {
-      return err(
-        createError(
-          "rm -r command requires exactly 1 path argument: rm -r <directory>",
-        ),
-      );
-    }
-    recursive = true;
-    targetPath = args[1] ?? "";
-  } else {
-    if (args.length !== 1) {
-      return err(
-        createError("rm command requires exactly 1 argument: rm <file>"),
-      );
-    }
-    targetPath = args[0] ?? "";
-  }
-
-  if (!targetPath) {
-    return err(createError("rm command requires a valid path argument"));
-  }
-
-  const fixedPathResult = validateAndFixPath(targetPath, "Path");
-  if (fixedPathResult.isErr()) {
-    return err(fixedPathResult.error);
-  }
-
-  const absolutePath = absolutePathJoin(
-    appConfig.appDir,
-    fixedPathResult.value,
-  );
-
-  const exists = await pathExists(absolutePath);
-  if (!exists) {
-    return err(
-      createError(
-        `rm: cannot remove '${targetPath}': No such file or directory`,
-      ),
-    );
-  }
-
-  try {
-    const stats = await fs.stat(absolutePath);
-
-    if (stats.isDirectory()) {
-      if (!recursive) {
-        return err(
-          createError(`rm: cannot remove '${targetPath}': Is a directory`),
-        );
-      }
-
-      // Recursive directory removal
-      await fs.rm(absolutePath, { force: true, recursive: true });
-      return ok(createSuccess(`rm -r ${targetPath}`));
-    } else {
-      // File removal
-      await fs.unlink(absolutePath);
-      const command = recursive ? `rm -r ${targetPath}` : `rm ${targetPath}`;
-      return ok(createSuccess(command));
-    }
-  } catch (error) {
-    return err(
-      createError(
-        `rm command failed: ${error instanceof Error ? error.message : "Unknown error"}`,
-      ),
-    );
-  }
-}
-
-function validateAndFixPath(
-  inputPath: string,
-  pathType: string,
-): Result<string, { message: string; type: "execute-error" }> {
-  const fixedPath = fixRelativePath(inputPath);
-  if (!fixedPath) {
-    return err(createError(`${pathType} path is not relative: ${inputPath}`));
-  }
-  return ok(fixedPath);
-}
-
-function validateArgCount(
-  command: string,
-  args: string[],
-  expectedCount: number,
-  usage: string,
-): Result<string[], { message: string; type: "execute-error" }> {
-  if (args.length !== expectedCount) {
-    return err(
-      createError(
-        `${command} command requires exactly ${expectedCount} argument${expectedCount > 1 ? "s" : ""}: ${usage}`,
-      ),
-    );
-  }
-
-  const nonEmptyArgs = args.filter(Boolean);
-  if (nonEmptyArgs.length !== expectedCount) {
-    return err(
-      createError(
-        `${command} command requires exactly ${expectedCount} argument${expectedCount > 1 ? "s" : ""}: ${usage}`,
-      ),
-    );
-  }
-
-  return ok(args);
 }
 
 export const RunShellCommand = createTool({

@@ -10,7 +10,7 @@ import { z } from "zod";
 
 import { absolutePathJoin } from "../lib/absolute-path-join";
 import { addLineNumbers } from "../lib/add-line-numbers";
-import { fixRelativePath } from "../lib/fix-relative-path";
+import { ensureRelativePath } from "../lib/ensure-relative-path";
 import { formatBytes } from "../lib/format-bytes";
 import { getMimeType } from "../lib/get-mime-type";
 import { pathExists } from "../lib/path-exists";
@@ -117,13 +117,11 @@ export const ReadFile = createTool({
     - You can read images, PDFs, audio files, and video files by using this tool.
   `,
   execute: async ({ appConfig, input, signal }) => {
-    const fixedPath = fixRelativePath(input.filePath);
-    if (!fixedPath) {
-      return err({
-        message: `Path is not relative: ${input.filePath}`,
-        type: "execute-error",
-      });
+    const fixedPathResult = ensureRelativePath(input.filePath);
+    if (fixedPathResult.isErr()) {
+      return err(fixedPathResult.error);
     }
+    const fixedPath = fixedPathResult.value;
 
     const absolutePath = absolutePathJoin(appConfig.appDir, fixedPath);
     const exists = await pathExists(absolutePath);

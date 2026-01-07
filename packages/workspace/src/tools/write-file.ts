@@ -6,7 +6,7 @@ import { dedent, sift } from "radashi";
 import { z } from "zod";
 
 import { absolutePathJoin } from "../lib/absolute-path-join";
-import { fixRelativePath } from "../lib/fix-relative-path";
+import { ensureRelativePath } from "../lib/ensure-relative-path";
 import { pathExists } from "../lib/path-exists";
 import { writeFileWithDir } from "../lib/write-file-with-dir";
 import { RelativePathSchema } from "../schemas/paths";
@@ -33,13 +33,11 @@ export const WriteFile = createTool({
     - Only use emojis if the user explicitly requests it. Avoid writing emojis to files unless asked.
   `,
   execute: async ({ appConfig, input, signal }) => {
-    const fixedPath = fixRelativePath(input.filePath);
-    if (!fixedPath) {
-      return err({
-        message: `The ${INPUT_PARAMS.filePath} parameter must be a relative path. E.g. ./src/client/app.tsx`,
-        type: "execute-error",
-      });
+    const fixedPathResult = ensureRelativePath(input.filePath);
+    if (fixedPathResult.isErr()) {
+      return err(fixedPathResult.error);
     }
+    const fixedPath = fixedPathResult.value;
 
     const absolutePath = absolutePathJoin(appConfig.appDir, fixedPath);
     const isNewFile = !(await pathExists(absolutePath));
