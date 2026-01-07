@@ -1,9 +1,9 @@
 import { type ProjectSubdomain } from "@quests/workspace/client";
 import { useQuery } from "@tanstack/react-query";
-import { cva } from "class-variance-authority";
 import { Code2, Download, Eye, Loader2, X } from "lucide-react";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { tv } from "tailwind-variants";
 
 import { isTextMimeType } from "../lib/is-text-mime-type";
 import { FileActionsMenu } from "./file-actions-menu";
@@ -62,26 +62,24 @@ function TextView({
   return <>{children(data ?? "")}</>;
 }
 
-const fileViewerVariants = cva(
-  "flex w-full flex-col overflow-hidden rounded border border-border bg-background",
-  {
-    defaultVariants: {
-      error: false,
-      fileType: "default",
+const fileViewerVariants = tv({
+  base: "flex w-full flex-col overflow-hidden rounded border border-border bg-background",
+  defaultVariants: {
+    error: false,
+    fileType: "default",
+  },
+  variants: {
+    error: {
+      true: "h-auto max-w-2xl!",
     },
-    variants: {
-      error: {
-        true: "h-auto max-w-2xl!",
-      },
-      fileType: {
-        audio: "h-auto max-w-2xl",
-        default: "h-[80vh] max-w-4xl",
-        html: "h-[80vh] max-w-6xl",
-        text: "h-[70vh] max-w-4xl",
-      },
+    fileType: {
+      audio: "h-auto max-w-2xl",
+      default: "h-[80vh] max-w-4xl",
+      html: "h-[80vh] max-w-6xl",
+      text: "h-[70vh] max-w-4xl",
     },
   },
-);
+});
 
 export function FileViewer({
   filename,

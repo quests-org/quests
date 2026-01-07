@@ -17,13 +17,13 @@ import { getSessionStore } from "@/electron-main/stores/session";
 import { getMainWindow } from "@/electron-main/windows/main/instance";
 import { serve } from "@hono/node-server";
 import { APP_PROTOCOL, SUPPORT_EMAIL } from "@quests/shared";
-import { cva } from "class-variance-authority";
 import { detect } from "detect-port";
 import { app as electronApp } from "electron";
 import { Hono } from "hono";
 import { html } from "hono/html";
 import fs from "node:fs";
 import path from "node:path";
+import { tv } from "tailwind-variants";
 
 function focusMainWindow() {
   const mainWindow = getMainWindow();
@@ -166,20 +166,18 @@ export async function startAuthCallbackServer() {
   };
 }
 
-const buttonVariants = cva(
-  "inline-flex h-9 items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium whitespace-nowrap transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-white/20",
-  {
-    defaultVariants: {
-      variant: "default",
-    },
-    variants: {
-      variant: {
-        default: "bg-white text-black shadow hover:bg-white/90",
-        outline: "border border-stone-700 text-white hover:bg-stone-800",
-      },
+const buttonVariants = tv({
+  base: "inline-flex h-9 items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium whitespace-nowrap transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-white/20",
+  defaultVariants: {
+    variant: "default",
+  },
+  variants: {
+    variant: {
+      default: "bg-white text-black shadow hover:bg-white/90",
+      outline: "border border-stone-700 text-white hover:bg-stone-800",
     },
   },
-);
+});
 
 const button = (variant: "default" | "outline", href: string, label: string) =>
   html`<a class="${buttonVariants({ variant })}" href="${href}">${label}</a>`;

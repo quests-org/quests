@@ -6,10 +6,11 @@ import { useTabActions } from "@/client/hooks/use-tab-actions";
 import { cn } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { cva } from "class-variance-authority";
 import { toast } from "sonner";
+import { tv } from "tailwind-variants";
 
-const planBadgeVariants = cva("px-2 py-0.5 text-xs", {
+const planBadgeVariants = tv({
+  base: "px-2 py-0.5 text-xs",
   defaultVariants: {
     plan: "free",
   },

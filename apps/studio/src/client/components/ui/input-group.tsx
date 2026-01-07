@@ -4,8 +4,8 @@ import { Button } from "@/client/components/ui/button";
 import { Input } from "@/client/components/ui/input";
 import { Textarea } from "@/client/components/ui/textarea";
 import { cn } from "@/client/lib/utils";
-import { cva, type VariantProps } from "class-variance-authority";
 import * as React from "react";
+import { tv, type VariantProps } from "tailwind-variants";
 
 function InputGroup({ className, ...props }: React.ComponentProps<"div">) {
   return (
@@ -35,26 +35,24 @@ function InputGroup({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
-const inputGroupAddonVariants = cva(
-  "flex h-auto cursor-text items-center justify-center gap-2 py-1.5 text-sm font-medium text-muted-foreground select-none group-data-[disabled=true]/input-group:opacity-50 [&>kbd]:rounded-[calc(var(--radius)-5px)] [&>svg:not([class*='size-'])]:size-4",
-  {
-    defaultVariants: {
-      align: "inline-start",
-    },
-    variants: {
-      align: {
-        "block-end":
-          "order-last w-full justify-start px-3 pb-3 group-has-[>input]/input-group:pb-2.5 [.border-t]:pt-3",
-        "block-start":
-          "order-first w-full justify-start px-3 pt-3 group-has-[>input]/input-group:pt-2.5 [.border-b]:pb-3",
-        "inline-end":
-          "order-last pr-3 has-[>button]:mr-[-0.45rem] has-[>kbd]:mr-[-0.35rem]",
-        "inline-start":
-          "order-first pl-3 has-[>button]:ml-[-0.45rem] has-[>kbd]:ml-[-0.35rem]",
-      },
+const inputGroupAddonVariants = tv({
+  base: "flex h-auto cursor-text items-center justify-center gap-2 py-1.5 text-sm font-medium text-muted-foreground select-none group-data-[disabled=true]/input-group:opacity-50 [&>kbd]:rounded-[calc(var(--radius)-5px)] [&>svg:not([class*='size-'])]:size-4",
+  defaultVariants: {
+    align: "inline-start",
+  },
+  variants: {
+    align: {
+      "block-end":
+        "order-last w-full justify-start px-3 pb-3 group-has-[>input]/input-group:pb-2.5 [.border-t]:pt-3",
+      "block-start":
+        "order-first w-full justify-start px-3 pt-3 group-has-[>input]/input-group:pt-2.5 [.border-b]:pb-3",
+      "inline-end":
+        "order-last pr-3 has-[>button]:mr-[-0.45rem] has-[>kbd]:mr-[-0.35rem]",
+      "inline-start":
+        "order-first pl-3 has-[>button]:ml-[-0.45rem] has-[>kbd]:ml-[-0.35rem]",
     },
   },
-);
+});
 
 function InputGroupAddon({
   align = "inline-start",
@@ -78,23 +76,20 @@ function InputGroupAddon({
   );
 }
 
-const inputGroupButtonVariants = cva(
-  "flex items-center gap-2 text-sm shadow-none",
-  {
-    defaultVariants: {
-      size: "xs",
-    },
-    variants: {
-      size: {
-        "icon-sm": "size-8 p-0 has-[>svg]:p-0",
-        "icon-xs":
-          "size-6 rounded-[calc(var(--radius)-5px)] p-0 has-[>svg]:p-0",
-        sm: "h-8 gap-1.5 rounded-md px-2.5 has-[>svg]:px-2.5",
-        xs: "h-6 gap-1 rounded-[calc(var(--radius)-5px)] px-2 has-[>svg]:px-2 [&>svg:not([class*='size-'])]:size-3.5",
-      },
+const inputGroupButtonVariants = tv({
+  base: "flex items-center gap-2 text-sm shadow-none",
+  defaultVariants: {
+    size: "xs",
+  },
+  variants: {
+    size: {
+      "icon-sm": "size-8 p-0 has-[>svg]:p-0",
+      "icon-xs": "size-6 rounded-[calc(var(--radius)-5px)] p-0 has-[>svg]:p-0",
+      sm: "h-8 gap-1.5 rounded-md px-2.5 has-[>svg]:px-2.5",
+      xs: "h-6 gap-1 rounded-[calc(var(--radius)-5px)] px-2 has-[>svg]:px-2 [&>svg:not([class*='size-'])]:size-3.5",
     },
   },
-);
+});
 
 function InputGroupButton({
   className,

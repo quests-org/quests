@@ -1,7 +1,6 @@
 import type { ComponentType } from "react";
 
 import { type AIGatewayModel } from "@quests/ai-gateway/client";
-import { cva, type VariantProps } from "class-variance-authority";
 import {
   AudioLines,
   Hourglass,
@@ -12,6 +11,7 @@ import {
   Video,
   Wrench,
 } from "lucide-react";
+import { tv, type VariantProps } from "tailwind-variants";
 
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
@@ -42,7 +42,8 @@ function Sparkle2Icon({ className }: { className?: string }) {
   );
 }
 
-const iconVariants = cva("size-4", {
+const iconVariants = tv({
+  base: "size-4",
   defaultVariants: {
     color: "primary",
   },
