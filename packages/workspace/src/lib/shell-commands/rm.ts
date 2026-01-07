@@ -4,9 +4,10 @@ import type { AppConfig } from "../app-config/types";
 
 import { absolutePathJoin } from "../absolute-path-join";
 import { ensureRelativePath } from "../ensure-relative-path";
+import { executeError } from "../execute-error";
 import { pathExists } from "../path-exists";
 import { type FileOperationResult } from "./types";
-import { executeError, shellSuccess, validateNoGlobs } from "./utils";
+import { shellSuccess, validateNoGlobs } from "./utils";
 
 export async function rmCommand(
   args: string[],

@@ -9,6 +9,7 @@ import { z } from "zod";
 
 import { absolutePathJoin } from "../lib/absolute-path-join";
 import { ensureRelativePath } from "../lib/ensure-relative-path";
+import { executeError } from "../lib/execute-error";
 import { pathExists } from "../lib/path-exists";
 import { writeFileWithDir } from "../lib/write-file-with-dir";
 import { RelativePathSchema } from "../schemas/paths";
@@ -599,10 +600,7 @@ export const EditFile = createTool({
   `,
   execute: async ({ appConfig, input, signal }) => {
     if (input.oldString === input.newString) {
-      return err({
-        message: "oldString and newString must be different",
-        type: "execute-error",
-      });
+      return executeError("oldString and newString must be different");
     }
 
     const fixedPathResult = ensureRelativePath(input.filePath);
@@ -615,27 +613,20 @@ export const EditFile = createTool({
     const exists = await pathExists(absolutePath);
 
     if (!exists) {
-      return err({
-        message: `File ${fixedPath} not found`,
-        type: "execute-error",
-      });
+      return executeError(`File ${fixedPath} not found`);
     }
 
     // Check file size
     const fs = await import("node:fs/promises");
     const stats = await fs.stat(absolutePath);
     if (stats.size > MAX_FILE_SIZE) {
-      return err({
-        message: `File is too large (${stats.size} bytes). Maximum size is ${MAX_FILE_SIZE} bytes`,
-        type: "execute-error",
-      });
+      return executeError(
+        `File is too large (${stats.size} bytes). Maximum size is ${MAX_FILE_SIZE} bytes`,
+      );
     }
 
     if (stats.isDirectory()) {
-      return err({
-        message: `Path is a directory, not a file: ${fixedPath}`,
-        type: "execute-error",
-      });
+      return executeError(`Path is a directory, not a file: ${fixedPath}`);
     }
 
     let contentOld = "";
@@ -662,10 +653,9 @@ export const EditFile = createTool({
         oldContent: contentOld,
       });
     } catch (error) {
-      return err({
-        message: `Failed to edit file ${fixedPath}: ${error instanceof Error ? error.message : "Unknown error"}`,
-        type: "execute-error",
-      });
+      return executeError(
+        `Failed to edit file ${fixedPath}: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     }
   },
   inputSchema: BaseInputSchema.extend({

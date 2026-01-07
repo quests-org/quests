@@ -6,10 +6,11 @@ import type { AppConfig } from "../app-config/types";
 
 import { absolutePathJoin } from "../absolute-path-join";
 import { ensureRelativePath } from "../ensure-relative-path";
+import { executeError } from "../execute-error";
 import { listFiles } from "../list-files";
 import { pathExists } from "../path-exists";
 import { type FileOperationResult } from "./types";
-import { executeError, validateNoGlobs } from "./utils";
+import { validateNoGlobs } from "./utils";
 
 export async function lsCommand(
   args: string[],

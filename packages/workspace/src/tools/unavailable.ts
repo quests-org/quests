@@ -1,8 +1,8 @@
 import ms from "ms";
-import { err } from "neverthrow";
 import { dedent } from "radashi";
 import { z } from "zod";
 
+import { executeError } from "../lib/execute-error";
 import { createTool } from "./create-tool";
 
 export const Unavailable = createTool({
@@ -14,10 +14,7 @@ export const Unavailable = createTool({
   `,
   execute: () =>
     Promise.resolve(
-      err({
-        message: "This tool is not available or not implemented.",
-        type: "execute-error",
-      }),
+      executeError("This tool is not available or not implemented."),
     ),
   inputSchema: z.any(),
   name: "unavailable",

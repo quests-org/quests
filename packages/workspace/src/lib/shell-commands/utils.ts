@@ -1,8 +1,6 @@
-import { err, ok } from "neverthrow";
+import { ok } from "neverthrow";
 
-export function executeError(message: string) {
-  return err({ message, type: "execute-error" as const });
-}
+import { executeError } from "../execute-error";
 
 export function shellSuccess(command: string) {
   return ok({ command, exitCode: 0, stderr: "", stdout: "" });

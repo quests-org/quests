@@ -1,12 +1,13 @@
 import { envForProviders } from "@quests/ai-gateway";
 import ms from "ms";
-import { err, ok } from "neverthrow";
+import { ok } from "neverthrow";
 import { dedent } from "radashi";
 import { z } from "zod";
 
 import type { AppConfig } from "../lib/app-config/types";
 
 import { execaNodeForApp } from "../lib/execa-node-for-app";
+import { executeError } from "../lib/execute-error";
 import { filterDebuggerMessages } from "../lib/filter-debugger-messages";
 import { runNodeModulesBin } from "../lib/run-node-modules-bin";
 import {
@@ -159,19 +160,13 @@ export const RunShellCommand = createTool({
   execute: async ({ appConfig, input, signal }) => {
     const parseResult = translateShellCommand(input.command);
     if (parseResult.isErr()) {
-      return err({
-        message: parseResult.error.message,
-        type: "execute-error",
-      });
+      return executeError(parseResult.error.message);
     }
 
     const [commandName, ...args] = parseResult.value;
 
     if (!commandName) {
-      return err({
-        message: "No command name found when parsing command.",
-        type: "execute-error",
-      });
+      return executeError("No command name found when parsing command.");
     }
 
     const commandValidation = CommandNameSchema.safeParse(commandName);
@@ -180,10 +175,9 @@ export const RunShellCommand = createTool({
         ...FileOperationSchema.options,
         ...ShellCommandSchema.options,
       ];
-      return err({
-        message: `Invalid command. The available commands are: ${allCommands.join(", ")}.`,
-        type: "execute-error",
-      });
+      return executeError(
+        `Invalid command. The available commands are: ${allCommands.join(", ")}.`,
+      );
     }
 
     const validCommand = commandValidation.data;
@@ -204,20 +198,18 @@ export const RunShellCommand = createTool({
         const secondArg = args[1];
 
         if (subcommand === "dev" || subcommand === "start") {
-          return err({
-            message: `Quests already starts and runs the apps for you. You don't need to run 'pnpm ${subcommand}'.`,
-            type: "execute-error",
-          });
+          return executeError(
+            `Quests already starts and runs the apps for you. You don't need to run 'pnpm ${subcommand}'.`,
+          );
         }
 
         if (
           subcommand === "run" &&
           (secondArg === "dev" || secondArg === "start")
         ) {
-          return err({
-            message: `Quests already starts and runs the apps for you. You don't need to run 'pnpm run ${secondArg}'.`,
-            type: "execute-error",
-          });
+          return executeError(
+            `Quests already starts and runs the apps for you. You don't need to run 'pnpm run ${secondArg}'.`,
+          );
         }
 
         const execResult = await execaNodeForApp(
@@ -238,10 +230,7 @@ export const RunShellCommand = createTool({
           cancelSignal: signal,
         });
         if (binResult.isErr()) {
-          return err({
-            message: binResult.error.message,
-            type: "execute-error",
-          });
+          return executeError(binResult.error.message);
         }
         const execResult = await binResult.value;
         return ok({
@@ -253,11 +242,9 @@ export const RunShellCommand = createTool({
       }
       case "tsx": {
         if (args.length === 0) {
-          return err({
-            message:
-              "tsx command requires a file argument (e.g., tsx scripts/setup.ts). Running tsx without arguments spawns an interactive shell.",
-            type: "execute-error",
-          });
+          return executeError(
+            "tsx command requires a file argument (e.g., tsx scripts/setup.ts). Running tsx without arguments spawns an interactive shell.",
+          );
         }
         const providerEnv = envForProviders({
           configs: appConfig.workspaceConfig.getAIProviderConfigs(),
@@ -268,10 +255,7 @@ export const RunShellCommand = createTool({
           env: providerEnv,
         });
         if (binResult.isErr()) {
-          return err({
-            message: binResult.error.message,
-            type: "execute-error",
-          });
+          return executeError(binResult.error.message);
         }
         const execResult = await binResult.value;
         return ok({

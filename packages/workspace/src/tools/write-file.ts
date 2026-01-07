@@ -7,6 +7,7 @@ import { z } from "zod";
 
 import { absolutePathJoin } from "../lib/absolute-path-join";
 import { ensureRelativePath } from "../lib/ensure-relative-path";
+import { executeError } from "../lib/execute-error";
 import { pathExists } from "../lib/path-exists";
 import { writeFileWithDir } from "../lib/write-file-with-dir";
 import { RelativePathSchema } from "../schemas/paths";
@@ -51,10 +52,9 @@ export const WriteFile = createTool({
         isNewFile,
       });
     } catch (error) {
-      return err({
-        message: `Failed to write file ${fixedPath}: ${error instanceof Error ? error.message : "Unknown error"}`,
-        type: "execute-error",
-      });
+      return executeError(
+        `Failed to write file ${fixedPath}: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     }
   },
   inputSchema: BaseInputSchema.extend({

@@ -11,6 +11,7 @@ import { z } from "zod";
 import { absolutePathJoin } from "../lib/absolute-path-join";
 import { addLineNumbers } from "../lib/add-line-numbers";
 import { ensureRelativePath } from "../lib/ensure-relative-path";
+import { executeError } from "../lib/execute-error";
 import { formatBytes } from "../lib/format-bytes";
 import { getMimeType } from "../lib/get-mime-type";
 import { pathExists } from "../lib/path-exists";
@@ -79,14 +80,13 @@ async function handleMediaFile({
 
   const stats = await fs.stat(absolutePath);
   if (stats.size > config.maxSize) {
-    return err({
-      message: [
+    return executeError(
+      [
         `${config.label} file too large: ${fixedPath}`,
         `(${formatBytes(stats.size)}, max ${formatBytes(config.maxSize)}).`,
         "You can use command-line tools or scripts to compress or convert the file to reduce its size.",
       ].join(" "),
-      type: "execute-error" as const,
-    });
+    );
   }
 
   const fileData = await fs.readFile(absolutePath, { signal });
