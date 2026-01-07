@@ -1,5 +1,3 @@
-import type { ComponentType } from "react";
-
 import {
   BsFileBinary,
   BsFileCode,
@@ -14,11 +12,10 @@ import {
   BsFileEarmarkWord,
   BsFilePdf,
 } from "react-icons/bs";
+import { type IconType } from "react-icons/lib";
 import { VscFileZip } from "react-icons/vsc";
 
-type IconComponent = ComponentType<{ className?: string }>;
-
-const EXTENSION_ICON_MAP: Record<string, IconComponent> = {
+const EXTENSION_ICON_MAP: Record<string, IconType | null> = {
   // cspell:ignore flac
   "7z": VscFileZip,
   aac: BsFileEarmarkMusic,
@@ -100,7 +97,7 @@ const EXTENSION_ICON_MAP: Record<string, IconComponent> = {
   zip: VscFileZip,
 };
 
-const FILENAME_ICON_MAP: Record<string, IconComponent> = {
+const FILENAME_ICON_MAP: Record<string, IconType | null> = {
   ".gitignore": BsFileCode,
   dockerfile: BsFileCode,
 };
@@ -114,14 +111,23 @@ export function FileIcon({
   fallbackExtension?: string;
   filename: string;
 }) {
-  const Icon = getFileIcon({ fallbackExtension, filename });
+  let Icon: IconType = BsFileBinary;
+  const lowerName = filename.toLowerCase();
 
-  if (Icon === null) {
-    return <BsFileBinary className={className} />;
+  if (FILENAME_ICON_MAP[lowerName]) {
+    Icon = FILENAME_ICON_MAP[lowerName];
+  } else {
+    const ext = getFileExtension(filename);
+    if (EXTENSION_ICON_MAP[ext]) {
+      Icon = EXTENSION_ICON_MAP[ext];
+    } else if (
+      fallbackExtension &&
+      EXTENSION_ICON_MAP[fallbackExtension.toLowerCase()]
+    ) {
+      Icon = EXTENSION_ICON_MAP[fallbackExtension.toLowerCase()] ?? Icon;
+    }
   }
 
-  // Dynamic creation should be fine because the components have no state
-  // eslint-disable-next-line react-hooks/static-components
   return <Icon className={className} />;
 }
 
@@ -132,31 +138,4 @@ function getFileExtension(filename: string): string {
     return "";
   }
   return lowerName.slice(lastDotIndex + 1);
-}
-
-function getFileIcon({
-  fallbackExtension,
-  filename,
-}: {
-  fallbackExtension?: string;
-  filename: string;
-}): IconComponent | null {
-  const lowerName = filename.toLowerCase();
-
-  if (FILENAME_ICON_MAP[lowerName]) {
-    return FILENAME_ICON_MAP[lowerName];
-  }
-
-  const ext = getFileExtension(filename);
-  const extIcon = EXTENSION_ICON_MAP[ext];
-
-  if (extIcon) {
-    return extIcon;
-  }
-
-  if (fallbackExtension) {
-    return EXTENSION_ICON_MAP[fallbackExtension.toLowerCase()] ?? null;
-  }
-
-  return null;
 }

@@ -30,23 +30,9 @@ import {
   SiVercel,
 } from "react-icons/si";
 
-export function AIProviderIcon({
-  className = "size-5",
-  type,
-}: {
-  className?: string;
-  type: AIProviderType;
-}) {
-  const Icon = getProviderIcon(type);
-
-  // Dynamic creation should be fine because the components have no state
-  // eslint-disable-next-line react-hooks/static-components
-  return <Icon className={className} />;
-}
-
 const PROVIDER_ICON_MAP: Record<
   AIProviderType,
-  ComponentType<{ className?: string }>
+  ComponentType<{ className?: string }> | null
 > = {
   anthropic: SiAnthropic,
   anyscale: Anyscale,
@@ -76,9 +62,13 @@ const PROVIDER_ICON_MAP: Record<
   "z-ai": ZAI,
 };
 
-function getProviderIcon(
-  providerType: AIProviderType,
-): ComponentType<{ className?: string }> {
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  return PROVIDER_ICON_MAP[providerType] ?? GrNodes;
+export function AIProviderIcon({
+  className = "size-5",
+  type,
+}: {
+  className?: string;
+  type: AIProviderType;
+}) {
+  const Icon = PROVIDER_ICON_MAP[type] ?? GrNodes;
+  return <Icon className={className} />;
 }
