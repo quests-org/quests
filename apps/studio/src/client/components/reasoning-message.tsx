@@ -15,6 +15,7 @@ import {
 interface ReasoningMessageProps {
   createdAt?: Date;
   endedAt?: Date;
+  hideIcon?: boolean;
   isLoading?: boolean;
   text: string;
 }
@@ -22,6 +23,7 @@ interface ReasoningMessageProps {
 export const ReasoningMessage = memo(function ReasoningMessage({
   createdAt,
   endedAt,
+  hideIcon = false,
   isLoading = false,
   text,
 }: ReasoningMessageProps) {
@@ -74,9 +76,11 @@ export const ReasoningMessage = memo(function ReasoningMessage({
 
   const headerContent = (
     <div className="flex w-full min-w-0 items-center gap-2 text-xs leading-tight">
-      <span className="shrink-0 text-accent-foreground/80">
-        <Brain className="size-3" />
-      </span>
+      {!hideIcon && (
+        <span className="shrink-0 text-accent-foreground/80">
+          <Brain className="size-3" />
+        </span>
+      )}
       <span
         className={cn(
           "shrink-0 font-medium text-foreground/60",

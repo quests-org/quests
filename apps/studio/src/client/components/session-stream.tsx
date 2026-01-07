@@ -435,10 +435,8 @@ export function SessionStream({
         )}
         <div className="flex flex-col gap-2">{chatElements}</div>
 
-        {isAgentRunning && (
-          <div className="flex justify-center py-4">
-            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-          </div>
+        {isAgentRunning && !hasActiveLoadingState && (
+          <ReasoningMessage hideIcon isLoading text="" />
         )}
 
         {shouldShowErrorRecoveryPrompt && (
