@@ -410,7 +410,10 @@ export class TabsManager {
 
     this.baseWindow.on("resize", () => {
       setWebContentBounds();
-      resizeToolbar({ baseWindow: this.baseWindow });
+      resizeToolbar({
+        baseWindow: this.baseWindow,
+        sidebarWidth: getSidebarWidth(),
+      });
     });
 
     this.baseWindow.contentView.addChildView(tab.webView);

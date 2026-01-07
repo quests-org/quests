@@ -1,9 +1,7 @@
 import { createContextMenu } from "@/electron-main/lib/context-menu";
-import { getMainWindow } from "@/electron-main/windows/main/instance";
 import { type BaseWindow, shell, WebContentsView } from "electron";
 import path from "node:path";
 
-import { getSidebarWidth } from "../lib/sidebar";
 import { getBackgroundColor } from "../lib/theme-utils";
 import { studioURL } from "../lib/urls";
 
@@ -12,8 +10,10 @@ let toolbarView: null | WebContentsView = null;
 
 export function createToolbar({
   baseWindow,
+  sidebarWidth,
 }: {
   baseWindow: BaseWindow;
+  sidebarWidth: number;
 }): Promise<null | WebContentsView> {
   return new Promise((resolve) => {
     if (toolbarView !== null) {
@@ -41,7 +41,6 @@ export function createToolbar({
     });
 
     const bounds = baseWindow.getContentBounds();
-    const sidebarWidth = getSidebarWidth();
     toolbarView.setBounds({
       height: toolbarHeight,
       width: bounds.width - sidebarWidth,
@@ -68,37 +67,21 @@ export function getToolbarView() {
   return toolbarView;
 }
 
-export function resizeToolbar({ baseWindow }: { baseWindow: BaseWindow }) {
+export function resizeToolbar({
+  baseWindow,
+  sidebarWidth,
+}: {
+  baseWindow: BaseWindow;
+  sidebarWidth: number;
+}) {
   const newBounds = baseWindow.getContentBounds();
   if (toolbarView === null) {
     return;
   }
-  const sidebarWidth = getSidebarWidth();
   toolbarView.setBounds({
     height: toolbarHeight,
     width: newBounds.width - sidebarWidth,
     x: sidebarWidth,
     y: 0,
   });
-}
-
-export function updateToolbarForSidebarChange() {
-  if (toolbarView) {
-    const baseWindow = getMainWindow();
-    // Using getContentBounds due to this being a frameless window. getBounds()
-    // returns the incorrect bounds on Windows when in maximized state.
-    const bounds = baseWindow?.getContentBounds();
-
-    if (!bounds) {
-      return;
-    }
-
-    const sidebarWidth = getSidebarWidth();
-    toolbarView.setBounds({
-      height: toolbarHeight,
-      width: bounds.width - sidebarWidth,
-      x: sidebarWidth,
-      y: 0,
-    });
-  }
 }

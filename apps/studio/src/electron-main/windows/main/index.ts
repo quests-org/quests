@@ -1,5 +1,6 @@
 import { createContextMenu } from "@/electron-main/lib/context-menu";
 import { logger } from "@/electron-main/lib/electron-logger";
+import { getSidebarWidth } from "@/electron-main/lib/sidebar";
 import {
   getMainWindowBackgroundColor,
   getTitleBarOverlay,
@@ -85,7 +86,10 @@ export async function createMainWindow() {
     showWindow(window);
   });
 
-  toolbar = await createToolbar({ baseWindow: mainWindow });
+  toolbar = await createToolbar({
+    baseWindow: mainWindow,
+    sidebarWidth: getSidebarWidth(),
+  });
 
   const tabsManager = createTabsManager({
     baseWindow: mainWindow,
