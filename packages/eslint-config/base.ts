@@ -18,7 +18,7 @@ import yml from "eslint-plugin-yml";
 import globals from "globals";
 import tseslint from "typescript-eslint";
 
-const ERROR_IN_CI = process.env.CI === "true" ? "error" : "off";
+export const ERROR_IN_CI = process.env.CI === "true" ? "error" : "off";
 
 export default tseslint.config(
   {

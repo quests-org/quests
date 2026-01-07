@@ -1,6 +1,7 @@
 import eslintPluginBetterTailwindcss from "eslint-plugin-better-tailwindcss";
 import tseslint from "typescript-eslint";
 
+import { ERROR_IN_CI } from "./base";
 import reactConfig from "./react";
 
 const config: ReturnType<typeof tseslint.config> = tseslint.config(
@@ -19,7 +20,8 @@ const config: ReturnType<typeof tseslint.config> = tseslint.config(
       // Causes formatting infinite loop due to Prettier conflicting
       "better-tailwindcss/enforce-consistent-line-wrapping": "off",
       "better-tailwindcss/no-unregistered-classes": [
-        "warn",
+        // Slow rule
+        ERROR_IN_CI,
         {
           ignore: ["shiny-text", "toaster"],
         },
