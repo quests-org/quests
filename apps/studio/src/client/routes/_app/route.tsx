@@ -9,8 +9,8 @@ import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { lazy, Suspense } from "react";
 
 const ProjectLauncher = lazy(() =>
-  import("@/client/components/project-launcher").then((module) => ({
-    default: module.ProjectLauncher,
+  import("@/client/components/studio-command-menu").then((module) => ({
+    default: module.StudioCommandMenu,
   })),
 );
 

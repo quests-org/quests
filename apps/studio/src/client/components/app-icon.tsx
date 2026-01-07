@@ -2,6 +2,7 @@ import { IconMap } from "@/client/components/app-icons";
 import { cn } from "@/client/lib/utils";
 import { type ProjectMode } from "@quests/shared";
 import { DEFAULT_THEME_GRADIENT, type IconName } from "@quests/shared/icons";
+import { cva, type VariantProps } from "class-variance-authority";
 
 const DEFAULT_LUCIDE_ICON_MAP: Record<ProjectMode, IconName> = {
   "app-builder": "square-dashed",
@@ -64,7 +65,7 @@ export function SmallAppIcon({
   background?: string;
   icon?: IconName;
   mode: ProjectMode;
-  size?: "lg" | "md" | "sm" | "xl";
+  size?: "lg" | "md" | "sm" | "xl" | "xs";
 }) {
   const finalBackground = background || DEFAULT_THEME_GRADIENT;
   const FlaskIcon = IconMap["flask-conical"];
@@ -75,6 +76,7 @@ export function SmallAppIcon({
       <IconComponent
         className={cn(
           "shrink-0 text-muted-foreground",
+          size === "xs" && "size-3",
           size === "sm" && "mx-0.5 size-4", // Align with app icons
           size === "md" && "size-5",
           size === "lg" && "size-7",
@@ -90,6 +92,7 @@ export function SmallAppIcon({
       className={cn(
         "relative flex shrink-0 items-center justify-center rounded-full shadow-md",
         mode === "eval" ? "overflow-visible" : "overflow-hidden",
+        size === "xs" && "size-4",
         size === "sm" && "size-5",
         size === "md" && "size-6",
         size === "lg" && "size-7",
@@ -103,6 +106,7 @@ export function SmallAppIcon({
         className={cn(
           "relative z-10 text-white drop-shadow-md",
           size === "sm" && "size-3",
+          size === "sm" && "size-3",
           size === "md" && "size-4",
           size === "lg" && "size-4.5",
           size === "xl" && "size-5",
@@ -112,6 +116,7 @@ export function SmallAppIcon({
         <FlaskIcon
           className={cn(
             "absolute right-0 bottom-0 z-20 text-white drop-shadow-md not-dark:fill-secondary not-dark:text-secondary-foreground",
+            size === "xs" && "size-2",
             size === "sm" && "size-2.5",
             size === "md" && "size-3",
             size === "lg" && "size-4",

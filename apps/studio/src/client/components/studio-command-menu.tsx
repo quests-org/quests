@@ -16,7 +16,7 @@ import { useMatch, useNavigate } from "@tanstack/react-router";
 import { Copy, LayoutGrid, Plus, SettingsIcon, TrashIcon } from "lucide-react";
 import { useCallback, useState } from "react";
 
-export function ProjectLauncher() {
+export function StudioCommandMenu() {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const projectRouteMatch = useMatch({
@@ -43,6 +43,10 @@ export function ProjectLauncher() {
   const projects = projectsData?.projects ?? [];
 
   const currentProjectSubdomain = projectRouteMatch?.params.subdomain;
+
+  const filteredProjects = projects.filter(
+    (project) => project.subdomain !== currentProjectSubdomain,
+  );
 
   const { data: currentProject } = useQuery(
     rpcClient.workspace.project.bySubdomain.queryOptions({
@@ -111,7 +115,19 @@ export function ProjectLauncher() {
           <>
             <CommandEmpty>No projects found.</CommandEmpty>
             {currentProject && (
-              <CommandGroup heading={currentProject.title}>
+              <CommandGroup
+                heading={
+                  <div className="flex items-center gap-x-1.5">
+                    <SmallAppIcon
+                      background={currentProject.icon?.background}
+                      icon={currentProject.icon?.lucide}
+                      mode={currentProject.mode}
+                      size="xs"
+                    />
+                    <span>{currentProject.title}</span>
+                  </div>
+                }
+              >
                 <CommandItem
                   onSelect={() => {
                     openCurrentProjectModal("showSettings");
@@ -161,7 +177,7 @@ export function ProjectLauncher() {
               </CommandGroup>
             )}
             <CommandGroup heading="Projects">
-              {projects.map((project) => (
+              {filteredProjects.map((project) => (
                 <CommandItem
                   key={project.subdomain}
                   keywords={[project.title]}
