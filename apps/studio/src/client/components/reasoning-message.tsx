@@ -101,17 +101,19 @@ export const ReasoningMessage = memo(function ReasoningMessage({
     </div>
   );
 
+  const isRedacted = text.trim() === "[REDACTED]";
+
   return (
     <Collapsible
       className="w-full"
       onOpenChange={setIsExpanded}
       open={isExpanded || isLoading}
     >
-      <CollapsibleTrigger asChild>
+      <CollapsibleTrigger asChild disabled={isRedacted}>
         <CollapsiblePartTrigger>{headerContent}</CollapsiblePartTrigger>
       </CollapsibleTrigger>
 
-      {!(isLoading && !text.trim()) && (
+      {!(isLoading && !text.trim()) && !isRedacted && (
         <CollapsibleContent>
           <div className="relative mt-2 text-xs">
             <div

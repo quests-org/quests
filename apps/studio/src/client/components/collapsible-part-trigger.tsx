@@ -8,7 +8,7 @@ export const CollapsiblePartTrigger = forwardRef<
 >(({ children, ...props }, ref) => {
   return (
     <Button
-      className="h-6 w-full justify-start rounded-sm px-1 py-0 hover:bg-accent/30"
+      className="hover:bg-accent/30i h-6 w-full justify-start rounded-sm px-1 py-0 disabled:opacity-100"
       ref={ref}
       variant="ghost"
       {...props}
