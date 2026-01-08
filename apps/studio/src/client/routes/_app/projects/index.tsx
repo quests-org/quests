@@ -4,9 +4,9 @@ import type {
 } from "@quests/workspace/client";
 import type { RowSelectionState } from "@tanstack/react-table";
 
+import { CommandMenuCTA } from "@/client/components/command-menu-cta";
 import { DeleteWithProgressDialog } from "@/client/components/delete-with-progress-dialog";
 import { InternalLink } from "@/client/components/internal-link";
-import { LauncherCTA } from "@/client/components/launcher-cta";
 import { ProjectDeleteDialog } from "@/client/components/project-delete-dialog";
 import { ProjectSettingsDialog } from "@/client/components/project-settings-dialog";
 import { ProjectsDataTable } from "@/client/components/projects-data-table";
@@ -350,7 +350,7 @@ function RouteComponent() {
             <h1 className="text-3xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
               Your Projects
             </h1>
-            <LauncherCTA />
+            <CommandMenuCTA />
           </div>
         </div>
       </div>

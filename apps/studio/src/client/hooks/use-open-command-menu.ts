@@ -1,7 +1,7 @@
 import { rpcClient } from "@/client/rpc/client";
 import { useEffect } from "react";
 
-export function useOpenProjectLauncher(onOpen: () => void) {
+export function useOpenCommandMenu(onOpen: () => void) {
   useEffect(() => {
     let isCancelled = false;
 

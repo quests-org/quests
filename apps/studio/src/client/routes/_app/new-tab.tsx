@@ -1,9 +1,9 @@
 import { SmallAppIcon } from "@/client/components/app-icon";
 import { AppStatusIcon } from "@/client/components/app-status-icon";
+import { CommandMenuCTA } from "@/client/components/command-menu-cta";
 import { NewTabDiscoverHeroCards } from "@/client/components/discover-hero-card";
 import { ExternalLink } from "@/client/components/external-link";
 import { InternalLink } from "@/client/components/internal-link";
-import { LauncherCTA } from "@/client/components/launcher-cta";
 import { NewTabHelpMessage } from "@/client/components/new-tab-help-message";
 import { ModelPreview } from "@/client/components/projects-data-table/model-preview";
 import { PromptInput } from "@/client/components/prompt-input";
@@ -187,7 +187,7 @@ function RouteComponent() {
                   </InternalLink>
                 )}
               </div>
-              <LauncherCTA />
+              <CommandMenuCTA />
             </div>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {recentProjects.map((project) => (

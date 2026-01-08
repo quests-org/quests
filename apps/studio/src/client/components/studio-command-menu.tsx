@@ -7,14 +7,23 @@ import {
   CommandItem,
   CommandList,
 } from "@/client/components/ui/command";
-import { Spinner } from "@/client/components/ui/spinner";
-import { useOpenProjectLauncher } from "@/client/hooks/use-open-project-launcher";
+import { Skeleton } from "@/client/components/ui/skeleton";
+import { useOpenCommandMenu } from "@/client/hooks/use-open-command-menu";
 import { rpcClient } from "@/client/rpc/client";
 import { type ProjectSubdomain } from "@quests/workspace/client";
 import { skipToken, useQuery } from "@tanstack/react-query";
 import { useMatch, useNavigate } from "@tanstack/react-router";
+import {
+  format,
+  formatDistanceToNow,
+  isToday,
+  isWithinInterval,
+  isYesterday,
+  startOfDay,
+  subDays,
+} from "date-fns";
 import { Copy, LayoutGrid, Plus, SettingsIcon, TrashIcon } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 export function StudioCommandMenu() {
   const [open, setOpen] = useState(false);
@@ -48,6 +57,22 @@ export function StudioCommandMenu() {
     (project) => project.subdomain !== currentProjectSubdomain,
   );
 
+  const groupedProjects = useMemo(() => {
+    const groups = {
+      "Last 7 Days": [] as typeof filteredProjects,
+      Older: [] as typeof filteredProjects,
+      Today: [] as typeof filteredProjects,
+      Yesterday: [] as typeof filteredProjects,
+    };
+
+    for (const project of filteredProjects) {
+      const group = getDateGroup(new Date(project.updatedAt));
+      groups[group].push(project);
+    }
+
+    return groups;
+  }, [filteredProjects]);
+
   const { data: currentProject } = useQuery(
     rpcClient.workspace.project.bySubdomain.queryOptions({
       input:
@@ -59,7 +84,7 @@ export function StudioCommandMenu() {
   const isOnNewTabPage = !!newTabRouteMatch;
   const isOnProjectsPage = !!projectsRouteMatch;
 
-  useOpenProjectLauncher(
+  useOpenCommandMenu(
     useCallback(() => {
       setOpen((prev) => !prev);
     }, []),
@@ -107,9 +132,16 @@ export function StudioCommandMenu() {
       <CommandInput placeholder="Search projects..." />
       <CommandList className="max-h-96">
         {isLoading && projects.length === 0 ? (
-          <div className="flex items-center justify-center gap-x-2 py-6 text-sm text-muted-foreground">
-            <Spinner />
-            <span>Loading projects...</span>
+          <div className="space-y-4 px-2 py-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div className="flex items-center gap-x-3" key={i}>
+                <Skeleton className="size-8 shrink-0 rounded-lg" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-32" />
+                </div>
+                <Skeleton className="h-3 w-16" />
+              </div>
+            ))}
           </div>
         ) : (
           <>
@@ -124,7 +156,7 @@ export function StudioCommandMenu() {
                       mode={currentProject.mode}
                       size="xs"
                     />
-                    <span>{currentProject.title}</span>
+                    <span className="truncate">{currentProject.title}</span>
                   </div>
                 }
               >
@@ -176,29 +208,67 @@ export function StudioCommandMenu() {
                 )}
               </CommandGroup>
             )}
-            <CommandGroup heading="Projects">
-              {filteredProjects.map((project) => (
-                <CommandItem
-                  key={project.subdomain}
-                  keywords={[project.title]}
-                  onSelect={() => {
-                    handleSelectProject(project.subdomain);
-                  }}
-                  value={project.subdomain}
-                >
-                  <SmallAppIcon
-                    background={project.icon?.background}
-                    icon={project.icon?.lucide}
-                    mode={project.mode}
-                    size="sm"
-                  />
-                  <span className="truncate">{project.title}</span>
-                </CommandItem>
-              ))}
-            </CommandGroup>
+            {(["Today", "Yesterday", "Last 7 Days", "Older"] as const).map(
+              (groupName) => {
+                const groupProjects = groupedProjects[groupName];
+                if (groupProjects.length === 0) {
+                  return null;
+                }
+
+                return (
+                  <CommandGroup heading={groupName} key={groupName}>
+                    {groupProjects.map((project) => (
+                      <CommandItem
+                        key={project.subdomain}
+                        keywords={[project.title]}
+                        onSelect={() => {
+                          handleSelectProject(project.subdomain);
+                        }}
+                        value={project.subdomain}
+                      >
+                        <SmallAppIcon
+                          background={project.icon?.background}
+                          icon={project.icon?.lucide}
+                          mode={project.mode}
+                          size="sm"
+                        />
+                        <span className="flex-1 truncate">{project.title}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {groupName === "Older"
+                            ? format(new Date(project.updatedAt), "MMM d, yyyy")
+                            : getRelativeTime(new Date(project.updatedAt))}
+                        </span>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                );
+              },
+            )}
           </>
         )}
       </CommandList>
     </CommandDialog>
   );
+}
+
+function getDateGroup(date: Date) {
+  if (isToday(date)) {
+    return "Today";
+  }
+  if (isYesterday(date)) {
+    return "Yesterday";
+  }
+  if (
+    isWithinInterval(date, {
+      end: new Date(),
+      start: startOfDay(subDays(new Date(), 7)),
+    })
+  ) {
+    return "Last 7 Days";
+  }
+  return "Older";
+}
+
+function getRelativeTime(date: Date) {
+  return formatDistanceToNow(date, { addSuffix: true });
 }
