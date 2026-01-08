@@ -184,6 +184,7 @@ export function SessionStream({
         return (
           <VersionAndFilesCard
             assetBaseUrl={project.urls.assetBase}
+            className="mt-2"
             isLastGitCommit={isLastVersion}
             isSelected={
               selectedVersion === part.data.ref ||

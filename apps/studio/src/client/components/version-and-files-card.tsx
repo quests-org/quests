@@ -18,6 +18,7 @@ import { ViewIndicator } from "./view-indicator";
 
 interface VersionCardProps {
   assetBaseUrl: string;
+  className?: string;
   isLastGitCommit?: boolean;
   isSelected?: boolean;
   projectSubdomain: ProjectSubdomain;
@@ -27,6 +28,7 @@ interface VersionCardProps {
 
 export function VersionAndFilesCard({
   assetBaseUrl,
+  className,
   isLastGitCommit = false,
   isSelected = false,
   projectSubdomain,
@@ -85,7 +87,12 @@ export function VersionAndFilesCard({
 
   if (isLoading) {
     return (
-      <div className="flex w-full flex-col gap-3 rounded-lg border bg-card p-3 shadow-sm">
+      <div
+        className={cn(
+          "flex w-full flex-col gap-3 rounded-lg border bg-card p-3 shadow-sm",
+          className,
+        )}
+      >
         <div className="h-4 w-48 animate-pulse rounded bg-muted" />
         <div className="h-4 w-32 animate-pulse rounded bg-muted" />
       </div>
@@ -97,7 +104,7 @@ export function VersionAndFilesCard({
   }
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className={cn("flex flex-col gap-2", className)}>
       {hasFilesInSrc && (
         <div
           className={cn(
