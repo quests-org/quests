@@ -4,6 +4,7 @@ import { z } from "zod";
 
 import { createTool } from "./create-tool";
 
+// Deprecated as of 2026-01-08, as most models don't use it
 export const Think = createTool({
   description:
     // Via https://www.anthropic.com/engineering/claude-think-tool

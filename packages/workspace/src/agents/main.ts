@@ -40,7 +40,7 @@ export const mainAgent = setupAgent({
     "ReadFile",
     "RunDiagnostics",
     "RunShellCommand",
-    "Think",
+    // "Think", // Removed on 2026-01-08, as most models don't use it
     "WriteFile",
   ]),
   name: "main",
