@@ -1,5 +1,4 @@
 import { type AIProviderType } from "../schemas/ai-gateway";
-import { type ProjectMode } from "../schemas/project-mode";
 
 export interface AnalyticsEvents {
   // Using snake_case for property names because they show with spaces in the UI
@@ -38,24 +37,19 @@ export interface AnalyticsEvents {
     ms_to_finish: number;
     ms_to_first_chunk: number;
     output_tokens: number | undefined;
-    project_mode: ProjectMode;
     reasoning_tokens?: number | undefined;
     step_count: number;
     total_tokens: number | undefined;
   }>;
   "llm.tool_called": WithModelProperties<{
-    project_mode: ProjectMode;
     tool_name: string;
   }>;
   "llm.tool_executed": {
-    project_mode: ProjectMode;
     success: boolean;
     tool_name: string;
   };
   "message.created": WithModelProperties<{
     files_count: number;
-    length: number;
-    project_mode: ProjectMode;
   }>;
   "project.bulk_deleted": {
     project_count: number;
@@ -66,7 +60,6 @@ export interface AnalyticsEvents {
   "project.created": WithModelProperties<{
     eval_name?: string;
     files_count: number;
-    project_mode: ProjectMode;
     template_name: string;
   }>;
   "project.forked": never;
@@ -79,12 +72,8 @@ export interface AnalyticsEvents {
   "project.shared": {
     share_type: "copied_screenshot" | "exported_zip" | "saved_screenshot";
   };
-  "project.trashed": {
-    project_mode: ProjectMode;
-  };
-  "project.updated": {
-    project_mode: ProjectMode;
-  };
+  "project.trashed": never;
+  "project.updated": never;
   "provider.created": {
     provider_type: AIProviderType;
   };

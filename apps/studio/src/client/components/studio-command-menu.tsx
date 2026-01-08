@@ -1,4 +1,4 @@
-import { SmallAppIcon } from "@/client/components/app-icon";
+import { AppIcon } from "@/client/components/app-icon";
 import {
   CommandDialog,
   CommandEmpty,
@@ -22,7 +22,7 @@ import {
   startOfDay,
   subDays,
 } from "date-fns";
-import { Copy, LayoutGrid, Plus, SettingsIcon, TrashIcon } from "lucide-react";
+import { Copy, LayoutGrid, Pencil, Plus, TrashIcon } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 
 export function StudioCommandMenu() {
@@ -150,12 +150,7 @@ export function StudioCommandMenu() {
               <CommandGroup
                 heading={
                   <div className="flex items-center gap-x-1.5">
-                    <SmallAppIcon
-                      background={currentProject.icon?.background}
-                      icon={currentProject.icon?.lucide}
-                      mode={currentProject.mode}
-                      size="xs"
-                    />
+                    <AppIcon name={currentProject.iconName} size="xs" />
                     <span className="truncate">{currentProject.title}</span>
                   </div>
                 }
@@ -164,10 +159,10 @@ export function StudioCommandMenu() {
                   onSelect={() => {
                     openCurrentProjectModal("showSettings");
                   }}
-                  value="current-project-settings"
+                  value="current-project-rename"
                 >
-                  <SettingsIcon className="size-4" />
-                  <span>Settings</span>
+                  <Pencil className="size-4" />
+                  <span>Rename</span>
                 </CommandItem>
                 <CommandItem
                   onSelect={() => {
@@ -226,12 +221,7 @@ export function StudioCommandMenu() {
                         }}
                         value={project.subdomain}
                       >
-                        <SmallAppIcon
-                          background={project.icon?.background}
-                          icon={project.icon?.lucide}
-                          mode={project.mode}
-                          size="sm"
-                        />
+                        <AppIcon name={project.iconName} size="sm" />
                         <span className="flex-1 truncate">{project.title}</span>
                         <span className="text-xs text-muted-foreground">
                           {groupName === "Older"

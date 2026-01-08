@@ -1,7 +1,10 @@
 import { type AIGatewayModelURI } from "@quests/ai-gateway/client";
-import { StoreId, type WorkspaceAppProject } from "@quests/workspace/client";
+import {
+  type StoreId,
+  type WorkspaceAppProject,
+} from "@quests/workspace/client";
 import { useMutation } from "@tanstack/react-query";
-import { useNavigate, useSearch } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { ChevronDown, Plus } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -9,7 +12,6 @@ import { useStickToBottom } from "use-stick-to-bottom";
 
 import { useAppState } from "../hooks/use-app-state";
 import { useContinueSession } from "../hooks/use-continue-session";
-import { createUserMessage } from "../lib/create-user-message";
 import { rpcClient } from "../rpc/client";
 import { ChatZeroState } from "./chat-zero-state";
 import { PromptInput } from "./prompt-input";
@@ -20,28 +22,22 @@ import { Tabs, TabsList, TabsTrigger } from "./ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { VersionList } from "./version-list";
 
-interface ProjectSidebarProps {
-  project: WorkspaceAppProject;
-  selectedModelURI?: AIGatewayModelURI.Type;
-  selectedVersion?: string;
-}
-
 export function ProjectSidebar({
   project,
   selectedModelURI: initialSelectedModelURI,
+  selectedSessionId,
   selectedVersion,
-}: ProjectSidebarProps) {
-  const { selectedSessionId } = useSearch({
-    from: "/_app/projects/$subdomain/",
-  });
+}: {
+  project: WorkspaceAppProject;
+  selectedModelURI?: AIGatewayModelURI.Type;
+  selectedSessionId?: StoreId.Session;
+  selectedVersion?: string;
+}) {
   const navigate = useNavigate();
 
   const { contentRef, isNearBottom, scrollRef, scrollToBottom } =
     // Less animation when sticking to bottom
     useStickToBottom({ mass: 0.8 });
-  const createSessionWithMessage = useMutation(
-    rpcClient.workspace.session.createWithMessage.mutationOptions(),
-  );
   const createMessage = useMutation(
     rpcClient.workspace.message.create.mutationOptions(),
   );
@@ -206,9 +202,7 @@ export function ProjectSidebar({
           <PromptInput
             atomKey={project.subdomain}
             autoFocus
-            isLoading={
-              createSessionWithMessage.isPending || createMessage.isPending
-            }
+            isLoading={createMessage.isPending}
             isStoppable={isAgentAlive}
             isSubmittable={!isAgentAlive}
             modelURI={selectedModelURI}
@@ -217,64 +211,19 @@ export function ProjectSidebar({
               stopSessions.mutate({ subdomain: project.subdomain });
             }}
             onSubmit={({ files, modelURI, prompt }) => {
-              const targetSessionId =
-                selectedSessionId ?? StoreId.newSessionId();
-
-              const { files: mappedFiles, message } = createUserMessage({
-                files,
-                prompt,
-                sessionId: targetSessionId,
-              });
-
-              if (
-                message.parts.length === 0 &&
-                (!mappedFiles || mappedFiles.length === 0)
-              ) {
-                return;
-              }
-
-              if (selectedSessionId) {
-                createMessage.mutate(
-                  {
-                    files: mappedFiles,
-                    message,
-                    modelURI,
-                    sessionId: selectedSessionId,
-                    subdomain: project.subdomain,
-                  },
-                  {
-                    onSuccess: () => {
-                      setFilterMode("chat");
-                      void scrollToBottom();
-                      if (selectedVersion) {
-                        void navigate({
-                          params: {
-                            subdomain: project.subdomain,
-                          },
-                          replace: true,
-                          search: (prev) => ({
-                            ...prev,
-                            selectedVersion: undefined,
-                          }),
-                          to: "/projects/$subdomain",
-                        });
-                      }
-                    },
-                  },
-                );
-              } else {
-                createSessionWithMessage.mutate(
-                  {
-                    files: mappedFiles,
-                    message,
-                    modelURI,
-                    sessionId: targetSessionId,
-                    subdomain: project.subdomain,
-                  },
-                  {
-                    onSuccess: () => {
-                      setFilterMode("chat");
-                      void scrollToBottom();
+              createMessage.mutate(
+                {
+                  files,
+                  modelURI,
+                  prompt,
+                  sessionId: selectedSessionId,
+                  subdomain: project.subdomain,
+                },
+                {
+                  onSuccess: ({ sessionId }) => {
+                    setFilterMode("chat");
+                    void scrollToBottom();
+                    if (selectedVersion) {
                       void navigate({
                         params: {
                           subdomain: project.subdomain,
@@ -282,17 +231,15 @@ export function ProjectSidebar({
                         replace: true,
                         search: (prev) => ({
                           ...prev,
-                          selectedSessionId: targetSessionId,
-                          selectedVersion: selectedVersion
-                            ? undefined
-                            : prev.selectedVersion,
+                          selectedSessionId: sessionId,
+                          selectedVersion: undefined,
                         }),
                         to: "/projects/$subdomain",
                       });
-                    },
+                    }
                   },
-                );
-              }
+                },
+              );
             }}
             placeholder="Type, paste, or drop some files here…"
             ref={promptInputRef}

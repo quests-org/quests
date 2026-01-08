@@ -1,6 +1,6 @@
 import { InternalLink } from "@/client/components/internal-link";
 import { ThemeToggle } from "@/client/components/theme-toggle";
-import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
+import { createIconMeta } from "@/shared/tabs";
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 
 // Global variables for link styles
@@ -15,10 +15,7 @@ export const Route = createFileRoute("/_app/debug")({
       {
         title: "Debug",
       },
-      {
-        content: "terminal",
-        name: META_TAG_LUCIDE_ICON,
-      },
+      createIconMeta("terminal"),
     ],
   }),
 });

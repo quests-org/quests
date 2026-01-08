@@ -9,20 +9,19 @@ import {
 } from "@/electron-main/windows/toolbar";
 import { type StudioPath } from "@/shared/studio-path";
 import {
-  META_TAG_ICON_BACKGROUND,
-  META_TAG_LUCIDE_ICON,
-  META_TAG_PROJECT_MODE,
+  META_TAGS,
   SingleTabOnlyRoutes,
   type Tab,
   type TabState,
 } from "@/shared/tabs";
-import { type ProjectMode } from "@quests/shared";
-import { type IconName } from "@quests/shared/icons";
+import { TabIconsSchema } from "@quests/shared/icons";
+import { ProjectSubdomainSchema } from "@quests/workspace/client";
 import { type BaseWindow, shell, WebContentsView } from "electron";
 import { type LogFunctions } from "electron-log";
 import Store from "electron-store";
 import path from "node:path";
 
+import { captureServerException } from "../lib/capture-server-exception";
 import { unsafe_studioURL } from "../lib/urls";
 
 interface TabStore {
@@ -141,15 +140,7 @@ export class TabsManager {
   public getState(): TabState {
     return {
       selectedTabId: this.selectedTabId,
-      tabs: this.tabs.map((tab) => ({
-        background: tab.background,
-        icon: tab.icon,
-        id: tab.id,
-        pathname: tab.pathname,
-        pinned: tab.pinned,
-        projectMode: tab.projectMode,
-        title: tab.title,
-      })),
+      tabs: this.tabs.map(({ webView: _webView, ...tab }) => tab),
     };
   }
 
@@ -193,7 +184,7 @@ export class TabsManager {
           if (view) {
             return {
               ...tab,
-              icon: tab.icon || undefined,
+              iconName: tab.iconName || undefined,
               pinned: tab.pinned || false,
               webView: view,
             };
@@ -290,10 +281,7 @@ export class TabsManager {
   }
 
   private afterUpdate() {
-    this.store.set("root", {
-      selectedTabId: this.selectedTabId,
-      tabs: this.tabs,
-    });
+    this.store.set("root", this.getState());
   }
 
   private closeTabView(tab: TabWithView) {
@@ -422,24 +410,23 @@ export class TabsManager {
   }
 
   private async updateMetaTags(tab: TabWithView) {
-    interface MetaTagsResult {
-      background: null | string;
-      icon: IconName | null;
-      projectMode: null | ProjectMode;
-    }
+    const metaTagQueries = {
+      iconName: META_TAGS.iconName,
+      projectSubdomain: META_TAGS.projectSubdomain,
+    } as const;
 
-    const META_TAGS = [
-      { key: "icon", name: META_TAG_LUCIDE_ICON },
-      { key: "background", name: META_TAG_ICON_BACKGROUND },
-      { key: "projectMode", name: META_TAG_PROJECT_MODE },
-    ] as const;
+    type MetaTagsResult = {
+      [K in keyof typeof metaTagQueries]: string | undefined;
+    };
 
-    const queries = META_TAGS.map(
-      ({ key, name }) => `${key}: (() => {
+    const queries = Object.entries(metaTagQueries)
+      .map(
+        ([key, name]) => `${JSON.stringify(key)}: (() => {
         const el = document.querySelector('meta[name="${name}"]');
-        return el ? el.getAttribute('content') : null;
+        return el ? el.getAttribute('content') : undefined;
       })()`,
-    ).join(",\n        ");
+      )
+      .join(",\n        ");
 
     const script = `
       (() => {
@@ -449,13 +436,24 @@ export class TabsManager {
       })()
     `;
 
-    const metaTags = (await tab.webView.webContents.executeJavaScript(
-      script,
-    )) as MetaTagsResult;
-
-    tab.icon = metaTags.icon ?? undefined;
-    tab.background = metaTags.background ?? undefined;
-    tab.projectMode = metaTags.projectMode ?? undefined;
+    try {
+      const metaTags = (await tab.webView.webContents.executeJavaScript(
+        script,
+      )) as MetaTagsResult;
+      const iconNameResult = TabIconsSchema.safeParse(metaTags.iconName);
+      tab.iconName = iconNameResult.success ? iconNameResult.data : undefined;
+      const projectSubdomainResult = ProjectSubdomainSchema.safeParse(
+        metaTags.projectSubdomain,
+      );
+      tab.projectSubdomain = projectSubdomainResult.success
+        ? projectSubdomainResult.data
+        : undefined;
+    } catch (error) {
+      captureServerException(
+        new Error("Failed to update meta tags", { cause: error }),
+        { scopes: ["studio"] },
+      );
+    }
   }
 
   private updateTabBounds(tab: TabWithView) {

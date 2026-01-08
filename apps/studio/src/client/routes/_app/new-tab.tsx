@@ -1,4 +1,4 @@
-import { SmallAppIcon } from "@/client/components/app-icon";
+import { AppIcon } from "@/client/components/app-icon";
 import { AppStatusIcon } from "@/client/components/app-status-icon";
 import { CommandMenuCTA } from "@/client/components/command-menu-cta";
 import { NewTabDiscoverHeroCards } from "@/client/components/discover-hero-card";
@@ -10,7 +10,6 @@ import { PromptInput } from "@/client/components/prompt-input";
 import { Card, CardContent } from "@/client/components/ui/card";
 import { useDefaultModelURI } from "@/client/hooks/use-default-model-uri";
 import { useTabActions } from "@/client/hooks/use-tab-actions";
-import { createUserMessage } from "@/client/lib/create-user-message";
 import { rpcClient } from "@/client/rpc/client";
 import {
   APP_REPO_URL,
@@ -18,7 +17,6 @@ import {
   NEW_ISSUE_URL,
   PRODUCT_NAME,
 } from "@quests/shared";
-import { StoreId } from "@quests/workspace/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   createFileRoute,
@@ -109,30 +107,17 @@ function RouteComponent() {
               modelURI={selectedModelURI}
               onModelChange={setSelectedModelURI}
               onSubmit={({ files, modelURI, openInNewTab, prompt }) => {
-                const sessionId = StoreId.newSessionId();
-                const { files: mappedFiles, message } = createUserMessage({
-                  files,
-                  prompt,
-                  sessionId,
-                });
-
                 saveSelectedModelURI(modelURI);
 
                 createProjectMutation.mutate(
-                  {
-                    files: mappedFiles,
-                    message,
-                    mode: "app-builder",
-                    modelURI,
-                    sessionId,
-                  },
+                  { files, modelURI, prompt },
                   {
                     onError: (error) => {
                       toast.error(
                         `There was an error starting your project: ${error.message}`,
                       );
                     },
-                    onSuccess: ({ subdomain }) => {
+                    onSuccess: ({ sessionId, subdomain }) => {
                       if (openInNewTab) {
                         void addTab(
                           {
@@ -199,12 +184,7 @@ function RouteComponent() {
                 >
                   <Card className="py-0 transition-shadow hover:shadow-md">
                     <CardContent className="flex items-center gap-x-4 py-4">
-                      <SmallAppIcon
-                        background={project.icon?.background}
-                        icon={project.icon?.lucide}
-                        mode={project.mode}
-                        size="xl"
-                      />
+                      <AppIcon name={project.iconName} size="xl" />
                       <div className="min-w-0 flex-1">
                         <div className="mb-1.5 flex items-center gap-x-2">
                           <h3 className="truncate text-base font-medium text-foreground">

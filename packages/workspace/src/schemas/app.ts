@@ -1,4 +1,3 @@
-import { ProjectModeSchema } from "@quests/shared";
 import { z } from "zod";
 
 import { ProjectManifestSchema } from "./project-manifest";
@@ -13,7 +12,7 @@ const WorkspaceAppBaseSchema = z.object({
   createdAt: z.date(),
   description: ProjectManifestSchema.shape.description.optional(),
   folderName: z.string(),
-  icon: ProjectManifestSchema.shape.icon.optional(),
+  iconName: ProjectManifestSchema.shape.iconName.optional(),
   title: z.string(),
   updatedAt: z.date(),
   urls: z.object({
@@ -30,7 +29,6 @@ export const WorkspaceAppPreviewSchema = WorkspaceAppBaseSchema.extend({
 });
 
 export const WorkspaceAppProjectSchema = WorkspaceAppBaseSchema.extend({
-  mode: ProjectModeSchema,
   subdomain: ProjectSubdomainSchema,
   type: z.literal("project"),
 });

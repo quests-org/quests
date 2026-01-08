@@ -6,7 +6,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/client/components/ui/tabs";
 import { captureClientEvent } from "@/client/lib/capture-client-event";
 import { cn } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
-import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
+import { createIconMeta } from "@/shared/tabs";
 import { QuestsAnimatedLogo } from "@quests/components/animated-logo";
 import { SALES_EMAIL } from "@quests/shared";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -23,10 +23,7 @@ export const Route = createFileRoute("/_app/_authenticated/subscribe")({
         {
           title: "Subscribe",
         },
-        {
-          content: "quests",
-          name: META_TAG_LUCIDE_ICON,
-        },
+        createIconMeta("quests"),
       ],
     };
   },

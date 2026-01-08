@@ -1,5 +1,3 @@
-import { type ProjectMode } from "@quests/shared";
-
 export const APP_FOLDER_NAMES = {
   output: "output",
   private: ".quests",
@@ -8,8 +6,7 @@ export const APP_FOLDER_NAMES = {
   uploads: "uploads",
 } as const;
 export const SESSIONS_DB_FILE_NAME = "sessions.db";
-export const PROJECT_SUBDOMAIN_MODE_PREFIXES: Record<ProjectMode, string> = {
-  "app-builder": "",
+export const LEGACY_PROJECT_SUBDOMAIN_MODE_PREFIXES = {
   chat: "chat",
   eval: "eval",
 };

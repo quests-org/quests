@@ -1,3 +1,4 @@
+import { EVAL_SUBDOMAIN_PREFIX } from "@quests/shared";
 import { glob } from "glob";
 import { err, ok, type Result } from "neverthrow";
 import fs from "node:fs/promises";
@@ -39,7 +40,6 @@ import {
   isVersionSubdomain,
 } from "./is-app";
 import { getProjectManifest } from "./project-manifest";
-import { projectModeForSubdomain } from "./project-mode-for-subdomain";
 import { projectSubdomainForSubdomain } from "./project-subdomain-for-subdomain";
 import { urlsForSubdomain } from "./url-for-subdomain";
 
@@ -293,7 +293,7 @@ async function appDirsInRootDir(rootDir: AbsolutePath): Promise<AppDir[]> {
     return [];
   }
 }
-async function computeAppTitle(
+async function getAppTitle(
   appDir: AppDir,
   folderName: string,
 ): Promise<string> {
@@ -335,15 +335,20 @@ async function workspaceApp({
       );
     }
 
-    const title = await computeAppTitle(appDir, rawFolderName);
-    const questsConfig = await getProjectManifest(appDir);
+    const title = await getAppTitle(appDir, rawFolderName);
+    const manifest = await getProjectManifest(appDir);
+
+    const iconName =
+      manifest?.iconName ||
+      (subdomainResult.data.startsWith(EVAL_SUBDOMAIN_PREFIX)
+        ? "flask-conical"
+        : undefined);
 
     const projectApp: WorkspaceAppProject = {
       ...(await getAppDirTimestamps(appDir)),
-      description: questsConfig?.description,
+      description: manifest?.description,
       folderName: rawFolderName,
-      icon: questsConfig?.icon,
-      mode: projectModeForSubdomain(subdomainResult.data),
+      iconName,
       subdomain: subdomainResult.data,
       title,
       type: "project",
@@ -364,7 +369,7 @@ async function workspaceApp({
       );
     }
 
-    const title = await computeAppTitle(appDir, rawFolderName);
+    const title = await getAppTitle(appDir, rawFolderName);
 
     const previewApp: WorkspaceAppPreview = {
       ...(await getAppDirTimestamps(appDir)),
@@ -383,7 +388,7 @@ async function workspaceApp({
   );
 
   if (sandboxSubdomainResult.success) {
-    const title = await computeAppTitle(appDir, rawFolderName);
+    const title = await getAppTitle(appDir, rawFolderName);
 
     const sandboxApp: WorkspaceAppSandbox = {
       ...(await getAppDirTimestamps(appDir)),
@@ -403,7 +408,7 @@ async function workspaceApp({
   );
 
   if (versionSubdomainResult.success) {
-    const title = await computeAppTitle(appDir, rawFolderName);
+    const title = await getAppTitle(appDir, rawFolderName);
 
     const versionApp: WorkspaceAppVersion = {
       ...(await getAppDirTimestamps(appDir)),

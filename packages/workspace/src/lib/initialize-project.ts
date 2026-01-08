@@ -12,7 +12,7 @@ import { git } from "./git";
 import { GitCommands } from "./git/commands";
 import { ensureGitRepo } from "./git/ensure-git-repo";
 
-export async function createProjectApp(
+export async function initializeProject(
   {
     projectConfig,
     templateName,

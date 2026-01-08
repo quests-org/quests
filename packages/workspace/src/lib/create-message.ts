@@ -1,47 +1,86 @@
 import { type LanguageModelV2 } from "@ai-sdk/provider";
 import { type AIGatewayModelURI } from "@quests/ai-gateway";
+import { ok } from "neverthrow";
 
 import { type SessionMessage } from "../schemas/session/message";
-import { type AppSubdomain } from "../schemas/subdomains";
-import { type WorkspaceConfig } from "../types";
-import { createAppConfig } from "./app-config/create";
-import { projectModeForSubdomain } from "./project-mode-for-subdomain";
+import { type SessionMessagePart } from "../schemas/session/message-part";
+import { StoreId } from "../schemas/store-id";
+import { type Upload } from "../schemas/upload";
+import { type AppConfig } from "./app-config/types";
+import { createSession } from "./create-session";
 import { setProjectState } from "./project-state-store";
-import { textForMessage } from "./text-for-message";
-
-interface CreateMessageParams {
-  filesCount: number;
-  message: SessionMessage.WithParts;
-  model: LanguageModelV2;
-  modelURI: AIGatewayModelURI.Type;
-  subdomain: AppSubdomain;
-  workspaceConfig: WorkspaceConfig;
-}
+import { writeUploadedFiles } from "./write-uploaded-files";
 
 export async function createMessage({
-  filesCount,
-  message,
+  appConfig,
+  files,
   model,
   modelURI,
-  subdomain,
-  workspaceConfig,
-}: CreateMessageParams) {
-  const appConfig = createAppConfig({
-    subdomain,
-    workspaceConfig,
-  });
+  prompt,
+  sessionId,
+}: {
+  appConfig: AppConfig;
+  files?: Upload.Type[];
+  model: LanguageModelV2;
+  modelURI: AIGatewayModelURI.Type;
+  prompt: string;
+  sessionId?: StoreId.Session;
+}) {
+  let finalSessionId: StoreId.Session;
+  if (sessionId) {
+    finalSessionId = sessionId;
+  } else {
+    const sessionResult = await createSession({ appConfig });
+    if (sessionResult.isErr()) {
+      return sessionResult;
+    }
+    finalSessionId = sessionResult.value.id;
+  }
+  const messageId = StoreId.newMessageId();
+  const createdAt = new Date();
+  const parts: SessionMessagePart.Type[] = [];
+  if (prompt.trim()) {
+    parts.push({
+      metadata: {
+        createdAt,
+        id: StoreId.newPartId(),
+        messageId,
+        sessionId: finalSessionId,
+      },
+      text: prompt.trim(),
+      type: "text",
+    });
+  }
+
+  if (files && files.length > 0) {
+    const uploadResult = await writeUploadedFiles({
+      appDir: appConfig.appDir,
+      files,
+      messageId,
+      sessionId: finalSessionId,
+    });
+
+    if (uploadResult.isErr()) {
+      return uploadResult;
+    }
+
+    parts.push(uploadResult.value.part);
+  }
+
+  const message: SessionMessage.UserWithParts = {
+    id: messageId,
+    metadata: { createdAt, sessionId: finalSessionId },
+    parts,
+    role: "user",
+  };
 
   await setProjectState(appConfig.appDir, { selectedModelURI: modelURI });
 
-  const messageText = textForMessage(message);
-
-  workspaceConfig.captureEvent("message.created", {
-    files_count: filesCount,
-    length: messageText.length,
+  appConfig.workspaceConfig.captureEvent("message.created", {
+    files_count: files?.length ?? 0,
     modelId: model.modelId,
-    project_mode: projectModeForSubdomain(subdomain),
     providerId: model.provider,
   });
 
-  return { appConfig };
+  return ok(message);
 }

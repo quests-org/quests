@@ -1,6 +1,5 @@
 import { providerMetadataAtom } from "@/client/atoms/provider-metadata";
 import { AIProviderIcon } from "@/client/components/ai-provider-icon";
-import { IconMap } from "@/client/components/app-icons";
 import { ModelBadges } from "@/client/components/model-badges";
 import { NewTabHelpMessage } from "@/client/components/new-tab-help-message";
 import {
@@ -34,10 +33,10 @@ import {
 } from "@/client/lib/group-models";
 import { rpcClient } from "@/client/rpc/client";
 import { CUSTOM_EVAL_TEMPLATE_NAME } from "@/shared/evals";
-import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
+import { createIconMeta } from "@/shared/tabs";
 import { type AIGatewayModelURI } from "@quests/ai-gateway/client";
+import { EVAL_SUBDOMAIN_PREFIX } from "@quests/shared";
 import { type AIProviderType } from "@quests/shared";
-import { StoreId } from "@quests/workspace/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useAtom, useAtomValue } from "jotai";
@@ -46,6 +45,7 @@ import { Loader2, X } from "lucide-react";
 import { sift } from "radashi";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { ulid } from "ulid";
 
 const selectedEvalProviderAtom = atomWithStorage<"all" | AIProviderType>(
   "evals-selected-provider",
@@ -72,10 +72,7 @@ export const Route = createFileRoute("/_app/evals/")({
         {
           title: "Evals",
         },
-        {
-          content: "chart-line",
-          name: META_TAG_LUCIDE_ICON,
-        },
+        createIconMeta("flask-conical"),
       ],
     };
   },
@@ -106,8 +103,8 @@ function RouteComponent() {
     () => new Set(selectedModelsArray),
     [selectedModelsArray],
   );
-  const createFromEvalMutation = useMutation(
-    rpcClient.workspace.project.createFromEval.mutationOptions(),
+  const createMutation = useMutation(
+    rpcClient.workspace.project.create.mutationOptions(),
   );
 
   const {
@@ -187,41 +184,40 @@ function RouteComponent() {
       const createdProjects = [];
 
       for (const templateName of selectedEvalTemplates) {
-        if (templateName === CUSTOM_EVAL_TEMPLATE_NAME) {
-          for (const modelURI of selectedModels) {
-            const sessionId = StoreId.newSessionId();
-
-            const project = await createFromEvalMutation.mutateAsync({
-              evalName: CUSTOM_EVAL_TEMPLATE_NAME,
-              iconName: "pencil",
-              modelURI,
-              sessionId,
-              systemPrompt: "",
-              userPrompt: customEvalPrompt.trim(),
-            });
-            createdProjects.push(project);
-          }
-        } else {
-          const template = evalTemplateGroups
-            ?.flatMap((g) => g.templates)
-            .find((t) => t.name === templateName);
-          if (!template) {
+        for (const modelURI of selectedModels) {
+          const model = modelsData?.models.find((m) => m.uri === modelURI);
+          if (!model) {
+            toast.error(`Model not found: ${modelURI}`);
             continue;
           }
 
-          for (const modelURI of selectedModels) {
-            const sessionId = StoreId.newSessionId();
+          const isCustomTemplate = templateName === CUSTOM_EVAL_TEMPLATE_NAME;
+          const template = isCustomTemplate
+            ? null
+            : evalTemplateGroups
+                ?.flatMap((g) => g.templates)
+                .find((t) => t.name === templateName);
+          const userPrompt = isCustomTemplate
+            ? customEvalPrompt.trim()
+            : template?.userPrompt;
 
-            const project = await createFromEvalMutation.mutateAsync({
-              evalName: template.name,
-              iconName: template.iconName,
-              modelURI,
-              sessionId,
-              systemPrompt: template.systemPrompt,
-              userPrompt: template.userPrompt,
-            });
-            createdProjects.push(project);
+          if (!userPrompt) {
+            continue;
           }
+
+          const prompt = sift([template?.systemPrompt, userPrompt]).join(
+            "\n\n",
+          );
+          const name = `${templateName} - ${model.name}`;
+
+          const project = await createMutation.mutateAsync({
+            iconName: "flask-conical",
+            modelURI,
+            name,
+            preferredFolderName: `${EVAL_SUBDOMAIN_PREFIX}${ulid().toLowerCase()}`,
+            prompt,
+          });
+          createdProjects.push(project);
         }
       }
 
@@ -385,7 +381,6 @@ function RouteComponent() {
                       evalTemplateGroups.map((group) => (
                         <CommandGroup heading={group.name} key={group.name}>
                           {group.templates.map((template) => {
-                            const IconComponent = IconMap[template.iconName];
                             const isCustom =
                               template.name === CUSTOM_EVAL_TEMPLATE_NAME;
                             return (
@@ -403,7 +398,6 @@ function RouteComponent() {
                                     )}
                                     className="mt-0.5 shrink-0 [&_svg]:text-primary-foreground!"
                                   />
-                                  <IconComponent className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
                                   <div className="min-w-0 flex-1">
                                     <div className="text-sm font-medium">
                                       {template.name}
@@ -594,37 +588,25 @@ function RouteComponent() {
                           : "Prompts"}
                       </div>
                       <div className="flex flex-wrap gap-1.5">
-                        {[...selectedEvalTemplates].map((templateName) => {
-                          const template = evalTemplateGroups
-                            ?.flatMap((g) => g.templates)
-                            .find((t) => t.name === templateName);
-                          const IconComponent = template
-                            ? IconMap[template.iconName]
-                            : null;
-
-                          return (
-                            <div
-                              className="flex items-center gap-1 rounded-md border bg-muted/50 py-1 pr-1 pl-2"
-                              key={templateName}
-                            >
-                              {IconComponent && (
-                                <IconComponent className="size-3 shrink-0 text-muted-foreground" />
-                              )}
-                              <div className="truncate text-xs">
-                                {templateName}
-                              </div>
-                              <button
-                                className="shrink-0 rounded hover:bg-background"
-                                onClick={() => {
-                                  handleToggleEvalTemplate(templateName);
-                                }}
-                                type="button"
-                              >
-                                <X className="size-3 text-muted-foreground" />
-                              </button>
+                        {[...selectedEvalTemplates].map((templateName) => (
+                          <div
+                            className="flex items-center gap-1 rounded-md border bg-muted/50 py-1 pr-1 pl-2"
+                            key={templateName}
+                          >
+                            <div className="truncate text-xs">
+                              {templateName}
                             </div>
-                          );
-                        })}
+                            <button
+                              className="shrink-0 rounded hover:bg-background"
+                              onClick={() => {
+                                handleToggleEvalTemplate(templateName);
+                              }}
+                              type="button"
+                            >
+                              <X className="size-3 text-muted-foreground" />
+                            </button>
+                          </div>
+                        ))}
                       </div>
                     </div>
 

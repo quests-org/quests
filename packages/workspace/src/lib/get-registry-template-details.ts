@@ -14,7 +14,7 @@ import { getProjectManifest } from "./project-manifest";
 
 export const RegistryTemplateDetailsSchema = z.object({
   description: ProjectManifestSchema.shape.description.optional(),
-  icon: ProjectManifestSchema.shape.icon.optional(),
+  iconName: ProjectManifestSchema.shape.iconName.optional(),
   preview: WorkspaceAppPreviewSchema,
   readme: z.string().optional(),
   screenshotPath: z.string().optional(),
@@ -70,7 +70,7 @@ export async function getRegistryTemplateDetails(
 
     return {
       description,
-      icon: questsConfig?.icon,
+      iconName: questsConfig?.iconName,
       preview,
       readme,
       screenshotPath,

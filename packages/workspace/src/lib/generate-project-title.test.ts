@@ -2,7 +2,7 @@ import { MockLanguageModelV2 } from "ai/test";
 import { describe, expect, it } from "vitest";
 
 import { StoreId } from "../schemas/store-id";
-import { generateAppTitle, generateChatTitle } from "./generate-project-title";
+import { generateProjectTitle } from "./generate-project-title";
 
 function createMockMessage(text: string) {
   return {
@@ -53,7 +53,7 @@ describe("generateProjectTitle", () => {
       "Very Long Project Title That Exceeds The Five Word Limit",
     );
 
-    const result = await generateAppTitle({ message: mockMessage, model });
+    const result = await generateProjectTitle({ message: mockMessage, model });
     const title = result._unsafeUnwrap();
 
     expect(title.split(" ")).toHaveLength(5);
@@ -63,7 +63,7 @@ describe("generateProjectTitle", () => {
   it("should preserve titles with 5 words or fewer", async () => {
     const model = createMockModel("Todo List Manager");
 
-    const result = await generateAppTitle({ message: mockMessage, model });
+    const result = await generateProjectTitle({ message: mockMessage, model });
     const title = result._unsafeUnwrap();
 
     expect(title.split(" ")).toHaveLength(3);
@@ -73,7 +73,7 @@ describe("generateProjectTitle", () => {
   it("should handle exactly 5 words", async () => {
     const model = createMockModel("Chat With File Upload System");
 
-    const result = await generateAppTitle({ message: mockMessage, model });
+    const result = await generateProjectTitle({ message: mockMessage, model });
     const title = result._unsafeUnwrap();
 
     expect(title.split(" ")).toHaveLength(5);
@@ -83,7 +83,7 @@ describe("generateProjectTitle", () => {
   it("should handle single word titles", async () => {
     const model = createMockModel("Todos");
 
-    const result = await generateAppTitle({ message: mockMessage, model });
+    const result = await generateProjectTitle({ message: mockMessage, model });
     const title = result._unsafeUnwrap();
 
     expect(title.split(" ")).toHaveLength(1);
@@ -94,7 +94,7 @@ describe("generateProjectTitle", () => {
     const model = createMockModel("Default Title");
     const emptyMessage = createMockMessage("");
 
-    const result = await generateAppTitle({ message: emptyMessage, model });
+    const result = await generateProjectTitle({ message: emptyMessage, model });
 
     expect(result.isErr()).toBe(true);
     expect(result._unsafeUnwrapErr().message).toMatchInlineSnapshot(
@@ -105,7 +105,7 @@ describe("generateProjectTitle", () => {
   it("should trim whitespace from generated title", async () => {
     const model = createMockModel("  Todo Manager  ");
 
-    const result = await generateAppTitle({ message: mockMessage, model });
+    const result = await generateProjectTitle({ message: mockMessage, model });
     const title = result._unsafeUnwrap();
 
     expect(title).toBe("Todo Manager");
@@ -115,7 +115,7 @@ describe("generateProjectTitle", () => {
     // cspell:ignore تطبيق المهام اليومية
     const model = createMockModel("تطبيق المهام اليومية");
 
-    const result = await generateAppTitle({ message: mockMessage, model });
+    const result = await generateProjectTitle({ message: mockMessage, model });
     const title = result._unsafeUnwrap();
 
     expect(title).toBe("تطبيق المهام اليومية");
@@ -126,7 +126,7 @@ describe("generateProjectTitle", () => {
       "システム 管理 アプリケーション データベース 設定 追加",
     );
 
-    const result = await generateAppTitle({ message: mockMessage, model });
+    const result = await generateProjectTitle({ message: mockMessage, model });
     const title = result._unsafeUnwrap();
 
     expect(title.split(" ")).toHaveLength(5);
@@ -136,22 +136,10 @@ describe("generateProjectTitle", () => {
   it("should handle mixed language titles", async () => {
     const model = createMockModel("Chat アプリ with ファイル upload");
 
-    const result = await generateAppTitle({ message: mockMessage, model });
+    const result = await generateProjectTitle({ message: mockMessage, model });
     const title = result._unsafeUnwrap();
 
     expect(title.split(" ")).toHaveLength(5);
     expect(title).toBe("Chat アプリ with ファイル upload");
-  });
-});
-
-describe("generateChatTitle", () => {
-  it("should generate a chat title in sentence case from user message", async () => {
-    const model = createMockModel("Weather inquiry");
-    const message = createMockMessage("What is the weather like today?");
-
-    const result = await generateChatTitle({ message, model });
-    const title = result._unsafeUnwrap();
-
-    expect(title).toBe("Weather inquiry");
   });
 });

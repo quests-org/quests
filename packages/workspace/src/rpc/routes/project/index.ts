@@ -1,41 +1,30 @@
 import { call, eventIterator } from "@orpc/server";
 import { AIGatewayModelURI } from "@quests/ai-gateway";
-import { ProjectModeSchema } from "@quests/shared";
-import {
-  AppIconsSchema,
-  DEFAULT_THEME_GRADIENT,
-  SelectableAppIconsSchema,
-  THEMES,
-} from "@quests/shared/icons";
 import { mergeGenerators } from "@quests/shared/merge-generators";
-import { draw } from "radashi";
 import { z } from "zod";
 
 import { createAppConfig } from "../../../lib/app-config/create";
 import { newProjectConfig } from "../../../lib/app-config/new";
-import { createProjectApp } from "../../../lib/create-project-app";
+import { createMessage } from "../../../lib/create-message";
 import { defaultProjectName } from "../../../lib/default-project-name";
 import { duplicateProject } from "../../../lib/duplicate-project";
 import { exportProjectZip } from "../../../lib/export-project-zip";
-import { generateChatTitle } from "../../../lib/generate-project-title";
-import { generateProjectTitleAndIcon } from "../../../lib/generate-project-title-and-icon";
+import { generateProjectTitle } from "../../../lib/generate-project-title";
 import { getApp, getProjects } from "../../../lib/get-apps";
 import { getWorkspaceAppForSubdomain } from "../../../lib/get-workspace-app-for-subdomain";
 import { importProject as importProjectLib } from "../../../lib/import-project";
+import { initializeProject } from "../../../lib/initialize-project";
 import { pathExists } from "../../../lib/path-exists";
 import {
   getProjectManifest,
   updateProjectManifest,
 } from "../../../lib/project-manifest";
-import { projectModeForSubdomain } from "../../../lib/project-mode-for-subdomain";
-import { setProjectState } from "../../../lib/project-state-store";
+import { resolveModel } from "../../../lib/resolve-model";
 import { trashProject } from "../../../lib/trash-project";
-import { writeUploadedFiles } from "../../../lib/write-uploaded-files";
-import { getWorkspaceServerURL } from "../../../logic/server/url";
 import { WorkspaceAppProjectSchema } from "../../../schemas/app";
 import { AbsolutePathSchema } from "../../../schemas/paths";
-import { SessionMessage } from "../../../schemas/session/message";
 import { StoreId } from "../../../schemas/store-id";
+import { SubdomainPartSchema } from "../../../schemas/subdomain-part";
 import { ProjectSubdomainSchema } from "../../../schemas/subdomains";
 import { Upload } from "../../../schemas/upload";
 import { base, toORPCError } from "../../base";
@@ -125,220 +114,46 @@ const create = base
   .input(
     z.object({
       files: z.array(Upload.Schema).optional(),
-      message: SessionMessage.UserSchemaWithParts,
-      mode: ProjectModeSchema,
+      iconName: z.literal("flask-conical").optional(),
       modelURI: AIGatewayModelURI.Schema,
-      sessionId: StoreId.SessionSchema,
+      name: z.string().optional(),
+      preferredFolderName: SubdomainPartSchema.optional(),
+      prompt: z.string(),
       templateName: z.string().optional().default(DEFAULT_TEMPLATE_NAME),
     }),
   )
-  .output(WorkspaceAppProjectSchema)
-  .handler(
-    async ({
-      context,
-      errors,
-      input: { files, message, mode, modelURI, sessionId, templateName },
-      signal,
-    }) => {
-      const [model, error] = (
-        await context.modelRegistry.languageModel(
-          modelURI,
-          context.workspaceConfig.getAIProviderConfigs(),
-          {
-            captureException: context.workspaceConfig.captureException,
-            workspaceServerURL: getWorkspaceServerURL(),
-          },
-        )
-      )
-        // eslint-disable-next-line unicorn/no-await-expression-member
-        .toTuple();
-
-      if (error) {
-        context.workspaceConfig.captureException(error);
-        throw toORPCError(error, errors);
-      }
-
-      const projectConfig = await newProjectConfig({
-        mode,
-        workspaceConfig: context.workspaceConfig,
-      });
-
-      if (mode === "app-builder" || mode === "eval") {
-        const result = await createProjectApp(
-          {
-            projectConfig,
-            templateName,
-            workspaceConfig: context.workspaceConfig,
-          },
-          { signal },
-        );
-
-        if (result.isErr()) {
-          context.workspaceConfig.captureException(result.error);
-          throw toORPCError(result.error, errors);
-        }
-      }
-
-      await setProjectState(projectConfig.appDir, {
-        selectedModelURI: modelURI,
-      });
-
-      await updateProjectManifest(projectConfig.appDir, {
-        name: defaultProjectName(message),
-      });
-
-      publisher.publish("project.updated", {
-        subdomain: projectConfig.subdomain,
-      });
-
-      let messageWithFiles = message;
-      if (files && files.length > 0) {
-        const uploadResult = await writeUploadedFiles(
-          projectConfig.appDir,
-          files,
-        );
-
-        if (uploadResult.isErr()) {
-          context.workspaceConfig.captureException(uploadResult.error);
-          throw toORPCError(uploadResult.error, errors);
-        }
-
-        const fileAttachmentsPart = {
-          data: {
-            files: uploadResult.value.files,
-          },
-          metadata: {
-            createdAt: new Date(),
-            id: StoreId.newPartId(),
-            messageId: message.id,
-            sessionId,
-          },
-          type: "data-fileAttachments" as const,
-        };
-
-        messageWithFiles = {
-          ...message,
-          parts: [...message.parts, fileAttachmentsPart],
-        };
-      }
-
-      if (mode === "chat") {
-        void (async () => {
-          const titleResult = await generateChatTitle({
-            message: messageWithFiles,
-            model,
-          });
-
-          if (titleResult.isOk()) {
-            await updateProjectManifest(projectConfig.appDir, {
-              name: titleResult.value,
-            });
-            publisher.publish("project.updated", {
-              subdomain: projectConfig.subdomain,
-            });
-          }
-        })().catch(context.workspaceConfig.captureException);
-      } else {
-        generateProjectTitleAndIcon({
-          message: messageWithFiles,
-          model,
-          onUpdate: () => {
-            publisher.publish("project.updated", {
-              subdomain: projectConfig.subdomain,
-            });
-          },
-          projectConfig,
-          templateName,
-          workspaceConfig: context.workspaceConfig,
-        }).catch(context.workspaceConfig.captureException);
-      }
-
-      publisher.publish("project.updated", {
-        subdomain: projectConfig.subdomain,
-      });
-
-      context.workspaceRef.send({
-        type: "createSession",
-        value: {
-          message: messageWithFiles,
-          model,
-          sessionId,
-          subdomain: projectConfig.subdomain,
-        },
-      });
-
-      const workspaceApp = await getWorkspaceAppForSubdomain(
-        projectConfig.subdomain,
-        context.workspaceConfig,
-      );
-
-      context.workspaceConfig.captureEvent("project.created", {
-        files_count: files?.length ?? 0,
-        modelId: model.modelId,
-        project_mode: mode,
-        providerId: model.provider,
-        template_name: templateName,
-      });
-
-      return workspaceApp;
-    },
-  );
-
-const createFromEval = base
-  .input(
+  .output(
     z.object({
-      evalName: z.string(),
-      iconName: SelectableAppIconsSchema,
-      modelURI: AIGatewayModelURI.Schema,
       sessionId: StoreId.SessionSchema,
-      systemPrompt: z.string().optional(),
-      userPrompt: z.string(),
+      subdomain: ProjectSubdomainSchema,
     }),
   )
-  .output(WorkspaceAppProjectSchema)
   .handler(
     async ({
       context,
       errors,
       input: {
-        evalName,
+        files,
         iconName,
         modelURI,
-        sessionId,
-        systemPrompt,
-        userPrompt,
+        name,
+        preferredFolderName,
+        prompt,
+        templateName,
       },
       signal,
     }) => {
-      const [model, error] = (
-        await context.modelRegistry.languageModel(
-          modelURI,
-          context.workspaceConfig.getAIProviderConfigs(),
-          {
-            captureException: context.workspaceConfig.captureException,
-            workspaceServerURL: getWorkspaceServerURL(),
-          },
-        )
-      )
-        // eslint-disable-next-line unicorn/no-await-expression-member
-        .toTuple();
-
-      if (error) {
-        context.workspaceConfig.captureException(error);
-        throw toORPCError(error, errors);
-      }
+      const model = await resolveModel(modelURI, context, errors);
 
       const projectConfig = await newProjectConfig({
-        evalName,
-        mode: "eval",
-        modelURI,
+        preferredFolderName,
         workspaceConfig: context.workspaceConfig,
       });
 
-      const result = await createProjectApp(
+      const result = await initializeProject(
         {
           projectConfig,
-          templateName: DEFAULT_TEMPLATE_NAME,
+          templateName,
           workspaceConfig: context.workspaceConfig,
         },
         { signal },
@@ -349,80 +164,69 @@ const createFromEval = base
         throw toORPCError(result.error, errors);
       }
 
-      await setProjectState(projectConfig.appDir, {
-        selectedModelURI: modelURI,
+      const messageResult = await createMessage({
+        appConfig: projectConfig,
+        files,
+        model,
+        modelURI,
+        prompt,
       });
 
-      const modelId = AIGatewayModelURI.parse(modelURI)
-        .map((m) => m.canonicalId)
-        .getOrDefault(model.modelId);
-      const projectName = `${evalName} - ${modelId}`;
-      const randomTheme = draw(THEMES) ?? DEFAULT_THEME_GRADIENT;
-      await updateProjectManifest(projectConfig.appDir, {
-        icon: {
-          background: randomTheme,
-          lucide: iconName,
-        },
-        name: projectName,
+      if (messageResult.isErr()) {
+        context.workspaceConfig.captureException(messageResult.error);
+        throw toORPCError(messageResult.error, errors);
+      }
+      const message = messageResult.value;
+
+      await updateProjectManifest(projectConfig, {
+        iconName,
+        name: name ?? defaultProjectName(message),
       });
+
+      if (!name) {
+        // Intentionally non blocking
+        generateProjectTitle({
+          message,
+          model,
+          // Only relevant for non default templates
+          templateTitle:
+            templateName === DEFAULT_TEMPLATE_NAME ? undefined : templateName,
+        }).then(async (title) => {
+          if (title.isOk()) {
+            await updateProjectManifest(projectConfig, {
+              name: title.value,
+            });
+          } else {
+            context.workspaceConfig.captureException(title.error);
+          }
+        });
+      }
 
       publisher.publish("project.updated", {
         subdomain: projectConfig.subdomain,
       });
-
-      const messageId = StoreId.newMessageId();
-      const createdAt = new Date();
-      // For now, we're not using an actual system role
-      const promptText = systemPrompt
-        ? `${systemPrompt}\n\n${userPrompt}`
-        : userPrompt;
-
-      const message: SessionMessage.UserWithParts = {
-        id: messageId,
-        metadata: {
-          createdAt,
-          sessionId,
-        },
-        parts: [
-          {
-            metadata: {
-              createdAt,
-              id: StoreId.newPartId(),
-              messageId,
-              sessionId,
-            },
-            text: promptText,
-            type: "text",
-          },
-        ],
-        role: "user",
-      };
 
       context.workspaceRef.send({
         type: "createSession",
         value: {
           message,
           model,
-          sessionId,
+          sessionId: message.metadata.sessionId,
           subdomain: projectConfig.subdomain,
         },
       });
 
-      const workspaceApp = await getWorkspaceAppForSubdomain(
-        projectConfig.subdomain,
-        context.workspaceConfig,
-      );
-
       context.workspaceConfig.captureEvent("project.created", {
-        eval_name: evalName,
-        files_count: 0,
+        files_count: files?.length ?? 0,
         modelId: model.modelId,
-        project_mode: projectModeForSubdomain(projectConfig.subdomain),
         providerId: model.provider,
-        template_name: DEFAULT_TEMPLATE_NAME,
+        template_name: templateName,
       });
 
-      return workspaceApp;
+      return {
+        sessionId: message.metadata.sessionId,
+        subdomain: projectConfig.subdomain,
+      };
     },
   );
 
@@ -521,20 +325,12 @@ const trash = base
       subdomain,
     });
 
-    context.workspaceConfig.captureEvent("project.trashed", {
-      project_mode: projectModeForSubdomain(subdomain),
-    });
+    context.workspaceConfig.captureEvent("project.trashed");
   });
 
 const update = base
   .input(
     z.object({
-      icon: z
-        .object({
-          background: z.string(),
-          lucide: AppIconsSchema,
-        })
-        .optional(),
       name: z.string(),
       subdomain: ProjectSubdomainSchema,
     }),
@@ -545,8 +341,7 @@ const update = base
       subdomain: input.subdomain,
       workspaceConfig: context.workspaceConfig,
     });
-    await updateProjectManifest(projectConfig.appDir, {
-      icon: input.icon,
+    await updateProjectManifest(projectConfig, {
       name: input.name,
     });
 
@@ -554,9 +349,7 @@ const update = base
       subdomain: input.subdomain,
     });
 
-    context.workspaceConfig.captureEvent("project.updated", {
-      project_mode: projectModeForSubdomain(input.subdomain),
-    });
+    context.workspaceConfig.captureEvent("project.updated");
   });
 
 const exportZip = base
@@ -695,7 +488,6 @@ export const project = {
   bySubdomain,
   bySubdomains,
   create,
-  createFromEval,
   duplicate,
   exportZip,
   git: projectGit,

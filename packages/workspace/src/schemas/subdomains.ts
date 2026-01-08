@@ -28,7 +28,7 @@ function validateSubdomainPrefix(
 
 export const PreviewSubdomainSchema = z
   .custom<PreviewSubdomain>()
-  .superRefine((val, ctx) => {
+  .superRefine((val: unknown, ctx) => {
     if (typeof val !== "string") {
       ctx.addIssue({
         code: "custom",
@@ -66,7 +66,7 @@ export const PreviewSubdomainSchema = z
 
 export const ProjectSubdomainSchema = z
   .custom<ProjectSubdomain>()
-  .superRefine((val, ctx) => {
+  .superRefine((val: unknown, ctx) => {
     if (typeof val !== "string") {
       ctx.addIssue({
         code: "custom",
@@ -74,6 +74,7 @@ export const ProjectSubdomainSchema = z
         input: val,
         message: "Subdomain must be a string",
       });
+      return;
     }
 
     if (val === PREVIEW_SUBDOMAIN_PART) {
@@ -90,7 +91,7 @@ export const ProjectSubdomainSchema = z
 
 export const SandboxSubdomainSchema = z
   .custom<SandboxSubdomain>()
-  .superRefine((val, ctx) => {
+  .superRefine((val: unknown, ctx) => {
     if (typeof val !== "string") {
       ctx.addIssue({
         code: "custom",
@@ -98,6 +99,7 @@ export const SandboxSubdomainSchema = z
         input: val,
         message: "Subdomain must be a string",
       });
+      return;
     }
 
     const parts = val.split(".");
@@ -129,7 +131,7 @@ export const SandboxSubdomainSchema = z
 
 export const VersionSubdomainSchema = z
   .custom<VersionSubdomain>()
-  .superRefine((val, ctx) => {
+  .superRefine((val: unknown, ctx) => {
     if (typeof val !== "string") {
       ctx.addIssue({
         code: "custom",
@@ -137,6 +139,7 @@ export const VersionSubdomainSchema = z
         input: val,
         message: "Subdomain must be a string",
       });
+      return;
     }
 
     const parts = val.split(".");

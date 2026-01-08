@@ -1,13 +1,9 @@
-import { SmallAppIcon } from "@/client/components/app-icon";
+import { AppIcon } from "@/client/components/app-icon";
 import { AppStatusIcon } from "@/client/components/app-status-icon";
-import { TabIcon } from "@/client/components/tab-icon";
 import { cn } from "@/client/lib/utils";
 import { type Tab as TabData } from "@/shared/tabs";
-import { ProjectSubdomainSchema } from "@quests/workspace/client";
 import { motion, Reorder } from "framer-motion";
 import { X } from "lucide-react";
-
-import { useMatchesForPathname } from "../lib/get-route-matches";
 
 const SkeletonIcon = ({ isPinned = false }: { isPinned?: boolean }) => {
   return (
@@ -37,15 +33,6 @@ interface Props {
 }
 
 export const Tab = ({ isSelected, item, onClick, onRemove }: Props) => {
-  const matches = useMatchesForPathname(item.pathname);
-
-  const match = matches.find((m) => m.routeId === "/_app/projects/$subdomain/");
-
-  const rawSubdomain = match?.params.subdomain.split("?")[0];
-  const subdomainResult = rawSubdomain
-    ? ProjectSubdomainSchema.safeParse(rawSubdomain)
-    : undefined;
-
   return (
     <Reorder.Item
       animate={{
@@ -79,16 +66,13 @@ export const Tab = ({ isSelected, item, onClick, onRemove }: Props) => {
       value={item}
     >
       <motion.div className="flex min-w-0 flex-1 items-center">
-        <div className={item.pinned ? "" : "mr-2"}>
-          {item.projectMode ? (
-            <SmallAppIcon
-              background={item.background}
-              icon={item.icon}
-              mode={item.projectMode}
-              size="sm"
+        <div className={cn(item.pinned ? "" : "mr-1.5")}>
+          {item.iconName ? (
+            <AppIcon
+              isSelected={isSelected}
+              name={item.iconName}
+              size={item.projectSubdomain ? "sm" : "md"}
             />
-          ) : item.icon ? (
-            <TabIcon isSelected={isSelected} lucideIconName={item.icon} />
           ) : (
             <SkeletonIcon isPinned={item.pinned} />
           )}
@@ -115,10 +99,10 @@ export const Tab = ({ isSelected, item, onClick, onRemove }: Props) => {
       {!item.pinned && (
         <div className="flex items-center gap-1 pr-2 pl-1">
           <div className="group-hover:hidden">
-            {subdomainResult?.data && !isSelected && (
+            {item.projectSubdomain && !isSelected && (
               <AppStatusIcon
                 className="size-4 shrink-0"
-                subdomain={subdomainResult.data}
+                subdomain={item.projectSubdomain}
               />
             )}
           </div>

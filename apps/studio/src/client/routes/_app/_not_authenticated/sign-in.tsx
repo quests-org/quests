@@ -1,5 +1,5 @@
 import { AISetupView } from "@/client/components/ai-setup-view";
-import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
+import { createIconMeta } from "@/shared/tabs";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_app/_not_authenticated/sign-in")({
@@ -10,10 +10,7 @@ export const Route = createFileRoute("/_app/_not_authenticated/sign-in")({
         {
           title: "Sign in",
         },
-        {
-          content: "quests",
-          name: META_TAG_LUCIDE_ICON,
-        },
+        createIconMeta("quests"),
       ],
     };
   },

@@ -74,7 +74,7 @@ export function NavProjects({
   );
 
   return (
-    <SidebarGroup className="group-data-[collapsible=icon]:hidden">
+    <SidebarGroup className="pr-0.5 pl-1 group-data-[collapsible=icon]:hidden">
       <SidebarGroupLabel
         asChild
         className={cn(isActive && "text-sidebar-foreground/90")}

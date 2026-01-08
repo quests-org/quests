@@ -11,14 +11,13 @@ import { GithubLogo } from "@/client/components/service-icons";
 import { TechStack } from "@/client/components/tech-stack";
 import { Button } from "@/client/components/ui/button";
 import { useDefaultModelURI } from "@/client/hooks/use-default-model-uri";
-import { createUserMessage } from "@/client/lib/create-user-message";
 import { rpcClient } from "@/client/rpc/client";
 import {
   GITHUB_ORG,
   REGISTRY_REPO_NAME,
   REGISTRY_REPO_URL,
 } from "@quests/shared";
-import { StoreId, type Upload } from "@quests/workspace/client";
+import { type Upload } from "@quests/workspace/client";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
@@ -61,22 +60,13 @@ export function TemplateDetail({
 
   const handleCreateProject = (prompt: string, files?: Upload.Type[]) => {
     if (appDetails && selectedModelURI) {
-      const sessionId = StoreId.newSessionId();
-      const { files: mappedFiles, message } = createUserMessage({
-        files,
-        prompt,
-        sessionId,
-      });
-
       saveSelectedModelURI(selectedModelURI);
 
       createProjectMutation.mutate(
         {
-          files: mappedFiles,
-          message,
-          mode: "app-builder",
+          files,
           modelURI: selectedModelURI,
-          sessionId,
+          prompt,
           templateName: folderName,
         },
         {
@@ -85,9 +75,9 @@ export function TemplateDetail({
               `There was an error starting your project: ${error.message}`,
             );
           },
-          onSuccess: (result) => {
+          onSuccess: ({ sessionId, subdomain }) => {
             void navigate({
-              params: { subdomain: result.subdomain },
+              params: { subdomain },
               search: { selectedSessionId: sessionId },
               to: "/projects/$subdomain",
             });

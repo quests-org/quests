@@ -1,19 +1,13 @@
 import { call } from "@orpc/server";
-import { AIGatewayModelURI } from "@quests/ai-gateway";
 import { mergeGenerators } from "@quests/shared/merge-generators";
 import { z } from "zod";
 
 import { createAppConfig } from "../../lib/app-config/create";
-import { createMessage } from "../../lib/create-message";
-import { generateSessionTitle } from "../../lib/generate-session-title";
-import { resolveModel } from "../../lib/resolve-model";
+import { createSession } from "../../lib/create-session";
 import { Store } from "../../lib/store";
-import { writeUploadedFiles } from "../../lib/write-uploaded-files";
 import { Session } from "../../schemas/session";
-import { SessionMessage } from "../../schemas/session/message";
 import { StoreId } from "../../schemas/store-id";
 import { AppSubdomainSchema } from "../../schemas/subdomains";
-import { Upload } from "../../schemas/upload";
 import { base, toORPCError } from "../base";
 import { publisher } from "../publisher";
 
@@ -120,96 +114,14 @@ const create = base
       subdomain,
       workspaceConfig,
     });
-    const title = await generateSessionTitle(appConfig);
-    const sessionId = StoreId.newSessionId();
-    const sessionResult = await Store.saveSession(
-      {
-        createdAt: new Date(),
-        id: sessionId,
-        title,
-      },
-      appConfig,
-    );
+    const sessionResult = await createSession({ appConfig });
 
     if (sessionResult.isErr()) {
       context.workspaceConfig.captureException(sessionResult.error);
       throw toORPCError(sessionResult.error, errors);
     }
 
-    context.workspaceConfig.captureEvent("session.created");
-
     return sessionResult.value;
-  });
-
-const createWithMessage = base
-  .input(
-    z.object({
-      files: z.array(Upload.Schema).optional(),
-      message: SessionMessage.UserSchemaWithParts,
-      modelURI: AIGatewayModelURI.Schema,
-      sessionId: StoreId.SessionSchema,
-      subdomain: AppSubdomainSchema,
-    }),
-  )
-  .handler(async ({ context, errors, input }) => {
-    const model = await resolveModel(input.modelURI, context, errors);
-
-    const appConfig = createAppConfig({
-      subdomain: input.subdomain,
-      workspaceConfig: context.workspaceConfig,
-    });
-
-    await createMessage({
-      filesCount: input.files?.length ?? 0,
-      message: input.message,
-      model,
-      modelURI: input.modelURI,
-      subdomain: input.subdomain,
-      workspaceConfig: context.workspaceConfig,
-    });
-
-    let messageWithFiles = input.message;
-    if (input.files && input.files.length > 0) {
-      const uploadResult = await writeUploadedFiles(
-        appConfig.appDir,
-        input.files,
-      );
-
-      if (uploadResult.isErr()) {
-        context.workspaceConfig.captureException(uploadResult.error);
-        throw toORPCError(uploadResult.error, errors);
-      }
-
-      const fileAttachmentsPart = {
-        data: {
-          files: uploadResult.value.files,
-        },
-        metadata: {
-          createdAt: new Date(),
-          id: StoreId.newPartId(),
-          messageId: input.message.id,
-          sessionId: input.sessionId,
-        },
-        type: "data-fileAttachments" as const,
-      };
-
-      messageWithFiles = {
-        ...input.message,
-        parts: [...input.message.parts, fileAttachmentsPart],
-      };
-    }
-
-    context.workspaceRef.send({
-      type: "createSession",
-      value: {
-        message: messageWithFiles,
-        model,
-        sessionId: input.sessionId,
-        subdomain: input.subdomain,
-      },
-    });
-
-    context.workspaceConfig.captureEvent("session.created");
   });
 
 const stop = base
@@ -257,7 +169,6 @@ export const session = {
   byId,
   byIdWithMessagesAndParts,
   create,
-  createWithMessage,
   list,
   live,
   remove,

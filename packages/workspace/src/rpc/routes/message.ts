@@ -7,7 +7,6 @@ import { createAppConfig } from "../../lib/app-config/create";
 import { createMessage } from "../../lib/create-message";
 import { resolveModel } from "../../lib/resolve-model";
 import { Store } from "../../lib/store";
-import { writeUploadedFiles } from "../../lib/write-uploaded-files";
 import { SessionMessage } from "../../schemas/session/message";
 import { StoreId } from "../../schemas/store-id";
 import { AppSubdomainSchema } from "../../schemas/subdomains";
@@ -46,64 +45,46 @@ const create = base
   .input(
     z.object({
       files: z.array(Upload.Schema).optional(),
-      message: SessionMessage.UserSchemaWithParts,
       modelURI: AIGatewayModelURI.Schema,
-      sessionId: StoreId.SessionSchema,
+      prompt: z.string(),
+      sessionId: StoreId.SessionSchema.optional(),
       subdomain: AppSubdomainSchema,
     }),
   )
-  .output(z.void())
+  .output(z.object({ sessionId: StoreId.SessionSchema }))
   .handler(
     async ({
       context,
       errors,
-      input: { files, message, modelURI, sessionId, subdomain },
+      input: { files, modelURI, prompt, sessionId, subdomain },
     }) => {
-      const model = await resolveModel(modelURI, context, errors);
-
-      const { appConfig } = await createMessage({
-        filesCount: files?.length ?? 0,
-        message,
-        model,
-        modelURI,
+      const appConfig = createAppConfig({
         subdomain,
         workspaceConfig: context.workspaceConfig,
       });
+      const model = await resolveModel(modelURI, context, errors);
 
-      let messageWithFiles = message;
-      if (files && files.length > 0) {
-        const uploadResult = await writeUploadedFiles(appConfig.appDir, files);
+      const messageResult = await createMessage({
+        appConfig,
+        files,
+        model,
+        modelURI,
+        prompt,
+        sessionId,
+      });
 
-        if (uploadResult.isErr()) {
-          context.workspaceConfig.captureException(uploadResult.error);
-          throw toORPCError(uploadResult.error, errors);
-        }
-
-        const fileAttachmentsPart = {
-          data: {
-            files: uploadResult.value.files,
-          },
-          metadata: {
-            createdAt: new Date(),
-            id: StoreId.newPartId(),
-            messageId: message.id,
-            sessionId,
-          },
-          type: "data-fileAttachments" as const,
-        };
-
-        messageWithFiles = {
-          ...message,
-          parts: [...message.parts, fileAttachmentsPart],
-        };
+      if (messageResult.isErr()) {
+        context.workspaceConfig.captureException(messageResult.error);
+        throw toORPCError(messageResult.error, errors);
       }
 
+      const message = messageResult.value;
       context.workspaceRef.send({
         type: "addMessage",
         value: {
-          message: messageWithFiles,
+          message,
           model,
-          sessionId,
+          sessionId: message.metadata.sessionId,
           subdomain,
         },
       });
@@ -113,6 +94,8 @@ const create = base
           subdomain: appConfig.subdomain,
         });
       }
+
+      return { sessionId: message.metadata.sessionId };
     },
   );
 

@@ -1,6 +1,6 @@
 import { rpcClient } from "@/client/rpc/client";
 import { type AIGatewayModelURI } from "@quests/ai-gateway/client";
-import { type ProjectSubdomain, StoreId } from "@quests/workspace/client";
+import { type ProjectSubdomain, type StoreId } from "@quests/workspace/client";
 import { useMutation } from "@tanstack/react-query";
 
 export function useContinueSession({
@@ -23,32 +23,10 @@ export function useContinueSession({
       return;
     }
 
-    const messageId = StoreId.newMessageId();
-    const createdAt = new Date();
-
     createMessage.mutate(
       {
-        message: {
-          id: messageId,
-          metadata: {
-            createdAt,
-            sessionId,
-          },
-          parts: [
-            {
-              metadata: {
-                createdAt,
-                id: StoreId.newPartId(),
-                messageId,
-                sessionId,
-              },
-              text: "Continue",
-              type: "text",
-            },
-          ],
-          role: "user",
-        },
         modelURI,
+        prompt: "Continue.",
         sessionId,
         subdomain,
       },

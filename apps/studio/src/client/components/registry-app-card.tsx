@@ -1,4 +1,4 @@
-import { SmallAppIcon } from "@/client/components/app-icon";
+import { AppIcon } from "@/client/components/app-icon";
 import { InternalLink } from "@/client/components/internal-link";
 import { cn } from "@/client/lib/utils";
 import { useQuery } from "@tanstack/react-query";
@@ -30,7 +30,6 @@ export function RegistryAppCard({
 
   const title = appDetails?.title;
   const description = appDetails?.description;
-  const icon = appDetails?.icon;
 
   return (
     <div className={cn("group relative block", className)} {...props}>
@@ -60,14 +59,7 @@ export function RegistryAppCard({
           </div>
         </InternalLink>
         <div className="flex items-start gap-2 text-sm">
-          {showIcon && (
-            <SmallAppIcon
-              background={icon?.background}
-              icon={icon?.lucide}
-              mode="app-builder"
-              size="lg"
-            />
-          )}
+          {showIcon && <AppIcon name={appDetails?.iconName} size="lg" />}
           <div className="min-w-0 flex-1 space-y-1">
             <InternalLink
               params={{ folderName }}

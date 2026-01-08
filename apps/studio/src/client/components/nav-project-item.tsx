@@ -1,4 +1,4 @@
-import { SmallAppIcon } from "@/client/components/app-icon";
+import { AppIcon } from "@/client/components/app-icon";
 import { InternalLink } from "@/client/components/internal-link";
 import {
   DropdownMenu,
@@ -125,12 +125,6 @@ export const NavProjectItem = memo(function NavProjectItem({
     <SidebarMenuItem className="group" key={project.subdomain}>
       {isEditing ? (
         <div className="flex h-9 items-center gap-2 px-2">
-          <SmallAppIcon
-            background={project.icon?.background}
-            icon={project.icon?.lucide}
-            mode={project.mode}
-            size="sm"
-          />
           <Input
             className="-ml-1 h-7 pl-1 text-sm"
             disabled={isRenameLoading}
@@ -148,8 +142,8 @@ export const NavProjectItem = memo(function NavProjectItem({
       ) : (
         <SidebarMenuButton
           asChild
-          className="h-9 group-hover:bg-black/10 data-[active=true]:bg-black/15 data-[active=true]:font-normal data-[active=true]:text-foreground dark:group-hover:bg-white/10 dark:data-[active=true]:bg-white/15"
-          isActive={isActive || undefined}
+          className="h-9 gap-1 group-hover:bg-black/10 data-[active=true]:bg-black/15 data-[active=true]:font-normal data-[active=true]:text-foreground dark:group-hover:bg-white/10 dark:data-[active=true]:bg-white/15"
+          isActive={isActive}
         >
           <InternalLink
             onDoubleClick={handleStartEdit}
@@ -157,12 +151,7 @@ export const NavProjectItem = memo(function NavProjectItem({
             params={{ subdomain: project.subdomain }}
             to="/projects/$subdomain"
           >
-            <SmallAppIcon
-              background={project.icon?.background}
-              icon={project.icon?.lucide}
-              mode={project.mode}
-              size="sm"
-            />
+            <AppIcon name={project.iconName} size="xs" />
             <span>{project.title}</span>
           </InternalLink>
         </SidebarMenuButton>

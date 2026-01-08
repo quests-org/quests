@@ -1,15 +1,10 @@
-import { AppIconsSchema } from "@quests/shared/icons";
+import { TabIconsSchema } from "@quests/shared/icons";
 import { z } from "zod";
 
 export const ProjectManifestSchema = z.object({
   description: z.string().optional(),
-  icon: z
-    .object({
-      background: z.string().optional(),
-      // eslint-disable-next-line unicorn/prefer-top-level-await
-      lucide: AppIconsSchema.optional().catch(undefined),
-    })
-    .optional(),
+  // eslint-disable-next-line unicorn/prefer-top-level-await
+  iconName: TabIconsSchema.optional().catch(undefined),
   name: z.string(),
 });
 

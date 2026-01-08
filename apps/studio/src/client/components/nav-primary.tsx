@@ -24,7 +24,7 @@ export function NavPrimary({
   }[];
 }) {
   return (
-    <SidebarGroup {...props}>
+    <SidebarGroup {...props} className="pl-1">
       <SidebarGroupContent>
         <SidebarMenu>
           {items.map((item) => (

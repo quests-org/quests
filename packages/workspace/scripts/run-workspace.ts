@@ -12,12 +12,11 @@ import readline from "node:readline";
 import { ulid } from "ulid";
 import { createActor } from "xstate";
 
-import { type WorkspaceAppProject } from "../src/client";
+import { type ProjectSubdomain } from "../src/client";
 import { workspaceMachine } from "../src/electron";
-import { getCurrentDate } from "../src/lib/get-current-date";
 import { message as messageRoute } from "../src/rpc/routes/message";
 import { project as projectRoute } from "../src/rpc/routes/project";
-import { StoreId } from "../src/schemas/store-id";
+import { type StoreId } from "../src/schemas/store-id";
 import { env } from "./lib/env";
 
 const cacheIdentifier = "quests-run-workspace";
@@ -128,8 +127,7 @@ const rl = readline.createInterface({
   output: process.stdout,
 });
 
-let project: undefined | WorkspaceAppProject;
-const sessionId = StoreId.newSessionId();
+let projectSubdomain: ProjectSubdomain | undefined;
 
 const FAKE_FILES = {
   audio: {
@@ -168,7 +166,7 @@ function extractFilePrefix(input: string) {
             mimeType: file.mimeType,
             size: Buffer.from(file.content, "base64").length,
           })),
-          text: input.slice(prefix.length).trim(),
+          prompt: input.slice(prefix.length).trim(),
         };
       }
       const type = prefix.slice(0, -1) as keyof typeof FAKE_FILES;
@@ -180,12 +178,14 @@ function extractFilePrefix(input: string) {
             size: Buffer.from(FAKE_FILES[type].content, "base64").length,
           },
         ],
-        text: input.slice(prefix.length).trim(),
+        prompt: input.slice(prefix.length).trim(),
       };
     }
   }
-  return { files: undefined, text: input };
+  return { files: undefined, prompt: input };
 }
+
+let savedSessionId: StoreId.Session | undefined;
 
 // eslint-disable-next-line no-console
 console.log("Enter task prompt (press Enter to submit):");
@@ -196,29 +196,7 @@ rl.on("line", (input) => {
     const textAfterChatPrefix = isChatMode
       ? trimmedInput.slice(5).trim()
       : trimmedInput;
-    const { files, text } = extractFilePrefix(textAfterChatPrefix);
-    const finalMode = isChatMode ? "chat" : "app-builder";
-    const messageId = StoreId.newMessageId();
-    const message = {
-      id: messageId,
-      metadata: {
-        createdAt: new Date(),
-        sessionId,
-      },
-      parts: [
-        {
-          metadata: {
-            createdAt: getCurrentDate(),
-            id: StoreId.newPartId(),
-            messageId,
-            sessionId,
-          },
-          text,
-          type: "text" as const,
-        },
-      ],
-      role: "user" as const,
-    };
+    const { files, prompt } = extractFilePrefix(textAfterChatPrefix);
     const context = {
       modelRegistry: {
         languageModel: fetchAISDKModel,
@@ -236,31 +214,32 @@ rl.on("line", (input) => {
       // "google/gemini-3-pro-preview?provider=openrouter&providerConfigId=openrouter-config-id";
       "openai/gpt-5.2?provider=openrouter&providerConfigId=openrouter-config-id";
 
-    if (project) {
+    if (projectSubdomain) {
       void call(
         messageRoute.create,
         {
           files,
-          message,
           modelURI,
-          sessionId,
-          subdomain: project.subdomain,
+          prompt,
+          sessionId: savedSessionId,
+          subdomain: projectSubdomain,
         },
         { context },
-      );
+      ).then(({ sessionId }) => {
+        savedSessionId = sessionId;
+      });
     } else {
       void call(
         projectRoute.create,
         {
           files,
-          message,
-          mode: finalMode,
           modelURI,
-          sessionId,
+          prompt,
         },
         { context },
       ).then((newProject) => {
-        project = newProject;
+        projectSubdomain = newProject.subdomain;
+        savedSessionId = newProject.sessionId;
       });
     }
   }

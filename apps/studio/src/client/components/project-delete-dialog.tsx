@@ -1,4 +1,4 @@
-import { SmallAppIcon } from "@/client/components/app-icon";
+import { AppIcon } from "@/client/components/app-icon";
 import { DeleteWithProgressDialog } from "@/client/components/delete-with-progress-dialog";
 import { useTrashApp } from "@/client/hooks/use-trash-app";
 import { getTrashTerminology } from "@/client/lib/trash-terminology";
@@ -27,7 +27,6 @@ export function ProjectDeleteDialog({
     ...rpcClient.workspace.project.git.commits.list.queryOptions({
       input: { projectSubdomain: project.subdomain },
     }),
-    enabled: project.mode !== "chat",
   });
 
   const { data: messageCount } = useQuery(
@@ -52,16 +51,11 @@ export function ProjectDeleteDialog({
     <DeleteWithProgressDialog
       content={
         <div className="flex items-center gap-3 rounded-lg border bg-muted/50 p-4">
-          <SmallAppIcon
-            background={project.icon?.background}
-            icon={project.icon?.lucide}
-            mode={project.mode}
-            size="lg"
-          />
+          <AppIcon name={project.iconName} size="lg" />
           <div className="flex flex-col gap-1">
             <div className="font-medium text-foreground">{project.title}</div>
             <div className="flex items-center gap-3 text-xs text-muted-foreground">
-              {project.mode !== "chat" && commitsData?.commits && (
+              {commitsData?.commits && (
                 <div className="flex items-center gap-1">
                   <GitCommitVertical className="size-3" />
                   <span>
@@ -79,20 +73,18 @@ export function ProjectDeleteDialog({
                 </div>
               )}
             </div>
-            {project.mode !== "chat" && (
-              <div className="text-xs text-muted-foreground/70">
-                {project.urls.localhost}
-              </div>
-            )}
+            <div className="text-xs text-muted-foreground/70">
+              {project.urls.localhost}
+            </div>
           </div>
         </div>
       }
-      description={`This ${project.mode === "chat" ? "chat" : "project"} will be moved to your system ${trashTerminology}. You can restore it from there if needed.`}
+      description={`This project will be moved to your system ${trashTerminology}. You can restore it from there if needed.`}
       items={[project]}
       onDelete={handleDelete}
       onOpenChange={onOpenChange}
       open={open}
-      title={`Delete "${project.title}" ${project.mode === "chat" ? "chat" : "project"}?`}
+      title={`Delete "${project.title}" project?`}
     />
   );
 }

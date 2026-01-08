@@ -31,7 +31,6 @@ import { Route as AppProjectsIndexRouteImport } from './routes/_app/projects/ind
 import { Route as AppEvalsIndexRouteImport } from './routes/_app/evals/index'
 import { Route as AppDiscoverIndexRouteImport } from './routes/_app/discover/index'
 import { Route as AppDebugIndexRouteImport } from './routes/_app/debug/index'
-import { Route as AppEvalsRunRouteImport } from './routes/_app/evals/run'
 import { Route as AppDebugComponentsRouteImport } from './routes/_app/debug/components'
 import { Route as AppDebugColorsRouteImport } from './routes/_app/debug/colors'
 import { Route as AppNot_authenticatedWelcomeRouteImport } from './routes/_app/_not_authenticated/welcome'
@@ -151,11 +150,6 @@ const AppDebugIndexRoute = AppDebugIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppDebugRouteRoute,
 } as any)
-const AppEvalsRunRoute = AppEvalsRunRouteImport.update({
-  id: '/evals/run',
-  path: '/evals/run',
-  getParentRoute: () => AppRouteRoute,
-} as any)
 const AppDebugComponentsRoute = AppDebugComponentsRouteImport.update({
   id: '/components',
   path: '/components',
@@ -235,7 +229,6 @@ export interface FileRoutesByFullPath {
   '/welcome': typeof AppNot_authenticatedWelcomeRoute
   '/debug/colors': typeof AppDebugColorsRoute
   '/debug/components': typeof AppDebugComponentsRoute
-  '/evals/run': typeof AppEvalsRunRoute
   '/debug/': typeof AppDebugIndexRoute
   '/discover': typeof AppDiscoverIndexRoute
   '/evals': typeof AppEvalsIndexRoute
@@ -265,7 +258,6 @@ export interface FileRoutesByTo {
   '/welcome': typeof AppNot_authenticatedWelcomeRoute
   '/debug/colors': typeof AppDebugColorsRoute
   '/debug/components': typeof AppDebugComponentsRoute
-  '/evals/run': typeof AppEvalsRunRoute
   '/debug': typeof AppDebugIndexRoute
   '/discover': typeof AppDiscoverIndexRoute
   '/evals': typeof AppEvalsIndexRoute
@@ -301,7 +293,6 @@ export interface FileRoutesById {
   '/_app/_not_authenticated/welcome': typeof AppNot_authenticatedWelcomeRoute
   '/_app/debug/colors': typeof AppDebugColorsRoute
   '/_app/debug/components': typeof AppDebugComponentsRoute
-  '/_app/evals/run': typeof AppEvalsRunRoute
   '/_app/debug/': typeof AppDebugIndexRoute
   '/_app/discover/': typeof AppDiscoverIndexRoute
   '/_app/evals/': typeof AppEvalsIndexRoute
@@ -335,7 +326,6 @@ export interface FileRouteTypes {
     | '/welcome'
     | '/debug/colors'
     | '/debug/components'
-    | '/evals/run'
     | '/debug/'
     | '/discover'
     | '/evals'
@@ -365,7 +355,6 @@ export interface FileRouteTypes {
     | '/welcome'
     | '/debug/colors'
     | '/debug/components'
-    | '/evals/run'
     | '/debug'
     | '/discover'
     | '/evals'
@@ -400,7 +389,6 @@ export interface FileRouteTypes {
     | '/_app/_not_authenticated/welcome'
     | '/_app/debug/colors'
     | '/_app/debug/components'
-    | '/_app/evals/run'
     | '/_app/debug/'
     | '/_app/discover/'
     | '/_app/evals/'
@@ -577,13 +565,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDebugIndexRouteImport
       parentRoute: typeof AppDebugRouteRoute
     }
-    '/_app/evals/run': {
-      id: '/_app/evals/run'
-      path: '/evals/run'
-      fullPath: '/evals/run'
-      preLoaderRoute: typeof AppEvalsRunRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
     '/_app/debug/components': {
       id: '/_app/debug/components'
       path: '/components'
@@ -710,7 +691,6 @@ interface AppRouteRouteChildren {
   AppNewTabRoute: typeof AppNewTabRoute
   AppReleaseNotesRoute: typeof AppReleaseNotesRoute
   AppSetupRoute: typeof AppSetupRoute
-  AppEvalsRunRoute: typeof AppEvalsRunRoute
   AppDiscoverIndexRoute: typeof AppDiscoverIndexRoute
   AppEvalsIndexRoute: typeof AppEvalsIndexRoute
   AppProjectsIndexRoute: typeof AppProjectsIndexRoute
@@ -729,7 +709,6 @@ const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppNewTabRoute: AppNewTabRoute,
   AppReleaseNotesRoute: AppReleaseNotesRoute,
   AppSetupRoute: AppSetupRoute,
-  AppEvalsRunRoute: AppEvalsRunRoute,
   AppDiscoverIndexRoute: AppDiscoverIndexRoute,
   AppEvalsIndexRoute: AppEvalsIndexRoute,
   AppProjectsIndexRoute: AppProjectsIndexRoute,

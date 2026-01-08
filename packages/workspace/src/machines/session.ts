@@ -13,7 +13,7 @@ import {
 import { type AnyAgent } from "../agents/types";
 import { type AppConfig } from "../lib/app-config/types";
 import { createAssignEventError } from "../lib/assign-event-error";
-import { generateSessionTitle } from "../lib/generate-session-title";
+import { createSession } from "../lib/create-session";
 import { logUnhandledEvent } from "../lib/log-unhandled-event";
 import { Store } from "../lib/store";
 import { type SessionTag } from "../schemas/app-state";
@@ -101,25 +101,17 @@ export const sessionMachine = setup({
         appConfig: AppConfig;
         sessionId: StoreId.Session;
       }
-    >(async ({ input, signal }) => {
-      const existingSession = await Store.getSession(
-        input.sessionId,
-        input.appConfig,
-        { signal },
-      );
+    >(async ({ input: { appConfig, sessionId }, signal }) => {
+      const existingSession = await Store.getSession(sessionId, appConfig, {
+        signal,
+      });
       if (existingSession.isErr()) {
         if (existingSession.error.type === "workspace-not-found-error") {
-          // Create a new session with a date-based title
-          const title = await generateSessionTitle(input.appConfig, { signal });
-          const result = await Store.saveSession(
-            {
-              createdAt: new Date(),
-              id: input.sessionId,
-              title,
-            },
-            input.appConfig,
-            { signal },
-          );
+          const result = await createSession({
+            appConfig,
+            sessionId,
+            signal,
+          });
           if (result.isErr()) {
             throw new Error(
               `Failed to create session: ${result.error.message}`,
@@ -131,17 +123,18 @@ export const sessionMachine = setup({
             `Failed to get session: ${existingSession.error.message}`,
           );
         }
-      }
-      const result = await Store.saveSession(
-        {
-          ...existingSession.value,
-          updatedAt: new Date(),
-        },
-        input.appConfig,
-        { signal },
-      );
-      if (result.isErr()) {
-        throw new Error(`Failed to update session: ${result.error.message}`);
+      } else {
+        const result = await Store.saveSession(
+          {
+            ...existingSession.value,
+            updatedAt: new Date(),
+          },
+          appConfig,
+          { signal },
+        );
+        if (result.isErr()) {
+          throw new Error(`Failed to update session: ${result.error.message}`);
+        }
       }
     }),
   },

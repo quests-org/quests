@@ -1,7 +1,5 @@
-import { DEFAULT_THEME_GRADIENT, THEMES } from "@quests/shared/icons";
 import { errAsync, ok, safeTry } from "neverthrow";
 import fs from "node:fs/promises";
-import { draw } from "radashi";
 
 import { type ProjectSubdomain } from "../schemas/subdomains";
 import { type WorkspaceConfig } from "../types";
@@ -15,7 +13,6 @@ import { GitCommands } from "./git/commands";
 import { ensureGitRepo } from "./git/ensure-git-repo";
 import { pathExists } from "./path-exists";
 import { getProjectManifest, updateProjectManifest } from "./project-manifest";
-import { projectModeForSubdomain } from "./project-mode-for-subdomain";
 import { getProjectState, setProjectState } from "./project-state-store";
 
 interface DuplicateProjectOptions {
@@ -35,7 +32,6 @@ export async function duplicateProject(
     });
 
     const projectConfig = await newProjectConfig({
-      mode: projectModeForSubdomain(sourceSubdomain),
       workspaceConfig,
     });
 
@@ -120,19 +116,9 @@ export async function duplicateProject(
     }
 
     const existingManifest = await getProjectManifest(projectConfig.appDir);
-    const currentTheme = existingManifest?.icon?.background;
 
-    // Pick a random theme that's different from the current one
-    const availableThemes = currentTheme
-      ? THEMES.filter((theme) => theme !== currentTheme)
-      : THEMES;
-    const randomTheme = draw(availableThemes) ?? DEFAULT_THEME_GRADIENT;
-
-    await updateProjectManifest(projectConfig.appDir, {
-      icon: {
-        background: randomTheme,
-        lucide: existingManifest?.icon?.lucide,
-      },
+    await updateProjectManifest(projectConfig, {
+      ...(existingManifest && { iconName: existingManifest.iconName }),
       name: duplicateName,
     });
 

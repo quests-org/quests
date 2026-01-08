@@ -4,7 +4,6 @@ import { assign, fromPromise, log, setup } from "xstate";
 
 import { type AppConfig } from "../lib/app-config/types";
 import { getCurrentDate } from "../lib/get-current-date";
-import { projectModeForSubdomain } from "../lib/project-mode-for-subdomain";
 import { Store } from "../lib/store";
 import { type SessionMessagePart } from "../schemas/session/message-part";
 import { getToolByType } from "../tools/all";
@@ -57,7 +56,6 @@ const executeToolLogic = fromPromise<
           { signal },
         ));
     appConfig.workspaceConfig.captureEvent("llm.tool_executed", {
-      project_mode: projectModeForSubdomain(appConfig.subdomain),
       success: output.isOk(),
       tool_name: part.type,
     });

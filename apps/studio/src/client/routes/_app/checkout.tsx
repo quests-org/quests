@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/client/components/ui/card";
-import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
+import { createIconMeta } from "@/shared/tabs";
 import { SUPPORT_URL } from "@quests/shared";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { CheckCircle2, XCircle } from "lucide-react";
@@ -26,10 +26,7 @@ export const Route = createFileRoute("/_app/checkout")({
         {
           title: "Checkout",
         },
-        {
-          content: "credit-card",
-          name: META_TAG_LUCIDE_ICON,
-        },
+        createIconMeta("credit-card"),
       ],
     };
   },

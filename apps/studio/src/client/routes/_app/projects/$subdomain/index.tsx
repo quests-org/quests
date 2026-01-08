@@ -3,16 +3,11 @@ import { DuplicateProjectModal } from "@/client/components/duplicate-project-mod
 import { ProjectDeleteDialog } from "@/client/components/project-delete-dialog";
 import { ProjectHeaderToolbar } from "@/client/components/project-header-toolbar";
 import { ProjectSettingsDialog } from "@/client/components/project-settings-dialog";
-import { ProjectViewApp } from "@/client/components/project-view/app";
-import { ProjectViewChat } from "@/client/components/project-view/chat";
+import { ProjectView } from "@/client/components/project-view";
 import { useProjectRouteSync } from "@/client/hooks/use-project-route-sync";
 import { migrateProjectSubdomain } from "@/client/lib/migrate-project-subdomain";
 import { rpcClient } from "@/client/rpc/client";
-import {
-  META_TAG_ICON_BACKGROUND,
-  META_TAG_LUCIDE_ICON,
-  META_TAG_PROJECT_MODE,
-} from "@/shared/tabs";
+import { createIconMeta, createProjectSubdomainMeta } from "@/shared/tabs";
 import { safe } from "@orpc/client";
 import {
   ProjectSubdomainSchema,
@@ -120,18 +115,10 @@ export const Route = createFileRoute("/_app/projects/$subdomain/")({
         {
           title: title(project.data),
         },
-        {
-          content: project.data?.icon?.lucide,
-          name: META_TAG_LUCIDE_ICON,
-        },
-        {
-          content: project.data?.icon?.background,
-          name: META_TAG_ICON_BACKGROUND,
-        },
-        {
-          content: project.data?.mode,
-          name: META_TAG_PROJECT_MODE,
-        },
+        ...(project.data?.iconName
+          ? [createIconMeta(project.data.iconName)]
+          : [createIconMeta("message-circle")]),
+        createProjectSubdomainMeta(params.subdomain),
       ],
     };
   },
@@ -244,20 +231,13 @@ function RouteComponent() {
       />
 
       <div className="flex flex-1 overflow-hidden">
-        {project.mode === "chat" ? (
-          <ProjectViewChat
-            project={project}
-            selectedModelURI={projectState.selectedModelURI}
-            selectedSessionId={selectedSessionId}
-          />
-        ) : (
-          <ProjectViewApp
-            hasAppModifications={hasAppModifications}
-            project={project}
-            selectedModelURI={projectState.selectedModelURI}
-            selectedVersion={selectedVersion}
-          />
-        )}
+        <ProjectView
+          hasAppModifications={hasAppModifications}
+          project={project}
+          selectedModelURI={projectState.selectedModelURI}
+          selectedSessionId={selectedSessionId}
+          selectedVersion={selectedVersion}
+        />
       </div>
 
       <ProjectDeleteDialog
@@ -268,7 +248,6 @@ function RouteComponent() {
       />
 
       <DuplicateProjectModal
-        isChat={project.mode === "chat"}
         isOpen={showDuplicate ?? false}
         onClose={() => {
           handleDuplicateDialogChange(false);

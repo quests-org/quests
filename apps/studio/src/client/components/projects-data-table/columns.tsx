@@ -4,7 +4,7 @@ import type {
 } from "@quests/workspace/client";
 import type { ColumnDef } from "@tanstack/react-table";
 
-import { SmallAppIcon } from "@/client/components/app-icon";
+import { AppIcon } from "@/client/components/app-icon";
 import { AppStatusIcon } from "@/client/components/app-status-icon";
 import { InternalLink } from "@/client/components/internal-link";
 import { Button } from "@/client/components/ui/button";
@@ -94,12 +94,7 @@ export function createColumns({
               params={{ subdomain: project.subdomain }}
               to="/projects/$subdomain"
             >
-              <SmallAppIcon
-                background={project.icon?.background}
-                icon={project.icon?.lucide}
-                mode={project.mode}
-                size="sm"
-              />
+              <AppIcon name={project.iconName} size="sm" />
               <span className="truncate font-medium">{project.title}</span>
               <AppStatusIcon
                 className="ml-auto h-4 w-4 shrink-0"

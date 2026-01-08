@@ -24,8 +24,9 @@ import { useTrashApp } from "@/client/hooks/use-trash-app";
 import { captureClientEvent } from "@/client/lib/capture-client-event";
 import { getTrashTerminology } from "@/client/lib/trash-terminology";
 import { rpcClient } from "@/client/rpc/client";
-import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
+import { createIconMeta } from "@/shared/tabs";
 import { isDefinedError } from "@orpc/client";
+import { EVAL_SUBDOMAIN_PREFIX } from "@quests/shared";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { Circle, Loader2, Square, Trash2 } from "lucide-react";
@@ -35,7 +36,7 @@ import { z } from "zod";
 
 const projectsSearchSchema = z.object({
   filter: z
-    .enum(["all", "apps", "chats", "evals", "active", "favorites"])
+    .enum(["all", "evals", "active", "favorites"])
     .optional()
     .default("all"),
 });
@@ -48,10 +49,7 @@ export const Route = createFileRoute("/_app/projects/")({
         {
           title: "Your Projects",
         },
-        {
-          content: "layout-grid",
-          name: META_TAG_LUCIDE_ICON,
-        },
+        createIconMeta("layout-grid"),
       ],
     };
   },
@@ -120,18 +118,10 @@ function RouteComponent() {
     );
   }, [appStates]);
 
-  const appsCount = useMemo(
-    () => projects.filter((p) => p.mode === "app-builder").length,
-    [projects],
-  );
-
-  const chatsCount = useMemo(
-    () => projects.filter((p) => p.mode === "chat").length,
-    [projects],
-  );
-
   const evalsCount = useMemo(
-    () => projects.filter((p) => p.mode === "eval").length,
+    () =>
+      projects.filter((p) => p.subdomain.startsWith(EVAL_SUBDOMAIN_PREFIX))
+        .length,
     [projects],
   );
 
@@ -140,14 +130,10 @@ function RouteComponent() {
       case "active": {
         return projects.filter((p) => activeProjectSubdomains.has(p.subdomain));
       }
-      case "apps": {
-        return projects.filter((p) => p.mode === "app-builder");
-      }
-      case "chats": {
-        return projects.filter((p) => p.mode === "chat");
-      }
       case "evals": {
-        return projects.filter((p) => p.mode === "eval");
+        return projects.filter((p) =>
+          p.subdomain.startsWith(EVAL_SUBDOMAIN_PREFIX),
+        );
       }
       case "favorites": {
         return projects.filter((p) =>
@@ -375,28 +361,6 @@ function RouteComponent() {
                     {projects.length}
                   </Badge>
                 </TabsTrigger>
-                {appsCount > 0 && (
-                  <TabsTrigger value="apps">
-                    Apps
-                    <Badge
-                      className="ml-2 px-1.5"
-                      variant={filterTab === "apps" ? "default" : "secondary"}
-                    >
-                      {appsCount}
-                    </Badge>
-                  </TabsTrigger>
-                )}
-                {chatsCount > 0 && (
-                  <TabsTrigger value="chats">
-                    Chats
-                    <Badge
-                      className="ml-2 px-1.5"
-                      variant={filterTab === "chats" ? "default" : "secondary"}
-                    >
-                      {chatsCount}
-                    </Badge>
-                  </TabsTrigger>
-                )}
                 {evalsCount > 0 && (
                   <TabsTrigger value="evals">
                     Evals

@@ -1,13 +1,12 @@
-import { type ProjectMode } from "@quests/shared";
-import { type IconName } from "@quests/shared/icons";
+import { type TabIconName } from "@quests/shared/icons";
+import { type ProjectSubdomain } from "@quests/workspace/client";
 
 export interface Tab {
-  background?: string;
-  icon?: IconName;
+  iconName?: TabIconName;
   id: string;
   pathname: string;
   pinned?: boolean;
-  projectMode?: ProjectMode;
+  projectSubdomain?: ProjectSubdomain;
   title?: string;
 }
 
@@ -18,6 +17,21 @@ export interface TabState {
 
 export const SingleTabOnlyRoutes = /\/projects\/[^/]+|\/sign-in/;
 
-export const META_TAG_LUCIDE_ICON = "lucide-icon";
-export const META_TAG_ICON_BACKGROUND = "icon-background";
-export const META_TAG_PROJECT_MODE = "project-mode";
+export const META_TAGS = {
+  iconName: "quests-icon-name",
+  projectSubdomain: "quests-project-subdomain",
+};
+
+export function createIconMeta(icon: TabIconName) {
+  return {
+    content: icon,
+    name: META_TAGS.iconName,
+  };
+}
+
+export function createProjectSubdomainMeta(subdomain: ProjectSubdomain) {
+  return {
+    content: subdomain,
+    name: META_TAGS.projectSubdomain,
+  };
+}

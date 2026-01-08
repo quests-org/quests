@@ -1,5 +1,5 @@
 import { AISetupView } from "@/client/components/ai-setup-view";
-import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
+import { createIconMeta } from "@/shared/tabs";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_app/setup")({
@@ -10,10 +10,7 @@ export const Route = createFileRoute("/_app/setup")({
         {
           title: "Setup",
         },
-        {
-          content: "quests",
-          name: META_TAG_LUCIDE_ICON,
-        },
+        createIconMeta("quests"),
       ],
     };
   },

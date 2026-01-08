@@ -1,6 +1,6 @@
 import { DiscoverPageLayout } from "@/client/components/discover-page-layout";
 import { rpcClient } from "@/client/rpc/client";
-import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
+import { createIconMeta } from "@/shared/tabs";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_app/discover/templates/")({
@@ -10,10 +10,7 @@ export const Route = createFileRoute("/_app/discover/templates/")({
       {
         title: "Templates - Discover",
       },
-      {
-        content: "square-dashed",
-        name: META_TAG_LUCIDE_ICON,
-      },
+      createIconMeta("square-dashed"),
     ],
   }),
   loader: async () => {

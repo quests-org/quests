@@ -24,3 +24,4 @@ export const SALES_EMAIL = "hello@quests.dev";
 export const SUPPORT_EMAIL = "support@quests.dev";
 export const PROJECT_MANIFEST_FILE_NAME = "quests.json";
 export const VERSION_REF_QUERY_PARAM = "versionRef";
+export const EVAL_SUBDOMAIN_PREFIX = "eval-";

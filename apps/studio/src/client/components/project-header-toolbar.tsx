@@ -3,7 +3,7 @@ import type {
   SupportedEditorId,
 } from "@/shared/schemas/editors";
 
-import { SmallAppIcon } from "@/client/components/app-icon";
+import { AppIcon } from "@/client/components/app-icon";
 import { ProjectSettingsDialog } from "@/client/components/project-settings-dialog";
 import { Button } from "@/client/components/ui/button";
 import { Toggle } from "@/client/components/ui/toggle";
@@ -24,8 +24,8 @@ import {
   FolderOpenIcon,
   MessageCircle,
   PanelLeftClose,
+  Pencil,
   Save,
-  SettingsIcon,
   Terminal,
   TrashIcon,
 } from "lucide-react";
@@ -68,8 +68,6 @@ export function ProjectHeaderToolbar({
   project,
   selectedVersion,
 }: ProjectHeaderToolbarProps) {
-  const isChat = project.mode === "chat";
-  const canCollapseChat = !isChat && hasAppModifications;
   const { data: preferences } = useQuery(
     rpcClient.preferences.live.get.experimental_liveOptions(),
   );
@@ -212,12 +210,7 @@ export function ProjectHeaderToolbar({
                   className="h-auto max-w-80 min-w-0 justify-start gap-2 py-1 font-semibold text-foreground hover:bg-accent hover:text-accent-foreground has-[>svg]:px-1"
                   variant="ghost"
                 >
-                  <SmallAppIcon
-                    background={project.icon?.background}
-                    icon={project.icon?.lucide}
-                    mode={project.mode}
-                    size="md"
-                  />
+                  <AppIcon name={project.iconName} size="md" />
                   <span className="truncate">{project.title}</span>
                   <ChevronDown className="h-3 w-3 shrink-0" />
                 </Button>
@@ -240,8 +233,8 @@ export function ProjectHeaderToolbar({
                     setSettingsDialogOpen(true);
                   }}
                 >
-                  <SettingsIcon className="h-4 w-4" />
-                  <span>Settings</span>
+                  <Pencil className="h-4 w-4" />
+                  <span>Rename</span>
                 </DropdownMenuItem>
 
                 <DropdownMenuSeparator />
@@ -264,7 +257,7 @@ export function ProjectHeaderToolbar({
 
             {!sidebarCollapsed && <div className="flex-1" />}
 
-            {canCollapseChat && (
+            {hasAppModifications && (
               <Toggle
                 aria-label={sidebarCollapsed ? "Show sidebar" : "Hide sidebar"}
                 onPressedChange={() => {
@@ -303,7 +296,7 @@ export function ProjectHeaderToolbar({
             ) : (
               <div className="flex items-center gap-2">
                 <ToolbarFavoriteAction project={project} />
-                {(!isChat || isDeveloperMode) && (
+                {isDeveloperMode && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
@@ -393,7 +386,7 @@ export function ProjectHeaderToolbar({
                     </DropdownMenuContent>
                   </DropdownMenu>
                 )}
-                {(!isChat || isDeveloperMode) && (
+                {isDeveloperMode && (
                   <DropdownMenu
                     onOpenChange={(open) => {
                       if (open) {

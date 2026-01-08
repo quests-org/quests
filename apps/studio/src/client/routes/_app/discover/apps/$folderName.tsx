@@ -2,7 +2,7 @@
 /* eslint-enable unicorn/filename-case */
 import { TemplateDetail } from "@/client/components/template-detail";
 import { rpcClient } from "@/client/rpc/client";
-import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
+import { createIconMeta } from "@/shared/tabs";
 import { createFileRoute, notFound } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_app/discover/apps/$folderName")({
@@ -26,10 +26,7 @@ export const Route = createFileRoute("/_app/discover/apps/$folderName")({
         {
           title: `${loaderData?.title ?? params.folderName} · Discover`,
         },
-        {
-          content: "telescope",
-          name: META_TAG_LUCIDE_ICON,
-        },
+        createIconMeta("telescope"),
       ],
     };
   },

@@ -10,7 +10,7 @@ import {
 } from "@/client/components/ui/card";
 import { Skeleton } from "@/client/components/ui/skeleton";
 import { rpcClient } from "@/client/rpc/client";
-import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
+import { createIconMeta } from "@/shared/tabs";
 import { RELEASE_NOTES_URL } from "@quests/shared";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
@@ -25,10 +25,7 @@ export const Route = createFileRoute("/_app/release-notes")({
       {
         title: "Release Notes",
       },
-      {
-        content: "file-text",
-        name: META_TAG_LUCIDE_ICON,
-      },
+      createIconMeta("file-text"),
     ],
   }),
 });

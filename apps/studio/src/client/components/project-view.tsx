@@ -10,20 +10,25 @@ import { VersionOverlay } from "@/client/components/version-overlay";
 import { useReload } from "@/client/hooks/use-reload";
 import { cn } from "@/client/lib/utils";
 import { type AIGatewayModelURI } from "@quests/ai-gateway/client";
-import { type WorkspaceAppProject } from "@quests/workspace/client";
+import {
+  type StoreId,
+  type WorkspaceAppProject,
+} from "@quests/workspace/client";
 import { useAtomValue, useSetAtom } from "jotai";
 import { useCallback, useEffect, useRef } from "react";
 import { usePanelRef } from "react-resizable-panels";
 
-export function ProjectViewApp({
+export function ProjectView({
   hasAppModifications,
   project,
   selectedModelURI,
+  selectedSessionId,
   selectedVersion,
 }: {
   hasAppModifications: boolean;
   project: WorkspaceAppProject;
   selectedModelURI: AIGatewayModelURI.Type | undefined;
+  selectedSessionId?: StoreId.Session;
   selectedVersion: string | undefined;
 }) {
   const sidebarCollapsed = useAtomValue(
@@ -71,6 +76,7 @@ export function ProjectViewApp({
           <ProjectSidebar
             project={project}
             selectedModelURI={selectedModelURI}
+            selectedSessionId={selectedSessionId}
             selectedVersion={selectedVersion}
           />
         </div>
@@ -103,6 +109,7 @@ export function ProjectViewApp({
         <ProjectSidebar
           project={project}
           selectedModelURI={selectedModelURI}
+          selectedSessionId={selectedSessionId}
           selectedVersion={selectedVersion}
         />
       </ResizablePanel>

@@ -72,7 +72,7 @@ export function NavUser() {
       <SidebarMenu>
         <SidebarMenuItem className="group">
           <SidebarMenuButton
-            className="group-hover:bg-black/10 dark:group-hover:bg-white/10"
+            className="px-1 group-hover:bg-black/10 dark:group-hover:bg-white/10"
             onClick={() => {
               void rpcClient.preferences.openSettingsWindow.call({
                 tab: "General",
@@ -105,7 +105,7 @@ export function NavUser() {
         >
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
-              className="group-hover:bg-black/10 data-[state=open]:bg-black/10 dark:group-hover:bg-white/10 dark:data-[state=open]:bg-white/10"
+              className="px-1 group-hover:bg-black/10 data-[state=open]:bg-black/10 dark:group-hover:bg-white/10 dark:data-[state=open]:bg-white/10"
               size="lg"
             >
               <Avatar className="h-8 w-8 rounded-lg">

@@ -5,6 +5,8 @@ import path from "node:path";
 import { APP_FOLDER_NAMES } from "../constants";
 import { type AbsolutePath, RelativePathSchema } from "../schemas/paths";
 import { type SessionMessageDataPart } from "../schemas/session/message-data-part";
+import { type SessionMessagePart } from "../schemas/session/message-part";
+import { StoreId } from "../schemas/store-id";
 import { type Upload } from "../schemas/upload";
 import { absolutePathJoin } from "./absolute-path-join";
 import { TypedError } from "./errors";
@@ -18,15 +20,18 @@ type FileAttachmentWithoutRef = Omit<
   "gitRef"
 >;
 
-export async function writeUploadedFiles(
-  appDir: AbsolutePath,
-  files: Upload.Type[],
-) {
+export async function writeUploadedFiles({
+  appDir,
+  files,
+  messageId,
+  sessionId,
+}: {
+  appDir: AbsolutePath;
+  files: Upload.Type[];
+  messageId: StoreId.Message;
+  sessionId: StoreId.Session;
+}) {
   return safeTry(async function* () {
-    if (files.length === 0) {
-      return ok({ files: [] });
-    }
-
     const uploadsDir = absolutePathJoin(appDir, APP_FOLDER_NAMES.uploads);
     yield* ResultAsync.fromPromise(
       fs.mkdir(uploadsDir, { recursive: true }),
@@ -104,7 +109,20 @@ export async function writeUploadedFiles(
         gitRef,
       }));
 
-    return ok({ files: fileMetadata });
+    const part: SessionMessagePart.Type = {
+      data: {
+        files: fileMetadata,
+      },
+      metadata: {
+        createdAt: new Date(),
+        id: StoreId.newPartId(),
+        messageId,
+        sessionId,
+      },
+      type: "data-fileAttachments",
+    };
+
+    return ok({ part });
   });
 }
 

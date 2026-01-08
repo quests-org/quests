@@ -15,7 +15,6 @@ import {
 import { type WorkspaceConfig } from "../types";
 import { createAppConfig } from "./app-config/create";
 import { getAppDirTimestamps } from "./get-app-dir-timestamps";
-import { projectModeForSubdomain } from "./project-mode-for-subdomain";
 import { projectSubdomainForSubdomain } from "./project-subdomain-for-subdomain";
 import { urlsForSubdomain } from "./url-for-subdomain";
 
@@ -79,7 +78,6 @@ export async function getWorkspaceAppForSubdomain<T extends AppSubdomain>(
 
   return {
     ...baseApp,
-    mode: projectModeForSubdomain(appConfig.subdomain),
     subdomain: appConfig.subdomain,
     title: appConfig.folderName,
     type: appConfig.type,

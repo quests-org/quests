@@ -16,7 +16,6 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 interface DuplicateProjectModalProps {
-  isChat: boolean;
   isOpen: boolean;
   onClose: () => void;
   projectName: string;
@@ -24,7 +23,6 @@ interface DuplicateProjectModalProps {
 }
 
 export function DuplicateProjectModal({
-  isChat,
   isOpen,
   onClose,
   projectName,
@@ -56,7 +54,7 @@ export function DuplicateProjectModal({
 
   const handleDuplicate = () => {
     duplicateMutation.mutate({
-      keepHistory: isChat ? true : keepHistory,
+      keepHistory,
       sourceSubdomain: projectSubdomain,
     });
   };
@@ -65,31 +63,27 @@ export function DuplicateProjectModal({
     <Dialog onOpenChange={onClose} open={isOpen}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>
-            {isChat ? "Duplicate Chat" : "Duplicate Project"}
-          </DialogTitle>
+          <DialogTitle>Duplicate Project</DialogTitle>
           <DialogDescription className="text-left">
-            {`This will create a copy of "${projectName}" as a new ${isChat ? "chat" : "project"}.`}
+            {`This will create a copy of "${projectName}" as a new project.`}
           </DialogDescription>
         </DialogHeader>
 
-        {!isChat && (
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              checked={keepHistory}
-              id="keep-history"
-              onCheckedChange={(checked) => {
-                setKeepHistory(checked === true);
-              }}
-            />
-            <label
-              className="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              htmlFor="keep-history"
-            >
-              Keep chat and version history
-            </label>
-          </div>
-        )}
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            checked={keepHistory}
+            id="keep-history"
+            onCheckedChange={(checked) => {
+              setKeepHistory(checked === true);
+            }}
+          />
+          <label
+            className="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            htmlFor="keep-history"
+          >
+            Keep chat and version history
+          </label>
+        </div>
 
         <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
           <Button onClick={onClose} variant="outline">
@@ -101,9 +95,7 @@ export function DuplicateProjectModal({
           >
             {duplicateMutation.isPending
               ? "Duplicating..."
-              : isChat
-                ? "Duplicate Chat"
-                : "Duplicate Project"}
+              : "Duplicate Project"}
           </Button>
         </DialogFooter>
       </DialogContent>

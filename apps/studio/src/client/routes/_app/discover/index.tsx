@@ -1,6 +1,6 @@
 import { DiscoverHorizontalSection } from "@/client/components/discover-horizontal-section";
 import { rpcClient } from "@/client/rpc/client";
-import { META_TAG_LUCIDE_ICON } from "@/shared/tabs";
+import { createIconMeta } from "@/shared/tabs";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_app/discover/")({
@@ -10,10 +10,7 @@ export const Route = createFileRoute("/_app/discover/")({
       {
         title: "Discover",
       },
-      {
-        content: "telescope",
-        name: META_TAG_LUCIDE_ICON,
-      },
+      createIconMeta("telescope"),
     ],
   }),
   loader: async () => {
