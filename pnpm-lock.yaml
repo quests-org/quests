@@ -246,6 +246,9 @@ importers:
       read-pkg:
         specifier: ^9.0.1
         version: 9.0.1
+      tailwind-merge:
+        specifier: ^3.3.1
+        version: 3.3.1
       tailwind-variants:
         specifier: ^3.2.2
         version: 3.2.2(tailwind-merge@3.3.1)(tailwindcss@4.1.18)
@@ -454,9 +457,6 @@ importers:
       sonner:
         specifier: ^2.0.7
         version: 2.0.7(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
-      tailwind-merge:
-        specifier: ^3.3.1
-        version: 3.3.1
       tailwindcss:
         specifier: ^4.1.18
         version: 4.1.18
