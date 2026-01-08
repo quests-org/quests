@@ -7,11 +7,12 @@ import {
   ResizablePanelGroup,
 } from "@/client/components/ui/resizable";
 import { VersionOverlay } from "@/client/components/version-overlay";
+import { useReload } from "@/client/hooks/use-reload";
 import { cn } from "@/client/lib/utils";
 import { type AIGatewayModelURI } from "@quests/ai-gateway/client";
 import { type WorkspaceAppProject } from "@quests/workspace/client";
 import { useAtomValue, useSetAtom } from "jotai";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { usePanelRef } from "react-resizable-panels";
 
 export function ProjectViewApp({
@@ -33,6 +34,14 @@ export function ProjectViewApp({
   );
   const panelRef = usePanelRef();
   const lastAtomValueRef = useRef(sidebarCollapsed);
+
+  useReload(
+    useCallback(() => {
+      if (!hasAppModifications) {
+        window.location.reload();
+      }
+    }, [hasAppModifications]),
+  );
 
   useEffect(() => {
     // panelRef is not stable, so we need this check to avoid an infinite loop
