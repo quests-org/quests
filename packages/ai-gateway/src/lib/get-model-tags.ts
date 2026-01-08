@@ -125,7 +125,7 @@ function isSuperseded(canonicalId: AIGatewayModel.CanonicalId): boolean {
     canonicalId === "gpt-5" ||
     canonicalId.startsWith("gpt-5.1")
   ) {
-    if (canonicalId.includes("-max")) {
+    if (canonicalId.includes("-max") || canonicalId.includes("5.1-codex")) {
       return false;
     }
     return true;
