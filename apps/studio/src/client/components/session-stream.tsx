@@ -266,6 +266,7 @@ export function SessionStream({
   const { chatElements } = useMemo(() => {
     const newChatElements: React.ReactNode[] = [];
     let lastFooterIndex = 0;
+    let visibleAssistantContentCount = 0;
 
     for (const [messageIndex, message] of regularMessages.entries()) {
       const messageElements: React.ReactNode[] = [];
@@ -298,6 +299,9 @@ export function SessionStream({
         const rendered = renderChatPart(part, message, partIndex);
         if (rendered) {
           messageElements.push(rendered);
+          if (message.role === "assistant") {
+            visibleAssistantContentCount++;
+          }
         }
       }
 
@@ -318,6 +322,7 @@ export function SessionStream({
         const isLastMessageGroup = messageIndex === regularMessages.length - 1;
         const shouldRenderFooter =
           assistantMessages.length > 0 &&
+          visibleAssistantContentCount > 0 &&
           (!isLastMessageGroup || !isAgentRunning);
 
         if (shouldRenderFooter) {
@@ -330,6 +335,7 @@ export function SessionStream({
         }
 
         lastFooterIndex = messageIndex + 1;
+        visibleAssistantContentCount = 0;
       }
 
       if (message.role === "user" && fileAttachments.length > 0) {
