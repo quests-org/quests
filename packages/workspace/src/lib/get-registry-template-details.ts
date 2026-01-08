@@ -4,17 +4,17 @@ import { z } from "zod";
 
 import { WorkspaceAppPreviewSchema } from "../schemas/app";
 import { AppDirSchema } from "../schemas/paths";
-import { ProjectConfigSchema } from "../schemas/project-config";
+import { ProjectManifestSchema } from "../schemas/project-manifest";
 import { SubdomainPartSchema } from "../schemas/subdomain-part";
 import { PreviewSubdomainSchema } from "../schemas/subdomains";
 import { type WorkspaceConfig } from "../types";
 import { absolutePathJoin } from "./absolute-path-join";
 import { getWorkspaceAppForSubdomain } from "./get-workspace-app-for-subdomain";
-import { getProjectConfig } from "./project-config";
+import { getProjectManifest } from "./project-manifest";
 
 export const RegistryTemplateDetailsSchema = z.object({
-  description: ProjectConfigSchema.shape.description.optional(),
-  icon: ProjectConfigSchema.shape.icon.optional(),
+  description: ProjectManifestSchema.shape.description.optional(),
+  icon: ProjectManifestSchema.shape.icon.optional(),
   preview: WorkspaceAppPreviewSchema,
   readme: z.string().optional(),
   screenshotPath: z.string().optional(),
@@ -55,7 +55,7 @@ export async function getRegistryTemplateDetails(
 
     // Read all metadata in parallel for better performance
     const [questsConfig, readme, screenshotPath] = await Promise.all([
-      getProjectConfig(parsedTemplateDir),
+      getProjectManifest(parsedTemplateDir),
       readTemplateReadme(parsedTemplateDir),
       findTemplateScreenshot(parsedTemplateDir),
     ]);

@@ -1,6 +1,6 @@
 import { getAssetUrl } from "@/client/lib/get-asset-url";
 import { cn } from "@/client/lib/utils";
-import { PROJECT_CONFIG_FILE_NAME } from "@quests/shared";
+import { PROJECT_MANIFEST_FILE_NAME } from "@quests/shared";
 import { type ProjectSubdomain } from "@quests/workspace/client";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
@@ -155,7 +155,7 @@ function shouldFilterFile(filename: string): boolean {
   const baseName = filename.split("/").pop()?.toLowerCase() ?? "";
 
   const filteredFiles = [
-    PROJECT_CONFIG_FILE_NAME,
+    PROJECT_MANIFEST_FILE_NAME,
     "package.json",
     "pnpm-lock.yaml",
     "pnpm-workspace.yaml",

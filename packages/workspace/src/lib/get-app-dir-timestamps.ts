@@ -1,4 +1,4 @@
-import { PROJECT_CONFIG_FILE_NAME } from "@quests/shared";
+import { PROJECT_MANIFEST_FILE_NAME } from "@quests/shared";
 import fs from "node:fs/promises";
 
 import { type AppDir } from "../schemas/paths";
@@ -9,7 +9,10 @@ import { pathExists } from "./path-exists";
 
 export async function getAppDirTimestamps(appDir: AppDir) {
   const privateDir = getAppPrivateDir(appDir);
-  const projectConfigPath = absolutePathJoin(appDir, PROJECT_CONFIG_FILE_NAME);
+  const projectConfigPath = absolutePathJoin(
+    appDir,
+    PROJECT_MANIFEST_FILE_NAME,
+  );
   const srcFolder = absolutePathJoin(appDir, "src");
   const paths = [
     privateDir, // Changes when agent changes

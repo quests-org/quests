@@ -1,4 +1,4 @@
-import { PROJECT_CONFIG_FILE_NAME } from "@quests/shared";
+import { PROJECT_MANIFEST_FILE_NAME } from "@quests/shared";
 import { ok, ResultAsync } from "neverthrow";
 import fs from "node:fs/promises";
 import path from "node:path";
@@ -30,7 +30,7 @@ export function copyProject({
     .andThen((ignore) => {
       if (isTemplate) {
         // New projects will generate their own title and icon
-        ignore.add(PROJECT_CONFIG_FILE_NAME);
+        ignore.add(PROJECT_MANIFEST_FILE_NAME);
         // Screenshots can confuse the agent
         ignore.add("screenshot.*");
       }

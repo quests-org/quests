@@ -2,14 +2,14 @@ import { DEFAULT_THEME_GRADIENT, THEMES } from "@quests/shared/icons";
 import { type LanguageModel } from "ai";
 import { draw } from "radashi";
 
-import { type ProjectConfig } from "../schemas/project-config";
+import { type ProjectManifest } from "../schemas/project-manifest";
 import { type SessionMessage } from "../schemas/session/message";
 import { type WorkspaceConfig } from "../types";
 import { type AppConfigProject } from "./app-config/types";
 import { generateProjectIcon } from "./generate-project-icon";
 import { generateAppTitle } from "./generate-project-title";
 import { getRegistryTemplateDetails } from "./get-registry-template-details";
-import { updateProjectConfig } from "./project-config";
+import { updateProjectManifest } from "./project-manifest";
 
 export async function generateProjectTitleAndIcon({
   message,
@@ -44,7 +44,7 @@ export async function generateProjectTitleAndIcon({
     }),
   ]);
 
-  const updates: Partial<ProjectConfig> = {};
+  const updates: Partial<ProjectManifest> = {};
 
   if (titleResult.status === "fulfilled" && titleResult.value.isOk()) {
     updates.name = titleResult.value.value;
@@ -59,7 +59,7 @@ export async function generateProjectTitleAndIcon({
   }
 
   if (Object.keys(updates).length > 0) {
-    await updateProjectConfig(projectConfig.appDir, updates);
+    await updateProjectManifest(projectConfig.appDir, updates);
     onUpdate();
   }
 }

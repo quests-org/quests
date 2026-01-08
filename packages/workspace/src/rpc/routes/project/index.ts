@@ -24,9 +24,9 @@ import { getWorkspaceAppForSubdomain } from "../../../lib/get-workspace-app-for-
 import { importProject as importProjectLib } from "../../../lib/import-project";
 import { pathExists } from "../../../lib/path-exists";
 import {
-  getProjectConfig,
-  updateProjectConfig,
-} from "../../../lib/project-config";
+  getProjectManifest,
+  updateProjectManifest,
+} from "../../../lib/project-manifest";
 import { projectModeForSubdomain } from "../../../lib/project-mode-for-subdomain";
 import { setProjectState } from "../../../lib/project-state-store";
 import { trashProject } from "../../../lib/trash-project";
@@ -183,7 +183,7 @@ const create = base
         selectedModelURI: modelURI,
       });
 
-      await updateProjectConfig(projectConfig.appDir, {
+      await updateProjectManifest(projectConfig.appDir, {
         name: defaultProjectName(message),
       });
 
@@ -230,7 +230,7 @@ const create = base
           });
 
           if (titleResult.isOk()) {
-            await updateProjectConfig(projectConfig.appDir, {
+            await updateProjectManifest(projectConfig.appDir, {
               name: titleResult.value,
             });
             publisher.publish("project.updated", {
@@ -358,7 +358,7 @@ const createFromEval = base
         .getOrDefault(model.modelId);
       const projectName = `${evalName} - ${modelId}`;
       const randomTheme = draw(THEMES) ?? DEFAULT_THEME_GRADIENT;
-      await updateProjectConfig(projectConfig.appDir, {
+      await updateProjectManifest(projectConfig.appDir, {
         icon: {
           background: randomTheme,
           lucide: iconName,
@@ -545,7 +545,7 @@ const update = base
       subdomain: input.subdomain,
       workspaceConfig: context.workspaceConfig,
     });
-    await updateProjectConfig(projectConfig.appDir, {
+    await updateProjectManifest(projectConfig.appDir, {
       icon: input.icon,
       name: input.name,
     });
@@ -585,7 +585,7 @@ const exportZip = base
         workspaceConfig: context.workspaceConfig,
       });
 
-      const manifest = await getProjectConfig(appConfig.appDir);
+      const manifest = await getProjectManifest(appConfig.appDir);
       const projectName = manifest?.name ?? input.subdomain;
 
       const safeName = projectName
