@@ -2,12 +2,15 @@ import {
   getToolNameByType,
   type SessionMessagePart,
 } from "@quests/workspace/client";
-import { ChevronUp, Loader2, TriangleAlert } from "lucide-react";
 import { useState } from "react";
 
 import { getToolLabel, getToolStreamingLabel } from "../../lib/tool-display";
 import { cn } from "../../lib/utils";
-import { CollapsiblePartTrigger } from "../collapsible-part-trigger";
+import {
+  CollapsiblePartHeader,
+  CollapsiblePartMainContent,
+  CollapsiblePartTrigger,
+} from "../collapsible-part";
 import { ReasoningMessage } from "../reasoning-message";
 import { ToolIcon } from "../tool-icon";
 import {
@@ -55,7 +58,7 @@ export function ToolPart({
         label = getToolLabel(toolName);
         value = truncateText(part.output.thought, 80);
       } else {
-        label = isFileNotFound ? "Read failed" : getToolLabel(toolName);
+        label = getToolLabel(toolName);
         value = getToolOutputDescription(part);
       }
       break;
@@ -97,47 +100,13 @@ export function ToolPart({
   }
 
   const mainContent = (
-    <div className="flex w-full min-w-0 items-center gap-2 text-xs leading-tight">
-      <span
-        className={cn(
-          "shrink-0 text-accent-foreground/80",
-          isError && "text-warning-foreground/80",
-        )}
-      >
-        {isLoading ? (
-          <Loader2 className="size-3 animate-spin" />
-        ) : isError ? (
-          <TriangleAlert className="size-3" />
-        ) : (
-          <ToolIcon className="size-3" toolName={toolName} />
-        )}
-      </span>
-
-      <span
-        className={cn(
-          "shrink-0 font-medium text-foreground/80",
-          isError && "text-warning-foreground",
-          isLoading && "shiny-text",
-        )}
-      >
-        {label}
-      </span>
-      {value && (
-        <span
-          className={cn(
-            "min-w-0 truncate text-foreground/60",
-            isError && "text-warning-foreground/60",
-          )}
-        >
-          {value}
-        </span>
-      )}
-      {isExpandable && isExpanded && (
-        <span className="ml-auto shrink-0 text-accent-foreground/60">
-          <ChevronUp className="size-3" />
-        </span>
-      )}
-    </div>
+    <CollapsiblePartHeader
+      icon={<ToolIcon className="size-3" toolName={toolName} />}
+      isExpanded={isExpandable && isExpanded}
+      label={label}
+      labelClassName={cn(isLoading && "shiny-text")}
+      value={value}
+    />
   );
 
   if (!isExpandable && !hasStreamableContent) {
@@ -169,16 +138,14 @@ export function ToolPart({
 
       <CollapsibleContent>
         {isSuccess && (
-          <div className="mt-2 text-xs">
-            <div className="max-h-64 overflow-y-auto rounded-md border bg-muted/30 p-2">
-              <ToolPartExpanded part={part} />
-            </div>
-          </div>
+          <CollapsiblePartMainContent>
+            <ToolPartExpanded part={part} />
+          </CollapsiblePartMainContent>
         )}
 
         {isError && (
           <div className="mt-2 space-y-2 text-xs">
-            <div className="max-h-64 overflow-y-auto rounded-md border bg-muted/30 p-2">
+            <CollapsiblePartMainContent>
               <div className="mb-1 font-semibold">Error:</div>
               <pre className="font-mono text-xs wrap-break-word whitespace-pre-wrap">
                 {isFileNotFound &&
@@ -187,13 +154,13 @@ export function ToolPart({
                   part.state === "output-error" &&
                   part.errorText}
               </pre>
-            </div>
-            <div className="max-h-64 overflow-y-auto rounded-md border bg-muted/30 p-2">
+            </CollapsiblePartMainContent>
+            <CollapsiblePartMainContent>
               <div className="mb-1 font-semibold">Input:</div>
               <pre className="font-mono text-xs wrap-break-word whitespace-pre-wrap">
                 {JSON.stringify(part.input, null, 2)}
               </pre>
-            </div>
+            </CollapsiblePartMainContent>
           </div>
         )}
       </CollapsibleContent>
@@ -286,7 +253,9 @@ function getToolOutputDescription(
         : `${matches.length} matches found`;
     }
     case "tool-read_file": {
-      return filenameFromFilePath(part.output.filePath) || "file missing";
+      return part.output.state === "does-not-exist"
+        ? `file not found: ${part.output.filePath}`
+        : filenameFromFilePath(part.output.filePath);
     }
     case "tool-run_diagnostics": {
       const errorCount = part.output.errors.length;
