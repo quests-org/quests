@@ -29,15 +29,13 @@ export async function downloadProjectFile({
     if (!error && versionRefs.length > 1) {
       const versionNumber = versionRefs.indexOf(versionRef) + 1;
 
-      if (versionNumber > 1) {
-        const lastDotIndex = filename.lastIndexOf(".");
-        if (lastDotIndex > 0) {
-          const name = filename.slice(0, lastDotIndex);
-          const ext = filename.slice(lastDotIndex);
-          downloadFilename = `${name}-v${versionNumber}${ext}`;
-        } else {
-          downloadFilename = `${filename}-v${versionNumber}`;
-        }
+      const lastDotIndex = filename.lastIndexOf(".");
+      if (lastDotIndex > 0) {
+        const name = filename.slice(0, lastDotIndex);
+        const ext = filename.slice(lastDotIndex);
+        downloadFilename = `${name}-v${versionNumber}${ext}`;
+      } else {
+        downloadFilename = `${filename}-v${versionNumber}`;
       }
     }
   }
