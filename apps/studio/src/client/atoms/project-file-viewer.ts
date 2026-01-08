@@ -48,3 +48,14 @@ export const openProjectFileViewerAtom = atom(
 export const closeProjectFileViewerAtom = atom(null, (_get, set) => {
   set(projectFileViewerAtom, initialState);
 });
+
+export const setProjectFileViewerIndexAtom = atom(
+  null,
+  (get, set, index: number) => {
+    const state = get(projectFileViewerAtom);
+    set(projectFileViewerAtom, {
+      ...state,
+      currentIndex: index,
+    });
+  },
+);

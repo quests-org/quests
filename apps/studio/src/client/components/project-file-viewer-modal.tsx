@@ -1,6 +1,7 @@
 import {
   closeProjectFileViewerAtom,
   projectFileViewerAtom,
+  setProjectFileViewerIndexAtom,
 } from "@/client/atoms/project-file-viewer";
 import {
   copyFileToClipboard,
@@ -11,7 +12,7 @@ import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { useRouter } from "@tanstack/react-router";
 import { useAtomValue, useSetAtom } from "jotai";
 import { ChevronLeft, ChevronRight, Download, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect } from "react";
 
 import { FileActionsMenu } from "./file-actions-menu";
 import { FileIcon } from "./file-icon";
@@ -25,10 +26,10 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 export function ProjectFileViewerModal() {
   const state = useAtomValue(projectFileViewerAtom);
   const closeViewer = useSetAtom(closeProjectFileViewerAtom);
+  const setCurrentIndex = useSetAtom(setProjectFileViewerIndexAtom);
   const router = useRouter();
-  const [currentIndex, setCurrentIndex] = useState(0);
 
-  const currentFile = state.files[currentIndex];
+  const currentFile = state.files[state.currentIndex];
   const hasMultipleFiles = state.files.length > 1;
 
   const isDownloadable = currentFile
@@ -52,11 +53,18 @@ export function ProjectFileViewerModal() {
     await copyFileToClipboard({ url: currentFile.url });
   };
 
-  useEffect(() => {
-    if (state.isOpen) {
-      setCurrentIndex(state.currentIndex);
-    }
-  }, [state.isOpen, state.currentIndex]);
+  const goToPrevious = useCallback(() => {
+    const newIndex =
+      state.currentIndex === 0
+        ? state.files.length - 1
+        : state.currentIndex - 1;
+    setCurrentIndex(newIndex);
+  }, [state.currentIndex, state.files.length, setCurrentIndex]);
+
+  const goToNext = useCallback(() => {
+    const newIndex = (state.currentIndex + 1) % state.files.length;
+    setCurrentIndex(newIndex);
+  }, [state.currentIndex, state.files.length, setCurrentIndex]);
 
   useEffect(() => {
     const unsubscribe = router.subscribe("onBeforeLoad", () => {
@@ -78,12 +86,10 @@ export function ProjectFileViewerModal() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "ArrowLeft") {
         e.preventDefault();
-        setCurrentIndex((prev) =>
-          prev === 0 ? state.files.length - 1 : prev - 1,
-        );
+        goToPrevious();
       } else if (e.key === "ArrowRight") {
         e.preventDefault();
-        setCurrentIndex((prev) => (prev + 1) % state.files.length);
+        goToNext();
       }
     };
 
@@ -91,14 +97,24 @@ export function ProjectFileViewerModal() {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [state.isOpen, hasMultipleFiles, state.files.length]);
+  }, [
+    state.isOpen,
+    hasMultipleFiles,
+    state.files.length,
+    state.currentIndex,
+    setCurrentIndex,
+    goToPrevious,
+    goToNext,
+  ]);
 
   useEffect(() => {
     if (!state.isOpen || !hasMultipleFiles) {
       return;
     }
 
-    const thumbnail = document.querySelector(`#thumbnail-${currentIndex}`);
+    const thumbnail = document.querySelector(
+      `#thumbnail-${state.currentIndex}`,
+    );
     if (thumbnail) {
       thumbnail.scrollIntoView({
         behavior: "smooth",
@@ -106,7 +122,7 @@ export function ProjectFileViewerModal() {
         inline: "center",
       });
     }
-  }, [currentIndex, state.isOpen, hasMultipleFiles]);
+  }, [state.currentIndex, state.isOpen, hasMultipleFiles]);
 
   if (!currentFile) {
     return null;
@@ -208,11 +224,7 @@ export function ProjectFileViewerModal() {
                 <>
                   <Button
                     className="absolute top-1/2 left-4 z-10 -translate-y-1/2 bg-black/50 text-white hover:bg-white/10"
-                    onClick={() => {
-                      setCurrentIndex((prev) =>
-                        prev === 0 ? state.files.length - 1 : prev - 1,
-                      );
-                    }}
+                    onClick={goToPrevious}
                     size="icon"
                     variant="ghost"
                   >
@@ -220,11 +232,7 @@ export function ProjectFileViewerModal() {
                   </Button>
                   <Button
                     className="absolute top-1/2 right-4 z-10 -translate-y-1/2 bg-black/50 text-white hover:bg-white/10"
-                    onClick={() => {
-                      setCurrentIndex(
-                        (prev) => (prev + 1) % state.files.length,
-                      );
-                    }}
+                    onClick={goToNext}
                     size="icon"
                     variant="ghost"
                   >
@@ -302,7 +310,7 @@ export function ProjectFileViewerModal() {
                     >
                       <FilePreviewListItem
                         file={file}
-                        isSelected={index === currentIndex}
+                        isSelected={index === state.currentIndex}
                         onClick={() => {
                           setCurrentIndex(index);
                         }}

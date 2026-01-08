@@ -211,9 +211,19 @@ export function FileViewer({
     >
       <div className="flex shrink-0 items-center gap-2 border-b border-border bg-muted/30 px-4 py-2">
         <FileIcon className="size-4 shrink-0" filename={filename} />
-        <span className="truncate text-xs text-muted-foreground">
-          {filePath}
-        </span>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="truncate text-xs text-muted-foreground">
+              {filePath}
+            </span>
+          </TooltipTrigger>
+          <TooltipContent
+            className="max-w-[min(500px,90vw)] wrap-break-word"
+            collisionPadding={10}
+          >
+            {filePath}
+          </TooltipContent>
+        </Tooltip>
         {filePath && projectSubdomain && versionRef && (
           <FileVersionBadge
             filePath={filePath}

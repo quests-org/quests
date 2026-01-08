@@ -21,6 +21,7 @@ export function FilePreviewCard({
 }) {
   const { filename, mimeType, url } = file;
   const videoRef = useRef<HTMLVideoElement>(null);
+  const videoTimeoutRef = useRef<null | number>(null);
   const [videoProgress, setVideoProgress] = useState(0);
   const [timeRemaining, setTimeRemaining] = useState<null | number>(null);
 
@@ -33,12 +34,18 @@ export function FilePreviewCard({
 
   const handleMouseEnter = () => {
     if (isVideo && videoRef.current) {
-      void videoRef.current.play();
+      videoTimeoutRef.current = window.setTimeout(() => {
+        void videoRef.current?.play();
+      }, 500);
     }
   };
 
   const handleMouseLeave = () => {
     if (isVideo && videoRef.current) {
+      if (videoTimeoutRef.current !== null) {
+        clearTimeout(videoTimeoutRef.current);
+        videoTimeoutRef.current = null;
+      }
       videoRef.current.pause();
       videoRef.current.currentTime = 0;
     }
@@ -81,7 +88,7 @@ export function FilePreviewCard({
 
   return (
     <div
-      className="group relative overflow-hidden rounded-lg border border-border bg-background"
+      className="group relative overflow-hidden rounded-lg border border-border bg-background transition-colors hover:bg-muted"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
