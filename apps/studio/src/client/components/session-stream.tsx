@@ -322,7 +322,7 @@ export function SessionStream({
         if (shouldRenderFooter) {
           messageElements.push(
             <AssistantMessagesFooter
-              key={`actions-${message.id}`}
+              key={`assistant-footer-${message.id}`}
               messages={assistantMessages}
             />,
           );
