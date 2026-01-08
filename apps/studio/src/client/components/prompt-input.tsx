@@ -192,13 +192,18 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
       }
     };
 
-    const validateSubmission = useCallback(() => {
-      if (!value.trim() && uploadedFiles.length === 0) {
-        return false;
-      }
+    const canSubmit =
+      !disabled &&
+      !isLoading &&
+      (value.trim() || uploadedFiles.length > 0) &&
+      modelURI &&
+      selectedModel;
 
-      if (!modelURI || !selectedModel) {
-        toast.error("Select a model");
+    const validateSubmission = () => {
+      if (!canSubmit) {
+        if (!modelURI || !selectedModel) {
+          toast.error("Select a model");
+        }
         return false;
       }
 
@@ -210,49 +215,37 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
       }
 
       return true;
-    }, [value, uploadedFiles.length, modelURI, selectedModel, isSubmittable]);
+    };
 
-    const handleSubmit = useCallback(
-      (openInNewTab = false) => {
-        if (!validateSubmission() || !modelURI) {
-          return;
-        }
+    const handleSubmit = (openInNewTab = false) => {
+      if (!validateSubmission() || !modelURI) {
+        return;
+      }
 
-        const trimmedPrompt = value.trim();
-        const prompt =
-          !trimmedPrompt && uploadedFiles.length > 0
-            ? `Review the uploaded ${uploadedFiles.length} file${uploadedFiles.length === 1 ? "" : "s"} to help with this request.`
-            : trimmedPrompt;
+      const trimmedPrompt = value.trim();
+      const prompt =
+        !trimmedPrompt && uploadedFiles.length > 0
+          ? `Review the uploaded ${uploadedFiles.length} file${uploadedFiles.length === 1 ? "" : "s"} to help with this request.`
+          : trimmedPrompt;
 
-        onSubmit({
-          files:
-            uploadedFiles.length > 0
-              ? uploadedFiles.map((f) => ({
-                  content: f.content,
-                  filename: f.name,
-                }))
-              : undefined,
-          modelURI,
-          openInNewTab,
-          prompt,
-        });
-        if (!(allowOpenInNewTab && openInNewTab)) {
-          setValue("");
-          setUploadedFiles([]);
-          resetTextareaHeight();
-        }
-      },
-      [
-        allowOpenInNewTab,
+      onSubmit({
+        files:
+          uploadedFiles.length > 0
+            ? uploadedFiles.map((f) => ({
+                content: f.content,
+                filename: f.name,
+              }))
+            : undefined,
         modelURI,
-        onSubmit,
-        resetTextareaHeight,
-        setValue,
-        uploadedFiles,
-        validateSubmission,
-        value,
-      ],
-    );
+        openInNewTab,
+        prompt,
+      });
+      if (!(allowOpenInNewTab && openInNewTab)) {
+        setValue("");
+        setUploadedFiles([]);
+        resetTextareaHeight();
+      }
+    };
 
     const handleStop = () => {
       onStop?.();
@@ -323,13 +316,6 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
         );
       }
     };
-
-    const canSubmit =
-      !disabled &&
-      !isLoading &&
-      (value.trim() || uploadedFiles.length > 0) &&
-      modelURI &&
-      selectedModel;
 
     return (
       <>
