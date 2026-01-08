@@ -72,15 +72,10 @@ export function FilesGrid({ alignEnd = false, files }: FilesGridProps) {
                 key={file.filePath}
               >
                 <FilePreviewCard
-                  filename={file.filename}
-                  filePath={file.filePath}
-                  mimeType={file.mimeType}
+                  file={file}
                   onClick={() => {
                     handleFileClick(file);
                   }}
-                  projectSubdomain={file.projectSubdomain}
-                  url={file.url}
-                  versionRef={file.versionRef}
                 />
               </div>
             ))}
@@ -93,15 +88,10 @@ export function FilesGrid({ alignEnd = false, files }: FilesGridProps) {
           {otherFiles.map((file) => (
             <div className="h-12 min-w-0" key={file.filePath}>
               <FilePreviewListItem
-                filename={file.filename}
-                filePath={file.filePath}
-                mimeType={file.mimeType}
+                file={file}
                 onClick={() => {
                   handleFileClick(file);
                 }}
-                projectSubdomain={file.projectSubdomain}
-                url={file.url}
-                versionRef={file.versionRef}
               />
             </div>
           ))}

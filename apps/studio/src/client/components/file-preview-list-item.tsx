@@ -1,5 +1,5 @@
+import { type ProjectFileViewerFile } from "@/client/atoms/project-file-viewer";
 import { cn } from "@/client/lib/utils";
-import { type ProjectSubdomain } from "@quests/workspace/client";
 
 import { FileIcon } from "./file-icon";
 import { FileVersionBadge } from "./file-version-badge";
@@ -8,27 +8,18 @@ import { Button } from "./ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 export function FilePreviewListItem({
-  filename,
-  filePath,
+  file,
   isSelected = false,
-  mimeType,
   onClick,
-  projectSubdomain,
-  url,
-  versionRef,
 }: {
-  filename: string;
-  filePath: string;
+  file: ProjectFileViewerFile;
   isSelected?: boolean;
-  mimeType: string;
   onClick: () => void;
-  projectSubdomain: ProjectSubdomain;
-  url: string;
-  versionRef: string;
 }) {
+  const { filename, filePath, mimeType, projectSubdomain, url, versionRef } =
+    file;
   const isImage = mimeType.startsWith("image/");
   const hasPreview = Boolean(url);
-  const showVersionBadge = filePath && projectSubdomain && versionRef;
 
   const content = (() => {
     if (hasPreview && isImage) {
@@ -55,34 +46,30 @@ export function FilePreviewListItem({
     }
 
     return (
-      <div className="relative h-12 min-w-0">
-        <Button
-          className={cn(
-            "h-full w-full justify-start gap-x-2 overflow-hidden bg-background!",
-            isSelected &&
-              "ring-2 ring-primary ring-offset-2 ring-offset-background",
-          )}
-          onClick={onClick}
-          type="button"
-          variant="outline"
-        >
-          <FileIcon
-            className="size-5 shrink-0 text-muted-foreground"
-            filename={filename}
-          />
-          <span className="min-w-0 truncate text-left text-xs leading-tight">
-            {filename}
-          </span>
-          {showVersionBadge && (
-            <FileVersionBadge
-              className="ml-auto shrink-0 text-[10px]"
-              filePath={filePath}
-              projectSubdomain={projectSubdomain}
-              versionRef={versionRef}
-            />
-          )}
-        </Button>
-      </div>
+      <Button
+        className={cn(
+          "h-full w-full justify-start gap-x-2 overflow-hidden bg-background!",
+          isSelected &&
+            "ring-2 ring-primary ring-offset-2 ring-offset-background",
+        )}
+        onClick={onClick}
+        type="button"
+        variant="outline"
+      >
+        <FileIcon
+          className="size-5 shrink-0 text-muted-foreground"
+          filename={filename}
+        />
+        <span className="min-w-0 truncate text-left text-xs leading-tight">
+          {filename}
+        </span>
+        <FileVersionBadge
+          className="ml-auto shrink-0 text-[10px]"
+          filePath={filePath}
+          projectSubdomain={projectSubdomain}
+          versionRef={versionRef}
+        />
+      </Button>
     );
   })();
 
@@ -95,14 +82,12 @@ export function FilePreviewListItem({
       >
         <div className="flex items-center gap-x-2">
           <span>{filePath}</span>
-          {showVersionBadge && (
-            <FileVersionBadge
-              className="shrink-0 text-[10px]"
-              filePath={filePath}
-              projectSubdomain={projectSubdomain}
-              versionRef={versionRef}
-            />
-          )}
+          <FileVersionBadge
+            className="shrink-0 text-[10px]"
+            filePath={filePath}
+            projectSubdomain={projectSubdomain}
+            versionRef={versionRef}
+          />
         </div>
       </TooltipContent>
     </Tooltip>

@@ -2,14 +2,17 @@ import {
   closeProjectFileViewerAtom,
   projectFileViewerAtom,
 } from "@/client/atoms/project-file-viewer";
+import {
+  copyFileToClipboard,
+  downloadFile,
+  isFileDownloadable,
+} from "@/client/lib/file-actions";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { useRouter } from "@tanstack/react-router";
 import { useAtomValue, useSetAtom } from "jotai";
 import { ChevronLeft, ChevronRight, Download, X } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { toast } from "sonner";
+import { useEffect, useState } from "react";
 
-import { downloadProjectFile } from "../lib/download-project-file";
 import { FileActionsMenu } from "./file-actions-menu";
 import { FileIcon } from "./file-icon";
 import { FilePreviewListItem } from "./file-preview-list-item";
@@ -28,31 +31,32 @@ export function ProjectFileViewerModal() {
   const currentFile = state.files[currentIndex];
   const hasMultipleFiles = state.files.length > 1;
 
+  const isDownloadable = currentFile
+    ? isFileDownloadable(currentFile.url)
+    : false;
+  const isImage = currentFile
+    ? currentFile.mimeType.startsWith("image/")
+    : false;
+
+  const handleDownload = async () => {
+    if (!currentFile?.projectSubdomain || !currentFile.filePath) {
+      return;
+    }
+    await downloadFile(currentFile);
+  };
+
+  const handleCopy = async () => {
+    if (!currentFile) {
+      return;
+    }
+    await copyFileToClipboard({ url: currentFile.url });
+  };
+
   useEffect(() => {
     if (state.isOpen) {
       setCurrentIndex(state.currentIndex);
     }
   }, [state.isOpen, state.currentIndex]);
-
-  const isDownloadable = useMemo(() => {
-    // We can't assume a file is downloadable via fetch due to CORS restrictions
-    if (!currentFile) {
-      return false;
-    }
-
-    if (currentFile.url.startsWith("data:")) {
-      return true;
-    }
-
-    try {
-      const url = new URL(currentFile.url);
-      return (
-        url.hostname === "localhost" || url.hostname.endsWith(".localhost")
-      );
-    } catch {
-      return false;
-    }
-  }, [currentFile]);
 
   useEffect(() => {
     const unsubscribe = router.subscribe("onBeforeLoad", () => {
@@ -107,79 +111,6 @@ export function ProjectFileViewerModal() {
   if (!currentFile) {
     return null;
   }
-
-  const handleDownload = async () => {
-    try {
-      if (currentFile.url.startsWith("data:")) {
-        const response = await fetch(currentFile.url);
-        const blob = await response.blob();
-        await downloadProjectFile({
-          blob,
-          filename: currentFile.filename,
-          filePath: currentFile.filePath,
-          projectSubdomain: currentFile.projectSubdomain,
-          versionRef: currentFile.versionRef,
-        });
-      } else {
-        const response = await fetch(currentFile.url);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch file: ${response.statusText}`);
-        }
-        const blob = await response.blob();
-        await downloadProjectFile({
-          blob,
-          filename: currentFile.filename,
-          filePath: currentFile.filePath,
-          projectSubdomain: currentFile.projectSubdomain,
-          versionRef: currentFile.versionRef,
-        });
-      }
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : "An unknown error occurred while downloading the file";
-      toast.error("Failed to download file", {
-        closeButton: true,
-        description: `${errorMessage}\n\nFile: ${currentFile.filePath}`,
-        duration: 10_000,
-        richColors: true,
-      });
-    }
-  };
-
-  const handleCopyImage = async () => {
-    try {
-      const response = await fetch(currentFile.url);
-      const blob = await response.blob();
-
-      if (blob.type.includes("svg") || blob.type.includes("xml")) {
-        const text = await blob.text();
-        await navigator.clipboard.writeText(text);
-      } else {
-        try {
-          await navigator.clipboard.write([
-            new ClipboardItem({ [blob.type]: blob }),
-          ]);
-        } catch {
-          const text = await blob.text();
-          await navigator.clipboard.writeText(text);
-        }
-      }
-    } catch {
-      toast.error("Failed to copy image", {
-        closeButton: true,
-        description: "The image could not be copied to clipboard",
-        duration: 5000,
-        richColors: true,
-      });
-    }
-  };
-
-  const hasExtension = currentFile.filename.includes(".");
-  const isImage =
-    currentFile.mimeType.startsWith("image/") ||
-    (!currentFile.mimeType && !hasExtension);
 
   return (
     <DialogPrimitive.Root
@@ -243,12 +174,14 @@ export function ProjectFileViewerModal() {
                       </TooltipContent>
                     </Tooltip>
                   )}
-                  <FileActionsMenu
-                    filePath={currentFile.filePath}
-                    onCopy={isDownloadable ? handleCopyImage : undefined}
-                    projectSubdomain={currentFile.projectSubdomain}
-                    versionRef={currentFile.versionRef}
-                  />
+                  {currentFile.projectSubdomain && currentFile.filePath && (
+                    <FileActionsMenu
+                      filePath={currentFile.filePath}
+                      onCopy={isDownloadable ? handleCopy : undefined}
+                      projectSubdomain={currentFile.projectSubdomain}
+                      versionRef={currentFile.versionRef}
+                    />
+                  )}
                   <Button
                     className="text-white hover:bg-white/10"
                     onClick={() => {
@@ -343,7 +276,13 @@ export function ProjectFileViewerModal() {
                     filePath={currentFile.filePath}
                     mimeType={currentFile.mimeType}
                     onClose={closeViewer}
-                    onDownload={isDownloadable ? handleDownload : undefined}
+                    onDownload={
+                      isDownloadable &&
+                      currentFile.projectSubdomain &&
+                      currentFile.filePath
+                        ? handleDownload
+                        : undefined
+                    }
                     projectSubdomain={currentFile.projectSubdomain}
                     url={currentFile.url}
                     versionRef={currentFile.versionRef}
@@ -362,16 +301,11 @@ export function ProjectFileViewerModal() {
                       key={index}
                     >
                       <FilePreviewListItem
-                        filename={file.filename}
-                        filePath={file.filePath}
+                        file={file}
                         isSelected={index === currentIndex}
-                        mimeType={file.mimeType}
                         onClick={() => {
                           setCurrentIndex(index);
                         }}
-                        projectSubdomain={file.projectSubdomain}
-                        url={file.url}
-                        versionRef={file.versionRef}
                       />
                     </div>
                   ))}

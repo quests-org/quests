@@ -1,10 +1,10 @@
-import { getAssetUrl } from "@/client/lib/get-asset-url";
-import { type ProjectSubdomain } from "@quests/workspace/client";
+import { type ProjectFileViewerFile } from "@/client/atoms/project-file-viewer";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, Play } from "lucide-react";
 import { useRef, useState } from "react";
 
 import { FileIcon } from "./file-icon";
+import { FilePreviewActionsMenu } from "./file-preview-actions-menu";
 import { FileVersionBadge } from "./file-version-badge";
 import { ImageWithFallback } from "./image-with-fallback";
 import { Markdown } from "./markdown";
@@ -12,35 +12,17 @@ import { SandboxedHtmlIframe } from "./sandboxed-html-iframe";
 import { Badge } from "./ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
-interface FilePreviewCardProps {
-  assetBaseUrl?: string;
-  filename: string;
-  filePath?: string;
-  mimeType: string;
-  onClick?: () => void;
-  projectSubdomain?: ProjectSubdomain;
-  url: string;
-  versionRef: string;
-}
-
 export function FilePreviewCard({
-  assetBaseUrl,
-  filename,
-  filePath,
-  mimeType,
+  file,
   onClick,
-  projectSubdomain,
-  url,
-  versionRef,
-}: FilePreviewCardProps) {
+}: {
+  file: ProjectFileViewerFile;
+  onClick: () => void;
+}) {
+  const { filename, mimeType, url } = file;
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoProgress, setVideoProgress] = useState(0);
   const [timeRemaining, setTimeRemaining] = useState<null | number>(null);
-
-  const finalUrl =
-    assetBaseUrl && filePath && versionRef
-      ? getAssetUrl({ assetBase: assetBaseUrl, filePath, versionRef })
-      : url;
 
   const isImage = mimeType.startsWith("image/");
   const isHtml = mimeType === "text/html";
@@ -65,15 +47,9 @@ export function FilePreviewCard({
   if (isAudio) {
     return (
       <div className="group relative overflow-hidden rounded-lg border border-border bg-background">
-        <PreviewHeader
-          filename={filename}
-          filePath={filePath}
-          onClick={onClick}
-          projectSubdomain={projectSubdomain}
-          versionRef={versionRef}
-        />
+        <PreviewHeader file={file} onClick={onClick} />
         <div className="relative p-2">
-          <audio className="w-full" controls src={finalUrl} />
+          <audio className="w-full" controls src={url} />
           <button
             className="absolute inset-0 size-full"
             onClick={onClick}
@@ -87,16 +63,10 @@ export function FilePreviewCard({
   if (isMarkdown) {
     return (
       <div className="group relative overflow-hidden rounded-lg border border-border bg-background">
-        <PreviewHeader
-          filename={filename}
-          filePath={filePath}
-          onClick={onClick}
-          projectSubdomain={projectSubdomain}
-          versionRef={versionRef}
-        />
+        <PreviewHeader file={file} onClick={onClick} />
         <div className="relative w-full overflow-hidden">
           <div className="max-h-64 overflow-hidden bg-background">
-            <MarkdownPreview url={finalUrl} />
+            <MarkdownPreview url={url} />
           </div>
           <div className="pointer-events-none absolute right-0 bottom-0 left-0 h-16 bg-linear-to-t from-background to-transparent" />
           <button
@@ -115,13 +85,7 @@ export function FilePreviewCard({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <PreviewHeader
-        filename={filename}
-        filePath={filePath}
-        onClick={onClick}
-        projectSubdomain={projectSubdomain}
-        versionRef={versionRef}
-      />
+      <PreviewHeader file={file} onClick={onClick} />
       <div className="relative aspect-video w-full overflow-hidden">
         {isImage && (
           <div className="flex size-full items-center justify-center">
@@ -130,7 +94,7 @@ export function FilePreviewCard({
               className="max-h-full max-w-full bg-white object-contain"
               fallbackClassName="size-full"
               filename={filename}
-              src={finalUrl}
+              src={url}
             />
           </div>
         )}
@@ -138,7 +102,7 @@ export function FilePreviewCard({
           <SandboxedHtmlIframe
             className="absolute top-0 left-0 h-[300%] w-[300%] origin-top-left border-0"
             restrictInteractive
-            src={finalUrl}
+            src={url}
             style={{ transform: "scale(0.333)" }}
             title={filename}
           />
@@ -147,7 +111,7 @@ export function FilePreviewCard({
           <iframe
             className="absolute top-0 left-0 h-[300%] w-[300%] origin-top-left border-0"
             // cspell:ignore navpanes
-            src={`${finalUrl}#toolbar=0&navpanes=0&view=Fit`}
+            src={`${url}#toolbar=0&navpanes=0&view=Fit`}
             style={{ transform: "scale(0.333)" }}
             title={filename}
           />
@@ -170,7 +134,7 @@ export function FilePreviewCard({
                 setTimeRemaining(remaining);
               }}
               ref={videoRef}
-              src={finalUrl}
+              src={url}
             />
             <div className="absolute inset-0 flex items-center justify-center bg-black/20 transition-opacity group-hover:opacity-0">
               <div className="rounded-full bg-white/90 p-4 shadow-lg">
@@ -250,29 +214,25 @@ function MarkdownPreview({ url }: { url: string }) {
 }
 
 function PreviewHeader({
-  filename,
-  filePath,
+  file,
   onClick,
-  projectSubdomain,
-  versionRef,
 }: {
-  filename: string;
-  filePath?: string;
+  file: ProjectFileViewerFile;
   onClick?: () => void;
-  projectSubdomain?: ProjectSubdomain;
-  versionRef: string;
 }) {
+  const { filename, filePath, projectSubdomain, versionRef } = file;
+
   return (
-    <button
-      className="flex w-full items-center gap-2 border-b border-border bg-muted/30 px-2.5 py-1.5 text-left"
-      onClick={onClick}
-      type="button"
-    >
-      <FileIcon
-        className="size-4 shrink-0 text-muted-foreground"
-        filename={filename}
-      />
-      {filePath ? (
+    <div className="flex w-full items-center gap-2 border-b border-border bg-muted/30 px-2.5 py-1.5">
+      <button
+        className="flex min-w-0 flex-1 items-center gap-2 text-left"
+        onClick={onClick}
+        type="button"
+      >
+        <FileIcon
+          className="size-4 shrink-0 text-muted-foreground"
+          filename={filename}
+        />
         <Tooltip>
           <TooltipTrigger asChild>
             <span className="min-w-0 truncate text-xs text-muted-foreground">
@@ -283,19 +243,14 @@ function PreviewHeader({
             <span className="break-all">{filePath}</span>
           </TooltipContent>
         </Tooltip>
-      ) : (
-        <span className="min-w-0 truncate text-xs text-muted-foreground">
-          {filename}
-        </span>
-      )}
-      {filePath && projectSubdomain && versionRef && (
         <FileVersionBadge
-          className="ml-auto shrink-0 text-[10px]"
+          className="shrink-0 text-[10px]"
           filePath={filePath}
           projectSubdomain={projectSubdomain}
           versionRef={versionRef}
         />
-      )}
-    </button>
+      </button>
+      <FilePreviewActionsMenu file={file} />
+    </div>
   );
 }
