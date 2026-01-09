@@ -8,7 +8,7 @@ const TAB_ICONS = [
   "file-text",
   "flask-conical",
   "globe",
-  "layout-grid",
+  "table-properties",
   "quests",
   "message-circle",
   "square-dashed",

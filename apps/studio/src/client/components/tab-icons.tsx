@@ -5,10 +5,10 @@ import {
   FileText,
   FlaskConical,
   Globe,
-  LayoutGrid,
   type LucideIcon,
   MessageCircle,
   SquareDashed,
+  TableProperties,
   Telescope,
   Terminal,
 } from "lucide-react";
@@ -18,10 +18,10 @@ export const IconMap: Record<TabIconName, LucideIcon> = {
   "file-text": FileText,
   "flask-conical": FlaskConical,
   globe: Globe,
-  "layout-grid": LayoutGrid,
   "message-circle": MessageCircle,
   quests: QuestsLogoIcon,
   "square-dashed": SquareDashed,
+  "table-properties": TableProperties,
   telescope: Telescope,
   terminal: Terminal,
 } as const;

@@ -49,7 +49,7 @@ export const Route = createFileRoute("/_app/projects/")({
         {
           title: "Your Projects",
         },
-        createIconMeta("layout-grid"),
+        createIconMeta("table-properties"),
       ],
     };
   },
