@@ -116,7 +116,7 @@ const create = base
       files: z.array(Upload.Schema).optional(),
       iconName: z.literal("flask-conical").optional(),
       modelURI: AIGatewayModelURI.Schema,
-      name: z.string().optional(),
+      name: z.string().trim().min(1).optional(),
       preferredFolderName: SubdomainPartSchema.optional(),
       prompt: z.string(),
       templateName: z.string().optional().default(DEFAULT_TEMPLATE_NAME),
@@ -331,7 +331,7 @@ const trash = base
 const update = base
   .input(
     z.object({
-      name: z.string(),
+      name: z.string().trim().min(1),
       subdomain: ProjectSubdomainSchema,
     }),
   )
