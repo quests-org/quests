@@ -3,6 +3,7 @@ import { ulid } from "ulid";
 import { publisher } from "../rpc/publisher";
 
 interface ServerException {
+  code?: string;
   id: string;
   message: string;
   stack?: string;
@@ -12,6 +13,7 @@ interface ServerException {
 const EXCEPTIONS: ServerException[] = [];
 
 export function addServerException(exception: {
+  code?: string;
   message: string;
   stack?: string;
 }) {

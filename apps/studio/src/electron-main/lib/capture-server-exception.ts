@@ -16,12 +16,21 @@ export const captureServerException: CaptureExceptionFunction = function (
     scopes?: ExceptionScope[];
   },
 ) {
+  const errorCode =
+    error &&
+    typeof error === "object" &&
+    "code" in error &&
+    typeof error.code === "string"
+      ? error.code
+      : undefined;
+
   const finalProperties = {
     ...additionalProperties,
     $process_person_profile: false, // Ensure anonymous, if at all
     scopes: ["studio", ...(additionalProperties?.scopes ?? [])],
     version: app.getVersion(),
     ...getSystemProperties(),
+    ...(errorCode ? { error_code: errorCode } : {}),
   };
   const appStateStore = getAppStateStore();
   const telemetryId = appStateStore.get("telemetryId");
@@ -30,8 +39,11 @@ export const captureServerException: CaptureExceptionFunction = function (
     /* eslint-disable no-console */
     const errorMessage = error instanceof Error ? error.message : String(error);
     const errorStack = error instanceof Error ? error.stack : undefined;
+    const displayMessage = errorCode
+      ? `[${errorCode}] ${errorMessage}`
+      : errorMessage;
 
-    console.groupCollapsed(`%c[Exception] ${errorMessage}`, "color: #b71c1c");
+    console.groupCollapsed(`%c[Exception] ${displayMessage}`, "color: #b71c1c");
 
     if (error instanceof Error) {
       if (errorStack) {
@@ -57,6 +69,7 @@ export const captureServerException: CaptureExceptionFunction = function (
     console.groupEnd();
 
     addServerException({
+      code: errorCode,
       message: errorMessage,
       stack: errorStack,
     });

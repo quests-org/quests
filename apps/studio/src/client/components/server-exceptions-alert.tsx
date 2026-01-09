@@ -18,6 +18,7 @@ import { isEqual } from "radashi";
 import { useMemo } from "react";
 
 interface GroupedExceptionItem {
+  code?: string;
   content: string;
   count: number;
   firstLine: string;
@@ -43,8 +44,16 @@ export function ServerExceptionsAlert() {
 
       const existingGroup = groups.find((group) =>
         isEqual(
-          { content: group.content, firstLine: group.firstLine },
-          { content, firstLine: firstLineWithoutErrorPrefix },
+          {
+            code: group.code,
+            content: group.content,
+            firstLine: group.firstLine,
+          },
+          {
+            code: exception.code,
+            content,
+            firstLine: firstLineWithoutErrorPrefix,
+          },
         ),
       );
 
@@ -52,6 +61,7 @@ export function ServerExceptionsAlert() {
         existingGroup.count++;
       } else {
         groups.push({
+          code: exception.code,
           content,
           count: 1,
           firstLine: firstLineWithoutErrorPrefix,
@@ -115,6 +125,7 @@ export function ServerExceptionsAlert() {
                     </Badge>
                   )}
                   <span className="block truncate overflow-hidden text-left font-mono text-[11px] leading-tight text-foreground/90">
+                    {exception.code ? `[${exception.code}] ` : ""}
                     {exception.firstLine}
                   </span>
                 </div>

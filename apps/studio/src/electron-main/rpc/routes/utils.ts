@@ -548,6 +548,7 @@ const live = {
       eventIterator(
         z.array(
           z.object({
+            code: z.string().optional(),
             id: z.string(),
             message: z.string(),
             stack: z.string().optional(),
