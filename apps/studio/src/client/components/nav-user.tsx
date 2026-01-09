@@ -48,14 +48,14 @@ export function NavUser() {
     rpcClient.user.live.subscriptionStatus.experimental_liveOptions(),
   );
 
-  const plan = subscription?.plan;
+  const planName = subscription?.plan ?? null;
   const badgeVariant: "default" | "outline" | "secondary" = "secondary";
   let badgeClassName = "text-xs px-1 py-0.5 ";
 
-  if (plan === "Basic") {
+  if (planName === "Basic") {
     badgeClassName +=
       " bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/30";
-  } else if (plan === "Pro") {
+  } else if (planName === "Pro") {
     badgeClassName +=
       "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30";
   }
@@ -117,9 +117,11 @@ export function NavUser() {
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <div className="flex items-center gap-2">
                   <span className="truncate font-medium">{user.name}</span>
-                  <Badge className={badgeClassName} variant={badgeVariant}>
-                    {plan ?? "Free"}
-                  </Badge>
+                  {subscription && (
+                    <Badge className={badgeClassName} variant={badgeVariant}>
+                      {planName ?? "Free"}
+                    </Badge>
+                  )}
                 </div>
                 <span className="truncate text-xs">{user.email}</span>
               </div>
@@ -143,15 +145,17 @@ export function NavUser() {
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <div className="flex items-center gap-2">
                     <span className="truncate font-medium">{user.name}</span>
-                    <Badge className={badgeClassName} variant={badgeVariant}>
-                      {plan ?? "Free"}
-                    </Badge>
+                    {subscription && (
+                      <Badge className={badgeClassName} variant={badgeVariant}>
+                        {planName ?? "Free"}
+                      </Badge>
+                    )}
                   </div>
                   <span className="truncate text-xs">{user.email}</span>
                 </div>
               </div>
             </DropdownMenuLabel>
-            {isLowOnCredits(subscription) && (
+            {subscription && isLowOnCredits(subscription) && (
               <div className="px-2 py-1.5">
                 <Button
                   className="h-7 w-full text-xs font-semibold"
