@@ -62,8 +62,7 @@ export function UsageStatsTooltip({
   ];
 
   const visibleRows = rows.filter(
-    (row) =>
-      row.value !== undefined && !Number.isNaN(row.value) && row.value > 0,
+    (row) => row.value !== undefined && !Number.isNaN(row.value),
   );
 
   if (visibleRows.length === 0) {

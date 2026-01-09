@@ -56,10 +56,6 @@ export function UsageSummary({ messages }: UsageSummaryProps) {
     };
   }, [messages]);
 
-  if (usage.totalTokens === 0) {
-    return null;
-  }
-
   return (
     <div className="flex w-full items-center gap-2 py-2 text-[10px] text-muted-foreground/60">
       <UsageStatsTooltip
