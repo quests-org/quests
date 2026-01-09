@@ -1,10 +1,8 @@
-import {
-  isInsufficientCreditsError,
-  type SessionMessage,
-} from "@quests/workspace/client";
+import { type SessionMessage } from "@quests/workspace/client";
 import { AlertTriangle } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { isInsufficientCreditsError } from "../lib/is-insufficient-credits-error";
 import {
   CollapsiblePartHeader,
   CollapsiblePartMainContent,

@@ -1,5 +1,4 @@
 import {
-  isInsufficientCreditsError,
   isToolPart,
   type SessionMessage,
   type SessionMessagePart,
@@ -14,6 +13,7 @@ import { useCallback, useMemo } from "react";
 import { toast } from "sonner";
 
 import { useAppState } from "../hooks/use-app-state";
+import { isInsufficientCreditsError } from "../lib/is-insufficient-credits-error";
 import { rpcClient } from "../rpc/client";
 import { AssistantMessage } from "./assistant-message";
 import { AssistantMessagesFooter } from "./assistant-messages-footer";

@@ -15,7 +15,7 @@ import { type AnyAgent } from "../agents/types";
 import { type AppConfig } from "../lib/app-config/types";
 import { createAssignEventError } from "../lib/assign-event-error";
 import { getCurrentDate } from "../lib/get-current-date";
-import { isInsufficientCreditsError } from "../lib/is-insufficient-credits-error";
+import { getErrorAction } from "../lib/get-error-action";
 import { isInteractiveTool } from "../lib/is-interactive-tool";
 import { isToolPart } from "../lib/is-tool-part";
 import { logUnhandledEvent } from "../lib/log-unhandled-event";
@@ -399,39 +399,16 @@ export const agentMachine = setup({
             raise(({ event: { output } }) => {
               const { message } = output;
 
-              if (message.metadata.error?.kind === "aborted") {
-                return { type: "stop" };
-              }
-
-              if (message.metadata.error?.kind === "unknown") {
-                return {
-                  error: new Error(message.metadata.error.message),
-                  type: "error",
-                };
-              }
-
-              if (isInsufficientCreditsError(message)) {
-                return { type: "stop" };
-              }
-
-              const hasRetryableError =
-                message.metadata.error?.kind === "api-call" ||
-                message.metadata.error?.kind === "no-such-tool" ||
-                message.metadata.error?.kind === "invalid-tool-input";
-
-              if (hasRetryableError) {
-                return { type: "retry" };
+              const errorAction = getErrorAction(message);
+              if (errorAction.type !== "continue") {
+                return errorAction;
               }
 
               return { type: "executeToolCalls" };
             }),
             assign(({ event: { output } }) => {
               const { message, parts } = output;
-              const hasRetryableError =
-                message.metadata.error?.kind === "api-call" ||
-                message.metadata.error?.kind === "no-such-tool" ||
-                message.metadata.error?.kind === "invalid-tool-input";
-              if (hasRetryableError) {
+              if (getErrorAction(message).type !== "continue") {
                 return {};
               }
 
