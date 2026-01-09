@@ -15,6 +15,9 @@ catalogs:
     '@orpc/server':
       specifier: ^1.12.2
       version: 1.12.2
+    '@orpc/shared':
+      specifier: ^1.12.2
+      version: 1.12.2
     '@orpc/tanstack-query':
       specifier: ^1.12.2
       version: 1.12.2
@@ -174,6 +177,9 @@ importers:
       '@orpc/server':
         specifier: 'catalog:'
         version: 1.12.2(@opentelemetry/api@1.9.0)(crossws@0.3.4)(ws@8.18.3)
+      '@orpc/shared':
+        specifier: 'catalog:'
+        version: 1.12.2(@opentelemetry/api@1.9.0)
       '@orpc/tanstack-query':
         specifier: 'catalog:'
         version: 1.12.2(@opentelemetry/api@1.9.0)(@orpc/client@1.12.2(@opentelemetry/api@1.9.0))(@tanstack/query-core@5.90.12)

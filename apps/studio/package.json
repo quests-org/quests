@@ -58,6 +58,7 @@
     "@orpc/client": "catalog:",
     "@orpc/contract": "catalog:",
     "@orpc/server": "catalog:",
+    "@orpc/shared": "catalog:",
     "@orpc/tanstack-query": "catalog:",
     "@quests/ai-gateway": "workspace:*",
     "@quests/shared": "workspace:*",

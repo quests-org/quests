@@ -12,6 +12,7 @@ catalog:
   "@orpc/client": ^1.12.2
   "@orpc/contract": ^1.12.2
   "@orpc/server": ^1.12.2
+  "@orpc/shared": ^1.12.2
   "@orpc/tanstack-query": ^1.12.2
   "@types/node": 22.19.2
   "@types/react": ^19.2.7
