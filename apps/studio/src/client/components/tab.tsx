@@ -68,11 +68,7 @@ export const Tab = ({ isSelected, item, onClick, onRemove }: Props) => {
       <motion.div className="flex min-w-0 flex-1 items-center">
         <div className={cn(item.pinned ? "" : "mr-1.5")}>
           {item.iconName ? (
-            <AppIcon
-              isSelected={isSelected}
-              name={item.iconName}
-              size={item.projectSubdomain ? "sm" : "md"}
-            />
+            <AppIcon isSelected={isSelected} name={item.iconName} size="sm" />
           ) : (
             <SkeletonIcon isPinned={item.pinned} />
           )}
