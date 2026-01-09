@@ -78,7 +78,9 @@ function treeToString(node: TreeNode, prefix = ""): string {
   let result = "";
 
   for (const child of node.children) {
-    result += `${prefix}${child.name}${child.isDirectory ? "/" : ""}\n`;
+    const isEmpty = child.isDirectory && child.children.length === 0;
+    const emptyIndicator = isEmpty ? " (empty)" : "";
+    result += `${prefix}${child.name}${child.isDirectory ? "/" : ""}${emptyIndicator}\n`;
     if (child.isDirectory) {
       result += treeToString(child, `${prefix}  `);
     }

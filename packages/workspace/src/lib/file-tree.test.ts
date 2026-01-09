@@ -20,7 +20,7 @@ describe("file-tree", () => {
         "a-folder/
           built-in.ts
           external-module.ts
-        dot-files-only/
+        dot-files-only/ (empty)
         ignored-folder/
           except-me.txt
         nested/
