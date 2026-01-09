@@ -1,10 +1,11 @@
-import { type ErrorMap, onError, os } from "@orpc/server";
+import { type ErrorMap, os } from "@orpc/server";
 
 import { hasToken } from "../api/utils";
 import { getTabsManager } from "../tabs";
 import { type InitialRPCContext } from "./context";
 
 const ORPC_ERRORS = {
+  API_ERROR: {},
   NOT_FOUND: {},
   UNAUTHORIZED: {},
 } as const satisfies ErrorMap;

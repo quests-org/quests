@@ -37,26 +37,40 @@ const subscriptionStatus = base
   });
 
 const live = {
-  me: base.handler(async function* ({ signal }) {
-    yield* createAuthenticatedLiveQuery({
-      getOptions: (enabled) =>
-        apiRPCClient.users.getMe.queryOptions({ enabled }),
-      queryKey: apiRPCClient.users.getMe.queryKey(),
-      signal,
-    });
+  me: base.handler(async function* ({ errors, signal }) {
+    try {
+      yield* createAuthenticatedLiveQuery({
+        getOptions: (enabled) =>
+          apiRPCClient.users.getMe.queryOptions({ enabled }),
+        queryKey: apiRPCClient.users.getMe.queryKey(),
+        signal,
+      });
+    } catch (error) {
+      throw errors.API_ERROR({
+        cause: error,
+        message: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
   }),
   subscriptionStatus: base
     .input(SubscriptionStatusInputSchema)
-    .handler(async function* ({ input, signal }) {
-      yield* createAuthenticatedLiveQuery({
-        getOptions: (enabled) =>
-          apiRPCClient.users.getSubscriptionStatus.queryOptions({
-            enabled,
-            staleTime: input?.staleTime,
-          }),
-        queryKey: apiRPCClient.users.getSubscriptionStatus.queryKey(),
-        signal,
-      });
+    .handler(async function* ({ errors, input, signal }) {
+      try {
+        yield* createAuthenticatedLiveQuery({
+          getOptions: (enabled) =>
+            apiRPCClient.users.getSubscriptionStatus.queryOptions({
+              enabled,
+              staleTime: input?.staleTime,
+            }),
+          queryKey: apiRPCClient.users.getSubscriptionStatus.queryKey(),
+          signal,
+        });
+      } catch (error) {
+        throw errors.API_ERROR({
+          cause: error,
+          message: error instanceof Error ? error.message : "Unknown error",
+        });
+      }
     }),
 };
 

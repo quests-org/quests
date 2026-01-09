@@ -29,14 +29,17 @@ export async function* createAuthenticatedLiveQuery<TData>({
   let lastYieldedData: unknown;
 
   const observerUnsubscribe = observer.subscribe((queryResult) => {
-    if (!isEqual(queryResult.data, lastYieldedData) && resolveNext) {
+    if (
+      resolveNext &&
+      (queryResult.error || !isEqual(queryResult.data, lastYieldedData))
+    ) {
       const resolve = resolveNext;
       resolveNext = undefined;
       resolve();
     }
   });
 
-  const tokenUnsubscribe = (async () => {
+  void (async () => {
     for await (const _ of publisher.subscribe(
       "session.apiBearerToken.updated",
       { signal },
@@ -62,26 +65,29 @@ export async function* createAuthenticatedLiveQuery<TData>({
 
   signal?.addEventListener("abort", cleanup);
 
-  try {
-    const initialData = observer.getCurrentResult().data ?? null;
-    lastYieldedData = initialData;
-    yield initialData;
+  const initialResult = observer.getCurrentResult();
+  if (initialResult.error) {
+    throw initialResult.error;
+  }
+  const initialData = initialResult.data ?? null;
+  lastYieldedData = initialData;
+  yield initialData;
 
-    while (!signal?.aborted) {
-      await new Promise<void>((resolve) => {
-        resolveNext = resolve;
-      });
+  while (!signal?.aborted) {
+    await new Promise<void>((resolve) => {
+      resolveNext = resolve;
+    });
 
-      if (!signal?.aborted) {
-        const newData = observer.getCurrentResult().data ?? null;
-        if (!isEqual(newData, lastYieldedData)) {
-          lastYieldedData = newData;
-          yield newData;
-        }
+    if (!signal?.aborted) {
+      const currentResult = observer.getCurrentResult();
+      if (currentResult.error) {
+        throw currentResult.error;
+      }
+      const newData = currentResult.data ?? null;
+      if (!isEqual(newData, lastYieldedData)) {
+        lastYieldedData = newData;
+        yield newData;
       }
     }
-  } finally {
-    cleanup();
-    await tokenUnsubscribe;
   }
 }

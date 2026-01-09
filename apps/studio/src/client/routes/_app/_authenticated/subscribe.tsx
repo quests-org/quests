@@ -3,6 +3,7 @@ import { ErrorCard } from "@/client/components/error-card";
 import { Button } from "@/client/components/ui/button";
 import { Card } from "@/client/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/client/components/ui/tabs";
+import { useLiveSubscriptionStatus } from "@/client/hooks/use-live-subscription-status";
 import { captureClientEvent } from "@/client/lib/capture-client-event";
 import { cn } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
@@ -12,7 +13,7 @@ import { SALES_EMAIL } from "@quests/shared";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { CheckCircle2, Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/_authenticated/subscribe")({
@@ -55,24 +56,17 @@ function SubscribePage() {
     error: plansError,
     isLoading: isPlansLoading,
   } = useQuery(rpcClient.plans.get.queryOptions());
-  const { data: subscription, refetch: refetchSubscription } = useQuery(
-    rpcClient.user.live.subscriptionStatus.experimental_liveOptions({
-      input: { baz: true, staleTime: 0 },
-    }),
-  );
+  const {
+    data: subscription,
+    error: subscriptionError,
+    isLoading: isSubscriptionLoading,
+  } = useLiveSubscriptionStatus();
   const { mutateAsync: createCheckoutSession } = useMutation(
     rpcClient.stripe.createCheckoutSession.mutationOptions(),
   );
   const { mutateAsync: openExternalLink } = useMutation(
     rpcClient.utils.openExternalLink.mutationOptions(),
   );
-  const { data: onWindowFocus } = useQuery(
-    rpcClient.utils.live.onWindowFocus.experimental_liveOptions(),
-  );
-
-  useEffect(() => {
-    void refetchSubscription();
-  }, [onWindowFocus, refetchSubscription]);
 
   const [billingCycle, setBillingCycle] = useState<BillingCycle>("yearly");
 
@@ -137,7 +131,6 @@ function SubscribePage() {
     }
 
     await processCheckout(priceId);
-    await refetchSubscription();
   };
 
   const confirmUpgrade = async () => {
@@ -150,7 +143,6 @@ function SubscribePage() {
     }
 
     await processCheckout(priceId);
-    await refetchSubscription();
     setShowPlanChangePreview(false);
   };
 
@@ -169,7 +161,7 @@ function SubscribePage() {
           </p>
         </div>
 
-        {isPlansLoading && (
+        {(isPlansLoading || isSubscriptionLoading) && (
           <div className="flex justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin" />
           </div>
@@ -181,6 +173,16 @@ function SubscribePage() {
               description="We couldn't load the available subscription plans"
               error={plansError}
               title="Failed to load plans"
+            />
+          </div>
+        )}
+
+        {subscriptionError && (
+          <div className="flex justify-center">
+            <ErrorCard
+              description="We couldn't load your subscription information"
+              error={subscriptionError}
+              title="Failed to load subscription"
             />
           </div>
         )}

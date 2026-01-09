@@ -13,17 +13,12 @@ export function AccountInfo() {
   const { data: hasToken } = useQuery(
     rpcClient.auth.live.hasToken.experimental_liveOptions(),
   );
-  // We use both queries because only the non live query will return some kinds
-  // of errors, such as network issues.
-  const liveQuery = useQuery(rpcClient.user.live.me.experimental_liveOptions());
-  const nonLiveQuery = useQuery(rpcClient.user.me.queryOptions());
-
-  const user = liveQuery.data;
-  const error = liveQuery.error ?? nonLiveQuery.error;
-  const isLoading = liveQuery.isLoading || nonLiveQuery.isLoading;
-  const refetch = async () => {
-    await Promise.all([liveQuery.refetch(), nonLiveQuery.refetch()]);
-  };
+  const {
+    data: user,
+    error,
+    isLoading,
+    refetch,
+  } = useQuery(rpcClient.user.live.me.experimental_liveOptions());
 
   const { addTab } = useTabActions();
 

@@ -26,7 +26,12 @@ const planBadgeVariants = tv({
 
 export function SubscriptionCard() {
   const { addTab } = useTabActions();
-  const { data: subscription } = useQuery(
+  const {
+    data: subscription,
+    error,
+    isLoading,
+    refetch,
+  } = useQuery(
     rpcClient.user.live.subscriptionStatus.experimental_liveOptions(),
   );
   const { mutateAsync: createPortalSession } = useMutation(
@@ -49,13 +54,50 @@ export function SubscriptionCard() {
     }
   };
 
-  const plan = subscription?.plan;
-  const usagePercent = subscription?.usagePercent;
-  const freeUsagePercent = subscription?.freeUsagePercent;
-  const displayUsagePercent = plan ? usagePercent : freeUsagePercent;
+  if (error) {
+    return (
+      <Card className="bg-accent/30 p-4 shadow-sm">
+        <div className="space-y-4">
+          <div>
+            <h4 className="mb-1 font-medium">Subscription & Usage</h4>
+            <p className="text-sm text-destructive">
+              Failed to load subscription status
+            </p>
+          </div>
+          <Button onClick={() => void refetch()} size="sm" variant="outline">
+            Retry
+          </Button>
+        </div>
+      </Card>
+    );
+  }
+
+  if (isLoading || !subscription) {
+    return (
+      <Card className="bg-accent/30 p-4 shadow-sm">
+        <div className="space-y-6">
+          <div>
+            <h4 className="mb-1 font-medium">Subscription & Usage</h4>
+            <p className="text-sm text-muted-foreground">
+              Loading subscription status...
+            </p>
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
+  const hasPaidPlan = subscription.plan !== null;
+  const displayUsagePercent = hasPaidPlan
+    ? subscription.usagePercent
+    : subscription.freeUsagePercent;
 
   const planVariant =
-    plan === "Basic" ? "basic" : plan === "Pro" ? "pro" : "free";
+    subscription.plan === "Basic"
+      ? "basic"
+      : subscription.plan === "Pro"
+        ? "pro"
+        : "free";
 
   return (
     <Card className="bg-accent/30 p-4 shadow-sm">
@@ -68,14 +110,14 @@ export function SubscriptionCard() {
                 className={cn(planBadgeVariants({ plan: planVariant }))}
                 variant="secondary"
               >
-                {plan ? `${plan} Plan` : "Free Plan"}
+                {subscription.plan ?? "Free"} Plan
               </Badge>
             </div>
             <p className="text-sm text-muted-foreground">
               Manage your plan and view credit usage
             </p>
           </div>
-          {!plan && (
+          {!hasPaidPlan && (
             <Button
               className="shrink-0 gap-1.5 font-semibold"
               onClick={() => {
@@ -91,38 +133,34 @@ export function SubscriptionCard() {
         </div>
 
         <div className="space-y-4 pt-2">
-          {displayUsagePercent === undefined ? null : (
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="font-medium">
-                  {plan ? "Monthly Usage" : "Free Usage"}
-                </span>
-                <span className="text-muted-foreground">
-                  {displayUsagePercent.toFixed(0)}% used
-                </span>
-              </div>
-              <Progress value={displayUsagePercent} />
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm">
+              <span className="font-medium">
+                {hasPaidPlan ? "Monthly Usage" : "Free Usage"}
+              </span>
+              <span className="text-muted-foreground">
+                {displayUsagePercent.toFixed(0)}% used
+              </span>
             </div>
-          )}
-          {subscription?.nextAllocation && (
+            <Progress value={displayUsagePercent} />
+          </div>
+          {subscription.nextAllocation && (
             <p className="text-xs text-muted-foreground">
               Next credit allocation on{" "}
               {new Date(subscription.nextAllocation).toLocaleDateString()}
             </p>
           )}
-          {plan && (
+          {hasPaidPlan && (
             <div className="flex justify-end gap-2 pt-2">
-              {plan !== "Free" && (
-                <Button
-                  className="font-medium"
-                  onClick={handleManageSubscription}
-                  size="sm"
-                  variant="outline"
-                >
-                  Manage Subscription
-                </Button>
-              )}
-              {plan === "Basic" && (
+              <Button
+                className="font-medium"
+                onClick={handleManageSubscription}
+                size="sm"
+                variant="outline"
+              >
+                Manage Subscription
+              </Button>
+              {subscription.plan === "Basic" && (
                 <Button
                   className="shrink-0 gap-1.5 font-semibold"
                   onClick={() => {
