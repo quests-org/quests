@@ -5,8 +5,8 @@ import { useInvalidateRouterOnUserChange } from "@/client/hooks/use-invalidate-r
 import { useUpdateNotifications } from "@/client/hooks/use-update-notifications";
 import { rpcClient } from "@/client/rpc/client";
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, Outlet } from "@tanstack/react-router";
-import { lazy, Suspense } from "react";
+import { createFileRoute, Outlet, useRouter } from "@tanstack/react-router";
+import { lazy, Suspense, useEffect } from "react";
 
 const StudioCommandMenu = lazy(() =>
   import("@/client/components/studio-command-menu").then((module) => ({
@@ -30,6 +30,24 @@ function RouteComponent() {
   );
   useUpdateNotifications();
   useInvalidateRouterOnUserChange();
+
+  const router = useRouter();
+
+  useEffect(() => {
+    async function preloadRouteChunks() {
+      try {
+        const projectRoute = router.routesByPath["/projects/$subdomain"];
+        await Promise.all([
+          router.loadRouteChunk(projectRoute),
+          router.loadRouteChunk(projectRoute.parentRoute),
+        ]);
+      } catch {
+        // Failed to preload route chunk
+      }
+    }
+
+    void preloadRouteChunks();
+  }, [router]);
 
   return (
     <div className="relative flex h-full min-h-dvh flex-col bg-background">

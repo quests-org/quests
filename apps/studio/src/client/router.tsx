@@ -32,7 +32,7 @@ function createRouter(options?: { history?: RouterHistory }) {
     context: { queryClient },
     defaultErrorComponent: DefaultErrorComponent,
     defaultNotFoundComponent: NotFoundRouteComponent,
-    defaultPreload: "intent",
+    defaultPreload: false, // 99% of data is local, so no preload. We preload JS for certain routs in _app/route.tsx.
     history: options?.history,
     routeTree,
     scrollRestoration: true,
