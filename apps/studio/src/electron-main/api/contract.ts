@@ -61,6 +61,7 @@ export const contract = {
       z.object({
         billingCycle: z.enum(["monthly", "yearly"]).nullable(),
         freeUsagePercent: z.number(),
+        hasEnoughCredits: z.boolean(),
         nextAllocation: z.date().nullable(),
         plan: z.string().nullable(),
         usagePercent: z.number(),

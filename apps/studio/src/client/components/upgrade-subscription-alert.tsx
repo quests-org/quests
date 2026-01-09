@@ -1,4 +1,7 @@
 import { useLiveSubscriptionStatus } from "@/client/hooks/use-live-subscription-status";
+import { useSignInSocial } from "@/client/hooks/use-sign-in-social";
+import { rpcClient } from "@/client/rpc/client";
+import { useQuery } from "@tanstack/react-query";
 
 import { InternalLink } from "./internal-link";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
@@ -10,15 +13,11 @@ export function UpgradeSubscriptionAlert({
 }: {
   onContinue: () => void;
 }) {
-  const { data: subscription, error } = useLiveSubscriptionStatus();
-
-  const plan = subscription?.plan;
-  const usagePercent = subscription?.usagePercent;
-  const freeUsagePercent = subscription?.freeUsagePercent;
-  const displayUsagePercent = plan ? usagePercent : freeUsagePercent;
-
-  const hasCredits =
-    displayUsagePercent !== undefined && displayUsagePercent < 100;
+  const { data: subscription, error, isLoading } = useLiveSubscriptionStatus();
+  const { data: hasToken } = useQuery(
+    rpcClient.auth.live.hasToken.experimental_liveOptions(),
+  );
+  const { signIn } = useSignInSocial();
 
   if (error) {
     return (
@@ -35,7 +34,7 @@ export function UpgradeSubscriptionAlert({
     );
   }
 
-  if (!subscription) {
+  if (isLoading || (hasToken && !subscription)) {
     return (
       <Alert>
         <AlertTitle>
@@ -52,9 +51,25 @@ export function UpgradeSubscriptionAlert({
     );
   }
 
+  if (!hasToken || !subscription) {
+    return (
+      <Alert>
+        <AlertTitle>Sign in required</AlertTitle>
+        <AlertDescription className="flex flex-col gap-3">
+          <span>Sign in to Quests to continue.</span>
+          <div className="flex">
+            <Button onClick={() => void signIn()} size="sm" variant="brand">
+              Sign in
+            </Button>
+          </div>
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
   return (
     <Alert>
-      {hasCredits ? (
+      {subscription.hasEnoughCredits ? (
         <>
           <AlertTitle>Ready to continue</AlertTitle>
           <AlertDescription className="flex flex-col gap-3">
