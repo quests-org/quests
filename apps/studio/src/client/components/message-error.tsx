@@ -96,7 +96,8 @@ export function MessageError({
       <span className="shrink-0 font-medium text-warning-foreground/80">
         {getErrorTitle()}
       </span>
-      <span className="ml-auto min-w-0 truncate text-right text-warning-foreground/60">
+      <span className="flex-1" />
+      <span className="shrink-0 text-warning-foreground/60">
         {getErrorTypeLabel()}
       </span>
     </CollapsiblePartHeader>
