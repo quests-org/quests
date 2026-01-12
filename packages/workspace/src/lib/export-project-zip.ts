@@ -14,13 +14,11 @@ import { pathExists } from "./path-exists";
 
 interface ExportProjectZipOptions {
   appDir: AppDir;
-  includeChat: boolean;
   outputPath: string;
 }
 
 export function exportProjectZip({
   appDir,
-  includeChat,
   outputPath,
 }: ExportProjectZipOptions) {
   return safeTry(async function* () {
@@ -44,19 +42,17 @@ export function exportProjectZip({
 
     const filesToInclude = new Set(files);
 
-    if (includeChat) {
-      const sessionsDbPath = absolutePathJoin(
-        appDir,
-        APP_FOLDER_NAMES.private,
-        SESSIONS_DB_FILE_NAME,
-      );
-      const sessionsDbExists = await pathExists(sessionsDbPath);
+    const sessionsDbPath = absolutePathJoin(
+      appDir,
+      APP_FOLDER_NAMES.private,
+      SESSIONS_DB_FILE_NAME,
+    );
+    const sessionsDbExists = await pathExists(sessionsDbPath);
 
-      if (sessionsDbExists) {
-        filesToInclude.add(
-          path.join(APP_FOLDER_NAMES.private, SESSIONS_DB_FILE_NAME),
-        );
-      }
+    if (sessionsDbExists) {
+      filesToInclude.add(
+        path.join(APP_FOLDER_NAMES.private, SESSIONS_DB_FILE_NAME),
+      );
     }
 
     yield* ResultAsync.fromPromise(

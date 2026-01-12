@@ -360,7 +360,6 @@ const exportZip = base
   })
   .input(
     z.object({
-      includeChat: z.boolean().default(false),
       outputPath: z.string(),
       subdomain: ProjectSubdomainSchema,
     }),
@@ -400,7 +399,6 @@ const exportZip = base
 
       const result = await exportProjectZip({
         appDir: appConfig.appDir,
-        includeChat: input.includeChat,
         outputPath: filepath,
       });
 

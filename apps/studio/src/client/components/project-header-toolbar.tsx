@@ -460,8 +460,7 @@ export function ProjectHeaderToolbar({
         onClose={() => {
           setExportZipModalOpen(false);
         }}
-        projectName={project.title}
-        projectSubdomain={project.subdomain}
+        project={project}
       />
     </>
   );
