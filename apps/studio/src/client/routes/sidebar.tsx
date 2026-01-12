@@ -8,6 +8,10 @@ export const Route = createFileRoute("/sidebar")({
   head: () => ({
     meta: [
       {
+        title:
+          process.env.NODE_ENV === "development" ? "Quests (Dev)" : "Quests",
+      },
+      {
         content: "",
         name: "transparent-background",
       },
