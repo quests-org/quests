@@ -12,7 +12,8 @@ export default defineConfig({
   },
   test: {
     clearMocks: true,
-    exclude: ["node_modules", "dist", "directory", "out", "smoke-test.spec.ts"],
-    setupFiles: ["src/tests/setup.ts"],
+    exclude: ["node_modules", "dist", "directory", "out"],
+    include: ["smoke-test.spec.ts"],
+    testTimeout: 120_000,
   },
 });

@@ -39,7 +39,7 @@
     "dev": "NODE_OPTIONS='--enable-source-maps' electron-vite dev --sourcemap",
     "dev:fresh": "ELECTRON_USE_NEW_USER_FOLDER=true NODE_OPTIONS='--enable-source-maps' electron-vite dev --sourcemap",
     "lint:fix": "eslint . --max-warnings 0 --fix",
-    "smoke-test": "tsx smoke-test.ts",
+    "smoke-test": "vitest run --config vitest.smoke.config.ts",
     "smoke-test:build": "pnpm run build:pre-builder && electron-builder --config.mac.identity=null --dir && pnpm run smoke-test",
     "start": "electron-vite preview",
     "tag:release:minor": "tsx scripts/tag-release.ts minor",
