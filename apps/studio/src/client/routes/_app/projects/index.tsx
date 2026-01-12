@@ -25,12 +25,11 @@ import { captureClientEvent } from "@/client/lib/capture-client-event";
 import { getTrashTerminology } from "@/client/lib/trash-terminology";
 import { rpcClient } from "@/client/rpc/client";
 import { createIconMeta } from "@/shared/tabs";
-import { isDefinedError } from "@orpc/client";
 import { EVAL_SUBDOMAIN_PREFIX } from "@quests/shared";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { Circle, Loader2, Square, Trash2 } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -175,28 +174,54 @@ function RouteComponent() {
 
   const { trashApp } = useTrashApp({ navigateOnDelete: false });
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const importProjectMutation = useMutation(
-    rpcClient.utils.importProject.mutationOptions(),
+    rpcClient.workspace.project.import.mutationOptions(),
   );
 
   const handleImport = useCallback(() => {
-    importProjectMutation.mutate(undefined, {
-      onError: (error) => {
-        if (isDefinedError(error) && error.code !== "IMPORT_CANCELLED") {
-          toast.error("Failed to import project", {
-            description: error.message,
-          });
-        }
-      },
-      onSuccess: (data) => {
-        toast.success("Project imported successfully");
-        void router.navigate({
-          params: { subdomain: data.subdomain },
-          to: "/projects/$subdomain",
-        });
-      },
-    });
-  }, [importProjectMutation, router]);
+    fileInputRef.current?.click();
+  }, []);
+
+  const handleFileSelect = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) {
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.addEventListener("load", () => {
+        const dataUrl = reader.result as string;
+        const base64 = dataUrl.split(",")[1] ?? "";
+
+        importProjectMutation.mutate(
+          { zipFileData: base64 },
+          {
+            onError: (error) => {
+              toast.error("Failed to import project", {
+                description: error.message,
+              });
+            },
+            onSuccess: (data) => {
+              toast.success("Project imported successfully");
+              void router.navigate({
+                params: { subdomain: data.subdomain },
+                to: "/projects/$subdomain",
+              });
+            },
+          },
+        );
+      });
+      reader.readAsDataURL(file);
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    },
+    [importProjectMutation, router],
+  );
 
   const handleStop = useCallback(
     (subdomain: ProjectSubdomain) => {
@@ -411,10 +436,17 @@ function RouteComponent() {
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  Select a folder exported from Quests containing a quests.json
-                  file
+                  Select a zip file exported from Quests containing a
+                  quests.json file
                 </TooltipContent>
               </Tooltip>
+              <input
+                accept=".zip"
+                className="hidden"
+                onChange={handleFileSelect}
+                ref={fileInputRef}
+                type="file"
+              />
               <Button asChild size="sm">
                 <InternalLink to="/new-tab">New project</InternalLink>
               </Button>

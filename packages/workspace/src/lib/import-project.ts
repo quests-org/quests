@@ -1,12 +1,14 @@
 import { PROJECT_MANIFEST_FILE_NAME } from "@quests/shared";
-import { errAsync, ok, safeTry } from "neverthrow";
+import { BlobReader, BlobWriter, ZipReader } from "@zip.js/zip.js";
+import { errAsync, ok, ResultAsync, safeTry } from "neverthrow";
+import fs from "node:fs/promises";
+import path from "node:path";
 import { ulid } from "ulid";
 
-import { AbsolutePathSchema, AppDirSchema } from "../schemas/paths";
+import { AppDirSchema } from "../schemas/paths";
 import { ProjectSubdomainSchema } from "../schemas/subdomains";
 import { type WorkspaceConfig } from "../types";
 import { absolutePathJoin } from "./absolute-path-join";
-import { copyProject } from "./copy-project";
 import { TypedError } from "./errors";
 import { folderNameForSubdomain } from "./folder-name-for-subdomain";
 import { git } from "./git";
@@ -15,39 +17,15 @@ import { ensureGitRepo } from "./git/ensure-git-repo";
 import { pathExists } from "./path-exists";
 
 interface ImportProjectOptions {
-  sourcePath: string;
   workspaceConfig: WorkspaceConfig;
+  zipFileData: string;
 }
 
 export async function importProject(
-  { sourcePath: rawSourcePath, workspaceConfig }: ImportProjectOptions,
+  { workspaceConfig, zipFileData }: ImportProjectOptions,
   { signal }: { signal?: AbortSignal } = {},
 ) {
   return safeTry(async function* () {
-    const sourcePath = AbsolutePathSchema.parse(rawSourcePath);
-
-    const sourceExists = await pathExists(sourcePath);
-    if (!sourceExists) {
-      return errAsync(
-        new TypedError.NotFound(
-          `Source directory does not exist: ${sourcePath}`,
-        ),
-      );
-    }
-
-    const questManifestPath = absolutePathJoin(
-      sourcePath,
-      PROJECT_MANIFEST_FILE_NAME,
-    );
-    const hasQuestManifest = await pathExists(questManifestPath);
-    if (!hasQuestManifest) {
-      return errAsync(
-        new TypedError.NotFound(
-          `Source directory does not contain ${PROJECT_MANIFEST_FILE_NAME}`,
-        ),
-      );
-    }
-
     const subdomain = ProjectSubdomainSchema.parse(
       `import-${ulid().toLowerCase()}`,
     );
@@ -73,12 +51,47 @@ export async function importProject(
       );
     }
 
-    yield* copyProject({
-      includePrivateFolder: true,
-      isTemplate: false,
-      sourceDir: sourcePath,
-      targetDir: projectDir,
-    });
+    yield* ResultAsync.fromPromise(
+      (async () => {
+        const buffer = Buffer.from(zipFileData, "base64");
+        const blob = new Blob([buffer]);
+        const zipReader = new ZipReader(new BlobReader(blob));
+        const entries = await zipReader.getEntries();
+
+        const hasQuestManifest = entries.some(
+          (entry) => entry.filename === PROJECT_MANIFEST_FILE_NAME,
+        );
+        if (!hasQuestManifest) {
+          throw new TypedError.NotFound(
+            `Zip file does not contain ${PROJECT_MANIFEST_FILE_NAME}`,
+          );
+        }
+
+        await fs.mkdir(projectDir, { recursive: true });
+
+        for (const entry of entries) {
+          if (!entry.filename || entry.directory) {
+            continue;
+          }
+
+          const fullPath = absolutePathJoin(projectDir, entry.filename);
+          const dirPath = path.dirname(fullPath);
+          await fs.mkdir(dirPath, { recursive: true });
+
+          const writer = new BlobWriter();
+          const entryBlob = await entry.getData(writer);
+          const arrayBuffer = await entryBlob.arrayBuffer();
+          await fs.writeFile(fullPath, Buffer.from(arrayBuffer));
+        }
+
+        await zipReader.close();
+      })(),
+      (error) =>
+        new TypedError.FileSystem(
+          `Failed to extract zip file: ${error instanceof Error ? error.message : String(error)}`,
+          { cause: error },
+        ),
+    );
 
     const ensureResult = yield* ensureGitRepo({
       appDir: projectDir,

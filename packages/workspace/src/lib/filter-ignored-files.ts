@@ -7,9 +7,11 @@ import { absolutePathJoin } from "./absolute-path-join";
 
 export async function filterIgnoredFiles({
   ignore,
+  includeGit = false,
   rootDir,
 }: {
   ignore: Ignore;
+  includeGit?: boolean;
   rootDir: AbsolutePath;
 }): Promise<{ emptyDirs: string[]; files: string[] }> {
   const files = await fs.readdir(rootDir, { withFileTypes: true });
@@ -21,7 +23,8 @@ export async function filterIgnoredFiles({
     const relativePath = path.relative(rootDir, fullPath);
 
     // Skip dot-prefixed files and folders by default
-    if (file.name.startsWith(".")) {
+    const isGitAndIncluded = includeGit && file.name === ".git";
+    if (file.name.startsWith(".") && !isGitAndIncluded) {
       continue;
     }
 
@@ -30,6 +33,7 @@ export async function filterIgnoredFiles({
         const { emptyDirs: subEmptyDirs, files: subFiles } =
           await filterIgnoredFiles({
             ignore,
+            includeGit,
             rootDir: fullPath,
           });
 

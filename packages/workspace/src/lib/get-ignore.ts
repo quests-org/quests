@@ -8,7 +8,7 @@ import { pathExists } from "./path-exists";
 
 export async function getIgnore(
   rootDir: AbsolutePath,
-  options?: { signal?: AbortSignal },
+  options?: { includeGit?: boolean; signal?: AbortSignal },
 ) {
   const gitIgnorePath = absolutePathJoin(rootDir, ".gitignore");
   const exists = await pathExists(gitIgnorePath);
@@ -21,5 +21,6 @@ export async function getIgnore(
     signal: options?.signal,
   });
 
-  return nodeIgnore().add(gitignoreContent).add(".git");
+  const ignore = nodeIgnore().add(gitignoreContent);
+  return options?.includeGit ? ignore : ignore.add(".git");
 }

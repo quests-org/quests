@@ -1,15 +1,15 @@
-import { okAsync, safeTry } from "neverthrow";
+import { ZipWriter } from "@zip.js/zip.js";
+import { okAsync, ResultAsync, safeTry } from "neverthrow";
+import fs from "node:fs/promises";
+import path from "node:path";
+import { Readable, Writable } from "node:stream";
 
-import {
-  APP_FOLDER_NAMES,
-  GIT_AUTHOR,
-  SESSIONS_DB_FILE_NAME,
-} from "../constants";
+import { APP_FOLDER_NAMES, SESSIONS_DB_FILE_NAME } from "../constants";
 import { type AppDir } from "../schemas/paths";
 import { absolutePathJoin } from "./absolute-path-join";
-import { git } from "./git";
-import { GitCommands } from "./git/commands";
-import { ensureGitRepo } from "./git/ensure-git-repo";
+import { TypedError } from "./errors";
+import { filterIgnoredFiles } from "./filter-ignored-files";
+import { getIgnore } from "./get-ignore";
 import { pathExists } from "./path-exists";
 
 interface ExportProjectZipOptions {
@@ -24,22 +24,25 @@ export function exportProjectZip({
   outputPath,
 }: ExportProjectZipOptions) {
   return safeTry(async function* () {
-    const ensureResult = yield* ensureGitRepo({ appDir });
+    const ignore = yield* ResultAsync.fromPromise(
+      getIgnore(appDir, { includeGit: true }),
+      (error) =>
+        new TypedError.FileSystem(
+          `Failed to get ignore patterns: ${error instanceof Error ? error.message : String(error)}`,
+          { cause: error },
+        ),
+    );
 
-    const statusResult = yield* git(GitCommands.status(), appDir, {});
+    const { files } = yield* ResultAsync.fromPromise(
+      filterIgnoredFiles({ ignore, includeGit: true, rootDir: appDir }),
+      (error) =>
+        new TypedError.FileSystem(
+          `Failed to filter files: ${error instanceof Error ? error.message : String(error)}`,
+          { cause: error },
+        ),
+    );
 
-    if (
-      ensureResult.created ||
-      statusResult.stdout.toString("utf8").trim() !== ""
-    ) {
-      yield* git(GitCommands.addAll(), appDir, {});
-      const commitMessage = ensureResult.created
-        ? "Initial commit before export"
-        : "Auto-commit before export";
-      yield* git(GitCommands.commitWithAuthor(commitMessage), appDir, {});
-    }
-
-    let needsReset = false;
+    const filesToInclude = new Set(files);
 
     if (includeChat) {
       const sessionsDbPath = absolutePathJoin(
@@ -50,45 +53,45 @@ export function exportProjectZip({
       const sessionsDbExists = await pathExists(sessionsDbPath);
 
       if (sessionsDbExists) {
-        yield* git(
-          ["add", "-f", `${APP_FOLDER_NAMES.private}/${SESSIONS_DB_FILE_NAME}`],
-          appDir,
-          {},
+        filesToInclude.add(
+          path.join(APP_FOLDER_NAMES.private, SESSIONS_DB_FILE_NAME),
         );
-
-        const statusAfterAdd = yield* git(GitCommands.status(), appDir, {});
-
-        if (statusAfterAdd.stdout.toString("utf8").trim() !== "") {
-          yield* git(
-            [
-              "commit",
-              "-m",
-              "Temporary: include chat for export",
-              "--author",
-              `${GIT_AUTHOR.name} <${GIT_AUTHOR.email}>`,
-            ],
-            appDir,
-            {},
-          );
-          needsReset = true;
-        }
       }
     }
 
-    yield* git(GitCommands.archiveZip(outputPath), appDir, {});
+    yield* ResultAsync.fromPromise(
+      (async () => {
+        const fileHandle = await fs.open(outputPath, "w");
+        const writeStream = fileHandle.createWriteStream();
+        const writableStream = Writable.toWeb(writeStream);
 
-    if (needsReset) {
-      yield* git(["reset", "--soft", "HEAD~1"], appDir, {});
-      yield* git(
-        [
-          "reset",
-          "HEAD",
-          `${APP_FOLDER_NAMES.private}/${SESSIONS_DB_FILE_NAME}`,
-        ],
-        appDir,
-        {},
-      );
-    }
+        const zipWriter = new ZipWriter(writableStream);
+
+        for (const file of filesToInclude) {
+          const fullPath = absolutePathJoin(appDir, file);
+          const fileStats = await fs.stat(fullPath);
+
+          if (fileStats.isFile()) {
+            const readHandle = await fs.open(fullPath, "r");
+            const readStream = readHandle.createReadStream();
+            const fileStream = Readable.toWeb(readStream);
+
+            // Casting due to Node.js mismatches between the stream types
+            await zipWriter.add(file, fileStream as ReadableStream, {
+              lastModDate: fileStats.mtime,
+            });
+          }
+        }
+
+        await zipWriter.close();
+        await fileHandle.close();
+      })(),
+      (error) =>
+        new TypedError.FileSystem(
+          `Failed to create zip file: ${error instanceof Error ? error.message : String(error)}`,
+          { cause: error },
+        ),
+    );
 
     return okAsync({ outputPath });
   });

@@ -277,7 +277,7 @@ const duplicate = base
 const importProject = base
   .input(
     z.object({
-      sourcePath: z.string(),
+      zipFileData: z.string(),
     }),
   )
   .output(
@@ -285,11 +285,11 @@ const importProject = base
       subdomain: ProjectSubdomainSchema,
     }),
   )
-  .handler(async ({ context, errors, input: { sourcePath }, signal }) => {
+  .handler(async ({ context, errors, input: { zipFileData }, signal }) => {
     const result = await importProjectLib(
       {
-        sourcePath,
         workspaceConfig: context.workspaceConfig,
+        zipFileData,
       },
       { signal },
     );

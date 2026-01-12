@@ -19,7 +19,7 @@ import {
 import { call, eventIterator } from "@orpc/server";
 import { ProjectSubdomainSchema } from "@quests/workspace/client";
 import { createAppConfig, workspaceRouter } from "@quests/workspace/electron";
-import { app, clipboard, dialog, shell, webContents } from "electron";
+import { app, clipboard, shell, webContents } from "electron";
 import { exec } from "node:child_process";
 import fs from "node:fs/promises";
 import os from "node:os";
@@ -470,44 +470,6 @@ const getSupportedEditors = base
     return await initializeSupportedEditorsCache();
   });
 
-const importProject = base
-  .errors({
-    IMPORT_CANCELLED: {
-      message: "Import was cancelled",
-    },
-    IMPORT_FAILED: {
-      message: "Failed to import project",
-    },
-  })
-  .output(
-    z.object({
-      subdomain: ProjectSubdomainSchema,
-    }),
-  )
-  .handler(async ({ context, errors, signal }) => {
-    const result = await dialog.showOpenDialog({
-      properties: ["openDirectory"],
-      title: "Select Project Folder to Import",
-    });
-
-    if (result.canceled || result.filePaths.length === 0) {
-      throw errors.IMPORT_CANCELLED();
-    }
-
-    const sourcePath = result.filePaths[0];
-    if (!sourcePath) {
-      throw errors.IMPORT_CANCELLED();
-    }
-
-    const importResult = await call(
-      workspaceRouter.project.import,
-      { sourcePath },
-      { context, signal },
-    );
-
-    return { subdomain: importResult.subdomain };
-  });
-
 const clearExceptions = base.input(z.void()).handler(() => {
   clearServerExceptions();
 });
@@ -574,7 +536,6 @@ export const utils = {
   exportZip,
   getSupportedEditors,
   imageDataURI,
-  importProject,
   live,
   openAppIn,
   openExternalLink,
