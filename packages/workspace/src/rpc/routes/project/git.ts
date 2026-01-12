@@ -2,6 +2,7 @@ import { call, eventIterator } from "@orpc/server";
 import { z } from "zod";
 
 import { getFileVersionRefs } from "../../../lib/get-file-version-refs";
+import { getFilesAddedSinceInitial } from "../../../lib/get-files-added-since-initial";
 import { getGitCommits, GitCommitsSchema } from "../../../lib/get-git-commits";
 import { getGitRefInfo, GitRefInfoSchema } from "../../../lib/get-git-ref-info";
 import { getTrackedFileCount } from "../../../lib/get-tracked-file-count";
@@ -150,8 +151,30 @@ const trackedFileCount = base
     return result.value;
   });
 
+const filesAddedSinceInitial = base
+  .input(
+    z.object({
+      projectSubdomain: ProjectSubdomainSchema,
+    }),
+  )
+  .output(z.number().nullable())
+  .handler(async ({ context, input: { projectSubdomain } }) => {
+    const result = await getFilesAddedSinceInitial(
+      projectSubdomain,
+      context.workspaceConfig,
+    );
+
+    if (result.isErr()) {
+      // Return null if initial commit not found (older projects)
+      return null;
+    }
+
+    return result.value;
+  });
+
 export const projectGit = {
   commits,
+  filesAddedSinceInitial,
   fileVersionRefs,
   hasAppModifications: {
     check: hasAppModificationsEndpoint,
