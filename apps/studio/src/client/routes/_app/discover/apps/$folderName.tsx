@@ -26,7 +26,7 @@ export const Route = createFileRoute("/_app/discover/apps/$folderName")({
         {
           title: `${loaderData?.title ?? params.folderName} · Discover`,
         },
-        createIconMeta("telescope"),
+        createIconMeta("squircle"),
       ],
     };
   },

@@ -13,6 +13,7 @@ const TAB_ICONS = [
   "message-circle",
   "square-dashed",
   "telescope",
+  "squircle",
   "terminal",
 ] as const satisfies (CustomIconName | LucideIconName)[];
 
