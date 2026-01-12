@@ -3,7 +3,10 @@ globs: *.ts,*.tsx
 alwaysApply: false
 ---
 
+- Avoid casting types unless necessary. If you do cast, you must add a comment explaining why.
 - Avoid `any` and NEVER use `as any`.
+- Avoid redefining types and interfaces in every file, if possible, use an existing type or interface.
+- Avoid making component props and object properties optional unless necessary.
 - NEVER use non-null assertions (`!`).
 - We use kebab case for filenames.
 - We use non-default exports whenever possible.
@@ -14,13 +17,11 @@ alwaysApply: false
 - Don't run `tsc` to check for type errors, use your built-in diagnostics tool.
 - `"lib": ["es2023", "DOM", "DOM.Iterable"]` is set, so you can use modern features.
 - The `radashi` import is installed. Use it for common lodash-style functions.
-- Avoid redefining types and interfaces in every file, if possible, use an existing type or interface.
 - Prefer inline type declarations when they are short and not exported.
 - Prefer object types for functions with identical parameters, e.g. `({ a, b }: { a: number, b: number }) => number` instead of `(a: number, b: number) => number`.
 - Array#reduce() usually results in hard-to-read and less performant code. Instead, prefer .map, .filter, or a for-of loop.
 - Don't define return types unless necessary.
 - Use the `cn` helper from `@/client/lib/utils` for class name merging.
-- Avoid making component props and object properties optional unless necessary.
 
 ## Tailwind Rules
 
