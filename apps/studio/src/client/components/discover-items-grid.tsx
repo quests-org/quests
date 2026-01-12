@@ -3,14 +3,9 @@ import { RegistryAppCard } from "@/client/components/registry-app-card";
 interface DiscoverItemsGridProps {
   category: "apps" | "templates";
   items: { folderName: string }[];
-  showIcon?: boolean;
 }
 
-export function DiscoverItemsGrid({
-  category,
-  items,
-  showIcon = true,
-}: DiscoverItemsGridProps) {
+export function DiscoverItemsGrid({ category, items }: DiscoverItemsGridProps) {
   if (items.length === 0) {
     return (
       <div className="py-16 text-center">
@@ -47,7 +42,6 @@ export function DiscoverItemsGrid({
           category={category}
           folderName={item.folderName}
           key={item.folderName}
-          showIcon={showIcon}
         />
       ))}
     </div>

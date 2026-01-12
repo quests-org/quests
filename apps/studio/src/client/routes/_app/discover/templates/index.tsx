@@ -34,7 +34,6 @@ function RouteComponent() {
       category="templates"
       description="Next.js, Svelte, Vue, and more"
       items={templates}
-      showIcon={false}
       title="Templates"
     />
   );

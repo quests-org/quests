@@ -50,7 +50,6 @@ function RouteComponent() {
           category="templates"
           description="Next.js, Svelte, Vue, and more"
           items={templates}
-          showIcon={false}
           title="Templates"
           viewAllHref="/discover/templates"
         />
@@ -59,7 +58,6 @@ function RouteComponent() {
           category="apps"
           description="Explore example apps"
           items={apps}
-          showIcon={false}
           title="Apps"
           viewAllHref="/discover/apps"
         />

@@ -8,7 +8,6 @@ interface DiscoverHorizontalSectionProps {
   category: "apps" | "templates";
   description: string;
   items: { folderName: string }[];
-  showIcon?: boolean;
   title: string;
   viewAllHref: LinkProps["to"];
 }
@@ -17,7 +16,6 @@ export function DiscoverHorizontalSection({
   category,
   description,
   items,
-  showIcon = true,
   title,
   viewAllHref,
 }: DiscoverHorizontalSectionProps) {
@@ -191,7 +189,6 @@ export function DiscoverHorizontalSection({
                 <RegistryAppCard
                   category={category}
                   folderName={item.folderName}
-                  showIcon={showIcon}
                 />
               </div>
             ))}

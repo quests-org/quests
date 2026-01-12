@@ -10,7 +10,6 @@ interface DiscoverPageLayoutProps {
   description: string;
   items: { folderName: string }[];
   showHero?: boolean;
-  showIcon?: boolean;
   title: string;
 }
 
@@ -19,7 +18,6 @@ export function DiscoverPageLayout({
   category,
   description,
   items,
-  showIcon = true,
   title,
 }: DiscoverPageLayoutProps) {
   return (
@@ -38,11 +36,7 @@ export function DiscoverPageLayout({
       </div>
 
       <div className="mb-20 px-6 lg:px-8">
-        <DiscoverItemsGrid
-          category={category}
-          items={items}
-          showIcon={showIcon}
-        />
+        <DiscoverItemsGrid category={category} items={items} />
       </div>
     </div>
   );

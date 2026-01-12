@@ -31,7 +31,6 @@ function RouteComponent() {
       description="Explore our collection of built-in example apps"
       items={apps}
       showHero
-      showIcon={false}
       title="Discover Apps"
     />
   );

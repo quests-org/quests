@@ -1,4 +1,3 @@
-import { AppIcon } from "@/client/components/app-icon";
 import { InternalLink } from "@/client/components/internal-link";
 import { cn } from "@/client/lib/utils";
 import { useQuery } from "@tanstack/react-query";
@@ -10,12 +9,10 @@ export function RegistryAppCard({
   category,
   className,
   folderName,
-  showIcon = true,
   ...props
 }: React.HTMLAttributes<HTMLDivElement> & {
   category: "apps" | "templates";
   folderName: string;
-  showIcon?: boolean;
 }) {
   const { data: appDetails } = useQuery(
     rpcClient.workspace.registry.template.byFolderName.queryOptions({
@@ -58,23 +55,20 @@ export function RegistryAppCard({
             </div>
           </div>
         </InternalLink>
-        <div className="flex items-start gap-2 text-sm">
-          {showIcon && <AppIcon name={appDetails?.iconName} size="lg" />}
-          <div className="min-w-0 flex-1 space-y-1">
-            <InternalLink
-              params={{ folderName }}
-              to={`/discover/${category}/$folderName`}
-            >
-              <h3 className="mb-1 leading-none font-medium text-foreground">
-                {title}
-              </h3>
-            </InternalLink>
-            {description && (
-              <p className="line-clamp-2 text-xs text-muted-foreground">
-                {description}
-              </p>
-            )}
-          </div>
+        <div className="space-y-1 text-sm">
+          <InternalLink
+            params={{ folderName }}
+            to={`/discover/${category}/$folderName`}
+          >
+            <h3 className="mb-1 leading-none font-medium text-foreground">
+              {title}
+            </h3>
+          </InternalLink>
+          {description && (
+            <p className="line-clamp-2 text-xs text-muted-foreground">
+              {description}
+            </p>
+          )}
         </div>
       </div>
     </div>
