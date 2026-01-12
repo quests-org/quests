@@ -4,6 +4,7 @@ export namespace TypedError {
   const PREFIX = "workspace";
   export type Type =
     | Conflict
+    | DependencyInstall
     | FileSystem
     | Git
     | NoChanges
@@ -15,6 +16,10 @@ export namespace TypedError {
 
   export class Conflict extends Error {
     readonly type = `${PREFIX}-conflict-error`;
+  }
+
+  export class DependencyInstall extends Error {
+    readonly type = `${PREFIX}-dependency-install-error`;
   }
 
   export class FileSystem extends Error {

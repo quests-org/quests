@@ -1,5 +1,6 @@
 import { type Options } from "execa";
 import { err } from "neverthrow";
+import { dedent } from "radashi";
 
 import { type AbsolutePath } from "../schemas/paths";
 import { type AppConfig } from "./app-config/types";
@@ -18,10 +19,11 @@ export async function ensurePnpmShim(
     return shimResult;
   }
 
-  if (!(shimResult.error instanceof TypedError.ShimNotFound)) {
+  if (shimResult.error.type !== "workspace-shim-not-found-error") {
     return shimResult;
   }
 
+  let installError: unknown;
   try {
     await execaNodeForApp(
       appConfig,
@@ -29,15 +31,31 @@ export async function ensurePnpmShim(
       ["install"],
       { cancelSignal: options?.cancelSignal },
     );
-
-    const retryResult = await readPNPMShim(shimPath);
-    return retryResult;
   } catch (error) {
-    return err(
-      new TypedError.ShimNotFound(
-        `Failed to install dependencies: ${error instanceof Error ? error.message : String(error)}`,
-        { cause: error },
-      ),
-    );
+    installError = error;
   }
+
+  const retryResult = await readPNPMShim(shimPath);
+
+  if (retryResult.isOk()) {
+    return retryResult;
+  }
+
+  const hadInstallError = installError !== undefined;
+  const installErrorMessage = hadInstallError
+    ? `\n\nInstall error: ${installError instanceof Error ? installError.message : String(installError)}`
+    : "";
+
+  return err(
+    new TypedError.DependencyInstall(
+      dedent`
+        The pnpm shim was not found at the expected location. This typically means 'pnpm install' has not completed successfully.
+        
+        An attempt was just made to run 'pnpm install' to create the shim, but it ${hadInstallError ? "failed" : "did not resolve the issue"}.${installErrorMessage}
+        
+        Review the error details above to determine the best course of action.
+      `,
+      { cause: installError ?? undefined },
+    ),
+  );
 }

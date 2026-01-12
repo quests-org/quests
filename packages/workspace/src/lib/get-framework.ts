@@ -6,8 +6,8 @@ import { readPackage } from "read-pkg";
 import { type AppDir } from "../schemas/paths";
 import { absolutePathJoin } from "./absolute-path-join";
 import { type AppConfig } from "./app-config/types";
-import { ensurePnpmShim } from "./ensure-pnpm-shim";
 import { TypedError } from "./errors";
+import { readPNPMShim } from "./read-pnpm-shim";
 
 export async function getFramework({
   appConfig,
@@ -75,8 +75,7 @@ export async function getFramework({
     );
   }
 
-  const binPathResult = await ensurePnpmShim(
-    appConfig,
+  const binPathResult = await readPNPMShim(
     getBinShimPath(appConfig.appDir, devCommand),
   );
 
