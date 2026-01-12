@@ -1,4 +1,3 @@
-import { AppIcon } from "@/client/components/app-icon";
 import { Button } from "@/client/components/ui/button";
 import {
   Dialog,
@@ -11,9 +10,10 @@ import {
 import { getRevealInFolderLabel } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
 import { type WorkspaceAppProject } from "@quests/workspace/client";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { GitCommitVertical, MessageSquare } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
+
+import { ProjectStatsCard } from "./project-stats-card";
 
 interface ExportZipModalProps {
   isOpen: boolean;
@@ -26,18 +26,6 @@ export function ExportZipModal({
   onClose,
   project,
 }: ExportZipModalProps) {
-  const { data: commitsData } = useQuery({
-    ...rpcClient.workspace.project.git.commits.list.queryOptions({
-      input: { projectSubdomain: project.subdomain },
-    }),
-  });
-
-  const { data: messageCount } = useQuery(
-    rpcClient.workspace.message.count.queryOptions({
-      input: { subdomain: project.subdomain },
-    }),
-  );
-
   const showFileInFolderMutation = useMutation(
     rpcClient.utils.showFileInFolder.mutationOptions(),
   );
@@ -83,34 +71,7 @@ export function ExportZipModal({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex items-center gap-3 rounded-lg border bg-muted/50 p-4">
-          <AppIcon name={project.iconName} size="lg" />
-          <div className="flex flex-col gap-1">
-            <div className="font-medium text-foreground">{project.title}</div>
-            <div className="flex items-center gap-3 text-xs text-muted-foreground">
-              {commitsData?.commits && (
-                <div className="flex items-center gap-1">
-                  <GitCommitVertical className="size-3" />
-                  <span>
-                    {commitsData.commits.length}{" "}
-                    {commitsData.commits.length === 1 ? "version" : "versions"}
-                  </span>
-                </div>
-              )}
-              {messageCount !== undefined && messageCount > 0 && (
-                <div className="flex items-center gap-1">
-                  <MessageSquare className="size-3" />
-                  <span>
-                    {messageCount} {messageCount === 1 ? "message" : "messages"}
-                  </span>
-                </div>
-              )}
-            </div>
-            <div className="text-xs text-muted-foreground/70">
-              {project.urls.localhost}
-            </div>
-          </div>
-        </div>
+        <ProjectStatsCard project={project} />
 
         <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
           <Button onClick={onClose} variant="outline">

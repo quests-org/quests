@@ -91,6 +91,10 @@ export namespace GitCommands {
     return args;
   }
 
+  export function lsFiles() {
+    return ["ls-files"];
+  }
+
   export function revList(ref: string) {
     return ["rev-list", "--count", ref];
   }

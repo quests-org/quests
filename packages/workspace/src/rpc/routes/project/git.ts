@@ -4,6 +4,7 @@ import { z } from "zod";
 import { getFileVersionRefs } from "../../../lib/get-file-version-refs";
 import { getGitCommits, GitCommitsSchema } from "../../../lib/get-git-commits";
 import { getGitRefInfo, GitRefInfoSchema } from "../../../lib/get-git-ref-info";
+import { getTrackedFileCount } from "../../../lib/get-tracked-file-count";
 import { hasAppModifications } from "../../../lib/has-app-modifications";
 import { RelativePathSchema } from "../../../schemas/paths";
 import { ProjectSubdomainSchema } from "../../../schemas/subdomains";
@@ -129,6 +130,26 @@ const fileVersionRefs = base
     },
   );
 
+const trackedFileCount = base
+  .input(
+    z.object({
+      projectSubdomain: ProjectSubdomainSchema,
+    }),
+  )
+  .output(z.number())
+  .handler(async ({ context, errors, input: { projectSubdomain } }) => {
+    const result = await getTrackedFileCount(
+      projectSubdomain,
+      context.workspaceConfig,
+    );
+
+    if (result.isErr()) {
+      throw toORPCError(result.error, errors);
+    }
+
+    return result.value;
+  });
+
 export const projectGit = {
   commits,
   fileVersionRefs,
@@ -164,4 +185,5 @@ export const projectGit = {
     },
   },
   ref,
+  trackedFileCount,
 };
