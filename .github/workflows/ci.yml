@@ -136,6 +136,26 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
       - uses: rharkor/caching-for-turbo@v1.8
       - run: pnpm check:electron-node-version
+  smoke_test:
+    name: Electron Smoke Test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ secrets.CHECKOUT_ACCESS_TOKEN }}
+      - uses: ./.github/actions/setup-ripgrep-cache
+      - uses: ./.github/actions/prepare
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: rharkor/caching-for-turbo@v1.8
+      - name: Install Playwright browsers
+        run: cd apps/studio
+      - name: Build and run smoke test
+        run: cd apps/studio && pnpm run smoke-test:build
 
 name: CI
 

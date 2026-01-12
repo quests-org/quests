@@ -62,7 +62,12 @@ if (!platform.isWindows) {
   fixPath();
 }
 
-if (is.dev) {
+if (process.env.ELECTRON_USER_DATA_DIR) {
+  logger.info(
+    `Using custom user data dir: ${process.env.ELECTRON_USER_DATA_DIR}`,
+  );
+  app.setPath("userData", process.env.ELECTRON_USER_DATA_DIR);
+} else if (is.dev) {
   let suffix = "";
   if (process.env.ELECTRON_DEV_USER_FOLDER_SUFFIX) {
     suffix = ` (${process.env.ELECTRON_DEV_USER_FOLDER_SUFFIX})`;
@@ -136,7 +141,8 @@ void app.whenReady().then(async () => {
   if (
     process.platform === "darwin" &&
     !is.dev &&
-    !app.isInApplicationsFolder()
+    !app.isInApplicationsFolder() &&
+    process.env.SKIP_MOVE_TO_APPLICATIONS !== "true"
   ) {
     const choice = dialog.showMessageBoxSync({
       buttons: ["Move to Applications Folder", "Not Now"],
