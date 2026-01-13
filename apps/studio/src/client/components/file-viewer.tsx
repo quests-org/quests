@@ -1,6 +1,7 @@
 import { getLanguageFromFilePath } from "@/client/lib/file-extension-to-language";
 import { type ProjectSubdomain } from "@quests/workspace/client";
 import { useQuery } from "@tanstack/react-query";
+import { motion } from "framer-motion";
 import { Code2, Download, Eye, Loader2, X } from "lucide-react";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -117,7 +118,16 @@ function TextView({
     );
   }
 
-  return <>{children(data ?? "")}</>;
+  // Delay showing plain text fallback by 500ms to give syntax highlighting time to load
+  return (
+    <motion.div
+      animate={{ opacity: 1 }}
+      initial={{ opacity: 0 }}
+      transition={{ delay: 0.5, duration: 0 }}
+    >
+      {children(data ?? "")}
+    </motion.div>
+  );
 }
 
 const fileViewerVariants = tv({
