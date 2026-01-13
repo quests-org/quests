@@ -55,8 +55,9 @@ describe("Electron App Smoke Test", () => {
     }
 
     const electronApp = await electron.launch({
-      args: platform === "linux" ? ["--no-sandbox"] : [],
+      args: platform === "linux" ? ["--no-sandbox", "--disable-gpu"] : [],
       env: {
+        ...(process.env as Record<string, string>),
         ELECTRON_USER_DATA_DIR: tempUserDataDir,
         SKIP_MOVE_TO_APPLICATIONS: "true",
       },
