@@ -3,7 +3,7 @@ globs: *.tsx
 alwaysApply: false
 ---
 
-- Declare component props inline instead of using a separate interface.
+- Avoid using interfaces for component props, use inline types instead.
 - Avoid `useEffect` whenever possible in favor of making logic declarative.
 - React Compiler is setup for the Studio, so basic memoization like memo, useMemo, and useCallback are not needed.
 - Ignore "Incorrect class order" errors from eslint-plugin-better-tailwindcss, they will be fixed automatically after your work is done.
