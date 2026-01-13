@@ -8,9 +8,24 @@ on:
       - build/**
 
 jobs:
+  check_ci:
+    name: Check CI Status
+    runs-on: ubuntu-latest
+    if: github.ref_type == 'tag'
+    steps:
+      - name: Wait for CI to complete
+        uses: lewagon/wait-on-check-action@v1.3.4
+        with:
+          ref: ${{ github.sha }}
+          check-name: "Studio Smoke Test"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          wait-interval: 10
+
   release:
     name: ${{ matrix.os }} ${{ matrix.arch }}
     runs-on: ${{ matrix.runner }}
+    needs: [check_ci]
+    if: always() && (needs.check_ci.result == 'success' || needs.check_ci.result == 'skipped')
     permissions:
       contents: write
       id-token: "write"
