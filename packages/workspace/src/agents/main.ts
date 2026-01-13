@@ -179,6 +179,7 @@ export const mainAgent = setupAgent({
           
           # Git Repository
           - You are working within a Git repository where commits happen automatically after each round of your tool calls that modify files.
+          - Old file versions are automatically stored and shown to the user in the conversation. Feel free to overwrite files without worrying about losing history.
           
           ${staticFileServingInstructions}
           `.trim(),
