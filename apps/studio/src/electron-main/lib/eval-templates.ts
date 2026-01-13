@@ -38,11 +38,11 @@ const EVAL_TEMPLATE_GROUPS: EvalTemplateGroup[] = [
     templates: [
       {
         name: "Pie Chart",
-        userPrompt: "Use `canvas` in a script to create a pie chart on disk",
+        userPrompt: "Make me an image of a pie chart",
       },
       {
         name: "Bar Chart",
-        userPrompt: "Create a demo bar chart SVG in the output folder",
+        userPrompt: "I need an animated bar chart SVG",
       },
       {
         name: "Eval a string of code",
