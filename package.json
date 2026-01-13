@@ -47,6 +47,7 @@
     "turbo:check:types": "turbo check:types --parallel",
     "turbo:check:unused": "turbo check:unused",
     "turbo:check:workspace": "turbo check:workspace",
+    "turbo:smoke-test": "turbo smoke-test",
     "turbo:test:ci": "turbo test:ci"
   },
   "devDependencies": {

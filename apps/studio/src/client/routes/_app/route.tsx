@@ -50,7 +50,10 @@ function RouteComponent() {
   }, [router]);
 
   return (
-    <div className="relative flex h-full min-h-dvh flex-col bg-background">
+    <div
+      className="relative flex h-full min-h-dvh flex-col bg-background"
+      data-testid="app-page"
+    >
       <Outlet />
 
       {preferences?.developerMode && (

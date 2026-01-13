@@ -162,10 +162,8 @@ jobs:
         run: |
           Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
           echo "DISPLAY=:99" >> $GITHUB_ENV
-      - name: Install Playwright browsers
-        run: cd apps/studio
       - name: Build and run smoke test
-        run: cd apps/studio && pnpm run smoke-test:build
+        run: pnpm turbo run smoke-test
         env:
           # Minimal env for build to succeed
           VITE_POSTHOG_API_HOST: ${{ vars.VITE_POSTHOG_API_HOST }}

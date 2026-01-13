@@ -67,28 +67,71 @@ describe("Electron App Smoke Test", () => {
 
     expect(electronApp).toBeDefined();
 
-    const window = await electronApp.firstWindow({ timeout: 30_000 });
-    expect(window).toBeDefined();
+    await electronApp.firstWindow({ timeout: 30_000 });
 
-    await window.waitForLoadState("domcontentloaded", { timeout: 30_000 });
+    let windows = electronApp.windows();
+    const startTime = Date.now();
+    while (windows.length < 3 && Date.now() - startTime < 30_000) {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      windows = electronApp.windows();
+    }
 
-    await window.waitForSelector("#root > *", { timeout: 30_000 });
+    expect(windows).toHaveLength(3);
 
-    const title = await window.title();
-    expect(title).toBe("Quests");
+    const sidebarWindow = windows.find((w) => w.url().includes("#/sidebar"));
+    const toolbarWindow = windows.find((w) => w.url().includes("#/toolbar"));
+    const mainWindow = windows.find(
+      (w) => !w.url().includes("#/sidebar") && !w.url().includes("#/toolbar"),
+    );
 
-    const isVisible = await window.isVisible("body");
-    expect(isVisible).toBe(true);
+    const windowConfigs = [
+      { name: "sidebar", testId: "sidebar-page", window: sidebarWindow },
+      { name: "toolbar", testId: "toolbar-page", window: toolbarWindow },
+      { name: "main", testId: "app-page", window: mainWindow },
+    ];
+
+    for (const { name, window } of windowConfigs) {
+      expect(window, `${name} window`).toBeDefined();
+      if (!window) {
+        throw new Error(`${name} window not found`);
+      }
+    }
+
+    const definedWindows = windowConfigs.map(({ window }) => window);
+    if (definedWindows.some((w) => !w)) {
+      throw new Error("Some windows are undefined");
+    }
+
+    await Promise.all(
+      definedWindows.map((window) =>
+        window?.waitForLoadState("domcontentloaded", { timeout: 30_000 }),
+      ),
+    );
+
+    await Promise.all(
+      windowConfigs.map(({ testId, window }) =>
+        window?.waitForSelector(`[data-testid="${testId}"]`, {
+          timeout: 30_000,
+        }),
+      ),
+    );
+
+    await Promise.all(
+      definedWindows.map(async (window) => {
+        expect(await window?.isVisible("#root > *")).toBe(true);
+      }),
+    );
 
     await electronApp.close();
 
-    const binDir = path.join(tempUserDataDir, "bin");
-    expect(existsSync(binDir)).toBe(true);
+    const requiredPaths = [
+      path.join(tempUserDataDir, "bin"),
+      path.join(tempUserDataDir, "preferences.json"),
+      path.join(tempUserDataDir, "app-state.json"),
+    ];
 
-    const preferencesFile = path.join(tempUserDataDir, "preferences.json");
-    expect(existsSync(preferencesFile)).toBe(true);
-
-    const appStateFile = path.join(tempUserDataDir, "app-state.json");
-    expect(existsSync(appStateFile)).toBe(true);
+    for (const filePath of requiredPaths) {
+      expect(existsSync(filePath)).toBe(true);
+    }
   });
 });

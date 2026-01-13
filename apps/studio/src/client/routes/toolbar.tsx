@@ -28,7 +28,10 @@ function ToolbarPage() {
   const isSidebarVisible = sidebarVisibility?.visible ?? true;
 
   return (
-    <div className="flex h-svh w-full items-end overflow-hidden bg-secondary inset-shadow-toolbar inset-shadow-(color:--border) [-webkit-app-region:drag]">
+    <div
+      className="flex h-svh w-full items-end overflow-hidden bg-secondary inset-shadow-toolbar inset-shadow-(color:--border) [-webkit-app-region:drag]"
+      data-testid="toolbar-page"
+    >
       <header
         className={cn(
           `

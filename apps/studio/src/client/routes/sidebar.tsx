@@ -8,10 +8,6 @@ export const Route = createFileRoute("/sidebar")({
   head: () => ({
     meta: [
       {
-        title:
-          process.env.NODE_ENV === "development" ? "Quests (Dev)" : "Quests",
-      },
-      {
         content: "",
         name: "transparent-background",
       },
@@ -23,6 +19,7 @@ function SidebarPage() {
   return (
     <div
       className="flex h-screen w-full flex-col overflow-hidden overflow-x-hidden border-r border-border select-none"
+      data-testid="sidebar-page"
       style={
         {
           "--sidebar-width": "250px",

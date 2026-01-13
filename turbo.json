@@ -73,7 +73,7 @@
       "dependsOn": ["@quests/shim-client#build"],
       "outputs": ["dist/**", "out/**"]
     },
-    "build:mac:unsigned-app-only": {
+    "build:mac:unsigned": {
       "cache": false,
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "dependsOn": ["@quests/shim-client#build"],
@@ -98,6 +98,27 @@
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "dependsOn": ["@quests/shim-client#build"],
       "outputs": ["dist/**", "out/**"]
+    },
+    "build:win:unsigned": {
+      "cache": false,
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "dependsOn": ["@quests/shim-client#build"],
+      "outputs": ["dist/**", "out/**"]
+    },
+    "build:unsigned-app": {
+      "cache": false,
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "dependsOn": ["@quests/shim-client#build"],
+      "outputs": ["dist/**", "out/**"]
+    },
+    "smoke-test": {
+      "cache": false,
+      "dependsOn": ["build:unsigned-app"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "smoke-test.spec.ts",
+        "vitest.smoke.config.ts"
+      ]
     },
     "check:unused": { "dependsOn": ["^check:unused"] },
     "//#check:unused": {},
