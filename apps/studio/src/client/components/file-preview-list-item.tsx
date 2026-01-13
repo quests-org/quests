@@ -76,6 +76,7 @@ export function FilePreviewListItem({
       <FileIcon
         className="size-5 shrink-0 text-muted-foreground"
         filename={filename}
+        mimeType={mimeType}
       />
       <span className="min-w-0 truncate text-left text-xs leading-tight">
         {filename}

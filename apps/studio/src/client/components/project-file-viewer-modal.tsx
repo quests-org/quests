@@ -160,6 +160,7 @@ export function ProjectFileViewerModal() {
                   <FileIcon
                     className="size-4 shrink-0"
                     filename={currentFile.filename}
+                    mimeType={currentFile.mimeType}
                   />
                   <span className="truncate text-xs">
                     {currentFile.filePath}
@@ -260,6 +261,7 @@ export function ProjectFileViewerModal() {
                             className="size-16"
                             fallbackExtension="jpg"
                             filename={currentFile.filename}
+                            mimeType={currentFile.mimeType}
                           />
                         </div>
                         <div>

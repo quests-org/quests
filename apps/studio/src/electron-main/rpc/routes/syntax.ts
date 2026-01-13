@@ -63,6 +63,16 @@ const highlightCode = base
     return highlighter.codeToHtml(input.code, {
       lang: input.lang,
       theme: SHIKI_THEMES[input.theme],
+      transformers: [
+        {
+          name: "remove-background",
+          pre: (node) => {
+            node.properties.style &&= (
+              node.properties.style as string
+            ).replaceAll(/background-color:[^;]+;?/g, "");
+          },
+        },
+      ],
     });
   });
 

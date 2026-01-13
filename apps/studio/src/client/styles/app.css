@@ -133,6 +133,11 @@ html:has(meta[name="transparent-background"]) body {
   --brand-foreground: oklch(100% 0 0);
 }
 
+@utility prose-custom {
+  --tw-prose-pre-bg: var(--muted);
+  --tw-prose-pre-code: var(--foreground);
+}
+
 @utility scrollbar-thin {
   scrollbar-width: thin;
 }

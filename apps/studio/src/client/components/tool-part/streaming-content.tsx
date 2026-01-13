@@ -3,11 +3,16 @@ import type { SessionMessagePart } from "@quests/workspace/client";
 import { memo, useEffect, useRef, useState } from "react";
 import { useStickToBottom } from "use-stick-to-bottom";
 
+import { useSyntaxHighlighting } from "../../hooks/use-syntax-highlighting";
+import { getLanguageFromFilePath } from "../../lib/file-extension-to-language";
+
 const StreamingToolContent = memo(function StreamingToolContent({
   content,
+  filePath,
   isLoading,
 }: {
   content: string;
+  filePath?: string;
   isLoading: boolean;
 }) {
   const [scrollState, setScrollState] = useState({
@@ -21,6 +26,12 @@ const StreamingToolContent = memo(function StreamingToolContent({
     damping: 0.9,
     mass: 2.5,
     stiffness: 0.01,
+  });
+
+  const language = filePath ? getLanguageFromFilePath(filePath) : undefined;
+  const { highlightedHtml } = useSyntaxHighlighting({
+    code: content,
+    language,
   });
 
   const updateScrollState = () => {
@@ -84,9 +95,13 @@ const StreamingToolContent = memo(function StreamingToolContent({
         }}
       >
         <div ref={contentRef}>
-          <pre className="font-mono text-xs wrap-break-word whitespace-pre-wrap">
-            {content}
-          </pre>
+          {highlightedHtml ? (
+            <div dangerouslySetInnerHTML={{ __html: highlightedHtml }} />
+          ) : (
+            <pre className="font-mono text-xs wrap-break-word whitespace-pre-wrap">
+              {content}
+            </pre>
+          )}
         </div>
       </div>
 
@@ -115,10 +130,12 @@ export function StreamingContent({
   }
 
   let content: string | undefined;
+  let filePath: string | undefined;
 
   switch (part.type) {
     case "tool-edit_file": {
       content = part.input.newString;
+      filePath = part.input.filePath;
       break;
     }
     case "tool-run_shell_command": {
@@ -127,6 +144,7 @@ export function StreamingContent({
     }
     case "tool-write_file": {
       content = part.input.content;
+      filePath = part.input.filePath;
       break;
     }
     default: {
@@ -141,6 +159,7 @@ export function StreamingContent({
   return (
     <StreamingToolContent
       content={content}
+      filePath={filePath}
       isLoading={part.state === "input-streaming"}
     />
   );

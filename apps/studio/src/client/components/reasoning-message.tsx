@@ -8,7 +8,7 @@ import {
   CollapsiblePartHeader,
   CollapsiblePartTrigger,
 } from "./collapsible-part";
-import { Markdown } from "./markdown";
+import { SessionMarkdown } from "./session-markdown";
 import {
   Collapsible,
   CollapsibleContent,
@@ -120,23 +120,17 @@ export const ReasoningMessage = memo(function ReasoningMessage({
                 }
               }}
             >
-              <div
-                className={cn(
-                  "prose prose-sm max-w-none text-sm leading-relaxed wrap-break-word italic dark:prose-invert",
-                  !isLoading && "opacity-60",
-                )}
-                ref={contentRef}
-              >
-                <Markdown
-                  markdown={
-                    isLoading
+              <SessionMarkdown
+                className={cn("italic", !isLoading && "opacity-60")}
+                markdown={
+                  isLoading
+                    ? displayText
+                    : displayText.trim()
                       ? displayText
-                      : displayText.trim()
-                        ? displayText
-                        : "Reasoning not available"
-                  }
-                />
-              </div>
+                      : "Reasoning not available"
+                }
+                ref={contentRef}
+              />
             </div>
 
             {scrollState.canScrollUp && (

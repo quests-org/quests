@@ -1,6 +1,4 @@
 import { openFilePreviewAtom } from "@/client/atoms/file-preview";
-import { rpcClient, type RPCOutput } from "@/client/rpc/client";
-import { skipToken, useQuery } from "@tanstack/react-query";
 import { useSetAtom } from "jotai";
 import { memo, useCallback } from "react";
 import ReactMarkdown from "react-markdown";
@@ -10,10 +8,10 @@ import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import remend from "remend";
 
+import { useSyntaxHighlighting } from "../hooks/use-syntax-highlighting";
 import { cn } from "../lib/utils";
 import { CopyButton } from "./copy-button";
 import { ExternalLink } from "./external-link";
-import { useTheme } from "./theme-provider";
 
 import "katex/dist/katex.min.css";
 
@@ -43,41 +41,10 @@ const CodeWithCopy = ({
   </div>
 );
 
-type SupportedLanguage = RPCOutput["syntax"]["supportedLanguages"][number];
+const CodeBlock = ({ code, language }: { code: string; language: string }) => {
+  const { highlightedHtml } = useSyntaxHighlighting({ code, language });
 
-const CodeBlock = ({
-  code,
-  language,
-  supportedLanguages,
-  theme,
-}: {
-  code: string;
-  language: string;
-  supportedLanguages: SupportedLanguage[] | undefined;
-  theme: "dark" | "light";
-}) => {
-  const isLanguageSupported = supportedLanguages?.includes(
-    language as SupportedLanguage,
-  );
-
-  const { data: html } = useQuery(
-    rpcClient.syntax.highlightCode.queryOptions({
-      input: isLanguageSupported
-        ? {
-            code,
-            lang: language as SupportedLanguage,
-            theme,
-          }
-        : skipToken,
-      placeholderData: (previousData) => previousData,
-      refetchOnMount: false,
-      refetchOnReconnect: false,
-      refetchOnWindowFocus: false,
-      staleTime: Number.POSITIVE_INFINITY,
-    }),
-  );
-
-  if (!html) {
+  if (!highlightedHtml) {
     return (
       <pre>
         <code>{code}</code>
@@ -85,21 +52,11 @@ const CodeBlock = ({
     );
   }
 
-  return <div dangerouslySetInnerHTML={{ __html: html }} />;
+  return <div dangerouslySetInnerHTML={{ __html: highlightedHtml }} />;
 };
 
 export const Markdown = memo(({ allowRawHtml, markdown }: MarkdownProps) => {
   const openFilePreview = useSetAtom(openFilePreviewAtom);
-  const { resolvedTheme } = useTheme();
-
-  const { data: supportedLanguages } = useQuery(
-    rpcClient.syntax.supportedLanguages.queryOptions({
-      refetchOnMount: false,
-      refetchOnReconnect: false,
-      refetchOnWindowFocus: false,
-      staleTime: Number.POSITIVE_INFINITY,
-    }),
-  );
 
   const handleImageClick = useCallback(
     (event: React.MouseEvent<HTMLImageElement>) => {
@@ -147,12 +104,7 @@ export const Markdown = memo(({ allowRawHtml, markdown }: MarkdownProps) => {
 
           return (
             <CodeWithCopy content={codeString}>
-              <CodeBlock
-                code={codeString}
-                language={language}
-                supportedLanguages={supportedLanguages}
-                theme={resolvedTheme === "dark" ? "dark" : "light"}
-              />
+              <CodeBlock code={codeString} language={language} />
             </CodeWithCopy>
           );
         },

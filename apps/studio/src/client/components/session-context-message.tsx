@@ -4,7 +4,7 @@ import {
 } from "@quests/workspace/client";
 import { memo } from "react";
 
-import { Markdown } from "./markdown";
+import { SessionMarkdown } from "./session-markdown";
 
 interface ContextMessageProps {
   message: SessionMessage.ContextWithParts;
@@ -29,9 +29,7 @@ export const ContextMessage = memo(function ContextMessage({
       <div className="mb-1 text-xs font-medium text-foreground/70">
         {roleDisplay} prompt
       </div>
-      <div className="prose prose-sm max-w-none text-sm leading-relaxed wrap-break-word dark:prose-invert">
-        <Markdown markdown={part.text} />
-      </div>
+      <SessionMarkdown markdown={part.text} />
     </div>
   );
 });

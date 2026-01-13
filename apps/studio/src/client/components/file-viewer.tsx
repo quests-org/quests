@@ -1,3 +1,4 @@
+import { getLanguageFromFilePath } from "@/client/lib/file-extension-to-language";
 import { type ProjectSubdomain } from "@quests/workspace/client";
 import { useQuery } from "@tanstack/react-query";
 import { Code2, Download, Eye, Loader2, X } from "lucide-react";
@@ -5,25 +6,20 @@ import { type ReactNode, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { tv } from "tailwind-variants";
 
+import { useSyntaxHighlighting } from "../hooks/use-syntax-highlighting";
 import { isTextMimeType } from "../lib/is-text-mime-type";
 import { FileActionsMenu } from "./file-actions-menu";
 import { FileIcon } from "./file-icon";
 import { FilePreviewFallback } from "./file-preview-fallback";
 import { FileVersionBadge } from "./file-version-badge";
-import { Markdown } from "./markdown";
 import { SandboxedHtmlIframe } from "./sandboxed-html-iframe";
+import { SessionMarkdown } from "./session-markdown";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { Button } from "./ui/button";
 import { Tabs, TabsList, TabsTrigger } from "./ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
-function TextView({
-  children,
-  url,
-}: {
-  children: (text: string) => ReactNode;
-  url: string;
-}) {
+function MarkdownPreview({ url }: { url: string }) {
   const { data, error, isLoading } = useQuery({
     queryFn: async () => {
       const response = await fetch(url);
@@ -32,8 +28,8 @@ function TextView({
       }
       return response.text();
     },
-    queryKey: ["text-file", url],
-    retry: false, // Ensures fast failure
+    queryKey: ["markdown-file", url],
+    retry: false,
   });
 
   if (isLoading) {
@@ -56,6 +52,68 @@ function TextView({
           </AlertDescription>
         </Alert>
       </div>
+    );
+  }
+
+  return <SessionMarkdown className="p-8" markdown={data ?? ""} />;
+}
+
+function TextView({
+  children,
+  filename,
+  url,
+}: {
+  children: (text: string) => ReactNode;
+  filename: string;
+  url: string;
+}) {
+  const { data, error, isLoading } = useQuery({
+    queryFn: async () => {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch file: ${response.statusText}`);
+      }
+      return response.text();
+    },
+    queryKey: ["text-file", url],
+    retry: false, // Ensures fast failure
+  });
+
+  const language = getLanguageFromFilePath(filename);
+  const { highlightedHtml } = useSyntaxHighlighting({
+    code: data,
+    language,
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex size-full items-center justify-center">
+        <Loader2 className="size-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex size-full items-center justify-center p-8">
+        <Alert className="max-w-2xl" variant="destructive">
+          <AlertTitle>Failed to load file</AlertTitle>
+          <AlertDescription>
+            {error instanceof Error
+              ? error.message
+              : "An unknown error occurred"}
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+
+  if (highlightedHtml) {
+    return (
+      <div
+        className="p-4 text-sm"
+        dangerouslySetInnerHTML={{ __html: highlightedHtml }}
+      />
     );
   }
 
@@ -210,7 +268,11 @@ export function FileViewer({
       })}
     >
       <div className="flex shrink-0 items-center gap-2 border-b border-border bg-muted/30 px-4 py-2">
-        <FileIcon className="size-4 shrink-0" filename={filename} />
+        <FileIcon
+          className="size-4 shrink-0"
+          filename={filename}
+          mimeType={mimeType}
+        />
         <Tooltip>
           <TooltipTrigger asChild>
             <span className="truncate text-xs text-muted-foreground">
@@ -264,13 +326,7 @@ export function FileViewer({
             />
           </div>
         ) : isMarkdown && viewMode === "preview" ? (
-          <TextView url={url}>
-            {(text) => (
-              <div className="prose prose-sm max-w-none p-8 dark:prose-invert">
-                <Markdown markdown={text} />
-              </div>
-            )}
-          </TextView>
+          <MarkdownPreview url={url} />
         ) : isHtml && viewMode === "preview" ? (
           <SandboxedHtmlIframe
             className="absolute inset-0 size-full border-0 bg-background"
@@ -278,9 +334,9 @@ export function FileViewer({
             title={filename}
           />
         ) : isText ? (
-          <TextView url={url}>
+          <TextView filename={filename} url={url}>
             {(text) => (
-              <pre className="p-8 text-sm text-foreground">{text}</pre>
+              <pre className="p-4 text-sm text-foreground">{text}</pre>
             )}
           </TextView>
         ) : isPdf ? (

@@ -4,8 +4,8 @@ import { ChevronUp } from "lucide-react";
 import { memo, useState } from "react";
 
 import { CopyButton } from "./copy-button";
-import { Markdown } from "./markdown";
 import { RelativeTime } from "./relative-time";
+import { SessionMarkdown } from "./session-markdown";
 import {
   Collapsible,
   CollapsibleContent,
@@ -35,9 +35,7 @@ export const UserMessage = memo(function UserMessage({
     return (
       <div className="group flex flex-col items-end">
         <div className="relative max-w-full rounded-xl border border-border/50 bg-muted px-4 py-2 text-foreground">
-          <div className="prose prose-sm max-w-none text-sm leading-relaxed wrap-break-word dark:prose-invert">
-            <Markdown markdown={messageText} />
-          </div>
+          <SessionMarkdown markdown={messageText} />
         </div>
         <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100">
           <RelativeTime
@@ -67,14 +65,12 @@ export const UserMessage = memo(function UserMessage({
         open={isExpanded}
       >
         <CollapsibleTrigger asChild>
-          <div
+          <SessionMarkdown
             className={cn(
-              "prose prose-sm max-w-none text-sm leading-relaxed wrap-break-word dark:prose-invert",
               !isExpanded && "max-h-32 cursor-pointer overflow-hidden",
             )}
-          >
-            <Markdown markdown={messageText} />
-          </div>
+            markdown={messageText}
+          />
         </CollapsibleTrigger>
 
         {!isExpanded && (

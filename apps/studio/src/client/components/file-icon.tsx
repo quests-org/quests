@@ -15,16 +15,21 @@ import {
 import { type IconType } from "react-icons/lib";
 import { VscFileZip } from "react-icons/vsc";
 
+import { EXTENSION_MAP } from "../lib/file-extension-to-language";
+
+const codeFileExtensions: Record<string, IconType> = {};
+for (const ext of Object.keys(EXTENSION_MAP)) {
+  codeFileExtensions[ext] = BsFileCode;
+}
+
 const EXTENSION_ICON_MAP: Record<string, IconType | null> = {
+  ...codeFileExtensions,
   // cspell:ignore flac
   "7z": VscFileZip,
   aac: BsFileEarmarkMusic,
   ai: BsFileEarmarkImage,
   avi: BsFileEarmarkPlay,
-  bash: BsFileCode,
   bmp: BsFileEarmarkImage,
-  cs: BsFileCode,
-  css: BsFileCode,
   csv: BsFileEarmarkSpreadsheet,
   doc: BsFileEarmarkWord,
   docx: BsFileEarmarkWord,
@@ -32,23 +37,13 @@ const EXTENSION_ICON_MAP: Record<string, IconType | null> = {
   exe: BsFileBinary,
   flac: BsFileEarmarkMusic,
   gif: BsFileEarmarkImage,
-  gml: BsFileCode,
   gz: VscFileZip,
   heic: BsFileEarmarkImage,
-  htm: BsFileCode,
-  html: BsFileCode,
-  java: BsFileCode,
   jpeg: BsFileEarmarkImage,
   jpg: BsFileEarmarkImage,
-  js: BsFileCode,
-  json: BsFileCode,
-  jsx: BsFileCode,
   key: BsFileEarmarkPpt,
-  kml: BsFileCode,
   m4a: BsFileEarmarkMusic,
   md: BsFileEarmarkText,
-  mdx: BsFileCode,
-  mjs: BsFileCode,
   mkv: BsFileEarmarkPlay,
   mov: BsFileEarmarkPlay,
   mp3: BsFileEarmarkMusic,
@@ -62,54 +57,45 @@ const EXTENSION_ICON_MAP: Record<string, IconType | null> = {
   otf: BsFileEarmarkFont,
   pages: BsFileEarmarkWord,
   pdf: BsFilePdf,
-  php: BsFileCode,
   png: BsFileEarmarkImage,
   ppt: BsFileEarmarkPpt,
   pptx: BsFileEarmarkPpt,
   psd: BsFileEarmarkImage,
-  py: BsFileCode,
   rar: VscFileZip,
   raw: BsFileEarmarkImage,
-  rb: BsFileCode,
-  rss: BsFileCode,
   rtf: BsFileEarmarkRichtext,
-  sass: BsFileCode,
-  scss: BsFileCode,
-  sh: BsFileCode,
-  sql: BsFileCode,
   svg: BsFileEarmarkImage,
   tar: VscFileZip,
   tiff: BsFileEarmarkImage,
-  ts: BsFileCode,
   tsv: BsFileEarmarkSpreadsheet,
-  tsx: BsFileCode,
   ttf: BsFileEarmarkFont,
   txt: BsFileEarmarkText,
   wav: BsFileEarmarkMusic,
   webm: BsFileEarmarkPlay,
   woff: BsFileEarmarkFont,
-  xhtml: BsFileCode,
   xls: BsFileEarmarkSpreadsheet,
   xlsx: BsFileEarmarkSpreadsheet,
-  xml: BsFileCode,
-  yaml: BsFileCode,
-  yml: BsFileCode,
   zip: VscFileZip,
 };
 
 const FILENAME_ICON_MAP: Record<string, IconType | null> = {
   ".gitignore": BsFileCode,
+  changelog: BsFileEarmarkText,
   dockerfile: BsFileCode,
+  license: BsFileEarmarkText,
+  readme: BsFileEarmarkText,
 };
 
 export function FileIcon({
   className = "size-5",
   fallbackExtension,
   filename,
+  mimeType,
 }: {
   className?: string;
   fallbackExtension?: string;
   filename: string;
+  mimeType?: string;
 }) {
   let Icon: IconType = BsFileBinary;
   const lowerName = filename.toLowerCase();
@@ -125,6 +111,8 @@ export function FileIcon({
       EXTENSION_ICON_MAP[fallbackExtension.toLowerCase()]
     ) {
       Icon = EXTENSION_ICON_MAP[fallbackExtension.toLowerCase()] ?? Icon;
+    } else if (mimeType?.startsWith("text/")) {
+      Icon = BsFileEarmarkText;
     }
   }
 
