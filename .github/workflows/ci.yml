@@ -137,7 +137,7 @@ jobs:
       - uses: rharkor/caching-for-turbo@v1.8
       - run: pnpm check:electron-node-version
   smoke_test:
-    name: Electron Smoke Test
+    name: Studio Smoke Test
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
