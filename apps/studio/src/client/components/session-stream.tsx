@@ -8,7 +8,6 @@ import {
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { AlertTriangle, Loader2 } from "lucide-react";
-import { selectFirst } from "radashi";
 import { useCallback, useMemo } from "react";
 import { toast } from "sonner";
 
@@ -394,23 +393,20 @@ export function SessionStream({
       return false;
     }
 
-    const lastUserIndex = messages.findLastIndex((m) => m.role === "user");
-    const messagesSinceLastUser = messages.slice(lastUserIndex + 1);
-
-    const lastError = selectFirst(messagesSinceLastUser.toReversed(), (m) =>
-      m.role === "assistant" && m.metadata.error ? m : undefined,
-    );
-    if (!lastError || isInsufficientCreditsError(lastError)) {
+    const lastMessage = messages.at(-1);
+    if (!lastMessage || lastMessage.role !== "assistant") {
       return false;
     }
 
-    return messagesSinceLastUser.some(
-      (m) =>
-        m.role === "assistant" &&
-        m.metadata.error &&
-        m.metadata.error.kind !== "aborted" &&
-        m.metadata.error.kind !== "invalid-tool-input" &&
-        m.metadata.error.kind !== "no-such-tool",
+    const error = lastMessage.metadata.error;
+    if (!error || isInsufficientCreditsError(lastMessage)) {
+      return false;
+    }
+
+    return (
+      error.kind !== "aborted" &&
+      error.kind !== "invalid-tool-input" &&
+      error.kind !== "no-such-tool"
     );
   }, [messages, isAgentRunning]);
 
