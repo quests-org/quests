@@ -16,7 +16,6 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { formatDistanceToNow } from "date-fns";
 import { ExternalLink as ExternalLinkIcon } from "lucide-react";
-import rehypeRaw from "rehype-raw";
 
 export const Route = createFileRoute("/_app/release-notes")({
   component: RouteComponent,
@@ -166,9 +165,8 @@ function RouteComponent() {
                 {release.body ? (
                   <div className="prose prose-sm dark:prose-invert">
                     <Markdown
+                      allowRawHtml // To support GitHub's HTML-based image attachments
                       markdown={release.body}
-                      // To support raw HTML images in the release notes
-                      rehypePlugins={[rehypeRaw]}
                     />
                   </div>
                 ) : (

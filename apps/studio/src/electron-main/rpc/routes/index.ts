@@ -13,6 +13,7 @@ import { providerConfig } from "./provider-config";
 import { releases } from "./releases";
 import { sidebar } from "./sidebar";
 import { stripe } from "./stripe";
+import { syntax } from "./syntax";
 import { tabs } from "./tabs";
 import { telemetry } from "./telemetry";
 import { updates } from "./updates";
@@ -33,6 +34,7 @@ export const router = {
   releases,
   sidebar,
   stripe,
+  syntax,
   tabs,
   telemetry,
   updates,

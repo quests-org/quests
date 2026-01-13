@@ -24,6 +24,15 @@ export const captureServerException: CaptureExceptionFunction = function (
       ? error.code
       : undefined;
 
+  // Extract additional error data from ORPC (e.g., validation issues from BAD_REQUEST)
+  const errorData =
+    error &&
+    typeof error === "object" &&
+    "data" in error &&
+    error.data !== undefined
+      ? error.data
+      : undefined;
+
   const finalProperties = {
     ...additionalProperties,
     $process_person_profile: false, // Ensure anonymous, if at all
@@ -31,6 +40,7 @@ export const captureServerException: CaptureExceptionFunction = function (
     version: app.getVersion(),
     ...getSystemProperties(),
     ...(errorCode ? { error_code: errorCode } : {}),
+    ...(errorData ? { error_data: errorData } : {}),
   };
   const appStateStore = getAppStateStore();
   const telemetryId = appStateStore.get("telemetryId");
@@ -64,6 +74,13 @@ export const captureServerException: CaptureExceptionFunction = function (
       }
     } else {
       console.error(error);
+    }
+
+    // Log additional error data if present (e.g., validation issues)
+    if (errorData) {
+      console.groupCollapsed("%c▶︎ Error Data", "color: #ff9800");
+      console.error(errorData);
+      console.groupEnd();
     }
 
     console.groupEnd();
