@@ -19,7 +19,7 @@ jobs:
           ref: ${{ github.sha }}
           check-regexp: Studio Smoke Test.*
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          wait-interval: 10
+          wait-interval: 20
 
   release:
     name: ${{ matrix.os }} ${{ matrix.arch }}
