@@ -225,7 +225,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
       const trimmedPrompt = value.trim();
       const prompt =
         !trimmedPrompt && uploadedFiles.length > 0
-          ? `Review the uploaded ${uploadedFiles.length} file${uploadedFiles.length === 1 ? "" : "s"} to help with this request.`
+          ? `Review the ${uploadedFiles.length} added file${uploadedFiles.length === 1 ? "" : "s"} to help with this request.`
           : trimmedPrompt;
 
       onSubmit({
@@ -328,7 +328,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
             <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed border-primary bg-primary/5 backdrop-blur-sm">
               <Upload className="size-8 text-primary" />
               <span className="text-sm font-medium text-primary">
-                Drop files to add to the project
+                Drop files to add them to the project
               </span>
             </div>
           )}
@@ -415,7 +415,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
                   <Paperclip className="size-4" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Upload files</TooltipContent>
+              <TooltipContent>Add files</TooltipContent>
             </Tooltip>
 
             <Button

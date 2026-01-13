@@ -1,9 +1,9 @@
 export const APP_FOLDER_NAMES = {
+  input: "input",
   output: "output",
   private: ".quests",
   scripts: "scripts",
   src: "src",
-  uploads: "uploads",
 } as const;
 export const SESSIONS_DB_FILE_NAME = "sessions.db";
 export const LEGACY_PROJECT_SUBDOMAIN_MODE_PREFIXES = {
@@ -26,8 +26,6 @@ export const GIT_TRAILERS = {
   initialCommit: "Quests-Initial-Commit",
   template: "Quests-Template",
 };
-export const WEBSITE_URL = "https://quests.dev";
-export const APP_NAME = "Quests";
 
 // Limit prompt storage to 50KB to avoid blowing up the JSON file
 export const MAX_PROMPT_STORAGE_LENGTH = 50_000;

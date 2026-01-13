@@ -10,7 +10,7 @@ import {
 
 describe("detect-static-file-serving", () => {
   describe("detectStaticFileServing", () => {
-    it("should detect both uploads and output folders in basic template", async () => {
+    it("should detect both input and output folders in basic template", async () => {
       const basicTemplateDir = AbsolutePathSchema.parse(
         path.resolve(
           import.meta.dirname,
@@ -21,7 +21,7 @@ describe("detect-static-file-serving", () => {
       const result = await detectStaticFileServing(basicTemplateDir);
 
       expect(result).toHaveLength(2);
-      expect(result).toContain("uploads");
+      expect(result).toContain("input");
       expect(result).toContain("output");
     });
 
@@ -52,27 +52,27 @@ describe("detect-static-file-serving", () => {
   describe("buildStaticFileServingInstructions", () => {
     it("should build instructions for both folders", () => {
       const instructions = buildStaticFileServingInstructions([
-        APP_FOLDER_NAMES.uploads,
+        APP_FOLDER_NAMES.input,
         APP_FOLDER_NAMES.output,
       ]);
 
       expect(instructions).toMatchInlineSnapshot(`
-        "## Static File Serving
+        "# Static File Serving
         The server serves static files from specific directories, making them accessible to code running in the \`src/\` directory:
-        - Files in \`./uploads/\` are served at \`/uploads/*\` (e.g., \`/uploads/image.png\`)
+        - Files in \`./input/\` are served at \`/input/*\` (e.g., \`/input/image.png\`)
         - Files in \`./output/\` are served at \`/output/*\` (e.g., \`/output/image.png\`)"
       `);
     });
 
     it("should build instructions for single folder", () => {
       const instructions = buildStaticFileServingInstructions([
-        APP_FOLDER_NAMES.uploads,
+        APP_FOLDER_NAMES.input,
       ]);
 
       expect(instructions).toMatchInlineSnapshot(`
-        "## Static File Serving
+        "# Static File Serving
         The server serves static files from specific directories, making them accessible to code running in the \`src/\` directory:
-        - Files in \`./uploads/\` are served at \`/uploads/*\` (e.g., \`/uploads/image.png\`)"
+        - Files in \`./input/\` are served at \`/input/*\` (e.g., \`/input/image.png\`)"
       `);
     });
 

@@ -32,9 +32,9 @@ export async function writeUploadedFiles({
   sessionId: StoreId.Session;
 }) {
   return safeTry(async function* () {
-    const uploadsDir = absolutePathJoin(appDir, APP_FOLDER_NAMES.uploads);
+    const inputDir = absolutePathJoin(appDir, APP_FOLDER_NAMES.input);
     yield* ResultAsync.fromPromise(
-      fs.mkdir(uploadsDir, { recursive: true }),
+      fs.mkdir(inputDir, { recursive: true }),
       (error) =>
         new TypedError.FileSystem(
           error instanceof Error ? error.message : "Unknown error",
@@ -47,7 +47,7 @@ export async function writeUploadedFiles({
     for (const file of files) {
       const sanitized = sanitizeFilename(file.filename);
       const uniqueFilename = yield* ResultAsync.fromPromise(
-        getUniqueFilename(uploadsDir, sanitized),
+        getUniqueFilename(inputDir, sanitized),
         (error) =>
           new TypedError.FileSystem(
             error instanceof Error ? error.message : "Unknown error",
@@ -55,7 +55,7 @@ export async function writeUploadedFiles({
           ),
       );
 
-      const relativePath = `./${APP_FOLDER_NAMES.uploads}/${uniqueFilename}`;
+      const relativePath = `./${APP_FOLDER_NAMES.input}/${uniqueFilename}`;
       const filePath = absolutePathJoin(appDir, relativePath);
       const buffer = Buffer.from(file.content, "base64");
       yield* ResultAsync.fromPromise(
@@ -89,8 +89,8 @@ export async function writeUploadedFiles({
 
     const commitMessage =
       files.length === 1
-        ? `Uploaded ${fileInfos[0]?.filename ?? "file"}`
-        : `Uploaded ${files.length} files`;
+        ? `Added ${fileInfos[0]?.filename ?? "file"}`
+        : `Added ${files.length} files`;
 
     const filePaths = fileInfos.map((file) => file.filePath);
     yield* git(GitCommands.addFiles(filePaths), appDir, {});
@@ -127,7 +127,7 @@ export async function writeUploadedFiles({
 }
 
 async function getUniqueFilename(
-  uploadsDir: AbsolutePath,
+  inputDir: AbsolutePath,
   filename: string,
 ): Promise<string> {
   const ext = path.extname(filename);
@@ -137,7 +137,7 @@ async function getUniqueFilename(
   let counter = 1;
 
   while (true) {
-    const filePath = absolutePathJoin(uploadsDir, candidate);
+    const filePath = absolutePathJoin(inputDir, candidate);
     try {
       await fs.access(filePath);
       candidate = `${base}-${counter}${ext}`;

@@ -1,5 +1,5 @@
 export const AI_GATEWAY_API_PATH = "/ai-gateway";
-
+export const APP_NAME = "Quests";
 export const APP_PROTOCOL =
   process.env.NODE_ENV === "development" ? "quests-local" : "quests";
 

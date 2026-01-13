@@ -8,8 +8,8 @@ import { pathExists } from "./path-exists";
 const SERVER_INDEX_PATH = "src/server/index.ts";
 
 const POSSIBLE_SERVED_FOLDERS = [
+  APP_FOLDER_NAMES.input,
   APP_FOLDER_NAMES.output,
-  APP_FOLDER_NAMES.uploads,
 ] as const;
 
 type PossibleServedFolder = (typeof POSSIBLE_SERVED_FOLDERS)[number];
@@ -27,7 +27,7 @@ export function buildStaticFileServingInstructions(
     })
     .join("\n");
 
-  return `## Static File Serving
+  return `# Static File Serving
 The server serves static files from specific directories, making them accessible to code running in the \`${APP_FOLDER_NAMES.src}/\` directory:
 ${folderInstructions}`;
 }
@@ -61,6 +61,6 @@ function hasServeStaticForFolder(
   folderName: PossibleServedFolder,
 ): boolean {
   // A very basic check looking for Hono's serveStatic middleware
-  // e.g. app.use("/uploads/*", serveStatic({ root: "./" }));
+  // e.g. app.use("/input/*", serveStatic({ root: "./" }));
   return content.includes("serveStatic") && content.includes(folderName);
 }
