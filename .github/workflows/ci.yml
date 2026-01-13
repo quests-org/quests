@@ -156,6 +156,10 @@ jobs:
         run: cd apps/studio
       - name: Build and run smoke test
         run: cd apps/studio && pnpm run smoke-test:build
+        env:
+          # Minimal env for build to succeed
+          VITE_POSTHOG_API_HOST: ${{ vars.VITE_POSTHOG_API_HOST }}
+          VITE_POSTHOG_API_KEY: ${{ vars.VITE_POSTHOG_API_KEY }}
 
 name: CI
 
