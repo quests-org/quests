@@ -1,5 +1,6 @@
 import type { SessionMessagePart } from "@quests/workspace/client";
 
+import { motion } from "framer-motion";
 import { memo, useEffect, useRef, useState } from "react";
 import { useStickToBottom } from "use-stick-to-bottom";
 
@@ -19,7 +20,7 @@ const StreamingToolContent = memo(function StreamingToolContent({
     canScrollDown: false,
     canScrollUp: false,
   });
-  const [shouldShow, setShouldShow] = useState(false);
+  const [debouncedContent, setDebouncedContent] = useState(content);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const { contentRef, scrollRef } = useStickToBottom({
@@ -28,9 +29,21 @@ const StreamingToolContent = memo(function StreamingToolContent({
     stiffness: 0.01,
   });
 
+  useEffect(() => {
+    const delay = isLoading ? 500 : 0;
+
+    const timer = setTimeout(() => {
+      setDebouncedContent(content);
+    }, delay);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [content, isLoading]);
+
   const language = filePath ? getLanguageFromFilePath(filePath) : undefined;
   const { highlightedHtml } = useSyntaxHighlighting({
-    code: content,
+    code: debouncedContent,
     language,
   });
 
@@ -46,16 +59,6 @@ const StreamingToolContent = memo(function StreamingToolContent({
       canScrollUp: scrollTop > 0,
     });
   };
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShouldShow(true);
-    }, 500);
-
-    return () => {
-      clearTimeout(timer);
-    };
-  }, []);
 
   useEffect(() => {
     if (!isLoading) {
@@ -79,12 +82,17 @@ const StreamingToolContent = memo(function StreamingToolContent({
     };
   }, [isLoading, content]);
 
-  if (!content || !shouldShow) {
+  if (!content) {
     return null;
   }
 
   return (
-    <div className="relative mt-2 text-xs">
+    <motion.div
+      animate={{ opacity: 1 }}
+      className="relative mt-2 text-xs"
+      initial={{ opacity: 0 }}
+      transition={{ delay: 0.5 }}
+    >
       <div
         className="max-h-44 overflow-y-auto rounded-r-md border-l-4 border-muted-foreground/30 bg-muted/30 py-2 pl-4"
         ref={(el) => {
@@ -112,7 +120,7 @@ const StreamingToolContent = memo(function StreamingToolContent({
       {scrollState.canScrollDown && (
         <div className="pointer-events-none absolute right-0 bottom-0 left-0 z-10 h-4 bg-linear-to-t from-background to-transparent" />
       )}
-    </div>
+    </motion.div>
   );
 });
 
