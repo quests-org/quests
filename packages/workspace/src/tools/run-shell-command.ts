@@ -71,12 +71,12 @@ const AVAILABLE_COMMANDS: Record<
     isFileOperation: false,
   },
   tsx: {
-    description:
-      "Execute TypeScript files directly. Avoid -e string evaluation except for short one-liners like math, formatting, simple file operations, etc.",
-    examples: [
-      "tsx scripts/setup.ts",
-      'tsx -e "console.log(Math.floor(Date.now() / 1000))"',
-    ],
+    description: [
+      "Execute TypeScript files directly.",
+      "Avoid -e flag for inline execution except for simple one-liners that require no string escaping.",
+      "For most cases, create a .ts file and execute it instead.",
+    ].join(" "),
+    examples: ["tsx scripts/setup.ts", 'tsx -e "console.log(Date.now())"'],
     isFileOperation: false,
   },
 };
