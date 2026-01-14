@@ -210,7 +210,7 @@ export function ProjectHeaderToolbar({
                   className="h-auto max-w-80 min-w-0 justify-start gap-2 py-1 font-semibold text-foreground hover:bg-accent hover:text-accent-foreground has-[>svg]:px-1"
                   variant="ghost"
                 >
-                  <AppIcon name={project.iconName} size="md" />
+                  <AppIcon name={project.iconName} size="sm" />
                   <span className="truncate">{project.title}</span>
                   <ChevronDown className="h-3 w-3 shrink-0" />
                 </Button>
