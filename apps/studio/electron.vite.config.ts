@@ -90,7 +90,11 @@ export default defineConfig(({ command }) => ({
       },
       watch: {}, // Enable hot reloading
     },
-    plugins: [...(isAnalyzing ? [analyzer()] : []), validateProductionEnv],
+    plugins: [
+      ...(isAnalyzing ? [analyzer()] : []),
+      validateProductionEnv,
+      ValidateEnv({ configFile: "./validate-env" }),
+    ],
     resolve,
   },
   preload: {
@@ -126,7 +130,6 @@ export default defineConfig(({ command }) => ({
         },
       }),
       tailwindcss(),
-      ValidateEnv({ configFile: "./validate-env" }),
     ],
     resolve,
     root: path.resolve("src"),

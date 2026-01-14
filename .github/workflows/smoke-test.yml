@@ -41,3 +41,4 @@ jobs:
           # Minimal env for build to succeed
           VITE_POSTHOG_API_HOST: ${{ vars.VITE_POSTHOG_API_HOST }}
           VITE_POSTHOG_API_KEY: ${{ vars.VITE_POSTHOG_API_KEY }}
+          MAIN_VITE_QUESTS_API_BASE_URL: ${{ vars.MAIN_VITE_QUESTS_API_BASE_URL }}
