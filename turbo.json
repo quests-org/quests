@@ -113,6 +113,11 @@
       "outputs": ["dist/**", "out/**"]
     },
     "smoke-test": {
+      "passThroughEnv": [
+        "VITE_POSTHOG_API_HOST",
+        "VITE_POSTHOG_API_KEY",
+        "MAIN_VITE_QUESTS_API_BASE_URL"
+      ],
       "cache": false,
       "dependsOn": ["@quests/shim-client#build"],
       "inputs": [
