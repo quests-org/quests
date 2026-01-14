@@ -1,11 +1,16 @@
 import type { SessionMessagePart } from "@quests/workspace/client";
 
 import { motion } from "framer-motion";
+import { throttle } from "radashi";
 import { memo, useEffect, useRef, useState } from "react";
 import { useStickToBottom } from "use-stick-to-bottom";
 
-import { useSyntaxHighlighting } from "../../hooks/use-syntax-highlighting";
-import { getLanguageFromFilePath } from "../../lib/file-extension-to-language";
+import { useTheme } from "../../components/theme-provider";
+import {
+  getLanguageFromFilePath,
+  toSupportedLanguage,
+} from "../../lib/file-extension-to-language";
+import { rpcClient } from "../../rpc/client";
 
 const StreamingToolContent = memo(function StreamingToolContent({
   content,
@@ -20,8 +25,11 @@ const StreamingToolContent = memo(function StreamingToolContent({
     canScrollDown: false,
     canScrollUp: false,
   });
-  const [debouncedContent, setDebouncedContent] = useState(content);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const rawTextRef = useRef<HTMLPreElement>(null);
+  const highlightedRef = useRef<HTMLDivElement>(null);
+  const hasHighlightedRef = useRef(false);
+  const { resolvedTheme } = useTheme();
 
   const { contentRef, scrollRef } = useStickToBottom({
     damping: 0.9,
@@ -29,23 +37,55 @@ const StreamingToolContent = memo(function StreamingToolContent({
     stiffness: 0.01,
   });
 
-  useEffect(() => {
-    const delay = isLoading ? 500 : 0;
-
-    const timer = setTimeout(() => {
-      setDebouncedContent(content);
-    }, delay);
-
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [content, isLoading]);
-
   const language = filePath ? getLanguageFromFilePath(filePath) : undefined;
-  const { highlightedHtml } = useSyntaxHighlighting({
-    code: debouncedContent,
-    language,
-  });
+
+  useEffect(() => {
+    // Update raw text immediately (only if we haven't shown highlighted content yet)
+    if (rawTextRef.current && !hasHighlightedRef.current) {
+      rawTextRef.current.textContent = content;
+    }
+
+    if (!language) {
+      return;
+    }
+
+    const updateHighlighting = throttle(
+      { interval: 500, trailing: true },
+      async (code: string) => {
+        try {
+          const supportedLanguages =
+            await rpcClient.syntax.supportedLanguages.call();
+          const validLanguage = toSupportedLanguage(
+            language,
+            supportedLanguages,
+          );
+
+          if (!validLanguage) {
+            return;
+          }
+
+          const html = await rpcClient.syntax.highlightCode.call({
+            code,
+            lang: validLanguage,
+            theme: resolvedTheme === "dark" ? "dark" : "light",
+          });
+
+          if (highlightedRef.current && rawTextRef.current) {
+            highlightedRef.current.innerHTML = html;
+            if (!hasHighlightedRef.current) {
+              highlightedRef.current.style.display = "block";
+              rawTextRef.current.style.display = "none";
+              hasHighlightedRef.current = true;
+            }
+          }
+        } catch {
+          // Silently fail - just keep showing raw text
+        }
+      },
+    );
+
+    updateHighlighting(content);
+  }, [content, isLoading, language, resolvedTheme]);
 
   const updateScrollState = () => {
     const container = scrollContainerRef.current;
@@ -103,13 +143,13 @@ const StreamingToolContent = memo(function StreamingToolContent({
         }}
       >
         <div ref={contentRef}>
-          {highlightedHtml ? (
-            <div dangerouslySetInnerHTML={{ __html: highlightedHtml }} />
-          ) : (
-            <pre className="font-mono text-xs wrap-break-word whitespace-pre-wrap">
-              {content}
-            </pre>
-          )}
+          <div ref={highlightedRef} style={{ display: "none" }} />
+          <pre
+            className="font-mono text-xs wrap-break-word whitespace-pre-wrap"
+            ref={rawTextRef}
+          >
+            {content}
+          </pre>
         </div>
       </div>
 
