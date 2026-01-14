@@ -483,8 +483,10 @@ export function SessionStream({
         )}
         <div className="flex flex-col gap-2">{chatElements}</div>
 
-        {isAgentRunning && !hasActiveLoadingState && (
-          <ReasoningMessage hideIcon isLoading text="" />
+        {isAgentRunning && (
+          <div className={hasActiveLoadingState ? "invisible" : "visible"}>
+            <ReasoningMessage hideIcon isLoading text="" />
+          </div>
         )}
 
         {shouldShowErrorRecoveryPrompt && (
