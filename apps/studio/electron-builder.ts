@@ -30,6 +30,7 @@ const config: Configuration = {
   asarUnpack: ["resources/**"],
   directories: {
     buildResources: "build",
+    output: process.env.ELECTRON_BUILDER_OUTPUT_DIR ?? "dist",
   },
   dmg: {
     artifactName: "${productName}-${os}-${version}-${arch}.${ext}",

@@ -1,5 +1,6 @@
 import { Button } from "@/client/components/ui/button";
 import { Skeleton } from "@/client/components/ui/skeleton";
+import { useLiveUser } from "@/client/hooks/use-live-user";
 import { useTabActions } from "@/client/hooks/use-tab-actions";
 import { signOut } from "@/client/lib/sign-out";
 import { rpcClient } from "@/client/rpc/client";
@@ -13,12 +14,7 @@ export function AccountInfo() {
   const { data: hasToken } = useQuery(
     rpcClient.auth.live.hasToken.experimental_liveOptions(),
   );
-  const {
-    data: user,
-    error,
-    isLoading,
-    refetch,
-  } = useQuery(rpcClient.user.live.me.experimental_liveOptions());
+  const { data: user, error, isLoading, refetch } = useLiveUser();
 
   const { addTab } = useTabActions();
 

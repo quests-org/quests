@@ -10,6 +10,7 @@
         "CI",
         "DEV",
         "ELECTRON_RENDERER_URL",
+        "ELECTRON_BUILDER_OUTPUT_DIR",
         "ELECTRON_DEV_USER_FOLDER_SUFFIX",
         "ELECTRON_USER_DATA_DIR",
         "ELECTRON_USE_NEW_USER_FOLDER",
@@ -105,7 +106,7 @@
       "dependsOn": ["@quests/shim-client#build"],
       "outputs": ["dist/**", "out/**"]
     },
-    "build:unsigned-app": {
+    "build:env:unsigned": {
       "cache": false,
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "dependsOn": ["@quests/shim-client#build"],
@@ -113,7 +114,7 @@
     },
     "smoke-test": {
       "cache": false,
-      "dependsOn": ["build:unsigned-app"],
+      "dependsOn": ["@quests/shim-client#build"],
       "inputs": [
         "$TURBO_DEFAULT$",
         "smoke-test.spec.ts",

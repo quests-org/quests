@@ -35,18 +35,18 @@ import {
 } from "lucide-react";
 import { startTransition } from "react";
 
+import { useLiveSubscriptionStatus } from "../hooks/use-live-subscription-status";
+import { useLiveUser } from "../hooks/use-live-user";
+
 export function NavUser() {
   const { isMobile } = useSidebar();
   const { addTab } = useTabActions();
   const { data: providerConfigs } = useQuery(
     rpcClient.providerConfig.live.list.experimental_liveOptions(),
   );
-  const { data: user, refetch: refetchUser } = useQuery(
-    rpcClient.user.live.me.experimental_liveOptions(),
-  );
-  const { data: subscription, refetch: refetchSubscription } = useQuery(
-    rpcClient.user.live.subscriptionStatus.experimental_liveOptions(),
-  );
+  const { data: user, refetch: refetchUser } = useLiveUser();
+  const { data: subscription, refetch: refetchSubscription } =
+    useLiveSubscriptionStatus();
 
   const planName = subscription?.plan ?? null;
   const badgeVariant: "default" | "outline" | "secondary" = "secondary";

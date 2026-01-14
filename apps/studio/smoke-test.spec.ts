@@ -1,18 +1,34 @@
-import { existsSync, mkdtempSync, rmSync } from "node:fs";
+import { execSync } from "node:child_process";
+import fs from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { _electron as electron } from "playwright";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-describe("Electron App Smoke Test", () => {
+describe("Studio Smoke Test", () => {
+  let distPath: string;
   let tempUserDataDir: string;
 
-  beforeAll(() => {
-    tempUserDataDir = mkdtempSync(path.join(tmpdir(), "quests-smoke-test-"));
-  });
+  beforeAll(async () => {
+    // Must run the app outside of the monorepo to avoid inheriting node modules
+    distPath = await fs.mkdtemp(path.join(tmpdir(), "quests-smoke-app-"));
+    tempUserDataDir = await fs.mkdtemp(
+      path.join(tmpdir(), "quests-smoke-test-"),
+    );
 
-  afterAll(() => {
-    rmSync(tempUserDataDir, { force: true, recursive: true });
+    execSync("pnpm run build:env:unsigned", {
+      cwd: process.cwd(),
+      env: {
+        ...process.env,
+        ELECTRON_BUILDER_OUTPUT_DIR: distPath,
+      },
+      stdio: "inherit",
+    });
+  }, 300_000);
+
+  afterAll(async () => {
+    await fs.rm(distPath, { force: true, recursive: true });
+    await fs.rm(tempUserDataDir, { force: true, recursive: true });
   });
 
   it("should launch the app and verify basic functionality", async () => {
@@ -21,33 +37,40 @@ describe("Electron App Smoke Test", () => {
 
     if (platform === "darwin") {
       executablePath = path.join(
-        process.cwd(),
-        "dist/mac-arm64/Quests.app/Contents/MacOS/Quests",
+        distPath,
+        "mac-arm64/Quests.app/Contents/MacOS/Quests",
       );
-      if (!existsSync(executablePath)) {
+      try {
+        await fs.access(executablePath);
+      } catch {
         executablePath = path.join(
-          process.cwd(),
-          "dist/mac-x64/Quests.app/Contents/MacOS/Quests",
+          distPath,
+          "mac-x64/Quests.app/Contents/MacOS/Quests",
         );
       }
-      if (!existsSync(executablePath)) {
+      try {
+        await fs.access(executablePath);
+      } catch {
         executablePath = path.join(
-          process.cwd(),
-          "dist/mac/Quests.app/Contents/MacOS/Quests",
+          distPath,
+          "mac/Quests.app/Contents/MacOS/Quests",
         );
       }
     } else if (platform === "win32") {
-      executablePath = path.join(process.cwd(), "dist/win-unpacked/Quests.exe");
+      executablePath = path.join(distPath, "win-unpacked/Quests.exe");
     } else {
-      executablePath = path.join(process.cwd(), "dist/linux-unpacked/quests");
+      executablePath = path.join(distPath, "linux-unpacked/quests");
     }
 
-    if (!existsSync(executablePath)) {
-      const distPath = path.join(process.cwd(), "dist");
-      let distContents = "dist directory not found";
-      if (existsSync(distPath)) {
-        const { readdirSync } = await import("node:fs");
-        distContents = readdirSync(distPath).join(", ");
+    try {
+      await fs.access(executablePath);
+    } catch {
+      let distContents = "unable to read dist directory";
+      try {
+        const files = await fs.readdir(distPath);
+        distContents = files.join(", ");
+      } catch {
+        // Keep default message
       }
       throw new Error(
         `Executable not found at: ${executablePath}\nAvailable dist contents: ${distContents}`,
@@ -131,7 +154,13 @@ describe("Electron App Smoke Test", () => {
     ];
 
     for (const filePath of requiredPaths) {
-      expect(existsSync(filePath)).toBe(true);
+      let exists = true;
+      try {
+        await fs.access(filePath);
+      } catch {
+        exists = false;
+      }
+      expect(exists).toBe(true);
     }
   });
 });

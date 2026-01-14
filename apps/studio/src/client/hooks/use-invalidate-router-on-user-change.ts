@@ -1,7 +1,7 @@
-import { rpcClient } from "@/client/rpc/client";
-import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
+
+import { useLiveUser } from "./use-live-user";
 
 // Invalidates the router when the user authentication state changes.
 // This is necessary because main tab pages can have authentication requirements,
@@ -12,9 +12,7 @@ import { useEffect, useRef } from "react";
 // router invalidation happens at the app level when user state changes.
 export function useInvalidateRouterOnUserChange() {
   const router = useRouter();
-  const { data: user } = useQuery(
-    rpcClient.user.live.me.experimental_liveOptions(),
-  );
+  const { data: user } = useLiveUser();
   const hadUserRef = useRef<boolean | null>(null);
 
   useEffect(() => {

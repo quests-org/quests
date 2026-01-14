@@ -29,6 +29,7 @@ declare namespace NodeJS {
       ARCH: string | undefined;
       BUILDER_PUBLISH_S3_ENDPOINT: string | undefined;
       CI: string | undefined;
+      ELECTRON_BUILDER_OUTPUT_DIR: string | undefined;
       ELECTRON_DEV_USER_FOLDER_SUFFIX: string | undefined;
       ELECTRON_RENDERER_URL: string | undefined;
       ELECTRON_USE_NEW_USER_FOLDER: string | undefined;

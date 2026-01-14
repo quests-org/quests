@@ -5,15 +5,12 @@ import {
 } from "@/client/components/ui/avatar";
 import { Button } from "@/client/components/ui/button";
 import { Card } from "@/client/components/ui/card";
+import { useLiveUser } from "@/client/hooks/use-live-user";
 import { getInitials } from "@/client/lib/get-initials";
 import { signOut } from "@/client/lib/sign-out";
-import { rpcClient } from "@/client/rpc/client";
-import { useQuery } from "@tanstack/react-query";
 
 export function UserInfoCard() {
-  const { data: user } = useQuery(
-    rpcClient.user.live.me.experimental_liveOptions(),
-  );
+  const { data: user } = useLiveUser();
 
   if (!user?.id) {
     return null;
