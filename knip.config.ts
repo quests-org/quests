@@ -24,7 +24,7 @@ const config: KnipConfig = {
         "electron.vite.config.ts",
         "src/index.html",
         "electron-builder.ts",
-        "src/client/validate-env.ts",
+        "validate-env.ts",
       ],
       ignore: ["fixtures/**/*", "templates/**/*", "__mocks__/**/*"],
       ignoreBinaries: ["tail", "op"],

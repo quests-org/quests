@@ -10,7 +10,7 @@ type ImportMetaEnvAugmented =
   // eslint-disable-next-line @typescript-eslint/consistent-type-imports
   import("@julr/vite-plugin-validate-env").ImportMetaEnvAugmented<
     // eslint-disable-next-line @typescript-eslint/consistent-type-imports
-    typeof import("./validate-env").default
+    typeof import("../validate-env").default
   >;
 
 interface ViteTypeOptions {

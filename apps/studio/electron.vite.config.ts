@@ -126,7 +126,7 @@ export default defineConfig(({ command }) => ({
         },
       }),
       tailwindcss(),
-      ValidateEnv({ configFile: "./src/client/validate-env" }),
+      ValidateEnv({ configFile: "./validate-env" }),
     ],
     resolve,
     root: path.resolve("src"),
