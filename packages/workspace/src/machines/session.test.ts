@@ -377,8 +377,8 @@ describe("sessionMachine", () => {
             <tool tool="write_file" state="output-available" callId="test-call-2">
               <input>
                 {
-                  "content": "console.log('Hello, world!');",
-                  "filePath": "test.txt"
+                  "filePath": "test.txt",
+                  "content": "console.log('Hello, world!');"
                 }
               </input>
               <output>

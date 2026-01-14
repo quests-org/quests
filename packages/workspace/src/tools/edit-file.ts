@@ -659,9 +659,9 @@ export const EditFile = createTool({
     }
   },
   inputSchema: BaseInputSchema.extend({
-    [INPUT_PARAMS.filePath]: z
-      .string()
-      .meta({ description: "The path to the file to modify" }),
+    [INPUT_PARAMS.filePath]: z.string().meta({
+      description: "Relative path to the file to modify. Generate this first.",
+    }),
     [INPUT_PARAMS.newString]: z.string().meta({
       description:
         "The text to replace it with (must be different from oldString)",

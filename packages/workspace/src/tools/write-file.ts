@@ -58,12 +58,15 @@ export const WriteFile = createTool({
     }
   },
   inputSchema: BaseInputSchema.extend({
+    /* eslint-disable perfectionist/sort-objects */
+    // Sorting the file path first to attempt to get model to generate it first
+    [INPUT_PARAMS.filePath]: z.string().meta({
+      description: "The path of the file to write. Generate this first.",
+    }),
     [INPUT_PARAMS.content]: z
       .string()
       .meta({ description: "The content to write to the file" }),
-    [INPUT_PARAMS.filePath]: z
-      .string()
-      .meta({ description: "The path of the file to write" }),
+    /* eslint-enable perfectionist/sort-objects */
   }),
   name: "write_file",
   outputSchema: z.object({
