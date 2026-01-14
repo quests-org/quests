@@ -1,4 +1,3 @@
-import { API_AUTH_BASE_URL } from "@/electron-main/api/constants";
 import { getToken } from "@/electron-main/api/utils";
 import { getAuthServerPort } from "@/electron-main/auth/state";
 import { publisher } from "@/electron-main/rpc/publisher";
@@ -11,7 +10,7 @@ import { shell } from "electron";
 import { captureServerException } from "../lib/capture-server-exception";
 
 export const auth = createAuthClient({
-  baseURL: API_AUTH_BASE_URL,
+  baseURL: `${import.meta.env.MAIN_VITE_QUESTS_API_BASE_URL}/auth`,
 });
 
 export const store: {

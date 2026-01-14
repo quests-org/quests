@@ -1,4 +1,3 @@
-import { API_RPC_BASE_URL } from "@/electron-main/api/constants";
 import { type contract } from "@/electron-main/api/contract";
 import { getToken } from "@/electron-main/api/utils";
 import { createORPCClient } from "@orpc/client";
@@ -37,7 +36,7 @@ const RPC_LINK = new RPCLink({
       ],
     }),
   ],
-  url: API_RPC_BASE_URL,
+  url: `${import.meta.env.MAIN_VITE_QUESTS_API_BASE_URL}/rpc`,
 });
 
 const baseClient: ContractRouterClient<typeof contract> =
