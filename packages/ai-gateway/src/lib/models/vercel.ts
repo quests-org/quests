@@ -34,8 +34,8 @@ export function fetchModelsForVercel(config: AIGatewayProviderConfig.Type) {
 
     for (const model of models) {
       const providerId = AIGatewayModel.ProviderIdSchema.parse(model.id);
-      const [modelAuthor, modelId] = providerId.split("/");
-      if (!modelAuthor || !modelId) {
+      const [author, modelId] = providerId.split("/");
+      if (!author || !modelId) {
         return Result.error(
           new TypedError.Parse(`Invalid model ID for vercel: ${model.id}`),
         );
@@ -49,11 +49,15 @@ export function fetchModelsForVercel(config: AIGatewayProviderConfig.Type) {
         features = unique(features);
       }
 
-      const tags = getModelTags(canonicalModelId, config);
+      const tags = getModelTags({
+        author,
+        canonicalId: canonicalModelId,
+        config,
+      });
 
       const params = { provider: config.type, providerConfigId: config.id };
       validModels.push({
-        author: modelAuthor,
+        author,
         canonicalId: canonicalModelId,
         features,
         name: model.name,
@@ -62,7 +66,7 @@ export function fetchModelsForVercel(config: AIGatewayProviderConfig.Type) {
         providerName: config.displayName ?? metadata.name,
         tags,
         uri: AIGatewayModelURI.fromModel({
-          author: modelAuthor,
+          author,
           canonicalId: canonicalModelId,
           params,
         }),

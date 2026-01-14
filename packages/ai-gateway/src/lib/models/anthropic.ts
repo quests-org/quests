@@ -93,7 +93,11 @@ export function fetchAndParseAnthropicModels(
     return [...modelMap.values()].map(({ canonicalModelId, model }) => {
       const providerId = AIGatewayModel.ProviderIdSchema.parse(model.id);
 
-      const tags = getModelTags(canonicalModelId, config);
+      const tags = getModelTags({
+        author,
+        canonicalId: canonicalModelId,
+        config,
+      });
       if (isModelNew(model.created_at)) {
         tags.push("new");
       }

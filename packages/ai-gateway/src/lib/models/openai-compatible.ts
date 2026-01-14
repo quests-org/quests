@@ -41,13 +41,11 @@ export function fetchAndParseOpenAICompatibleModels(
     );
 
     const metadata = getProviderMetadata(config.type);
-    const author = config.type;
-
     return modelsResult.data.map((model) => {
       const providerId = AIGatewayModel.ProviderIdSchema.parse(model.id);
 
       let canonicalId: AIGatewayModel.CanonicalId;
-      let modelAuthor: string = author;
+      let author: string = config.type;
       let modelName: string | undefined;
 
       // Handle Fireworks model ID format: accounts/{author}/models/{modelId}
@@ -69,7 +67,7 @@ export function fetchAndParseOpenAICompatibleModels(
         const [authorPart, modelId] = model.id.split("/");
         if (authorPart && modelId) {
           canonicalId = AIGatewayModel.CanonicalIdSchema.parse(modelId);
-          modelAuthor = authorPart;
+          author = authorPart;
         } else {
           canonicalId = AIGatewayModel.CanonicalIdSchema.parse(providerId);
         }
@@ -91,7 +89,7 @@ export function fetchAndParseOpenAICompatibleModels(
         if (mappedAuthor) {
           const modelId = model.id.slice(firstDashIndex + 1);
           canonicalId = AIGatewayModel.CanonicalIdSchema.parse(modelId);
-          modelAuthor = mappedAuthor;
+          author = mappedAuthor;
           // Use the original provider ID to generate the model name so it's still readable
           modelName = generateModelName(
             AIGatewayModel.CanonicalIdSchema.parse(providerId),
@@ -106,7 +104,11 @@ export function fetchAndParseOpenAICompatibleModels(
       modelName ||= generateModelName(canonicalId);
 
       const features = getModelFeatures(canonicalId);
-      const tags = getModelTags(canonicalId, config);
+      const tags = getModelTags({
+        author,
+        canonicalId,
+        config,
+      });
       const isNew = isModelNew(model.created);
       if (isNew) {
         tags.push("new");
@@ -116,7 +118,7 @@ export function fetchAndParseOpenAICompatibleModels(
         providerConfigId: config.id,
       };
       return {
-        author: modelAuthor,
+        author,
         canonicalId,
         features,
         name: modelName,
@@ -125,7 +127,7 @@ export function fetchAndParseOpenAICompatibleModels(
         providerName: config.displayName ?? metadata.name,
         tags,
         uri: AIGatewayModelURI.fromModel({
-          author: modelAuthor,
+          author,
           canonicalId,
           params,
         }),

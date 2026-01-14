@@ -43,7 +43,10 @@ export async function setDefaultModelIfNeeded(options?: {
       continue;
     }
 
-    if (model.params.provider === "quests") {
+    if (model.author === "quests") {
+      questsDefaultModel = model;
+      break;
+    } else if (model.params.provider === "quests") {
       questsDefaultModel = model;
       break;
     }

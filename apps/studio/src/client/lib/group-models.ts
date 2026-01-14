@@ -67,10 +67,24 @@ function prioritizeQuestsModels(
   return sortModelsByProviderAndName(models);
 }
 
+const QUESTS_AUTHOR = "quests";
+
 function sortModelsByProviderAndName(
   models: AIGatewayModel.Type[],
 ): AIGatewayModel.Type[] {
   return models.toSorted((a, b) => {
+    const authorA = a.author;
+    const authorB = b.author;
+
+    if (authorA !== authorB) {
+      if (authorA === QUESTS_AUTHOR) {
+        return -1;
+      }
+      if (authorB === QUESTS_AUTHOR) {
+        return 1;
+      }
+    }
+
     const providerA = a.params.provider;
     const providerB = b.params.provider;
 
@@ -83,6 +97,11 @@ function sortModelsByProviderAndName(
       }
 
       return providerA.localeCompare(providerB);
+    }
+
+    // Keep Quests models in the order they are returned by the API
+    if (authorA === QUESTS_AUTHOR && authorB === QUESTS_AUTHOR) {
+      return 0;
     }
 
     return a.name.localeCompare(b.name);

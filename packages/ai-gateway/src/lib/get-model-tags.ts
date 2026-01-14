@@ -25,13 +25,19 @@ const DEFAULT_MODELS_BY_CONFIG_TYPE: Partial<
   cerebras: ["glm-4.6"],
   google: ["gemini-3-pro", "gemini-3-pro-preview"],
   openai: ["gpt-5.1-codex-mini"],
+  quests: ["tale"],
   "z-ai": ["glm-4.6"],
 };
 
-export function getModelTags(
-  canonicalId: AIGatewayModel.CanonicalId,
-  config: AIGatewayProviderConfig.Type,
-): AIGatewayModel.ModelTag[] {
+export function getModelTags({
+  author,
+  canonicalId,
+  config,
+}: {
+  author: string;
+  canonicalId: AIGatewayModel.CanonicalId;
+  config: AIGatewayProviderConfig.Type;
+}): AIGatewayModel.ModelTag[] {
   const staticTags = MODEL_TAGS[canonicalId] ?? [];
   const dynamicTags = getDynamicTags(canonicalId);
 
@@ -52,6 +58,11 @@ export function getModelTags(
   const defaultModels = DEFAULT_MODELS_BY_CONFIG_TYPE[config.type] ?? [];
   if (defaultModels.includes(canonicalId)) {
     tags = [...tags, "default"];
+  }
+
+  // Quests models are tailored for the Quests app, so default and recommend
+  if (author === "quests") {
+    return ["default", "recommended", "coding"];
   }
 
   return unique(tags);

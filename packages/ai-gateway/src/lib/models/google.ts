@@ -61,7 +61,11 @@ export function fetchAndParseGoogleModels(
         canonicalModelId = AIGatewayModel.CanonicalIdSchema.parse(modelId);
       }
 
-      const tags = getModelTags(canonicalModelId, config);
+      const tags = getModelTags({
+        author,
+        canonicalId: canonicalModelId,
+        config,
+      });
       const features = getModelFeatures(canonicalModelId);
 
       const params = { provider: config.type, providerConfigId: config.id };

@@ -29,30 +29,11 @@ const OpenRouterSchema = z.object({
     output_modalities: OutputModalitySchema.array(),
     tokenizer: z.string(),
   }),
-  canonical_slug: z.string().nullish(),
-  context_length: z.number().nullish(),
   created: z.number(),
   description: z.string(),
-  hugging_face_id: z.string().nullish(),
   id: z.string(),
   name: z.string(),
-  per_request_limits: z.record(z.string(), z.number()).nullish(),
-  pricing: z.object({
-    completion: z.string(),
-    image: z.string().nullish(),
-    input_cache_read: z.string().nullish(),
-    input_cache_write: z.string().nullish(),
-    internal_reasoning: z.string().nullish(),
-    prompt: z.string(),
-    request: z.string().nullish(),
-    web_search: z.string().nullish(),
-  }),
   supported_parameters: z.array(z.string()).nullish(),
-  top_provider: z.object({
-    context_length: z.number().nullish(),
-    is_moderated: z.boolean(),
-    max_completion_tokens: z.number().nullish(),
-  }),
 });
 
 const OpenRouterModelsResponseSchema = z.object({
@@ -76,8 +57,8 @@ export function fetchModelsForOpenRouter(config: AIGatewayProviderConfig.Type) {
     const validModels: AIGatewayModel.Type[] = [];
     for (const model of modelsResult.data) {
       const providerId = AIGatewayModel.ProviderIdSchema.parse(model.id);
-      const [modelAuthor, modelId] = providerId.split("/");
-      if (!modelAuthor || !modelId) {
+      const [author, modelId] = providerId.split("/");
+      if (!author || !modelId) {
         return Result.error(
           new TypedError.Parse(`Invalid model ID for openrouter: ${model.id}`),
         );
@@ -104,7 +85,11 @@ export function fetchModelsForOpenRouter(config: AIGatewayProviderConfig.Type) {
         features.push("tools");
       }
 
-      const tags = getModelTags(canonicalModelId, config);
+      const tags = getModelTags({
+        author,
+        canonicalId: canonicalModelId,
+        config,
+      });
       if (isModelNew(model.created)) {
         tags.push("new");
       }
@@ -113,12 +98,14 @@ export function fetchModelsForOpenRouter(config: AIGatewayProviderConfig.Type) {
         provider: config.type,
         providerConfigId: config.id,
       };
-      const [_authorName, ...modelNameParts] = model.name.split(":");
+      const colonIndex = model.name.indexOf(":");
       const modelName =
-        modelNameParts.join(":") || generateModelName(canonicalModelId);
+        colonIndex === -1
+          ? model.name || generateModelName(canonicalModelId)
+          : model.name.slice(colonIndex + 1);
 
       validModels.push({
-        author: modelAuthor,
+        author,
         canonicalId: canonicalModelId,
         features,
         name: modelName,
@@ -127,7 +114,7 @@ export function fetchModelsForOpenRouter(config: AIGatewayProviderConfig.Type) {
         providerName: config.displayName ?? metadata.name,
         tags,
         uri: AIGatewayModelURI.fromModel({
-          author: modelAuthor,
+          author,
           canonicalId: canonicalModelId,
           params,
         }),
@@ -155,10 +142,11 @@ export function fetchModelsForOpenRouter(config: AIGatewayProviderConfig.Type) {
         // We will display this in the UI with a tag to not confuse users
         model.name = model.name.replace(/\s*\(exacto\)\s*$/i, "");
         const baseModelId = model.canonicalId.slice(0, -7);
-        const baseModelTags = getModelTags(
-          AIGatewayModel.CanonicalIdSchema.parse(baseModelId),
+        const baseModelTags = getModelTags({
+          author: model.author,
+          canonicalId: AIGatewayModel.CanonicalIdSchema.parse(baseModelId),
           config,
-        );
+        });
 
         for (const tag of baseModelTags) {
           if (!model.tags.includes(tag)) {

@@ -49,7 +49,7 @@ export function fetchAndParseOpenAIModels(
       const modelName = generateModelName(canonicalId);
 
       const features = getModelFeatures(canonicalId);
-      const tags = getModelTags(canonicalId, config);
+      const tags = getModelTags({ author, canonicalId, config });
       const isNew = isModelNew(model.created);
       if (isNew) {
         tags.push("new");

@@ -89,7 +89,11 @@ describe("getModelTags", () => {
   it.each(testCases)(
     "should return $expected for $modelId",
     ({ expected, modelId }) => {
-      const tags = getModelTags(modelId, mockConfig);
+      const tags = getModelTags({
+        author: "test-author",
+        canonicalId: modelId,
+        config: mockConfig,
+      });
       expect(tags).toEqual(expected);
     },
   );
@@ -101,10 +105,11 @@ describe("getModelTags", () => {
       id: AIProviderConfigIdSchema.parse("quests"),
       type: "openai",
     };
-    const tags = getModelTags(
-      AIGatewayModel.CanonicalIdSchema.parse("gpt-5.1-codex-mini"),
-      openaiConfig,
-    );
+    const tags = getModelTags({
+      author: "openai",
+      canonicalId: AIGatewayModel.CanonicalIdSchema.parse("gpt-5.1-codex-mini"),
+      config: openaiConfig,
+    });
     expect(tags).toContain("default");
   });
 
@@ -115,10 +120,11 @@ describe("getModelTags", () => {
       id: AIProviderConfigIdSchema.parse("quests"),
       type: "openai-compatible",
     };
-    const tags = getModelTags(
-      AIGatewayModel.CanonicalIdSchema.parse("gpt-5-codex"),
-      compatConfig,
-    );
+    const tags = getModelTags({
+      author: "openai-compatible",
+      canonicalId: AIGatewayModel.CanonicalIdSchema.parse("gpt-5-codex"),
+      config: compatConfig,
+    });
     expect(tags).not.toContain("recommended");
     expect(tags).not.toContain("default");
   });
@@ -130,18 +136,29 @@ describe("getModelTags", () => {
       id: AIProviderConfigIdSchema.parse("quests"),
       type: "openai",
     };
-    const tags = getModelTags(
-      AIGatewayModel.CanonicalIdSchema.parse("o-1"),
-      openaiConfig,
-    );
+    const tags = getModelTags({
+      author: "openai",
+      canonicalId: AIGatewayModel.CanonicalIdSchema.parse("o-1"),
+      config: openaiConfig,
+    });
     expect(tags).toContain("legacy");
   });
 
   it("should not mark o- models as legacy for non-OpenAI providers", () => {
-    const tags = getModelTags(
-      AIGatewayModel.CanonicalIdSchema.parse("o-1"),
-      mockConfig,
-    );
+    const tags = getModelTags({
+      author: "test-author",
+      canonicalId: AIGatewayModel.CanonicalIdSchema.parse("o-1"),
+      config: mockConfig,
+    });
     expect(tags).not.toContain("legacy");
+  });
+
+  it("should return default, recommended, and coding tags for quests author", () => {
+    const tags = getModelTags({
+      author: "quests",
+      canonicalId: AIGatewayModel.CanonicalIdSchema.parse("spark"),
+      config: mockConfig,
+    });
+    expect(tags).toEqual(["default", "recommended", "coding"]);
   });
 });
