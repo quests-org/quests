@@ -40,18 +40,25 @@ export async function* createAuthenticatedLiveQuery<TData>({
   });
 
   void (async () => {
-    for await (const _ of publisher.subscribe(
-      "session.apiBearerToken.updated",
-      { signal },
-    )) {
-      const currentHasToken = hasToken();
-      if (currentHasToken) {
-        observer.setOptions(getOptions(true));
-        await apiQueryClient.invalidateQueries({ queryKey });
-      } else {
-        apiQueryClient.removeQueries({ queryKey });
-        observer.setOptions(getOptions(false));
+    try {
+      for await (const _ of publisher.subscribe(
+        "session.apiBearerToken.updated",
+        { signal },
+      )) {
+        const currentHasToken = hasToken();
+        if (currentHasToken) {
+          observer.setOptions(getOptions(true));
+          await apiQueryClient.invalidateQueries({ queryKey });
+        } else {
+          apiQueryClient.removeQueries({ queryKey });
+          observer.setOptions(getOptions(false));
+        }
       }
+    } catch (error) {
+      if (signal?.aborted) {
+        return;
+      }
+      throw error;
     }
   })();
 
@@ -73,21 +80,24 @@ export async function* createAuthenticatedLiveQuery<TData>({
   lastYieldedData = initialData;
   yield initialData;
 
-  while (!signal?.aborted) {
+  while (true) {
     await new Promise<void>((resolve) => {
       resolveNext = resolve;
     });
 
-    if (!signal?.aborted) {
-      const currentResult = observer.getCurrentResult();
-      if (currentResult.error) {
-        throw currentResult.error;
-      }
-      const newData = currentResult.data ?? null;
-      if (!isEqual(newData, lastYieldedData)) {
-        lastYieldedData = newData;
-        yield newData;
-      }
+    if (signal?.aborted) {
+      cleanup();
+      return;
+    }
+
+    const currentResult = observer.getCurrentResult();
+    if (currentResult.error) {
+      throw currentResult.error;
+    }
+    const newData = currentResult.data ?? null;
+    if (!isEqual(newData, lastYieldedData)) {
+      lastYieldedData = newData;
+      yield newData;
     }
   }
 }
