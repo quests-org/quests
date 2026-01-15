@@ -16,7 +16,7 @@ import { type AIProviderType } from "@quests/shared";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
-import { Check, CreditCard } from "lucide-react";
+import { Check } from "lucide-react";
 import { useState } from "react";
 import { SiGoogle } from "react-icons/si";
 
@@ -49,7 +49,7 @@ export function AISetupView({ mode }: { mode: "setup" | "sign-in" }) {
 
   const title = mode === "setup" ? "Sign in to Quests" : "Sign in to Quests";
   const readyTitle = mode === "setup" ? "You're all set!" : "You're signed in!";
-  const subtitle = "Claim your free AI credits";
+  const subtitle = "Claim your free AI credits, no card required";
   const readySubtitle = "You're now ready to start building!";
 
   return (
@@ -150,25 +150,19 @@ export function AISetupView({ mode }: { mode: "setup" | "sign-in" }) {
                   </ContactErrorAlert>
                 )}
 
-                <div className="flex w-full flex-col items-center gap-3">
-                  <form
-                    className="flex w-full items-center justify-center"
-                    onSubmit={handleContinueClick}
+                <form
+                  className="flex w-full items-center justify-center"
+                  onSubmit={handleContinueClick}
+                >
+                  <Button
+                    className="w-full min-w-80"
+                    type="submit"
+                    variant="default"
                   >
-                    <Button
-                      className="w-full min-w-80"
-                      type="submit"
-                      variant="default"
-                    >
-                      <SiGoogle />
-                      Continue with Google
-                    </Button>
-                  </form>
-                  <p className="flex items-center gap-1.5 text-xs text-muted-foreground/60">
-                    <CreditCard className="size-3" />
-                    <span>No card required</span>
-                  </p>
-                </div>
+                    <SiGoogle />
+                    Continue with Google
+                  </Button>
+                </form>
 
                 {mode === "setup" && (
                   <div className="flex flex-col items-center justify-center">
