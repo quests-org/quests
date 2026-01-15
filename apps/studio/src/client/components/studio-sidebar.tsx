@@ -32,11 +32,11 @@ export function StudioSidebar({
 }: React.ComponentProps<typeof Sidebar>) {
   const features = useAtomValue(featuresAtom);
 
-  const { data: sidebarVisibility } = useQuery(
-    rpcClient.sidebar.live.visibility.experimental_liveOptions({}),
+  const { data: sidebarState } = useQuery(
+    rpcClient.sidebar.live.state.experimental_liveOptions({}),
   );
 
-  const isSidebarVisible = sidebarVisibility?.visible ?? true;
+  const isSidebarOpen = sidebarState?.isOpen ?? true;
 
   const selectedTab = useSelectedTab();
 
@@ -110,8 +110,8 @@ export function StudioSidebar({
       <SidebarHeader>
         <div
           className={cn(
-            "mt-px flex items-center py-1",
-            !isWindows() && isSidebarVisible && "[-webkit-app-region:drag]",
+            "flex items-center py-1",
+            !isWindows() && isSidebarOpen && "[-webkit-app-region:drag]",
             isMacOS() ? "pl-20" : "justify-end pl-4",
           )}
         >

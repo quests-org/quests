@@ -14,13 +14,11 @@ const add = base
       select: z.boolean().optional(),
     }),
   )
-  .handler(async ({ context: { tabsManager }, input }) => {
-    if (!tabsManager) {
-      return false;
-    }
-
-    await tabsManager.addTab({ select: input.select, urlPath: input.appPath });
-    return true;
+  .handler(({ context, input }) => {
+    context.tabsManager?.addTab({
+      select: input.select,
+      urlPath: input.appPath,
+    });
   });
 
 const navigate = base
@@ -71,37 +69,20 @@ const navigateForward = base.handler(({ context }) => {
 
 const close = base
   .input(z.object({ id: z.string() }))
-  .handler(async ({ context, input }) => {
-    const { tabsManager } = context;
-    if (!tabsManager) {
-      return false;
-    }
-
-    return tabsManager.closeTab({ id: input.id });
+  .handler(({ context, input }) => {
+    context.tabsManager?.closeTab({ id: input.id });
   });
 
 const reorder = base
   .input(z.object({ tabIds: z.array(z.string()) }))
   .handler(({ context, input }) => {
-    const { tabsManager } = context;
-    if (!tabsManager) {
-      return false;
-    }
-
-    tabsManager.reorderTabs(input.tabIds);
-    return true;
+    context.tabsManager?.reorderTabs(input.tabIds);
   });
 
 const select = base
   .input(z.object({ id: z.string() }))
   .handler(({ context, input }) => {
-    const { tabsManager } = context;
-    if (!tabsManager) {
-      return false;
-    }
-
-    tabsManager.selectTab({ id: input.id });
-    return true;
+    context.tabsManager?.selectTab({ id: input.id });
   });
 
 const live = {

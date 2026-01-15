@@ -30,9 +30,10 @@ interface PublisherEvents {
   };
   "server-exceptions.updated": null;
   "session.apiBearerToken.updated": null;
-  "sidebar.visibility-updated": Partial<{
-    visible: boolean;
-  }>;
+  "sidebar.updated": {
+    isOpen: boolean;
+    width: number;
+  };
   "tabs.updated": null | TabState;
   "test-notification": null;
   "updates.status": { status: AppUpdaterStatus };

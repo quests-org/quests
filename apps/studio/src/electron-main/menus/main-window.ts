@@ -1,9 +1,10 @@
-import { getSidebarVisible, toggleSidebar } from "@/electron-main/lib/sidebar";
 import { publisher } from "@/electron-main/rpc/publisher";
 import { isDeveloperMode } from "@/electron-main/stores/preferences";
 import { getTabsManager } from "@/electron-main/tabs";
 import { type MenuItemConstructorOptions } from "electron";
 
+import { captureServerEvent } from "../lib/capture-server-event";
+import { getSidebarVisible, setSidebarVisible } from "../stores/app-state";
 import {
   createAppMenu,
   createDevToolsMenu,
@@ -19,7 +20,7 @@ export function createMainWindowMenu(): MenuItemConstructorOptions[] {
         accelerator: "CmdOrCtrl+T",
         click: () => {
           const tabsManager = getTabsManager();
-          void tabsManager?.addTab({
+          tabsManager?.addTab({
             urlPath: "/new-tab",
           });
         },
@@ -44,7 +45,7 @@ export function createMainWindowMenu(): MenuItemConstructorOptions[] {
           const tabsManager = getTabsManager();
           const selectedTabId = tabsManager?.getState().selectedTabId;
           if (selectedTabId) {
-            void tabsManager.closeTab({ id: selectedTabId });
+            tabsManager.closeTab({ id: selectedTabId });
           }
         },
         label: "Close Tab",
@@ -104,7 +105,11 @@ export function createMainWindowMenu(): MenuItemConstructorOptions[] {
       {
         accelerator: "CmdOrCtrl+B",
         click: () => {
-          toggleSidebar({ tabsManager: getTabsManager() });
+          const wasVisible = getSidebarVisible();
+          setSidebarVisible(!wasVisible);
+          captureServerEvent(
+            wasVisible ? "app.sidebar_closed" : "app.sidebar_opened",
+          );
         },
         label: getSidebarVisible() ? "Hide Sidebar" : "Show Sidebar",
       },

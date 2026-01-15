@@ -2,84 +2,78 @@ import { createContextMenu } from "@/electron-main/lib/context-menu";
 import { type BaseWindow, shell, WebContentsView } from "electron";
 import path from "node:path";
 
+import { TOOLBAR_HEIGHT } from "../constants";
 import { getBackgroundColor } from "../lib/theme-utils";
 import { studioURL } from "../lib/urls";
+import { publisher } from "../rpc/publisher";
 
-const toolbarHeight = 40;
 let toolbarView: null | WebContentsView = null;
 
 export function createToolbar({
   baseWindow,
-  sidebarWidth,
+  initialSidebarWidth,
 }: {
   baseWindow: BaseWindow;
-  sidebarWidth: number;
-}): Promise<null | WebContentsView> {
-  return new Promise((resolve) => {
-    if (toolbarView !== null) {
-      resolve(toolbarView);
-      return;
-    }
+  initialSidebarWidth: number;
+}) {
+  if (toolbarView !== null) {
+    return toolbarView;
+  }
 
-    toolbarView = new WebContentsView({
-      webPreferences: {
-        preload: path.join(import.meta.dirname, "../preload/index.mjs"),
-        sandbox: false,
-      },
-    });
-
-    toolbarView.setBackgroundColor(getBackgroundColor());
-
-    toolbarView.webContents.setWindowOpenHandler((details) => {
-      void shell.openExternal(details.url);
-      return { action: "deny" };
-    });
-
-    createContextMenu({
-      inspectInNewWindow: true,
-      windowOrWebContentsView: toolbarView,
-    });
-
-    const bounds = baseWindow.getContentBounds();
-    toolbarView.setBounds({
-      height: toolbarHeight,
-      width: bounds.width - sidebarWidth,
-      x: sidebarWidth,
-      y: 0,
-    });
-
-    void toolbarView.webContents.loadURL(studioURL("/toolbar"));
-    toolbarView.webContents.on("did-finish-load", () => {
-      resolve(toolbarView);
-    });
-
-    toolbarView.webContents.on("did-fail-load", () => {
-      resolve(null);
-    });
+  toolbarView = new WebContentsView({
+    webPreferences: {
+      preload: path.join(import.meta.dirname, "../preload/index.mjs"),
+      sandbox: false,
+    },
   });
-}
 
-export function getToolbarHeight() {
-  return toolbarHeight;
+  toolbarView.setBackgroundColor(getBackgroundColor());
+
+  toolbarView.webContents.setWindowOpenHandler((details) => {
+    void shell.openExternal(details.url);
+    return { action: "deny" };
+  });
+
+  createContextMenu({
+    inspectInNewWindow: true,
+    windowOrWebContentsView: toolbarView,
+  });
+
+  let currentSidebarWidth = initialSidebarWidth;
+  resizeToolbar({ baseWindow, sidebarWidth: currentSidebarWidth });
+  void publisher.subscribe("sidebar.updated", ({ width }) => {
+    currentSidebarWidth = width;
+    resizeToolbar({ baseWindow, sidebarWidth: currentSidebarWidth });
+  });
+
+  baseWindow.on("resize", () => {
+    resizeToolbar({ baseWindow, sidebarWidth: currentSidebarWidth });
+  });
+
+  void toolbarView.webContents.loadURL(studioURL("/toolbar"));
+
+  return toolbarView;
 }
 
 export function getToolbarView() {
   return toolbarView;
 }
 
-export function resizeToolbar({
+function resizeToolbar({
   baseWindow,
   sidebarWidth,
 }: {
   baseWindow: BaseWindow;
   sidebarWidth: number;
 }) {
+  // Using getContentBounds due to this being a frameless window. getBounds()
+  // returns the incorrect bounds on Windows when in maximized state.
   const newBounds = baseWindow.getContentBounds();
   if (toolbarView === null) {
     return;
   }
   toolbarView.setBounds({
-    height: toolbarHeight,
+    height: TOOLBAR_HEIGHT,
     width: newBounds.width - sidebarWidth,
     x: sidebarWidth,
     y: 0,

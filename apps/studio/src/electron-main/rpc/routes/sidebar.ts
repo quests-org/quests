@@ -1,41 +1,29 @@
+import { captureServerEvent } from "@/electron-main/lib/capture-server-event";
+import { base } from "@/electron-main/rpc/base";
+import { publisher } from "@/electron-main/rpc/publisher";
 import {
   getSidebarVisible,
   setSidebarVisible,
-} from "@/electron-main/lib/sidebar";
-import { base } from "@/electron-main/rpc/base";
-import { publisher } from "@/electron-main/rpc/publisher";
+} from "@/electron-main/stores/app-state";
 
-const close = base.handler(({ context }) => {
-  setSidebarVisible({
-    tabsManager: context.tabsManager,
-    visible: false,
-    workspaceConfig: context.workspaceConfig,
-  });
-
-  return true;
+const close = base.handler(() => {
+  setSidebarVisible(false);
+  captureServerEvent("app.sidebar_closed");
 });
 
-const open = base.handler(({ context }) => {
-  setSidebarVisible({
-    tabsManager: context.tabsManager,
-    visible: true,
-    workspaceConfig: context.workspaceConfig,
-  });
-
-  return true;
+const open = base.handler(() => {
+  setSidebarVisible(true);
+  captureServerEvent("app.sidebar_opened");
 });
 
 const live = {
-  visibility: base.handler(async function* ({ signal }) {
-    // Yield current state
-    yield { visible: getSidebarVisible() };
+  state: base.handler(async function* ({ signal }) {
+    yield { isOpen: getSidebarVisible() };
 
-    // Subscribe to changes
-    for await (const payload of publisher.subscribe(
-      "sidebar.visibility-updated",
-      { signal },
-    )) {
-      yield payload;
+    for await (const payload of publisher.subscribe("sidebar.updated", {
+      signal,
+    })) {
+      yield { isOpen: payload.isOpen };
     }
   }),
 };

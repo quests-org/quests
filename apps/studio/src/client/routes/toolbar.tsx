@@ -12,8 +12,8 @@ export const Route = createFileRoute("/toolbar")({
 });
 
 function ToolbarPage() {
-  const { data: sidebarVisibility } = useQuery(
-    rpcClient.sidebar.live.visibility.experimental_liveOptions({}),
+  const { data: sidebarState } = useQuery(
+    rpcClient.sidebar.live.state.experimental_liveOptions({}),
   );
 
   const { mutate: openSidebar } = useMutation(
@@ -25,7 +25,7 @@ function ToolbarPage() {
   );
 
   const hasExceptions = (exceptions?.length ?? 0) > 0;
-  const isSidebarVisible = sidebarVisibility?.visible ?? true;
+  const isSidebarOpen = sidebarState?.isOpen ?? true;
 
   return (
     <div
@@ -44,7 +44,7 @@ function ToolbarPage() {
         )}
       >
         <div className="flex h-full min-w-0 flex-1 items-center">
-          {!isSidebarVisible && (
+          {!isSidebarOpen && (
             <div className="flex items-center [-webkit-app-region:no-drag]">
               <div className={cn(isMacOS() ? "ml-20" : "ml-4")} />
               <Button

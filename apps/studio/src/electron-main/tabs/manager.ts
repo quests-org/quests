@@ -1,12 +1,7 @@
 import { createContextMenu } from "@/electron-main/lib/context-menu";
 import { logger } from "@/electron-main/lib/electron-logger";
-import { getSidebarWidth } from "@/electron-main/lib/sidebar";
 import { getBackgroundColor } from "@/electron-main/lib/theme-utils";
 import { publisher } from "@/electron-main/rpc/publisher";
-import {
-  getToolbarHeight,
-  resizeToolbar,
-} from "@/electron-main/windows/toolbar";
 import { type StudioPath } from "@/shared/studio-path";
 import {
   META_TAGS,
@@ -21,6 +16,7 @@ import { type LogFunctions } from "electron-log";
 import Store from "electron-store";
 import path from "node:path";
 
+import { TOOLBAR_HEIGHT } from "../constants";
 import { captureServerException } from "../lib/capture-server-exception";
 import { unsafe_studioURL } from "../lib/urls";
 
@@ -36,10 +32,18 @@ export class TabsManager {
   private baseWindow: BaseWindow;
   private logger: LogFunctions;
   private selectedTabId: null | string = null;
+  private sidebarWidth = 0;
   private store: Store<TabStore>;
   private tabs: TabWithView[];
 
-  public constructor({ baseWindow }: { baseWindow: BaseWindow }) {
+  public constructor({
+    baseWindow,
+    initialSidebarWidth,
+  }: {
+    baseWindow: BaseWindow;
+    initialSidebarWidth: number;
+  }) {
+    this.sidebarWidth = initialSidebarWidth;
     this.tabs = [];
     this.logger = logger.scope("tabs");
     this.baseWindow = baseWindow;
@@ -49,9 +53,16 @@ export class TabsManager {
         this.emitStateChange(value.root);
       }
     });
+    void publisher.subscribe("sidebar.updated", ({ width }) => {
+      this.sidebarWidth = width;
+      for (const tab of this.getTabs()) {
+        this.updateTabBounds(tab);
+      }
+      this.focusCurrentTab();
+    });
   }
 
-  public async addTab({
+  public addTab({
     params = {},
     select = true,
     urlPath = "/",
@@ -69,12 +80,7 @@ export class TabsManager {
     }
 
     const id = crypto.randomUUID();
-    const view = await this.createTabView({ id, urlPath: pathWithParams });
-    if (view === null) {
-      this.logger.error("Failed to create new tab");
-      return;
-    }
-
+    const view = this.createTabView({ id, urlPath: pathWithParams });
     const newTab = {
       icon: undefined,
       id,
@@ -100,7 +106,7 @@ export class TabsManager {
     this.afterUpdate();
   }
 
-  public async closeTab({ id }: { id: string }) {
+  public closeTab({ id }: { id: string }) {
     const tabIndex = this.tabs.findIndex((tab) => tab.id === id);
     const tab = this.tabs[tabIndex];
 
@@ -120,7 +126,7 @@ export class TabsManager {
     this.tabs = this.tabs.filter((t) => t.id !== id);
 
     if (this.tabs.length === 0) {
-      await this.addTab({});
+      this.addTab({});
     } else {
       this.afterUpdate();
     }
@@ -175,25 +181,22 @@ export class TabsManager {
     const tabs = await Promise.all(
       data.tabs
         .filter((tab) => !tab.pinned)
-        .map(async (tab) => {
-          const view = await this.createTabView({
+        .map((tab) => {
+          const view = this.createTabView({
             id: tab.id,
             // Unsafe, but cannot be verified. Client will handle possible 404s
             urlPath: tab.pathname as StudioPath,
           });
-          if (view) {
-            return {
-              ...tab,
-              iconName: tab.iconName || undefined,
-              pinned: tab.pinned || false,
-              webView: view,
-            };
-          }
-          return null;
+          return {
+            ...tab,
+            iconName: tab.iconName || undefined,
+            pinned: tab.pinned || false,
+            webView: view,
+          };
         }),
     );
 
-    this.tabs = tabs.filter((tab) => tab !== null);
+    this.tabs = tabs;
     const selectedTab = this.tabs.find((tab) => tab.id === this.selectedTabId);
 
     if (selectedTab) {
@@ -201,7 +204,7 @@ export class TabsManager {
     } else if (this.tabs[0]) {
       this.showTabView(this.tabs[0]);
     } else {
-      await this.addTab({});
+      this.addTab({});
     }
 
     this.afterUpdate();
@@ -258,12 +261,6 @@ export class TabsManager {
     this.baseWindow.removeAllListeners("resize");
   }
 
-  public updateTabsForSidebarChange() {
-    for (const tab of this.tabs) {
-      this.updateTabBounds(tab);
-    }
-  }
-
   public zoomIn() {
     const tab = this.getCurrentTab();
     if (tab) {
@@ -289,62 +286,53 @@ export class TabsManager {
     tab.webView.webContents.close();
   }
 
-  private async createTabView({
-    id,
-    urlPath,
-  }: {
-    id: string;
-    urlPath: string;
-  }) {
-    return new Promise<null | WebContentsView>((resolve) => {
-      const url = unsafe_studioURL(urlPath);
-      const newContentView = new WebContentsView({
-        webPreferences: {
-          additionalArguments: [`--tabId=${id}`],
-          preload: path.join(import.meta.dirname, "../preload/index.mjs"),
-          sandbox: false,
-        },
-      });
-
-      resolve(newContentView);
-
-      createContextMenu({ windowOrWebContentsView: newContentView });
-
-      newContentView.setBackgroundColor(getBackgroundColor());
-
-      newContentView.webContents.setWindowOpenHandler((details) => {
-        void shell.openExternal(details.url);
-        return { action: "deny" };
-      });
-
-      newContentView.webContents.on("did-navigate-in-page", (_, newUrl) => {
-        const tab = this.tabs.find((t) => t.id === id);
-        const pathname = newUrl.split("#")[1];
-        if (tab && pathname) {
-          tab.pathname = pathname;
-          this.afterUpdate();
-        }
-      });
-
-      newContentView.webContents.on("page-title-updated", (_event, title) => {
-        void (async () => {
-          const tab = this.tabs.find((t) => t.id === id);
-
-          if (!tab) {
-            return;
-          }
-
-          if (title.trim()) {
-            tab.title = title.trim();
-          }
-
-          await this.updateMetaTags(tab);
-          this.afterUpdate();
-        })();
-      });
-
-      void newContentView.webContents.loadURL(url);
+  private createTabView({ id, urlPath }: { id: string; urlPath: string }) {
+    const url = unsafe_studioURL(urlPath);
+    const newContentView = new WebContentsView({
+      webPreferences: {
+        additionalArguments: [`--tabId=${id}`],
+        preload: path.join(import.meta.dirname, "../preload/index.mjs"),
+        sandbox: false,
+      },
     });
+
+    createContextMenu({ windowOrWebContentsView: newContentView });
+
+    newContentView.setBackgroundColor(getBackgroundColor());
+
+    newContentView.webContents.setWindowOpenHandler((details) => {
+      void shell.openExternal(details.url);
+      return { action: "deny" };
+    });
+
+    newContentView.webContents.on("did-navigate-in-page", (_, newUrl) => {
+      const tab = this.tabs.find((t) => t.id === id);
+      const pathname = newUrl.split("#")[1];
+      if (tab && pathname) {
+        tab.pathname = pathname;
+        this.afterUpdate();
+      }
+    });
+
+    newContentView.webContents.on("page-title-updated", (_event, title) => {
+      const tab = this.tabs.find((t) => t.id === id);
+
+      if (!tab) {
+        return;
+      }
+
+      if (title.trim()) {
+        tab.title = title.trim();
+      }
+
+      void this.updateMetaTags(tab).then(() => {
+        this.afterUpdate();
+      });
+    });
+
+    void newContentView.webContents.loadURL(url);
+
+    return newContentView;
   }
 
   private emitStateChange(value: TabState) {
@@ -398,10 +386,6 @@ export class TabsManager {
 
     this.baseWindow.on("resize", () => {
       setWebContentBounds();
-      resizeToolbar({
-        baseWindow: this.baseWindow,
-        sidebarWidth: getSidebarWidth(),
-      });
     });
 
     this.baseWindow.contentView.addChildView(tab.webView);
@@ -460,12 +444,11 @@ export class TabsManager {
     // Using getContentBounds due to this being a frameless window. getBounds()
     // returns the incorrect bounds on Windows when in maximized state.
     const newBounds = this.baseWindow.getContentBounds();
-    const sidebarWidth = getSidebarWidth();
     tab.webView.setBounds({
-      height: newBounds.height - getToolbarHeight(),
-      width: newBounds.width - sidebarWidth,
-      x: sidebarWidth,
-      y: getToolbarHeight(),
+      height: newBounds.height - TOOLBAR_HEIGHT,
+      width: newBounds.width - this.sidebarWidth,
+      x: this.sidebarWidth,
+      y: TOOLBAR_HEIGHT,
     });
   }
 }

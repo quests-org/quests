@@ -1,12 +1,11 @@
 import { createContextMenu } from "@/electron-main/lib/context-menu";
-import { logger } from "@/electron-main/lib/electron-logger";
-import { getSidebarWidth } from "@/electron-main/lib/sidebar";
 import {
   getMainWindowBackgroundColor,
   getTitleBarOverlay,
 } from "@/electron-main/lib/theme-utils";
 import { studioURL } from "@/electron-main/lib/urls";
 import { publisher } from "@/electron-main/rpc/publisher";
+import { getSidebarWidth } from "@/electron-main/stores/app-state";
 import { windowStateStore } from "@/electron-main/stores/main-window";
 import { createTabsManager, getTabsManager } from "@/electron-main/tabs";
 import {
@@ -86,19 +85,13 @@ export async function createMainWindow() {
     showWindow(window);
   });
 
-  toolbar = await createToolbar({
-    baseWindow: mainWindow,
-    sidebarWidth: getSidebarWidth(),
-  });
+  const initialSidebarWidth = getSidebarWidth();
+  toolbar = createToolbar({ baseWindow: mainWindow, initialSidebarWidth });
 
   const tabsManager = createTabsManager({
     baseWindow: mainWindow,
+    initialSidebarWidth,
   });
-
-  if (toolbar === null) {
-    logger.error("Failed to load toolbar or mainContent");
-    return;
-  }
 
   void mainWindow.loadURL(studioURL("/sidebar"));
   mainWindow.contentView.addChildView(toolbar);

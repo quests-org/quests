@@ -15,7 +15,7 @@ export function createApplicationMenu(): void {
     updateApplicationMenu();
   });
 
-  void publisher.subscribe("sidebar.visibility-updated", () => {
+  void publisher.subscribe("sidebar.updated", () => {
     updateApplicationMenu();
   });
 }

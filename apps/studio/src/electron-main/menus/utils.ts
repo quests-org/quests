@@ -101,21 +101,21 @@ export function createDevToolsMenu(): MenuItemConstructorOptions[] {
             {
               click: () => {
                 const tabsManager = getTabsManager();
-                void tabsManager?.addTab({ urlPath: "/sign-in" });
+                tabsManager?.addTab({ urlPath: "/sign-in" });
               },
               label: "/sign-in",
             },
             {
               click: () => {
                 const tabsManager = getTabsManager();
-                void tabsManager?.addTab({ urlPath: "/welcome" });
+                tabsManager?.addTab({ urlPath: "/welcome" });
               },
               label: "/welcome",
             },
             {
               click: () => {
                 const tabsManager = getTabsManager();
-                void tabsManager?.addTab({ urlPath: "/setup" });
+                tabsManager?.addTab({ urlPath: "/setup" });
               },
               label: "/setup",
             },
@@ -128,7 +128,7 @@ export function createDevToolsMenu(): MenuItemConstructorOptions[] {
             {
               click: () => {
                 const tabsManager = getTabsManager();
-                void tabsManager?.addTab({ urlPath: "/subscribe" });
+                tabsManager?.addTab({ urlPath: "/subscribe" });
               },
               label: "/subscribe",
             },

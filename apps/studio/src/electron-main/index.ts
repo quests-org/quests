@@ -228,12 +228,12 @@ function handleDeepLink(url: string) {
     const tabsManager = getTabsManager();
     if (tabsManager) {
       if (url.includes("checkout?success=true")) {
-        void tabsManager.addTab({
+        tabsManager.addTab({
           params: { success: "true" },
           urlPath: "/checkout",
         });
       } else if (url.includes("checkout?canceled=true")) {
-        void tabsManager.addTab({
+        tabsManager.addTab({
           params: { canceled: "true" },
           urlPath: "/checkout",
         });
