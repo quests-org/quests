@@ -15,6 +15,7 @@ export namespace AIGatewayModel {
     "recommended",
     "new",
     "exacto",
+    "premium",
   ]);
   export type ModelTag = z.output<typeof ModelTagSchema>;
   export const ModelFeaturesSchema = z.enum([

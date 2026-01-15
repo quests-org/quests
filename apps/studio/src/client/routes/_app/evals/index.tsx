@@ -24,6 +24,7 @@ import {
 } from "@/client/components/ui/command";
 import { Tabs, TabsList, TabsTrigger } from "@/client/components/ui/tabs";
 import { Textarea } from "@/client/components/ui/textarea";
+import { useLiveSubscriptionStatus } from "@/client/hooks/use-live-subscription-status";
 import { useTabActions } from "@/client/hooks/use-tab-actions";
 import { captureClientEvent } from "@/client/lib/capture-client-event";
 import {
@@ -31,6 +32,7 @@ import {
   groupAndFilterModels,
   type GroupedModels,
 } from "@/client/lib/group-models";
+import { isPayingUser } from "@/client/lib/is-paying-user";
 import { rpcClient } from "@/client/rpc/client";
 import { CUSTOM_EVAL_TEMPLATE_NAME } from "@/shared/evals";
 import { createIconMeta } from "@/shared/tabs";
@@ -138,9 +140,15 @@ function RouteComponent() {
     return models.filter((m) => m.params.provider === selectedProvider);
   }, [models, selectedProvider]);
 
+  const { data: subscriptionStatus } = useLiveSubscriptionStatus();
+  const isPaying = useMemo(
+    () => isPayingUser(subscriptionStatus ?? null),
+    [subscriptionStatus],
+  );
+
   const groupedModels: GroupedModels = useMemo(
-    () => groupAndFilterModels(filteredModels),
-    [filteredModels],
+    () => groupAndFilterModels({ isPaying, models: filteredModels }),
+    [filteredModels, isPaying],
   );
 
   const handleToggleEvalTemplate = (templateName: string) => {
@@ -523,7 +531,10 @@ function RouteComponent() {
                                     </span>
                                   </div>
                                   <div className="ml-2 flex items-center gap-1">
-                                    <ModelBadges model={model} />
+                                    <ModelBadges
+                                      isPaying={isPaying}
+                                      model={model}
+                                    />
                                   </div>
                                 </CommandItem>
                               ))}

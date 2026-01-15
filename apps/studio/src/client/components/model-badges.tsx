@@ -3,6 +3,7 @@ import type { ComponentType } from "react";
 import { type AIGatewayModel } from "@quests/ai-gateway/client";
 import {
   AudioLines,
+  Crown,
   Hourglass,
   Image,
   type LucideIcon,
@@ -120,9 +121,28 @@ const BADGE_CONFIGS: BadgeConfig[] = [
   },
 ];
 
-export function ModelBadges({ model }: { model: AIGatewayModel.Type }) {
+export function ModelBadges({
+  isPaying,
+  model,
+}: {
+  isPaying: boolean;
+  model: AIGatewayModel.Type;
+}) {
+  const showPremiumBadge = model.tags.includes("premium") && !isPaying;
+
   return (
     <div className="flex items-center gap-1">
+      {showPremiumBadge && (
+        <Badge
+          config={{
+            color: "brand",
+            icon: Crown,
+            key: "premium",
+            shouldShow: () => true,
+            tooltip: "This model requires a paid Quests plan",
+          }}
+        />
+      )}
       {BADGE_CONFIGS.filter((config) => config.shouldShow(model)).map(
         (config) => (
           <Badge config={config} key={config.key} />

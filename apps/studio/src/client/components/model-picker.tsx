@@ -17,6 +17,7 @@ import {
   getGroupedModelsEntries,
   groupAndFilterModels,
 } from "@/client/lib/group-models";
+import { isPayingUser } from "@/client/lib/is-paying-user";
 import { cn } from "@/client/lib/utils";
 import { rpcClient, type RPCOutput } from "@/client/rpc/client";
 import {
@@ -26,7 +27,9 @@ import {
 import { QUESTS_AUTO_MODEL_PROVIDER_ID } from "@quests/shared";
 import { AlertCircle, Check, ChevronDown, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 
+import { useLiveSubscriptionStatus } from "../hooks/use-live-subscription-status";
 import { AIProviderIcon } from "./ai-provider-icon";
 import { ModelBadges } from "./model-badges";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
@@ -61,6 +64,12 @@ export function ModelPicker({
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
+  const { data: subscriptionStatus } = useLiveSubscriptionStatus();
+  const isPaying = useMemo(
+    () => isPayingUser(subscriptionStatus ?? null),
+    [subscriptionStatus],
+  );
+
   const autoModel = useMemo(
     () => models?.find((m) => m.providerId === QUESTS_AUTO_MODEL_PROVIDER_ID),
     [models],
@@ -74,8 +83,8 @@ export function ModelPicker({
   );
 
   const groupedModels = useMemo(
-    () => groupAndFilterModels(modelsWithoutAuto),
-    [modelsWithoutAuto],
+    () => groupAndFilterModels({ isPaying, models: modelsWithoutAuto }),
+    [modelsWithoutAuto, isPaying],
   );
 
   const hasModels = modelsWithoutAuto.length > 0;
@@ -214,8 +223,16 @@ export function ModelPicker({
             {hasModels && (
               <ModelGroups
                 groupedModels={groupedModels}
-                onSelectModel={(uri) => {
-                  onValueChange(uri);
+                isPaying={isPaying}
+                onSelectModel={(uri, requiresPremium) => {
+                  if (requiresPremium && autoModel) {
+                    onValueChange(autoModel.uri);
+                    toast.info("Model requires paid plan", {
+                      description: "Switch to Auto mode.",
+                    });
+                  } else {
+                    onValueChange(uri);
+                  }
                   setOpen(false);
                 }}
                 selectedModel={selectedModel}
@@ -324,11 +341,16 @@ function ErrorsGroup({
 
 function ModelGroups({
   groupedModels,
+  isPaying,
   onSelectModel,
   selectedModel,
 }: {
   groupedModels: ReturnType<typeof groupAndFilterModels>;
-  onSelectModel: (uri: AIGatewayModelURI.Type) => void;
+  isPaying: boolean;
+  onSelectModel: (
+    uri: AIGatewayModelURI.Type,
+    requiresPremium: boolean,
+  ) => void;
   selectedModel?: AIGatewayModel.Type;
 }) {
   return (
@@ -337,40 +359,45 @@ function ModelGroups({
         ([groupName, modelGroup]) =>
           modelGroup.length > 0 && (
             <CommandGroup heading={groupName} key={groupName}>
-              {modelGroup.map((model) => (
-                <CommandItem
-                  className="flex items-center justify-between py-2"
-                  key={model.uri}
-                  onSelect={() => {
-                    onSelectModel(model.uri);
-                  }}
-                  value={model.uri}
-                >
-                  <div className="flex items-center">
-                    <Check
-                      className={cn(
-                        "mr-2 size-4",
-                        selectedModel?.uri === model.uri
-                          ? "opacity-100"
-                          : "opacity-0",
-                      )}
-                    />
-                    <div className="flex flex-col gap-1">
-                      <span className="text-sm">{model.name}</span>
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <AIProviderIcon
-                          className="size-3 shrink-0"
-                          type={model.params.provider}
-                        />
-                        <span>{model.providerName}</span>
+              {modelGroup.map((model) => {
+                const requiresPremium =
+                  model.tags.includes("premium") && !isPaying;
+
+                return (
+                  <CommandItem
+                    className="flex items-center justify-between py-2"
+                    key={model.uri}
+                    onSelect={() => {
+                      onSelectModel(model.uri, requiresPremium);
+                    }}
+                    value={model.uri}
+                  >
+                    <div className="flex items-center">
+                      <Check
+                        className={cn(
+                          "mr-2 size-4",
+                          selectedModel?.uri === model.uri
+                            ? "opacity-100"
+                            : "opacity-0",
+                        )}
+                      />
+                      <div className="flex flex-col gap-1">
+                        <span className="text-sm">{model.name}</span>
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <AIProviderIcon
+                            className="size-3 shrink-0"
+                            type={model.params.provider}
+                          />
+                          <span>{model.providerName}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="mt-1 ml-2 flex gap-1 self-start">
-                    <ModelBadges model={model} />
-                  </div>
-                </CommandItem>
-              ))}
+                    <div className="mt-1 ml-2 flex gap-1 self-start">
+                      <ModelBadges isPaying={isPaying} model={model} />
+                    </div>
+                  </CommandItem>
+                );
+              })}
             </CommandGroup>
           ),
       )}

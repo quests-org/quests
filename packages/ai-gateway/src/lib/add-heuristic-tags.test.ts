@@ -9,8 +9,8 @@ import { addHeuristicTags } from "./add-heuristic-tags";
 const mockConfig: AIGatewayProviderConfig.Type = {
   apiKey: "NOT_NEEDED",
   cacheIdentifier: "quests",
-  id: AIProviderConfigIdSchema.parse("quests"),
-  type: "quests",
+  id: AIProviderConfigIdSchema.parse("test"),
+  type: "openrouter",
 };
 
 function createMockModel(
@@ -21,7 +21,7 @@ function createMockModel(
     providerId.split("/");
   const canonicalId = AIGatewayModel.CanonicalIdSchema.parse(rawCanonicalId);
   const params = {
-    provider: "quests" as const,
+    provider: "openrouter" as const,
     providerConfigId: mockConfig.id,
   };
   return {

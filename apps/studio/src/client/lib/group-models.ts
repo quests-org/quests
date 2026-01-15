@@ -6,6 +6,7 @@ export interface GroupedModels {
   "May not support tools": AIGatewayModel.Type[];
   New: AIGatewayModel.Type[];
   Other: AIGatewayModel.Type[];
+  Premium: AIGatewayModel.Type[];
   Recommended: AIGatewayModel.Type[];
 }
 
@@ -19,17 +20,31 @@ export function getGroupedModelsEntries(
   return listify(grouped, (key, value) => [key, value]);
 }
 
-export function groupAndFilterModels(
-  models: AIGatewayModel.Type[],
-): GroupedModels {
+export function groupAndFilterModels({
+  isPaying,
+  models,
+}: {
+  isPaying: boolean;
+  models: AIGatewayModel.Type[];
+}): GroupedModels {
+  const shouldSeparatePremium = !isPaying;
+
   const [recommended, notRecommended] = fork(
     models,
     (model) =>
       model.tags.includes("recommended") && model.tags.includes("coding"),
   );
 
+  const [questsPremium, nonQuestsPremium] = shouldSeparatePremium
+    ? fork(
+        recommended,
+        (model) =>
+          model.params.provider === "quests" && model.tags.includes("premium"),
+      )
+    : [[], recommended];
+
   const [defaultRecommended, nonDefaultRecommended] = fork(
-    recommended,
+    nonQuestsPremium,
     (model) => model.tags.includes("default"),
   );
 
@@ -51,6 +66,7 @@ export function groupAndFilterModels(
       ...defaultRecommended,
       ...nonDefaultRecommended,
     ]),
+    Premium: prioritizeQuestsModels(questsPremium),
     New: prioritizeQuestsModels(newModels),
     Other: prioritizeQuestsModels(notLegacy),
     Legacy: prioritizeQuestsModels(legacy),

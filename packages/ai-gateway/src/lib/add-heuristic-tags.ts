@@ -33,7 +33,7 @@ export function addHeuristicTags(
   model: AIGatewayModel.Type,
   config: AIGatewayProviderConfig.Type,
 ): AIGatewayModel.Type {
-  const { author, canonicalId } = model;
+  const { author, canonicalId, params } = model;
   const staticTags = MODEL_TAGS[canonicalId] ?? [];
   const dynamicTags = getDynamicTags(canonicalId);
 
@@ -44,7 +44,7 @@ export function addHeuristicTags(
   }
 
   if (canonicalId.startsWith("o-") && config.type === "openai") {
-    tags = [...tags, "legacy"];
+    tags.push("legacy");
   }
 
   if (config.type === "openai-compatible" && canonicalId.endsWith("-codex")) {
@@ -53,14 +53,18 @@ export function addHeuristicTags(
 
   const defaultModels = DEFAULT_MODELS_BY_CONFIG_TYPE[config.type] ?? [];
   if (defaultModels.includes(canonicalId)) {
-    tags = [...tags, "default"];
+    tags.push("default");
   }
 
   if (author === "quests") {
     tags = [...tags, "recommended", "coding"];
     if (model.providerId === QUESTS_AUTO_MODEL_PROVIDER_ID) {
-      tags = [...tags, "default"];
+      tags.push("default");
     }
+  }
+
+  if (params.provider === "quests" && !model.providerId.endsWith(":free")) {
+    tags.push("premium");
   }
 
   return {
