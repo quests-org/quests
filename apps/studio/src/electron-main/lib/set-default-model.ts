@@ -6,6 +6,7 @@ import {
   type AIGatewayModel,
   fetchModelResultsForProviders,
 } from "@quests/ai-gateway";
+import { QUESTS_AUTO_MODEL_PROVIDER_ID } from "@quests/shared";
 
 import { captureServerException } from "./capture-server-exception";
 import { getAIProviderConfigs } from "./get-ai-provider-configs";
@@ -35,26 +36,20 @@ export async function setDefaultModelIfNeeded(options?: {
     }
   }
 
-  let questsDefaultModel: AIGatewayModel.Type | undefined;
-  let fallbackDefaultModel: AIGatewayModel.Type | undefined;
+  const defaultModels = models.filter((model) =>
+    model.tags.includes("default"),
+  );
 
-  for (const model of models) {
-    if (!model.tags.includes("default")) {
-      continue;
-    }
+  // 1. Quests auto model (quests/auto)
+  // 2. Quests authored model (quests/*)
+  // 3. Quests provider model (any/model?provider=quests)
+  // 4. First default model
+  const selectedModel =
+    defaultModels.find((m) => m.providerId === QUESTS_AUTO_MODEL_PROVIDER_ID) ??
+    defaultModels.find((m) => m.author === "quests") ??
+    defaultModels.find((m) => m.params.provider === "quests") ??
+    defaultModels[0];
 
-    if (model.author === "quests") {
-      questsDefaultModel = model;
-      break;
-    } else if (model.params.provider === "quests") {
-      questsDefaultModel = model;
-      break;
-    }
-    fallbackDefaultModel ??= model;
-  }
-
-  // Prefer the Quests default model if it exists, otherwise use the fallback
-  const selectedModel = questsDefaultModel ?? fallbackDefaultModel;
   if (selectedModel) {
     setDefaultModelURI(selectedModel.uri);
   }
