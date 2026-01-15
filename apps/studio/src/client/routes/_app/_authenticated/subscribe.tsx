@@ -15,6 +15,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { CheckCircle2, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { tv } from "tailwind-variants";
 
 export const Route = createFileRoute("/_app/_authenticated/subscribe")({
   component: SubscribePage,
@@ -49,6 +50,31 @@ interface PricingPlan {
   };
   yearlyPrice: number;
 }
+
+const planCardVariants = tv({
+  slots: {
+    card: "relative flex flex-col border border-border/50 p-6 shadow-none transition-all",
+    title: "text-4xl font-bold",
+  },
+  variants: {
+    plan: {
+      Basic: {
+        card: "bg-gradient-to-br from-emerald-100 via-background to-background dark:from-emerald-900/20",
+        title:
+          "bg-gradient-to-r from-emerald-600 to-emerald-800 bg-clip-text text-transparent dark:from-emerald-400 dark:to-emerald-600",
+      },
+      Free: {
+        card: "bg-card",
+        title: "",
+      },
+      Pro: {
+        card: "bg-gradient-to-br from-blue-100 via-background to-background dark:from-blue-950/40 dark:via-slate-900/20",
+        title:
+          "bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-indigo-400",
+      },
+    },
+  },
+});
 
 function SubscribePage() {
   const {
@@ -161,31 +187,23 @@ function SubscribePage() {
           </p>
         </div>
 
-        {(isPlansLoading || isSubscriptionLoading) && (
-          <div className="flex justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin" />
-          </div>
-        )}
-
-        {plansError && (
+        {(plansError ?? subscriptionError) && (
           <div className="flex justify-center">
             <ErrorCard
-              description="We couldn't load the available subscription plans"
-              error={plansError}
-              title="Failed to load plans"
+              description="We couldn't load the subscription information"
+              error={[plansError, subscriptionError]}
+              title="Failed to load subscription data"
             />
           </div>
         )}
 
-        {subscriptionError && (
-          <div className="flex justify-center">
-            <ErrorCard
-              description="We couldn't load your subscription information"
-              error={subscriptionError}
-              title="Failed to load subscription"
-            />
-          </div>
-        )}
+        {!plansError &&
+          !subscriptionError &&
+          (isPlansLoading || isSubscriptionLoading) && (
+            <div className="flex justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin" />
+            </div>
+          )}
 
         {plans && (
           <>
@@ -239,24 +257,6 @@ function SubscribePage() {
                 const isBasicUser = currentPlan === "Basic";
                 const isProUser = currentPlan === "Pro";
 
-                let cardStyles =
-                  "relative p-6 transition-all flex flex-col border border-border/50 shadow-none";
-                let titleStyles = "text-4xl font-bold";
-
-                if (plan.name === "Basic") {
-                  cardStyles +=
-                    " bg-gradient-to-br from-emerald-100 via-background to-background dark:from-emerald-900/20";
-                  titleStyles +=
-                    " bg-gradient-to-r from-emerald-600 to-emerald-800 dark:from-emerald-400 dark:to-emerald-600 bg-clip-text text-transparent";
-                } else if (plan.name === "Pro") {
-                  cardStyles +=
-                    " bg-gradient-to-br from-blue-100 via-background to-background dark:from-blue-950/40 dark:via-slate-900/20";
-                  titleStyles +=
-                    " bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent";
-                } else {
-                  cardStyles += " bg-card";
-                }
-
                 let buttonText = "Subscribe";
                 let isButtonDisabled = false;
                 let showButton = true;
@@ -305,10 +305,14 @@ function SubscribePage() {
                   // No default
                 }
 
+                const { card, title } = planCardVariants({
+                  plan: plan.name as "Basic" | "Free" | "Pro",
+                });
+
                 return (
-                  <Card className={cardStyles} key={plan.name}>
+                  <Card className={card()} key={plan.name}>
                     <div className="min-h-24">
-                      <h3 className={titleStyles}>{plan.name}</h3>
+                      <h3 className={title()}>{plan.name}</h3>
 
                       <div className="flex items-baseline gap-1">
                         <span className="text-3xl font-medium">${price}</span>
