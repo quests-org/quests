@@ -183,29 +183,29 @@ function RouteComponent() {
                   to="/projects/$subdomain"
                 >
                   <Card className="py-0 transition-shadow hover:shadow-md">
-                    <CardContent className="flex items-center gap-x-4 py-4">
-                      <AppIcon name={project.iconName} size="xl" />
-                      <div className="min-w-0 flex-1">
-                        <div className="mb-1.5 flex items-center gap-x-2">
-                          <h3 className="truncate text-base font-medium text-foreground">
-                            {project.title}
-                          </h3>
-                          <AppStatusIcon
-                            className="size-4 shrink-0"
-                            subdomain={project.subdomain}
-                          />
-                        </div>
-                        <div className="flex min-w-0 items-center gap-x-1.5 text-xs text-muted-foreground">
-                          <ModelPreview subdomain={project.subdomain} />
-                          <span className="shrink-0">·</span>
-                          <span className="shrink-0">
-                            {formatDistanceToNow(project.updatedAt, {
-                              addSuffix: true,
-                            })
-                              .replace("less than ", "")
-                              .replace("about ", "")}
-                          </span>
-                        </div>
+                    <CardContent className="py-4">
+                      <div className="mb-1.5 flex items-center gap-x-1">
+                        {project.iconName && (
+                          <AppIcon name={project.iconName} size="sm" />
+                        )}
+                        <h3 className="truncate text-base font-medium text-foreground">
+                          {project.title}
+                        </h3>
+                        <AppStatusIcon
+                          className="size-4 shrink-0"
+                          subdomain={project.subdomain}
+                        />
+                      </div>
+                      <div className="flex min-w-0 items-center gap-x-1.5 text-xs text-muted-foreground">
+                        <ModelPreview subdomain={project.subdomain} />
+                        <span className="shrink-0">·</span>
+                        <span className="shrink-0">
+                          {formatDistanceToNow(project.updatedAt, {
+                            addSuffix: true,
+                          })
+                            .replace("less than ", "")
+                            .replace("about ", "")}
+                        </span>
                       </div>
                     </CardContent>
                   </Card>
