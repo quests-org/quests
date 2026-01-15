@@ -1,8 +1,8 @@
 import { createContextMenu } from "@/electron-main/lib/context-menu";
+import { TOOLBAR_HEIGHT } from "@/shared/constants";
 import { type BaseWindow, shell, WebContentsView } from "electron";
 import path from "node:path";
 
-import { TOOLBAR_HEIGHT } from "../constants";
 import { getBackgroundColor } from "../lib/theme-utils";
 import { studioURL } from "../lib/urls";
 import { publisher } from "../rpc/publisher";

@@ -3,6 +3,7 @@ import TabBar from "@/client/components/tab-bar";
 import { Button } from "@/client/components/ui/button";
 import { cn, isLinux, isMacOS, isWindows } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
+import { TOOLBAR_HEIGHT } from "@/shared/constants";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { SidebarIcon } from "lucide-react";
@@ -29,8 +30,11 @@ function ToolbarPage() {
 
   return (
     <div
-      className="flex h-svh w-full items-end overflow-hidden bg-secondary inset-shadow-toolbar inset-shadow-(color:--border) [-webkit-app-region:drag]"
+      className="flex w-full items-end overflow-hidden bg-secondary inset-shadow-toolbar inset-shadow-(color:--border) [-webkit-app-region:drag]"
       data-testid="toolbar-page"
+      style={{
+        height: `${TOOLBAR_HEIGHT}px`,
+      }}
     >
       <header
         className={cn(

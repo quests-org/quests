@@ -18,6 +18,7 @@ import {
 } from "@/client/components/ui/tooltip";
 import { useIsMobile } from "@/client/hooks/use-mobile";
 import { cn } from "@/client/lib/utils";
+import { SIDEBAR_WIDTH } from "@/shared/constants";
 import { Slot } from "@radix-ui/react-slot";
 import { PanelLeftIcon } from "lucide-react";
 import * as React from "react";
@@ -25,8 +26,6 @@ import { tv, type VariantProps } from "tailwind-variants";
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state";
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
-const SIDEBAR_WIDTH = "250px";
-const SIDEBAR_WIDTH_MOBILE = "250px";
 const SIDEBAR_WIDTH_ICON = "3rem";
 const SIDEBAR_KEYBOARD_SHORTCUT = "b";
 
@@ -85,7 +84,7 @@ function Sidebar({
           side={side}
           style={
             {
-              "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
+              "--sidebar-width": `${SIDEBAR_WIDTH}px`,
             } as React.CSSProperties
           }
         >
@@ -390,7 +389,7 @@ function SidebarProvider({
           data-slot="sidebar-wrapper"
           style={
             {
-              "--sidebar-width": SIDEBAR_WIDTH,
+              "--sidebar-width": `${SIDEBAR_WIDTH}px`,
               "--sidebar-width-icon": SIDEBAR_WIDTH_ICON,
               ...style,
             } as React.CSSProperties

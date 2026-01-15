@@ -1,10 +1,10 @@
 import { logger } from "@/electron-main/lib/electron-logger";
 import { publisher } from "@/electron-main/rpc/publisher";
+import { SIDEBAR_WIDTH } from "@/shared/constants";
 import Store from "electron-store";
 import { ulid } from "ulid";
 import { z } from "zod";
 
-import { SIDEBAR_WIDTH } from "../constants";
 import { getProviderConfigsStore } from "./provider-configs";
 
 function generateTelemetryId(): string {

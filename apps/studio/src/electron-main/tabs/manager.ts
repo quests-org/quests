@@ -2,6 +2,7 @@ import { createContextMenu } from "@/electron-main/lib/context-menu";
 import { logger } from "@/electron-main/lib/electron-logger";
 import { getBackgroundColor } from "@/electron-main/lib/theme-utils";
 import { publisher } from "@/electron-main/rpc/publisher";
+import { TOOLBAR_HEIGHT } from "@/shared/constants";
 import { type StudioPath } from "@/shared/studio-path";
 import {
   META_TAGS,
@@ -16,7 +17,6 @@ import { type LogFunctions } from "electron-log";
 import Store from "electron-store";
 import path from "node:path";
 
-import { TOOLBAR_HEIGHT } from "../constants";
 import { captureServerException } from "../lib/capture-server-exception";
 import { unsafe_studioURL } from "../lib/urls";
 

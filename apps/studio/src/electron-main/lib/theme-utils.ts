@@ -1,3 +1,4 @@
+import { TOOLBAR_HEIGHT } from "@/shared/constants";
 import { nativeTheme } from "electron";
 
 import { getPreferencesStore } from "../stores/preferences";
@@ -18,7 +19,7 @@ export function getTitleBarOverlay() {
   const isDark = shouldUseDarkMode();
   return {
     color: isDark ? "#272a2d" : "#e7e8ec",
-    height: 40,
+    height: TOOLBAR_HEIGHT,
     symbolColor: isDark ? "#ffffff" : "#3f3f3f",
   };
 }

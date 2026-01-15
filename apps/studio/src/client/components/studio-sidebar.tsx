@@ -28,15 +28,10 @@ import {
 import { useMemo } from "react";
 
 export function StudioSidebar({
+  isOpen,
   ...props
-}: React.ComponentProps<typeof Sidebar>) {
+}: React.ComponentProps<typeof Sidebar> & { isOpen: boolean }) {
   const features = useAtomValue(featuresAtom);
-
-  const { data: sidebarState } = useQuery(
-    rpcClient.sidebar.live.state.experimental_liveOptions({}),
-  );
-
-  const isSidebarOpen = sidebarState?.isOpen ?? true;
 
   const selectedTab = useSelectedTab();
 
@@ -111,7 +106,7 @@ export function StudioSidebar({
         <div
           className={cn(
             "flex items-center py-1",
-            !isWindows() && isSidebarOpen && "[-webkit-app-region:drag]",
+            !isWindows() && isOpen && "[-webkit-app-region:drag]",
             isMacOS() ? "pl-20" : "justify-end pl-4",
           )}
         >
