@@ -69,7 +69,8 @@ export function ProjectView({
     }
   }, [sidebarCollapsed, panelRef]);
 
-  if (!hasAppModifications) {
+  // TODO: Remove chat- after 2026-03-01
+  if (!hasAppModifications || project.subdomain.startsWith("chat-")) {
     return (
       <div className="flex h-full w-full items-start justify-center border-t">
         <div className="flex h-full w-full max-w-3xl flex-col bg-background">

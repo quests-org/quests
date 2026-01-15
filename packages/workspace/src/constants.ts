@@ -6,6 +6,7 @@ export const APP_FOLDER_NAMES = {
   src: "src",
 } as const;
 export const SESSIONS_DB_FILE_NAME = "sessions.db";
+// TODO: Remove chat- after 2026-03-01
 export const LEGACY_PROJECT_SUBDOMAIN_MODE_PREFIXES = {
   chat: "chat",
   eval: "eval",
