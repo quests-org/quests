@@ -13,11 +13,11 @@ import {
   PopoverTrigger,
 } from "@/client/components/ui/popover";
 import { Switch } from "@/client/components/ui/switch";
+import { useHasPlan } from "@/client/hooks/use-has-plan";
 import {
   getGroupedModelsEntries,
   groupAndFilterModels,
 } from "@/client/lib/group-models";
-import { isPayingUser } from "@/client/lib/is-paying-user";
 import { cn } from "@/client/lib/utils";
 import { rpcClient, type RPCOutput } from "@/client/rpc/client";
 import {
@@ -25,11 +25,11 @@ import {
   type AIGatewayModelURI,
 } from "@quests/ai-gateway/client";
 import { QUESTS_AUTO_MODEL_PROVIDER_ID } from "@quests/shared";
-import { AlertCircle, Check, ChevronDown, Plus } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
+import { AlertCircle, Check, ChevronDown, Crown, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
-import { useLiveSubscriptionStatus } from "../hooks/use-live-subscription-status";
 import { AIProviderIcon } from "./ai-provider-icon";
 import { ModelBadges } from "./model-badges";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
@@ -63,12 +63,8 @@ export function ModelPicker({
 }: ModelPickerProps) {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-
-  const { data: subscriptionStatus } = useLiveSubscriptionStatus();
-  const isPaying = useMemo(
-    () => isPayingUser(subscriptionStatus ?? null),
-    [subscriptionStatus],
-  );
+  const navigate = useNavigate();
+  const hasPlan = useHasPlan();
 
   const autoModel = useMemo(
     () => models?.find((m) => m.providerId === QUESTS_AUTO_MODEL_PROVIDER_ID),
@@ -83,8 +79,8 @@ export function ModelPicker({
   );
 
   const groupedModels = useMemo(
-    () => groupAndFilterModels({ isPaying, models: modelsWithoutAuto }),
-    [modelsWithoutAuto, isPaying],
+    () => groupAndFilterModels({ hasPlan, models: modelsWithoutAuto }),
+    [modelsWithoutAuto, hasPlan],
   );
 
   const hasModels = modelsWithoutAuto.length > 0;
@@ -223,12 +219,20 @@ export function ModelPicker({
             {hasModels && (
               <ModelGroups
                 groupedModels={groupedModels}
-                isPaying={isPaying}
-                onSelectModel={(uri, requiresPremium) => {
+                hasPlan={hasPlan}
+                onSelectModel={(uri, requiresPremium, modelName) => {
                   if (requiresPremium && autoModel) {
-                    onValueChange(autoModel.uri);
                     toast.info("Model requires paid plan", {
-                      description: "Switch to Auto mode.",
+                      action: {
+                        label: "Upgrade",
+                        onClick: () => {
+                          void navigate({ to: "/subscribe" });
+                        },
+                      },
+                      description: `${modelName} is available with a paid Quests plan.`,
+                      dismissible: true,
+                      duration: 7000,
+                      icon: <Crown className="size-4 text-brand" />,
                     });
                   } else {
                     onValueChange(uri);
@@ -341,15 +345,16 @@ function ErrorsGroup({
 
 function ModelGroups({
   groupedModels,
-  isPaying,
+  hasPlan,
   onSelectModel,
   selectedModel,
 }: {
   groupedModels: ReturnType<typeof groupAndFilterModels>;
-  isPaying: boolean;
+  hasPlan: boolean;
   onSelectModel: (
     uri: AIGatewayModelURI.Type,
     requiresPremium: boolean,
+    modelName: string,
   ) => void;
   selectedModel?: AIGatewayModel.Type;
 }) {
@@ -361,14 +366,14 @@ function ModelGroups({
             <CommandGroup heading={groupName} key={groupName}>
               {modelGroup.map((model) => {
                 const requiresPremium =
-                  model.tags.includes("premium") && !isPaying;
+                  model.tags.includes("premium") && !hasPlan;
 
                 return (
                   <CommandItem
                     className="flex items-center justify-between py-2"
                     key={model.uri}
                     onSelect={() => {
-                      onSelectModel(model.uri, requiresPremium);
+                      onSelectModel(model.uri, requiresPremium, model.name);
                     }}
                     value={model.uri}
                   >
@@ -393,7 +398,7 @@ function ModelGroups({
                       </div>
                     </div>
                     <div className="mt-1 ml-2 flex gap-1 self-start">
-                      <ModelBadges isPaying={isPaying} model={model} />
+                      <ModelBadges hasPlan={hasPlan} model={model} />
                     </div>
                   </CommandItem>
                 );

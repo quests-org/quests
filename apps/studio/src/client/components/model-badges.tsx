@@ -122,13 +122,13 @@ const BADGE_CONFIGS: BadgeConfig[] = [
 ];
 
 export function ModelBadges({
-  isPaying,
+  hasPlan,
   model,
 }: {
-  isPaying: boolean;
+  hasPlan: boolean;
   model: AIGatewayModel.Type;
 }) {
-  const showPremiumBadge = model.tags.includes("premium") && !isPaying;
+  const showPremiumBadge = model.tags.includes("premium") && !hasPlan;
 
   return (
     <div className="flex items-center gap-1">
