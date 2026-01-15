@@ -1,3 +1,4 @@
+import { QUESTS_AUTO_MODEL_PROVIDER_ID } from "@quests/shared";
 import { unique } from "radashi";
 
 import { type AIGatewayModel } from "../schemas/model";
@@ -25,23 +26,18 @@ const DEFAULT_MODELS_BY_CONFIG_TYPE: Partial<
   cerebras: ["glm-4.6"],
   google: ["gemini-3-pro", "gemini-3-pro-preview"],
   openai: ["gpt-5.1-codex-mini"],
-  quests: ["tale"],
   "z-ai": ["glm-4.6"],
 };
 
-export function getModelTags({
-  author,
-  canonicalId,
-  config,
-}: {
-  author: string;
-  canonicalId: AIGatewayModel.CanonicalId;
-  config: AIGatewayProviderConfig.Type;
-}): AIGatewayModel.ModelTag[] {
+export function addHeuristicTags(
+  model: AIGatewayModel.Type,
+  config: AIGatewayProviderConfig.Type,
+): AIGatewayModel.Type {
+  const { author, canonicalId } = model;
   const staticTags = MODEL_TAGS[canonicalId] ?? [];
   const dynamicTags = getDynamicTags(canonicalId);
 
-  let tags = [...dynamicTags, ...staticTags];
+  let tags = [...model.tags, ...dynamicTags, ...staticTags];
 
   if (isSuperseded(canonicalId)) {
     tags = [...tags.filter((tag) => tag !== "recommended"), "legacy"];
@@ -60,12 +56,17 @@ export function getModelTags({
     tags = [...tags, "default"];
   }
 
-  // Quests models are tailored for the Quests app, so default and recommend
   if (author === "quests") {
-    return ["default", "recommended", "coding"];
+    tags = [...tags, "recommended", "coding"];
+    if (model.providerId === QUESTS_AUTO_MODEL_PROVIDER_ID) {
+      tags = [...tags, "default"];
+    }
   }
 
-  return unique(tags);
+  return {
+    ...model,
+    tags: unique(tags),
+  };
 }
 
 function getDynamicTags(

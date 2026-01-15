@@ -4,9 +4,9 @@ import { z } from "zod";
 import { AIGatewayModel } from "../../schemas/model";
 import { AIGatewayModelURI } from "../../schemas/model-uri";
 import { type AIGatewayProviderConfig } from "../../schemas/provider-config";
+import { addHeuristicTags } from "../add-heuristic-tags";
 import { TypedError } from "../errors";
 import { generateModelName } from "../generate-model-name";
-import { getModelTags } from "../get-model-tags";
 import { isModelNew } from "../is-model-new";
 import { getProviderMetadata } from "../providers/metadata";
 import { fetchOpenAICompatibleModels } from "./openai-compatible";
@@ -85,11 +85,7 @@ export function fetchModelsForOpenRouter(config: AIGatewayProviderConfig.Type) {
         features.push("tools");
       }
 
-      const tags = getModelTags({
-        author,
-        canonicalId: canonicalModelId,
-        config,
-      });
+      const tags: AIGatewayModel.ModelTag[] = [];
       if (isModelNew(model.created)) {
         tags.push("new");
       }
@@ -104,21 +100,26 @@ export function fetchModelsForOpenRouter(config: AIGatewayProviderConfig.Type) {
           ? model.name || generateModelName(canonicalModelId)
           : model.name.slice(colonIndex + 1);
 
-      validModels.push({
-        author,
-        canonicalId: canonicalModelId,
-        features,
-        name: modelName,
-        params,
-        providerId,
-        providerName: config.displayName ?? metadata.name,
-        tags,
-        uri: AIGatewayModelURI.fromModel({
-          author,
-          canonicalId: canonicalModelId,
-          params,
-        }),
-      });
+      validModels.push(
+        addHeuristicTags(
+          {
+            author,
+            canonicalId: canonicalModelId,
+            features,
+            name: modelName,
+            params,
+            providerId,
+            providerName: config.displayName ?? metadata.name,
+            tags,
+            uri: AIGatewayModelURI.fromModel({
+              author,
+              canonicalId: canonicalModelId,
+              params,
+            }),
+          },
+          config,
+        ),
+      );
     }
 
     // Exacto variants (`:exacto` suffix) route to providers with higher
@@ -142,13 +143,16 @@ export function fetchModelsForOpenRouter(config: AIGatewayProviderConfig.Type) {
         // We will display this in the UI with a tag to not confuse users
         model.name = model.name.replace(/\s*\(exacto\)\s*$/i, "");
         const baseModelId = model.canonicalId.slice(0, -7);
-        const baseModelTags = getModelTags({
-          author: model.author,
-          canonicalId: AIGatewayModel.CanonicalIdSchema.parse(baseModelId),
+        const baseModel = addHeuristicTags(
+          {
+            ...model,
+            canonicalId: AIGatewayModel.CanonicalIdSchema.parse(baseModelId),
+            tags: [],
+          },
           config,
-        });
+        );
 
-        for (const tag of baseModelTags) {
+        for (const tag of baseModel.tags) {
           if (!model.tags.includes(tag)) {
             model.tags.push(tag);
           }

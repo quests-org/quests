@@ -5,12 +5,12 @@ import { z } from "zod";
 import { AIGatewayModel } from "../../schemas/model";
 import { AIGatewayModelURI } from "../../schemas/model-uri";
 import { type AIGatewayProviderConfig } from "../../schemas/provider-config";
+import { addHeuristicTags } from "../add-heuristic-tags";
 import { canonicalizeAnthropicModelId } from "../canonicalize-model-id";
 import { TypedError } from "../errors";
 import { fetchJson } from "../fetch-json";
 import { generateModelName } from "../generate-model-name";
 import { getModelFeatures } from "../get-model-features";
-import { getModelTags } from "../get-model-tags";
 import { isModelNew } from "../is-model-new";
 import { parseModelDate } from "../parse-model-date";
 import { apiURL } from "../providers/api-url";
@@ -93,11 +93,7 @@ export function fetchAndParseAnthropicModels(
     return [...modelMap.values()].map(({ canonicalModelId, model }) => {
       const providerId = AIGatewayModel.ProviderIdSchema.parse(model.id);
 
-      const tags = getModelTags({
-        author,
-        canonicalId: canonicalModelId,
-        config,
-      });
+      const tags: AIGatewayModel.ModelTag[] = [];
       if (isModelNew(model.created_at)) {
         tags.push("new");
       }
@@ -105,21 +101,25 @@ export function fetchAndParseAnthropicModels(
       const features = getModelFeatures(canonicalModelId);
 
       const params = { provider: config.type, providerConfigId: config.id };
-      return {
-        author,
-        canonicalId: canonicalModelId,
-        features,
-        name: model.display_name ?? generateModelName(canonicalModelId),
-        params,
-        providerId,
-        providerName: config.displayName ?? metadata.name,
-        tags,
-        uri: AIGatewayModelURI.fromModel({
+
+      return addHeuristicTags(
+        {
           author,
           canonicalId: canonicalModelId,
+          features,
+          name: model.display_name ?? generateModelName(canonicalModelId),
           params,
-        }),
-      } satisfies AIGatewayModel.Type;
+          providerId,
+          providerName: config.displayName ?? metadata.name,
+          tags,
+          uri: AIGatewayModelURI.fromModel({
+            author,
+            canonicalId: canonicalModelId,
+            params,
+          }),
+        },
+        config,
+      );
     });
   });
 }

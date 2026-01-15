@@ -4,10 +4,10 @@ import { z } from "zod";
 import { AIGatewayModel } from "../../schemas/model";
 import { AIGatewayModelURI } from "../../schemas/model-uri";
 import { type AIGatewayProviderConfig } from "../../schemas/provider-config";
+import { addHeuristicTags } from "../add-heuristic-tags";
 import { TypedError } from "../errors";
 import { fetchJson } from "../fetch-json";
 import { getModelFeatures } from "../get-model-features";
-import { getModelTags } from "../get-model-tags";
 import { apiURL } from "../providers/api-url";
 import { getProviderMetadata } from "../providers/metadata";
 import { setProviderAuthHeaders } from "../providers/set-auth-headers";
@@ -61,29 +61,28 @@ export function fetchAndParseGoogleModels(
         canonicalModelId = AIGatewayModel.CanonicalIdSchema.parse(modelId);
       }
 
-      const tags = getModelTags({
-        author,
-        canonicalId: canonicalModelId,
-        config,
-      });
       const features = getModelFeatures(canonicalModelId);
 
       const params = { provider: config.type, providerConfigId: config.id };
-      return {
-        author,
-        canonicalId: canonicalModelId,
-        features,
-        name: model.displayName,
-        params,
-        providerId,
-        providerName: config.displayName ?? metadata.name,
-        tags,
-        uri: AIGatewayModelURI.fromModel({
+
+      return addHeuristicTags(
+        {
           author,
           canonicalId: canonicalModelId,
+          features,
+          name: model.displayName,
           params,
-        }),
-      } satisfies AIGatewayModel.Type;
+          providerId,
+          providerName: config.displayName ?? metadata.name,
+          tags: [],
+          uri: AIGatewayModelURI.fromModel({
+            author,
+            canonicalId: canonicalModelId,
+            params,
+          }),
+        },
+        config,
+      );
     });
   });
 }

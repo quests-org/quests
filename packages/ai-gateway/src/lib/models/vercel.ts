@@ -5,10 +5,10 @@ import { Result } from "typescript-result";
 import { AIGatewayModel } from "../../schemas/model";
 import { AIGatewayModelURI } from "../../schemas/model-uri";
 import { type AIGatewayProviderConfig } from "../../schemas/provider-config";
+import { addHeuristicTags } from "../add-heuristic-tags";
 import { getCachedResult, setCachedResult } from "../cache";
 import { TypedError } from "../errors";
 import { getModelFeatures } from "../get-model-features";
-import { getModelTags } from "../get-model-tags";
 import { getProviderMetadata } from "../providers/metadata";
 
 export function fetchModelsForVercel(config: AIGatewayProviderConfig.Type) {
@@ -49,28 +49,28 @@ export function fetchModelsForVercel(config: AIGatewayProviderConfig.Type) {
         features = unique(features);
       }
 
-      const tags = getModelTags({
-        author,
-        canonicalId: canonicalModelId,
-        config,
-      });
-
       const params = { provider: config.type, providerConfigId: config.id };
-      validModels.push({
-        author,
-        canonicalId: canonicalModelId,
-        features,
-        name: model.name,
-        params,
-        providerId,
-        providerName: config.displayName ?? metadata.name,
-        tags,
-        uri: AIGatewayModelURI.fromModel({
-          author,
-          canonicalId: canonicalModelId,
-          params,
-        }),
-      } satisfies AIGatewayModel.Type);
+
+      validModels.push(
+        addHeuristicTags(
+          {
+            author,
+            canonicalId: canonicalModelId,
+            features,
+            name: model.name,
+            params,
+            providerId,
+            providerName: config.displayName ?? metadata.name,
+            tags: [],
+            uri: AIGatewayModelURI.fromModel({
+              author,
+              canonicalId: canonicalModelId,
+              params,
+            }),
+          },
+          config,
+        ),
+      );
     }
 
     setCachedResult(cacheKey, validModels);

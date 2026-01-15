@@ -2,8 +2,9 @@ import { AIProviderConfigIdSchema } from "@quests/shared";
 import { describe, expect, it } from "vitest";
 
 import { AIGatewayModel } from "../schemas/model";
+import { AIGatewayModelURI } from "../schemas/model-uri";
 import { type AIGatewayProviderConfig } from "../schemas/provider-config";
-import { getModelTags } from "./get-model-tags";
+import { addHeuristicTags } from "./add-heuristic-tags";
 
 const mockConfig: AIGatewayProviderConfig.Type = {
   apiKey: "NOT_NEEDED",
@@ -12,10 +13,34 @@ const mockConfig: AIGatewayProviderConfig.Type = {
   type: "quests",
 };
 
-describe("getModelTags", () => {
+function createMockModel(
+  providerId: string,
+  existingTags: AIGatewayModel.ModelTag[] = [],
+): AIGatewayModel.Type {
+  const [author = "test-author", rawCanonicalId = providerId] =
+    providerId.split("/");
+  const canonicalId = AIGatewayModel.CanonicalIdSchema.parse(rawCanonicalId);
+  const params = {
+    provider: "quests" as const,
+    providerConfigId: mockConfig.id,
+  };
+  return {
+    author,
+    canonicalId,
+    features: [],
+    name: canonicalId,
+    params,
+    providerId: AIGatewayModel.ProviderIdSchema.parse(providerId),
+    providerName: "Test Provider",
+    tags: existingTags,
+    uri: AIGatewayModelURI.fromModel({ author, canonicalId, params }),
+  };
+}
+
+describe("addHeuristicTags", () => {
   const testCases: {
     expected: AIGatewayModel.ModelTag[];
-    modelId: AIGatewayModel.CanonicalId;
+    modelId: string;
   }[] = [
     { expected: [], modelId: "gpt-4.1" },
     { expected: [], modelId: "gpt-4-turbo" },
@@ -83,82 +108,70 @@ describe("getModelTags", () => {
     { expected: ["coding", "recommended"], modelId: "claude-sonnet-5.5" },
   ].map(({ expected, modelId }) => ({
     expected: expected.map((tag) => AIGatewayModel.ModelTagSchema.parse(tag)),
-    modelId: AIGatewayModel.CanonicalIdSchema.parse(modelId),
+    modelId,
   }));
 
   it.each(testCases)(
     "should return $expected for $modelId",
     ({ expected, modelId }) => {
-      const tags = getModelTags({
-        author: "test-author",
-        canonicalId: modelId,
-        config: mockConfig,
-      });
-      expect(tags).toEqual(expected);
+      const model = createMockModel(modelId);
+      const result = addHeuristicTags(model, mockConfig);
+      expect(result.tags).toEqual(expected);
     },
   );
 
   it("should add default tag for provider-specific defaults", () => {
     const openaiConfig: AIGatewayProviderConfig.Type = {
       apiKey: "NOT_NEEDED",
-      cacheIdentifier: "quests",
-      id: AIProviderConfigIdSchema.parse("quests"),
+      cacheIdentifier: "openai",
+      id: AIProviderConfigIdSchema.parse("openai"),
       type: "openai",
     };
-    const tags = getModelTags({
-      author: "openai",
-      canonicalId: AIGatewayModel.CanonicalIdSchema.parse("gpt-5.1-codex-mini"),
-      config: openaiConfig,
-    });
-    expect(tags).toContain("default");
+    const model = createMockModel("openai/gpt-5.1-codex-mini");
+    const result = addHeuristicTags(model, openaiConfig);
+    expect(result.tags).toContain("default");
   });
 
   it("should not recommend gpt-5-codex for openai-compatible", () => {
     const compatConfig: AIGatewayProviderConfig.Type = {
       apiKey: "NOT_NEEDED",
-      cacheIdentifier: "quests",
-      id: AIProviderConfigIdSchema.parse("quests"),
+      cacheIdentifier: "openai-compatible",
+      id: AIProviderConfigIdSchema.parse("openai-compatible"),
       type: "openai-compatible",
     };
-    const tags = getModelTags({
-      author: "openai-compatible",
-      canonicalId: AIGatewayModel.CanonicalIdSchema.parse("gpt-5-codex"),
-      config: compatConfig,
-    });
-    expect(tags).not.toContain("recommended");
-    expect(tags).not.toContain("default");
+    const model = createMockModel("openai-compatible/gpt-5-codex");
+    const result = addHeuristicTags(model, compatConfig);
+    expect(result.tags).not.toContain("recommended");
+    expect(result.tags).not.toContain("default");
   });
 
   it("should mark o- models as legacy for OpenAI provider", () => {
     const openaiConfig: AIGatewayProviderConfig.Type = {
       apiKey: "NOT_NEEDED",
-      cacheIdentifier: "quests",
-      id: AIProviderConfigIdSchema.parse("quests"),
+      cacheIdentifier: "openai",
+      id: AIProviderConfigIdSchema.parse("openai"),
       type: "openai",
     };
-    const tags = getModelTags({
-      author: "openai",
-      canonicalId: AIGatewayModel.CanonicalIdSchema.parse("o-1"),
-      config: openaiConfig,
-    });
-    expect(tags).toContain("legacy");
+    const model = createMockModel("openai/o-1");
+    const result = addHeuristicTags(model, openaiConfig);
+    expect(result.tags).toContain("legacy");
   });
 
   it("should not mark o- models as legacy for non-OpenAI providers", () => {
-    const tags = getModelTags({
-      author: "test-author",
-      canonicalId: AIGatewayModel.CanonicalIdSchema.parse("o-1"),
-      config: mockConfig,
-    });
-    expect(tags).not.toContain("legacy");
+    const model = createMockModel("openai/o-1");
+    const result = addHeuristicTags(model, mockConfig);
+    expect(result.tags).not.toContain("legacy");
   });
 
   it("should return default, recommended, and coding tags for quests author", () => {
-    const tags = getModelTags({
-      author: "quests",
-      canonicalId: AIGatewayModel.CanonicalIdSchema.parse("spark"),
-      config: mockConfig,
-    });
-    expect(tags).toEqual(["default", "recommended", "coding"]);
+    const model = createMockModel("quests/auto");
+    const result = addHeuristicTags(model, mockConfig);
+    expect(result.tags).toEqual(["recommended", "coding", "default"]);
+  });
+
+  it("should preserve existing tags and add heuristic tags", () => {
+    const model = createMockModel("test-author/gpt-5.2", ["new"]);
+    const result = addHeuristicTags(model, mockConfig);
+    expect(result.tags).toEqual(["new", "coding", "recommended"]);
   });
 });

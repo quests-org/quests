@@ -4,11 +4,11 @@ import { z } from "zod";
 import { AIGatewayModel } from "../../schemas/model";
 import { AIGatewayModelURI } from "../../schemas/model-uri";
 import { type AIGatewayProviderConfig } from "../../schemas/provider-config";
+import { addHeuristicTags } from "../add-heuristic-tags";
 import { TypedError } from "../errors";
 import { fetchJson } from "../fetch-json";
 import { generateModelName } from "../generate-model-name";
 import { getModelFeatures } from "../get-model-features";
-import { getModelTags } from "../get-model-tags";
 import { isModelNew } from "../is-model-new";
 import { apiURL } from "../providers/api-url";
 import { getProviderMetadata } from "../providers/metadata";
@@ -49,7 +49,7 @@ export function fetchAndParseOpenAIModels(
       const modelName = generateModelName(canonicalId);
 
       const features = getModelFeatures(canonicalId);
-      const tags = getModelTags({ author, canonicalId, config });
+      const tags: AIGatewayModel.ModelTag[] = [];
       const isNew = isModelNew(model.created);
       if (isNew) {
         tags.push("new");
@@ -58,21 +58,25 @@ export function fetchAndParseOpenAIModels(
         provider: config.type,
         providerConfigId: config.id,
       };
-      return {
-        author,
-        canonicalId,
-        features,
-        name: modelName,
-        params,
-        providerId,
-        providerName: config.displayName ?? metadata.name,
-        tags,
-        uri: AIGatewayModelURI.fromModel({
+
+      return addHeuristicTags(
+        {
           author,
           canonicalId,
+          features,
+          name: modelName,
           params,
-        }),
-      } satisfies AIGatewayModel.Type;
+          providerId,
+          providerName: config.displayName ?? metadata.name,
+          tags,
+          uri: AIGatewayModelURI.fromModel({
+            author,
+            canonicalId,
+            params,
+          }),
+        },
+        config,
+      );
     });
   });
 }
