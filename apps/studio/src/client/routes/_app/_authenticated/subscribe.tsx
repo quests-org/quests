@@ -54,24 +54,22 @@ interface PricingPlan {
 
 const planCardVariants = tv({
   slots: {
-    card: "relative flex flex-col border border-border/50 p-6 shadow-none transition-all",
+    card: "relative flex flex-col overflow-hidden border border-border/50 p-6 shadow-none transition-all",
     title: "text-4xl font-bold",
   },
   variants: {
     plan: {
       Basic: {
-        card: "bg-gradient-to-br from-emerald-100 via-background to-background dark:from-emerald-900/20",
-        title:
-          "bg-gradient-to-r from-emerald-600 to-emerald-800 bg-clip-text text-transparent dark:from-emerald-400 dark:to-emerald-600",
+        card: "bg-radial-[at_15%_25%] from-emerald-200/50 from-30% via-emerald-100/20 to-background to-80% dark:from-emerald-500/20 dark:from-25% dark:via-emerald-900/10 dark:to-background dark:to-75%",
+        title: "text-emerald-700 dark:text-emerald-400",
       },
       Free: {
         card: "bg-card",
         title: "",
       },
       Pro: {
-        card: "bg-gradient-to-br from-blue-100 via-background to-background dark:from-blue-950/40 dark:via-slate-900/20",
-        title:
-          "bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-indigo-400",
+        card: "bg-radial-[at_85%_75%] from-blue-200/40 from-30% via-indigo-100/20 to-background to-80% dark:from-blue-400/20 dark:from-25% dark:via-indigo-500/10 dark:to-background dark:to-75%",
+        title: "text-blue-700 dark:text-blue-400",
       },
     },
   },
@@ -255,7 +253,7 @@ function SubscribePage() {
                 const isBasicUser = currentPlan === "Basic";
                 const isProUser = currentPlan === "Pro";
 
-                let buttonText = "Subscribe";
+                let buttonText = `Get ${plan.name}`;
                 let isButtonDisabled = false;
                 let showButton = true;
                 let showCheckmark = false;
@@ -264,13 +262,13 @@ function SubscribePage() {
                 switch (plan.name) {
                   case "Basic": {
                     if (isFreeUser) {
-                      buttonText = "Subscribe";
+                      buttonText = `Get ${plan.name}`;
                     } else if (isBasicUser) {
                       buttonText = "Current Plan";
                       showCheckmark = true;
                       variant = "secondary";
                     } else if (isProUser) {
-                      buttonText = "Downgrade";
+                      buttonText = `Get ${plan.name}`;
                       variant = "outline";
                     }
 
@@ -292,10 +290,8 @@ function SubscribePage() {
                       buttonText = "Current Plan";
                       showCheckmark = true;
                       variant = "secondary";
-                    } else if (isBasicUser) {
-                      buttonText = "Upgrade";
                     } else {
-                      buttonText = "Subscribe";
+                      buttonText = `Get ${plan.name}`;
                     }
 
                     break;
@@ -366,23 +362,23 @@ function SubscribePage() {
             </div>
 
             <div className="mx-auto mt-12 max-w-4xl">
-              <Card className="relative border border-border/50 bg-linear-to-br from-violet-100 via-background to-background p-8 dark:from-violet-950/30 dark:via-slate-900/20">
+              <Card className="relative overflow-hidden border border-border/50 bg-radial-[at_50%_50%] from-violet-200/40 from-35% to-background to-80% p-8 dark:from-violet-500/8 dark:from-35% dark:to-background dark:to-80%">
                 <div className="text-center">
-                  <h2 className="mb-2 bg-linear-to-r from-violet-600 to-purple-600 bg-clip-text text-2xl font-bold text-transparent dark:from-violet-400 dark:to-purple-400">
+                  <h2 className="mb-2 text-2xl font-bold text-violet-600 dark:text-violet-400">
                     Custom Plans
                   </h2>
                   <p className="mx-auto mb-6 max-w-xl text-sm text-muted-foreground">
                     Whether you&apos;re a team, agency, or enterprise,
                     we&apos;ll build a plan that fits your needs.
                   </p>
-                  <div className="mb-6 flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
+                  <div className="mb-6 flex flex-wrap justify-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
                     <span>Custom pricing</span>
                     <span>•</span>
                     <span>Priority support SLA</span>
                     <span>•</span>
                     <span>SSO & SAML</span>
                   </div>
-                  <Button asChild size="lg">
+                  <Button asChild size="lg" variant="outline">
                     <EmailLink
                       email={SALES_EMAIL}
                       onClick={() => {
