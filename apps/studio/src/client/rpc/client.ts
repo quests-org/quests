@@ -43,11 +43,6 @@ export const rpcClient = createTanstackQueryUtils(baseClient, {
           retry: 3,
         },
       },
-      subscriptionStatus: {
-        queryOptions: {
-          retry: 3,
-        },
-      },
     },
   },
 });

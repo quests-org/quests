@@ -23,18 +23,6 @@ const SubscriptionStatusInputSchema = z.union([
   z.void(),
   z.object({ staleTime: z.number().optional().default(30_000) }),
 ]);
-const subscriptionStatus = base
-  .input(SubscriptionStatusInputSchema)
-  .handler(async ({ input }) => {
-    if (!hasToken()) {
-      return null;
-    }
-    return apiQueryClient.fetchQuery(
-      apiRPCClient.users.getSubscriptionStatus.queryOptions({
-        staleTime: input?.staleTime,
-      }),
-    );
-  });
 
 const live = {
   me: base.handler(async function* ({ errors, signal }) {
@@ -78,5 +66,4 @@ export const user = {
   hasAIProviderConfig,
   live,
   me,
-  subscriptionStatus,
 };
