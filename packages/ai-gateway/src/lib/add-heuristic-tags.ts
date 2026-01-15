@@ -26,6 +26,7 @@ const DEFAULT_MODELS_BY_CONFIG_TYPE: Partial<
   cerebras: ["glm-4.6"],
   google: ["gemini-3-pro", "gemini-3-pro-preview"],
   openai: ["gpt-5.1-codex-mini"],
+  "x-ai": ["grok-code-fast-1"],
   "z-ai": ["glm-4.6"],
 };
 
