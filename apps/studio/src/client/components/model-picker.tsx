@@ -29,7 +29,6 @@ import { useMemo, useState } from "react";
 
 import { AIProviderIcon } from "./ai-provider-icon";
 import { ModelBadges } from "./model-badges";
-import { Badge } from "./ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 interface ModelPickerProps {
@@ -84,12 +83,14 @@ export function ModelPicker({
   const isSelectDisabled = disabled || isLoading || isError;
 
   const hasQuestsProviderError = useMemo(
-    () => errors?.some((error) => error.config.type === "quests"),
+    () => errors?.some((error) => error.config.type === "quests") ?? false,
     [errors],
   );
 
   const isAutoMode =
     selectedModel?.providerId === QUESTS_AUTO_MODEL_PROVIDER_ID;
+
+  const hideModelList = isAutoMode && !searchQuery;
 
   const getPlaceholderText = () => {
     if (isLoading) {
@@ -160,196 +161,86 @@ export function ModelPicker({
         </Button>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-80 p-0">
-        {isAutoMode ? (
+        <Command>
           <AutoModeSwitch
-            checked
+            autoModel={autoModel}
+            checked={isAutoMode}
             onCheckedChange={(checked) => {
-              if (!checked) {
+              if (checked && autoModel) {
+                onValueChange(autoModel.uri);
+              } else {
                 onValueChange("" as AIGatewayModelURI.Type);
               }
             }}
           />
-        ) : (
-          <Command>
-            {autoModel && (
-              <>
-                <AutoModeSwitch
-                  checked={false}
-                  onCheckedChange={(checked) => {
-                    if (checked) {
-                      onValueChange(autoModel.uri);
-                    }
+          {autoModel && <hr className="border-t" />}
+          <CommandInput
+            autoFocus
+            className="h-9"
+            containerClassName={cn(isAutoMode && "border-b-0")}
+            onValueChange={setSearchQuery}
+            placeholder="Search models..."
+            value={searchQuery}
+          />
+          <CommandList className={cn("max-h-82", hideModelList && "hidden")}>
+            {!hasModels && !hasErrors ? (
+              <NoProvidersMessage
+                onAddProvider={() => {
+                  setOpen(false);
+                  onAddProvider?.();
+                }}
+              />
+            ) : (
+              <CommandEmpty>
+                <NoMatchingModelsMessage
+                  onAddProvider={() => {
+                    setOpen(false);
+                    onAddProvider?.();
                   }}
                 />
-                <hr className="border-t" />
-              </>
+              </CommandEmpty>
             )}
-            <CommandInput
-              autoFocus
-              className="h-9"
-              onValueChange={setSearchQuery}
-              placeholder="Search models..."
-              value={searchQuery}
-            />
-            <CommandList className="max-h-82">
-              {!hasModels && !hasErrors ? (
-                <div className="flex flex-col items-center gap-3 py-6">
-                  <p className="text-sm text-muted-foreground">
-                    Connect a provider to use Quests
-                  </p>
-                  <Button
-                    onClick={() => {
-                      setOpen(false);
-                      onAddProvider?.();
-                    }}
-                    size="sm"
-                    variant="outline"
-                  >
-                    <Plus className="mr-2 size-4" />
-                    Add an AI provider
-                  </Button>
-                </div>
-              ) : (
-                <CommandEmpty>
-                  <div className="flex flex-col items-center gap-3 py-6">
-                    <p className="text-sm text-muted-foreground">
-                      No matching models
-                    </p>
-                    <Button
-                      onClick={() => {
-                        setOpen(false);
-                        onAddProvider?.();
-                      }}
-                      size="sm"
-                      variant="outline"
-                    >
-                      <Plus className="mr-2 size-4" />
-                      Add an AI provider
-                    </Button>
-                    <p className="max-w-64 text-center text-xs text-muted-foreground">
-                      The model you&apos;re looking for might be available from
-                      a different provider
-                    </p>
-                  </div>
-                </CommandEmpty>
-              )}
-              {hasErrors && (
-                <CommandGroup
-                  heading={
-                    <div className="flex w-full items-center justify-between">
-                      <span>Errors</span>
-                      <Button
-                        className="h-6 px-2 text-xs"
-                        onClick={() => {
-                          if (hasQuestsProviderError) {
-                            void rpcClient.preferences.openSettingsWindow.call({
-                              tab: "General",
-                            });
-                          } else {
-                            void rpcClient.preferences.openSettingsWindow.call({
-                              showNewProviderDialog: false,
-                              tab: "Providers",
-                            });
-                          }
-                        }}
-                        size="sm"
-                        variant="outline"
-                      >
-                        {hasQuestsProviderError
-                          ? "Check account"
-                          : "Edit providers"}
-                      </Button>
-                    </div>
-                  }
-                >
-                  {errors.map((error, index) => (
-                    <CommandItem
-                      className="flex cursor-default items-center py-2 data-disabled:opacity-80!"
-                      disabled
-                      key={index}
-                    >
-                      <AlertCircle className="mr-2 size-4 shrink-0 text-destructive" />
-                      <div className="flex min-w-0 flex-1 flex-col gap-1">
-                        <div className="flex items-center gap-1 text-xs">
-                          <AIProviderIcon
-                            className="size-3 shrink-0"
-                            type={error.config.type}
-                          />
-                          <span className="text-muted-foreground">
-                            {error.config.displayName}
-                          </span>
-                        </div>
-                        <span className="line-clamp-2 text-xs wrap-break-word">
-                          {error.message}
-                        </span>
-                      </div>
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              )}
-              {isError && (
-                <CommandGroup>
-                  <CommandItem disabled>Failed to load models</CommandItem>
-                </CommandGroup>
-              )}
-              {hasModels &&
-                getGroupedModelsEntries(groupedModels).map(
-                  ([groupName, modelGroup]) =>
-                    modelGroup.length > 0 && (
-                      <CommandGroup heading={groupName} key={groupName}>
-                        {modelGroup.map((model) => (
-                          <CommandItem
-                            className="flex items-center justify-between py-2"
-                            key={model.uri}
-                            onSelect={() => {
-                              onValueChange(model.uri);
-                              setOpen(false);
-                            }}
-                            value={model.uri}
-                          >
-                            <div className="flex items-center">
-                              <Check
-                                className={cn(
-                                  "mr-2 size-4",
-                                  selectedModel?.uri === model.uri
-                                    ? "opacity-100"
-                                    : "opacity-0",
-                                )}
-                              />
-                              <div className="flex flex-col gap-1">
-                                <span className="text-sm">{model.name}</span>
-                                <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                  <AIProviderIcon
-                                    className="size-3 shrink-0"
-                                    type={model.params.provider}
-                                  />
-                                  <span>{model.providerName}</span>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="mt-1 ml-2 flex gap-1 self-start">
-                              <ModelBadges model={model} />
-                            </div>
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    ),
-                )}
-            </CommandList>
-          </Command>
-        )}
+            {hasErrors && (
+              <ErrorsGroup
+                errors={errors}
+                hasQuestsProviderError={hasQuestsProviderError}
+              />
+            )}
+            {isError && (
+              <CommandGroup>
+                <CommandItem disabled>Failed to load models</CommandItem>
+              </CommandGroup>
+            )}
+            {hasModels && (
+              <ModelGroups
+                groupedModels={groupedModels}
+                onSelectModel={(uri) => {
+                  onValueChange(uri);
+                  setOpen(false);
+                }}
+                selectedModel={selectedModel}
+              />
+            )}
+          </CommandList>
+        </Command>
       </PopoverContent>
     </Popover>
   );
 }
 
 function AutoModeSwitch({
+  autoModel,
   checked,
   onCheckedChange,
 }: {
+  autoModel?: AIGatewayModel.Type;
   checked: boolean;
   onCheckedChange: (checked: boolean) => void;
 }) {
+  if (!autoModel) {
+    return null;
+  }
+
   return (
     <div
       className="flex flex-col gap-1 px-4 py-3"
@@ -360,15 +251,163 @@ function AutoModeSwitch({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium">Auto</span>
-          {!checked && <Badge variant="outline">Recommended</Badge>}
         </div>
         <Switch checked={checked} onCheckedChange={onCheckedChange} />
       </div>
-      {checked && (
-        <span className="text-xs text-muted-foreground">
-          Balanced quality and speed, recommended for most tasks
-        </span>
+      <span className="text-xs text-muted-foreground">
+        Selects the best model for your task
+      </span>
+    </div>
+  );
+}
+
+function ErrorsGroup({
+  errors,
+  hasQuestsProviderError,
+}: {
+  errors: NonNullable<RPCOutput["gateway"]["models"]["list"]["errors"]>;
+  hasQuestsProviderError: boolean;
+}) {
+  return (
+    <CommandGroup
+      heading={
+        <div className="flex w-full items-center justify-between">
+          <span>Errors</span>
+          <Button
+            className="h-6 px-2 text-xs"
+            onClick={() => {
+              if (hasQuestsProviderError) {
+                void rpcClient.preferences.openSettingsWindow.call({
+                  tab: "General",
+                });
+              } else {
+                void rpcClient.preferences.openSettingsWindow.call({
+                  showNewProviderDialog: false,
+                  tab: "Providers",
+                });
+              }
+            }}
+            size="sm"
+            variant="outline"
+          >
+            {hasQuestsProviderError ? "Check account" : "Edit providers"}
+          </Button>
+        </div>
+      }
+    >
+      {errors.map((error, index) => (
+        <CommandItem
+          className="flex cursor-default items-center py-2 data-disabled:opacity-80!"
+          disabled
+          key={index}
+        >
+          <AlertCircle className="mr-2 size-4 shrink-0 text-destructive" />
+          <div className="flex min-w-0 flex-1 flex-col gap-1">
+            <div className="flex items-center gap-1 text-xs">
+              <AIProviderIcon
+                className="size-3 shrink-0"
+                type={error.config.type}
+              />
+              <span className="text-muted-foreground">
+                {error.config.displayName}
+              </span>
+            </div>
+            <span className="line-clamp-2 text-xs wrap-break-word">
+              {error.message}
+            </span>
+          </div>
+        </CommandItem>
+      ))}
+    </CommandGroup>
+  );
+}
+
+function ModelGroups({
+  groupedModels,
+  onSelectModel,
+  selectedModel,
+}: {
+  groupedModels: ReturnType<typeof groupAndFilterModels>;
+  onSelectModel: (uri: AIGatewayModelURI.Type) => void;
+  selectedModel?: AIGatewayModel.Type;
+}) {
+  return (
+    <>
+      {getGroupedModelsEntries(groupedModels).map(
+        ([groupName, modelGroup]) =>
+          modelGroup.length > 0 && (
+            <CommandGroup heading={groupName} key={groupName}>
+              {modelGroup.map((model) => (
+                <CommandItem
+                  className="flex items-center justify-between py-2"
+                  key={model.uri}
+                  onSelect={() => {
+                    onSelectModel(model.uri);
+                  }}
+                  value={model.uri}
+                >
+                  <div className="flex items-center">
+                    <Check
+                      className={cn(
+                        "mr-2 size-4",
+                        selectedModel?.uri === model.uri
+                          ? "opacity-100"
+                          : "opacity-0",
+                      )}
+                    />
+                    <div className="flex flex-col gap-1">
+                      <span className="text-sm">{model.name}</span>
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <AIProviderIcon
+                          className="size-3 shrink-0"
+                          type={model.params.provider}
+                        />
+                        <span>{model.providerName}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-1 ml-2 flex gap-1 self-start">
+                    <ModelBadges model={model} />
+                  </div>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          ),
       )}
+    </>
+  );
+}
+
+function NoMatchingModelsMessage({
+  onAddProvider,
+}: {
+  onAddProvider: () => void;
+}) {
+  return (
+    <div className="flex flex-col items-center gap-3 py-6">
+      <p className="text-sm text-muted-foreground">No matching models</p>
+      <Button onClick={onAddProvider} size="sm" variant="outline">
+        <Plus className="mr-2 size-4" />
+        Add an AI provider
+      </Button>
+      <p className="max-w-64 text-center text-xs text-muted-foreground">
+        The model you&apos;re looking for might be available from a different
+        provider
+      </p>
+    </div>
+  );
+}
+
+function NoProvidersMessage({ onAddProvider }: { onAddProvider: () => void }) {
+  return (
+    <div className="flex flex-col items-center gap-3 py-6">
+      <p className="text-sm text-muted-foreground">
+        Connect a provider to use Quests
+      </p>
+      <Button onClick={onAddProvider} size="sm" variant="outline">
+        <Plus className="mr-2 size-4" />
+        Add an AI provider
+      </Button>
     </div>
   );
 }
