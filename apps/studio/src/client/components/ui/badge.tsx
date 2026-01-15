@@ -10,6 +10,8 @@ const badgeVariants = tv({
   },
   variants: {
     variant: {
+      brand:
+        "border-brand bg-brand text-brand-foreground [a&]:hover:bg-brand/90 [a&]:hover:text-brand-foreground",
       "brand-outline":
         "border-brand text-brand [a&]:hover:bg-brand [a&]:hover:text-brand-foreground",
       default:

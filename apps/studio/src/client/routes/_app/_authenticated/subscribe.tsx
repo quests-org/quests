@@ -1,8 +1,9 @@
 import { EmailLink } from "@/client/components/email-link";
 import { ErrorCard } from "@/client/components/error-card";
+import { Badge } from "@/client/components/ui/badge";
 import { Button } from "@/client/components/ui/button";
 import { Card } from "@/client/components/ui/card";
-import { Tabs, TabsList, TabsTrigger } from "@/client/components/ui/tabs";
+import { Switch } from "@/client/components/ui/switch";
 import { useLiveSubscriptionStatus } from "@/client/hooks/use-live-subscription-status";
 import { captureClientEvent } from "@/client/lib/capture-client-event";
 import { cn } from "@/client/lib/utils";
@@ -208,42 +209,39 @@ function SubscribePage() {
         {plans && (
           <>
             <div className="mb-6 flex justify-center">
-              <Tabs
-                defaultValue="yearly"
-                onValueChange={(value) => {
-                  const newBillingCycle = value as BillingCycle;
-                  setBillingCycle(newBillingCycle);
-                  captureClientEvent("subscribe.billing_cycle_changed", {
-                    billing_cycle: newBillingCycle,
-                  });
-                }}
-                value={billingCycle}
-              >
-                <TabsList className="bg-muted text-primary-foreground/50 dark:bg-muted">
-                  <TabsTrigger
-                    className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground dark:data-[state=active]:bg-primary dark:data-[state=active]:text-primary-foreground"
-                    value="yearly"
-                  >
-                    Yearly
-                    <span
-                      className={cn(
-                        "rounded-full px-2 py-0.5 text-xs",
-                        billingCycle === "yearly"
-                          ? "bg-background/20 dark:bg-background/20"
-                          : "bg-border",
-                      )}
-                    >
-                      Save 20%
-                    </span>
-                  </TabsTrigger>
-                  <TabsTrigger
-                    className="hover:text-primary-foreground data-[state=active]:bg-primary data-[state=active]:text-background dark:data-[state=active]:bg-primary dark:data-[state=active]:text-background"
-                    value="monthly"
-                  >
-                    Monthly
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
+              <div className="flex items-center gap-3 rounded-lg border border-border/50 bg-card px-4 py-3 shadow-sm">
+                <span
+                  className={cn(
+                    "text-sm font-medium transition-colors",
+                    billingCycle === "monthly"
+                      ? "text-foreground"
+                      : "text-muted-foreground",
+                  )}
+                >
+                  Monthly
+                </span>
+                <Switch
+                  checked={billingCycle === "yearly"}
+                  onCheckedChange={(checked) => {
+                    const newBillingCycle = checked ? "yearly" : "monthly";
+                    setBillingCycle(newBillingCycle);
+                    captureClientEvent("subscribe.billing_cycle_changed", {
+                      billing_cycle: newBillingCycle,
+                    });
+                  }}
+                />
+                <span
+                  className={cn(
+                    "flex items-center gap-2 text-sm font-medium transition-colors",
+                    billingCycle === "yearly"
+                      ? "text-foreground"
+                      : "text-muted-foreground",
+                  )}
+                >
+                  Yearly
+                  <Badge variant="brand">Save 20%</Badge>
+                </span>
+              </div>
             </div>
 
             <div className="mx-auto grid max-w-6xl gap-6 md:grid-cols-3">
