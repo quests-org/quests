@@ -64,7 +64,11 @@ export function addHeuristicTags(
     }
   }
 
-  if (params.provider === "quests" && !model.providerId.endsWith(":free")) {
+  if (
+    params.provider === "quests" &&
+    !model.providerId.endsWith(":free") &&
+    model.providerId !== QUESTS_AUTO_MODEL_PROVIDER_ID
+  ) {
     tags.push("premium");
   }
 

@@ -506,6 +506,9 @@ function RouteComponent() {
                             <CommandGroup heading={groupName} key={groupName}>
                               {groupModels.map((model) => (
                                 <CommandItem
+                                  disabled={
+                                    model.tags.includes("premium") && !hasPlan
+                                  }
                                   key={model.uri}
                                   onSelect={() => {
                                     handleToggleModel(model.uri);
