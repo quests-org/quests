@@ -66,6 +66,7 @@ export function createMainWindowMenu(): MenuItemConstructorOptions[] {
             publisher.publish("app.open-project-launcher", {
               webContentsId: currentTab.webView.webContents.id,
             });
+            tabsManager?.focusCurrentTab();
           }
         },
         label: "Show Command Menu",
