@@ -484,18 +484,6 @@ const live = {
       };
     }
   }),
-  openProjectLauncher: base.handler(async function* ({ context, signal }) {
-    for await (const payload of publisher.subscribe(
-      "app.open-project-launcher",
-      {
-        signal,
-      },
-    )) {
-      if (context.webContentsId === payload.webContentsId) {
-        yield;
-      }
-    }
-  }),
   reload: base.handler(async function* ({ context, signal }) {
     for await (const payload of publisher.subscribe("app.reload", {
       signal,
@@ -528,6 +516,15 @@ const live = {
         yield getServerExceptions();
       }
     }),
+  toggleCommandMenu: base.handler(async function* ({ context, signal }) {
+    for await (const payload of publisher.subscribe("app.toggle-command-menu", {
+      signal,
+    })) {
+      if (context.webContentsId === payload.webContentsId) {
+        yield;
+      }
+    }
+  }),
 };
 
 export const utils = {

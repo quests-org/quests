@@ -1,27 +1,26 @@
 import { rpcClient } from "@/client/rpc/client";
 import { useEffect } from "react";
 
-export function useOpenCommandMenu(onOpen: () => void) {
+export function useToggleCommandMenu(onToggle: () => void) {
   useEffect(() => {
     let isCancelled = false;
 
-    async function subscribeToOpenProjectLauncher() {
-      const subscription =
-        await rpcClient.utils.live.openProjectLauncher.call();
+    async function subscribeToToggleProjectLauncher() {
+      const subscription = await rpcClient.utils.live.toggleCommandMenu.call();
 
       for await (const _ of subscription) {
         if (isCancelled) {
           break;
         }
 
-        onOpen();
+        onToggle();
       }
     }
 
-    void subscribeToOpenProjectLauncher();
+    void subscribeToToggleProjectLauncher();
 
     return () => {
       isCancelled = true;
     };
-  }, [onOpen]);
+  }, [onToggle]);
 }

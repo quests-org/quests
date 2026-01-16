@@ -63,7 +63,7 @@ export function createMainWindowMenu(): MenuItemConstructorOptions[] {
           const tabsManager = getTabsManager();
           const currentTab = tabsManager?.getCurrentTab();
           if (currentTab) {
-            publisher.publish("app.open-project-launcher", {
+            publisher.publish("app.toggle-command-menu", {
               webContentsId: currentTab.webView.webContents.id,
             });
             tabsManager?.focusCurrentTab();

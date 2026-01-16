@@ -8,7 +8,7 @@ import {
   CommandList,
 } from "@/client/components/ui/command";
 import { Skeleton } from "@/client/components/ui/skeleton";
-import { useOpenCommandMenu } from "@/client/hooks/use-open-command-menu";
+import { useToggleCommandMenu } from "@/client/hooks/use-toggle-command-menu";
 import { rpcClient } from "@/client/rpc/client";
 import { type ProjectSubdomain } from "@quests/workspace/client";
 import { skipToken, useQuery } from "@tanstack/react-query";
@@ -84,7 +84,7 @@ export function StudioCommandMenu() {
   const isOnNewTabPage = !!newTabRouteMatch;
   const isOnProjectsPage = !!projectsRouteMatch;
 
-  useOpenCommandMenu(
+  useToggleCommandMenu(
     useCallback(() => {
       setOpen((prev) => !prev);
     }, []),
