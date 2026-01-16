@@ -213,9 +213,6 @@ importers:
       detect-port:
         specifier: ^2.1.0
         version: 2.1.0
-      dotenv:
-        specifier: ^16.6.1
-        version: 16.6.1
       dugite:
         specifier: 3.0.0-rc11
         version: 3.0.0-rc11
@@ -409,6 +406,9 @@ importers:
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
+      dotenv:
+        specifier: ^16.6.1
+        version: 16.6.1
       electron:
         specifier: ^39.2.6
         version: 39.2.6
