@@ -1,13 +1,8 @@
 /// <reference types="electron-vite/node" />
 
-import "dotenv/config";
+import "@/electron-main/setup-environment"; // This must be imported first
 import { startAuthCallbackServer } from "@/electron-main/auth/server";
 import { captureServerException } from "@/electron-main/lib/capture-server-exception";
-import {
-  initializeElectronLogging,
-  logger,
-} from "@/electron-main/lib/electron-logger";
-import { setupDBusEnvironment } from "@/electron-main/lib/setup-dbus-env";
 import { StudioAppUpdater } from "@/electron-main/lib/update";
 import { createApplicationMenu } from "@/electron-main/menus";
 import { getTabsManager } from "@/electron-main/tabs";
@@ -16,11 +11,9 @@ import {
   updateTitleBarOverlay,
 } from "@/electron-main/windows/main";
 import { getMainWindow } from "@/electron-main/windows/main/instance";
-import { is, optimizer, platform } from "@electron-toolkit/utils";
+import { is, optimizer } from "@electron-toolkit/utils";
 import { APP_PROTOCOL } from "@quests/shared";
 import { app, BrowserWindow, dialog, nativeTheme, protocol } from "electron";
-import fixPath from "fix-path";
-import path from "node:path";
 
 import { createWorkspaceActor } from "./lib/create-workspace-actor";
 import { generateUserAgent } from "./lib/generate-user-agent";
@@ -28,69 +21,7 @@ import { registerTelemetry } from "./lib/register-telemetry";
 import { setupBinDirectory } from "./lib/setup-bin-directory";
 import { watchThemePreferenceAndApply } from "./lib/theme-utils";
 import { initializeRPC } from "./rpc/initialize";
-
-// Suppress Unstorage dB0 experimental warning
-// Remove when stable https://github.com/unjs/unstorage/blob/main/src/drivers/db0.ts
-(
-  globalThis as unknown as Record<string, boolean>
-).__unstorage_db0_experimental_warning__ = true;
-
-const passwordStore = setupDBusEnvironment();
-
-if (platform.isLinux) {
-  // Fix issues with Wayland on Linux until it stabilizes
-  // https://github.com/RocketChat/Rocket.Chat.Electron/pull/3159
-  // https://github.com/electron/electron/pull/48301
-  //
-  // `ELECTRON_OZONE_PLATFORM_HINT` was removed.
-  // https://www.electronjs.org/docs/latest/breaking-changes#planned-breaking-api-changes-380
-  app.commandLine.appendSwitch("ozone-platform", "x11");
-
-  const existing = app.commandLine.getSwitchValue("password-store");
-  if (existing) {
-    logger.info(
-      `Command line already has password-store: ${existing} - not overriding`,
-    );
-  } else if (passwordStore) {
-    app.commandLine.appendSwitch("password-store", passwordStore);
-    logger.info(`Using password store: ${passwordStore}`);
-  }
-}
-
-if (!platform.isWindows) {
-  // Fix the $PATH on macOS and Linux when run from a GUI app
-  fixPath();
-}
-
-if (process.env.ELECTRON_USER_DATA_DIR) {
-  logger.info(
-    `Using custom user data dir: ${process.env.ELECTRON_USER_DATA_DIR}`,
-  );
-  app.setPath("userData", process.env.ELECTRON_USER_DATA_DIR);
-} else if (is.dev) {
-  let suffix = "";
-  if (process.env.ELECTRON_DEV_USER_FOLDER_SUFFIX) {
-    suffix = ` (${process.env.ELECTRON_DEV_USER_FOLDER_SUFFIX})`;
-  }
-  if (process.env.ELECTRON_USE_NEW_USER_FOLDER === "true") {
-    suffix = ` (${Date.now().toString()})`;
-  }
-  const DEV_APP_NAME = `Quests (Dev${suffix})`;
-  if (suffix) {
-    logger.info(`Using user folder ${DEV_APP_NAME}`);
-  }
-  // Sandbox userData during development to Quests/Quests (Dev)/*
-  // Must be done as soon as possible because it's stateful
-  app.setPath(
-    "userData",
-    path.join(app.getPath("userData"), "..", DEV_APP_NAME),
-  );
-  app.setName(DEV_APP_NAME);
-}
-
 let appUpdater: StudioAppUpdater | undefined;
-
-initializeElectronLogging();
 
 protocol.registerSchemesAsPrivileged([
   {
