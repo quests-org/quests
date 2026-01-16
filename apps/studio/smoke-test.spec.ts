@@ -120,30 +120,15 @@ describe("Studio Smoke Test", () => {
       }
     }
 
-    const definedWindows = windowConfigs.map(({ window }) => window);
-    if (definedWindows.some((w) => !w)) {
-      throw new Error("Some windows are undefined");
+    for (const { name, testId, window } of windowConfigs) {
+      const locator = window?.locator(`[data-testid="${testId}"]`);
+      await locator?.waitFor({
+        // Sidebar is hidden during initial setup
+        state: name === "sidebar" ? "attached" : "visible",
+        timeout: 30_000,
+      });
+      expect(await locator?.count(), `${name} window has ${testId}`).toBe(1);
     }
-
-    await Promise.all(
-      definedWindows.map((window) =>
-        window?.waitForLoadState("domcontentloaded", { timeout: 30_000 }),
-      ),
-    );
-
-    await Promise.all(
-      windowConfigs.map(({ testId, window }) =>
-        window?.waitForSelector(`[data-testid="${testId}"]`, {
-          timeout: 30_000,
-        }),
-      ),
-    );
-
-    await Promise.all(
-      definedWindows.map(async (window) => {
-        expect(await window?.isVisible("#root > *")).toBe(true);
-      }),
-    );
 
     await electronApp.close();
 
@@ -160,7 +145,7 @@ describe("Studio Smoke Test", () => {
       } catch {
         exists = false;
       }
-      expect(exists).toBe(true);
+      expect(exists, `File exists: ${filePath}`).toBe(true);
     }
   });
 });
