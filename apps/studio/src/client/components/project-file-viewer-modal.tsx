@@ -253,7 +253,7 @@ export function ProjectFileViewerModal() {
                 {isImage ? (
                   <ImageWithFallback
                     alt={currentFile.filename}
-                    className="h-auto max-h-full w-auto max-w-full rounded bg-white/90 object-contain"
+                    className="h-auto max-h-full w-auto max-w-full rounded object-contain"
                     fallback={
                       <div className="flex w-full max-w-md flex-col items-center justify-center gap-4 p-8 text-center">
                         <div className="flex size-32 items-center justify-center rounded-lg bg-background">
@@ -278,6 +278,7 @@ export function ProjectFileViewerModal() {
                     fallbackClassName="size-32 rounded-lg"
                     filename={currentFile.filename}
                     onClick={closeViewer}
+                    showCheckerboard
                     src={currentFile.url}
                   />
                 ) : (

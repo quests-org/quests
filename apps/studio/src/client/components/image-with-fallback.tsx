@@ -10,6 +10,7 @@ export function ImageWithFallback({
   fallbackClassName,
   filename,
   onError,
+  showCheckerboard = false,
   src,
   ...props
 }: Omit<
@@ -22,6 +23,7 @@ export function ImageWithFallback({
   fallbackClassName?: string;
   filename: string;
   onError?: () => void;
+  showCheckerboard?: boolean;
   src: string;
 }) {
   const [hasError, setHasError] = useState(false);
@@ -56,6 +58,20 @@ export function ImageWithFallback({
       className={className}
       onError={handleError}
       src={src}
+      style={{
+        ...props.style,
+        ...(showCheckerboard && {
+          backgroundColor: "#f5f5f5",
+          backgroundImage: `
+            linear-gradient(45deg, #d0d0d0 25%, transparent 25%),
+            linear-gradient(-45deg, #d0d0d0 25%, transparent 25%),
+            linear-gradient(45deg, transparent 75%, #d0d0d0 75%),
+            linear-gradient(-45deg, transparent 75%, #d0d0d0 75%)
+          `,
+          backgroundPosition: "0 0, 0 8px, 8px -8px, -8px 0px",
+          backgroundSize: "16px 16px",
+        }),
+      }}
     />
   );
 }

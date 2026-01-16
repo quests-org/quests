@@ -37,9 +37,10 @@ export function FilePreviewListItem({
           >
             <ImageWithFallback
               alt={filename}
-              className="size-12 bg-white object-cover"
+              className="size-12 object-cover"
               fallbackClassName="size-12 rounded-lg"
               filename={filename}
+              showCheckerboard
               src={url}
             />
           </Button>

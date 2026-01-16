@@ -37,9 +37,10 @@ export function UploadedFilePreview({
           >
             <ImageWithFallback
               alt={filename}
-              className="size-full bg-white object-cover"
+              className="size-full object-cover"
               fallbackClassName="size-full"
               filename={filename}
+              showCheckerboard
               src={url}
             />
           </Button>

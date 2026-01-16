@@ -98,9 +98,10 @@ export function FilePreviewCard({
           <div className="flex size-full items-center justify-center">
             <ImageWithFallback
               alt={filename}
-              className="max-h-full max-w-full bg-white object-contain"
+              className="max-h-full max-w-full object-contain"
               fallbackClassName="size-full"
               filename={filename}
+              showCheckerboard
               src={url}
             />
           </div>
