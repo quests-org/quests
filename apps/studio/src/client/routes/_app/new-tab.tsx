@@ -37,12 +37,22 @@ export const Route = createFileRoute("/_app/new-tab")({
       },
     ],
   }),
+  loader: async ({ context }) => {
+    const hasToken = await rpcClient.auth.hasToken.call();
+    // Ensures the UI doesn't flicker by pre-loading the hasToken data
+    // Using a raw RPC call because it's a live query, which means
+    // `.ensureQueryData` would never resolve.
+    context.queryClient.setQueryData(
+      rpcClient.auth.live.hasToken.experimental_liveKey(),
+      hasToken,
+    );
+  },
 });
 
 function RouteComponent() {
   const [selectedModelURI, setSelectedModelURI, saveSelectedModelURI] =
     useDefaultModelURI();
-  const { data: hasToken, isLoading: isLoadingHasToken } = useQuery(
+  const { data: hasToken } = useQuery(
     rpcClient.auth.live.hasToken.experimental_liveOptions(),
   );
   const navigate = useNavigate({ from: "/new-tab" });
@@ -75,7 +85,7 @@ function RouteComponent() {
     <div className="relative flex min-h-screen w-full flex-1 flex-col items-center">
       <div className="flex w-full items-center justify-center">
         <div className="w-full max-w-2xl space-y-8 px-8 pt-36">
-          {!hasToken && !isLoadingHasToken && (
+          {hasToken === false && (
             <div className="mb-8 flex flex-col items-center gap-y-4">
               <button
                 className="group relative flex items-center gap-x-4 overflow-hidden rounded-2xl border border-brand/50 bg-linear-to-r from-brand/20 via-brand/10 to-brand/20 px-6 py-4 shadow-lg shadow-brand/10 transition-all duration-300 hover:scale-[1.02] hover:border-brand hover:from-brand/30 hover:via-brand/20 hover:to-brand/30 hover:shadow-xl hover:shadow-brand/20"
