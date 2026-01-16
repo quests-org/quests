@@ -362,6 +362,7 @@ export function FileViewer({
           />
         ) : isVideo ? (
           <video
+            autoPlay
             className="size-full object-contain p-4"
             controls
             key={url}
