@@ -1,4 +1,5 @@
 import { type AIGatewayLanguageModel } from "@quests/ai-gateway";
+import { alphabetical, isEqual } from "radashi";
 import invariant from "tiny-invariant";
 import {
   type ActorRef,
@@ -16,6 +17,7 @@ import { createAssignEventError } from "../lib/assign-event-error";
 import { createSession } from "../lib/create-session";
 import { logUnhandledEvent } from "../lib/log-unhandled-event";
 import { Store } from "../lib/store";
+import { publisher } from "../rpc/publisher";
 import { type SessionTag } from "../schemas/app-state";
 import { type SessionMessage } from "../schemas/session/message";
 import { type StoreId } from "../schemas/store-id";
@@ -155,6 +157,7 @@ export const sessionMachine = setup({
       parentRef: ParentActorRef;
       queuedMessages: SessionMessage.UserWithParts[];
       sessionId: StoreId.Session;
+      subscription?: { unsubscribe: () => void };
       usedNonReadOnlyTools: boolean;
     },
     events: {} as SessionMachineEvent,
@@ -172,7 +175,26 @@ export const sessionMachine = setup({
     tags: {} as SessionTag,
   },
 }).createMachine({
-  context: ({ input }) => {
+  context: ({ input, self }) => {
+    let previousTags: string[] = [];
+
+    const subscription = self.subscribe((snapshot) => {
+      const currentTags = alphabetical([...snapshot.tags], (tag) => tag);
+
+      if (!isEqual(currentTags, previousTags)) {
+        publisher.publish("appState.session.tagsChanged", {
+          sessionId: input.sessionId,
+          subdomain: input.appConfig.subdomain,
+        });
+        previousTags = currentTags;
+      }
+    });
+
+    publisher.publish("appState.session.added", {
+      sessionId: input.sessionId,
+      subdomain: input.appConfig.subdomain,
+    });
+
     return {
       agent: input.agent,
       appConfig: input.appConfig,
@@ -183,6 +205,7 @@ export const sessionMachine = setup({
       parentRef: input.parentRef,
       queuedMessages: input.queuedMessages,
       sessionId: input.sessionId,
+      subscription,
       usedNonReadOnlyTools: false,
     };
   },
@@ -332,6 +355,15 @@ export const sessionMachine = setup({
 
     Done: {
       entry: ({ context, self }) => {
+        if (context.subscription) {
+          context.subscription.unsubscribe();
+        }
+
+        publisher.publish("appState.session.removed", {
+          sessionId: context.sessionId,
+          subdomain: context.appConfig.subdomain,
+        });
+
         context.parentRef.send({
           type: "session.done",
           value: {
