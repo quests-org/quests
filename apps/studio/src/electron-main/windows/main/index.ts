@@ -6,7 +6,10 @@ import {
 import { studioURL } from "@/electron-main/lib/urls";
 import { publisher } from "@/electron-main/rpc/publisher";
 import { getSidebarWidth } from "@/electron-main/stores/app-state";
-import { windowStateStore } from "@/electron-main/stores/window-state";
+import {
+  getWindowState,
+  setWindowState,
+} from "@/electron-main/stores/window-state";
 import { createTabsManager, getTabsManager } from "@/electron-main/tabs";
 import {
   getMainWindow,
@@ -16,6 +19,7 @@ import { createToolbar } from "@/electron-main/windows/toolbar";
 import { is } from "@electron-toolkit/utils";
 import { type BaseWindow, BrowserWindow, shell } from "electron";
 import path from "node:path";
+import { debounce } from "radashi";
 
 import icon from "../../../../resources/icon.png?asset";
 
@@ -23,10 +27,8 @@ let toolbar: Electron.CrossProcessExports.WebContentsView | null = null;
 let wasWindowBlurred = false;
 
 export async function createMainWindow() {
-  const boundsState = windowStateStore.get("bounds");
-
   const mainWindow = new BrowserWindow({
-    ...boundsState,
+    ...getWindowState().bounds,
     show: false,
     titleBarStyle: process.platform === "darwin" ? "hiddenInset" : "hidden",
     trafficLightPosition: { x: 12, y: 12 },
@@ -46,14 +48,24 @@ export async function createMainWindow() {
   setMainWindow(mainWindow);
 
   const saveState = () => {
-    const isMaximized = mainWindow.isMaximized();
-    const bounds = mainWindow.getBounds();
+    try {
+      const isMaximized = mainWindow.isMaximized();
+      const bounds = mainWindow.getBounds();
+      const isNormal =
+        !mainWindow.isMaximized() &&
+        !mainWindow.isMinimized() &&
+        !mainWindow.isFullScreen();
 
-    windowStateStore.set({
-      bounds: isMaximized ? windowStateStore.get("bounds") : bounds,
-      isMaximized,
-    });
+      setWindowState({
+        bounds: isNormal ? bounds : getWindowState().bounds,
+        isMaximized,
+      });
+    } catch {
+      // Window may be destroyed
+    }
   };
+
+  const debouncedSaveState = debounce({ delay: 500 }, saveState);
 
   mainWindow.on("close", () => {
     const tabsManager = getTabsManager();
@@ -61,8 +73,12 @@ export async function createMainWindow() {
     tabsManager?.teardown();
   });
 
-  mainWindow.on("resize", saveState);
-  mainWindow.on("move", saveState);
+  mainWindow.on("closed", () => {
+    saveState();
+  });
+
+  mainWindow.on("resize", debouncedSaveState);
+  mainWindow.on("move", debouncedSaveState);
   mainWindow.on("blur", () => {
     wasWindowBlurred = true;
   });
@@ -98,7 +114,7 @@ export async function createMainWindow() {
   await tabsManager.initialize();
   showWindow(mainWindow);
 
-  if (windowStateStore.get("isMaximized")) {
+  if (getWindowState().isMaximized) {
     mainWindow.maximize();
   }
 
