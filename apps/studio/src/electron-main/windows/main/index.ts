@@ -6,7 +6,7 @@ import {
 import { studioURL } from "@/electron-main/lib/urls";
 import { publisher } from "@/electron-main/rpc/publisher";
 import { getSidebarWidth } from "@/electron-main/stores/app-state";
-import { windowStateStore } from "@/electron-main/stores/main-window";
+import { windowStateStore } from "@/electron-main/stores/window-state";
 import { createTabsManager, getTabsManager } from "@/electron-main/tabs";
 import {
   getMainWindow,
