@@ -61,7 +61,6 @@
     "**/.private_keys": true,
     "**/.tmp": true,
     "**/.turbo": true,
-    "**/.wrangler": true,
     "**/coverage": true,
     "**/dist": true,
     "**/node_modules": true,
