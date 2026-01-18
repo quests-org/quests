@@ -375,6 +375,7 @@ export function FileViewer({
         ) : isAudio ? (
           <div className="flex size-full items-center justify-center p-8">
             <audio
+              autoPlay
               className="w-full"
               controls
               key={url}
