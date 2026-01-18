@@ -2,18 +2,30 @@ import {
   openProjectFileViewerAtom,
   type ProjectFileViewerFile,
 } from "@/client/atoms/project-file-viewer";
+import { cn } from "@/client/lib/utils";
 import { useSetAtom } from "jotai";
+import { ChevronDown, ChevronUp } from "lucide-react";
+import { useState } from "react";
 
 import { FilePreviewCard } from "./file-preview-card";
 import { FilePreviewListItem } from "./file-preview-list-item";
+import { Button } from "./ui/button";
 
 interface FilesGridProps {
   alignEnd?: boolean;
   files: ProjectFileViewerFile[];
+  initialVisibleCount?: number;
 }
 
-export function FilesGrid({ alignEnd = false, files }: FilesGridProps) {
+const DEFAULT_INITIAL_VISIBLE_COUNT = 6;
+
+export function FilesGrid({
+  alignEnd = false,
+  files,
+  initialVisibleCount = DEFAULT_INITIAL_VISIBLE_COUNT,
+}: FilesGridProps) {
   const openFileViewer = useSetAtom(openProjectFileViewerAtom);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const allFiles: ProjectFileViewerFile[] = files.map((f) => ({
     filename: f.filename,
@@ -32,12 +44,17 @@ export function FilesGrid({ alignEnd = false, files }: FilesGridProps) {
     });
   };
 
+  const visibleFiles = files.slice(0, initialVisibleCount);
+  const hiddenFiles = files.slice(initialVisibleCount);
+  const hasHiddenFiles = hiddenFiles.length > 0;
+  const filesToShow = isExpanded ? files : visibleFiles;
+
   const richPreviewFiles: (ProjectFileViewerFile & {
     shouldSpanTwo?: boolean;
   })[] = [];
   const otherFiles: ProjectFileViewerFile[] = [];
 
-  for (const file of files) {
+  for (const file of filesToShow) {
     const isImage = file.mimeType.startsWith("image/");
     const isHtml = file.mimeType === "text/html";
     const isPdf = file.mimeType === "application/pdf";
@@ -59,15 +76,16 @@ export function FilesGrid({ alignEnd = false, files }: FilesGridProps) {
       {richPreviewFiles.length > 0 && (
         <div className="@container">
           <div
-            className={`flex flex-wrap gap-2 ${alignEnd ? "justify-end" : ""}`}
+            className={cn("flex flex-wrap gap-2", alignEnd && "justify-end")}
           >
             {richPreviewFiles.map((file) => (
               <div
-                className={`w-full shrink-0 grow-0 @md:w-[calc((100%/2)-(0.5rem/2))] ${
+                className={cn(
+                  "w-full shrink-0 grow-0 @md:w-[calc((100%/2)-(0.5rem/2))]",
                   file.shouldSpanTwo
                     ? "@2xl:w-[calc((100%/3*2)-(0.5rem/3))]"
-                    : "@2xl:w-[calc((100%/3)-(0.5rem*2/3))]"
-                }`}
+                    : "@2xl:w-[calc((100%/3)-(0.5rem*2/3))]",
+                )}
                 key={file.filePath}
               >
                 <FilePreviewCard
@@ -84,7 +102,10 @@ export function FilesGrid({ alignEnd = false, files }: FilesGridProps) {
 
       {otherFiles.length > 0 && (
         <div
-          className={`flex flex-wrap items-start gap-2 ${alignEnd ? "justify-end" : ""}`}
+          className={cn(
+            "flex flex-wrap items-start gap-2",
+            alignEnd && "justify-end",
+          )}
         >
           {otherFiles.map((file) => (
             <div className="h-12 min-w-0" key={file.filePath}>
@@ -96,6 +117,29 @@ export function FilesGrid({ alignEnd = false, files }: FilesGridProps) {
               />
             </div>
           ))}
+        </div>
+      )}
+
+      {hasHiddenFiles && (
+        <div className={cn("flex", alignEnd ? "justify-end" : "justify-start")}>
+          <Button
+            className="h-12 shrink-0 justify-center gap-1.5"
+            onClick={() => {
+              setIsExpanded(!isExpanded);
+            }}
+            size="sm"
+            type="button"
+            variant="ghost"
+          >
+            <span className="text-xs text-muted-foreground">
+              {isExpanded ? "Show less" : `+${hiddenFiles.length} more`}
+            </span>
+            {isExpanded ? (
+              <ChevronUp className="size-3.5 text-muted-foreground" />
+            ) : (
+              <ChevronDown className="size-3.5 text-muted-foreground" />
+            )}
+          </Button>
         </div>
       )}
     </div>
