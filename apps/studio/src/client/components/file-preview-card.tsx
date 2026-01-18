@@ -29,7 +29,6 @@ export function FilePreviewCard({
   const isHtml = mimeType === "text/html";
   const isPdf = mimeType === "application/pdf";
   const isVideo = mimeType.startsWith("video/");
-  const isAudio = mimeType.startsWith("audio/");
   const isMarkdown = mimeType === "text/markdown";
 
   const handleMouseEnter = () => {
@@ -50,22 +49,6 @@ export function FilePreviewCard({
       videoRef.current.currentTime = 0;
     }
   };
-
-  if (isAudio) {
-    return (
-      <div className="group relative overflow-hidden rounded-lg border border-border bg-background">
-        <PreviewHeader file={file} onClick={onClick} />
-        <div className="relative p-2">
-          <audio className="w-full" controls src={url} />
-          <button
-            className="absolute inset-0 size-full"
-            onClick={onClick}
-            type="button"
-          />
-        </div>
-      </div>
-    );
-  }
 
   if (isMarkdown) {
     return (
@@ -166,6 +149,15 @@ export function FilePreviewCard({
               />
             </div>
           </>
+        )}
+        {!isImage && !isHtml && !isPdf && !isVideo && (
+          <div className="flex size-full items-center justify-center">
+            <FileIcon
+              className="size-16 text-muted-foreground"
+              filename={filename}
+              mimeType={mimeType}
+            />
+          </div>
         )}
         <button
           className="absolute inset-0 size-full"

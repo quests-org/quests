@@ -42,13 +42,12 @@ export function FilesGrid({ alignEnd = false, files }: FilesGridProps) {
     const isHtml = file.mimeType === "text/html";
     const isPdf = file.mimeType === "application/pdf";
     const isVideo = file.mimeType.startsWith("video/");
-    const isAudio = file.mimeType.startsWith("audio/");
     const isMarkdown = file.mimeType === "text/markdown";
 
-    if (isImage || isHtml || isPdf || isVideo || isAudio || isMarkdown) {
+    if (isImage || isHtml || isPdf || isVideo || isMarkdown) {
       richPreviewFiles.push({
         ...file,
-        shouldSpanTwo: isAudio || isMarkdown,
+        shouldSpanTwo: isMarkdown,
       });
     } else {
       otherFiles.push(file);
@@ -84,7 +83,9 @@ export function FilesGrid({ alignEnd = false, files }: FilesGridProps) {
       )}
 
       {otherFiles.length > 0 && (
-        <div className="flex flex-wrap items-start gap-2">
+        <div
+          className={`flex flex-wrap items-start gap-2 ${alignEnd ? "justify-end" : ""}`}
+        >
           {otherFiles.map((file) => (
             <div className="h-12 min-w-0" key={file.filePath}>
               <FilePreviewListItem
