@@ -154,7 +154,7 @@ export function AppToolbar({
         >
           <ChevronRight className="h-4 w-4" />
         </Button>
-        <Tooltip>
+        <Tooltip delayDuration={0}>
           <TooltipTrigger asChild>
             <Button
               className="size-6"

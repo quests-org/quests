@@ -49,7 +49,7 @@ function TooltipContent({
 }
 
 function TooltipProvider({
-  delayDuration = 0,
+  delayDuration,
   ...props
 }: React.ComponentProps<typeof TooltipPrimitive.Provider>) {
   return (
