@@ -19,6 +19,7 @@ import { rpcClient } from "@/client/rpc/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useAtomValue } from "jotai";
 import {
+  Bug,
   FlaskConical,
   Globe,
   PlusIcon,
@@ -32,6 +33,10 @@ export function StudioSidebar({
   ...props
 }: React.ComponentProps<typeof Sidebar> & { isOpen: boolean }) {
   const features = useAtomValue(featuresAtom);
+
+  const { data: preferences } = useQuery(
+    rpcClient.preferences.live.get.experimental_liveOptions(),
+  );
 
   const selectedTab = useSelectedTab();
 
@@ -69,8 +74,20 @@ export function StudioSidebar({
             },
           ]
         : []),
+      ...(preferences?.developerMode
+        ? [
+            {
+              icon: Bug,
+              isActive: matches.some((match) =>
+                match.routeId.startsWith("/_app/debug"),
+              ),
+              title: "Debug",
+              url: "/debug" as const,
+            },
+          ]
+        : []),
     ],
-    [features.browser, matches],
+    [features.browser, preferences?.developerMode, matches],
   );
 
   const { data: favorites } = useQuery(
