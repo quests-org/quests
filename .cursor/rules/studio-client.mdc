@@ -1,7 +1,7 @@
 ---
 description: Rules for the Studio.
 globs: apps/studio/**/*
-alwaysApply: false
+alwaysApply: true
 ---
 
 ## Project

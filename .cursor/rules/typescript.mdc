@@ -1,6 +1,6 @@
 ---
 globs: *.ts,*.tsx
-alwaysApply: false
+alwaysApply: true
 ---
 
 - Avoid casting types unless necessary. If you do cast, you must add a comment explaining why.
