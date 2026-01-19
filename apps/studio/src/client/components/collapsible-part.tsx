@@ -74,7 +74,7 @@ export function ToolCallItem({
         {label}
       </span>
       {value && (
-        <span className="min-w-0 truncate text-foreground/60">{value}</span>
+        <span className="shrink-0 truncate text-foreground/60">{value}</span>
       )}
       {reasoning && (
         <span className="ml-auto min-w-0 truncate text-muted-foreground/60">
