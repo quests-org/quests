@@ -14,9 +14,10 @@ import { useAppState } from "../hooks/use-app-state";
 import { useContinueSession } from "../hooks/use-continue-session";
 import { rpcClient } from "../rpc/client";
 import { ChatZeroState } from "./chat-zero-state";
+import { ProjectSessionStream } from "./project-session-stream";
 import { PromptInput } from "./prompt-input";
 import { SessionMenu } from "./session-menu";
-import { type FilterMode, SessionStream } from "./session-stream";
+import { type FilterMode } from "./session-stream";
 import { Button } from "./ui/button";
 import { Tabs, TabsList, TabsTrigger } from "./ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
@@ -168,8 +169,9 @@ export function ProjectSidebar({
               selectedVersion={selectedVersion}
             />
           ) : selectedSessionId ? (
-            <SessionStream
+            <ProjectSessionStream
               onContinue={handleContinue}
+              onModelChange={setSelectedModelURI}
               project={project}
               selectedVersion={selectedVersion}
               sessionId={selectedSessionId}

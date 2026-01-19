@@ -44,6 +44,15 @@ function RouteComponent() {
             >
               Colors
             </InternalLink>
+            <InternalLink
+              activeProps={{
+                className: linkActiveClasses,
+              }}
+              className={linkBaseClasses}
+              to="/debug/session-stream"
+            >
+              Session Stream
+            </InternalLink>
           </div>
           <ThemeToggle />
         </nav>

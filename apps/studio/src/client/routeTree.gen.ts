@@ -31,6 +31,7 @@ import { Route as AppProjectsIndexRouteImport } from './routes/_app/projects/ind
 import { Route as AppEvalsIndexRouteImport } from './routes/_app/evals/index'
 import { Route as AppDiscoverIndexRouteImport } from './routes/_app/discover/index'
 import { Route as AppDebugIndexRouteImport } from './routes/_app/debug/index'
+import { Route as AppDebugSessionStreamRouteImport } from './routes/_app/debug/session-stream'
 import { Route as AppDebugComponentsRouteImport } from './routes/_app/debug/components'
 import { Route as AppDebugColorsRouteImport } from './routes/_app/debug/colors'
 import { Route as AppNot_authenticatedWelcomeRouteImport } from './routes/_app/_not_authenticated/welcome'
@@ -150,6 +151,11 @@ const AppDebugIndexRoute = AppDebugIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppDebugRouteRoute,
 } as any)
+const AppDebugSessionStreamRoute = AppDebugSessionStreamRouteImport.update({
+  id: '/session-stream',
+  path: '/session-stream',
+  getParentRoute: () => AppDebugRouteRoute,
+} as any)
 const AppDebugComponentsRoute = AppDebugComponentsRouteImport.update({
   id: '/components',
   path: '/components',
@@ -229,6 +235,7 @@ export interface FileRoutesByFullPath {
   '/welcome': typeof AppNot_authenticatedWelcomeRoute
   '/debug/colors': typeof AppDebugColorsRoute
   '/debug/components': typeof AppDebugComponentsRoute
+  '/debug/session-stream': typeof AppDebugSessionStreamRoute
   '/debug/': typeof AppDebugIndexRoute
   '/discover': typeof AppDiscoverIndexRoute
   '/evals': typeof AppEvalsIndexRoute
@@ -258,6 +265,7 @@ export interface FileRoutesByTo {
   '/welcome': typeof AppNot_authenticatedWelcomeRoute
   '/debug/colors': typeof AppDebugColorsRoute
   '/debug/components': typeof AppDebugComponentsRoute
+  '/debug/session-stream': typeof AppDebugSessionStreamRoute
   '/debug': typeof AppDebugIndexRoute
   '/discover': typeof AppDiscoverIndexRoute
   '/evals': typeof AppEvalsIndexRoute
@@ -293,6 +301,7 @@ export interface FileRoutesById {
   '/_app/_not_authenticated/welcome': typeof AppNot_authenticatedWelcomeRoute
   '/_app/debug/colors': typeof AppDebugColorsRoute
   '/_app/debug/components': typeof AppDebugComponentsRoute
+  '/_app/debug/session-stream': typeof AppDebugSessionStreamRoute
   '/_app/debug/': typeof AppDebugIndexRoute
   '/_app/discover/': typeof AppDiscoverIndexRoute
   '/_app/evals/': typeof AppEvalsIndexRoute
@@ -326,6 +335,7 @@ export interface FileRouteTypes {
     | '/welcome'
     | '/debug/colors'
     | '/debug/components'
+    | '/debug/session-stream'
     | '/debug/'
     | '/discover'
     | '/evals'
@@ -355,6 +365,7 @@ export interface FileRouteTypes {
     | '/welcome'
     | '/debug/colors'
     | '/debug/components'
+    | '/debug/session-stream'
     | '/debug'
     | '/discover'
     | '/evals'
@@ -389,6 +400,7 @@ export interface FileRouteTypes {
     | '/_app/_not_authenticated/welcome'
     | '/_app/debug/colors'
     | '/_app/debug/components'
+    | '/_app/debug/session-stream'
     | '/_app/debug/'
     | '/_app/discover/'
     | '/_app/evals/'
@@ -565,6 +577,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDebugIndexRouteImport
       parentRoute: typeof AppDebugRouteRoute
     }
+    '/_app/debug/session-stream': {
+      id: '/_app/debug/session-stream'
+      path: '/session-stream'
+      fullPath: '/debug/session-stream'
+      preLoaderRoute: typeof AppDebugSessionStreamRouteImport
+      parentRoute: typeof AppDebugRouteRoute
+    }
     '/_app/debug/components': {
       id: '/_app/debug/components'
       path: '/components'
@@ -670,12 +689,14 @@ const AppNot_authenticatedRouteRouteWithChildren =
 interface AppDebugRouteRouteChildren {
   AppDebugColorsRoute: typeof AppDebugColorsRoute
   AppDebugComponentsRoute: typeof AppDebugComponentsRoute
+  AppDebugSessionStreamRoute: typeof AppDebugSessionStreamRoute
   AppDebugIndexRoute: typeof AppDebugIndexRoute
 }
 
 const AppDebugRouteRouteChildren: AppDebugRouteRouteChildren = {
   AppDebugColorsRoute: AppDebugColorsRoute,
   AppDebugComponentsRoute: AppDebugComponentsRoute,
+  AppDebugSessionStreamRoute: AppDebugSessionStreamRoute,
   AppDebugIndexRoute: AppDebugIndexRoute,
 }
 

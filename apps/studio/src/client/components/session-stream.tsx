@@ -1,3 +1,4 @@
+import { type AIGatewayModelURI } from "@quests/ai-gateway/client";
 import {
   isToolPart,
   type SessionMessage,
@@ -5,19 +6,13 @@ import {
   type StoreId,
   type WorkspaceAppProject,
 } from "@quests/workspace/client";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { useNavigate } from "@tanstack/react-router";
-import { AlertTriangle, Loader2 } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import { useCallback, useMemo } from "react";
-import { toast } from "sonner";
 
-import { useAppState } from "../hooks/use-app-state";
-import { isInsufficientCreditsError } from "../lib/is-insufficient-credits-error";
-import { rpcClient } from "../rpc/client";
+import { parseQuestsApiError } from "../lib/parse-quests-api-error";
 import { AssistantMessage } from "./assistant-message";
 import { AssistantMessagesFooter } from "./assistant-messages-footer";
 import { ChatErrorAlert } from "./chat-error-alert";
-import { ChatZeroState } from "./chat-zero-state";
 import { ContextMessages } from "./context-messages";
 import { FileAttachmentsCard } from "./file-attachments-card";
 import { MessageError } from "./message-error";
@@ -33,74 +28,28 @@ import { VersionAndFilesCard } from "./version-and-files-card";
 export type FilterMode = "chat" | "versions";
 
 interface SessionEventListProps {
+  isAgentAlive?: boolean;
+  isAgentRunning: boolean;
+  isDeveloperMode?: boolean;
+  messages: SessionMessage.WithParts[];
   onContinue: () => void;
+  onModelChange: (modelURI: AIGatewayModelURI.Type) => void;
+  onStartNewChat: () => void;
   project: WorkspaceAppProject;
   selectedVersion?: string;
-  sessionId: StoreId.Session;
 }
 
 export function SessionStream({
+  isAgentAlive = false,
+  isAgentRunning,
+  isDeveloperMode = false,
+  messages,
   onContinue,
+  onModelChange,
+  onStartNewChat,
   project,
   selectedVersion,
-  sessionId,
 }: SessionEventListProps) {
-  const {
-    data: messages = [],
-    error: messageError,
-    isLoading,
-  } = useQuery(
-    rpcClient.workspace.message.live.listWithParts.experimental_liveOptions({
-      input: {
-        sessionId,
-        subdomain: project.subdomain,
-      },
-    }),
-  );
-  const { data: appState } = useAppState({ subdomain: project.subdomain });
-  const { data: preferences } = useQuery(
-    rpcClient.preferences.live.get.experimental_liveOptions(),
-  );
-  const isDeveloperMode = preferences?.developerMode;
-  const navigate = useNavigate();
-
-  const createEmptySessionMutation = useMutation(
-    rpcClient.workspace.session.create.mutationOptions(),
-  );
-
-  const handleNewSession = () => {
-    createEmptySessionMutation.mutate(
-      { subdomain: project.subdomain },
-      {
-        onError: (error) => {
-          toast.error("Failed to create new chat", {
-            description: error.message,
-          });
-        },
-        onSuccess: (result) => {
-          void navigate({
-            params: {
-              subdomain: project.subdomain,
-            },
-            replace: true,
-            search: (prev) => ({
-              ...prev,
-              selectedSessionId: result.id,
-            }),
-            to: "/projects/$subdomain",
-          });
-        },
-      },
-    );
-  };
-
-  const isAgentRunning = (appState?.sessionActors ?? []).some(
-    (s) => s.sessionId === sessionId && s.tags.includes("agent.running"),
-  );
-  const isAgentAlive = (appState?.sessionActors ?? []).some((s) =>
-    s.tags.includes("agent.alive"),
-  );
-
   const gitCommitParts = useMemo(() => {
     return messages.flatMap((message) =>
       message.parts.filter((part) => part.type === "data-gitCommit"),
@@ -374,7 +323,8 @@ export function SessionStream({
             key={`error-${message.id}`}
             message={message}
             onContinue={onContinue}
-            showUpgradeAlertIfApplicable={isLastMessage && !isAgentRunning}
+            onModelChange={onModelChange}
+            showRecoveryAlertIfApplicable={isLastMessage && !isAgentRunning}
           />,
         );
       }
@@ -390,6 +340,7 @@ export function SessionStream({
     renderChatPart,
     isAgentRunning,
     onContinue,
+    onModelChange,
     project.subdomain,
   ]);
 
@@ -404,7 +355,12 @@ export function SessionStream({
     }
 
     const error = lastMessage.metadata.error;
-    if (!error || isInsufficientCreditsError(lastMessage)) {
+    if (!error) {
+      return false;
+    }
+
+    const questsError = parseQuestsApiError(lastMessage);
+    if (questsError) {
       return false;
     }
 
@@ -462,62 +418,41 @@ export function SessionStream({
   }, [isAgentRunning, regularMessages, lastMessageId]);
 
   return (
-    <>
-      {isLoading && (
-        <div className="flex justify-center py-4">
-          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+    <div className="flex w-full flex-col gap-2">
+      {contextMessages.length > 0 && (
+        <ContextMessages messages={contextMessages} />
+      )}
+      <div className="flex flex-col gap-2">{chatElements}</div>
+
+      {isAgentRunning && (
+        <div className={hasActiveLoadingState ? "invisible" : "visible"}>
+          <ReasoningMessage hideIcon isLoading text="" />
         </div>
       )}
-      {messageError && (
-        <ChatErrorAlert
-          message={`Failed to load messages: ${messageError.message || "Unknown error occurred"}`}
-          onStartNewChat={handleNewSession}
-        />
+
+      {shouldShowErrorRecoveryPrompt && (
+        <ChatErrorAlert onStartNewChat={onStartNewChat} />
       )}
 
-      {!isAgentRunning &&
-        !messageError &&
-        !isLoading &&
-        messages.length === 0 && (
-          <ChatZeroState project={project} selectedSessionId={sessionId} />
-        )}
+      {shouldShowContinueButton && (
+        <Alert className="mt-4" variant="warning">
+          <AlertTriangle />
+          <AlertDescription className="flex flex-col gap-3">
+            <div className="text-xs">
+              Agent was stopped due to reaching maximum unattended steps.
+            </div>
+            <Button onClick={onContinue} size="sm" variant="secondary">
+              Resume the agent
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
 
-      <div className="flex w-full flex-col gap-2">
-        {contextMessages.length > 0 && (
-          <ContextMessages messages={contextMessages} />
-        )}
-        <div className="flex flex-col gap-2">{chatElements}</div>
-
-        {isAgentRunning && (
-          <div className={hasActiveLoadingState ? "invisible" : "visible"}>
-            <ReasoningMessage hideIcon isLoading text="" />
-          </div>
-        )}
-
-        {shouldShowErrorRecoveryPrompt && (
-          <ChatErrorAlert onStartNewChat={handleNewSession} />
-        )}
-
-        {shouldShowContinueButton && (
-          <Alert className="mt-4" variant="warning">
-            <AlertTriangle />
-            <AlertDescription className="flex flex-col gap-3">
-              <div className="text-xs">
-                Agent was stopped due to reaching maximum unattended steps.
-              </div>
-              <Button onClick={onContinue} size="sm" variant="secondary">
-                Resume the agent
-              </Button>
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {!isAgentAlive && messages.length > 0 && isDeveloperMode && (
-          <div className="mt-4 border-t pt-4">
-            <UsageSummary messages={messages} />
-          </div>
-        )}
-      </div>
-    </>
+      {!isAgentAlive && messages.length > 0 && isDeveloperMode && (
+        <div className="mt-4 border-t pt-4">
+          <UsageSummary messages={messages} />
+        </div>
+      )}
+    </div>
   );
 }

@@ -1,13 +1,23 @@
+import { type AIGatewayModelURI } from "@quests/ai-gateway/client";
+import { QUESTS_AUTO_MODEL_PROVIDER_ID } from "@quests/shared";
 import { type SessionMessage } from "@quests/workspace/client";
+import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
-import { isInsufficientCreditsError } from "../lib/is-insufficient-credits-error";
+import {
+  parseQuestsApiError,
+  requiresAutoModelRecovery,
+} from "../lib/parse-quests-api-error";
+import { rpcClient } from "../rpc/client";
 import {
   CollapsiblePartMainContent,
   CollapsiblePartTrigger,
   ToolCallItem,
 } from "./collapsible-part";
+import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
+import { Button } from "./ui/button";
 import {
   Collapsible,
   CollapsibleContent,
@@ -19,17 +29,23 @@ interface MessageErrorProps {
   defaultExpanded?: boolean;
   message: SessionMessage.Assistant;
   onContinue: () => void;
-  showUpgradeAlertIfApplicable?: boolean;
+  onModelChange: (modelURI: AIGatewayModelURI.Type) => void;
+  showRecoveryAlertIfApplicable?: boolean;
 }
 
 export function MessageError({
   defaultExpanded = false,
   message,
   onContinue,
-  showUpgradeAlertIfApplicable = false,
+  onModelChange,
+  showRecoveryAlertIfApplicable = false,
 }: MessageErrorProps) {
   const error = message.metadata.error;
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
+  const { data: modelsData } = useQuery(
+    rpcClient.gateway.models.live.list.experimental_liveOptions(),
+  );
+  const { models } = modelsData ?? {};
 
   useEffect(() => {
     setIsExpanded(defaultExpanded);
@@ -39,8 +55,40 @@ export function MessageError({
     return null;
   }
 
-  if (showUpgradeAlertIfApplicable && isInsufficientCreditsError(message)) {
-    return <UpgradeSubscriptionAlert onContinue={onContinue} />;
+  const questsError = parseQuestsApiError(message);
+
+  if (showRecoveryAlertIfApplicable && questsError) {
+    if (questsError.code === "insufficient-credits") {
+      return <UpgradeSubscriptionAlert onContinue={onContinue} />;
+    }
+
+    if (requiresAutoModelRecovery(message)) {
+      const autoModel = models?.find(
+        (m) => m.providerId === QUESTS_AUTO_MODEL_PROVIDER_ID,
+      );
+
+      return (
+        <Alert>
+          <AlertTitle>Model unavailable</AlertTitle>
+          <AlertDescription className="flex flex-col gap-3">
+            <span>{questsError.message || error.message}</span>
+            {autoModel && (
+              <div className="flex">
+                <Button
+                  onClick={() => {
+                    onModelChange(autoModel.uri);
+                    toast.success("Switched to Auto model");
+                  }}
+                  size="sm"
+                >
+                  Switch to Auto Mode
+                </Button>
+              </div>
+            )}
+          </AlertDescription>
+        </Alert>
+      );
+    }
   }
 
   const getErrorTitle = () => {
