@@ -2,8 +2,8 @@ import { ok } from "neverthrow";
 
 import { executeError } from "../execute-error";
 
-export function shellSuccess(command: string) {
-  return ok({ command, exitCode: 0, stderr: "", stdout: "" });
+export function shellSuccess(command: string, output = "") {
+  return ok({ command, exitCode: 0, output });
 }
 
 export function validateNoGlobs(paths: string[], command: string) {

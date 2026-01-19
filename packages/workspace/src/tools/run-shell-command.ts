@@ -195,28 +195,29 @@ export const RunShellCommand = createTool({
           appConfig,
           appConfig.workspaceConfig.pnpmBinPath,
           args,
-          { cancelSignal: signal },
+          { all: true, cancelSignal: signal },
         );
+        const combined = filterDebuggerMessages(execResult.all);
         return ok({
+          combined,
           command: input.command,
           exitCode: execResult.exitCode ?? 0,
-          stderr: filterDebuggerMessages(execResult.stderr),
-          stdout: filterDebuggerMessages(execResult.stdout),
         });
       }
       case "tsc": {
         const binResult = await runNodeModulesBin(appConfig, "tsc", args, {
+          all: true,
           cancelSignal: signal,
         });
         if (binResult.isErr()) {
           return executeError(binResult.error.message);
         }
         const execResult = await binResult.value;
+        const combined = filterDebuggerMessages(execResult.all);
         return ok({
+          combined,
           command: input.command,
           exitCode: execResult.exitCode ?? 0,
-          stderr: filterDebuggerMessages(execResult.stderr),
-          stdout: filterDebuggerMessages(execResult.stdout),
         });
       }
       case "tsx": {
@@ -230,6 +231,7 @@ export const RunShellCommand = createTool({
           workspaceServerURL: getWorkspaceServerURL(),
         });
         const binResult = await runNodeModulesBin(appConfig, "tsx", args, {
+          all: true,
           cancelSignal: signal,
           env: providerEnv,
         });
@@ -237,11 +239,11 @@ export const RunShellCommand = createTool({
           return executeError(binResult.error.message);
         }
         const execResult = await binResult.value;
+        const combined = filterDebuggerMessages(execResult.all);
         return ok({
+          combined,
           command: input.command,
           exitCode: execResult.exitCode ?? 0,
-          stderr: filterDebuggerMessages(execResult.stderr),
-          stdout: filterDebuggerMessages(execResult.stdout),
         });
       }
     }
@@ -254,37 +256,40 @@ export const RunShellCommand = createTool({
   }),
   name: "run_shell_command",
   outputSchema: z.object({
+    combined: z.string().optional(), // Optional for backward compatibility
     command: z.string(),
     exitCode: z.number(),
-    stderr: z.string(),
-    stdout: z.string(),
+    stderr: z.string().optional(), // Backward compatibility with old output format
+    stdout: z.string().optional(), // Backward compatibility with old output format
   }),
   readOnly: false,
   timeoutMs: ({ input }) => input.timeoutMs,
   toModelOutput: ({ output: result }) => {
+    // For backward compatibility, construct output from stderr and stdout if needed
+    const output =
+      result.combined ??
+      (result.stderr && result.stdout
+        ? `${result.stdout}${result.stderr}`
+        : (result.stderr ?? result.stdout));
     const hasErrors = result.exitCode !== 0;
 
-    if (!hasErrors && !result.stdout && !result.stderr) {
+    if (!hasErrors && !output) {
       return {
         type: "text",
         value: `$ ${result.command}`,
       };
     }
 
-    const outputParts = [];
-
-    if (result.stdout) {
-      outputParts.push(`<stdout>`, result.stdout, `</stdout>`);
-    }
-
-    if (result.stderr) {
-      outputParts.push(`<stderr>`, result.stderr, `</stderr>`);
+    const outputParts: string[] = [];
+    if (output) {
+      outputParts.push(output);
     }
 
     const isPnpmCommand = result.command.startsWith("pnpm ");
     const hasIgnoredBuildScriptsWarning =
-      result.stdout.includes("Ignored build scripts:") &&
-      result.stdout.includes("Warning");
+      output &&
+      output.includes("Ignored build scripts:") &&
+      output.includes("Warning");
 
     if (isPnpmCommand && hasIgnoredBuildScriptsWarning) {
       outputParts.push(
@@ -309,11 +314,11 @@ export const RunShellCommand = createTool({
       );
     }
 
-    const output = outputParts.join("\n");
+    const finalOutput = outputParts.join("\n");
 
     return {
       type: hasErrors ? "error-text" : "text",
-      value: [`$ ${result.command}`, output].join("\n"),
+      value: [`$ ${result.command}`, finalOutput].join("\n"),
     };
   },
 });

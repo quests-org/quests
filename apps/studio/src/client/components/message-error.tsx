@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 
 import { isInsufficientCreditsError } from "../lib/is-insufficient-credits-error";
 import {
-  CollapsiblePartHeader,
   CollapsiblePartMainContent,
   CollapsiblePartTrigger,
+  ToolCallItem,
 } from "./collapsible-part";
 import {
   Collapsible,
@@ -87,7 +87,7 @@ export function MessageError({
   };
 
   const mainContent = (
-    <CollapsiblePartHeader isExpanded={isExpanded}>
+    <ToolCallItem isExpanded={isExpanded}>
       <span className="shrink-0 text-warning-foreground/80">
         <AlertTriangle className="size-3" />
       </span>
@@ -98,7 +98,7 @@ export function MessageError({
       <span className="shrink-0 text-warning-foreground/60">
         {getErrorTypeLabel()}
       </span>
-    </CollapsiblePartHeader>
+    </ToolCallItem>
   );
 
   return (

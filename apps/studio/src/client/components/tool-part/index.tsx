@@ -1,5 +1,6 @@
 import {
   getToolNameByType,
+  type ProjectSubdomain,
   type SessionMessagePart,
 } from "@quests/workspace/client";
 import { Loader2Icon } from "lucide-react";
@@ -8,9 +9,9 @@ import { useState } from "react";
 import { getToolLabel, getToolStreamingLabel } from "../../lib/tool-display";
 import { cn } from "../../lib/utils";
 import {
-  CollapsiblePartHeader,
   CollapsiblePartMainContent,
   CollapsiblePartTrigger,
+  ToolCallItem,
 } from "../collapsible-part";
 import { ReasoningMessage } from "../reasoning-message";
 import { ToolIcon } from "../tool-icon";
@@ -20,14 +21,17 @@ import {
   CollapsibleTrigger,
 } from "../ui/collapsible";
 import { ToolPartExpanded } from "./expanded";
-import { StreamingContent } from "./streaming-content";
+import { FileModification } from "./file-modification";
+import { ShellCommandCard } from "./shell-command-card";
 
 export function ToolPart({
   isLoading,
   part,
+  projectSubdomain,
 }: {
   isLoading: boolean;
   part: SessionMessagePart.ToolPart;
+  projectSubdomain: ProjectSubdomain;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const toolName = getToolNameByType(part.type);
@@ -39,6 +43,21 @@ export function ToolPart({
   const isError = part.state === "output-error" || isFileNotFound;
   const isSuccess = part.state === "output-available" && !isFileNotFound;
   const isExpandable = isSuccess || isError;
+
+  // Use dedicated components for file modification and shell commands
+  if (part.type === "tool-edit_file" || part.type === "tool-write_file") {
+    return <FileModification isLoading={isLoading} part={part} />;
+  }
+
+  if (part.type === "tool-run_shell_command") {
+    return (
+      <ShellCommandCard
+        isLoading={isLoading}
+        part={part}
+        projectSubdomain={projectSubdomain}
+      />
+    );
+  }
 
   let label: string;
   let value: string | undefined;
@@ -96,7 +115,7 @@ export function ToolPart({
   }
 
   const mainContent = (
-    <CollapsiblePartHeader
+    <ToolCallItem
       icon={
         isLoading ? (
           <Loader2Icon className="size-3 animate-spin" />
@@ -115,20 +134,6 @@ export function ToolPart({
     return (
       <div className="w-full">
         <div className="flex h-6 items-center px-1">{mainContent}</div>
-      </div>
-    );
-  }
-
-  if (
-    !isError &&
-    (part.type === "tool-edit_file" ||
-      part.type === "tool-write_file" ||
-      part.type === "tool-run_shell_command")
-  ) {
-    return (
-      <div className="w-full">
-        <div className="flex h-6 items-center px-1">{mainContent}</div>
-        <StreamingContent isLoading={isLoading} part={part} />
       </div>
     );
   }

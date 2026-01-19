@@ -212,6 +212,7 @@ export function SessionStream({
             }
             key={part.metadata.id}
             part={part}
+            projectSubdomain={project.subdomain}
           />
         );
       }

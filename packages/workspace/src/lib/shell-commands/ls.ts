@@ -111,12 +111,17 @@ export async function lsCommand(
     }
   }
 
-  const stderr = warnings.length > 0 ? warnings.join("\n") : "";
+  const outputParts: string[] = [];
+  if (warnings.length > 0) {
+    outputParts.push(warnings.join("\n"));
+  }
+  if (outputs.length > 0) {
+    outputParts.push(outputs.join("\n"));
+  }
 
   return ok({
     command: commandStr,
     exitCode: 0,
-    stderr,
-    stdout: outputs.join("\n"),
+    output: outputParts.join("\n"),
   });
 }

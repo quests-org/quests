@@ -43,6 +43,7 @@ describe("executeToolCallMachine", () => {
           return new Promise((resolve) => {
             setTimeout(() => {
               resolve({
+                all: "mocked all",
                 exitCode: 0,
                 stderr: "mocked stderr",
                 stdout: "mocked stdout",
@@ -52,6 +53,7 @@ describe("executeToolCallMachine", () => {
         }
 
         return {
+          all: "mocked all",
           exitCode: 0,
           stderr: "mocked stderr",
           stdout: "mocked stdout",
@@ -183,10 +185,9 @@ describe("executeToolCallMachine", () => {
             "sessionId": "ses_00000000018888888888888888",
           },
           "output": {
+            "combined": "mocked all",
             "command": "pnpm install",
             "exitCode": 0,
-            "stderr": "mocked stderr",
-            "stdout": "mocked stdout",
           },
           "state": "output-available",
           "toolCallId": "test_tool_call_1",

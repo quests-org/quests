@@ -41,8 +41,7 @@ describe("lsCommand", () => {
       {
         "command": "ls",
         "exitCode": 0,
-        "stderr": "",
-        "stdout": "file1.txt
+        "output": "file1.txt
       file2.txt
       folder
       folder2",
@@ -57,8 +56,7 @@ describe("lsCommand", () => {
       {
         "command": "ls folder",
         "exitCode": 0,
-        "stderr": "",
-        "stdout": "nested.txt",
+        "output": "nested.txt",
       }
     `);
   });
@@ -70,8 +68,7 @@ describe("lsCommand", () => {
       {
         "command": "ls -a",
         "exitCode": 0,
-        "stderr": "",
-        "stdout": ".hidden
+        "output": ".hidden
       file1.txt
       file2.txt
       folder
@@ -87,8 +84,7 @@ describe("lsCommand", () => {
       {
         "command": "ls -a folder",
         "exitCode": 0,
-        "stderr": "",
-        "stdout": "nested.txt",
+        "output": "nested.txt",
       }
     `);
   });
@@ -100,8 +96,7 @@ describe("lsCommand", () => {
       {
         "command": "ls file1.txt",
         "exitCode": 0,
-        "stderr": "",
-        "stdout": "file1.txt",
+        "output": "file1.txt",
       }
     `);
   });
@@ -113,8 +108,7 @@ describe("lsCommand", () => {
       {
         "command": "ls folder folder2",
         "exitCode": 0,
-        "stderr": "",
-        "stdout": "folder:
+        "output": "folder:
       nested.txt
 
       folder2:
@@ -131,8 +125,8 @@ describe("lsCommand", () => {
       {
         "command": "ls -l",
         "exitCode": 0,
-        "stderr": "ls: unknown flag '-l' ignored (supported flags: -a)",
-        "stdout": "file1.txt
+        "output": "ls: unknown flag '-l' ignored (supported flags: -a)
+      file1.txt
       file2.txt
       folder
       folder2",

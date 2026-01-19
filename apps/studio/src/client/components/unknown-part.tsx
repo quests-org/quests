@@ -3,9 +3,9 @@ import { HelpCircle } from "lucide-react";
 import { useState } from "react";
 
 import {
-  CollapsiblePartHeader,
   CollapsiblePartMainContent,
   CollapsiblePartTrigger,
+  ToolCallItem,
 } from "./collapsible-part";
 import {
   Collapsible,
@@ -21,7 +21,7 @@ export function UnknownPart({ part }: UnknownPartProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const mainContent = (
-    <CollapsiblePartHeader
+    <ToolCallItem
       icon={<HelpCircle className="size-3" />}
       isExpanded={isExpanded}
       label="Unknown part"

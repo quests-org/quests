@@ -4,12 +4,39 @@ import { forwardRef, type ReactNode } from "react";
 
 import { Button } from "./ui/button";
 
-export function CollapsiblePartHeader({
+export function CollapsiblePartMainContent({
+  children,
+  className,
+  contentClassName,
+  contentRef,
+}: {
+  children: ReactNode;
+  className?: string;
+  contentClassName?: string;
+  contentRef?: React.Ref<HTMLDivElement>;
+}) {
+  return (
+    <div className={cn("mt-2 text-xs", className)}>
+      <div
+        className={cn(
+          "max-h-64 overflow-y-auto rounded-md border border-l-4 bg-muted/30 p-2",
+          contentClassName,
+        )}
+        ref={contentRef}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
+export function ToolCallItem({
   children,
   icon,
   isExpanded,
   label,
   labelClassName,
+  reasoning,
   value,
 }: {
   children?: ReactNode;
@@ -17,6 +44,7 @@ export function CollapsiblePartHeader({
   isExpanded?: boolean;
   label?: ReactNode;
   labelClassName?: string;
+  reasoning?: string;
   value?: ReactNode;
 }) {
   if (children) {
@@ -48,37 +76,16 @@ export function CollapsiblePartHeader({
       {value && (
         <span className="min-w-0 truncate text-foreground/60">{value}</span>
       )}
+      {reasoning && (
+        <span className="ml-auto min-w-0 truncate text-muted-foreground/60">
+          {reasoning}
+        </span>
+      )}
       {isExpanded && (
         <span className="ml-auto shrink-0 text-accent-foreground/60">
           <ChevronUp className="size-3" />
         </span>
       )}
-    </div>
-  );
-}
-
-export function CollapsiblePartMainContent({
-  children,
-  className,
-  contentClassName,
-  contentRef,
-}: {
-  children: ReactNode;
-  className?: string;
-  contentClassName?: string;
-  contentRef?: React.Ref<HTMLDivElement>;
-}) {
-  return (
-    <div className={cn("mt-2 text-xs", className)}>
-      <div
-        className={cn(
-          "max-h-64 overflow-y-auto rounded-md border border-l-4 bg-muted/30 p-2",
-          contentClassName,
-        )}
-        ref={contentRef}
-      >
-        {children}
-      </div>
     </div>
   );
 }
