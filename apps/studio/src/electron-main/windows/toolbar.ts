@@ -2,6 +2,7 @@ import { createContextMenu } from "@/electron-main/lib/context-menu";
 import { TOOLBAR_HEIGHT } from "@/shared/constants";
 import { type BaseWindow, shell, WebContentsView } from "electron";
 import path from "node:path";
+import { debounce } from "radashi";
 
 import { getBackgroundColor } from "../lib/theme-utils";
 import { studioURL } from "../lib/urls";
@@ -46,8 +47,19 @@ export function createToolbar({
     resizeToolbar({ baseWindow, sidebarWidth: currentSidebarWidth });
   });
 
-  baseWindow.on("resize", () => {
+  const debouncedResize = debounce({ delay: 100 }, () => {
     resizeToolbar({ baseWindow, sidebarWidth: currentSidebarWidth });
+  });
+
+  baseWindow.on("resize", debouncedResize);
+  // Required on macOS, or unfocused resizes (e.g. Amethyst) won't be tracked
+  baseWindow.on("will-resize", debouncedResize);
+  // Required for double clicking window edge style resize
+  baseWindow.on("move", debouncedResize);
+
+  baseWindow.on("close", () => {
+    // Avoids errors when accessing destroyed window
+    debouncedResize.cancel();
   });
 
   void toolbarView.webContents.loadURL(studioURL("/toolbar"));

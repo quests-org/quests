@@ -69,14 +69,18 @@ export async function createMainWindow() {
 
   mainWindow.on("close", () => {
     const tabsManager = getTabsManager();
+    debouncedSaveState.cancel();
     saveState();
     tabsManager?.teardown();
   });
 
   mainWindow.on("closed", () => {
+    debouncedSaveState.cancel();
     saveState();
   });
 
+  // Required on macOS, or unfocused resizes (e.g. Amethyst) won't be tracked
+  mainWindow.on("will-resize", debouncedSaveState);
   mainWindow.on("resize", debouncedSaveState);
   mainWindow.on("move", debouncedSaveState);
   mainWindow.on("blur", () => {
