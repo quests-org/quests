@@ -1,7 +1,8 @@
 import { cn } from "@/client/lib/utils";
 import { type SessionMessagePart } from "@quests/workspace/client";
 import { ChevronUp } from "lucide-react";
-import { memo, useState } from "react";
+import { debounce } from "radashi";
+import { memo, useEffect, useRef, useState } from "react";
 
 import { CopyButton } from "./copy-button";
 import { RelativeTime } from "./relative-time";
@@ -21,6 +22,8 @@ export const UserMessage = memo(function UserMessage({
   part,
 }: UserMessageProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isOverflowing, setIsOverflowing] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const messageText = part.text;
 
@@ -28,68 +31,66 @@ export const UserMessage = memo(function UserMessage({
     await navigator.clipboard.writeText(messageText);
   };
 
-  const shouldShowExpansion =
-    messageText.length > 200 || messageText.split("\n").length > 5;
+  useEffect(() => {
+    const element = contentRef.current;
+    if (!element) {
+      return;
+    }
 
-  if (!shouldShowExpansion) {
-    return (
-      <div className="group flex flex-col items-end">
-        <div className="relative max-w-full rounded-xl border border-border/50 bg-muted px-4 py-2 text-foreground">
-          <SessionMarkdown markdown={messageText} />
-        </div>
-        <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100">
-          <RelativeTime
-            className="cursor-default"
-            date={part.metadata.createdAt}
-          />
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <CopyButton
-                className="rounded p-1 transition-colors hover:bg-muted/50 hover:text-foreground disabled:opacity-50"
-                iconSize={12}
-                onCopy={handleCopy}
-              />
-            </TooltipTrigger>
-            <TooltipContent>Copy message</TooltipContent>
-          </Tooltip>
-        </div>
-      </div>
-    );
-  }
+    const checkOverflow = () => {
+      const isContentOverflowing = element.scrollHeight > element.clientHeight;
+      setIsOverflowing(isContentOverflowing);
+    };
+
+    checkOverflow();
+
+    const debouncedCheckOverflow = debounce({ delay: 100 }, checkOverflow);
+    const resizeObserver = new ResizeObserver(debouncedCheckOverflow);
+    resizeObserver.observe(element);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [messageText]);
 
   return (
     <div className="group flex flex-col items-end">
-      <Collapsible
-        className="relative max-w-full rounded-xl border border-border/50 bg-muted px-4 py-2 text-foreground"
-        onOpenChange={setIsExpanded}
-        open={isExpanded}
-      >
-        <CollapsibleTrigger asChild>
-          <SessionMarkdown
-            className={cn(
-              !isExpanded && "max-h-32 cursor-pointer overflow-hidden",
-            )}
-            markdown={messageText}
-          />
-        </CollapsibleTrigger>
-
-        {!isExpanded && (
-          <div className="pointer-events-none absolute right-0 bottom-0 left-0 h-8 rounded-b-xl bg-linear-to-t from-muted to-transparent" />
-        )}
-
-        <CollapsibleContent>
+      <div className="relative max-w-full rounded-xl border border-border/50 bg-muted px-4 py-2 text-foreground">
+        <Collapsible onOpenChange={setIsExpanded} open={isExpanded}>
           <div
-            className="flex cursor-pointer items-center justify-center gap-1 pt-2 text-xs text-muted-foreground transition-colors hover:text-foreground"
-            onClick={() => {
-              setIsExpanded(false);
-            }}
-            title="Click to collapse"
+            className={cn(!isExpanded && "max-h-24 overflow-hidden")}
+            ref={contentRef}
           >
-            <span>Collapse</span>
-            <ChevronUp className="size-3" />
+            <SessionMarkdown markdown={messageText} />
           </div>
-        </CollapsibleContent>
-      </Collapsible>
+
+          {isOverflowing && (
+            <CollapsibleTrigger asChild>
+              <button
+                className="absolute inset-0 cursor-pointer"
+                type="button"
+              />
+            </CollapsibleTrigger>
+          )}
+
+          {!isExpanded && isOverflowing && (
+            <div className="pointer-events-none absolute right-0 bottom-0 left-0 h-16 rounded-b-xl bg-linear-to-t from-muted to-transparent" />
+          )}
+
+          <CollapsibleContent>
+            <div
+              className="flex cursor-pointer items-center justify-center gap-1 pt-2 text-xs text-muted-foreground transition-colors hover:text-foreground"
+              onClick={() => {
+                setIsExpanded(false);
+              }}
+              title="Click to collapse"
+            >
+              <span>Collapse</span>
+              <ChevronUp className="size-3" />
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+      </div>
       <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100">
         <RelativeTime
           className="cursor-default"
