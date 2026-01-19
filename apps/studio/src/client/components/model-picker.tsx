@@ -26,7 +26,14 @@ import {
 } from "@quests/ai-gateway/client";
 import { QUESTS_AUTO_MODEL_PROVIDER_ID } from "@quests/shared";
 import { useNavigate } from "@tanstack/react-router";
-import { AlertCircle, Check, ChevronDown, Crown, Plus } from "lucide-react";
+import {
+  AlertCircle,
+  AlertTriangle,
+  Check,
+  ChevronDown,
+  Crown,
+  Plus,
+} from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -39,6 +46,7 @@ interface ModelPickerProps {
   disabled?: boolean;
   errors?: RPCOutput["gateway"]["models"]["list"]["errors"];
   isError?: boolean;
+  isInvalidQuestsModel?: boolean;
   isLoading?: boolean;
   models?: AIGatewayModel.Type[];
   onAddProvider?: () => void;
@@ -53,6 +61,7 @@ export function ModelPicker({
   disabled = false,
   errors,
   isError = false,
+  isInvalidQuestsModel = false,
   isLoading = false,
   models,
   onAddProvider,
@@ -120,14 +129,22 @@ export function ModelPicker({
         <Tooltip>
           <TooltipTrigger asChild>
             <div className="shrink-0">
-              <AIProviderIcon
-                className="size-3 opacity-90"
-                type={selectedModel.params.provider}
-              />
+              {isInvalidQuestsModel ? (
+                <AlertTriangle className="size-3 text-destructive" />
+              ) : (
+                <AIProviderIcon
+                  className="size-3 opacity-90"
+                  type={selectedModel.params.provider}
+                />
+              )}
             </div>
           </TooltipTrigger>
           <TooltipContent>
-            <p>{selectedModel.providerName}</p>
+            {isInvalidQuestsModel ? (
+              <p>Invalid Quests model - please use Auto mode</p>
+            ) : (
+              <p>{selectedModel.providerName}</p>
+            )}
           </TooltipContent>
         </Tooltip>
         <span className="min-w-0 flex-1 truncate text-xs">
@@ -170,6 +187,7 @@ export function ModelPicker({
           <AutoModeSwitch
             autoModel={autoModel}
             checked={isAutoMode}
+            isInvalidQuestsModel={isInvalidQuestsModel}
             onCheckedChange={(checked) => {
               if (checked && autoModel) {
                 onValueChange(autoModel.uri);
@@ -252,14 +270,61 @@ export function ModelPicker({
 function AutoModeSwitch({
   autoModel,
   checked,
+  isInvalidQuestsModel,
   onCheckedChange,
 }: {
   autoModel?: AIGatewayModel.Type;
   checked: boolean;
+  isInvalidQuestsModel: boolean;
   onCheckedChange: (checked: boolean) => void;
 }) {
+  const navigate = useNavigate();
+
   if (!autoModel) {
     return null;
+  }
+
+  if (isInvalidQuestsModel && !checked) {
+    return (
+      <div
+        className="flex flex-col gap-2 px-4 py-3"
+        onClick={(e) => {
+          e.stopPropagation();
+        }}
+      >
+        <div className="flex items-start gap-1.5">
+          <AlertTriangle className="mt-0.5 size-3 shrink-0 text-destructive/70" />
+          <span className="text-xs text-muted-foreground">
+            Your selected model is not available without a paid plan.
+          </span>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            className="h-7 flex-1 text-xs"
+            onClick={(e) => {
+              e.stopPropagation();
+              onCheckedChange(true);
+            }}
+            size="sm"
+            variant="outline"
+          >
+            Switch to Auto
+          </Button>
+          <Button
+            className="h-7 flex-1 text-xs"
+            onClick={(e) => {
+              e.stopPropagation();
+              void navigate({ to: "/subscribe" });
+            }}
+            size="sm"
+            variant="outline"
+          >
+            <Crown className="mr-1 size-3" />
+            Upgrade
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   return (

@@ -10,6 +10,7 @@ import { UploadedFilePreview } from "@/client/components/uploaded-file-preview";
 import { useWindowFileDrop } from "@/client/lib/use-window-file-drop";
 import { cn, isMacOS } from "@/client/lib/utils";
 import { type AIGatewayModelURI } from "@quests/ai-gateway/client";
+import { QUESTS_AUTO_MODEL_PROVIDER_ID } from "@quests/shared";
 import { type Upload as UploadType } from "@quests/workspace/client";
 import { useQuery } from "@tanstack/react-query";
 import { useAtom, useSetAtom } from "jotai";
@@ -113,6 +114,14 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
     const { errors: modelsErrors, models } = modelsData ?? {};
 
     const selectedModel = models?.find((model) => model.uri === modelURI);
+    const autoModel = models?.find(
+      (m) => m.providerId === QUESTS_AUTO_MODEL_PROVIDER_ID,
+    );
+
+    const isInvalidQuestsModel =
+      selectedModel &&
+      selectedModel.params.provider === "quests" &&
+      selectedModel.providerId !== QUESTS_AUTO_MODEL_PROVIDER_ID;
 
     const resetTextareaHeight = useCallback(() => {
       if (textareaInnerRef.current) {
@@ -211,6 +220,20 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
         toast.error(
           "Agent is still running. Wait for it to finish or stop it.",
         );
+        return false;
+      }
+
+      if (isInvalidQuestsModel && autoModel) {
+        toast.error("Invalid model selected", {
+          action: {
+            label: "Use Auto",
+            onClick: () => {
+              onModelChange(autoModel.uri);
+            },
+          },
+          description: "Only the Auto model is available without a paid plan.",
+          duration: 7000,
+        });
         return false;
       }
 
@@ -387,6 +410,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
                   disabled={disabled}
                   errors={modelsErrors}
                   isError={modelsIsError}
+                  isInvalidQuestsModel={!!isInvalidQuestsModel}
                   isLoading={modelsIsLoading}
                   models={models}
                   onAddProvider={() => {
