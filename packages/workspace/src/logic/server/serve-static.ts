@@ -11,7 +11,7 @@ import { git } from "../../lib/git";
 import { GitCommands } from "../../lib/git/commands";
 import { type AbsolutePath } from "../../schemas/paths";
 
-export interface ServeStaticFileOptions {
+interface ServeStaticFileOptions {
   /**
    * App directory (git repository root) for git operations
    */
