@@ -1,7 +1,7 @@
 import { cn } from "@/client/lib/utils";
 import { type ConsoleLogType } from "@quests/shared/shim";
 import { type WorkspaceApp } from "@quests/workspace/client";
-import { getDefaultStore, type SetStateAction, type WritableAtom } from "jotai";
+import { getDefaultStore } from "jotai";
 import { ChevronDown, Copy, MessageSquare, Trash, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useStickToBottom } from "use-stick-to-bottom";
@@ -207,7 +207,7 @@ function ConsoleRow({
     const atom = promptValueAtomFamily(app.subdomain);
     const prevPromptValue = await Promise.resolve(defaultStore.get(atom));
     defaultStore.set(
-      atom as WritableAtom<string, [SetStateAction<string>], void>,
+      atom,
       prevPromptValue
         ? `${prevPromptValue}\n\n${contextualMessage}`
         : contextualMessage,
