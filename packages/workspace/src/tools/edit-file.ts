@@ -2,6 +2,7 @@
 // Adapted from
 // https://github.com/sst/opencode/blob/dev/packages/opencode/src/tool/edit.ts
 // Kept as a single file for now so we can easily merge changes from upstream.
+import { createTwoFilesPatch } from "diff";
 import ms from "ms";
 import { err, ok } from "neverthrow";
 import { dedent, sift } from "radashi";
@@ -19,6 +20,77 @@ import { ReadFile } from "./read-file";
 import { diagnosticsReminder } from "./run-diagnostics";
 
 const MAX_FILE_SIZE = 250 * 1024; // 250KB
+
+function normalizeLineEndings(text: string): string {
+  return text.replaceAll("\r\n", "\n");
+}
+
+function trimDiff(diff: string): string {
+  const lines = diff.split("\n");
+  const contentLines = lines.filter(
+    (line) =>
+      (line.startsWith("+") || line.startsWith("-") || line.startsWith(" ")) &&
+      !line.startsWith("---") &&
+      !line.startsWith("+++"),
+  );
+
+  if (contentLines.length === 0) {
+    return diff;
+  }
+
+  // Calculate minimum leading whitespace, but only consider lines that have some whitespace
+  let min = Number.POSITIVE_INFINITY;
+  for (const line of contentLines) {
+    const content = line.slice(1);
+    if (content.trim().length > 0) {
+      const match = /^(\s+)/.exec(content);
+      if (match?.[1]) {
+        min = Math.min(min, match[1].length);
+      }
+    }
+  }
+
+  // Only trim if we found a minimum > 0 and ALL non-empty lines have at least that much whitespace
+  if (min === Number.POSITIVE_INFINITY || min === 0) {
+    return diff;
+  }
+
+  // Verify all non-empty lines have at least 'min' leading whitespace before trimming
+  let allLinesHaveMinWhitespace = true;
+  for (const line of contentLines) {
+    const content = line.slice(1);
+    if (content.trim().length > 0) {
+      const match = /^(\s*)/.exec(content);
+      const leadingWhitespace = match?.[1]?.length ?? 0;
+      if (leadingWhitespace < min) {
+        allLinesHaveMinWhitespace = false;
+        break;
+      }
+    }
+  }
+
+  if (!allLinesHaveMinWhitespace) {
+    return diff;
+  }
+
+  const trimmedLines = lines.map((line) => {
+    if (
+      (line.startsWith("+") || line.startsWith("-") || line.startsWith(" ")) &&
+      !line.startsWith("---") &&
+      !line.startsWith("+++")
+    ) {
+      const prefix = line[0];
+      if (!prefix) {
+        return line;
+      }
+      const content = line.slice(1);
+      return prefix + content.slice(min);
+    }
+    return line;
+  });
+
+  return trimmedLines.join("\n");
+}
 
 const INPUT_PARAMS = {
   filePath: "filePath",
@@ -647,10 +719,18 @@ export const EditFile = createTool({
         await writeFileWithDir(absolutePath, contentNew, { signal });
       }
 
+      const diff = trimDiff(
+        createTwoFilesPatch(
+          fixedPath,
+          fixedPath,
+          normalizeLineEndings(contentOld),
+          normalizeLineEndings(contentNew),
+        ),
+      );
+
       return ok({
+        diff,
         filePath: fixedPath,
-        newContent: contentNew,
-        oldContent: contentOld,
       });
     } catch (error) {
       return executeError(
@@ -675,9 +755,8 @@ export const EditFile = createTool({
   }),
   name: "edit_file",
   outputSchema: z.object({
+    diff: z.string().optional(),
     filePath: RelativePathSchema,
-    newContent: z.string(),
-    oldContent: z.string(),
   }),
   readOnly: false,
   timeoutMs: ms("15 seconds"),
