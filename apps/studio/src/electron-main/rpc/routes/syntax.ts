@@ -50,7 +50,7 @@ const highlightCode = base
       theme: z.enum(["light", "dark"]),
     }),
   )
-  .output(z.string())
+  .output(z.array(z.string()))
   .handler(async ({ input }) => {
     const highlighter = await getHighlighter();
 
@@ -60,20 +60,22 @@ const highlightCode = base
       await highlighter.loadLanguage(bundledLanguages[input.lang]);
     }
 
-    return highlighter.codeToHtml(input.code, {
-      lang: input.lang,
-      theme: SHIKI_THEMES[input.theme],
-      transformers: [
-        {
-          name: "remove-background",
-          pre: (node) => {
-            node.properties.style &&= (
-              node.properties.style as string
-            ).replaceAll(/background-color:[^;]+;?/g, "");
+    return highlighter
+      .codeToHtml(input.code, {
+        lang: input.lang,
+        theme: SHIKI_THEMES[input.theme],
+        transformers: [
+          {
+            name: "remove-background",
+            pre: (node) => {
+              node.properties.style &&= (
+                node.properties.style as string
+              ).replaceAll(/background-color:[^;]+;?/g, "");
+            },
           },
-        },
-      ],
-    });
+        ],
+      })
+      .split("\n");
   });
 
 const supportedLanguages = base.output(z.array(languageSchema)).handler(() => {

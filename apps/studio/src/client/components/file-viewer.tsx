@@ -113,7 +113,7 @@ function TextView({
     return (
       <div
         className="p-4 text-sm"
-        dangerouslySetInnerHTML={{ __html: highlightedHtml }}
+        dangerouslySetInnerHTML={{ __html: highlightedHtml.join("\n") }}
       />
     );
   }

@@ -2,6 +2,7 @@ import {
   getToolNameByType,
   type SessionMessagePart,
 } from "@quests/workspace/client";
+import { Loader2Icon } from "lucide-react";
 import { useState } from "react";
 
 import { getToolLabel, getToolStreamingLabel } from "../../lib/tool-display";
@@ -64,7 +65,7 @@ export function ToolPart({
       break;
     }
     case "output-error": {
-      label = "Error";
+      label = getToolLabel(toolName);
       value = part.errorText;
       break;
     }
@@ -73,11 +74,6 @@ export function ToolPart({
       value = getToolInputValue(part);
     }
   }
-
-  const hasStreamableContent =
-    (part.state === "input-streaming" || part.state === "input-available") &&
-    isLoading &&
-    (part.type === "tool-write_file" || part.type === "tool-edit_file");
 
   if (toolName === "think") {
     const text =
@@ -101,7 +97,13 @@ export function ToolPart({
 
   const mainContent = (
     <CollapsiblePartHeader
-      icon={<ToolIcon className="size-3" toolName={toolName} />}
+      icon={
+        isLoading ? (
+          <Loader2Icon className="size-3 animate-spin" />
+        ) : (
+          <ToolIcon className="size-3" toolName={toolName} />
+        )
+      }
       isExpanded={isExpandable && isExpanded}
       label={label}
       labelClassName={cn(isLoading && "shiny-text")}
@@ -109,7 +111,7 @@ export function ToolPart({
     />
   );
 
-  if (!isExpandable && !hasStreamableContent) {
+  if (!isExpandable) {
     return (
       <div className="w-full">
         <div className="flex h-6 items-center px-1">{mainContent}</div>
@@ -117,11 +119,16 @@ export function ToolPart({
     );
   }
 
-  if (hasStreamableContent) {
+  if (
+    !isError &&
+    (part.type === "tool-edit_file" ||
+      part.type === "tool-write_file" ||
+      part.type === "tool-run_shell_command")
+  ) {
     return (
       <div className="w-full">
         <div className="flex h-6 items-center px-1">{mainContent}</div>
-        <StreamingContent part={part} />
+        <StreamingContent isLoading={isLoading} part={part} />
       </div>
     );
   }

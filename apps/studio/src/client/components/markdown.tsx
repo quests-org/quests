@@ -52,7 +52,9 @@ const CodeBlock = ({ code, language }: { code: string; language: string }) => {
     );
   }
 
-  return <div dangerouslySetInnerHTML={{ __html: highlightedHtml }} />;
+  return (
+    <div dangerouslySetInnerHTML={{ __html: highlightedHtml.join("\n") }} />
+  );
 };
 
 export const Markdown = memo(({ allowRawHtml, markdown }: MarkdownProps) => {
