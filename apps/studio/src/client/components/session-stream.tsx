@@ -58,6 +58,10 @@ export function SessionStream({
     }),
   );
   const { data: appState } = useAppState({ subdomain: project.subdomain });
+  const { data: preferences } = useQuery(
+    rpcClient.preferences.live.get.experimental_liveOptions(),
+  );
+  const isDeveloperMode = preferences?.developerMode;
   const navigate = useNavigate();
 
   const createEmptySessionMutation = useMutation(
@@ -508,7 +512,7 @@ export function SessionStream({
           </Alert>
         )}
 
-        {!isAgentAlive && messages.length > 0 && (
+        {!isAgentAlive && messages.length > 0 && isDeveloperMode && (
           <div className="mt-4 border-t pt-4">
             <UsageSummary messages={messages} />
           </div>

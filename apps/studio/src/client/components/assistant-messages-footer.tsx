@@ -2,9 +2,14 @@ import {
   type SessionMessage,
   type SessionMessagePart,
 } from "@quests/workspace/client";
+import { useQuery } from "@tanstack/react-query";
 import { FileText } from "lucide-react";
+import { guard, sift } from "radashi";
 import { useMemo, useState } from "react";
 
+import { formatDuration } from "../lib/format-time";
+import { cn } from "../lib/utils";
+import { rpcClient } from "../rpc/client";
 import { CopyButton } from "./copy-button";
 import { ExternalLink } from "./external-link";
 import { ModelChip } from "./model-chip";
@@ -16,16 +21,29 @@ import {
   CollapsibleTrigger,
 } from "./ui/collapsible";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
-import { UsageStatsTooltip } from "./usage-stats-tooltip";
 
 interface AssistantMessagesFooterProps {
   messages: SessionMessage.AssistantWithParts[];
+}
+
+interface ModelUsageData {
+  aiGatewayModel?: SessionMessage.AssistantWithParts["metadata"]["aiGatewayModel"];
+  label: string;
+  modelId: string;
+  stats: SessionMessage.Usage & {
+    msToFinish: number;
+    msToFirstChunk: number | undefined;
+  };
 }
 
 export function AssistantMessagesFooter({
   messages,
 }: AssistantMessagesFooterProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const { data: preferences } = useQuery(
+    rpcClient.preferences.live.get.experimental_liveOptions(),
+  );
+  const isDeveloperMode = preferences?.developerMode;
 
   const { latestCreatedAt, messageText, modelsUsed, sources } = useMemo(() => {
     const seenSourceIds = new Set<string>();
@@ -36,23 +54,7 @@ export function AssistantMessagesFooter({
     let combinedText = "";
     let latestDate: Date | undefined;
 
-    const modelMap = new Map<
-      string,
-      {
-        aiGatewayModel?: SessionMessage.AssistantWithParts["metadata"]["aiGatewayModel"];
-        label: string;
-        modelId: string;
-        stats: {
-          cachedInputTokens: number;
-          inputTokens: number;
-          msToFinish: number;
-          msToFirstChunk: number | undefined;
-          outputTokens: number;
-          reasoningTokens: number;
-          totalTokens: number;
-        };
-      }
-    >();
+    const modelMap = new Map<string, ModelUsageData>();
 
     for (const message of messages) {
       for (const part of message.parts) {
@@ -171,24 +173,33 @@ export function AssistantMessagesFooter({
                 {index > 0 && (
                   <span className="mr-1 text-muted-foreground/30">•</span>
                 )}
-                <UsageStatsTooltip
-                  stats={{
-                    cachedInputTokens: model.stats.cachedInputTokens,
-                    inputTokens: model.stats.inputTokens,
-                    msToFirstChunk: model.stats.msToFirstChunk,
-                    outputTokens: model.stats.outputTokens,
-                    reasoningTokens: model.stats.reasoningTokens,
-                    totalDuration: model.stats.msToFinish,
-                    totalTokens: model.stats.totalTokens,
-                  }}
-                >
-                  <div className="transition-colors hover:text-muted-foreground">
-                    <ModelChip
-                      aiGatewayModel={model.aiGatewayModel}
-                      modelId={model.modelId}
-                    />
-                  </div>
-                </UsageStatsTooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="transition-colors hover:text-muted-foreground">
+                      <ModelChip
+                        aiGatewayModel={model.aiGatewayModel}
+                        modelId={model.modelId}
+                      />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent
+                    align="start"
+                    className="p-3 text-xs"
+                    side="top"
+                  >
+                    <div className="space-y-2">
+                      {getTooltipRows(model, isDeveloperMode).map(
+                        (row, idx, arr) => (
+                          <TooltipRow
+                            key={row.label}
+                            {...row}
+                            divider={row.divider && idx === arr.indexOf(row)}
+                          />
+                        ),
+                      )}
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
               </div>
             ))}
           </div>
@@ -282,4 +293,87 @@ function getFaviconUrl(url: string): string {
   } catch {
     return `https://www.google.com/s2/favicons?domain=${url}&sz=32`;
   }
+}
+
+const makeStatRow = (label: string, value: false | string | undefined) =>
+  value && { label, value };
+
+const formatTokenCount = (count: number) =>
+  guard(() => count > 0 && count.toLocaleString());
+
+const formatTimeMs = (ms: number | undefined) =>
+  guard(() => ms !== undefined && !Number.isNaN(ms) && formatDuration(ms));
+
+function getTooltipRows(
+  model: ModelUsageData,
+  isDeveloperMode?: boolean,
+): { divider?: boolean; label: string; tabular?: boolean; value: string }[] {
+  const infoRows = sift([
+    model.aiGatewayModel?.name && {
+      label: "Model:",
+      value: model.aiGatewayModel.name,
+    },
+    model.aiGatewayModel?.params.provider && {
+      label: "Provider:",
+      value: model.aiGatewayModel.params.provider,
+    },
+    model.aiGatewayModel?.providerId && {
+      label: "Model ID:",
+      value: model.aiGatewayModel.providerId,
+    },
+  ]);
+
+  if (!isDeveloperMode) {
+    return infoRows;
+  }
+
+  const statRows = sift([
+    makeStatRow(
+      "Time to first chunk:",
+      formatTimeMs(model.stats.msToFirstChunk),
+    ),
+    makeStatRow("Input tokens:", formatTokenCount(model.stats.inputTokens)),
+    makeStatRow("Output tokens:", formatTokenCount(model.stats.outputTokens)),
+    makeStatRow(
+      "Reasoning tokens:",
+      formatTokenCount(model.stats.reasoningTokens),
+    ),
+    makeStatRow(
+      "Cached tokens:",
+      formatTokenCount(model.stats.cachedInputTokens),
+    ),
+    makeStatRow("Total tokens:", formatTokenCount(model.stats.totalTokens)),
+    makeStatRow("Duration:", formatTimeMs(model.stats.msToFinish)),
+  ]).map((stat, idx) => ({
+    ...stat,
+    divider: idx === 0 && infoRows.length > 0,
+    tabular: true as const,
+  }));
+
+  return [...infoRows, ...statRows];
+}
+
+function TooltipRow({
+  divider,
+  label,
+  tabular,
+  value,
+}: {
+  divider?: boolean;
+  label: string;
+  tabular?: boolean;
+  value: string;
+}) {
+  return (
+    <div
+      className={cn("flex items-baseline justify-between gap-6", {
+        "border-t pt-2": divider,
+      })}
+    >
+      <span className="opacity-80">{label}</span>
+      <span className={cn("font-medium", { "tabular-nums": tabular })}>
+        {value}
+      </span>
+    </div>
+  );
 }

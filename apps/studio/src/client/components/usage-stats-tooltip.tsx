@@ -70,7 +70,7 @@ export function UsageStatsTooltip({
   }
 
   return (
-    <Tooltip delayDuration={300}>
+    <Tooltip>
       <TooltipTrigger asChild>{children}</TooltipTrigger>
       <TooltipContent align="start" className="p-3 text-xs" side="top">
         <div className="space-y-2">
