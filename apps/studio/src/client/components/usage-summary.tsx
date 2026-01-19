@@ -57,7 +57,7 @@ export function UsageSummary({ messages }: UsageSummaryProps) {
   }, [messages]);
 
   return (
-    <div className="flex w-full items-center gap-2 py-2 text-[10px] text-muted-foreground/60">
+    <div className="flex w-full items-center gap-2 py-2 text-[10px] text-warning-foreground/60">
       <UsageStatsTooltip
         stats={{
           cachedInputTokens: usage.cachedInputTokens,
@@ -68,7 +68,7 @@ export function UsageSummary({ messages }: UsageSummaryProps) {
           totalTokens: usage.totalTokens,
         }}
       >
-        <div className="ml-auto flex items-center gap-2 transition-colors hover:text-muted-foreground">
+        <div className="ml-auto flex items-center gap-2 transition-colors hover:text-warning-foreground">
           <span className="whitespace-nowrap">
             {messages.length} {messages.length === 1 ? "message" : "messages"}
           </span>

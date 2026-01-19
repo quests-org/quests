@@ -307,7 +307,13 @@ const formatTimeMs = (ms: number | undefined) =>
 function getTooltipRows(
   model: ModelUsageData,
   isDeveloperMode?: boolean,
-): { divider?: boolean; label: string; tabular?: boolean; value: string }[] {
+): {
+  divider?: boolean;
+  isWarning?: boolean;
+  label: string;
+  tabular?: boolean;
+  value: string;
+}[] {
   const infoRows = sift([
     model.aiGatewayModel?.name && {
       label: "Model:",
@@ -347,6 +353,7 @@ function getTooltipRows(
   ]).map((stat, idx) => ({
     ...stat,
     divider: idx === 0 && infoRows.length > 0,
+    isWarning: true,
     tabular: true as const,
   }));
 
@@ -355,11 +362,13 @@ function getTooltipRows(
 
 function TooltipRow({
   divider,
+  isWarning,
   label,
   tabular,
   value,
 }: {
   divider?: boolean;
+  isWarning?: boolean;
   label: string;
   tabular?: boolean;
   value: string;
@@ -367,7 +376,8 @@ function TooltipRow({
   return (
     <div
       className={cn("flex items-baseline justify-between gap-6", {
-        "border-t pt-2": divider,
+        "border-t border-warning-foreground/20 pt-2": divider,
+        "text-warning-foreground": isWarning,
       })}
     >
       <span className="opacity-80">{label}</span>

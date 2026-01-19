@@ -33,6 +33,7 @@ function SettingsLayout() {
   );
   const sidebarNavItems: {
     icon: React.ElementType;
+    isWarning?: boolean;
     path:
       | "/settings/debug"
       | Extract<
@@ -55,11 +56,13 @@ function SettingsLayout() {
       ? [
           {
             icon: FlagIcon,
+            isWarning: true,
             path: "/settings/features" as const,
             title: "Features",
           },
           {
             icon: BugIcon,
+            isWarning: true,
             path: "/settings/debug" as const,
             title: "Debug",
           },
@@ -94,6 +97,11 @@ function SettingsLayout() {
                         activeOptions={{ exact: true }}
                         activeProps={{ "data-active": true }}
                         allowOpenNewTab={false}
+                        className={
+                          item.isWarning
+                            ? "text-warning-foreground [&>svg]:text-warning-foreground"
+                            : undefined
+                        }
                         to={item.path}
                       >
                         <item.icon />

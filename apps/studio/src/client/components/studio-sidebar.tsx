@@ -81,6 +81,7 @@ export function StudioSidebar({
               isActive: matches.some((match) =>
                 match.routeId.startsWith("/_app/debug"),
               ),
+              isWarning: true,
               title: "Debug",
               url: "/debug" as const,
             },

@@ -19,6 +19,7 @@ export function NavPrimary({
     badge?: React.ReactNode;
     icon: LucideIcon;
     isActive?: boolean;
+    isWarning?: boolean;
     title: string;
     url: LinkProps["to"];
   }[];
@@ -35,7 +36,11 @@ export function NavPrimary({
                 isActive={item.isActive}
               >
                 <InternalLink
-                  className="[&>svg]:size-4"
+                  className={
+                    item.isWarning
+                      ? "text-warning-foreground [&>svg]:size-4 [&>svg]:text-warning-foreground"
+                      : "[&>svg]:size-4"
+                  }
                   openInCurrentTab
                   to={item.url}
                 >
