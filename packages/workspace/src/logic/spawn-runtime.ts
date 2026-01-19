@@ -13,7 +13,7 @@ import {
 import { type AppConfig } from "../lib/app-config/types";
 import { cancelableTimeout, TimeoutError } from "../lib/cancelable-timeout";
 import { execaNodeForApp } from "../lib/execa-node-for-app";
-import { shouldFilterDebuggerMessage } from "../lib/filter-debugger-messages";
+import { shouldFilterDebuggerMessage } from "../lib/filter-shell-output";
 import { getFramework } from "../lib/get-framework";
 import { getPackageManager } from "../lib/get-package-manager";
 import { pathExists } from "../lib/path-exists";

@@ -1,8 +1,12 @@
-export function filterDebuggerMessages(stderr: string): string {
-  return stderr
+import { type AppDir } from "../schemas/paths";
+
+export function filterShellOutput(output: string, appDir: AppDir): string {
+  const filtered = output
     .split("\n")
     .filter((line) => !shouldFilterDebuggerMessage(line.trim()))
     .join("\n");
+
+  return filtered.replaceAll(appDir, ".");
 }
 
 export function shouldFilterDebuggerMessage(message: string): boolean {

@@ -8,7 +8,7 @@ import type { AppConfig } from "../lib/app-config/types";
 
 import { execaNodeForApp } from "../lib/execa-node-for-app";
 import { executeError } from "../lib/execute-error";
-import { filterDebuggerMessages } from "../lib/filter-debugger-messages";
+import { filterShellOutput } from "../lib/filter-shell-output";
 import { runNodeModulesBin } from "../lib/run-node-modules-bin";
 import {
   CP_COMMAND,
@@ -197,7 +197,7 @@ export const RunShellCommand = createTool({
           args,
           { all: true, cancelSignal: signal },
         );
-        const combined = filterDebuggerMessages(execResult.all);
+        const combined = filterShellOutput(execResult.all, appConfig.appDir);
         return ok({
           combined,
           command: input.command,
@@ -213,7 +213,7 @@ export const RunShellCommand = createTool({
           return executeError(binResult.error.message);
         }
         const execResult = await binResult.value;
-        const combined = filterDebuggerMessages(execResult.all);
+        const combined = filterShellOutput(execResult.all, appConfig.appDir);
         return ok({
           combined,
           command: input.command,
@@ -239,7 +239,7 @@ export const RunShellCommand = createTool({
           return executeError(binResult.error.message);
         }
         const execResult = await binResult.value;
-        const combined = filterDebuggerMessages(execResult.all);
+        const combined = filterShellOutput(execResult.all, appConfig.appDir);
         return ok({
           combined,
           command: input.command,
