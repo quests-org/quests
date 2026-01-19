@@ -8,7 +8,7 @@ export function filterDebuggerMessages(stderr: string): string {
 export function shouldFilterDebuggerMessage(message: string): boolean {
   return (
     process.env.NODE_ENV === "development" &&
-    (message === "Debugger attached." ||
-      message === "Waiting for the debugger to disconnect...")
+    (message.includes("Debugger attached.") ||
+      message.includes("Waiting for the debugger to disconnect..."))
   );
 }
