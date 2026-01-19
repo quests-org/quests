@@ -6,6 +6,7 @@ import {
 import { Loader2Icon } from "lucide-react";
 import { useState } from "react";
 
+import { filenameFromFilePath } from "../../lib/file-utils";
 import { getToolLabel, getToolStreamingLabel } from "../../lib/tool-display";
 import { cn } from "../../lib/utils";
 import {
@@ -178,10 +179,6 @@ export function ToolPart({
       </CollapsibleContent>
     </Collapsible>
   );
-}
-
-function filenameFromFilePath(filePath: string): string {
-  return filePath.split("/").pop() || filePath;
 }
 
 function getToolInputValue(

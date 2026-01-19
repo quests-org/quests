@@ -8,6 +8,7 @@ import {
   getLanguageFromFilePath,
   toSupportedLanguage,
 } from "../../lib/file-extension-to-language";
+import { filenameFromFilePath } from "../../lib/file-utils";
 import { getToolLabel, getToolStreamingLabel } from "../../lib/tool-display";
 import { cn } from "../../lib/utils";
 import { rpcClient } from "../../rpc/client";
@@ -208,8 +209,4 @@ export function FileModification({
       />
     </ToolCard>
   );
-}
-
-function filenameFromFilePath(filePath: string): string {
-  return filePath.split("/").pop() || filePath;
 }

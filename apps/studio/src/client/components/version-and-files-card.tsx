@@ -1,3 +1,4 @@
+import { filenameFromFilePath } from "@/client/lib/file-utils";
 import { getAssetUrl } from "@/client/lib/get-asset-url";
 import { cn } from "@/client/lib/utils";
 import { PROJECT_MANIFEST_FILE_NAME } from "@quests/shared";
@@ -152,7 +153,7 @@ export function VersionAndFilesCard({
 }
 
 function shouldFilterFile(filename: string): boolean {
-  const baseName = filename.split("/").pop()?.toLowerCase() ?? "";
+  const baseName = filenameFromFilePath(filename).toLowerCase();
 
   const filteredFiles = [
     PROJECT_MANIFEST_FILE_NAME,
