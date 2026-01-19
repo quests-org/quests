@@ -11,7 +11,7 @@ describe("AIGatewayModelURI.parse", () => {
     },
     {
       description: "valid Anthropic model URI",
-      uri: "anthropic/claude-3-5-sonnet-20241022?provider=anthropic&providerConfigId=anthropic-config-id",
+      uri: "anthropic/claude-sonnet-4.5?provider=anthropic&providerConfigId=anthropic-config-id",
       valid: true,
     },
     {
