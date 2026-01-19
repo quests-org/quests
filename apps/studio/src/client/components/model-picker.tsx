@@ -24,6 +24,7 @@ import {
   type AIGatewayModel,
   type AIGatewayModelURI,
 } from "@quests/ai-gateway/client";
+import { QuestsLogoSimpleIcon } from "@quests/components/logo-simple";
 import { QUESTS_AUTO_MODEL_PROVIDER_ID } from "@quests/shared";
 import { useNavigate } from "@tanstack/react-router";
 import {
@@ -31,7 +32,6 @@ import {
   AlertTriangle,
   Check,
   ChevronDown,
-  Crown,
   Plus,
 } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -250,7 +250,9 @@ export function ModelPicker({
                       description: `${modelName} is available with a paid Quests plan.`,
                       dismissible: true,
                       duration: 7000,
-                      icon: <Crown className="size-4 text-brand" />,
+                      icon: (
+                        <QuestsLogoSimpleIcon className="size-4 text-brand" />
+                      ),
                     });
                   } else {
                     onValueChange(uri);
@@ -300,7 +302,7 @@ function AutoModeSwitch({
         </div>
         <div className="flex gap-2">
           <Button
-            className="h-7 flex-1 text-xs"
+            className="flex-1"
             onClick={(e) => {
               e.stopPropagation();
               onCheckedChange(true);
@@ -311,15 +313,14 @@ function AutoModeSwitch({
             Switch to Auto
           </Button>
           <Button
-            className="h-7 flex-1 text-xs"
+            className="flex-1"
             onClick={(e) => {
               e.stopPropagation();
               void navigate({ to: "/subscribe" });
             }}
             size="sm"
-            variant="outline"
+            variant="default"
           >
-            <Crown className="mr-1 size-3" />
             Upgrade
           </Button>
         </div>

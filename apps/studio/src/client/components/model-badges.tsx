@@ -1,9 +1,9 @@
 import type { ComponentType } from "react";
 
 import { type AIGatewayModel } from "@quests/ai-gateway/client";
+import { QuestsLogoSimpleIcon } from "@quests/components/logo-simple";
 import {
   AudioLines,
-  Crown,
   Hourglass,
   Image,
   type LucideIcon,
@@ -136,7 +136,7 @@ export function ModelBadges({
         <Badge
           config={{
             color: "brand",
-            icon: Crown,
+            icon: QuestsLogoSimpleIcon,
             key: "premium",
             shouldShow: () => true,
             tooltip: "This model requires a paid Quests plan",
