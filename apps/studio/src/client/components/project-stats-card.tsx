@@ -3,7 +3,7 @@ import { rpcClient } from "@/client/rpc/client";
 import { type WorkspaceAppProject } from "@quests/workspace/client";
 import { useQuery } from "@tanstack/react-query";
 import { format, formatDistanceToNow } from "date-fns";
-import { FileText } from "lucide-react";
+import { Calendar, Clock, FileText, MessageSquare } from "lucide-react";
 
 export function ProjectStatsCard({
   project,
@@ -27,23 +27,31 @@ export function ProjectStatsCard({
       <AppIcon name={project.iconName} size="lg" />
       <div className="flex flex-col gap-2">
         <div className="font-medium text-foreground">{project.title}</div>
-        <div className="flex flex-col gap-1 text-xs text-muted-foreground">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+          <div className="flex items-center gap-1">
+            <Calendar className="size-3" />
             <span>Created {format(project.createdAt, "MMM d, yyyy")}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <Clock className="size-3" />
             <span>
-              Last updated{" "}
+              Updated{" "}
               {formatDistanceToNow(project.updatedAt, { addSuffix: true })
                 .replace("less than ", "")
                 .replace("about ", "")}
             </span>
           </div>
-          <div className="flex items-center gap-4">
-            {messageCount !== undefined && messageCount > 0 && (
+          {messageCount !== undefined && messageCount > 0 && (
+            <div className="flex items-center gap-1">
+              <MessageSquare className="size-3" />
               <span>
-                {messageCount} {messageCount === 1 ? "chat" : "chats"}
+                {messageCount} {messageCount === 1 ? "message" : "messages"}
               </span>
-            )}
-            {filesAddedCount !== null && filesAddedCount !== undefined && (
+            </div>
+          )}
+          {filesAddedCount !== null &&
+            filesAddedCount !== undefined &&
+            filesAddedCount > 0 && (
               <div className="flex items-center gap-1">
                 <FileText className="size-3" />
                 <span>
@@ -52,7 +60,6 @@ export function ProjectStatsCard({
                 </span>
               </div>
             )}
-          </div>
         </div>
       </div>
     </div>
