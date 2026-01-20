@@ -147,5 +147,17 @@ describe("Studio Smoke Test", () => {
       }
       expect(exists, `File exists: ${filePath}`).toBe(true);
     }
+
+    // Validate app-state.json has lastMigratedVersion set (migration ran)
+    const appStateContent = await fs.readFile(
+      path.join(tempUserDataDir, "app-state.json"),
+      "utf8",
+    );
+    const appState = JSON.parse(appStateContent) as {
+      lastMigratedVersion?: string;
+    };
+    expect(appState.lastMigratedVersion).toBeDefined();
+    expect(typeof appState.lastMigratedVersion).toBe("string");
+    expect(appState.lastMigratedVersion?.length).toBeGreaterThan(0);
   });
 });
