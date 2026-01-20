@@ -5,9 +5,8 @@ import {
 } from "@quests/workspace/client";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { ChevronDown, Plus } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
 import { useStickToBottom } from "use-stick-to-bottom";
 
 import { useAppState } from "../hooks/use-app-state";
@@ -16,23 +15,20 @@ import { rpcClient } from "../rpc/client";
 import { ChatZeroState } from "./chat-zero-state";
 import { ProjectSessionStream } from "./project-session-stream";
 import { PromptInput } from "./prompt-input";
-import { SessionMenu } from "./session-menu";
-import { type FilterMode } from "./session-stream";
 import { Button } from "./ui/button";
-import { Tabs, TabsList, TabsTrigger } from "./ui/tabs";
-import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
-import { VersionList } from "./version-list";
 
 export function ProjectChat({
   project,
   selectedModelURI: initialSelectedModelURI,
   selectedSessionId,
   selectedVersion,
+  showVersions,
 }: {
   project: WorkspaceAppProject;
   selectedModelURI?: AIGatewayModelURI.Type;
   selectedSessionId?: StoreId.Session;
   selectedVersion?: string;
+  showVersions?: boolean;
 }) {
   const navigate = useNavigate();
 
@@ -45,14 +41,10 @@ export function ProjectChat({
   const stopSessions = useMutation(
     rpcClient.workspace.session.stop.mutationOptions(),
   );
-  const createEmptySession = useMutation(
-    rpcClient.workspace.session.create.mutationOptions(),
-  );
 
   const bottomSectionRef = useRef<HTMLDivElement>(null);
   const promptInputRef = useRef<{ focus: () => void }>(null);
   const [bottomSectionHeight, setBottomSectionHeight] = useState(0);
-  const [filterMode, setFilterMode] = useState<FilterMode>("chat");
   const [selectedModelURI, setSelectedModelURI] = useState<
     AIGatewayModelURI.Type | undefined
   >(initialSelectedModelURI);
@@ -72,40 +64,9 @@ export function ProjectChat({
 
   const { handleContinue } = useContinueSession({
     modelURI: selectedModelURI,
-    onSuccess: () => {
-      setFilterMode("chat");
-    },
     sessionId: selectedSessionId,
     subdomain: project.subdomain,
   });
-
-  const handleNewSession = () => {
-    createEmptySession.mutate(
-      { subdomain: project.subdomain },
-      {
-        onError: (error) => {
-          toast.error("Failed to create new chat", {
-            description: error.message,
-          });
-        },
-        onSuccess: (result) => {
-          void navigate({
-            params: {
-              subdomain: project.subdomain,
-            },
-            replace: true,
-            search: (prev) => ({
-              ...prev,
-              selectedSessionId: result.id,
-            }),
-            to: "/projects/$subdomain",
-          }).then(() => {
-            promptInputRef.current?.focus();
-          });
-        },
-      },
-    );
-  };
 
   useEffect(() => {
     if (!bottomSectionRef.current) {
@@ -127,48 +88,9 @@ export function ProjectChat({
 
   return (
     <div className="relative flex size-full flex-col bg-background transition-all duration-300 ease-in-out">
-      <div className="p-2">
-        <div className="flex items-center justify-between gap-2">
-          <Tabs
-            onValueChange={(value) => {
-              setFilterMode(value as FilterMode);
-            }}
-            value={filterMode}
-          >
-            <TabsList>
-              <TabsTrigger value="chat">Chat</TabsTrigger>
-              <TabsTrigger value="versions">Versions</TabsTrigger>
-            </TabsList>
-          </Tabs>
-          <div className="flex items-center">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  disabled={createEmptySession.isPending || isAgentAlive}
-                  onClick={handleNewSession}
-                  size="sm"
-                  variant="ghost"
-                >
-                  <Plus className="size-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>New chat in this project</p>
-              </TooltipContent>
-            </Tooltip>
-            <SessionMenu project={project} />
-          </div>
-        </div>
-      </div>
-
       <div className="flex-1 overflow-y-auto p-4" ref={scrollRef}>
         <div className="flex flex-col gap-4" ref={contentRef}>
-          {filterMode === "versions" ? (
-            <VersionList
-              projectSubdomain={project.subdomain}
-              selectedVersion={selectedVersion}
-            />
-          ) : selectedSessionId ? (
+          {selectedSessionId ? (
             <ProjectSessionStream
               onContinue={handleContinue}
               onModelChange={setSelectedModelURI}
@@ -199,55 +121,53 @@ export function ProjectChat({
         </Button>
       )}
 
-      {filterMode === "chat" && (
-        <div className="px-2 pb-4" ref={bottomSectionRef}>
-          <PromptInput
-            atomKey={project.subdomain}
-            autoFocus
-            isLoading={createMessage.isPending}
-            isStoppable={isAgentAlive}
-            isSubmittable={!isAgentAlive}
-            modelURI={selectedModelURI}
-            onModelChange={setSelectedModelURI}
-            onStop={() => {
-              stopSessions.mutate({ subdomain: project.subdomain });
-            }}
-            onSubmit={({ files, modelURI, prompt }) => {
-              createMessage.mutate(
-                {
-                  files,
-                  modelURI,
-                  prompt,
-                  sessionId: selectedSessionId,
-                  subdomain: project.subdomain,
+      <div className="px-2 pb-4" ref={bottomSectionRef}>
+        <PromptInput
+          atomKey={project.subdomain}
+          autoFocus
+          isLoading={createMessage.isPending}
+          isStoppable={isAgentAlive}
+          isSubmittable={!isAgentAlive}
+          modelURI={selectedModelURI}
+          onModelChange={setSelectedModelURI}
+          onStop={() => {
+            stopSessions.mutate({ subdomain: project.subdomain });
+          }}
+          onSubmit={({ files, modelURI, prompt }) => {
+            createMessage.mutate(
+              {
+                files,
+                modelURI,
+                prompt,
+                sessionId: selectedSessionId,
+                subdomain: project.subdomain,
+              },
+              {
+                onSuccess: ({ sessionId }) => {
+                  void scrollToBottom();
+                  if (selectedVersion || showVersions) {
+                    void navigate({
+                      params: {
+                        subdomain: project.subdomain,
+                      },
+                      replace: true,
+                      search: (prev) => ({
+                        ...prev,
+                        selectedSessionId: sessionId,
+                        selectedVersion: undefined,
+                        showVersions: undefined,
+                      }),
+                      to: "/projects/$subdomain",
+                    });
+                  }
                 },
-                {
-                  onSuccess: ({ sessionId }) => {
-                    setFilterMode("chat");
-                    void scrollToBottom();
-                    if (selectedVersion) {
-                      void navigate({
-                        params: {
-                          subdomain: project.subdomain,
-                        },
-                        replace: true,
-                        search: (prev) => ({
-                          ...prev,
-                          selectedSessionId: sessionId,
-                          selectedVersion: undefined,
-                        }),
-                        to: "/projects/$subdomain",
-                      });
-                    }
-                  },
-                },
-              );
-            }}
-            placeholder="Type, paste, or drop some files here…"
-            ref={promptInputRef}
-          />
-        </div>
-      )}
+              },
+            );
+          }}
+          placeholder="Type, paste, or drop some files here…"
+          ref={promptInputRef}
+        />
+      </div>
     </div>
   );
 }

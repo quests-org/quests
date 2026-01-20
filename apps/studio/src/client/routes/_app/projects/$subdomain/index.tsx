@@ -32,6 +32,7 @@ const projectSearchSchema = z.object({
   showDelete: z.boolean().optional(),
   showDuplicate: z.boolean().optional(),
   showSettings: z.boolean().optional(),
+  showVersions: z.boolean().optional(),
 });
 
 function title(project?: WorkspaceAppProject) {
@@ -133,6 +134,7 @@ function RouteComponent() {
     showDelete,
     showDuplicate,
     showSettings,
+    showVersions,
   } = Route.useSearch();
   const navigate = useNavigate();
 
@@ -229,6 +231,7 @@ function RouteComponent() {
         selectedModelURI={projectState.selectedModelURI}
         selectedSessionId={selectedSessionId}
         selectedVersion={selectedVersion}
+        showVersions={showVersions}
       />
 
       <ProjectDeleteDialog

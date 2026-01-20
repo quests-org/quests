@@ -10,6 +10,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ExternalLinkIcon,
+  History,
   PanelBottom,
   RotateCw,
 } from "lucide-react";
@@ -27,8 +28,10 @@ interface AppToolbarProps {
   disabled?: boolean;
   iframeRef: React.RefObject<HTMLIFrameElement | null>;
   isConsoleOpen?: boolean;
+  isVersionsOpen?: boolean;
   onConsoleToggle: () => void;
   onReload: () => void;
+  onVersionsToggle?: () => void;
   rightActions?: ReactNode;
 }
 
@@ -44,8 +47,10 @@ export function AppToolbar({
   disabled = false,
   iframeRef,
   isConsoleOpen = true,
+  isVersionsOpen = false,
   onConsoleToggle,
   onReload,
+  onVersionsToggle,
   rightActions,
 }: AppToolbarProps) {
   const shimIFrame = useShimIFrame(iframeRef);
@@ -200,8 +205,33 @@ export function AppToolbar({
       </div>
 
       <div className="flex items-center gap-1">
+        {onVersionsToggle && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              {/* Relative div wrapper prevents tooltip/toggle conflict */}
+              <div className="relative">
+                <Toggle
+                  aria-label={
+                    isVersionsOpen ? "Hide Versions" : "Show Versions"
+                  }
+                  disabled={disabled}
+                  onPressedChange={onVersionsToggle}
+                  pressed={isVersionsOpen}
+                  size="sm"
+                >
+                  <History className="size-4" />
+                </Toggle>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{isVersionsOpen ? "Hide versions" : "Show versions"}</p>
+            </TooltipContent>
+          </Tooltip>
+        )}
+
         <Tooltip>
           <TooltipTrigger asChild>
+            {/* Relative div wrapper prevents tooltip/toggle conflict */}
             <div className="relative">
               <Toggle
                 aria-label={isConsoleOpen ? "Hide Console" : "Show Console"}
@@ -216,7 +246,7 @@ export function AppToolbar({
             </div>
           </TooltipTrigger>
           <TooltipContent>
-            <p>{isConsoleOpen ? "Hide Console" : "Show Console"}</p>
+            <p>{isConsoleOpen ? "Hide console" : "Show console"}</p>
           </TooltipContent>
         </Tooltip>
 

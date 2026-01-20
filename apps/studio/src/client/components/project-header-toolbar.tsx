@@ -3,7 +3,6 @@ import type {
   SupportedEditorId,
 } from "@/shared/schemas/editors";
 
-import { AppIcon } from "@/client/components/app-icon";
 import { ProjectSettingsDialog } from "@/client/components/project-settings-dialog";
 import { Button } from "@/client/components/ui/button";
 import { Toggle } from "@/client/components/ui/toggle";
@@ -12,22 +11,22 @@ import { captureClientEvent } from "@/client/lib/capture-client-event";
 import { cn, getRevealInFolderLabel, isMacOS } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
 import { OpenAppInTypeSchema } from "@/shared/schemas/editors";
-import { type WorkspaceAppProject } from "@quests/workspace/client";
+import {
+  type StoreId,
+  type WorkspaceAppProject,
+} from "@quests/workspace/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useAtom, useAtomValue } from "jotai";
 import {
   ChevronDown,
   Clipboard,
-  Copy,
   FileArchive,
   FolderOpenIcon,
   MessageCircle,
   PanelLeftClose,
-  Pencil,
   Save,
   Terminal,
-  TrashIcon,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -35,6 +34,7 @@ import { toast } from "sonner";
 import { projectIframeRefAtom } from "../atoms/project";
 import { projectSidebarCollapsedAtomFamily } from "../atoms/project-sidebar";
 import { ExportZipModal } from "./export-zip-modal";
+import { ProjectMenu } from "./project-menu";
 import { RestoreVersionModal } from "./restore-version-modal";
 import { CMD, Cursor, ITerm, MacOSTerminal, VSCode } from "./service-icons";
 import {
@@ -60,12 +60,14 @@ const EDITOR_ICON_MAP: Record<
 interface ProjectHeaderToolbarProps {
   hasAppModifications: boolean;
   project: WorkspaceAppProject;
+  selectedSessionId?: StoreId.Session;
   selectedVersion?: string;
 }
 
 export function ProjectHeaderToolbar({
   hasAppModifications,
   project,
+  selectedSessionId,
   selectedVersion,
 }: ProjectHeaderToolbarProps) {
   const iframeRef = useAtomValue(projectIframeRefAtom);
@@ -200,56 +202,13 @@ export function ProjectHeaderToolbar({
               !sidebarCollapsed && "w-96 shrink-0 pr-5",
             )}
           >
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  className="h-auto max-w-80 min-w-0 justify-start gap-2 py-1 font-semibold text-foreground hover:bg-accent hover:text-accent-foreground has-[>svg]:px-1"
-                  variant="ghost"
-                >
-                  <AppIcon name={project.iconName} size="sm" />
-                  <span className="truncate">{project.title}</span>
-                  <ChevronDown className="h-3 w-3 shrink-0" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" side="bottom">
-                <DropdownMenuItem
-                  onClick={() => {
-                    void navigate({
-                      from: "/projects/$subdomain",
-                      params: { subdomain: project.subdomain },
-                      search: (prev) => ({ ...prev, showDuplicate: true }),
-                    });
-                  }}
-                >
-                  <Copy className="h-4 w-4" />
-                  <span>Duplicate</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => {
-                    setSettingsDialogOpen(true);
-                  }}
-                >
-                  <Pencil className="h-4 w-4" />
-                  <span>Rename</span>
-                </DropdownMenuItem>
-
-                <DropdownMenuSeparator />
-
-                <DropdownMenuItem
-                  onSelect={() => {
-                    void navigate({
-                      from: "/projects/$subdomain",
-                      params: { subdomain: project.subdomain },
-                      search: (prev) => ({ ...prev, showDelete: true }),
-                    });
-                  }}
-                  variant="destructive"
-                >
-                  <TrashIcon />
-                  <span>Delete</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <ProjectMenu
+              onSettingsClick={() => {
+                setSettingsDialogOpen(true);
+              }}
+              project={project}
+              selectedSessionId={selectedSessionId}
+            />
 
             {!sidebarCollapsed && <div className="flex-1" />}
 

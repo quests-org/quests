@@ -25,7 +25,6 @@ import { UnknownPart } from "./unknown-part";
 import { UsageSummary } from "./usage-summary";
 import { UserMessage } from "./user-message";
 import { VersionAndFilesCard } from "./version-and-files-card";
-export type FilterMode = "chat" | "versions";
 
 interface SessionEventListProps {
   isAgentAlive?: boolean;

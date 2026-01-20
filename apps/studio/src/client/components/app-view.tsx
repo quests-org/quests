@@ -23,12 +23,16 @@ export function AppView({
   app,
   centerContent,
   className,
+  isVersionsOpen = false,
+  onVersionsToggle,
   rightActions,
   shouldReload = true,
 }: {
   app: WorkspaceApp;
   centerContent?: React.ReactNode;
   className?: string;
+  isVersionsOpen?: boolean;
+  onVersionsToggle?: () => void;
   rightActions?: React.ReactNode;
   shouldReload?: boolean;
 }) {
@@ -78,10 +82,12 @@ export function AppView({
         clientLogsAtom={clientLogsAtom}
         iframeRef={iframeRef}
         isConsoleOpen={isConsoleOpen}
+        isVersionsOpen={isVersionsOpen}
         onConsoleToggle={() => {
           setIsConsoleOpen((prev) => !prev);
         }}
         onReload={handleReload}
+        onVersionsToggle={onVersionsToggle}
         rightActions={rightActions}
       />
 

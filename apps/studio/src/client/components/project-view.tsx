@@ -2,11 +2,13 @@ import { projectSidebarCollapsedAtomFamily } from "@/client/atoms/project-sideba
 import { AppView } from "@/client/components/app-view";
 import { ProjectChat } from "@/client/components/project-chat";
 import { ProjectHeaderToolbar } from "@/client/components/project-header-toolbar";
+import { Button } from "@/client/components/ui/button";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/client/components/ui/resizable";
+import { VersionList } from "@/client/components/version-list";
 import { VersionOverlay } from "@/client/components/version-overlay";
 import { useReload } from "@/client/hooks/use-reload";
 import { cn } from "@/client/lib/utils";
@@ -15,7 +17,9 @@ import {
   type StoreId,
   type WorkspaceAppProject,
 } from "@quests/workspace/client";
+import { useNavigate } from "@tanstack/react-router";
 import { useAtomValue, useSetAtom } from "jotai";
+import { X } from "lucide-react";
 import { useCallback, useEffect, useRef } from "react";
 import { usePanelRef } from "react-resizable-panels";
 
@@ -25,13 +29,16 @@ export function ProjectView({
   selectedModelURI,
   selectedSessionId,
   selectedVersion,
+  showVersions,
 }: {
   hasAppModifications: boolean;
   project: WorkspaceAppProject;
   selectedModelURI: AIGatewayModelURI.Type | undefined;
   selectedSessionId?: StoreId.Session;
   selectedVersion: string | undefined;
+  showVersions?: boolean;
 }) {
+  const navigate = useNavigate();
   const sidebarCollapsed = useAtomValue(
     projectSidebarCollapsedAtomFamily(project.subdomain),
   );
@@ -40,6 +47,18 @@ export function ProjectView({
   );
   const panelRef = usePanelRef();
   const lastAtomValueRef = useRef(sidebarCollapsed);
+
+  const handleVersionsToggle = useCallback(() => {
+    void navigate({
+      from: "/projects/$subdomain",
+      params: { subdomain: project.subdomain },
+      replace: true,
+      search: (prev) => ({
+        ...prev,
+        showVersions: showVersions ? undefined : true,
+      }),
+    });
+  }, [navigate, project.subdomain, showVersions]);
 
   useReload(
     useCallback(() => {
@@ -75,6 +94,7 @@ export function ProjectView({
     selectedModelURI,
     selectedSessionId,
     selectedVersion,
+    showVersions,
   };
 
   // TODO: Remove chat- after 2026-03-01
@@ -86,6 +106,7 @@ export function ProjectView({
       <ProjectHeaderToolbar
         hasAppModifications={hasAppModifications}
         project={project}
+        selectedSessionId={selectedSessionId}
         selectedVersion={selectedVersion}
       />
 
@@ -118,7 +139,28 @@ export function ProjectView({
               }}
               panelRef={panelRef}
             >
-              <ProjectChat {...sidebarProps} />
+              {showVersions ? (
+                <div className="flex h-full flex-col overflow-hidden bg-background">
+                  <div className="flex items-center justify-between border-b p-2">
+                    <h2 className="px-2 font-semibold">Versions</h2>
+                    <Button
+                      onClick={handleVersionsToggle}
+                      size="icon"
+                      variant="ghost"
+                    >
+                      <X className="size-4" />
+                    </Button>
+                  </div>
+                  <div className="flex-1 overflow-y-auto p-4">
+                    <VersionList
+                      projectSubdomain={project.subdomain}
+                      selectedVersion={selectedVersion}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <ProjectChat {...sidebarProps} />
+              )}
             </ResizablePanel>
 
             <ResizableHandle className="bg-transparent transition-all duration-200 focus-visible:ring-0 focus-visible:ring-offset-0 data-[separator='active']:bg-primary/50 data-[separator='hover']:scale-x-[3] data-[separator='hover']:bg-muted-foreground" />
@@ -134,6 +176,8 @@ export function ProjectView({
                   <AppView
                     app={project}
                     className="overflow-hidden rounded-lg"
+                    isVersionsOpen={showVersions}
+                    onVersionsToggle={handleVersionsToggle}
                     shouldReload={!selectedVersion}
                   />
 
