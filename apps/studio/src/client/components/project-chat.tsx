@@ -23,7 +23,7 @@ import { Tabs, TabsList, TabsTrigger } from "./ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { VersionList } from "./version-list";
 
-export function ProjectSidebar({
+export function ProjectChat({
   project,
   selectedModelURI: initialSelectedModelURI,
   selectedSessionId,

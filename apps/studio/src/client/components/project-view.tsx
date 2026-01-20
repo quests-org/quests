@@ -1,7 +1,7 @@
 import { projectSidebarCollapsedAtomFamily } from "@/client/atoms/project-sidebar";
 import { AppView } from "@/client/components/app-view";
+import { ProjectChat } from "@/client/components/project-chat";
 import { ProjectHeaderToolbar } from "@/client/components/project-header-toolbar";
-import { ProjectSidebar } from "@/client/components/project-sidebar";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -92,7 +92,7 @@ export function ProjectView({
       {isChatOnly ? (
         <div className="flex h-full w-full flex-1 items-start justify-center overflow-hidden border-t">
           <div className="flex h-full w-full max-w-3xl flex-col bg-background">
-            <ProjectSidebar {...sidebarProps} />
+            <ProjectChat {...sidebarProps} />
           </div>
         </div>
       ) : (
@@ -118,7 +118,7 @@ export function ProjectView({
               }}
               panelRef={panelRef}
             >
-              <ProjectSidebar {...sidebarProps} />
+              <ProjectChat {...sidebarProps} />
             </ResizablePanel>
 
             <ResizableHandle className="bg-transparent transition-all duration-200 focus-visible:ring-0 focus-visible:ring-offset-0 data-[separator='active']:bg-primary/50 data-[separator='hover']:scale-x-[3] data-[separator='hover']:bg-muted-foreground" />
