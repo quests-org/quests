@@ -7,7 +7,6 @@ import { ProjectSettingsDialog } from "@/client/components/project-settings-dial
 import { Button } from "@/client/components/ui/button";
 import { Toggle } from "@/client/components/ui/toggle";
 import { ToolbarFavoriteAction } from "@/client/components/ui/toolbar-favorite-action";
-import { captureClientEvent } from "@/client/lib/capture-client-event";
 import { cn, getRevealInFolderLabel, isMacOS } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
 import { OpenAppInTypeSchema } from "@/shared/schemas/editors";
@@ -17,21 +16,18 @@ import {
 } from "@quests/workspace/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { useAtom, useAtomValue } from "jotai";
+import { useAtom } from "jotai";
 import {
   ChevronDown,
-  Clipboard,
   FileArchive,
   FolderOpenIcon,
   MessageCircle,
   PanelLeftClose,
-  Save,
   Terminal,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { projectIframeRefAtom } from "../atoms/project";
 import { projectSidebarCollapsedAtomFamily } from "../atoms/project-sidebar";
 import { ExportZipModal } from "./export-zip-modal";
 import { ProjectMenu } from "./project-menu";
@@ -70,7 +66,6 @@ export function ProjectHeaderToolbar({
   selectedSessionId,
   selectedVersion,
 }: ProjectHeaderToolbarProps) {
-  const iframeRef = useAtomValue(projectIframeRefAtom);
   const [sidebarCollapsed, setSidebarCollapsed] = useAtom(
     projectSidebarCollapsedAtomFamily(project.subdomain),
   );
@@ -78,10 +73,6 @@ export function ProjectHeaderToolbar({
   const [restoreModalOpen, setRestoreModalOpen] = useState(false);
   const [exportZipModalOpen, setExportZipModalOpen] = useState(false);
   const navigate = useNavigate();
-
-  const showFileInFolderMutation = useMutation(
-    rpcClient.utils.showFileInFolder.mutationOptions(),
-  );
 
   const { data: supportedEditors = [] } = useQuery<SupportedEditor[]>(
     rpcClient.utils.getSupportedEditors.queryOptions(),
@@ -96,80 +87,6 @@ export function ProjectHeaderToolbar({
       },
     }),
   );
-
-  const takeScreenshotMutation = useMutation(
-    rpcClient.utils.takeScreenshot.mutationOptions({
-      onError: (error) => {
-        toast.error("Failed to take screenshot", {
-          description: error.message,
-        });
-      },
-      onSuccess: (result) => {
-        toast.success(`Screenshot saved to your Downloads folder`, {
-          action: {
-            label: getRevealInFolderLabel(),
-            onClick: () => {
-              showFileInFolderMutation.mutate({
-                filepath: result.filepath,
-              });
-            },
-          },
-          closeButton: true,
-          dismissible: true,
-        });
-      },
-    }),
-  );
-
-  const copyScreenshotMutation = useMutation(
-    rpcClient.utils.copyScreenshotToClipboard.mutationOptions({
-      onError: (error) => {
-        toast.error("Failed to copy screenshot", {
-          description: error.message,
-        });
-      },
-      onSuccess: () => {
-        toast.success("Screenshot copied to clipboard");
-      },
-    }),
-  );
-
-  const handleTakeScreenshot = async () => {
-    if (!iframeRef?.current) {
-      toast.error("Unable to capture screenshot", {
-        description: "Iframe not found",
-      });
-      return;
-    }
-
-    const bounds = getScreenshotBounds(iframeRef.current);
-
-    // Allow the dropdown close animation to complete
-    await new Promise((resolve) => setTimeout(resolve, 100));
-
-    takeScreenshotMutation.mutate({
-      bounds,
-      name: project.title || project.subdomain,
-    });
-  };
-
-  const handleCopyScreenshot = async () => {
-    if (!iframeRef?.current) {
-      toast.error("Unable to capture screenshot", {
-        description: "Iframe not found",
-      });
-      return;
-    }
-
-    const bounds = getScreenshotBounds(iframeRef.current);
-
-    // Allow the dropdown close animation to complete
-    await new Promise((resolve) => setTimeout(resolve, 100));
-
-    copyScreenshotMutation.mutate({
-      bounds,
-    });
-  };
 
   const handleExitVersion = () => {
     void navigate({
@@ -335,32 +252,13 @@ export function ProjectHeaderToolbar({
                     )}
                   </DropdownMenuContent>
                 </DropdownMenu>
-                <DropdownMenu
-                  onOpenChange={(open) => {
-                    if (open) {
-                      captureClientEvent("project.share_menu_opened");
-                    }
-                  }}
-                >
+                <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button className="h-7 gap-1" size="sm" variant="secondary">
                       Share
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    {hasAppModifications && (
-                      <>
-                        <DropdownMenuItem onClick={handleCopyScreenshot}>
-                          <Clipboard className="h-4 w-4" />
-                          Copy screenshot
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={handleTakeScreenshot}>
-                          <Save className="h-4 w-4" />
-                          Save screenshot
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                      </>
-                    )}
                     <DropdownMenuItem
                       onClick={() => {
                         setExportZipModalOpen(true);
@@ -407,15 +305,4 @@ export function ProjectHeaderToolbar({
       />
     </>
   );
-}
-
-function getScreenshotBounds(iframeElement: HTMLIFrameElement) {
-  const rect = iframeElement.getBoundingClientRect();
-
-  return {
-    height: rect.height,
-    width: rect.width,
-    x: rect.left,
-    y: rect.top,
-  };
 }

@@ -19,7 +19,7 @@ import {
 import { call, eventIterator } from "@orpc/server";
 import { ProjectSubdomainSchema } from "@quests/workspace/client";
 import { createAppConfig, workspaceRouter } from "@quests/workspace/electron";
-import { app, clipboard, shell, webContents } from "electron";
+import { app, shell } from "electron";
 import { exec } from "node:child_process";
 import fs from "node:fs/promises";
 import os from "node:os";
@@ -273,122 +273,6 @@ const openAppIn = base
     }
   });
 
-const takeScreenshot = base
-  .errors({
-    SCREENSHOT_FAILED: {
-      message: "Failed to take screenshot",
-    },
-  })
-  .input(
-    z.object({
-      bounds: z
-        .object({
-          height: z.number(),
-          width: z.number(),
-          x: z.number(),
-          y: z.number(),
-        })
-        .optional(),
-      name: z.string().transform((name) =>
-        name
-          // Safe filename characters
-          // eslint-disable-next-line no-control-regex
-          .replaceAll(/[<>:"/\\|?*\u0000-\u001F]/g, "-")
-          .replaceAll(/\s+/g, "-")
-          .replaceAll(/^\.+/g, "")
-          .slice(0, 200),
-      ),
-    }),
-  )
-  .output(
-    z.object({
-      filename: z.string(),
-      filepath: z.string(),
-    }),
-  )
-  .handler(async ({ context, errors, input }) => {
-    try {
-      const webContent = webContents.fromId(context.webContentsId);
-      if (!webContent) {
-        throw errors.SCREENSHOT_FAILED({ message: "Web contents not found" });
-      }
-
-      const image = input.bounds
-        ? await webContent.capturePage({
-            height: Math.round(input.bounds.height),
-            width: Math.round(input.bounds.width),
-            x: Math.round(input.bounds.x),
-            y: Math.round(input.bounds.y),
-          })
-        : await webContent.capturePage();
-
-      const buffer = image.toPNG();
-
-      const timestamp = new Date().toISOString().replaceAll(/[:.]/g, "-");
-      const filename = `${input.name}-screenshot-${timestamp}.png`;
-      const downloadsPath = app.getPath("downloads");
-      const filepath = path.join(downloadsPath, filename);
-
-      await fs.writeFile(filepath, buffer);
-
-      captureServerEvent("project.shared", {
-        share_type: "saved_screenshot",
-      });
-
-      return { filename, filepath };
-    } catch (error) {
-      throw errors.SCREENSHOT_FAILED({
-        message: error instanceof Error ? error.message : "Unknown error",
-      });
-    }
-  });
-
-const copyScreenshotToClipboard = base
-  .errors({
-    SCREENSHOT_FAILED: {
-      message: "Failed to take screenshot",
-    },
-  })
-  .input(
-    z.object({
-      bounds: z
-        .object({
-          height: z.number(),
-          width: z.number(),
-          x: z.number(),
-          y: z.number(),
-        })
-        .optional(),
-    }),
-  )
-  .handler(async ({ context, errors, input }) => {
-    try {
-      const webContent = webContents.fromId(context.webContentsId);
-      if (!webContent) {
-        throw errors.SCREENSHOT_FAILED({ message: "Web contents not found" });
-      }
-
-      const image = input.bounds
-        ? await webContent.capturePage({
-            height: Math.round(input.bounds.height),
-            width: Math.round(input.bounds.width),
-            x: Math.round(input.bounds.x),
-            y: Math.round(input.bounds.y),
-          })
-        : await webContent.capturePage();
-
-      clipboard.writeImage(image);
-
-      captureServerEvent("project.shared", {
-        share_type: "copied_screenshot",
-      });
-    } catch (error) {
-      throw errors.SCREENSHOT_FAILED({
-        message: error instanceof Error ? error.message : "Unknown error",
-      });
-    }
-  });
-
 const showFileInFolder = base
   .errors({
     FILE_NOT_FOUND: {
@@ -529,7 +413,6 @@ const live = {
 
 export const utils = {
   clearExceptions,
-  copyScreenshotToClipboard,
   exportZip,
   getSupportedEditors,
   imageDataURI,
@@ -538,5 +421,4 @@ export const utils = {
   openExternalLink,
   showFileInFolder,
   showProjectFileInFolder,
-  takeScreenshot,
 };

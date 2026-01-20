@@ -1,15 +1,8 @@
 import { type WorkspaceApp } from "@quests/workspace/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { atom, useAtom, useSetAtom } from "jotai";
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { atom, useAtom } from "jotai";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 
-import { projectIframeRefAtom } from "../atoms/project";
 import { useReload } from "../hooks/use-reload";
 import { useShimIFrame } from "../hooks/use-shim-iframe";
 import { cn } from "../lib/utils";
@@ -38,7 +31,6 @@ export function AppView({
 }) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const shimIFrame = useShimIFrame(iframeRef);
-  const setProjectIframeRef = useSetAtom(projectIframeRefAtom);
   const [isConsoleOpen, setIsConsoleOpen] = useState(false);
   const clientLogsAtom = useMemo(() => {
     // To ensure atom changes when app.subdomain changes
@@ -54,17 +46,6 @@ export function AppView({
     restartRuntimeMutation.mutate({ appSubdomain: app.subdomain });
     shimIFrame.reloadWindow();
   }, [app.subdomain, restartRuntimeMutation, shimIFrame]);
-
-  useEffect(() => {
-    if (app.type === "project") {
-      setProjectIframeRef(iframeRef);
-    }
-    return () => {
-      if (app.type === "project") {
-        setProjectIframeRef(null);
-      }
-    };
-  }, [app.type, setProjectIframeRef, iframeRef]);
 
   useReload(
     useCallback(() => {
