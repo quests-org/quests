@@ -22,9 +22,10 @@ export async function filterIgnoredFiles({
     const fullPath = absolutePathJoin(rootDir, file.name);
     const relativePath = path.relative(rootDir, fullPath);
 
-    // Skip dot-prefixed files and folders by default
+    // Skip dot-prefixed files and folders by default, except .git (when includeGit is true) and .gitignore
     const isGitAndIncluded = includeGit && file.name === ".git";
-    if (file.name.startsWith(".") && !isGitAndIncluded) {
+    const isGitignore = file.name === ".gitignore";
+    if (file.name.startsWith(".") && !isGitAndIncluded && !isGitignore) {
       continue;
     }
 

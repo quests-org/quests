@@ -28,6 +28,7 @@ describe("file-tree", () => {
             file.txt
           level1/
             test-deep.txt
+        .gitignore
         empty-file.txt
         grep-test-2.txt
         grep-test.txt
