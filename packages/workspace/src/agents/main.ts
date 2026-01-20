@@ -152,9 +152,10 @@ export const mainAgent = setupAgent({
     
     # Scripts
     - Node.js and pnpm are pre-installed for package management.
-    - Python and other language runtimes are NOT included with the environment, but may be present on the user's system.
-    - Use the \`tsx\` CLI tool for running TypeScript scripts, e.g. \`tsx ${APP_FOLDER_NAMES.scripts}/example.ts\`.
-    - Prefer TypeScript for scripts so they can be typechecked using the \`${agentTools.RunDiagnostics.name}\` tool.
+    - The only built-in way to run scripts is by executing TypeScript files using the \`${agentTools.RunShellCommand.name}\` tool.
+    - Use the \`tsx\` command to run them, e.g. \`tsx ${APP_FOLDER_NAMES.scripts}/example.ts\`.
+    - No other runtimes are bundled with this product.
+    - You can use the \`${agentTools.RunDiagnostics.name}\` tool to check for errors in your scripts.
       
     # Output Files
     - Files in \`${APP_FOLDER_NAMES.output}/\` are automatically shown to the user. They can click them to view in full or download.
