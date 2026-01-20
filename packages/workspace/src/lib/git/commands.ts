@@ -18,8 +18,8 @@ export namespace GitCommands {
     return ["checkout", ref, "--", "."];
   }
 
-  export function cloneWithoutRemote(repoPath: string, targetPath: string) {
-    return ["clone", "--no-remote", repoPath, targetPath];
+  export function clone(repoPath: string, targetPath: string) {
+    return ["clone", repoPath, targetPath];
   }
 
   export function commitEmptyWithAuthor(message: string) {
@@ -93,6 +93,10 @@ export namespace GitCommands {
 
   export function lsFiles() {
     return ["ls-files"];
+  }
+
+  export function removeRemote(remoteName: string) {
+    return ["remote", "remove", remoteName];
   }
 
   export function revList(ref: string) {

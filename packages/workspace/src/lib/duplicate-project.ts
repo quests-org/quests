@@ -78,10 +78,15 @@ export async function duplicateProject(
     }
 
     yield* git(
-      GitCommands.cloneWithoutRemote(sourceConfig.appDir, projectConfig.appDir),
+      GitCommands.clone(sourceConfig.appDir, projectConfig.appDir),
       workspaceConfig.rootDir,
       { signal },
     );
+
+    // Remove the remote origin because we're duplicating the project
+    yield* git(GitCommands.removeRemote("origin"), projectConfig.appDir, {
+      signal,
+    });
 
     const sourceManifest = await getProjectManifest(sourceConfig.appDir);
     const sourceName = sourceManifest?.name || sourceConfig.subdomain;
