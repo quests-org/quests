@@ -1,5 +1,6 @@
 import { projectSidebarCollapsedAtomFamily } from "@/client/atoms/project-sidebar";
 import { AppView } from "@/client/components/app-view";
+import { ProjectHeaderToolbar } from "@/client/components/project-header-toolbar";
 import { ProjectSidebar } from "@/client/components/project-sidebar";
 import {
   ResizableHandle,
@@ -69,77 +70,85 @@ export function ProjectView({
     }
   }, [sidebarCollapsed, panelRef]);
 
+  const sidebarProps = {
+    project,
+    selectedModelURI,
+    selectedSessionId,
+    selectedVersion,
+  };
+
   // TODO: Remove chat- after 2026-03-01
-  if (!hasAppModifications || project.subdomain.startsWith("chat-")) {
-    return (
-      <div className="flex h-full w-full items-start justify-center border-t">
-        <div className="flex h-full w-full max-w-3xl flex-col bg-background">
-          <ProjectSidebar
-            project={project}
-            selectedModelURI={selectedModelURI}
-            selectedSessionId={selectedSessionId}
-            selectedVersion={selectedVersion}
-          />
-        </div>
-      </div>
-    );
-  }
+  const isChatOnly =
+    !hasAppModifications || project.subdomain.startsWith("chat-");
 
   return (
-    <ResizablePanelGroup orientation="horizontal">
-      <ResizablePanel
-        collapsedSize="0px"
-        collapsible
-        defaultSize="24rem"
-        maxSize="50%"
-        minSize="24rem"
-        onResize={() => {
-          const panel = panelRef.current;
-          if (!panel) {
-            return;
-          }
+    <div className="flex h-dvh w-full flex-col overflow-hidden">
+      <ProjectHeaderToolbar
+        hasAppModifications={hasAppModifications}
+        project={project}
+        selectedVersion={selectedVersion}
+      />
 
-          const isCollapsed = panel.isCollapsed();
-          if (lastAtomValueRef.current !== isCollapsed) {
-            lastAtomValueRef.current = isCollapsed;
-            setSidebarCollapsed(isCollapsed);
-          }
-        }}
-        panelRef={panelRef}
-      >
-        <ProjectSidebar
-          project={project}
-          selectedModelURI={selectedModelURI}
-          selectedSessionId={selectedSessionId}
-          selectedVersion={selectedVersion}
-        />
-      </ResizablePanel>
-
-      <ResizableHandle className="bg-transparent transition-all duration-200 focus-visible:ring-0 focus-visible:ring-offset-0 data-[separator='active']:bg-primary/50 data-[separator='hover']:scale-x-[3] data-[separator='hover']:bg-muted-foreground" />
-
-      <ResizablePanel>
-        <div
-          className={cn(
-            "flex h-full flex-1 flex-col overflow-hidden border-t bg-secondary p-2",
-            !sidebarCollapsed && "rounded-tl-lg border-l",
-          )}
-        >
-          <div className="relative flex flex-1 flex-col">
-            <AppView
-              app={project}
-              className="overflow-hidden rounded-lg"
-              shouldReload={!selectedVersion}
-            />
-
-            {selectedVersion && (
-              <VersionOverlay
-                projectSubdomain={project.subdomain}
-                versionRef={selectedVersion}
-              />
-            )}
+      {isChatOnly ? (
+        <div className="flex h-full w-full flex-1 items-start justify-center overflow-hidden border-t">
+          <div className="flex h-full w-full max-w-3xl flex-col bg-background">
+            <ProjectSidebar {...sidebarProps} />
           </div>
         </div>
-      </ResizablePanel>
-    </ResizablePanelGroup>
+      ) : (
+        <div className="flex flex-1 overflow-hidden">
+          <ResizablePanelGroup orientation="horizontal">
+            <ResizablePanel
+              collapsedSize="0px"
+              collapsible
+              defaultSize="24rem"
+              maxSize="50%"
+              minSize="24rem"
+              onResize={() => {
+                const panel = panelRef.current;
+                if (!panel) {
+                  return;
+                }
+
+                const isCollapsed = panel.isCollapsed();
+                if (lastAtomValueRef.current !== isCollapsed) {
+                  lastAtomValueRef.current = isCollapsed;
+                  setSidebarCollapsed(isCollapsed);
+                }
+              }}
+              panelRef={panelRef}
+            >
+              <ProjectSidebar {...sidebarProps} />
+            </ResizablePanel>
+
+            <ResizableHandle className="bg-transparent transition-all duration-200 focus-visible:ring-0 focus-visible:ring-offset-0 data-[separator='active']:bg-primary/50 data-[separator='hover']:scale-x-[3] data-[separator='hover']:bg-muted-foreground" />
+
+            <ResizablePanel>
+              <div
+                className={cn(
+                  "flex h-full flex-1 flex-col overflow-hidden border-t bg-secondary p-2",
+                  !sidebarCollapsed && "rounded-tl-lg border-l",
+                )}
+              >
+                <div className="relative flex flex-1 flex-col">
+                  <AppView
+                    app={project}
+                    className="overflow-hidden rounded-lg"
+                    shouldReload={!selectedVersion}
+                  />
+
+                  {selectedVersion && (
+                    <VersionOverlay
+                      projectSubdomain={project.subdomain}
+                      versionRef={selectedVersion}
+                    />
+                  )}
+                </div>
+              </div>
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        </div>
+      )}
+    </div>
   );
 }

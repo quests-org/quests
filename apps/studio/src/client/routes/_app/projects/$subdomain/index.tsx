@@ -1,7 +1,6 @@
 import { promptValueAtomFamily } from "@/client/atoms/prompt-value";
 import { DuplicateProjectModal } from "@/client/components/duplicate-project-modal";
 import { ProjectDeleteDialog } from "@/client/components/project-delete-dialog";
-import { ProjectHeaderToolbar } from "@/client/components/project-header-toolbar";
 import { ProjectSettingsDialog } from "@/client/components/project-settings-dialog";
 import { ProjectView } from "@/client/components/project-view";
 import { useProjectRouteSync } from "@/client/hooks/use-project-route-sync";
@@ -223,22 +222,14 @@ function RouteComponent() {
   }
 
   return (
-    <div className="flex h-dvh w-full flex-col overflow-hidden">
-      <ProjectHeaderToolbar
+    <>
+      <ProjectView
         hasAppModifications={hasAppModifications}
         project={project}
+        selectedModelURI={projectState.selectedModelURI}
+        selectedSessionId={selectedSessionId}
         selectedVersion={selectedVersion}
       />
-
-      <div className="flex flex-1 overflow-hidden">
-        <ProjectView
-          hasAppModifications={hasAppModifications}
-          project={project}
-          selectedModelURI={projectState.selectedModelURI}
-          selectedSessionId={selectedSessionId}
-          selectedVersion={selectedVersion}
-        />
-      </div>
 
       <ProjectDeleteDialog
         navigateOnDelete
@@ -261,6 +252,6 @@ function RouteComponent() {
         open={showSettings ?? false}
         project={project}
       />
-    </div>
+    </>
   );
 }
