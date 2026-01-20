@@ -11,11 +11,11 @@ import { QUESTS_AUTO_MODEL_PROVIDER_ID } from "@quests/shared";
 import { captureServerException } from "./capture-server-exception";
 import { getAIProviderConfigs } from "./get-ai-provider-configs";
 
-export async function setDefaultModelIfNeeded(options?: {
-  forceUpdateForNewLogin?: boolean;
+export async function setDefaultModel(options?: {
+  onlyIfUnset?: boolean;
 }): Promise<void> {
   const existingDefault = getDefaultModelURI();
-  if (existingDefault && !options?.forceUpdateForNewLogin) {
+  if (existingDefault && options?.onlyIfUnset) {
     return;
   }
 

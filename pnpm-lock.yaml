@@ -252,6 +252,9 @@ importers:
       read-pkg:
         specifier: ^9.0.1
         version: 9.0.1
+      semver:
+        specifier: ^7.7.2
+        version: 7.7.3
       shiki:
         specifier: ^3.21.0
         version: 3.21.0
@@ -469,9 +472,6 @@ importers:
       remend:
         specifier: ^1.0.2
         version: 1.0.2
-      semver:
-        specifier: ^7.7.2
-        version: 7.7.3
       sharp:
         specifier: ^0.34.3
         version: 0.34.3

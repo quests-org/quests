@@ -11,7 +11,7 @@ import {
 } from "@/electron-main/auth/state";
 import { captureServerEvent } from "@/electron-main/lib/capture-server-event";
 import { captureServerException } from "@/electron-main/lib/capture-server-exception";
-import { setDefaultModelIfNeeded } from "@/electron-main/lib/set-default-model";
+import { setDefaultModel } from "@/electron-main/lib/set-default-model";
 import { publisher } from "@/electron-main/rpc/publisher";
 import { getSessionStore } from "@/electron-main/stores/session";
 import { getMainWindow } from "@/electron-main/windows/main/instance";
@@ -147,7 +147,7 @@ export async function startAuthCallbackServer() {
       return c.html(renderAuthPage({ isError: true }), 400);
     }
 
-    void setDefaultModelIfNeeded({ forceUpdateForNewLogin: true });
+    void setDefaultModel();
     publisher.publish("auth.sign-in-success", { success: true });
     focusMainWindow();
     captureServerEvent("auth.signed_in");

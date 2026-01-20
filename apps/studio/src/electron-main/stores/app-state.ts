@@ -17,6 +17,7 @@ const DEFAULT_TELEMETRY_ID = "studio-main-default";
 const AppStateSchema = z.object({
   hasCompletedProviderSetup: z.boolean().catch(false),
   isSidebarOpen: z.boolean().catch(false),
+  lastMigratedVersion: z.string().optional(),
   telemetryId: z.string().catch(DEFAULT_TELEMETRY_ID),
 });
 /* eslint-enable unicorn/prefer-top-level-await */

@@ -18,6 +18,7 @@ import { app, BrowserWindow, dialog, nativeTheme, protocol } from "electron";
 import { createWorkspaceActor } from "./lib/create-workspace-actor";
 import { generateUserAgent } from "./lib/generate-user-agent";
 import { registerTelemetry } from "./lib/register-telemetry";
+import { runMigrations } from "./lib/run-migrations";
 import { setupBinDirectory } from "./lib/setup-bin-directory";
 import { watchThemePreferenceAndApply } from "./lib/theme-utils";
 import { initializeRPC } from "./rpc/initialize";
@@ -123,6 +124,8 @@ void app.whenReady().then(async () => {
   });
 
   await setupBinDirectory();
+
+  await runMigrations();
 
   appUpdater = new StudioAppUpdater();
   appUpdater.pollForUpdates();
