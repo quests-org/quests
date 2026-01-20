@@ -120,8 +120,8 @@ export async function lsCommand(
   }
 
   return ok({
+    combined: outputParts.join("\n"),
     command: commandStr,
     exitCode: 0,
-    output: outputParts.join("\n"),
   });
 }

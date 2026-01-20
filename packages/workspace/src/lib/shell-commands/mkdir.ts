@@ -71,5 +71,5 @@ export async function mkdirCommand(
 
   const pathsStr = directoryPaths.join(" ");
   const command = recursive ? `mkdir -p ${pathsStr}` : `mkdir ${pathsStr}`;
-  return shellSuccess(command);
+  return shellSuccess({ command });
 }

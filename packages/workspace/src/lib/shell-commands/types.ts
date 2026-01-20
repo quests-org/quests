@@ -1,6 +1,6 @@
 import { type Result } from "neverthrow";
 
 export type FileOperationResult = Result<
-  { command: string; exitCode: number; output: string },
+  { combined: string; command: string; exitCode: number },
   { message: string; type: "execute-error" }
 >;

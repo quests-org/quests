@@ -133,5 +133,5 @@ export async function cpCommand(
 
   const pathsStr = [...sourcePaths, destPath].join(" ");
   const command = recursive ? `cp -r ${pathsStr}` : `cp ${pathsStr}`;
-  return shellSuccess(command);
+  return shellSuccess({ command });
 }

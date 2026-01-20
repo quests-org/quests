@@ -39,12 +39,12 @@ describe("lsCommand", () => {
 
     expect(result._unsafeUnwrap()).toMatchInlineSnapshot(`
       {
-        "command": "ls",
-        "exitCode": 0,
-        "output": "file1.txt
+        "combined": "file1.txt
       file2.txt
       folder
       folder2",
+        "command": "ls",
+        "exitCode": 0,
       }
     `);
   });
@@ -54,9 +54,9 @@ describe("lsCommand", () => {
 
     expect(result._unsafeUnwrap()).toMatchInlineSnapshot(`
       {
+        "combined": "nested.txt",
         "command": "ls folder",
         "exitCode": 0,
-        "output": "nested.txt",
       }
     `);
   });
@@ -66,13 +66,13 @@ describe("lsCommand", () => {
 
     expect(result._unsafeUnwrap()).toMatchInlineSnapshot(`
       {
-        "command": "ls -a",
-        "exitCode": 0,
-        "output": ".hidden
+        "combined": ".hidden
       file1.txt
       file2.txt
       folder
       folder2",
+        "command": "ls -a",
+        "exitCode": 0,
       }
     `);
   });
@@ -82,9 +82,9 @@ describe("lsCommand", () => {
 
     expect(result._unsafeUnwrap()).toMatchInlineSnapshot(`
       {
+        "combined": "nested.txt",
         "command": "ls -a folder",
         "exitCode": 0,
-        "output": "nested.txt",
       }
     `);
   });
@@ -94,9 +94,9 @@ describe("lsCommand", () => {
 
     expect(result._unsafeUnwrap()).toMatchInlineSnapshot(`
       {
+        "combined": "file1.txt",
         "command": "ls file1.txt",
         "exitCode": 0,
-        "output": "file1.txt",
       }
     `);
   });
@@ -106,14 +106,14 @@ describe("lsCommand", () => {
 
     expect(result._unsafeUnwrap()).toMatchInlineSnapshot(`
       {
-        "command": "ls folder folder2",
-        "exitCode": 0,
-        "output": "folder:
+        "combined": "folder:
       nested.txt
 
       folder2:
       another.txt
       file.txt",
+        "command": "ls folder folder2",
+        "exitCode": 0,
       }
     `);
   });
@@ -123,13 +123,13 @@ describe("lsCommand", () => {
 
     expect(result._unsafeUnwrap()).toMatchInlineSnapshot(`
       {
-        "command": "ls -l",
-        "exitCode": 0,
-        "output": "ls: unknown flag '-l' ignored (supported flags: -a)
+        "combined": "ls: unknown flag '-l' ignored (supported flags: -a)
       file1.txt
       file2.txt
       folder
       folder2",
+        "command": "ls -l",
+        "exitCode": 0,
       }
     `);
   });

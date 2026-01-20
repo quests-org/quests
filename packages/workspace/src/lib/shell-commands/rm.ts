@@ -128,5 +128,5 @@ export async function rmCommand(
   }
   const flagsStr = flags.length > 0 ? `${flags.join(" ")} ` : "";
   const command = `rm ${flagsStr}${pathsStr}`;
-  return shellSuccess(command);
+  return shellSuccess({ command });
 }

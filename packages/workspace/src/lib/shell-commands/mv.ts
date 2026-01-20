@@ -107,5 +107,5 @@ export async function mvCommand(
   }
 
   const pathsStr = [...sourcePaths, destPath].join(" ");
-  return shellSuccess(`mv ${pathsStr}`);
+  return shellSuccess({ command: `mv ${pathsStr}` });
 }
