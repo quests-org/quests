@@ -230,15 +230,14 @@ export const RunShellCommand = createTool({
           configs: appConfig.workspaceConfig.getAIProviderConfigs(),
           workspaceServerURL: getWorkspaceServerURL(),
         });
-        const binResult = await runNodeModulesBin(appConfig, "tsx", args, {
-          all: true,
-          cancelSignal: signal,
-          env: providerEnv,
-        });
-        if (binResult.isErr()) {
-          return executeError(binResult.error.message);
-        }
-        const execResult = await binResult.value;
+        // Use pnpm dlx for faster execution via cached packages and avoid
+        // installing all packages eagerly.
+        const execResult = await execaNodeForApp(
+          appConfig,
+          appConfig.workspaceConfig.pnpmBinPath,
+          ["dlx", "tsx", ...args],
+          { all: true, cancelSignal: signal, env: providerEnv },
+        );
         const combined = filterShellOutput(execResult.all, appConfig.appDir);
         return ok({
           combined,
