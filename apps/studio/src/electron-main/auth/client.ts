@@ -1,5 +1,6 @@
 import { getToken } from "@/electron-main/api/utils";
 import { getAuthServerPort } from "@/electron-main/auth/state";
+import { setDefaultModel } from "@/electron-main/lib/set-default-model";
 import { publisher } from "@/electron-main/rpc/publisher";
 import { getSessionStore } from "@/electron-main/stores/session";
 import { mergeGenerators } from "@quests/shared/merge-generators";
@@ -118,5 +119,6 @@ export async function signOut() {
   }
   const sessionStore = getSessionStore();
   sessionStore.set("apiBearerToken", null);
+  void setDefaultModel({ onlyIfQuestsModel: true });
   return response;
 }
