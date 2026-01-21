@@ -193,7 +193,27 @@ export const RunShellCommand = createTool({
     stdout: z.string().optional(), // Backward compatibility with old output format
   }),
   readOnly: false,
-  timeoutMs: ({ input }) => input.timeoutMs,
+  timeoutMs: ({ input }) => {
+    let timeoutMs = input.timeoutMs;
+
+    try {
+      const parseResult = translateShellCommand(input.command);
+      if (parseResult.isOk()) {
+        const [commandName] = parseResult.value;
+        if (commandName === TS_COMMAND.name) {
+          // Allow extra time for `pnpm dlx jiti` if not cached
+          timeoutMs += ms("10 seconds");
+        } else if (commandName === TSC_COMMAND.name) {
+          // Allow extra time for possible `pnpm install`
+          timeoutMs += ms("20 seconds");
+        }
+      }
+    } catch {
+      // If parsing fails, just use the original timeout
+    }
+
+    return timeoutMs;
+  },
   toModelOutput: ({ output: result }) => {
     // For backward compatibility, construct output from stderr and stdout if needed
     const output =
