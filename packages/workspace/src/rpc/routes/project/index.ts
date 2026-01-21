@@ -5,7 +5,7 @@ import { z } from "zod";
 
 import { createAppConfig } from "../../../lib/app-config/create";
 import { newProjectConfig } from "../../../lib/app-config/new";
-import { createMessage } from "../../../lib/create-message";
+import { createSession } from "../../../lib/create-session";
 import { defaultProjectName } from "../../../lib/default-project-name";
 import { duplicateProject } from "../../../lib/duplicate-project";
 import { exportProjectZip } from "../../../lib/export-project-zip";
@@ -14,6 +14,7 @@ import { getApp, getProjects } from "../../../lib/get-apps";
 import { getWorkspaceAppForSubdomain } from "../../../lib/get-workspace-app-for-subdomain";
 import { importProject as importProjectLib } from "../../../lib/import-project";
 import { initializeProject } from "../../../lib/initialize-project";
+import { newMessage } from "../../../lib/new-message";
 import { pathExists } from "../../../lib/path-exists";
 import {
   getProjectManifest,
@@ -164,12 +165,23 @@ const create = base
         throw toORPCError(result.error, errors);
       }
 
-      const messageResult = await createMessage({
+      const sessionResult = await createSession({
+        appConfig: projectConfig,
+        signal,
+      });
+
+      if (sessionResult.isErr()) {
+        context.workspaceConfig.captureException(sessionResult.error);
+        throw toORPCError(sessionResult.error, errors);
+      }
+
+      const messageResult = await newMessage({
         appConfig: projectConfig,
         files,
         model,
         modelURI,
         prompt,
+        sessionId: sessionResult.value.id,
       });
 
       if (messageResult.isErr()) {

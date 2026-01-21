@@ -4,7 +4,8 @@ import { mergeGenerators } from "@quests/shared/merge-generators";
 import { z } from "zod";
 
 import { createAppConfig } from "../../lib/app-config/create";
-import { createMessage } from "../../lib/create-message";
+import { createSession } from "../../lib/create-session";
+import { newMessage } from "../../lib/new-message";
 import { resolveModel } from "../../lib/resolve-model";
 import { Store } from "../../lib/store";
 import { SessionMessage } from "../../schemas/session/message";
@@ -64,13 +65,25 @@ const create = base
       });
       const model = await resolveModel(modelURI, context, errors);
 
-      const messageResult = await createMessage({
+      let finalSessionId: StoreId.Session;
+      if (sessionId) {
+        finalSessionId = sessionId;
+      } else {
+        const sessionResult = await createSession({ appConfig });
+        if (sessionResult.isErr()) {
+          context.workspaceConfig.captureException(sessionResult.error);
+          throw toORPCError(sessionResult.error, errors);
+        }
+        finalSessionId = sessionResult.value.id;
+      }
+
+      const messageResult = await newMessage({
         appConfig,
         files,
         model,
         modelURI,
         prompt,
-        sessionId,
+        sessionId: finalSessionId,
       });
 
       if (messageResult.isErr()) {

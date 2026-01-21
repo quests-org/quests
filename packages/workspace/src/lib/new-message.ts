@@ -7,11 +7,10 @@ import { type SessionMessagePart } from "../schemas/session/message-part";
 import { StoreId } from "../schemas/store-id";
 import { type Upload } from "../schemas/upload";
 import { type AppConfig } from "./app-config/types";
-import { createSession } from "./create-session";
 import { setProjectState } from "./project-state-store";
 import { writeUploadedFiles } from "./write-uploaded-files";
 
-export async function createMessage({
+export async function newMessage({
   appConfig,
   files,
   model,
@@ -24,18 +23,8 @@ export async function createMessage({
   model: LanguageModelV2;
   modelURI: AIGatewayModelURI.Type;
   prompt: string;
-  sessionId?: StoreId.Session;
+  sessionId: StoreId.Session;
 }) {
-  let finalSessionId: StoreId.Session;
-  if (sessionId) {
-    finalSessionId = sessionId;
-  } else {
-    const sessionResult = await createSession({ appConfig });
-    if (sessionResult.isErr()) {
-      return sessionResult;
-    }
-    finalSessionId = sessionResult.value.id;
-  }
   const messageId = StoreId.newMessageId();
   const createdAt = new Date();
   const parts: SessionMessagePart.Type[] = [];
@@ -45,7 +34,7 @@ export async function createMessage({
         createdAt,
         id: StoreId.newPartId(),
         messageId,
-        sessionId: finalSessionId,
+        sessionId,
       },
       text: prompt.trim(),
       type: "text",
@@ -57,7 +46,7 @@ export async function createMessage({
       appDir: appConfig.appDir,
       files,
       messageId,
-      sessionId: finalSessionId,
+      sessionId,
     });
 
     if (uploadResult.isErr()) {
@@ -69,7 +58,7 @@ export async function createMessage({
 
   const message: SessionMessage.UserWithParts = {
     id: messageId,
-    metadata: { createdAt, sessionId: finalSessionId },
+    metadata: { createdAt, sessionId },
     parts,
     role: "user",
   };
