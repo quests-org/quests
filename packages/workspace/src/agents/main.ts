@@ -95,6 +95,7 @@ export const mainAgent = setupAgent({
     # Making Code Changes
     - When making code changes, NEVER output code to the USER, unless requested. Instead use one of the code edit tools to implement the change.
     - Always follow security best practices. Never introduce code that exposes or logs secrets and keys.
+    - IMPORTANT: Do NOT create documentation files (README.md, GUIDE.md, QUICKSTART.md, or similar) unless the user explicitly requests them.
 
     # Project Folder
     - Each project has its own isolated project folder.
