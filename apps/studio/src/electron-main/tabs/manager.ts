@@ -68,10 +68,14 @@ export class TabsManager {
     );
 
     this.baseWindow.on("resize", () => {
-      const currentTab = this.getCurrentTab();
-      if (currentTab) {
-        this.updateTabBounds(currentTab);
-      }
+      this.updateCurrentTabBounds();
+    });
+    this.baseWindow.on("maximize", () => {
+      this.updateCurrentTabBounds();
+    });
+    // cspell:ignore unmaximize
+    this.baseWindow.on("unmaximize", () => {
+      this.updateCurrentTabBounds();
     });
   }
 
@@ -418,6 +422,13 @@ export class TabsManager {
     this.baseWindow.contentView.addChildView(tab.webView);
     tab.webView.webContents.focus();
     this.selectedTabId = tab.id;
+  }
+
+  private updateCurrentTabBounds() {
+    const currentTab = this.getCurrentTab();
+    if (currentTab) {
+      this.updateTabBounds(currentTab);
+    }
   }
 
   private async updateMetaTags(tab: TabWithView) {

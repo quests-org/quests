@@ -56,6 +56,10 @@ export function createToolbar({
   baseWindow.on("will-resize", debouncedResize);
   // Required for double clicking window edge style resize
   baseWindow.on("move", debouncedResize);
+  // Required for maximize/unmaximize on all platforms (resize may not fire reliably)
+  baseWindow.on("maximize", debouncedResize);
+  // cspell:ignore unmaximize
+  baseWindow.on("unmaximize", debouncedResize);
 
   baseWindow.on("close", () => {
     // Avoids errors when accessing destroyed window
