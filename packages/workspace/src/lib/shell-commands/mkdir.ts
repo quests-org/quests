@@ -1,4 +1,5 @@
 import fs from "node:fs/promises";
+import { parseArgs } from "node:util";
 
 import type { AppConfig } from "../app-config/types";
 
@@ -23,22 +24,30 @@ export async function mkdirCommand(
     return executeError(`mkdir command requires at least 1 argument\n${USAGE}`);
   }
 
-  let recursive = false;
-  let directoryPaths: string[];
+  const { positionals, values } = parseArgs({
+    allowPositionals: true,
+    args,
+    options: {
+      p: { type: "boolean" },
+    },
+    strict: false,
+  });
 
-  if (args[0] === "-p") {
-    if (args.length < 2) {
+  const recursive = Boolean(values.p);
+  const directoryPaths = positionals;
+
+  if (directoryPaths.length === 0) {
+    if (recursive) {
       return executeError(
         `mkdir -p command requires at least 1 path argument\n${USAGE}`,
       );
     }
-    recursive = true;
-    directoryPaths = args.slice(1);
-  } else {
-    directoryPaths = args;
+    return executeError(
+      `mkdir command requires valid path arguments\n${USAGE}`,
+    );
   }
 
-  if (directoryPaths.length === 0 || directoryPaths.some((p) => !p)) {
+  if (directoryPaths.some((p) => !p)) {
     return executeError(
       `mkdir command requires valid path arguments\n${USAGE}`,
     );

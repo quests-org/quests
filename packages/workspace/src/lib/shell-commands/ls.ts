@@ -1,6 +1,7 @@
 import { ok } from "neverthrow";
 import fs from "node:fs/promises";
 import path from "node:path";
+import { parseArgs } from "node:util";
 
 import type { AppConfig } from "../app-config/types";
 
@@ -23,41 +24,74 @@ export async function lsCommand(
   args: string[],
   appConfig: AppConfig,
 ): Promise<FileOperationResult> {
-  const KNOWN_FLAGS = new Set(["-a"]);
+  const IGNORED_FLAGS = new Set([
+    "1",
+    "A",
+    "color",
+    "F",
+    "G",
+    "h",
+    "i",
+    "l",
+    "p",
+    "r",
+    "S",
+    "s",
+    "t",
+    "U",
+  ]);
   const warnings: string[] = [];
 
-  let showHidden = false;
-  const flags: string[] = [];
-  const pathArgs: string[] = [];
+  const { positionals, tokens, values } = parseArgs({
+    allowPositionals: true,
+    args,
+    options: {
+      a: { type: "boolean" },
+      // Ignored flags
+      1: { type: "boolean" },
+      A: { type: "boolean" },
+      color: { type: "boolean" },
+      F: { type: "boolean" },
+      G: { type: "boolean" },
+      h: { type: "boolean" },
+      i: { type: "boolean" },
+      l: { type: "boolean" },
+      p: { type: "boolean" },
+      r: { type: "boolean" },
+      S: { type: "boolean" },
+      s: { type: "boolean" },
+      t: { type: "boolean" },
+      U: { type: "boolean" },
+    },
+    strict: false,
+    tokens: true,
+  });
 
-  for (const arg of args) {
-    if (arg.startsWith("-")) {
-      flags.push(arg);
-    } else {
-      pathArgs.push(arg);
-    }
-  }
+  const showHidden = Boolean(values.a);
 
-  for (const flag of flags) {
-    if (KNOWN_FLAGS.has(flag)) {
-      if (flag === "-a") {
-        showHidden = true;
-      }
-    } else {
+  // Warn about unknown flags
+  for (const token of tokens) {
+    if (
+      token.kind === "option" &&
+      !IGNORED_FLAGS.has(token.name) &&
+      token.name !== "a"
+    ) {
       warnings.push(
-        `ls: unknown flag '${flag}' ignored (supported flags: ${[...KNOWN_FLAGS].join(", ")})`,
+        `ls: unknown flag '-${token.name}' ignored (supported flags: -a)`,
       );
     }
   }
 
-  const targetPaths = pathArgs.length > 0 ? pathArgs : ["."];
+  const targetPaths = positionals.length > 0 ? positionals : ["."];
 
   const globValidation = validateNoGlobs(targetPaths, "ls");
   if (globValidation.isErr()) {
     return globValidation;
   }
 
-  const flagStr = flags.length > 0 ? ` ${flags.join(" ")}` : "";
+  // Reconstruct command string from original args
+  const flagArgs = args.filter((arg) => arg.startsWith("-"));
+  const flagStr = flagArgs.length > 0 ? ` ${flagArgs.join(" ")}` : "";
   const pathStr =
     targetPaths.length === 1 && targetPaths[0] === "."
       ? ""

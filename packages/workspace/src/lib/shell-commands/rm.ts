@@ -1,4 +1,5 @@
 import fs from "node:fs/promises";
+import { parseArgs } from "node:util";
 
 import type { AppConfig } from "../app-config/types";
 
@@ -29,34 +30,19 @@ export async function rmCommand(
     return executeError(`rm command requires at least 1 argument\n${USAGE}`);
   }
 
-  let recursive = false;
-  let force = false;
-  const targetPaths: string[] = [];
+  const { positionals, values } = parseArgs({
+    allowPositionals: true,
+    args,
+    options: {
+      f: { type: "boolean" },
+      r: { type: "boolean" },
+    },
+    strict: false,
+  });
 
-  for (const arg of args) {
-    switch (arg) {
-      case "-f": {
-        force = true;
-
-        break;
-      }
-      case "-fr":
-      case "-rf": {
-        recursive = true;
-        force = true;
-
-        break;
-      }
-      case "-r": {
-        recursive = true;
-
-        break;
-      }
-      default: {
-        targetPaths.push(arg);
-      }
-    }
-  }
+  const recursive = Boolean(values.r);
+  const force = Boolean(values.f);
+  const targetPaths = positionals;
 
   if (targetPaths.length === 0) {
     return executeError(

@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { parseArgs } from "node:util";
 
 import type { AppConfig } from "../app-config/types";
 
@@ -29,23 +30,30 @@ export async function cpCommand(
     return executeError(`cp command requires at least 2 arguments\n${USAGE}`);
   }
 
-  let recursive = false;
-  let sourcePaths: string[];
-  let destPath: string;
+  const { positionals, values } = parseArgs({
+    allowPositionals: true,
+    args,
+    options: {
+      r: { type: "boolean" },
+    },
+    strict: false,
+  });
 
-  if (args[0] === "-r") {
-    if (args.length < 3) {
+  const recursive = Boolean(values.r);
+
+  if (positionals.length < 2) {
+    if (recursive) {
       return executeError(
         `cp -r command requires at least 2 path arguments\n${USAGE}`,
       );
     }
-    recursive = true;
-    sourcePaths = args.slice(1, -1);
-    destPath = args.at(-1) ?? "";
-  } else {
-    sourcePaths = args.slice(0, -1);
-    destPath = args.at(-1) ?? "";
+    return executeError(
+      `cp command requires at least 2 path arguments\n${USAGE}`,
+    );
   }
+
+  const sourcePaths = positionals.slice(0, -1);
+  const destPath = positionals.at(-1) ?? "";
 
   if (sourcePaths.length === 0 || !destPath) {
     return executeError(
