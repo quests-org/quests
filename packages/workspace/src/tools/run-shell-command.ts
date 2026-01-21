@@ -71,12 +71,8 @@ const AVAILABLE_COMMANDS: Record<
     isFileOperation: false,
   },
   tsx: {
-    description: [
-      "Execute TypeScript files directly.",
-      "Avoid -e flag for inline execution except for simple one-liners that require no string escaping.",
-      "For most cases, create a .ts file and execute it instead.",
-    ].join(" "),
-    examples: ["tsx scripts/setup.ts", 'tsx -e "console.log(Date.now())"'],
+    description: ["Execute TypeScript files directly."].join(" "),
+    examples: ["tsx scripts/setup.ts"],
     isFileOperation: false,
   },
 };
@@ -235,7 +231,8 @@ export const RunShellCommand = createTool({
         const execResult = await execaNodeForApp(
           appConfig,
           appConfig.workspaceConfig.pnpmBinPath,
-          ["dlx", "tsx", ...args],
+          // Actually uses jiti, but called tsx to be more familiar to the agent
+          ["dlx", "jiti", ...args],
           { all: true, cancelSignal: signal, env: providerEnv },
         );
         const combined = filterShellOutput(execResult.all, appConfig.appDir);
