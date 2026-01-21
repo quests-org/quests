@@ -29,16 +29,16 @@ import { BaseInputSchema } from "./base";
 import { createTool } from "./create-tool";
 import { translateShellCommand } from "./translate-shell-command";
 
-export const TSX_COMMAND = {
-  description: "Execute TypeScript files directly.",
-  examples: ["tsx scripts/setup.ts"],
-  name: "tsx" as const,
+export const RUN_TS_COMMAND = {
+  description: "Execute a TypeScript file directly.",
+  examples: ["ts scripts/setup.ts"],
+  name: "ts" as const,
 } as const;
 
 const FileOperationSchema = z.enum(["cp", "ls", "mkdir", "mv", "rm"]);
 type FileOperation = z.output<typeof FileOperationSchema>;
 
-const ShellCommandSchema = z.enum(["pnpm", "tsc", TSX_COMMAND.name]);
+const ShellCommandSchema = z.enum(["pnpm", "tsc", RUN_TS_COMMAND.name]);
 type ShellCommand = z.output<typeof ShellCommandSchema>;
 
 const CommandNameSchema = z.union([FileOperationSchema, ShellCommandSchema]);
@@ -72,14 +72,14 @@ const AVAILABLE_COMMANDS: Record<
     ...RM_COMMAND,
     isFileOperation: true,
   },
+  [RUN_TS_COMMAND.name]: {
+    description: RUN_TS_COMMAND.description,
+    examples: RUN_TS_COMMAND.examples,
+    isFileOperation: false,
+  },
   tsc: {
     description: "TypeScript compiler",
     examples: ["tsc"],
-    isFileOperation: false,
-  },
-  [TSX_COMMAND.name]: {
-    description: TSX_COMMAND.description,
-    examples: TSX_COMMAND.examples,
     isFileOperation: false,
   },
 };
@@ -198,7 +198,8 @@ export const RunShellCommand = createTool({
           appConfig,
           appConfig.workspaceConfig.pnpmBinPath,
           args,
-          { all: true, cancelSignal: signal },
+          // Don't reject so we can filter the output
+          { all: true, cancelSignal: signal, reject: false },
         );
         const combined = filterShellOutput(execResult.all, appConfig.appDir);
         return ok({
@@ -207,30 +208,14 @@ export const RunShellCommand = createTool({
           exitCode: execResult.exitCode ?? 0,
         });
       }
-      case "tsc": {
-        const binResult = await runNodeModulesBin(appConfig, "tsc", args, {
-          all: true,
-          cancelSignal: signal,
-        });
-        if (binResult.isErr()) {
-          return executeError(binResult.error.message);
-        }
-        const execResult = await binResult.value;
-        const combined = filterShellOutput(execResult.all, appConfig.appDir);
-        return ok({
-          combined,
-          command: input.command,
-          exitCode: execResult.exitCode ?? 0,
-        });
-      }
-      case TSX_COMMAND.name: {
+      case RUN_TS_COMMAND.name: {
         if (args.length === 0) {
           return executeError(
-            `${TSX_COMMAND.name} command requires a file argument (e.g., ${TSX_COMMAND.name} scripts/setup.ts). Running ${TSX_COMMAND.name} without arguments spawns an interactive shell.`,
+            `${RUN_TS_COMMAND.name} command requires a file argument (e.g., ${RUN_TS_COMMAND.name} scripts/setup.ts). Running ${RUN_TS_COMMAND.name} without arguments spawns an interactive shell.`,
           );
         }
 
-        const { values } = parseArgs({
+        const { positionals, values } = parseArgs({
           allowPositionals: true,
           args,
           options: {
@@ -242,7 +227,26 @@ export const RunShellCommand = createTool({
 
         if (values.e !== undefined || values.eval !== undefined) {
           return executeError(
-            `${TSX_COMMAND.name} does not support the -e/--eval flag for evaluating code strings directly. Instead, write your code to a .ts or .js file and execute it with ${TSX_COMMAND.name}.`,
+            `${RUN_TS_COMMAND.name} does not support the -e/--eval flag for evaluating code strings directly. Instead, write your code to a .ts or .js file and execute it with ${RUN_TS_COMMAND.name}.`,
+          );
+        }
+
+        if (positionals.length === 0) {
+          return executeError(
+            `${RUN_TS_COMMAND.name} requires exactly one file path as a positional argument (e.g., ${RUN_TS_COMMAND.name} scripts/setup.ts).`,
+          );
+        }
+
+        if (positionals.length > 1) {
+          return executeError(
+            `${RUN_TS_COMMAND.name} only supports executing one file at a time. Found ${positionals.length} files: ${positionals.join(", ")}. Execute them separately or combine into a single script.`,
+          );
+        }
+
+        const filePath = positionals[0];
+        if (!filePath) {
+          return executeError(
+            `${RUN_TS_COMMAND.name} requires a file path argument.`,
           );
         }
 
@@ -252,13 +256,40 @@ export const RunShellCommand = createTool({
         });
         // Use pnpm dlx for faster execution via cached packages and avoid
         // installing all packages eagerly.
+        // Only pass the positional (file path) to avoid jiti misinterpreting arguments
         const execResult = await execaNodeForApp(
           appConfig,
           appConfig.workspaceConfig.pnpmBinPath,
-          // Actually uses jiti, but called tsx to be more familiar to the agent
-          ["dlx", "jiti", ...args],
-          { all: true, cancelSignal: signal, env: providerEnv },
+          ["dlx", "jiti", filePath],
+          // Don't reject so we can filter the output
+          { all: true, cancelSignal: signal, env: providerEnv, reject: false },
         );
+        let combined = filterShellOutput(execResult.all, appConfig.appDir);
+
+        // Warn about any unsupported flags that were ignored
+        const allFlags = args.filter((arg) => arg.startsWith("-"));
+        if (allFlags.length > 0) {
+          const warningMessage = `Warning: ${RUN_TS_COMMAND.name} received unsupported flags that were ignored: ${allFlags.join(", ")}. Only the file path is supported.\n\n`;
+          combined = warningMessage + combined;
+        }
+
+        return ok({
+          combined,
+          command: input.command,
+          exitCode: execResult.exitCode ?? 0,
+        });
+      }
+      case "tsc": {
+        const binResult = await runNodeModulesBin(appConfig, "tsc", args, {
+          all: true,
+          cancelSignal: signal,
+          // Don't reject so we can filter the output
+          reject: false,
+        });
+        if (binResult.isErr()) {
+          return executeError(binResult.error.message);
+        }
+        const execResult = await binResult.value;
         const combined = filterShellOutput(execResult.all, appConfig.appDir);
         return ok({
           combined,
