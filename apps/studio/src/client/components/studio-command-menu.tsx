@@ -130,7 +130,7 @@ export function StudioCommandMenu() {
       title="Open Project"
     >
       <CommandInput placeholder="Search projects..." />
-      <CommandList className="max-h-96">
+      <CommandList className="h-96">
         {isLoading && projects.length === 0 ? (
           <div className="space-y-4 px-2 py-3">
             {Array.from({ length: 3 }).map((_, i) => (
@@ -145,7 +145,9 @@ export function StudioCommandMenu() {
           </div>
         ) : (
           <>
-            <CommandEmpty>No projects found.</CommandEmpty>
+            <CommandEmpty>
+              <span className="text-muted-foreground">No commands found</span>
+            </CommandEmpty>
             {currentProject && (
               <CommandGroup
                 heading={
