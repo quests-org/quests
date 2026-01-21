@@ -422,8 +422,11 @@ export namespace Store {
       }
 
       const { parts, ...rest } = message;
+      // Save parts first without publishing part.updated events to avoid race condition
+      // where live queries try to read the message before it's saved
+      yield* await saveParts(parts, appConfig, { publish: false, signal });
+      // Save message - this will publish message.updated after everything is committed
       yield* saveMessage(rest, appConfig, { signal });
-      yield* await saveParts(parts, appConfig, { signal });
       return ok(message);
     });
   }
@@ -431,7 +434,10 @@ export namespace Store {
   export function savePart(
     part: SessionMessagePart.Type,
     appConfig: AppConfig,
-    { signal }: { signal?: AbortSignal } = {},
+    {
+      publish = true,
+      signal,
+    }: { publish?: boolean; signal?: AbortSignal } = {},
   ) {
     return safeTry(async function* () {
       const storage = yield* getSessionsStoreStorage(appConfig);
@@ -448,10 +454,12 @@ export namespace Store {
         { signal },
       );
 
-      publisher.publish("part.updated", {
-        part: savedPart,
-        subdomain: appConfig.subdomain,
-      });
+      if (publish) {
+        publisher.publish("part.updated", {
+          part: savedPart,
+          subdomain: appConfig.subdomain,
+        });
+      }
 
       return ok(savedPart);
     });
@@ -460,7 +468,10 @@ export namespace Store {
   export async function saveParts(
     parts: SessionMessagePart.Type[],
     appConfig: AppConfig,
-    { signal }: { signal?: AbortSignal } = {},
+    {
+      publish = true,
+      signal,
+    }: { publish?: boolean; signal?: AbortSignal } = {},
   ) {
     // Check that all parts belong to the same session
     const [firstPart] = parts;
@@ -493,7 +504,7 @@ export namespace Store {
       { limit: 10, signal },
       parts,
       async (part) => {
-        return savePart(part, appConfig, { signal });
+        return savePart(part, appConfig, { publish, signal });
       },
     );
 
