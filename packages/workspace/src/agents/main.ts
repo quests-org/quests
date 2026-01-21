@@ -23,6 +23,7 @@ import { type SessionMessageDataPart } from "../schemas/session/message-data-par
 import { StoreId } from "../schemas/store-id";
 import { getToolByType, TOOLS } from "../tools/all";
 import { TOOL_EXPLANATION_PARAM_NAME } from "../tools/base";
+import { TSX_COMMAND } from "../tools/run-shell-command";
 import { setupAgent } from "./create-agent";
 
 function formatCommitMessage(text: string): string {
@@ -153,9 +154,10 @@ export const mainAgent = setupAgent({
     # Scripts
     - Node.js and pnpm are pre-installed for package management.
     - The only built-in way to run scripts is by executing TypeScript files using the \`${agentTools.RunShellCommand.name}\` tool.
-    - Use the \`tsx\` command to run them, e.g. \`tsx ${APP_FOLDER_NAMES.scripts}/example.ts\`.
+    - Use the \`${TSX_COMMAND.name}\` command to run them, e.g. \`${TSX_COMMAND.name} ${APP_FOLDER_NAMES.scripts}/example.ts\`.
     - No other runtimes are bundled with this product.
     - You can use the \`${agentTools.RunDiagnostics.name}\` tool to check for errors in your scripts.
+    - You don't need to add shebangs to TypeScript script files.
       
     # Output Files
     - Files in \`${APP_FOLDER_NAMES.output}/\` are automatically shown to the user. They can click them to view in full or download.

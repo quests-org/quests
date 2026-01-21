@@ -28,17 +28,23 @@ import { BaseInputSchema } from "./base";
 import { createTool } from "./create-tool";
 import { translateShellCommand } from "./translate-shell-command";
 
+export const TSX_COMMAND = {
+  description: "Execute TypeScript files directly.",
+  examples: ["tsx scripts/setup.ts"],
+  name: "tsx" as const,
+} as const;
+
 const FileOperationSchema = z.enum(["cp", "ls", "mkdir", "mv", "rm"]);
 type FileOperation = z.output<typeof FileOperationSchema>;
 
-const ShellCommandSchema = z.enum(["pnpm", "tsc", "tsx"]);
+const ShellCommandSchema = z.enum(["pnpm", "tsc", TSX_COMMAND.name]);
 type ShellCommand = z.output<typeof ShellCommandSchema>;
 
 const CommandNameSchema = z.union([FileOperationSchema, ShellCommandSchema]);
 
 const AVAILABLE_COMMANDS: Record<
   FileOperation | ShellCommand,
-  { description: string; examples: string[]; isFileOperation: boolean }
+  { description: string; examples: readonly string[]; isFileOperation: boolean }
 > = {
   cp: {
     ...CP_COMMAND,
@@ -70,9 +76,9 @@ const AVAILABLE_COMMANDS: Record<
     examples: ["tsc"],
     isFileOperation: false,
   },
-  tsx: {
-    description: ["Execute TypeScript files directly."].join(" "),
-    examples: ["tsx scripts/setup.ts"],
+  [TSX_COMMAND.name]: {
+    description: TSX_COMMAND.description,
+    examples: TSX_COMMAND.examples,
     isFileOperation: false,
   },
 };
@@ -216,10 +222,10 @@ export const RunShellCommand = createTool({
           exitCode: execResult.exitCode ?? 0,
         });
       }
-      case "tsx": {
+      case TSX_COMMAND.name: {
         if (args.length === 0) {
           return executeError(
-            "tsx command requires a file argument (e.g., tsx scripts/setup.ts). Running tsx without arguments spawns an interactive shell.",
+            `${TSX_COMMAND.name} command requires a file argument (e.g., ${TSX_COMMAND.name} scripts/setup.ts). Running ${TSX_COMMAND.name} without arguments spawns an interactive shell.`,
           );
         }
         const providerEnv = envForProviders({
