@@ -92,6 +92,10 @@ const AVAILABLE_COMMANDS: Record<
   },
 };
 
+const VISIBLE_COMMANDS = Object.entries(AVAILABLE_COMMANDS).filter(
+  ([, config]) => !config.hidden,
+);
+
 async function handleFileOperation(
   command: FileOperation,
   args: string[],
@@ -118,41 +122,16 @@ async function handleFileOperation(
 
 export const RunShellCommand = createTool({
   description: dedent`
-    Execute specific whitelisted commands in the project folder. This is NOT a general shell.
-    
-    All commands operate in the project directory by default. All paths must be relative to the project root.
+    Execute whitelisted commands. Only these commands: ${VISIBLE_COMMANDS.map(([command]) => command).join(", ")}
     
     CONSTRAINTS:
-    - Only ONE command per invocation
-    - NO shell operators: no &&, ||, ;, |, >, <, 2>&1
-    - NO command chaining or piping
-    - NO cd commands (all run in project directory)
-    - NO glob patterns: no *, ?, [], {}, etc. - specify exact file/directory names
-    - Only these exact commands are allowed: ${Object.entries(
-      AVAILABLE_COMMANDS,
-    )
-      .filter(([, config]) => !config.hidden)
-      .map(([command]) => command)
-      .join(", ")}
+    - One command per call (no &&, ||, ;, |, >, <)
+    - No glob patterns (*, ?, [], {})
+    - Paths relative to project root
     
-    If you need multiple operations, call this tool multiple times.
-    
-    Available commands:
-    ${Object.entries(AVAILABLE_COMMANDS)
-      .filter(([, config]) => !config.hidden)
-      .map(([command, config]) => `- ${command} - ${config.description}`)
-      .join("\n")}
+    ${VISIBLE_COMMANDS.map(([command, config]) => `${command}: ${config.description}`).join("\n")}
       
-    Examples:
-    ${Object.entries(AVAILABLE_COMMANDS)
-      .filter(([, config]) => !config.hidden)
-      .flatMap(([, config]) => config.examples.map((ex) => `- ${ex}`))
-      .join("\n")}
-    
-    File operations (${Object.entries(AVAILABLE_COMMANDS)
-      .filter(([, config]) => config.isFileOperation && !config.hidden)
-      .map(([command]) => command)
-      .join(", ")}) use secure Node.js APIs instead of shell execution.
+    Examples: ${VISIBLE_COMMANDS.flatMap(([, config]) => config.examples).join(", ")}
   `,
   execute: async ({ appConfig, input, signal }) => {
     const parseResult = translateShellCommand(input.command);
