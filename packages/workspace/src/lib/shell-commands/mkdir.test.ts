@@ -72,40 +72,30 @@ describe("mkdirCommand", () => {
     expect(stats.isDirectory()).toBe(true);
   });
 
-  it("errors when no arguments provided", async () => {
-    const result = await mkdirCommand([], appConfig);
-
-    expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
-      {
-        "message": "mkdir command requires at least 1 argument
-      usage: mkdir [-p] directory_name ...",
-        "type": "execute-error",
-      }
-    `);
-  });
-
-  it("errors when -p flag provided without path", async () => {
-    const result = await mkdirCommand(["-p"], appConfig);
-
-    expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
-      {
-        "message": "mkdir -p command requires at least 1 path argument
-      usage: mkdir [-p] directory_name ...",
-        "type": "execute-error",
-      }
-    `);
-  });
-
-  it("errors with empty path", async () => {
-    const result = await mkdirCommand([""], appConfig);
-
-    expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
-      {
-        "message": "mkdir command requires valid path arguments
-      usage: mkdir [-p] directory_name ...",
-        "type": "execute-error",
-      }
-    `);
+  it.each([
+    {
+      args: [],
+      expectedMessage:
+        "mkdir command requires at least 1 argument\nusage: mkdir [-p] directory_name ...",
+      testName: "errors when no arguments provided",
+    },
+    {
+      args: ["-p"],
+      expectedMessage:
+        "mkdir -p command requires at least 1 path argument\nusage: mkdir [-p] directory_name ...",
+      testName: "errors when -p flag provided without path",
+    },
+    {
+      args: [""],
+      expectedMessage:
+        "mkdir command requires valid path arguments\nusage: mkdir [-p] directory_name ...",
+      testName: "errors with empty path",
+    },
+  ])("$testName", async ({ args, expectedMessage }) => {
+    const result = await mkdirCommand(args, appConfig);
+    const error = result._unsafeUnwrapErr();
+    expect(error.message).toBe(expectedMessage);
+    expect(error.type).toBe("execute-error");
   });
 
   it("errors with invalid path", async () => {

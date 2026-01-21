@@ -83,77 +83,48 @@ describe("mvCommand", () => {
     `);
   });
 
-  it("errors when no arguments provided", async () => {
-    const result = await mvCommand([], appConfig);
-
-    expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
-      {
-        "message": "mv command requires at least 2 arguments
-      usage: mv source target
-             mv source ... directory",
-        "type": "execute-error",
-      }
-    `);
-  });
-
-  it("errors when only one argument provided", async () => {
-    const result = await mvCommand(["file.txt"], appConfig);
-
-    expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
-      {
-        "message": "mv command requires at least 2 arguments
-      usage: mv source target
-             mv source ... directory",
-        "type": "execute-error",
-      }
-    `);
-  });
-
-  it("errors when source does not exist", async () => {
-    const result = await mvCommand(["nonexistent.txt", "dest.txt"], appConfig);
-
-    expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
-      {
-        "message": "mv: cannot stat 'nonexistent.txt': No such file or directory",
-        "type": "execute-error",
-      }
-    `);
-  });
-
-  it("errors when destination directory does not exist", async () => {
-    const result = await mvCommand(
-      ["file.txt", "nonexistent/file.txt"],
-      appConfig,
-    );
-
-    expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
-      {
-        "message": "mv: cannot move 'file.txt' to 'nonexistent/file.txt': No such file or directory",
-        "type": "execute-error",
-      }
-    `);
-  });
-
-  it("errors with invalid source path", async () => {
-    const result = await mvCommand(["/absolute/path", "dest.txt"], appConfig);
-
-    expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
-      {
-        "message": "mv: cannot stat '/absolute/path': No such file or directory",
-        "type": "execute-error",
-      }
-    `);
-  });
-
-  it("errors with invalid destination path", async () => {
-    const result = await mvCommand(["file.txt", "/absolute/path"], appConfig);
-
-    expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
-      {
-        "message": "mv: cannot move 'file.txt' to '/absolute/path': No such file or directory",
-        "type": "execute-error",
-      }
-    `);
+  it.each([
+    {
+      args: [],
+      expectedMessage:
+        "mv command requires at least 2 arguments\nusage: mv source target\n       mv source ... directory",
+      testName: "errors when no arguments provided",
+    },
+    {
+      args: ["file.txt"],
+      expectedMessage:
+        "mv command requires at least 2 arguments\nusage: mv source target\n       mv source ... directory",
+      testName: "errors when only one argument provided",
+    },
+    {
+      args: ["nonexistent.txt", "dest.txt"],
+      expectedMessage:
+        "mv: cannot stat 'nonexistent.txt': No such file or directory",
+      testName: "errors when source does not exist",
+    },
+    {
+      args: ["file.txt", "nonexistent/file.txt"],
+      expectedMessage:
+        "mv: cannot move 'file.txt' to 'nonexistent/file.txt': No such file or directory",
+      testName: "errors when destination directory does not exist",
+    },
+    {
+      args: ["/absolute/path", "dest.txt"],
+      expectedMessage:
+        "mv: cannot stat '/absolute/path': No such file or directory",
+      testName: "errors with invalid source path",
+    },
+    {
+      args: ["file.txt", "/absolute/path"],
+      expectedMessage:
+        "mv: cannot move 'file.txt' to '/absolute/path': No such file or directory",
+      testName: "errors with invalid destination path",
+    },
+  ])("$testName", async ({ args, expectedMessage }) => {
+    const result = await mvCommand(args, appConfig);
+    const error = result._unsafeUnwrapErr();
+    expect(error.message).toBe(expectedMessage);
+    expect(error.type).toBe("execute-error");
   });
 
   it("moves multiple files to a directory", async () => {

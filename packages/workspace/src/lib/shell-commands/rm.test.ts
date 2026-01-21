@@ -72,39 +72,42 @@ describe("rmCommand", () => {
     `);
   });
 
-  it("errors when no arguments provided", async () => {
-    const result = await rmCommand([], appConfig);
-
-    expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
-      {
-        "message": "rm command requires at least 1 argument
-      usage: rm [-f] [-r] file ...",
-        "type": "execute-error",
-      }
-    `);
-  });
-
-  it("errors when -r flag provided without path", async () => {
-    const result = await rmCommand(["-r"], appConfig);
-
-    expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
-      {
-        "message": "rm command requires at least 1 path argument after flags
-      usage: rm [-f] [-r] file ...",
-        "type": "execute-error",
-      }
-    `);
-  });
-
-  it("errors when file does not exist", async () => {
-    const result = await rmCommand(["non-existent.txt"], appConfig);
-
-    expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
-      {
-        "message": "rm: cannot remove 'non-existent.txt': No such file or directory",
-        "type": "execute-error",
-      }
-    `);
+  it.each([
+    {
+      args: [],
+      expectedMessage:
+        "rm command requires at least 1 argument\nusage: rm [-f] [-r] file ...",
+      testName: "errors when no arguments provided",
+    },
+    {
+      args: ["-r"],
+      expectedMessage:
+        "rm command requires at least 1 path argument after flags\nusage: rm [-f] [-r] file ...",
+      testName: "errors when -r flag provided without path",
+    },
+    {
+      args: [""],
+      expectedMessage:
+        "rm command requires valid path arguments\nusage: rm [-f] [-r] file ...",
+      testName: "errors with empty path",
+    },
+    {
+      args: ["non-existent.txt"],
+      expectedMessage:
+        "rm: cannot remove 'non-existent.txt': No such file or directory",
+      testName: "errors when file does not exist",
+    },
+    {
+      args: ["/absolute/path"],
+      expectedMessage:
+        "rm: cannot remove '/absolute/path': No such file or directory",
+      testName: "errors with invalid path",
+    },
+  ])("$testName", async ({ args, expectedMessage }) => {
+    const result = await rmCommand(args, appConfig);
+    const error = result._unsafeUnwrapErr();
+    expect(error.message).toBe(expectedMessage);
+    expect(error.type).toBe("execute-error");
   });
 
   it("errors when trying to remove directory without -r flag", async () => {
@@ -113,29 +116,6 @@ describe("rmCommand", () => {
     expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
       {
         "message": "rm: cannot remove 'folder': Is a directory",
-        "type": "execute-error",
-      }
-    `);
-  });
-
-  it("errors with invalid path", async () => {
-    const result = await rmCommand(["/absolute/path"], appConfig);
-
-    expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
-      {
-        "message": "rm: cannot remove '/absolute/path': No such file or directory",
-        "type": "execute-error",
-      }
-    `);
-  });
-
-  it("errors with empty path", async () => {
-    const result = await rmCommand([""], appConfig);
-
-    expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
-      {
-        "message": "rm command requires valid path arguments
-      usage: rm [-f] [-r] file ...",
         "type": "execute-error",
       }
     `);

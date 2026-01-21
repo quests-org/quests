@@ -50,41 +50,42 @@ describe("cpCommand", () => {
     expect(result._unsafeUnwrap()).toMatchInlineSnapshot();
   });
 
-  it("errors when no arguments provided", async () => {
-    const result = await cpCommand([], appConfig);
-
-    expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
-      {
-        "message": "cp command requires at least 2 arguments
-      usage: cp [-r] source_file target_file
-             cp [-r] source_file ... target_directory",
-        "type": "execute-error",
-      }
-    `);
-  });
-
-  it("errors when only one argument provided", async () => {
-    const result = await cpCommand(["file.txt"], appConfig);
-
-    expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
-      {
-        "message": "cp command requires at least 2 arguments
-      usage: cp [-r] source_file target_file
-             cp [-r] source_file ... target_directory",
-        "type": "execute-error",
-      }
-    `);
-  });
-
-  it("errors when source does not exist", async () => {
-    const result = await cpCommand(["nonexistent.txt", "dest.txt"], appConfig);
-
-    expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
-      {
-        "message": "cp: cannot stat 'nonexistent.txt': No such file or directory",
-        "type": "execute-error",
-      }
-    `);
+  it.each([
+    {
+      args: [],
+      expectedMessage:
+        "cp command requires at least 2 arguments\nusage: cp [-r] source_file target_file\n       cp [-r] source_file ... target_directory",
+      testName: "errors when no arguments provided",
+    },
+    {
+      args: ["file.txt"],
+      expectedMessage:
+        "cp command requires at least 2 arguments\nusage: cp [-r] source_file target_file\n       cp [-r] source_file ... target_directory",
+      testName: "errors when only one argument provided",
+    },
+    {
+      args: ["-r", "file.txt"],
+      expectedMessage:
+        "cp -r command requires at least 2 path arguments\nusage: cp [-r] source_file target_file\n       cp [-r] source_file ... target_directory",
+      testName: "errors when -r flag provided with wrong number of args",
+    },
+    {
+      args: ["nonexistent.txt", "dest.txt"],
+      expectedMessage:
+        "cp: cannot stat 'nonexistent.txt': No such file or directory",
+      testName: "errors when source does not exist",
+    },
+    {
+      args: ["/absolute/path", "dest.txt"],
+      expectedMessage:
+        "cp: cannot stat '/absolute/path': No such file or directory",
+      testName: "errors with invalid source path",
+    },
+  ])("$testName", async ({ args, expectedMessage }) => {
+    const result = await cpCommand(args, appConfig);
+    const error = result._unsafeUnwrapErr();
+    expect(error.message).toBe(expectedMessage);
+    expect(error.type).toBe("execute-error");
   });
 
   it("errors when copying directory without -r flag", async () => {
@@ -98,36 +99,12 @@ describe("cpCommand", () => {
     `);
   });
 
-  it("errors with invalid source path", async () => {
-    const result = await cpCommand(["/absolute/path", "dest.txt"], appConfig);
-
-    expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
-      {
-        "message": "cp: cannot stat '/absolute/path': No such file or directory",
-        "type": "execute-error",
-      }
-    `);
-  });
-
   it("errors with invalid destination path", async () => {
     const result = await cpCommand(["file.txt", "/absolute/path"], appConfig);
 
     expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
       {
         "message": "cp command failed for 'file.txt': ENOENT, no such file or directory '/tmp/workspace/projects/test/absolute/path'",
-        "type": "execute-error",
-      }
-    `);
-  });
-
-  it("errors when -r flag provided with wrong number of args", async () => {
-    const result = await cpCommand(["-r", "file.txt"], appConfig);
-
-    expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
-      {
-        "message": "cp -r command requires at least 2 path arguments
-      usage: cp [-r] source_file target_file
-             cp [-r] source_file ... target_directory",
         "type": "execute-error",
       }
     `);

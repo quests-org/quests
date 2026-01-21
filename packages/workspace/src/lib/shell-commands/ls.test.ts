@@ -34,71 +34,37 @@ describe("lsCommand", () => {
     mockFs.restore();
   });
 
-  it("lists files in current directory", async () => {
-    const result = await lsCommand([], appConfig);
-
-    expect(result._unsafeUnwrap()).toMatchInlineSnapshot(`
-      {
-        "combined": "file1.txt
-      file2.txt
-      folder
-      folder2",
-        "command": "ls",
-        "exitCode": 0,
-      }
-    `);
-  });
-
-  it("lists files in specified directory", async () => {
-    const result = await lsCommand(["folder"], appConfig);
-
-    expect(result._unsafeUnwrap()).toMatchInlineSnapshot(`
-      {
-        "combined": "nested.txt",
-        "command": "ls folder",
-        "exitCode": 0,
-      }
-    `);
-  });
-
-  it("lists hidden files with -a flag", async () => {
-    const result = await lsCommand(["-a"], appConfig);
-
-    expect(result._unsafeUnwrap()).toMatchInlineSnapshot(`
-      {
-        "combined": ".hidden
-      file1.txt
-      file2.txt
-      folder
-      folder2",
-        "command": "ls -a",
-        "exitCode": 0,
-      }
-    `);
-  });
-
-  it("lists hidden files in specified directory with -a flag", async () => {
-    const result = await lsCommand(["-a", "folder"], appConfig);
-
-    expect(result._unsafeUnwrap()).toMatchInlineSnapshot(`
-      {
-        "combined": "nested.txt",
-        "command": "ls -a folder",
-        "exitCode": 0,
-      }
-    `);
-  });
-
-  it("lists a single file", async () => {
-    const result = await lsCommand(["file1.txt"], appConfig);
-
-    expect(result._unsafeUnwrap()).toMatchInlineSnapshot(`
-      {
-        "combined": "file1.txt",
-        "command": "ls file1.txt",
-        "exitCode": 0,
-      }
-    `);
+  it.each([
+    {
+      args: [],
+      expected: "file1.txt\nfile2.txt\nfolder\nfolder2",
+      testName: "lists files in current directory",
+    },
+    {
+      args: ["folder"],
+      expected: "nested.txt",
+      testName: "lists files in specified directory",
+    },
+    {
+      args: ["-a"],
+      expected: ".hidden\nfile1.txt\nfile2.txt\nfolder\nfolder2",
+      testName: "lists hidden files with -a flag",
+    },
+    {
+      args: ["-a", "folder"],
+      expected: "nested.txt",
+      testName: "lists hidden files in specified directory with -a flag",
+    },
+    {
+      args: ["file1.txt"],
+      expected: "file1.txt",
+      testName: "lists a single file",
+    },
+  ])("$testName", async ({ args, expected }) => {
+    const result = await lsCommand(args, appConfig);
+    const output = result._unsafeUnwrap();
+    expect(output.combined).toBe(expected);
+    expect(output.exitCode).toBe(0);
   });
 
   it("lists multiple directories", async () => {
@@ -118,34 +84,17 @@ describe("lsCommand", () => {
     `);
   });
 
-  it("silently ignores cosmetic flags", async () => {
-    const result = await lsCommand(["-l"], appConfig);
-
-    expect(result._unsafeUnwrap()).toMatchInlineSnapshot(`
-      {
-        "combined": "file1.txt
-      file2.txt
-      folder
-      folder2",
-        "command": "ls -l",
-        "exitCode": 0,
-      }
-    `);
-  });
-
-  it("silently ignores multiple cosmetic flags", async () => {
-    const result = await lsCommand(["-l", "-h", "-t", "-r"], appConfig);
-
-    expect(result._unsafeUnwrap()).toMatchInlineSnapshot(`
-      {
-        "combined": "file1.txt
-      file2.txt
-      folder
-      folder2",
-        "command": "ls -l -h -t -r",
-        "exitCode": 0,
-      }
-    `);
+  it.each([
+    ["-l"],
+    ["-A"],
+    ["-l", "-h", "-t", "-r"],
+    ["-F", "-G", "--color"],
+    ["-t", "-r", "-S"],
+  ])("silently ignores cosmetic flags: %s", async (...args) => {
+    const result = await lsCommand(args, appConfig);
+    const output = result._unsafeUnwrap();
+    expect(output.combined).toBe("file1.txt\nfile2.txt\nfolder\nfolder2");
+    expect(output.exitCode).toBe(0);
   });
 
   it("warns about truly unknown flags", async () => {
@@ -164,125 +113,38 @@ describe("lsCommand", () => {
     `);
   });
 
-  it("silently ignores -A flag", async () => {
-    const result = await lsCommand(["-A"], appConfig);
-
-    expect(result._unsafeUnwrap()).toMatchInlineSnapshot(`
-      {
-        "combined": "file1.txt
-      file2.txt
-      folder
-      folder2",
-        "command": "ls -A",
-        "exitCode": 0,
-      }
-    `);
-  });
-
-  it("silently ignores format flags that don't affect output", async () => {
-    const result = await lsCommand(["-F", "-G", "--color"], appConfig);
-
-    expect(result._unsafeUnwrap()).toMatchInlineSnapshot(`
-      {
-        "combined": "file1.txt
-      file2.txt
-      folder
-      folder2",
-        "command": "ls -F -G --color",
-        "exitCode": 0,
-      }
-    `);
-  });
-
-  it("silently ignores sorting flags", async () => {
-    const result = await lsCommand(["-t", "-r", "-S"], appConfig);
-
-    expect(result._unsafeUnwrap()).toMatchInlineSnapshot(`
-      {
-        "combined": "file1.txt
-      file2.txt
-      folder
-      folder2",
-        "command": "ls -t -r -S",
-        "exitCode": 0,
-      }
-    `);
-  });
-
-  it("combines -a with ignored flags without warnings", async () => {
-    const result = await lsCommand(["-a", "-l", "-h", "-t"], appConfig);
-
-    expect(result._unsafeUnwrap()).toMatchInlineSnapshot(`
-      {
-        "combined": ".hidden
-      file1.txt
-      file2.txt
-      folder
-      folder2",
-        "command": "ls -a -l -h -t",
-        "exitCode": 0,
-      }
-    `);
-  });
-
-  it("handles combined flags like -al", async () => {
-    const result = await lsCommand(["-al"], appConfig);
-
-    expect(result._unsafeUnwrap()).toMatchInlineSnapshot(`
-      {
-        "combined": ".hidden
-      file1.txt
-      file2.txt
-      folder
-      folder2",
-        "command": "ls -al",
-        "exitCode": 0,
-      }
-    `);
-  });
-
-  it("handles combined flags like -lah", async () => {
-    const result = await lsCommand(["-lah"], appConfig);
-
-    expect(result._unsafeUnwrap()).toMatchInlineSnapshot(`
-      {
-        "combined": ".hidden
-      file1.txt
-      file2.txt
-      folder
-      folder2",
-        "command": "ls -lah",
-        "exitCode": 0,
-      }
-    `);
-  });
-
-  it("handles combined flags with path like -la folder", async () => {
-    const result = await lsCommand(["-la", "folder"], appConfig);
-
-    expect(result._unsafeUnwrap()).toMatchInlineSnapshot(`
-      {
-        "combined": "nested.txt",
-        "command": "ls -la folder",
-        "exitCode": 0,
-      }
-    `);
-  });
-
-  it("handles combined flags with all ignored flags", async () => {
-    const result = await lsCommand(["-lhtr"], appConfig);
-
-    // cspell:ignore lhtr
-    expect(result._unsafeUnwrap()).toMatchInlineSnapshot(`
-      {
-        "combined": "file1.txt
-      file2.txt
-      folder
-      folder2",
-        "command": "ls -lhtr",
-        "exitCode": 0,
-      }
-    `);
+  it.each([
+    {
+      args: ["-a", "-l", "-h", "-t"],
+      expected: ".hidden\nfile1.txt\nfile2.txt\nfolder\nfolder2",
+      testName: "combines -a with ignored flags",
+    },
+    {
+      args: ["-al"],
+      expected: ".hidden\nfile1.txt\nfile2.txt\nfolder\nfolder2",
+      testName: "handles combined flags like -al",
+    },
+    {
+      args: ["-lah"],
+      expected: ".hidden\nfile1.txt\nfile2.txt\nfolder\nfolder2",
+      testName: "handles combined flags like -lah",
+    },
+    {
+      args: ["-la", "folder"],
+      expected: "nested.txt",
+      testName: "handles combined flags with path",
+    },
+    {
+      // cspell:ignore lhtr
+      args: ["-lhtr"],
+      expected: "file1.txt\nfile2.txt\nfolder\nfolder2",
+      testName: "handles combined ignored flags without -a",
+    },
+  ])("$testName", async ({ args, expected }) => {
+    const result = await lsCommand(args, appConfig);
+    const output = result._unsafeUnwrap();
+    expect(output.combined).toBe(expected);
+    expect(output.exitCode).toBe(0);
   });
 
   it("warns only about truly unknown flags in combined format", async () => {
@@ -302,26 +164,24 @@ describe("lsCommand", () => {
     `);
   });
 
-  it("errors when path does not exist", async () => {
-    const result = await lsCommand(["nonexistent"], appConfig);
-
-    expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
-      {
-        "message": "ls: cannot access 'nonexistent': No such file or directory",
-        "type": "execute-error",
-      }
-    `);
-  });
-
-  it("errors with invalid path", async () => {
-    const result = await lsCommand(["/absolute/path"], appConfig);
-
-    expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
-      {
-        "message": "ls: cannot access '/absolute/path': No such file or directory",
-        "type": "execute-error",
-      }
-    `);
+  it.each([
+    {
+      args: ["nonexistent"],
+      expectedMessage:
+        "ls: cannot access 'nonexistent': No such file or directory",
+      testName: "errors when path does not exist",
+    },
+    {
+      args: ["/absolute/path"],
+      expectedMessage:
+        "ls: cannot access '/absolute/path': No such file or directory",
+      testName: "errors with invalid path",
+    },
+  ])("$testName", async ({ args, expectedMessage }) => {
+    const result = await lsCommand(args, appConfig);
+    const error = result._unsafeUnwrapErr();
+    expect(error.message).toBe(expectedMessage);
+    expect(error.type).toBe("execute-error");
   });
 
   it("errors when glob pattern is used", async () => {
