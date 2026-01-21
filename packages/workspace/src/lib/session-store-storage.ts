@@ -84,11 +84,20 @@ export function getSessionsStoreStorage(appConfig: AppConfig) {
         }),
       });
 
-      const wrappedStorage = wrapStorage(storage);
-
-      STORAGE_TO_DATABASE.set(wrappedStorage, database);
-      STORAGE_CACHE.set(appConfig.subdomain, wrappedStorage);
-      return ok(wrappedStorage);
+      // Perform a read to ensure storage is actually usable before caching
+      return ResultAsync.fromPromise(
+        storage.getItem("__quests_canary__"),
+        (error) =>
+          new TypedError.Storage(
+            `Failed to read session database at ${sessionStorePath(appConfig.appDir)}`,
+            { cause: error },
+          ),
+      ).map(() => {
+        const wrappedStorage = wrapStorage(storage);
+        STORAGE_TO_DATABASE.set(wrappedStorage, database);
+        STORAGE_CACHE.set(appConfig.subdomain, wrappedStorage);
+        return wrappedStorage;
+      });
     })
     .orTee(() => {
       STORAGE_CACHE.delete(appConfig.subdomain);
