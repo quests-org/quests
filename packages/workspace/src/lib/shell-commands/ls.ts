@@ -13,12 +13,17 @@ import { pathExists } from "../path-exists";
 import { type FileOperationResult } from "./types";
 import { validateNoGlobs } from "./utils";
 
-const USAGE = "usage: ls [-a] [file ...]";
+const COMMAND_NAME = "ls";
 
 export const LS_COMMAND = {
-  description: USAGE,
-  examples: ["ls", "ls src", "ls -a src/components"],
-};
+  description: `usage: ${COMMAND_NAME} [-a] [file ...]`,
+  examples: [
+    COMMAND_NAME,
+    `${COMMAND_NAME} src`,
+    `${COMMAND_NAME} -a src/components`,
+  ],
+  name: COMMAND_NAME,
+} as const;
 
 export async function lsCommand(
   args: string[],
@@ -77,14 +82,14 @@ export async function lsCommand(
       token.name !== "a"
     ) {
       warnings.push(
-        `ls: unknown flag '-${token.name}' ignored (supported flags: -a)`,
+        `${LS_COMMAND.name}: unknown flag '-${token.name}' ignored (supported flags: -a)`,
       );
     }
   }
 
   const targetPaths = positionals.length > 0 ? positionals : ["."];
 
-  const globValidation = validateNoGlobs(targetPaths, "ls");
+  const globValidation = validateNoGlobs(targetPaths, LS_COMMAND.name);
   if (globValidation.isErr()) {
     return globValidation;
   }
@@ -96,7 +101,7 @@ export async function lsCommand(
     targetPaths.length === 1 && targetPaths[0] === "."
       ? ""
       : ` ${targetPaths.join(" ")}`;
-  const commandStr = `ls${flagStr}${pathStr}`.trim();
+  const commandStr = `${LS_COMMAND.name}${flagStr}${pathStr}`.trim();
 
   const outputs: string[] = [];
 
@@ -114,7 +119,7 @@ export async function lsCommand(
     const exists = await pathExists(absolutePath);
     if (!exists) {
       return executeError(
-        `ls: cannot access '${targetPath}': No such file or directory`,
+        `${LS_COMMAND.name}: cannot access '${targetPath}': No such file or directory`,
       );
     }
 
@@ -140,7 +145,7 @@ export async function lsCommand(
       }
     } catch (error) {
       return executeError(
-        `ls command failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+        `${LS_COMMAND.name} command failed: ${error instanceof Error ? error.message : "Unknown error"}`,
       );
     }
   }

@@ -11,23 +11,25 @@ import { pathExists } from "../path-exists";
 import { type FileOperationResult } from "./types";
 import { shellSuccess, validateNoGlobs } from "./utils";
 
-const USAGE =
-  "usage: cp [-r] source_file target_file\n       cp [-r] source_file ... target_directory";
+const COMMAND_NAME = "cp";
 
 export const CP_COMMAND = {
-  description: USAGE,
+  description: `usage: ${COMMAND_NAME} [-r] source_file target_file\n       ${COMMAND_NAME} [-r] source_file ... target_directory`,
   examples: [
-    "cp src/file.ts src/file-copy.ts",
-    "cp -r src/components src/components-backup",
+    `${COMMAND_NAME} src/file.ts src/file-copy.ts`,
+    `${COMMAND_NAME} -r src/components src/components-backup`,
   ],
-};
+  name: COMMAND_NAME,
+} as const;
 
 export async function cpCommand(
   args: string[],
   appConfig: AppConfig,
 ): Promise<FileOperationResult> {
   if (args.length < 2) {
-    return executeError(`cp command requires at least 2 arguments\n${USAGE}`);
+    return executeError(
+      `${CP_COMMAND.name} command requires at least 2 arguments\n${CP_COMMAND.description}`,
+    );
   }
 
   const { positionals, values } = parseArgs({
@@ -44,11 +46,11 @@ export async function cpCommand(
   if (positionals.length < 2) {
     if (recursive) {
       return executeError(
-        `cp -r command requires at least 2 path arguments\n${USAGE}`,
+        `${CP_COMMAND.name} -r command requires at least 2 path arguments\n${CP_COMMAND.description}`,
       );
     }
     return executeError(
-      `cp command requires at least 2 path arguments\n${USAGE}`,
+      `${CP_COMMAND.name} command requires at least 2 path arguments\n${CP_COMMAND.description}`,
     );
   }
 
@@ -57,12 +59,12 @@ export async function cpCommand(
 
   if (sourcePaths.length === 0 || !destPath) {
     return executeError(
-      `cp command requires valid source and destination path arguments\n${USAGE}`,
+      `${CP_COMMAND.name} command requires valid source and destination path arguments\n${CP_COMMAND.description}`,
     );
   }
 
   const allPaths = [...sourcePaths, destPath];
-  const globValidation = validateNoGlobs(allPaths, "cp");
+  const globValidation = validateNoGlobs(allPaths, CP_COMMAND.name);
   if (globValidation.isErr()) {
     return globValidation;
   }
@@ -86,7 +88,9 @@ export async function cpCommand(
   }
 
   if (sourcePaths.length > 1 && !destIsDirectory) {
-    return executeError(`cp: target '${destPath}' is not a directory`);
+    return executeError(
+      `${CP_COMMAND.name}: target '${destPath}' is not a directory`,
+    );
   }
 
   for (const sourcePath of sourcePaths) {
@@ -103,7 +107,7 @@ export async function cpCommand(
     const sourceExists = await pathExists(absoluteSourcePath);
     if (!sourceExists) {
       return executeError(
-        `cp: cannot stat '${sourcePath}': No such file or directory`,
+        `${CP_COMMAND.name}: cannot stat '${sourcePath}': No such file or directory`,
       );
     }
 
@@ -113,7 +117,7 @@ export async function cpCommand(
       if (stats.isDirectory()) {
         if (!recursive) {
           return executeError(
-            `cp: -r not specified; omitting directory '${sourcePath}'`,
+            `${CP_COMMAND.name}: -r not specified; omitting directory '${sourcePath}'`,
           );
         }
 
@@ -134,12 +138,14 @@ export async function cpCommand(
       }
     } catch (error) {
       return executeError(
-        `cp command failed for '${sourcePath}': ${error instanceof Error ? error.message : "Unknown error"}`,
+        `${CP_COMMAND.name} command failed for '${sourcePath}': ${error instanceof Error ? error.message : "Unknown error"}`,
       );
     }
   }
 
   const pathsStr = [...sourcePaths, destPath].join(" ");
-  const command = recursive ? `cp -r ${pathsStr}` : `cp ${pathsStr}`;
+  const command = recursive
+    ? `${CP_COMMAND.name} -r ${pathsStr}`
+    : `${CP_COMMAND.name} ${pathsStr}`;
   return shellSuccess({ command });
 }

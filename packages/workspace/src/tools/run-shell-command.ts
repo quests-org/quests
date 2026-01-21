@@ -1,16 +1,10 @@
-import { envForProviders } from "@quests/ai-gateway";
 import ms from "ms";
-import { ok } from "neverthrow";
-import { parseArgs } from "node:util";
 import { dedent } from "radashi";
 import { z } from "zod";
 
 import type { AppConfig } from "../lib/app-config/types";
 
-import { execaNodeForApp } from "../lib/execa-node-for-app";
 import { executeError } from "../lib/execute-error";
-import { filterShellOutput } from "../lib/filter-shell-output";
-import { runNodeModulesBin } from "../lib/run-node-modules-bin";
 import {
   CP_COMMAND,
   cpCommand,
@@ -21,65 +15,79 @@ import {
   mkdirCommand,
   MV_COMMAND,
   mvCommand,
+  PNPM_COMMAND,
+  pnpmCommand,
   RM_COMMAND,
   rmCommand,
+  TS_COMMAND,
+  TSC_COMMAND,
+  tscCommand,
+  tsCommand,
 } from "../lib/shell-commands";
-import { getWorkspaceServerURL } from "../logic/server/url";
 import { BaseInputSchema } from "./base";
 import { createTool } from "./create-tool";
 import { translateShellCommand } from "./translate-shell-command";
 
-export const RUN_TS_COMMAND = {
-  description: "Execute a TypeScript file directly.",
-  examples: ["ts scripts/setup.ts"],
-  name: "ts" as const,
-} as const;
-
-const FileOperationSchema = z.enum(["cp", "ls", "mkdir", "mv", "rm"]);
+const FileOperationSchema = z.enum([
+  CP_COMMAND.name,
+  LS_COMMAND.name,
+  MKDIR_COMMAND.name,
+  MV_COMMAND.name,
+  RM_COMMAND.name,
+]);
 type FileOperation = z.output<typeof FileOperationSchema>;
 
-const ShellCommandSchema = z.enum(["pnpm", "tsc", RUN_TS_COMMAND.name]);
+const ShellCommandSchema = z.enum([
+  PNPM_COMMAND.name,
+  TSC_COMMAND.name,
+  TS_COMMAND.name,
+]);
 type ShellCommand = z.output<typeof ShellCommandSchema>;
 
 const CommandNameSchema = z.union([FileOperationSchema, ShellCommandSchema]);
 
 const AVAILABLE_COMMANDS: Record<
   FileOperation | ShellCommand,
-  { description: string; examples: readonly string[]; isFileOperation: boolean }
+  {
+    description: string;
+    examples: readonly string[];
+    hidden?: boolean;
+    isFileOperation: boolean;
+  }
 > = {
-  cp: {
+  [CP_COMMAND.name]: {
     ...CP_COMMAND,
     isFileOperation: true,
   },
-  ls: {
+  [LS_COMMAND.name]: {
     ...LS_COMMAND,
     isFileOperation: true,
   },
-  mkdir: {
+  [MKDIR_COMMAND.name]: {
     ...MKDIR_COMMAND,
     isFileOperation: true,
   },
-  mv: {
+  [MV_COMMAND.name]: {
     ...MV_COMMAND,
     isFileOperation: true,
   },
-  pnpm: {
-    description: "CLI tool for managing JavaScript packages.",
-    examples: ["pnpm add <package-name>"],
+  [PNPM_COMMAND.name]: {
+    ...PNPM_COMMAND,
     isFileOperation: false,
   },
-  rm: {
+  [RM_COMMAND.name]: {
     ...RM_COMMAND,
     isFileOperation: true,
   },
-  [RUN_TS_COMMAND.name]: {
-    description: RUN_TS_COMMAND.description,
-    examples: RUN_TS_COMMAND.examples,
+  [TS_COMMAND.name]: {
+    ...TS_COMMAND,
     isFileOperation: false,
   },
-  tsc: {
-    description: "TypeScript compiler",
-    examples: ["tsc"],
+  [TSC_COMMAND.name]: {
+    ...TSC_COMMAND,
+    // Hidden because the diagnostics tool should suffice and don't want agent
+    // to think it needs to compile scripts to run them
+    hidden: true,
     isFileOperation: false,
   },
 };
@@ -90,19 +98,19 @@ async function handleFileOperation(
   appConfig: AppConfig,
 ): Promise<FileOperationResult> {
   switch (command) {
-    case "cp": {
+    case CP_COMMAND.name: {
       return cpCommand(args, appConfig);
     }
-    case "ls": {
+    case LS_COMMAND.name: {
       return lsCommand(args, appConfig);
     }
-    case "mkdir": {
+    case MKDIR_COMMAND.name: {
       return mkdirCommand(args, appConfig);
     }
-    case "mv": {
+    case MV_COMMAND.name: {
       return mvCommand(args, appConfig);
     }
-    case "rm": {
+    case RM_COMMAND.name: {
       return rmCommand(args, appConfig);
     }
   }
@@ -120,22 +128,29 @@ export const RunShellCommand = createTool({
     - NO command chaining or piping
     - NO cd commands (all run in project directory)
     - NO glob patterns: no *, ?, [], {}, etc. - specify exact file/directory names
-    - Only these exact commands are allowed: ${Object.keys(AVAILABLE_COMMANDS).join(", ")}
+    - Only these exact commands are allowed: ${Object.entries(
+      AVAILABLE_COMMANDS,
+    )
+      .filter(([, config]) => !config.hidden)
+      .map(([command]) => command)
+      .join(", ")}
     
     If you need multiple operations, call this tool multiple times.
     
     Available commands:
     ${Object.entries(AVAILABLE_COMMANDS)
+      .filter(([, config]) => !config.hidden)
       .map(([command, config]) => `- ${command} - ${config.description}`)
       .join("\n")}
       
     Examples:
     ${Object.entries(AVAILABLE_COMMANDS)
+      .filter(([, config]) => !config.hidden)
       .flatMap(([, config]) => config.examples.map((ex) => `- ${ex}`))
       .join("\n")}
     
     File operations (${Object.entries(AVAILABLE_COMMANDS)
-      .filter(([, config]) => config.isFileOperation)
+      .filter(([, config]) => config.isFileOperation && !config.hidden)
       .map(([command]) => command)
       .join(", ")}) use secure Node.js APIs instead of shell execution.
   `,
@@ -170,132 +185,17 @@ export const RunShellCommand = createTool({
       return await handleFileOperation(fileOpValidation.data, args, appConfig);
     }
 
-    // At this point, TypeScript knows validCommand is a ShellCommand
-    const shellCommand = validCommand as ShellCommand;
+    const shellCommand = ShellCommandSchema.parse(validCommand);
 
-    // Handle allowed shell commands
     switch (shellCommand) {
-      case "pnpm": {
-        const subcommand = args[0];
-        const secondArg = args[1];
-
-        if (subcommand === "dev" || subcommand === "start") {
-          return executeError(
-            `Quests already starts and runs the apps for you. You don't need to run 'pnpm ${subcommand}'.`,
-          );
-        }
-
-        if (
-          subcommand === "run" &&
-          (secondArg === "dev" || secondArg === "start")
-        ) {
-          return executeError(
-            `Quests already starts and runs the apps for you. You don't need to run 'pnpm run ${secondArg}'.`,
-          );
-        }
-
-        const execResult = await execaNodeForApp(
-          appConfig,
-          appConfig.workspaceConfig.pnpmBinPath,
-          args,
-          // Don't reject so we can filter the output
-          { all: true, cancelSignal: signal, reject: false },
-        );
-        const combined = filterShellOutput(execResult.all, appConfig.appDir);
-        return ok({
-          combined,
-          command: input.command,
-          exitCode: execResult.exitCode ?? 0,
-        });
+      case PNPM_COMMAND.name: {
+        return await pnpmCommand(args, appConfig, signal);
       }
-      case RUN_TS_COMMAND.name: {
-        if (args.length === 0) {
-          return executeError(
-            `${RUN_TS_COMMAND.name} command requires a file argument (e.g., ${RUN_TS_COMMAND.name} scripts/setup.ts). Running ${RUN_TS_COMMAND.name} without arguments spawns an interactive shell.`,
-          );
-        }
-
-        const { positionals, values } = parseArgs({
-          allowPositionals: true,
-          args,
-          options: {
-            e: { type: "string" },
-            eval: { type: "string" },
-          },
-          strict: false,
-        });
-
-        if (values.e !== undefined || values.eval !== undefined) {
-          return executeError(
-            `${RUN_TS_COMMAND.name} does not support the -e/--eval flag for evaluating code strings directly. Instead, write your code to a .ts or .js file and execute it with ${RUN_TS_COMMAND.name}.`,
-          );
-        }
-
-        if (positionals.length === 0) {
-          return executeError(
-            `${RUN_TS_COMMAND.name} requires exactly one file path as a positional argument (e.g., ${RUN_TS_COMMAND.name} scripts/setup.ts).`,
-          );
-        }
-
-        if (positionals.length > 1) {
-          return executeError(
-            `${RUN_TS_COMMAND.name} only supports executing one file at a time. Found ${positionals.length} files: ${positionals.join(", ")}. Execute them separately or combine into a single script.`,
-          );
-        }
-
-        const filePath = positionals[0];
-        if (!filePath) {
-          return executeError(
-            `${RUN_TS_COMMAND.name} requires a file path argument.`,
-          );
-        }
-
-        const providerEnv = envForProviders({
-          configs: appConfig.workspaceConfig.getAIProviderConfigs(),
-          workspaceServerURL: getWorkspaceServerURL(),
-        });
-        // Use pnpm dlx for faster execution via cached packages and avoid
-        // installing all packages eagerly.
-        // Only pass the positional (file path) to avoid jiti misinterpreting arguments
-        const execResult = await execaNodeForApp(
-          appConfig,
-          appConfig.workspaceConfig.pnpmBinPath,
-          ["dlx", "jiti", filePath],
-          // Don't reject so we can filter the output
-          { all: true, cancelSignal: signal, env: providerEnv, reject: false },
-        );
-        let combined = filterShellOutput(execResult.all, appConfig.appDir);
-
-        // Warn about any unsupported flags that were ignored
-        const allFlags = args.filter((arg) => arg.startsWith("-"));
-        if (allFlags.length > 0) {
-          const warningMessage = `Warning: ${RUN_TS_COMMAND.name} received unsupported flags that were ignored: ${allFlags.join(", ")}. Only the file path is supported.\n\n`;
-          combined = warningMessage + combined;
-        }
-
-        return ok({
-          combined,
-          command: input.command,
-          exitCode: execResult.exitCode ?? 0,
-        });
+      case TS_COMMAND.name: {
+        return await tsCommand(args, appConfig, signal);
       }
-      case "tsc": {
-        const binResult = await runNodeModulesBin(appConfig, "tsc", args, {
-          all: true,
-          cancelSignal: signal,
-          // Don't reject so we can filter the output
-          reject: false,
-        });
-        if (binResult.isErr()) {
-          return executeError(binResult.error.message);
-        }
-        const execResult = await binResult.value;
-        const combined = filterShellOutput(execResult.all, appConfig.appDir);
-        return ok({
-          combined,
-          command: input.command,
-          exitCode: execResult.exitCode ?? 0,
-        });
+      case TSC_COMMAND.name: {
+        return await tscCommand(args, appConfig, signal);
       }
     }
   },
@@ -336,7 +236,7 @@ export const RunShellCommand = createTool({
       outputParts.push(output);
     }
 
-    const isPnpmCommand = result.command.startsWith("pnpm ");
+    const isPnpmCommand = result.command.startsWith(`${PNPM_COMMAND.name} `);
     const hasIgnoredBuildScriptsWarning =
       output &&
       output.includes("Ignored build scripts:") &&
@@ -357,7 +257,7 @@ export const RunShellCommand = createTool({
             esbuild: true
             sharp: true
           \`\`\`
-          3. Run \`pnpm rebuild <package-name>\` for each package you added.
+          3. Run \`${PNPM_COMMAND.name} rebuild <package-name>\` for each package you added.
           
           All three steps are required. Running rebuild without first modifying pnpm-workspace.yaml will not fix the issue.
           </quests-system-note>

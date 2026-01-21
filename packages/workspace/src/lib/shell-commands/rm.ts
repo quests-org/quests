@@ -10,24 +10,27 @@ import { pathExists } from "../path-exists";
 import { type FileOperationResult } from "./types";
 import { shellSuccess, validateNoGlobs } from "./utils";
 
-const USAGE = "usage: rm [-f] [-r] file ...";
+const COMMAND_NAME = "rm";
 
 export const RM_COMMAND = {
-  description: USAGE,
+  description: `usage: ${COMMAND_NAME} [-f] [-r] file ...`,
   examples: [
-    "rm src/temp.json",
-    "rm -r build/",
-    "rm file1.txt file2.txt file3.txt",
-    "rm -rf dist/ build/",
+    `${COMMAND_NAME} src/temp.json`,
+    `${COMMAND_NAME} -r build/`,
+    `${COMMAND_NAME} file1.txt file2.txt file3.txt`,
+    `${COMMAND_NAME} -rf dist/ build/`,
   ],
-};
+  name: COMMAND_NAME,
+} as const;
 
 export async function rmCommand(
   args: string[],
   appConfig: AppConfig,
 ): Promise<FileOperationResult> {
   if (args.length === 0) {
-    return executeError(`rm command requires at least 1 argument\n${USAGE}`);
+    return executeError(
+      `${RM_COMMAND.name} command requires at least 1 argument\n${RM_COMMAND.description}`,
+    );
   }
 
   const { positionals, values } = parseArgs({
@@ -46,15 +49,17 @@ export async function rmCommand(
 
   if (targetPaths.length === 0) {
     return executeError(
-      `rm command requires at least 1 path argument after flags\n${USAGE}`,
+      `${RM_COMMAND.name} command requires at least 1 path argument after flags\n${RM_COMMAND.description}`,
     );
   }
 
   if (targetPaths.some((p) => !p)) {
-    return executeError(`rm command requires valid path arguments\n${USAGE}`);
+    return executeError(
+      `${RM_COMMAND.name} command requires valid path arguments\n${RM_COMMAND.description}`,
+    );
   }
 
-  const globValidation = validateNoGlobs(targetPaths, "rm");
+  const globValidation = validateNoGlobs(targetPaths, RM_COMMAND.name);
   if (globValidation.isErr()) {
     return globValidation;
   }
@@ -76,7 +81,7 @@ export async function rmCommand(
         continue;
       }
       return executeError(
-        `rm: cannot remove '${targetPath}': No such file or directory`,
+        `${RM_COMMAND.name}: cannot remove '${targetPath}': No such file or directory`,
       );
     }
 
@@ -86,7 +91,7 @@ export async function rmCommand(
       if (stats.isDirectory()) {
         if (!recursive) {
           return executeError(
-            `rm: cannot remove '${targetPath}': Is a directory`,
+            `${RM_COMMAND.name}: cannot remove '${targetPath}': Is a directory`,
           );
         }
 
@@ -99,7 +104,7 @@ export async function rmCommand(
         continue;
       }
       return executeError(
-        `rm command failed for '${targetPath}': ${error instanceof Error ? error.message : "Unknown error"}`,
+        `${RM_COMMAND.name} command failed for '${targetPath}': ${error instanceof Error ? error.message : "Unknown error"}`,
       );
     }
   }
@@ -113,6 +118,6 @@ export async function rmCommand(
     flags.push("-f");
   }
   const flagsStr = flags.length > 0 ? `${flags.join(" ")} ` : "";
-  const command = `rm ${flagsStr}${pathsStr}`;
+  const command = `${RM_COMMAND.name} ${flagsStr}${pathsStr}`;
   return shellSuccess({ command });
 }

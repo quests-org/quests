@@ -16,6 +16,7 @@ import { GitCommands } from "../lib/git/commands";
 import { ensureGitRepo } from "../lib/git/ensure-git-repo";
 import { isToolPart } from "../lib/is-tool-part";
 import { readFileWithAnyCase } from "../lib/read-file-with-any-case";
+import { PNPM_COMMAND, TS_COMMAND } from "../lib/shell-commands";
 import { Store } from "../lib/store";
 import { textForMessage } from "../lib/text-for-message";
 import { type SessionMessage } from "../schemas/session/message";
@@ -23,7 +24,6 @@ import { type SessionMessageDataPart } from "../schemas/session/message-data-par
 import { StoreId } from "../schemas/store-id";
 import { getToolByType, TOOLS } from "../tools/all";
 import { TOOL_EXPLANATION_PARAM_NAME } from "../tools/base";
-import { RUN_TS_COMMAND } from "../tools/run-shell-command";
 import { setupAgent } from "./create-agent";
 
 function formatCommitMessage(text: string): string {
@@ -152,9 +152,8 @@ export const mainAgent = setupAgent({
     - Do NOT attempt to start, restart, or interact with development servers - this is handled automatically by the system.
     
     # Scripts
-    - Node.js and pnpm are pre-installed for package management.
-    - The only built-in way to run scripts is by executing TypeScript files using the \`${agentTools.RunShellCommand.name}\` tool.
-    - Use the \`${RUN_TS_COMMAND.name}\` command to run them, e.g. \`${RUN_TS_COMMAND.name} ${APP_FOLDER_NAMES.scripts}/example.ts\`.
+    - Node.js and ${PNPM_COMMAND.name} are pre-installed for package management.
+    - The only built-in way to run scripts is by executing TypeScript files using the \`${agentTools.RunShellCommand.name}\` tool with the \`${TS_COMMAND.name}\` command.
     - No other runtimes are bundled with this product.
     - You can use the \`${agentTools.RunDiagnostics.name}\` tool to check for errors in your scripts.
     - You don't need to add shebangs to TypeScript script files.

@@ -9,19 +9,25 @@ import { executeError } from "../execute-error";
 import { type FileOperationResult } from "./types";
 import { shellSuccess, validateNoGlobs } from "./utils";
 
-const USAGE = "usage: mkdir [-p] directory_name ...";
+const COMMAND_NAME = "mkdir";
 
 export const MKDIR_COMMAND = {
-  description: USAGE,
-  examples: ["mkdir src/utils", "mkdir -p src/components/ui/buttons"],
-};
+  description: `usage: ${COMMAND_NAME} [-p] directory_name ...`,
+  examples: [
+    `${COMMAND_NAME} src/utils`,
+    `${COMMAND_NAME} -p src/components/ui/buttons`,
+  ],
+  name: COMMAND_NAME,
+} as const;
 
 export async function mkdirCommand(
   args: string[],
   appConfig: AppConfig,
 ): Promise<FileOperationResult> {
   if (args.length === 0) {
-    return executeError(`mkdir command requires at least 1 argument\n${USAGE}`);
+    return executeError(
+      `${MKDIR_COMMAND.name} command requires at least 1 argument\n${MKDIR_COMMAND.description}`,
+    );
   }
 
   const { positionals, values } = parseArgs({
@@ -39,21 +45,21 @@ export async function mkdirCommand(
   if (directoryPaths.length === 0) {
     if (recursive) {
       return executeError(
-        `mkdir -p command requires at least 1 path argument\n${USAGE}`,
+        `${MKDIR_COMMAND.name} -p command requires at least 1 path argument\n${MKDIR_COMMAND.description}`,
       );
     }
     return executeError(
-      `mkdir command requires valid path arguments\n${USAGE}`,
+      `${MKDIR_COMMAND.name} command requires valid path arguments\n${MKDIR_COMMAND.description}`,
     );
   }
 
   if (directoryPaths.some((p) => !p)) {
     return executeError(
-      `mkdir command requires valid path arguments\n${USAGE}`,
+      `${MKDIR_COMMAND.name} command requires valid path arguments\n${MKDIR_COMMAND.description}`,
     );
   }
 
-  const globValidation = validateNoGlobs(directoryPaths, "mkdir");
+  const globValidation = validateNoGlobs(directoryPaths, MKDIR_COMMAND.name);
   if (globValidation.isErr()) {
     return globValidation;
   }
@@ -73,12 +79,14 @@ export async function mkdirCommand(
       await fs.mkdir(absolutePath, { recursive });
     } catch (error) {
       return executeError(
-        `mkdir command failed for '${directoryPath}': ${error instanceof Error ? error.message : "Unknown error"}`,
+        `${MKDIR_COMMAND.name} command failed for '${directoryPath}': ${error instanceof Error ? error.message : "Unknown error"}`,
       );
     }
   }
 
   const pathsStr = directoryPaths.join(" ");
-  const command = recursive ? `mkdir -p ${pathsStr}` : `mkdir ${pathsStr}`;
+  const command = recursive
+    ? `${MKDIR_COMMAND.name} -p ${pathsStr}`
+    : `${MKDIR_COMMAND.name} ${pathsStr}`;
   return shellSuccess({ command });
 }

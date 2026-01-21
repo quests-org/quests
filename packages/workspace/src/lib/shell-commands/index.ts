@@ -2,5 +2,8 @@ export { CP_COMMAND, cpCommand } from "./cp";
 export { LS_COMMAND, lsCommand } from "./ls";
 export { MKDIR_COMMAND, mkdirCommand } from "./mkdir";
 export { MV_COMMAND, mvCommand } from "./mv";
+export { PNPM_COMMAND, pnpmCommand } from "./pnpm";
 export { RM_COMMAND, rmCommand } from "./rm";
+export { TS_COMMAND, tsCommand } from "./ts";
+export { TSC_COMMAND, tscCommand } from "./tsc";
 export type { FileOperationResult } from "./types";

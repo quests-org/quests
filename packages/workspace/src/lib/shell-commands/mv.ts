@@ -10,19 +10,25 @@ import { pathExists } from "../path-exists";
 import { type FileOperationResult } from "./types";
 import { shellSuccess, validateNoGlobs } from "./utils";
 
-const USAGE = "usage: mv source target\n       mv source ... directory";
+const COMMAND_NAME = "mv";
 
 export const MV_COMMAND = {
-  description: USAGE,
-  examples: ["mv src/old.ts src/new.ts", "mv file1.txt file2.txt dest-dir/"],
-};
+  description: `usage: ${COMMAND_NAME} source target\n       ${COMMAND_NAME} source ... directory`,
+  examples: [
+    `${COMMAND_NAME} src/old.ts src/new.ts`,
+    `${COMMAND_NAME} file1.txt file2.txt dest-dir/`,
+  ],
+  name: COMMAND_NAME,
+} as const;
 
 export async function mvCommand(
   args: string[],
   appConfig: AppConfig,
 ): Promise<FileOperationResult> {
   if (args.length < 2) {
-    return executeError(`mv command requires at least 2 arguments\n${USAGE}`);
+    return executeError(
+      `${MV_COMMAND.name} command requires at least 2 arguments\n${MV_COMMAND.description}`,
+    );
   }
 
   const sourcePaths = args.slice(0, -1);
@@ -30,12 +36,12 @@ export async function mvCommand(
 
   if (sourcePaths.length === 0 || !destPath) {
     return executeError(
-      `mv command requires valid source and destination path arguments\n${USAGE}`,
+      `${MV_COMMAND.name} command requires valid source and destination path arguments\n${MV_COMMAND.description}`,
     );
   }
 
   const allPaths = [...sourcePaths, destPath];
-  const globValidation = validateNoGlobs(allPaths, "mv");
+  const globValidation = validateNoGlobs(allPaths, MV_COMMAND.name);
   if (globValidation.isErr()) {
     return globValidation;
   }
@@ -59,7 +65,9 @@ export async function mvCommand(
   }
 
   if (sourcePaths.length > 1 && !destIsDirectory) {
-    return executeError(`mv: target '${destPath}' is not a directory`);
+    return executeError(
+      `${MV_COMMAND.name}: target '${destPath}' is not a directory`,
+    );
   }
 
   for (const sourcePath of sourcePaths) {
@@ -76,7 +84,7 @@ export async function mvCommand(
     const sourceExists = await pathExists(absoluteSourcePath);
     if (!sourceExists) {
       return executeError(
-        `mv: cannot stat '${sourcePath}': No such file or directory`,
+        `${MV_COMMAND.name}: cannot stat '${sourcePath}': No such file or directory`,
       );
     }
 
@@ -89,7 +97,7 @@ export async function mvCommand(
       await fs.access(destDir);
     } catch {
       return executeError(
-        `mv: cannot move '${sourcePath}' to '${destPath}': No such file or directory`,
+        `${MV_COMMAND.name}: cannot move '${sourcePath}' to '${destPath}': No such file or directory`,
       );
     }
 
@@ -101,11 +109,11 @@ export async function mvCommand(
       await fs.rename(absoluteSourcePath, finalDestPath);
     } catch (error) {
       return executeError(
-        `mv command failed for '${sourcePath}': ${error instanceof Error ? error.message : "Unknown error"}`,
+        `${MV_COMMAND.name} command failed for '${sourcePath}': ${error instanceof Error ? error.message : "Unknown error"}`,
       );
     }
   }
 
   const pathsStr = [...sourcePaths, destPath].join(" ");
-  return shellSuccess({ command: `mv ${pathsStr}` });
+  return shellSuccess({ command: `${MV_COMMAND.name} ${pathsStr}` });
 }
