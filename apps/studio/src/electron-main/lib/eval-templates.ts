@@ -46,7 +46,7 @@ const EVAL_TEMPLATE_GROUPS: EvalTemplateGroup[] = [
       },
       {
         name: "Eval a string of code",
-        userPrompt: 'Use tsx -e to log "hello from eval!"',
+        userPrompt: 'Run JavaScript that logs "hello from eval!"',
       },
     ],
   },
