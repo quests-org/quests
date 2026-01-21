@@ -11,12 +11,7 @@ import { rpcClient } from "../rpc/client";
 import { AppView } from "./app-view";
 import { GitCommitCard } from "./git-commit-card";
 import { InternalLink } from "./internal-link";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "./ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 interface VersionOverlayProps {
   projectSubdomain: ProjectSubdomain;
@@ -88,50 +83,48 @@ export function VersionOverlay({
 
   const centerContent = (
     <div className="flex min-w-0 flex-1 items-center justify-center">
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div
-              className="flex h-8 w-full min-w-0 cursor-pointer items-center justify-center overflow-hidden rounded-md border border-input bg-transparent px-3 py-1 text-center text-xs font-medium whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none selection:bg-primary selection:text-primary-foreground file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 md:text-xs dark:bg-input/30 dark:aria-invalid:ring-destructive/40"
-              style={{
-                backgroundColor: `${hashColor}20`,
-                borderColor: `${hashColor}50`,
-              }}
-            >
-              <span className="min-w-0 text-ellipsis">
-                Viewing Version{" "}
-                <span className="font-mono font-semibold">
-                  {versionRef.slice(0, 8)}
-                </span>
-                {gitRefInfo?.commitMessage && (
-                  <>
-                    :{" "}
-                    {gitRefInfo.commitMessage.length > 50
-                      ? `${gitRefInfo.commitMessage.slice(0, 50)}...`
-                      : gitRefInfo.commitMessage}
-                  </>
-                )}
-              </span>
-            </div>
-          </TooltipTrigger>
-          <TooltipContent
-            arrowClassName="bg-background fill-background border-b border-r border-border"
-            className="max-w-md min-w-xs border border-border bg-background p-0 text-foreground"
-            side="bottom"
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div
+            className="flex h-8 w-full min-w-0 cursor-pointer items-center justify-center overflow-hidden rounded-md border border-input bg-transparent px-3 py-1 text-center text-xs font-medium whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none selection:bg-primary selection:text-primary-foreground file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 md:text-xs dark:bg-input/30 dark:aria-invalid:ring-destructive/40"
+            style={{
+              backgroundColor: `${hashColor}20`,
+              borderColor: `${hashColor}50`,
+            }}
           >
-            <GitCommitCard
-              disableBorder
-              disableLink
-              isLastGitCommit={false}
-              isSelected={false}
-              projectSubdomain={projectSubdomain}
-              showCommitMessage
-              showFullCommitMessage
-              versionRef={versionRef}
-            />
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+            <span className="min-w-0 text-ellipsis">
+              Viewing Version{" "}
+              <span className="font-mono font-semibold">
+                {versionRef.slice(0, 8)}
+              </span>
+              {gitRefInfo?.commitMessage && (
+                <>
+                  :{" "}
+                  {gitRefInfo.commitMessage.length > 50
+                    ? `${gitRefInfo.commitMessage.slice(0, 50)}...`
+                    : gitRefInfo.commitMessage}
+                </>
+              )}
+            </span>
+          </div>
+        </TooltipTrigger>
+        <TooltipContent
+          arrowClassName="bg-background fill-background border-b border-r border-border"
+          className="max-w-md min-w-xs border border-border bg-background p-0 text-foreground"
+          side="bottom"
+        >
+          <GitCommitCard
+            disableBorder
+            disableLink
+            isLastGitCommit={false}
+            isSelected={false}
+            projectSubdomain={projectSubdomain}
+            showCommitMessage
+            showFullCommitMessage
+            versionRef={versionRef}
+          />
+        </TooltipContent>
+      </Tooltip>
     </div>
   );
 

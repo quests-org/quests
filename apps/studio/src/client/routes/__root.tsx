@@ -13,6 +13,7 @@ import {
 import { Loader2 } from "lucide-react";
 import { useCallback } from "react";
 
+import { TooltipProvider } from "../components/ui/tooltip";
 import { useReload } from "../hooks/use-reload";
 
 export const Route = createRootRouteWithContext<{
@@ -44,7 +45,11 @@ function PendingComponent() {
 }
 
 function Root({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <ThemeProvider>{children}</ThemeProvider>;
+  return (
+    <ThemeProvider>
+      <TooltipProvider>{children}</TooltipProvider>
+    </ThemeProvider>
+  );
 }
 
 function RootComponent() {

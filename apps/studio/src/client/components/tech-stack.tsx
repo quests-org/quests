@@ -1,7 +1,6 @@
 import {
-  Tooltip,
   TooltipContent,
-  TooltipProvider,
+  TooltipRoot,
   TooltipTrigger,
 } from "@/client/components/ui/tooltip";
 import {
@@ -99,33 +98,31 @@ export function TechStack({
   }
 
   return (
-    <TooltipProvider>
-      <div>
-        <h3 className="mb-3 text-sm font-medium">Tech Stack</h3>
+    <div>
+      <h3 className="mb-3 text-sm font-medium">Tech Stack</h3>
 
-        <div className="flex flex-wrap gap-3">
-          {keyFrameworks.map((packageName) => {
-            const Logo = getTechLogo(packageName);
-            if (!Logo) {
-              return null;
-            }
+      <div className="flex flex-wrap gap-3">
+        {keyFrameworks.map((packageName) => {
+          const Logo = getTechLogo(packageName);
+          if (!Logo) {
+            return null;
+          }
 
-            return (
-              <Tooltip key={packageName}>
-                <TooltipTrigger asChild>
-                  <div>
-                    <Logo className="size-6 text-foreground" />
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  {TECH_DISPLAY_NAMES[packageName] || packageName}
-                </TooltipContent>
-              </Tooltip>
-            );
-          })}
-        </div>
+          return (
+            <TooltipRoot key={packageName}>
+              <TooltipTrigger asChild>
+                <div>
+                  <Logo className="size-6 text-foreground" />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                {TECH_DISPLAY_NAMES[packageName] || packageName}
+              </TooltipContent>
+            </TooltipRoot>
+          );
+        })}
       </div>
-    </TooltipProvider>
+    </div>
   );
 }
 

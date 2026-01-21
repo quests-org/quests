@@ -13,7 +13,6 @@ import { Skeleton } from "@/client/components/ui/skeleton";
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/client/components/ui/tooltip";
 import { useIsMobile } from "@/client/hooks/use-mobile";
@@ -380,25 +379,23 @@ function SidebarProvider({
 
   return (
     <SidebarContext.Provider value={contextValue}>
-      <TooltipProvider delayDuration={0}>
-        <div
-          className={cn(
-            "group/sidebar-wrapper flex min-h-svh w-full has-data-[variant=inset]:bg-sidebar",
-            className,
-          )}
-          data-slot="sidebar-wrapper"
-          style={
-            {
-              "--sidebar-width": `${SIDEBAR_WIDTH}px`,
-              "--sidebar-width-icon": SIDEBAR_WIDTH_ICON,
-              ...style,
-            } as React.CSSProperties
-          }
-          {...props}
-        >
-          {children}
-        </div>
-      </TooltipProvider>
+      <div
+        className={cn(
+          "group/sidebar-wrapper flex min-h-svh w-full has-data-[variant=inset]:bg-sidebar",
+          className,
+        )}
+        data-slot="sidebar-wrapper"
+        style={
+          {
+            "--sidebar-width": `${SIDEBAR_WIDTH}px`,
+            "--sidebar-width-icon": SIDEBAR_WIDTH_ICON,
+            ...style,
+          } as React.CSSProperties
+        }
+        {...props}
+      >
+        {children}
+      </div>
     </SidebarContext.Provider>
   );
 }

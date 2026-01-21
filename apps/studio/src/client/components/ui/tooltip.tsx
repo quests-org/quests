@@ -7,13 +7,7 @@ import * as React from "react";
 function Tooltip({
   ...props
 }: React.ComponentProps<typeof TooltipPrimitive.Root>) {
-  return (
-    // Disable hoverable content to prevent tooltip from lingering when user
-    // mouses over an iframe after a tooltip
-    <TooltipProvider disableHoverableContent>
-      <TooltipPrimitive.Root data-slot="tooltip" {...props} />
-    </TooltipProvider>
-  );
+  return <TooltipPrimitive.Root data-slot="tooltip" {...props} />;
 }
 
 function TooltipContent({
@@ -67,4 +61,12 @@ function TooltipTrigger({
   return <TooltipPrimitive.Trigger data-slot="tooltip-trigger" {...props} />;
 }
 
-export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger };
+const TooltipRoot = TooltipPrimitive.Root;
+
+export {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipRoot,
+  TooltipTrigger,
+};

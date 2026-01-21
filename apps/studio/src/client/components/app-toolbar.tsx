@@ -159,7 +159,10 @@ export function AppToolbar({
         >
           <ChevronRight className="h-4 w-4" />
         </Button>
-        <Tooltip delayDuration={0}>
+
+        <TooltipNearIFrame
+          delayDuration={0} // Because the icon looks like refresh only, we show the tooltip immediately
+        >
           <TooltipTrigger asChild>
             <Button
               className="size-6"
@@ -174,7 +177,7 @@ export function AppToolbar({
           <TooltipContent>
             <p>Refresh and restart</p>
           </TooltipContent>
-        </Tooltip>
+        </TooltipNearIFrame>
       </div>
 
       <div className="flex min-w-0 flex-1 items-center gap-1">
@@ -185,7 +188,7 @@ export function AppToolbar({
               readOnly
               value={app.urls.localhost}
             />
-            <Tooltip>
+            <TooltipNearIFrame>
               <TooltipTrigger asChild>
                 <Button
                   className="absolute top-1/2 right-2 size-4 -translate-y-1/2 p-0"
@@ -199,14 +202,14 @@ export function AppToolbar({
               <TooltipContent>
                 <p>Open in external browser</p>
               </TooltipContent>
-            </Tooltip>
+            </TooltipNearIFrame>
           </div>
         )}
       </div>
 
       <div className="flex items-center gap-1">
         {onVersionsToggle && (
-          <Tooltip>
+          <TooltipNearIFrame>
             <TooltipTrigger asChild>
               {/* Relative div wrapper prevents tooltip/toggle conflict */}
               <div className="relative">
@@ -226,10 +229,10 @@ export function AppToolbar({
             <TooltipContent>
               <p>{isVersionsOpen ? "Hide versions" : "Show versions"}</p>
             </TooltipContent>
-          </Tooltip>
+          </TooltipNearIFrame>
         )}
 
-        <Tooltip>
+        <TooltipNearIFrame>
           <TooltipTrigger asChild>
             {/* Relative div wrapper prevents tooltip/toggle conflict */}
             <div className="relative">
@@ -248,7 +251,7 @@ export function AppToolbar({
           <TooltipContent>
             <p>{isConsoleOpen ? "Hide console" : "Show console"}</p>
           </TooltipContent>
-        </Tooltip>
+        </TooltipNearIFrame>
 
         {rightActions && (
           <div className="flex items-center gap-1">{rightActions}</div>
@@ -270,5 +273,18 @@ function ConsoleBadge({ status }: ConsoleBadgeProps) {
         status === "error" ? "bg-destructive" : "bg-primary",
       )}
     />
+  );
+}
+
+function TooltipNearIFrame({
+  children,
+  ...props
+}: React.ComponentProps<typeof Tooltip>) {
+  return (
+    // Disable hoverable content to prevent tooltip from lingering when user
+    // mouses over an iframe after a tooltip
+    <Tooltip disableHoverableContent {...props}>
+      {children}
+    </Tooltip>
   );
 }
