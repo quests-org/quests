@@ -48,7 +48,6 @@ export function ProjectChat({
   );
 
   const bottomSectionRef = useRef<HTMLDivElement>(null);
-  const promptInputRef = useRef<{ focus: () => void }>(null);
   const [bottomSectionHeight, setBottomSectionHeight] = useState(0);
   const [selectedModelURI, setSelectedModelURI] = useState<
     AIGatewayModelURI.Type | undefined
@@ -188,7 +187,6 @@ export function ProjectChat({
             );
           }}
           placeholder="Type, paste, or drop some files here…"
-          ref={promptInputRef}
         />
       </div>
     </div>
