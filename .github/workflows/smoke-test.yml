@@ -10,6 +10,8 @@ env:
   MAIN_VITE_QUESTS_API_BASE_URL: ${{ vars.MAIN_VITE_QUESTS_API_BASE_URL }}
   MAIN_VITE_GOOGLE_CLIENT_ID: intentionally-invalid-client-id
   MAIN_VITE_GOOGLE_CLIENT_SECRET: intentionally-invalid-client-secret
+  VITE_POSTHOG_API_HOST: intentionally-invalid-api-host
+  VITE_POSTHOG_API_KEY: intentionally-invalid-api-key
 
 jobs:
   smoke_test:
