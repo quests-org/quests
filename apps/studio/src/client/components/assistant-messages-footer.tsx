@@ -45,80 +45,89 @@ export function AssistantMessagesFooter({
   );
   const isDeveloperMode = preferences?.developerMode;
 
-  const { latestCreatedAt, messageText, modelsUsed, sources } = useMemo(() => {
-    const seenSourceIds = new Set<string>();
-    const allSources: (
-      | SessionMessagePart.SourceDocumentPart
-      | SessionMessagePart.SourceUrlPart
-    )[] = [];
-    let combinedText = "";
-    let latestDate: Date | undefined;
+  const { latestCreatedAt, messageText, modelsUsed, sources, totalDuration } =
+    useMemo(() => {
+      const seenSourceIds = new Set<string>();
+      const allSources: (
+        | SessionMessagePart.SourceDocumentPart
+        | SessionMessagePart.SourceUrlPart
+      )[] = [];
+      let combinedText = "";
+      let latestDate: Date | undefined;
 
-    const modelMap = new Map<string, ModelUsageData>();
+      const modelMap = new Map<string, ModelUsageData>();
 
-    for (const message of messages) {
-      for (const part of message.parts) {
-        if (
-          (part.type === "source-document" || part.type === "source-url") &&
-          !seenSourceIds.has(part.sourceId)
-        ) {
-          seenSourceIds.add(part.sourceId);
-          allSources.push(part);
+      for (const message of messages) {
+        for (const part of message.parts) {
+          if (
+            (part.type === "source-document" || part.type === "source-url") &&
+            !seenSourceIds.has(part.sourceId)
+          ) {
+            seenSourceIds.add(part.sourceId);
+            allSources.push(part);
+          }
+          if (part.type === "text") {
+            combinedText += part.text;
+          }
         }
-        if (part.type === "text") {
-          combinedText += part.text;
+
+        if (!latestDate || message.metadata.createdAt > latestDate) {
+          latestDate = message.metadata.createdAt;
+        }
+
+        if (message.metadata.modelId && !message.metadata.synthetic) {
+          const modelId = message.metadata.modelId;
+          const aiGatewayModel = message.metadata.aiGatewayModel;
+          const key = aiGatewayModel?.uri ?? modelId;
+          const label = aiGatewayModel?.name ?? modelId;
+
+          const existing = modelMap.get(key);
+          const usage = message.metadata.usage;
+
+          modelMap.set(key, {
+            aiGatewayModel,
+            label,
+            modelId,
+            stats: {
+              cachedInputTokens:
+                (existing?.stats.cachedInputTokens || 0) +
+                (usage?.cachedInputTokens || 0),
+              inputTokens:
+                (existing?.stats.inputTokens || 0) + (usage?.inputTokens || 0),
+              msToFinish:
+                (existing?.stats.msToFinish || 0) +
+                (message.metadata.msToFinish || 0),
+              msToFirstChunk:
+                existing?.stats.msToFirstChunk ??
+                message.metadata.msToFirstChunk,
+              outputTokens:
+                (existing?.stats.outputTokens || 0) +
+                (usage?.outputTokens || 0),
+              reasoningTokens:
+                (existing?.stats.reasoningTokens || 0) +
+                (usage?.reasoningTokens || 0),
+              totalTokens:
+                (existing?.stats.totalTokens || 0) + (usage?.totalTokens || 0),
+            },
+          });
         }
       }
 
-      if (!latestDate || message.metadata.createdAt > latestDate) {
-        latestDate = message.metadata.createdAt;
-      }
+      const totalMs = [...modelMap.values()].reduce(
+        (sum, model) => sum + model.stats.msToFinish,
+        0,
+      );
 
-      if (message.metadata.modelId && !message.metadata.synthetic) {
-        const modelId = message.metadata.modelId;
-        const aiGatewayModel = message.metadata.aiGatewayModel;
-        const key = aiGatewayModel?.uri ?? modelId;
-        const label = aiGatewayModel?.name ?? modelId;
-
-        const existing = modelMap.get(key);
-        const usage = message.metadata.usage;
-
-        modelMap.set(key, {
-          aiGatewayModel,
-          label,
-          modelId,
-          stats: {
-            cachedInputTokens:
-              (existing?.stats.cachedInputTokens || 0) +
-              (usage?.cachedInputTokens || 0),
-            inputTokens:
-              (existing?.stats.inputTokens || 0) + (usage?.inputTokens || 0),
-            msToFinish:
-              (existing?.stats.msToFinish || 0) +
-              (message.metadata.msToFinish || 0),
-            msToFirstChunk:
-              existing?.stats.msToFirstChunk ?? message.metadata.msToFirstChunk,
-            outputTokens:
-              (existing?.stats.outputTokens || 0) + (usage?.outputTokens || 0),
-            reasoningTokens:
-              (existing?.stats.reasoningTokens || 0) +
-              (usage?.reasoningTokens || 0),
-            totalTokens:
-              (existing?.stats.totalTokens || 0) + (usage?.totalTokens || 0),
-          },
-        });
-      }
-    }
-
-    return {
-      latestCreatedAt: latestDate,
-      messageText: combinedText,
-      modelsUsed: [...modelMap.entries()]
-        .sort(([a], [b]) => a.localeCompare(b))
-        .map(([, data]) => data),
-      sources: allSources,
-    };
-  }, [messages]);
+      return {
+        latestCreatedAt: latestDate,
+        messageText: combinedText,
+        modelsUsed: [...modelMap.entries()]
+          .sort(([a], [b]) => a.localeCompare(b))
+          .map(([, data]) => data),
+        sources: allSources,
+        totalDuration: totalMs,
+      };
+    }, [messages]);
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(messageText);
@@ -128,20 +137,52 @@ export function AssistantMessagesFooter({
 
   return (
     <Collapsible
-      className="group mt-2 flex flex-col gap-2"
+      className="mt-2 flex flex-col gap-2"
       onOpenChange={setIsExpanded}
       open={isExpanded}
     >
-      <div className="flex items-center gap-2">
+      <div
+        className={cn(
+          "flex items-center gap-2 transition-opacity",
+          sources.length > 0
+            ? "opacity-100"
+            : "opacity-0 group-hover/assistant-message-footer:opacity-100",
+        )}
+      >
         <Tooltip>
           <TooltipTrigger asChild>
             <CopyButton
-              className="rounded p-0.5 text-muted-foreground/50 transition-colors group-hover:text-muted-foreground hover:bg-muted/50 hover:text-foreground disabled:opacity-50"
+              className="rounded p-0.5 text-muted-foreground/50 transition-colors hover:bg-muted/50 hover:text-foreground disabled:opacity-50"
               onCopy={handleCopy}
             />
           </TooltipTrigger>
           <TooltipContent>Copy message</TooltipContent>
         </Tooltip>
+        {totalDuration > 0 && (
+          <Tooltip disableHoverableContent={!isDeveloperMode}>
+            <TooltipTrigger asChild disabled={!isDeveloperMode}>
+              <span className="cursor-default text-xs text-muted-foreground/60">
+                {formatDuration(totalDuration)}
+              </span>
+            </TooltipTrigger>
+            {isDeveloperMode && modelsUsed.length > 0 && (
+              <TooltipContent align="start" className="p-3 text-xs" side="top">
+                <div className="space-y-2">
+                  {modelsUsed.map((model, index) => (
+                    <div key={model.aiGatewayModel?.uri ?? model.modelId}>
+                      {index > 0 && (
+                        <div className="my-2 border-t border-muted" />
+                      )}
+                      {getDeveloperModeRows(model).map((row) => (
+                        <TooltipRow key={row.label} {...row} />
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              </TooltipContent>
+            )}
+          </Tooltip>
+        )}
         {sources.length > 0 && (
           <CollapsibleTrigger asChild>
             <Button size="sm" variant="ghost">
@@ -164,10 +205,10 @@ export function AssistantMessagesFooter({
           </CollapsibleTrigger>
         )}
         {modelsUsed.length > 0 && (
-          <div className="flex min-w-0 items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100">
+          <div className="flex min-w-0 items-center gap-2">
             {modelsUsed.map((model, index) => (
               <div
-                className="flex min-w-0 items-center gap-1"
+                className="flex min-w-0 items-center gap-1.5"
                 key={model.aiGatewayModel?.uri ?? model.modelId}
               >
                 {index > 0 && (
@@ -175,7 +216,7 @@ export function AssistantMessagesFooter({
                 )}
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="transition-colors hover:text-muted-foreground">
+                    <div>
                       <ModelChip
                         aiGatewayModel={model.aiGatewayModel}
                         modelId={model.modelId}
@@ -188,15 +229,9 @@ export function AssistantMessagesFooter({
                     side="top"
                   >
                     <div className="space-y-2">
-                      {getTooltipRows(model, isDeveloperMode).map(
-                        (row, idx, arr) => (
-                          <TooltipRow
-                            key={row.label}
-                            {...row}
-                            divider={row.divider && idx === arr.indexOf(row)}
-                          />
-                        ),
-                      )}
+                      {getModelInfoRows(model).map((row) => (
+                        <TooltipRow key={row.label} {...row} />
+                      ))}
                     </div>
                   </TooltipContent>
                 </Tooltip>
@@ -206,7 +241,7 @@ export function AssistantMessagesFooter({
         )}
         {latestCreatedAt && (
           <RelativeTime
-            className="ml-auto cursor-default text-xs text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100"
+            className="ml-auto cursor-default text-xs text-muted-foreground/60"
             date={latestCreatedAt}
           />
         )}
@@ -304,36 +339,13 @@ const formatTokenCount = (count: number) =>
 const formatTimeMs = (ms: number | undefined) =>
   guard(() => ms !== undefined && !Number.isNaN(ms) && formatDuration(ms));
 
-function getTooltipRows(
-  model: ModelUsageData,
-  isDeveloperMode?: boolean,
-): {
-  divider?: boolean;
+function getDeveloperModeRows(model: ModelUsageData): {
   isWarning?: boolean;
   label: string;
   tabular?: boolean;
   value: string;
 }[] {
-  const infoRows = sift([
-    model.aiGatewayModel?.name && {
-      label: "Model:",
-      value: model.aiGatewayModel.name,
-    },
-    model.aiGatewayModel?.params.provider && {
-      label: "Provider:",
-      value: model.aiGatewayModel.params.provider,
-    },
-    model.aiGatewayModel?.providerId && {
-      label: "Model ID:",
-      value: model.aiGatewayModel.providerId,
-    },
-  ]);
-
-  if (!isDeveloperMode) {
-    return infoRows;
-  }
-
-  const statRows = sift([
+  return sift([
     makeStatRow(
       "Time to first chunk:",
       formatTimeMs(model.stats.msToFirstChunk),
@@ -350,24 +362,39 @@ function getTooltipRows(
     ),
     makeStatRow("Total tokens:", formatTokenCount(model.stats.totalTokens)),
     makeStatRow("Duration:", formatTimeMs(model.stats.msToFinish)),
-  ]).map((stat, idx) => ({
+  ]).map((stat) => ({
     ...stat,
-    divider: idx === 0 && infoRows.length > 0,
     isWarning: true,
-    tabular: true as const,
+    tabular: true,
   }));
+}
 
-  return [...infoRows, ...statRows];
+function getModelInfoRows(model: ModelUsageData): {
+  label: string;
+  value: string;
+}[] {
+  return sift([
+    model.aiGatewayModel?.name && {
+      label: "Model:",
+      value: model.aiGatewayModel.name,
+    },
+    model.aiGatewayModel?.params.provider && {
+      label: "Provider:",
+      value: model.aiGatewayModel.params.provider,
+    },
+    model.aiGatewayModel?.providerId && {
+      label: "Model ID:",
+      value: model.aiGatewayModel.providerId,
+    },
+  ]);
 }
 
 function TooltipRow({
-  divider,
   isWarning,
   label,
   tabular,
   value,
 }: {
-  divider?: boolean;
   isWarning?: boolean;
   label: string;
   tabular?: boolean;
@@ -376,7 +403,6 @@ function TooltipRow({
   return (
     <div
       className={cn("flex items-baseline justify-between gap-6", {
-        "border-t border-warning-foreground/20 pt-2": divider,
         "text-warning-foreground": isWarning,
       })}
     >

@@ -9,6 +9,7 @@ import {
 import { AlertTriangle } from "lucide-react";
 import { useCallback, useMemo } from "react";
 
+import { cn } from "../lib/utils";
 import { AssistantMessage } from "./assistant-message";
 import { AssistantMessagesFooter } from "./assistant-messages-footer";
 import { ContextMessages } from "./context-messages";
@@ -262,34 +263,6 @@ export function SessionStream({
         message.role === "assistant" &&
         (!nextMessage || nextMessage.role !== "assistant");
 
-      if (isLastInConsecutiveGroup) {
-        const assistantMessagesForFooter = regularMessages.slice(
-          lastFooterIndex,
-          messageIndex + 1,
-        );
-        const assistantMessages = assistantMessagesForFooter.filter(
-          (m) => m.role === "assistant",
-        );
-
-        const isLastMessageGroup = messageIndex === regularMessages.length - 1;
-        const shouldRenderFooter =
-          assistantMessages.length > 0 &&
-          visibleAssistantContentCount > 0 &&
-          (!isLastMessageGroup || !isAgentRunning);
-
-        if (shouldRenderFooter) {
-          messageElements.push(
-            <AssistantMessagesFooter
-              key={`assistant-footer-${message.id}`}
-              messages={assistantMessages}
-            />,
-          );
-        }
-
-        lastFooterIndex = messageIndex + 1;
-        visibleAssistantContentCount = 0;
-      }
-
       if (message.role === "user" && fileAttachments.length > 0) {
         const fileAttachmentsPart = fileAttachments.find(
           (part) => part.type === "data-fileAttachments",
@@ -328,6 +301,34 @@ export function SessionStream({
             showActions={isLastMessage && !isAgentRunning}
           />,
         );
+      }
+
+      if (isLastInConsecutiveGroup) {
+        const assistantMessagesForFooter = regularMessages.slice(
+          lastFooterIndex,
+          messageIndex + 1,
+        );
+        const assistantMessages = assistantMessagesForFooter.filter(
+          (m) => m.role === "assistant",
+        );
+
+        const isLastMessageGroup = messageIndex === regularMessages.length - 1;
+        const shouldRenderFooter =
+          assistantMessages.length > 0 &&
+          visibleAssistantContentCount > 0 &&
+          (!isLastMessageGroup || !isAgentRunning);
+
+        if (shouldRenderFooter) {
+          messageElements.push(
+            <AssistantMessagesFooter
+              key={`assistant-footer-${message.id}`}
+              messages={assistantMessages}
+            />,
+          );
+        }
+
+        lastFooterIndex = messageIndex + 1;
+        visibleAssistantContentCount = 0;
       }
 
       newChatElements.push(...messageElements);
@@ -394,7 +395,12 @@ export function SessionStream({
   }, [isAgentRunning, regularMessages, lastMessageId]);
 
   return (
-    <div className="flex w-full flex-col gap-2">
+    <div
+      className={cn(
+        "group/assistant-message-footer",
+        "flex w-full flex-col gap-2",
+      )}
+    >
       {contextMessages.length > 0 && (
         <ContextMessages messages={contextMessages} />
       )}
