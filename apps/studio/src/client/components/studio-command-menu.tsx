@@ -8,6 +8,7 @@ import {
   CommandList,
 } from "@/client/components/ui/command";
 import { Skeleton } from "@/client/components/ui/skeleton";
+import { useTabActions } from "@/client/hooks/use-tab-actions";
 import { useToggleCommandMenu } from "@/client/hooks/use-toggle-command-menu";
 import { rpcClient } from "@/client/rpc/client";
 import { type ProjectSubdomain } from "@quests/workspace/client";
@@ -28,6 +29,7 @@ import { useCallback, useMemo, useState } from "react";
 export function StudioCommandMenu() {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+  const { navigateTab } = useTabActions();
   const projectRouteMatch = useMatch({
     from: "/_app/projects/$subdomain/",
     shouldThrow: false,
@@ -92,7 +94,7 @@ export function StudioCommandMenu() {
 
   const handleSelectProject = (subdomain: ProjectSubdomain) => {
     setOpen(false);
-    void navigate({
+    void navigateTab({
       params: { subdomain },
       to: "/projects/$subdomain",
     });
