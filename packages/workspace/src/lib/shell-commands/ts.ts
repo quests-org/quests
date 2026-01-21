@@ -12,7 +12,7 @@ import { type FileOperationResult } from "./types";
 
 const COMMAND_NAME = "ts";
 export const TS_COMMAND = {
-  description: "Execute a TypeScript file directly.",
+  description: "Execute a TypeScript or JavaScript file directly.",
   examples: [`${COMMAND_NAME} scripts/setup.ts`],
   name: COMMAND_NAME,
 } as const;
