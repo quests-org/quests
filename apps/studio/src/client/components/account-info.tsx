@@ -14,7 +14,14 @@ export function AccountInfo() {
   const { data: hasToken } = useQuery(
     rpcClient.auth.live.hasToken.experimental_liveOptions(),
   );
-  const { data: user, error, isLoading, refetch } = useLiveUser();
+  const {
+    data: user,
+    error,
+    isLoading,
+    refetch,
+  } = useLiveUser({
+    input: { staleTime: 0 },
+  });
 
   const { addTab } = useTabActions();
 

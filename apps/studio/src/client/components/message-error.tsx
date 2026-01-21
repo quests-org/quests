@@ -43,7 +43,7 @@ export function MessageError({
   onModelChange,
   onRetry,
   onStartNewChat,
-  showActions: showRecoveryAlertIfApplicable = false,
+  showActions = false,
 }: MessageErrorProps) {
   const error = message.metadata.error;
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
@@ -62,7 +62,7 @@ export function MessageError({
 
   const questsError = parseQuestsApiError(message);
 
-  if (showRecoveryAlertIfApplicable && questsError) {
+  if (showActions && questsError) {
     if (questsError.code === "insufficient-credits") {
       return <UpgradeSubscriptionAlert onContinue={onContinue} />;
     }
@@ -212,30 +212,23 @@ export function MessageError({
             </div>
           )}
 
-          {showRecoveryAlertIfApplicable &&
-            onRetry &&
-            onStartNewChat &&
-            !questsError && (
-              <div className="mt-4 flex gap-2 border-t pt-4">
-                <Tooltip delayDuration={0}>
-                  <TooltipTrigger asChild>
-                    <Button
-                      onClick={onStartNewChat}
-                      size="sm"
-                      variant="outline"
-                    >
-                      Start new chat
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Starts a fresh chat in this project</p>
-                  </TooltipContent>
-                </Tooltip>
-                <Button onClick={onRetry} size="sm">
-                  Try again
-                </Button>
-              </div>
-            )}
+          {showActions && onRetry && onStartNewChat && !questsError && (
+            <div className="mt-4 flex gap-2 border-t pt-4">
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <Button onClick={onStartNewChat} size="sm" variant="outline">
+                    Start new chat
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Starts a fresh chat in this project</p>
+                </TooltipContent>
+              </Tooltip>
+              <Button onClick={onRetry} size="sm">
+                Try again
+              </Button>
+            </div>
+          )}
         </CollapsiblePartMainContent>
       </CollapsibleContent>
     </Collapsible>

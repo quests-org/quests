@@ -19,36 +19,36 @@ const me = base.handler(async () => {
   return apiQueryClient.fetchQuery(apiRPCClient.users.getMe.queryOptions());
 });
 
-const SubscriptionStatusInputSchema = z.union([
-  z.void(),
-  z.object({ staleTime: z.number().optional().default(30_000) }),
-]);
-
 const live = {
-  me: base.handler(async function* ({ errors, signal }) {
-    try {
-      yield* createAuthenticatedLiveQuery({
-        getOptions: (enabled) =>
-          apiRPCClient.users.getMe.queryOptions({ enabled }),
-        queryKey: apiRPCClient.users.getMe.queryKey(),
-        signal,
-      });
-    } catch (error) {
-      throw errors.API_ERROR({
-        cause: error,
-        message: error instanceof Error ? error.message : "Unknown error",
-      });
-    }
-  }),
+  me: base
+    .input(z.object({ staleTime: z.number().optional().default(30_000) }))
+    .handler(async function* ({ errors, input, signal }) {
+      try {
+        yield* createAuthenticatedLiveQuery({
+          getOptions: (enabled) =>
+            apiRPCClient.users.getMe.queryOptions({
+              enabled,
+              staleTime: input.staleTime,
+            }),
+          queryKey: apiRPCClient.users.getMe.queryKey(),
+          signal,
+        });
+      } catch (error) {
+        throw errors.API_ERROR({
+          cause: error,
+          message: error instanceof Error ? error.message : "Unknown error",
+        });
+      }
+    }),
   subscriptionStatus: base
-    .input(SubscriptionStatusInputSchema)
+    .input(z.object({ staleTime: z.number().optional().default(30_000) }))
     .handler(async function* ({ errors, input, signal }) {
       try {
         yield* createAuthenticatedLiveQuery({
           getOptions: (enabled) =>
             apiRPCClient.users.getSubscriptionStatus.queryOptions({
               enabled,
-              staleTime: input?.staleTime,
+              staleTime: input.staleTime,
             }),
           queryKey: apiRPCClient.users.getSubscriptionStatus.queryKey(),
           signal,

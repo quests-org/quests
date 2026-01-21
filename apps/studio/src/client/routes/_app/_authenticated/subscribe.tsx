@@ -85,7 +85,7 @@ function SubscribePage() {
     data: subscription,
     error: subscriptionError,
     isLoading: isSubscriptionLoading,
-  } = useLiveSubscriptionStatus();
+  } = useLiveSubscriptionStatus({ input: { staleTime: 0 } });
   const { mutateAsync: createCheckoutSession } = useMutation(
     rpcClient.stripe.createCheckoutSession.mutationOptions(),
   );

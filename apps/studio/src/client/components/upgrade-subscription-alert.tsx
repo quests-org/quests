@@ -13,7 +13,11 @@ export function UpgradeSubscriptionAlert({
 }: {
   onContinue: () => void;
 }) {
-  const { data: subscription, error, isLoading } = useLiveSubscriptionStatus();
+  const {
+    data: subscription,
+    error,
+    isLoading,
+  } = useLiveSubscriptionStatus({ input: { staleTime: 0 } });
   const { data: hasToken } = useQuery(
     rpcClient.auth.live.hasToken.experimental_liveOptions(),
   );

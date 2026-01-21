@@ -1,10 +1,16 @@
-import { rpcClient } from "@/client/rpc/client";
+import { rpcClient, type RPCInput } from "@/client/rpc/client";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 
-export function useLiveSubscriptionStatus() {
+export function useLiveSubscriptionStatus({
+  input,
+}: {
+  input?: RPCInput["user"]["live"]["subscriptionStatus"];
+} = {}) {
   const { refetch, ...rest } = useQuery(
-    rpcClient.user.live.subscriptionStatus.experimental_liveOptions(),
+    rpcClient.user.live.subscriptionStatus.experimental_liveOptions({
+      input: input ?? {},
+    }),
   );
   const { data: onWindowFocus } = useQuery(
     rpcClient.utils.live.onWindowFocus.experimental_liveOptions(),

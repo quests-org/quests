@@ -5,9 +5,11 @@ import { Progress } from "@/client/components/ui/progress";
 import { useTabActions } from "@/client/hooks/use-tab-actions";
 import { cn } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { tv } from "tailwind-variants";
+
+import { useLiveSubscriptionStatus } from "../hooks/use-live-subscription-status";
 
 const planBadgeVariants = tv({
   base: "px-2 py-0.5 text-xs",
@@ -31,9 +33,9 @@ export function SubscriptionCard() {
     error,
     isLoading,
     refetch,
-  } = useQuery(
-    rpcClient.user.live.subscriptionStatus.experimental_liveOptions(),
-  );
+  } = useLiveSubscriptionStatus({
+    input: { staleTime: 0 },
+  });
   const { mutateAsync: createPortalSession } = useMutation(
     rpcClient.stripe.createPortalSession.mutationOptions(),
   );
