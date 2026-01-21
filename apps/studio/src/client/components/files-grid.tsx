@@ -5,6 +5,7 @@ import {
 import { cn } from "@/client/lib/utils";
 import { useSetAtom } from "jotai";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { fork } from "radashi";
 import { useState } from "react";
 
 import { FilePreviewCard } from "./file-preview-card";
@@ -27,49 +28,29 @@ export function FilesGrid({
   const openFileViewer = useSetAtom(openProjectFileViewerAtom);
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const allFiles: ProjectFileViewerFile[] = files.map((f) => ({
-    filename: f.filename,
-    filePath: f.filePath,
-    mimeType: f.mimeType,
-    projectSubdomain: f.projectSubdomain,
-    url: f.url,
-    versionRef: f.versionRef,
-  }));
+  const [richFiles, nonRichFiles] = fork(files, hasRichPreview);
+  const sortedFiles = [...richFiles, ...nonRichFiles];
 
   const handleFileClick = (file: ProjectFileViewerFile) => {
-    const currentIndex = allFiles.findIndex((f) => f.url === file.url);
+    const currentIndex = sortedFiles.findIndex((f) => f.url === file.url);
     openFileViewer({
       currentIndex: currentIndex === -1 ? 0 : currentIndex,
-      files: allFiles,
+      files: sortedFiles,
     });
   };
 
-  const visibleFiles = files.slice(0, initialVisibleCount);
-  const hiddenFiles = files.slice(initialVisibleCount);
+  const visibleFiles = sortedFiles.slice(0, initialVisibleCount);
+  const hiddenFiles = sortedFiles.slice(initialVisibleCount);
   const hasHiddenFiles = hiddenFiles.length > 0;
-  const filesToShow = isExpanded ? files : visibleFiles;
+  const filesToShow = isExpanded ? sortedFiles : visibleFiles;
 
-  const richPreviewFiles: (ProjectFileViewerFile & {
-    shouldSpanTwo?: boolean;
-  })[] = [];
-  const otherFiles: ProjectFileViewerFile[] = [];
+  const richPreviewFiles = filesToShow.filter(hasRichPreview).map((file) => ({
+    ...file,
+    shouldSpanTwo:
+      file.mimeType === "text/markdown" || file.mimeType === "text/plain",
+  }));
 
-  for (const file of filesToShow) {
-    const isImage = file.mimeType.startsWith("image/");
-    const isHtml = file.mimeType === "text/html";
-    const isPdf = file.mimeType === "application/pdf";
-    const isVideo = file.mimeType.startsWith("video/");
-    const isMarkdown = file.mimeType === "text/markdown";
-
-    if (isImage || isHtml || isPdf || isVideo || isMarkdown) {
-      richPreviewFiles.push({
-        ...file,
-        shouldSpanTwo: isMarkdown,
-      });
-    } else {
-      otherFiles.push(file);
-    }
-  }
+  const otherFiles = filesToShow.filter((file) => !hasRichPreview(file));
 
   return (
     <div className="flex flex-col gap-2">
@@ -142,5 +123,16 @@ export function FilesGrid({
         </div>
       )}
     </div>
+  );
+}
+
+function hasRichPreview(file: ProjectFileViewerFile) {
+  return (
+    file.mimeType.startsWith("image/") ||
+    file.mimeType === "text/html" ||
+    file.mimeType === "application/pdf" ||
+    file.mimeType.startsWith("video/") ||
+    file.mimeType === "text/markdown" ||
+    file.mimeType === "text/plain"
   );
 }

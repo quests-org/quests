@@ -82,7 +82,7 @@ function TextView({
 
   const language = getLanguageFromFilePath(filename);
   const { highlightedHtml } = useSyntaxHighlighting({
-    code: data,
+    code: language ? data : undefined,
     language,
   });
 
@@ -118,16 +118,20 @@ function TextView({
     );
   }
 
-  // Delay showing plain text fallback by 500ms to give syntax highlighting time to load
-  return (
-    <motion.div
-      animate={{ opacity: 1 }}
-      initial={{ opacity: 0 }}
-      transition={{ delay: 0.5, duration: 0 }}
-    >
-      {children(data ?? "")}
-    </motion.div>
-  );
+  if (language) {
+    // Delay showing plain text fallback to give syntax highlighting time to load
+    return (
+      <motion.div
+        animate={{ opacity: 1 }}
+        initial={{ opacity: 0 }}
+        transition={{ delay: 0.3, duration: 0 }}
+      >
+        {children(data ?? "")}
+      </motion.div>
+    );
+  }
+
+  return <>{children(data ?? "")}</>;
 }
 
 const fileViewerVariants = tv({

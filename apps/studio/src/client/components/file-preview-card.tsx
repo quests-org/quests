@@ -30,6 +30,7 @@ export function FilePreviewCard({
   const isPdf = mimeType === "application/pdf";
   const isVideo = mimeType.startsWith("video/");
   const isMarkdown = mimeType === "text/markdown";
+  const isPlainText = mimeType === "text/plain";
 
   const handleMouseEnter = () => {
     if (isVideo && videoRef.current) {
@@ -50,13 +51,17 @@ export function FilePreviewCard({
     }
   };
 
-  if (isMarkdown) {
+  if (isMarkdown || isPlainText) {
     return (
       <div className="group relative overflow-hidden rounded-lg border border-border bg-background">
         <PreviewHeader file={file} onClick={onClick} />
         <div className="relative w-full overflow-hidden">
           <div className="max-h-64 overflow-hidden bg-background">
-            <MarkdownPreview url={url} />
+            {isMarkdown ? (
+              <MarkdownPreview url={url} />
+            ) : (
+              <TextPreview url={url} />
+            )}
           </div>
           <div className="pointer-events-none absolute right-0 bottom-0 left-0 h-16 bg-linear-to-t from-background to-transparent" />
           <button
@@ -252,5 +257,43 @@ function PreviewHeader({
       </button>
       <FilePreviewActionsMenu file={file} />
     </div>
+  );
+}
+
+function TextPreview({ url }: { url: string }) {
+  const { data, error, isLoading } = useQuery({
+    queryFn: async () => {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch file: ${response.statusText}`);
+      }
+      return response.text();
+    },
+    queryKey: ["text-preview", url],
+    retry: false,
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex size-full items-center justify-center">
+        <Loader2 className="size-4 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex size-full items-center justify-center p-4">
+        <p className="text-xs text-muted-foreground">Failed to load preview</p>
+      </div>
+    );
+  }
+
+  const truncatedContent = data ? data.split("\n").slice(0, 10).join("\n") : "";
+
+  return (
+    <pre className="size-full overflow-hidden p-3 font-mono text-xs text-foreground">
+      {truncatedContent}
+    </pre>
   );
 }
