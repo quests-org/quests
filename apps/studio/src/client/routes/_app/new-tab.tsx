@@ -1,8 +1,8 @@
+import { AppFooter } from "@/client/components/app-footer";
 import { AppIcon } from "@/client/components/app-icon";
 import { AppStatusIcon } from "@/client/components/app-status-icon";
 import { CommandMenuCTA } from "@/client/components/command-menu-cta";
 import { NewTabDiscoverHeroCards } from "@/client/components/discover-hero-card";
-import { ExternalLink } from "@/client/components/external-link";
 import { InternalLink } from "@/client/components/internal-link";
 import { NewTabHelpMessage } from "@/client/components/new-tab-help-message";
 import { ModelPreview } from "@/client/components/projects-data-table/model-preview";
@@ -11,12 +11,6 @@ import { Card, CardContent } from "@/client/components/ui/card";
 import { useDefaultModelURI } from "@/client/hooks/use-default-model-uri";
 import { useTabActions } from "@/client/hooks/use-tab-actions";
 import { rpcClient } from "@/client/rpc/client";
-import {
-  APP_REPO_URL,
-  DISCORD_URL,
-  NEW_ISSUE_URL,
-  PRODUCT_NAME,
-} from "@quests/shared";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   createFileRoute,
@@ -226,31 +220,7 @@ function RouteComponent() {
         )}
       </div>
 
-      <footer className="w-full px-8 py-4">
-        <p className="text-center text-xs text-muted-foreground">
-          {PRODUCT_NAME} is{" "}
-          <ExternalLink
-            className="transition-colors hover:text-foreground hover:underline"
-            href={APP_REPO_URL}
-          >
-            open source
-          </ExternalLink>
-          <span className="mx-2">·</span>
-          <ExternalLink
-            className="transition-colors hover:text-foreground hover:underline"
-            href={DISCORD_URL}
-          >
-            Join us on Discord
-          </ExternalLink>
-          <span className="mx-2">·</span>
-          <ExternalLink
-            className="transition-colors hover:text-foreground hover:underline"
-            href={NEW_ISSUE_URL}
-          >
-            Report an issue
-          </ExternalLink>
-        </p>
-      </footer>
+      <AppFooter />
     </div>
   );
 }
