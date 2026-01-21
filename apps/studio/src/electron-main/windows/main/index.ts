@@ -15,7 +15,7 @@ import {
   getMainWindow,
   setMainWindow,
 } from "@/electron-main/windows/main/instance";
-import { createToolbar } from "@/electron-main/windows/toolbar";
+import { createToolbar, resizeToolbar } from "@/electron-main/windows/toolbar";
 import { is } from "@electron-toolkit/utils";
 import { type BaseWindow, BrowserWindow, shell } from "electron";
 import path from "node:path";
@@ -66,23 +66,22 @@ export async function createMainWindow() {
   };
 
   const debouncedSaveState = debounce({ delay: 500 }, saveState);
+  const debouncedResizeViews = debounce({ delay: 100 }, resizeViews);
 
   mainWindow.on("close", () => {
     const tabsManager = getTabsManager();
     debouncedSaveState.cancel();
+    debouncedResizeViews.cancel();
     saveState();
     tabsManager?.teardown();
   });
 
   mainWindow.on("closed", () => {
     debouncedSaveState.cancel();
+    debouncedResizeViews.cancel();
     saveState();
   });
 
-  // Required on macOS, or unfocused resizes (e.g. Amethyst) won't be tracked
-  mainWindow.on("will-resize", debouncedSaveState);
-  mainWindow.on("resize", debouncedSaveState);
-  mainWindow.on("move", debouncedSaveState);
   mainWindow.on("blur", () => {
     wasWindowBlurred = true;
   });
@@ -122,6 +121,14 @@ export async function createMainWindow() {
     mainWindow.maximize();
   }
 
+  setupWindowEventListeners({
+    mainWindow,
+    onResize: () => {
+      debouncedSaveState();
+      debouncedResizeViews();
+    },
+  });
+
   createContextMenu({
     inspectInNewWindow: true,
     windowOrWebContentsView: mainWindow,
@@ -144,6 +151,42 @@ export function updateTitleBarOverlay() {
   ) {
     window.setTitleBarOverlay(getTitleBarOverlay());
   }
+}
+
+function resizeViews() {
+  const tabsManager = getTabsManager();
+  tabsManager?.updateCurrentTabBounds();
+  resizeToolbar();
+}
+
+function setupWindowEventListeners({
+  mainWindow,
+  onResize,
+}: {
+  mainWindow: BrowserWindow;
+  onResize: () => void;
+}) {
+  // Required on macOS and Linux
+  // On macoS, unfocused resizes (e.g. Amethyst) won't be tracked
+  // On Linux, maximize / unmaximize may not fire reliably
+  mainWindow.on("will-resize", () => {
+    onResize();
+  });
+  mainWindow.on("resize", () => {
+    onResize();
+  });
+  mainWindow.on("move", () => {
+    onResize();
+  });
+
+  // These were added when fixing Linux and may not be needed
+  mainWindow.on("maximize", () => {
+    onResize();
+  });
+  // cspell:ignore unmaximize
+  mainWindow.on("unmaximize", () => {
+    onResize();
+  });
 }
 
 function showWindow(baseWindow: BaseWindow) {
