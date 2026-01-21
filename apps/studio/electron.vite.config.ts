@@ -42,26 +42,49 @@ const resolve = {
   },
 };
 
-const validateProductionEnv: Plugin = {
-  configResolved(config) {
-    if (config.mode !== "production") {
-      return;
-    }
+/**
+ * Creates a plugin to validate production environment variables based on context.
+ *
+ * Electron Vite environment variable naming scheme:
+ * - KEY=123                # not available
+ * - MAIN_VITE_KEY=123      # only available in main process
+ * - PRELOAD_VITE_KEY=123   # only available in preload scripts
+ * - RENDERER_VITE_KEY=123  # only available in renderers
+ * - VITE_KEY=123           # available in all processes
+ */
+function createValidateProductionEnv(
+  context: "main" | "preload" | "renderer",
+): Plugin {
+  // Map of required environment variables by context
+  const requiredVarsByContext = {
+    main: ["MAIN_VITE_GOOGLE_CLIENT_ID", "MAIN_VITE_GOOGLE_CLIENT_SECRET"],
+    preload: [] as string[],
+    renderer: [] as string[],
+  };
 
-    const requiredVars = [
-      "VITE_POSTHOG_API_HOST",
-      "VITE_POSTHOG_API_KEY",
-      "MAIN_VITE_GOOGLE_CLIENT_ID",
-      "MAIN_VITE_GOOGLE_CLIENT_SECRET",
-    ];
-    for (const key of requiredVars) {
-      if (!config.env[key]) {
-        throw new Error(`Missing environment variable: ${key}`);
+  // Variables available to all contexts
+  const sharedRequiredVars = ["VITE_POSTHOG_API_HOST", "VITE_POSTHOG_API_KEY"];
+
+  return {
+    configResolved(config) {
+      if (config.mode !== "production") {
+        return;
       }
-    }
-  },
-  name: "validate-production-env",
-};
+
+      const contextVars = requiredVarsByContext[context];
+      const allRequiredVars = [...sharedRequiredVars, ...contextVars];
+
+      for (const key of allRequiredVars) {
+        if (!config.env[key]) {
+          throw new Error(
+            `Missing environment variable for ${context}: ${key}`,
+          );
+        }
+      }
+    },
+    name: `validate-production-env:${context}`,
+  };
+}
 
 export default defineConfig(({ command }) => ({
   main: {
@@ -97,7 +120,7 @@ export default defineConfig(({ command }) => ({
     },
     plugins: [
       ...(isAnalyzing ? [analyzer()] : []),
-      validateProductionEnv,
+      createValidateProductionEnv("main"),
       ValidateEnv({ configFile: "./validate-env" }),
     ],
     resolve,
@@ -109,7 +132,10 @@ export default defineConfig(({ command }) => ({
       },
       watch: {}, // Enable hot reloading
     },
-    plugins: [...(isAnalyzing ? [analyzer()] : []), validateProductionEnv],
+    plugins: [
+      ...(isAnalyzing ? [analyzer()] : []),
+      createValidateProductionEnv("preload"),
+    ],
     resolve,
   },
   renderer: {
@@ -123,7 +149,7 @@ export default defineConfig(({ command }) => ({
     },
     plugins: [
       ...(isAnalyzing ? [analyzer()] : []),
-      validateProductionEnv,
+      createValidateProductionEnv("renderer"),
       tanstackRouter({
         autoCodeSplitting: true,
         generatedRouteTree: "./src/client/routeTree.gen.ts",
