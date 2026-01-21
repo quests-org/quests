@@ -10,6 +10,14 @@ import { SidebarIcon } from "lucide-react";
 
 export const Route = createFileRoute("/toolbar")({
   component: ToolbarPage,
+  head: () => ({
+    meta: [
+      {
+        content: "",
+        name: "opaque-background",
+      },
+    ],
+  }),
 });
 
 function ToolbarPage() {

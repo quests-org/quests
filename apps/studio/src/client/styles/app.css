@@ -4,8 +4,12 @@
 
 @custom-variant dark (&:is(.dark *));
 
-html:has(meta[name="transparent-background"]) body {
+body {
   background: transparent;
+}
+
+html:has(meta[name="opaque-background"]) body {
+  background: var(--background);
 }
 
 /* =========================
@@ -164,7 +168,7 @@ html:has(meta[name="transparent-background"]) body {
     @apply border-border outline-ring/50 scrollbar-thin scrollbar-color;
   }
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply text-foreground font-sans antialiased;
   }
 }
 

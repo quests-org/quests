@@ -9,14 +9,6 @@ import { rpcClient } from "../rpc/client";
 
 export const Route = createFileRoute("/sidebar")({
   component: SidebarPage,
-  head: () => ({
-    meta: [
-      {
-        content: "",
-        name: "transparent-background",
-      },
-    ],
-  }),
 });
 
 function SidebarPage() {

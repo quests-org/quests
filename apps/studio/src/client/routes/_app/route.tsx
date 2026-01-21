@@ -16,6 +16,14 @@ const StudioCommandMenu = lazy(() =>
 
 export const Route = createFileRoute("/_app")({
   component: RouteComponent,
+  head: () => ({
+    meta: [
+      {
+        content: "",
+        name: "opaque-background",
+      },
+    ],
+  }),
 });
 
 const DevTools = lazy(() =>
