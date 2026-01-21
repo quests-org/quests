@@ -1,6 +1,7 @@
 import { envForProviders } from "@quests/ai-gateway";
 import ms from "ms";
 import { ok } from "neverthrow";
+import { parseArgs } from "node:util";
 import { dedent } from "radashi";
 import { z } from "zod";
 
@@ -228,6 +229,23 @@ export const RunShellCommand = createTool({
             `${TSX_COMMAND.name} command requires a file argument (e.g., ${TSX_COMMAND.name} scripts/setup.ts). Running ${TSX_COMMAND.name} without arguments spawns an interactive shell.`,
           );
         }
+
+        const { values } = parseArgs({
+          allowPositionals: true,
+          args,
+          options: {
+            e: { type: "string" },
+            eval: { type: "string" },
+          },
+          strict: false,
+        });
+
+        if (values.e !== undefined || values.eval !== undefined) {
+          return executeError(
+            `${TSX_COMMAND.name} does not support the -e/--eval flag for evaluating code strings directly. Instead, write your code to a .ts or .js file and execute it with ${TSX_COMMAND.name}.`,
+          );
+        }
+
         const providerEnv = envForProviders({
           configs: appConfig.workspaceConfig.getAIProviderConfigs(),
           workspaceServerURL: getWorkspaceServerURL(),
