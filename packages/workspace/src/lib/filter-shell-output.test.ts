@@ -90,8 +90,7 @@ ${appDir}/file3.ts`;
 
     const result = filterShellOutput(output, appDir);
     expect(result).toMatchInlineSnapshot(`
-      "
-          Error: Tool call execution failed for 'tool-run_shell_command': Command failed with exit code 1: pnpm dlx jiti scripts/test-06-dependencies.ts
+      "Error: Tool call execution failed for 'tool-run_shell_command': Command failed with exit code 1: pnpm dlx jiti scripts/test-06-dependencies.ts
 
           ✓ Test 6: Dependency Imports and Zod Validation
           ✓ Valid user parsed: { id: 1, email: 'user@example.com', age: 30, active: true }
