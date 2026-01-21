@@ -186,7 +186,7 @@ function RouteComponent() {
                   params={{ subdomain: project.subdomain }}
                   to="/projects/$subdomain"
                 >
-                  <Card className="py-0 transition-shadow hover:shadow-md">
+                  <Card className="py-0">
                     <CardContent className="py-4">
                       <div className="mb-1.5 flex items-center gap-x-1">
                         {project.iconName && (
