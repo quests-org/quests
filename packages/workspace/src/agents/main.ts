@@ -158,6 +158,7 @@ export const mainAgent = setupAgent({
     - No other runtimes are bundled with this product.
     - You can use the \`${agentTools.RunDiagnostics.name}\` tool to check for errors in your scripts.
     - You don't need to add shebangs to TypeScript script files.
+    - Before running scripts, add any new dependencies using \`${agentTools.RunShellCommand.name}\` with \`${PNPM_COMMAND.name}\`.
       
     # Output Files
     - Files in \`${APP_FOLDER_NAMES.output}/\` are automatically shown to the user. They can click them to view in full or download.

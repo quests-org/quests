@@ -5,21 +5,34 @@ import { err, ok } from "neverthrow";
 import { dedent, sift } from "radashi";
 import { z } from "zod";
 
+import { APP_FOLDER_NAMES } from "../constants";
 import { absolutePathJoin } from "../lib/absolute-path-join";
 import { ensureRelativePath } from "../lib/ensure-relative-path";
 import { executeError } from "../lib/execute-error";
 import { pathExists } from "../lib/path-exists";
+import { PNPM_COMMAND } from "../lib/shell-commands/pnpm";
 import { writeFileWithDir } from "../lib/write-file-with-dir";
 import { RelativePathSchema } from "../schemas/paths";
 import { BaseInputSchema } from "./base";
 import { createTool } from "./create-tool";
 import { ReadFile } from "./read-file";
 import { diagnosticsReminder } from "./run-diagnostics";
+import { RunShellCommand } from "./run-shell-command";
 
 const INPUT_PARAMS = {
   content: "content",
   filePath: "filePath",
 } as const;
+
+function scriptsDirectoryReminder(filePath: string): string | undefined {
+  // Scripts will often use new dependencies, so we remind the agent to add them.
+  if (filePath.startsWith(`${APP_FOLDER_NAMES.scripts}/`)) {
+    return dedent`
+      Before running this script, add any new dependencies using the ${RunShellCommand.name} tool with the ${PNPM_COMMAND.name} command.
+    `;
+  }
+  return undefined;
+}
 
 export const WriteFile = createTool({
   description: dedent`
@@ -86,6 +99,7 @@ export const WriteFile = createTool({
       value: sift([
         `${baseContent} ${output.filePath}`,
         diagnosticsReminder(output.filePath),
+        scriptsDirectoryReminder(output.filePath),
       ]).join("\n\n"),
     };
   },
