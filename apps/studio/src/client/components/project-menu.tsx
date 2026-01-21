@@ -29,6 +29,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 export function ProjectMenu({
   onSettingsClick,
@@ -137,13 +138,18 @@ export function ProjectMenu({
 
           <DropdownMenuSeparator />
 
-          <DropdownMenuItem
-            disabled={createEmptySession.isPending}
-            onClick={handleNewChat}
-          >
-            <Plus className="h-4 w-4" />
-            <span>New chat</span>
-          </DropdownMenuItem>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <DropdownMenuItem
+                disabled={createEmptySession.isPending}
+                onClick={handleNewChat}
+              >
+                <Plus className="h-4 w-4" />
+                <span>New chat</span>
+              </DropdownMenuItem>
+            </TooltipTrigger>
+            <TooltipContent>Start a fresh chat in this project.</TooltipContent>
+          </Tooltip>
 
           {showChatsSubmenu && (
             <DropdownMenuSub>
