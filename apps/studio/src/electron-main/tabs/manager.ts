@@ -35,6 +35,7 @@ export class TabsManager {
   private sidebarWidth = 0;
   private store: Store<TabStore>;
   private tabs: TabWithView[];
+  private unsubscribeSidebar?: () => void;
 
   public constructor({
     baseWindow,
@@ -53,12 +54,24 @@ export class TabsManager {
         this.emitStateChange(value.root);
       }
     });
-    void publisher.subscribe("sidebar.updated", ({ width }) => {
-      this.sidebarWidth = width;
-      for (const tab of this.getTabs()) {
-        this.updateTabBounds(tab);
+
+    this.unsubscribeSidebar = publisher.subscribe(
+      "sidebar.updated",
+      ({ width }) => {
+        this.sidebarWidth = width;
+        const currentTab = this.getCurrentTab();
+        if (currentTab) {
+          this.updateTabBounds(currentTab);
+        }
+        this.focusCurrentTab();
+      },
+    );
+
+    this.baseWindow.on("resize", () => {
+      const currentTab = this.getCurrentTab();
+      if (currentTab) {
+        this.updateTabBounds(currentTab);
       }
-      this.focusCurrentTab();
     });
   }
 
@@ -91,7 +104,7 @@ export class TabsManager {
 
     this.tabs.push(newTab);
     if (select) {
-      this.showTabView(newTab);
+      this.selectTabView(newTab);
     }
     this.afterUpdate();
   }
@@ -197,12 +210,13 @@ export class TabsManager {
     );
 
     this.tabs = tabs;
+
     const selectedTab = this.tabs.find((tab) => tab.id === this.selectedTabId);
 
     if (selectedTab) {
-      this.showTabView(selectedTab);
+      this.selectTabView(selectedTab);
     } else if (this.tabs[0]) {
-      this.showTabView(this.tabs[0]);
+      this.selectTabView(this.tabs[0]);
     } else {
       this.addTab({});
     }
@@ -235,8 +249,8 @@ export class TabsManager {
   public selectTab({ id }: { id: string }) {
     const tab = this.tabs.find((t) => t.id === id);
     if (tab) {
-      this.showTabView(tab);
-      this.selectedTabId = tab.id;
+      this.updateTabBounds(tab);
+      this.selectTabView(tab);
       this.afterUpdate();
     }
   }
@@ -246,8 +260,8 @@ export class TabsManager {
     if (index >= 0 && index < this.tabs.length) {
       const tab = this.tabs[index];
       if (tab) {
-        this.showTabView(tab);
-        this.selectedTabId = tab.id;
+        this.updateTabBounds(tab);
+        this.selectTabView(tab);
         this.afterUpdate();
       }
     }
@@ -258,7 +272,7 @@ export class TabsManager {
       this.closeTabView(tab);
     }
 
-    this.baseWindow.removeAllListeners("resize");
+    this.unsubscribeSidebar?.();
   }
 
   public zoomIn() {
@@ -286,6 +300,18 @@ export class TabsManager {
     tab.webView.webContents.close();
   }
 
+  private computeTabBounds() {
+    // Using getContentBounds due to this being a frameless window. getBounds()
+    // returns the incorrect bounds on Windows when in maximized state.
+    const windowBounds = this.baseWindow.getContentBounds();
+    return {
+      height: windowBounds.height - TOOLBAR_HEIGHT,
+      width: windowBounds.width - this.sidebarWidth,
+      x: this.sidebarWidth,
+      y: TOOLBAR_HEIGHT,
+    };
+  }
+
   private createTabView({ id, urlPath }: { id: string; urlPath: string }) {
     const url = unsafe_studioURL(urlPath);
     const newContentView = new WebContentsView({
@@ -299,6 +325,9 @@ export class TabsManager {
     createContextMenu({ windowOrWebContentsView: newContentView });
 
     newContentView.setBackgroundColor(getBackgroundColor());
+
+    // Set initial bounds respecting sidebar width
+    newContentView.setBounds(this.computeTabBounds());
 
     newContentView.webContents.setWindowOpenHandler((details) => {
       void shell.openExternal(details.url);
@@ -345,13 +374,15 @@ export class TabsManager {
     if (isSelected) {
       const nextTab = this.tabs[index + 1];
       if (nextTab) {
-        this.showTabView(nextTab);
+        this.updateTabBounds(nextTab);
+        this.selectTabView(nextTab);
         return;
       }
 
       const prevTab = this.tabs[index - 1];
       if (prevTab) {
-        this.showTabView(prevTab);
+        this.updateTabBounds(prevTab);
+        this.selectTabView(prevTab);
         return;
       }
     }
@@ -368,7 +399,8 @@ export class TabsManager {
     });
 
     if (existingTab) {
-      this.showTabView(existingTab);
+      this.updateTabBounds(existingTab);
+      this.selectTabView(existingTab);
       this.afterUpdate();
       return true;
     }
@@ -376,17 +408,12 @@ export class TabsManager {
     return false;
   }
 
-  private showTabView(tab: TabWithView) {
-    const setWebContentBounds = () => {
-      this.updateTabBounds(tab);
-    };
-
-    setWebContentBounds();
-    this.baseWindow.removeAllListeners("resize");
-
-    this.baseWindow.on("resize", () => {
-      setWebContentBounds();
-    });
+  private selectTabView(tab: TabWithView) {
+    // Remove the currently visible tab from view
+    const currentTab = this.getCurrentTab();
+    if (currentTab && currentTab.id !== tab.id) {
+      this.baseWindow.contentView.removeChildView(currentTab.webView);
+    }
 
     this.baseWindow.contentView.addChildView(tab.webView);
     tab.webView.webContents.focus();
@@ -441,14 +468,6 @@ export class TabsManager {
   }
 
   private updateTabBounds(tab: TabWithView) {
-    // Using getContentBounds due to this being a frameless window. getBounds()
-    // returns the incorrect bounds on Windows when in maximized state.
-    const newBounds = this.baseWindow.getContentBounds();
-    tab.webView.setBounds({
-      height: newBounds.height - TOOLBAR_HEIGHT,
-      width: newBounds.width - this.sidebarWidth,
-      x: this.sidebarWidth,
-      y: TOOLBAR_HEIGHT,
-    });
+    tab.webView.setBounds(this.computeTabBounds());
   }
 }
