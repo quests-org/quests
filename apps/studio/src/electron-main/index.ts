@@ -11,7 +11,6 @@ import {
   updateTitleBarOverlay,
 } from "@/electron-main/windows/main";
 import { getMainWindow } from "@/electron-main/windows/main/instance";
-import { updateSettingsWindowTitleBarOverlay } from "@/electron-main/windows/settings";
 import { is, optimizer } from "@electron-toolkit/utils";
 import { APP_PROTOCOL } from "@quests/shared";
 import { app, BrowserWindow, dialog, nativeTheme, protocol } from "electron";
@@ -119,13 +118,9 @@ void app.whenReady().then(async () => {
   });
 
   createApplicationMenu();
-  watchThemePreferenceAndApply(() => {
-    updateTitleBarOverlay();
-    updateSettingsWindowTitleBarOverlay();
-  });
+  watchThemePreferenceAndApply(updateTitleBarOverlay);
   nativeTheme.on("updated", () => {
     updateTitleBarOverlay();
-    updateSettingsWindowTitleBarOverlay();
   });
 
   await setupBinDirectory();

@@ -1,8 +1,5 @@
 import { createContextMenu } from "@/electron-main/lib/context-menu";
-import {
-  getBackgroundColor,
-  getTitleBarOverlay,
-} from "@/electron-main/lib/theme-utils";
+import { getBackgroundColor } from "@/electron-main/lib/theme-utils";
 import { publisher } from "@/electron-main/rpc/publisher";
 import { type StudioPath } from "@/shared/studio-path";
 import { BrowserWindow, shell } from "electron";
@@ -20,11 +17,13 @@ export function openSettingsWindow(
   tab?: "Advanced" | "Features" | "General" | "Providers",
   options?: { showNewProviderDialog?: boolean },
 ) {
+  // If settings window already exists, focus it
   if (settingsWindow && !settingsWindow.isDestroyed()) {
     settingsWindow.focus();
     return;
   }
 
+  // Create new settings window with minimal configuration
   settingsWindow = new BrowserWindow({
     autoHideMenuBar: true,
     backgroundColor: getBackgroundColor(),
@@ -33,9 +32,7 @@ export function openSettingsWindow(
     minWidth: 600,
     show: false,
     title: "Settings",
-    titleBarOverlay:
-      process.platform === "darwin" ? undefined : getTitleBarOverlay(),
-    titleBarStyle: process.platform === "darwin" ? "hiddenInset" : "hidden",
+    titleBarStyle: "hiddenInset",
     trafficLightPosition: { x: 12, y: 12 },
     webPreferences: {
       contextIsolation: true,
@@ -45,6 +42,7 @@ export function openSettingsWindow(
     width: 900,
   });
 
+  // Show window when ready
   settingsWindow.once("ready-to-show", () => {
     settingsWindow?.show();
   });
@@ -94,14 +92,4 @@ export function openSettingsWindow(
   void settingsWindow.loadURL(fullUrl);
 
   createContextMenu({ windowOrWebContentsView: settingsWindow });
-}
-
-export function updateSettingsWindowTitleBarOverlay() {
-  if (
-    settingsWindow &&
-    !settingsWindow.isDestroyed() &&
-    (process.platform === "linux" || process.platform === "win32")
-  ) {
-    settingsWindow.setTitleBarOverlay(getTitleBarOverlay());
-  }
 }
