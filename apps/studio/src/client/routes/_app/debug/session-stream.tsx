@@ -65,7 +65,7 @@ function RouteComponent() {
         value={selectedSessionId}
       >
         <CommandInput placeholder="Search sessions..." />
-        <CommandList>
+        <CommandList className="max-h-100">
           {presetSessions.map((session) => {
             const isSelected = selectedSessionId === session.id;
             return (
@@ -150,6 +150,7 @@ function RouteComponent() {
                 messages={selectedSession.messages}
                 onContinue={createEventHandler("Continue")}
                 onModelChange={createEventHandler("Model Change")}
+                onRetry={createEventHandler("Retry")}
                 onStartNewChat={createEventHandler("Start New Chat")}
                 project={mockProject as never}
               />

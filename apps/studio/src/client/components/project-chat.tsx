@@ -7,6 +7,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { ChevronDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { useStickToBottom } from "use-stick-to-bottom";
 
 import { useAppState } from "../hooks/use-app-state";
@@ -36,7 +37,11 @@ export function ProjectChat({
     // Less animation when sticking to bottom
     useStickToBottom({ mass: 0.8 });
   const createMessage = useMutation(
-    rpcClient.workspace.message.create.mutationOptions(),
+    rpcClient.workspace.message.create.mutationOptions({
+      onError: (error) => {
+        toast.error("Failed to create message", { description: error.message });
+      },
+    }),
   );
   const stopSessions = useMutation(
     rpcClient.workspace.session.stop.mutationOptions(),
@@ -68,6 +73,23 @@ export function ProjectChat({
     subdomain: project.subdomain,
   });
 
+  const handleRetry = () => {
+    if (!selectedSessionId) {
+      // No retry UI is shown when no session is selected
+      return;
+    }
+    if (!selectedModelURI) {
+      toast.error("Failed to retry", { description: "No model selected" });
+      return;
+    }
+    createMessage.mutate({
+      modelURI: selectedModelURI,
+      prompt: "Try that again.",
+      sessionId: selectedSessionId,
+      subdomain: project.subdomain,
+    });
+  };
+
   useEffect(() => {
     if (!bottomSectionRef.current) {
       return;
@@ -94,6 +116,7 @@ export function ProjectChat({
             <ProjectSessionStream
               onContinue={handleContinue}
               onModelChange={setSelectedModelURI}
+              onRetry={handleRetry}
               project={project}
               selectedVersion={selectedVersion}
               sessionId={selectedSessionId}

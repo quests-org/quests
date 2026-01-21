@@ -9,10 +9,8 @@ import {
 import { AlertTriangle } from "lucide-react";
 import { useCallback, useMemo } from "react";
 
-import { parseQuestsApiError } from "../lib/parse-quests-api-error";
 import { AssistantMessage } from "./assistant-message";
 import { AssistantMessagesFooter } from "./assistant-messages-footer";
-import { ChatErrorAlert } from "./chat-error-alert";
 import { ContextMessages } from "./context-messages";
 import { FileAttachmentsCard } from "./file-attachments-card";
 import { MessageError } from "./message-error";
@@ -33,6 +31,7 @@ interface SessionEventListProps {
   messages: SessionMessage.WithParts[];
   onContinue: () => void;
   onModelChange: (modelURI: AIGatewayModelURI.Type) => void;
+  onRetry: () => void;
   onStartNewChat: () => void;
   project: WorkspaceAppProject;
   selectedVersion?: string;
@@ -45,6 +44,7 @@ export function SessionStream({
   messages,
   onContinue,
   onModelChange,
+  onRetry,
   onStartNewChat,
   project,
   selectedVersion,
@@ -323,7 +323,9 @@ export function SessionStream({
             message={message}
             onContinue={onContinue}
             onModelChange={onModelChange}
-            showRecoveryAlertIfApplicable={isLastMessage && !isAgentRunning}
+            onRetry={onRetry}
+            onStartNewChat={onStartNewChat}
+            showActions={isLastMessage && !isAgentRunning}
           />,
         );
       }
@@ -340,35 +342,10 @@ export function SessionStream({
     isAgentRunning,
     onContinue,
     onModelChange,
+    onRetry,
+    onStartNewChat,
     project.subdomain,
   ]);
-
-  const shouldShowErrorRecoveryPrompt = useMemo(() => {
-    if (messages.length === 0 || isAgentRunning) {
-      return false;
-    }
-
-    const lastMessage = messages.at(-1);
-    if (!lastMessage || lastMessage.role !== "assistant") {
-      return false;
-    }
-
-    const error = lastMessage.metadata.error;
-    if (!error) {
-      return false;
-    }
-
-    const questsError = parseQuestsApiError(lastMessage);
-    if (questsError) {
-      return false;
-    }
-
-    return (
-      error.kind !== "aborted" &&
-      error.kind !== "invalid-tool-input" &&
-      error.kind !== "no-such-tool"
-    );
-  }, [messages, isAgentRunning]);
 
   const shouldShowContinueButton = useMemo(() => {
     if (messages.length === 0 || isAgentRunning) {
@@ -427,10 +404,6 @@ export function SessionStream({
         <div className={hasActiveLoadingState ? "invisible" : "visible"}>
           <ReasoningMessage hideIcon isLoading text="" />
         </div>
-      )}
-
-      {shouldShowErrorRecoveryPrompt && (
-        <ChatErrorAlert onStartNewChat={onStartNewChat} />
       )}
 
       {shouldShowContinueButton && (

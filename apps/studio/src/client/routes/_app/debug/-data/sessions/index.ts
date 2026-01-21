@@ -1,10 +1,15 @@
 import { type SessionMessage } from "@quests/workspace/client";
 
 import { errorApiSession } from "./error-api";
+import { errorApiKeySession } from "./error-api-key";
+import { errorConsecutiveSession } from "./error-consecutive";
 import { errorInsufficientCreditsSession } from "./error-insufficient-credits";
 import { errorModelNotAllowedSession } from "./error-model-not-allowed";
 import { errorModelNotFoundSession } from "./error-model-not-found";
+import { errorMultipleSession } from "./error-multiple";
 import { errorNoModelRequestedSession } from "./error-no-model-requested";
+import { errorTimeoutSession } from "./error-timeout";
+import { errorUnknownSession } from "./error-unknown";
 import { expandableUserMessageSession } from "./expandable-user-message";
 import { multiTurnSession } from "./multi-turn";
 import { toolsInvalidSession } from "./tools-invalid";
@@ -23,6 +28,26 @@ const presetSessionsData: {
   {
     messages: errorApiSession,
     name: "Error: API Call",
+  },
+  {
+    messages: errorApiKeySession,
+    name: "Error: API Key",
+  },
+  {
+    messages: errorTimeoutSession,
+    name: "Error: Timeout",
+  },
+  {
+    messages: errorUnknownSession,
+    name: "Error: Unknown",
+  },
+  {
+    messages: errorMultipleSession,
+    name: "Error: Multiple Errors",
+  },
+  {
+    messages: errorConsecutiveSession,
+    name: "Error: Consecutive Errors",
   },
   {
     messages: errorInsufficientCreditsSession,

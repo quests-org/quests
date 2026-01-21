@@ -23,6 +23,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "./ui/collapsible";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { UpgradeSubscriptionAlert } from "./upgrade-subscription-alert";
 
 interface MessageErrorProps {
@@ -30,7 +31,9 @@ interface MessageErrorProps {
   message: SessionMessage.Assistant;
   onContinue: () => void;
   onModelChange: (modelURI: AIGatewayModelURI.Type) => void;
-  showRecoveryAlertIfApplicable?: boolean;
+  onRetry?: () => void;
+  onStartNewChat?: () => void;
+  showActions?: boolean;
 }
 
 export function MessageError({
@@ -38,7 +41,9 @@ export function MessageError({
   message,
   onContinue,
   onModelChange,
-  showRecoveryAlertIfApplicable = false,
+  onRetry,
+  onStartNewChat,
+  showActions: showRecoveryAlertIfApplicable = false,
 }: MessageErrorProps) {
   const error = message.metadata.error;
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
@@ -206,6 +211,31 @@ export function MessageError({
               <strong>Tool:</strong> {error.toolName}
             </div>
           )}
+
+          {showRecoveryAlertIfApplicable &&
+            onRetry &&
+            onStartNewChat &&
+            !questsError && (
+              <div className="mt-4 flex gap-2 border-t pt-4">
+                <Tooltip delayDuration={0}>
+                  <TooltipTrigger asChild>
+                    <Button
+                      onClick={onStartNewChat}
+                      size="sm"
+                      variant="outline"
+                    >
+                      Start new chat
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Starts a fresh chat in this project</p>
+                  </TooltipContent>
+                </Tooltip>
+                <Button onClick={onRetry} size="sm">
+                  Try again
+                </Button>
+              </div>
+            )}
         </CollapsiblePartMainContent>
       </CollapsibleContent>
     </Collapsible>

@@ -9,13 +9,16 @@ import { toast } from "sonner";
 
 import { useAppState } from "../hooks/use-app-state";
 import { rpcClient } from "../rpc/client";
-import { ChatErrorAlert } from "./chat-error-alert";
 import { ChatZeroState } from "./chat-zero-state";
 import { SessionStream } from "./session-stream";
+import { Alert, AlertDescription } from "./ui/alert";
+import { Button } from "./ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 interface ProjectSessionStreamProps {
   onContinue: () => void;
   onModelChange: (modelURI: AIGatewayModelURI.Type) => void;
+  onRetry: () => void;
   project: WorkspaceAppProject;
   selectedVersion?: string;
   sessionId: StoreId.Session;
@@ -24,6 +27,7 @@ interface ProjectSessionStreamProps {
 export function ProjectSessionStream({
   onContinue,
   onModelChange,
+  onRetry,
   project,
   selectedVersion,
   sessionId,
@@ -95,10 +99,24 @@ export function ProjectSessionStream({
 
   if (messageError) {
     return (
-      <ChatErrorAlert
-        message={`Failed to load messages: ${messageError.message || "Unknown error occurred"}`}
-        onStartNewChat={handleNewSession}
-      />
+      <Alert className="mt-4" variant="warning">
+        <AlertDescription className="flex flex-col gap-4">
+          <div className="font-semibold">Failed to load messages</div>
+          <div className="text-sm">
+            {messageError.message || "Unknown error occurred"}
+          </div>
+          <div>
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <Button onClick={handleNewSession}>Start new chat</Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Starts a fresh chat in this project</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        </AlertDescription>
+      </Alert>
     );
   }
 
@@ -114,6 +132,7 @@ export function ProjectSessionStream({
       messages={messages}
       onContinue={onContinue}
       onModelChange={onModelChange}
+      onRetry={onRetry}
       onStartNewChat={handleNewSession}
       project={project}
       selectedVersion={selectedVersion}
