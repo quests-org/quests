@@ -10,8 +10,10 @@ export function filterShellOutput(output: string, appDir: AppDir): string {
 }
 
 export function shouldFilterDebuggerMessage(message: string): boolean {
+  const shouldFilter =
+    process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test";
   return (
-    process.env.NODE_ENV === "development" &&
+    shouldFilter &&
     (message.includes("Debugger attached.") ||
       message.includes("Waiting for the debugger to disconnect..."))
   );

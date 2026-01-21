@@ -74,6 +74,31 @@ ${appDir}/file3.ts`;
 
     expect(result).toMatchInlineSnapshot(`""`);
   });
+
+  it("filters debugger messages from output", () => {
+    const output = `
+    Error: Tool call execution failed for 'tool-run_shell_command': Command failed with exit code 1: pnpm dlx jiti scripts/test-06-dependencies.ts
+
+    Debugger attached.
+    Debugger attached.
+    ✓ Test 6: Dependency Imports and Zod Validation
+    ✓ Valid user parsed: { id: 1, email: 'user@example.com', age: 30, active: true }
+    ✓ Caught validation errors:
+    TypeError: Cannot read properties of undefined (reading 'forEach')
+    Waiting for the debugger to disconnect...
+    Waiting for the debugger to disconnect...`;
+
+    const result = filterShellOutput(output, appDir);
+    expect(result).toMatchInlineSnapshot(`
+      "
+          Error: Tool call execution failed for 'tool-run_shell_command': Command failed with exit code 1: pnpm dlx jiti scripts/test-06-dependencies.ts
+
+          ✓ Test 6: Dependency Imports and Zod Validation
+          ✓ Valid user parsed: { id: 1, email: 'user@example.com', age: 30, active: true }
+          ✓ Caught validation errors:
+          TypeError: Cannot read properties of undefined (reading 'forEach')"
+    `);
+  });
 });
 
 describe("shouldFilterDebuggerMessage", () => {
@@ -90,6 +115,14 @@ describe("shouldFilterDebuggerMessage", () => {
 
   it("filters waiting for debugger message in development", () => {
     process.env.NODE_ENV = "development";
+    expect(
+      shouldFilterDebuggerMessage("Waiting for the debugger to disconnect..."),
+    ).toBe(true);
+  });
+
+  it("filters debugger messages in test environment", () => {
+    process.env.NODE_ENV = "test";
+    expect(shouldFilterDebuggerMessage("Debugger attached.")).toBe(true);
     expect(
       shouldFilterDebuggerMessage("Waiting for the debugger to disconnect..."),
     ).toBe(true);
