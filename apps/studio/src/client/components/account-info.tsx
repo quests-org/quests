@@ -98,7 +98,7 @@ export function AccountInfo() {
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-0.5">
                   <div className="text-sm font-medium">
-                    Try all the latest models for free
+                    Access the best AI models for free
                   </div>
                   <p className="text-sm text-muted-foreground">
                     Claim your free credits by signing up for an account.

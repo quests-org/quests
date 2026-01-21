@@ -92,7 +92,7 @@ function RouteComponent() {
                 </div>
                 <div className="flex flex-col items-start gap-y-0.5">
                   <p className="text-sm font-medium text-foreground">
-                    Unlock access to hundreds of AI models for free
+                    Access the best AI models for free
                   </p>
                   <span className="text-sm font-semibold text-brand group-hover:underline">
                     Claim your credits →

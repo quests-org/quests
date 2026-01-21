@@ -76,7 +76,7 @@ function RouteComponent() {
 
           <div className="flex w-full flex-col gap-2">
             <FeatureCard
-              description="Sign in to unlock access to hundreds of AI models for free."
+              description="Access the best AI models for free."
               number="1"
               title="Get started for free"
             />
