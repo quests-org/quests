@@ -123,15 +123,14 @@ export function FilesGrid({
       {hasHiddenFiles && (
         <div className={cn("flex", alignEnd ? "justify-end" : "justify-start")}>
           <Button
-            className="h-12 shrink-0 justify-center gap-1.5"
             onClick={() => {
               setIsExpanded(!isExpanded);
             }}
             size="sm"
             type="button"
-            variant="ghost"
+            variant="outline-muted"
           >
-            <span className="text-xs text-muted-foreground">
+            <span className="text-xs">
               {isExpanded ? "Show less" : `+${hiddenFiles.length} more`}
             </span>
             {isExpanded ? (
