@@ -6,7 +6,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { getRevealInFolderLabel } from "../lib/utils";
-import { Button } from "./ui/button";
+import { Button, type ButtonVariant } from "./ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,11 +19,13 @@ export function FileActionsMenu({
   filePath,
   onCopy,
   projectSubdomain,
+  variant = "ghost",
   versionRef,
 }: {
   filePath: string;
   onCopy?: () => Promise<void> | void;
   projectSubdomain: ProjectSubdomain;
+  variant?: ButtonVariant;
   versionRef: string;
 }) {
   const [copied, setCopied] = useState(false);
@@ -86,7 +88,7 @@ export function FileActionsMenu({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button size="sm" variant="ghost">
+        <Button size="sm" variant={variant}>
           {copied ? (
             <Check className="size-4" />
           ) : (

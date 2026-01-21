@@ -3,7 +3,8 @@ import { Slot } from "@radix-ui/react-slot";
 import * as React from "react";
 import { tv, type VariantProps } from "tailwind-variants";
 
-const buttonVariants = tv({
+// eslint-disable-next-line react-refresh/only-export-components
+export const buttonVariants = tv({
   base: "inline-flex shrink-0 items-center justify-center gap-2 rounded-md text-sm font-medium whitespace-nowrap transition-all outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   defaultVariants: {
     size: "default",
@@ -27,6 +28,7 @@ const buttonVariants = tv({
         "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
       "ghost-destructive":
         "text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/20",
+      "ghost-overlay": "text-white hover:bg-white/20 hover:text-white",
       link: "text-primary underline-offset-4 hover:underline",
       outline:
         "border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
@@ -37,7 +39,9 @@ const buttonVariants = tv({
   },
 });
 
-function Button({
+export type ButtonVariant = VariantProps<typeof buttonVariants>["variant"];
+
+export function Button({
   asChild = false,
   className,
   size = "default",
@@ -59,6 +63,3 @@ function Button({
     />
   );
 }
-
-// eslint-disable-next-line react-refresh/only-export-components
-export { Button, buttonVariants };

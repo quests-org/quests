@@ -177,11 +177,10 @@ export function ProjectFileViewerModal() {
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
-                          className="text-white hover:bg-white/10"
                           onClick={handleDownload}
                           size="sm"
                           tabIndex={-1}
-                          variant="ghost"
+                          variant="ghost-overlay"
                         >
                           <Download className="size-4" />
                         </Button>
@@ -196,16 +195,16 @@ export function ProjectFileViewerModal() {
                       filePath={currentFile.filePath}
                       onCopy={isDownloadable ? handleCopy : undefined}
                       projectSubdomain={currentFile.projectSubdomain}
+                      variant="ghost-overlay"
                       versionRef={currentFile.versionRef}
                     />
                   )}
                   <Button
-                    className="text-white hover:bg-white/10"
                     onClick={() => {
                       closeViewer();
                     }}
                     size="sm"
-                    variant="ghost"
+                    variant="ghost-overlay"
                   >
                     <X className="size-4" />
                   </Button>
@@ -224,18 +223,18 @@ export function ProjectFileViewerModal() {
               {hasMultipleFiles && (
                 <>
                   <Button
-                    className="absolute top-1/2 left-4 z-10 -translate-y-1/2 bg-black/50 text-white hover:bg-white/10"
+                    className="absolute top-1/2 left-4 z-10 -translate-y-1/2"
                     onClick={goToPrevious}
                     size="icon"
-                    variant="ghost"
+                    variant="ghost-overlay"
                   >
                     <ChevronLeft className="size-6" />
                   </Button>
                   <Button
-                    className="absolute top-1/2 right-4 z-10 -translate-y-1/2 bg-black/50 text-white hover:bg-white/10"
+                    className="absolute top-1/2 right-4 z-10 -translate-y-1/2"
                     onClick={goToNext}
                     size="icon"
-                    variant="ghost"
+                    variant="ghost-overlay"
                   >
                     <ChevronRight className="size-6" />
                   </Button>
