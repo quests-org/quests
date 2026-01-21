@@ -17,13 +17,11 @@ export function openSettingsWindow(
   tab?: "Advanced" | "Features" | "General" | "Providers",
   options?: { showNewProviderDialog?: boolean },
 ) {
-  // If settings window already exists, focus it
   if (settingsWindow && !settingsWindow.isDestroyed()) {
     settingsWindow.focus();
     return;
   }
 
-  // Create new settings window with minimal configuration
   settingsWindow = new BrowserWindow({
     autoHideMenuBar: true,
     backgroundColor: getBackgroundColor(),
@@ -42,7 +40,6 @@ export function openSettingsWindow(
     width: 900,
   });
 
-  // Show window when ready
   settingsWindow.once("ready-to-show", () => {
     settingsWindow?.show();
   });
