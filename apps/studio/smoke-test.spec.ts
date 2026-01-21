@@ -16,7 +16,7 @@ describe("Studio Smoke Test", () => {
       path.join(tmpdir(), "quests-smoke-test-"),
     );
 
-    execSync("pnpm run build:env:unsigned", {
+    execSync("pnpm run build:env:unsigned:test", {
       cwd: process.cwd(),
       env: {
         ...process.env,
