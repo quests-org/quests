@@ -48,7 +48,12 @@ const validateProductionEnv: Plugin = {
       return;
     }
 
-    const requiredVars = ["VITE_POSTHOG_API_HOST", "VITE_POSTHOG_API_KEY"];
+    const requiredVars = [
+      "VITE_POSTHOG_API_HOST",
+      "VITE_POSTHOG_API_KEY",
+      "MAIN_VITE_GOOGLE_CLIENT_ID",
+      "MAIN_VITE_GOOGLE_CLIENT_SECRET",
+    ];
     for (const key of requiredVars) {
       if (!config.env[key]) {
         throw new Error(`Missing environment variable: ${key}`);

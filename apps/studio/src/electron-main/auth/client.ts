@@ -30,8 +30,8 @@ interface OAuthState {
 
 export function createGoogleProvider({ port }: { port: number }) {
   return new arctic.Google(
-    import.meta.env.MAIN_VITE_GOOGLE_CLIENT_ID,
-    import.meta.env.MAIN_VITE_GOOGLE_CLIENT_SECRET,
+    import.meta.env.MAIN_VITE_GOOGLE_CLIENT_ID ?? "invalid-client-id",
+    import.meta.env.MAIN_VITE_GOOGLE_CLIENT_SECRET ?? "invalid-client-secret",
     `http://localhost:${port}/auth/callback/google`,
   );
 }
