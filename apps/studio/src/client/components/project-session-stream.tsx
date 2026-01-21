@@ -5,6 +5,7 @@ import {
 } from "@quests/workspace/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { useAppState } from "../hooks/use-app-state";
@@ -36,12 +37,14 @@ export function ProjectSessionStream({
     data: messages = [],
     error: messageError,
     isLoading,
+    refetch,
   } = useQuery(
     rpcClient.workspace.message.live.listWithParts.experimental_liveOptions({
       input: {
         sessionId,
         subdomain: project.subdomain,
       },
+      retry: 1, // Allowing retry just in case of race condition SQLite issues (may remove this in the future)
     }),
   );
 
@@ -92,7 +95,7 @@ export function ProjectSessionStream({
   if (isLoading) {
     return (
       <div className="flex justify-center py-4">
-        <div className="h-4 w-4 animate-spin text-muted-foreground" />
+        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -105,13 +108,23 @@ export function ProjectSessionStream({
           <div className="text-sm">
             {messageError.message || "Unknown error occurred"}
           </div>
-          <div>
+          <div className="flex gap-2">
             <Tooltip delayDuration={0}>
               <TooltipTrigger asChild>
-                <Button onClick={handleNewSession}>Start new chat</Button>
+                <Button onClick={handleNewSession} variant="secondary">
+                  Start new chat
+                </Button>
               </TooltipTrigger>
               <TooltipContent>
                 <p>Starts a fresh chat in this project</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <Button onClick={() => refetch()}>Retry</Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Retry loading messages</p>
               </TooltipContent>
             </Tooltip>
           </div>
