@@ -4,6 +4,7 @@ import {
   Breadcrumb,
   type BreadcrumbItem,
 } from "@/client/components/breadcrumb";
+import { ExternalLink } from "@/client/components/external-link";
 import { Markdown } from "@/client/components/markdown";
 import { NotFoundComponent } from "@/client/components/not-found";
 import { PromptInput } from "@/client/components/prompt-input";
@@ -164,15 +165,13 @@ export function TemplateDetail({
         <div className="space-y-6">
           <div>
             <h3 className="mb-2 text-sm font-medium">Source Code</h3>
-            <a
+            <ExternalLink
               className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
               href={`${REGISTRY_REPO_URL}/tree/main/templates/${folderName}`}
-              rel="noopener noreferrer"
-              target="_blank"
             >
               <GithubLogo className="size-5" />
               {GITHUB_ORG}/{REGISTRY_REPO_NAME}
-            </a>
+            </ExternalLink>
           </div>
 
           {packageJson && (

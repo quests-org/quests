@@ -1,3 +1,4 @@
+import { ExternalLink } from "@/client/components/external-link";
 import { Button } from "@/client/components/ui/button";
 import {
   Card,
@@ -83,14 +84,9 @@ function CheckoutPage() {
           <CardContent>
             <p className="text-sm text-muted-foreground">
               If you encountered an issue, please try again or{" "}
-              <a
-                className="cursor-pointer underline"
-                href={SUPPORT_URL}
-                rel="noopener noreferrer"
-                target="_blank"
-              >
+              <ExternalLink className="underline" href={SUPPORT_URL}>
                 contact support
-              </a>
+              </ExternalLink>
               .
             </p>
           </CardContent>

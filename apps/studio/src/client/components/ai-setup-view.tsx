@@ -2,7 +2,10 @@ import { providerMetadataAtom } from "@/client/atoms/provider-metadata";
 import { AddProviderDialog } from "@/client/components/add-provider/dialog";
 import { AIProviderIcon } from "@/client/components/ai-provider-icon";
 import { ContactErrorAlert } from "@/client/components/contact-error-alert";
+import { GoogleSignInButton } from "@/client/components/google-sign-in-button";
+import { ManualProviderButton } from "@/client/components/manual-provider-button";
 import { StarryLayout } from "@/client/components/starry-layout";
+import { TermsFooter } from "@/client/components/terms-footer";
 import { Button } from "@/client/components/ui/button";
 import {
   Tooltip,
@@ -18,13 +21,12 @@ import { useNavigate } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
 import { Check } from "lucide-react";
 import { useState } from "react";
-import { SiGoogle } from "react-icons/si";
 
 const FEATURED_PROVIDERS: AIProviderType[] = ["anthropic", "openai", "google"];
 
 export function AISetupView({ mode }: { mode: "setup" | "sign-in" }) {
   const [showAddProviderDialog, setShowAddProviderDialog] = useState(false);
-  const { error, signIn } = useSignInSocial();
+  const { error } = useSignInSocial();
   const navigate = useNavigate();
   const { providerMetadataMap } = useAtomValue(providerMetadataAtom);
   const { data: hasToken } = useQuery(
@@ -38,11 +40,6 @@ export function AISetupView({ mode }: { mode: "setup" | "sign-in" }) {
   const hasProvider = (providerConfigs?.length ?? 0) > 0;
   const isReady = mode === "setup" ? hasToken || hasProvider : hasToken;
 
-  const handleContinueClick = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    void signIn();
-  };
-
   const handleGetStarted = () => {
     void navigate({ replace: true, to: "/new-tab" });
   };
@@ -53,31 +50,7 @@ export function AISetupView({ mode }: { mode: "setup" | "sign-in" }) {
   const readySubtitle = "You're now ready to start building!";
 
   return (
-    <StarryLayout
-      footer={
-        !isReady && (
-          <>
-            By clicking continue, you agree to our{" "}
-            <a
-              href="https://quests.dev/terms"
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              Terms of Service
-            </a>{" "}
-            and{" "}
-            <a
-              href="https://quests.dev/privacy"
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              Privacy Policy
-            </a>
-            .
-          </>
-        )
-      }
-    >
+    <StarryLayout footer={!isReady && <TermsFooter />}>
       <div className="max-w-sm">
         <div className="flex flex-col gap-6 pb-12">
           <div className="flex flex-col items-center gap-6">
@@ -150,34 +123,14 @@ export function AISetupView({ mode }: { mode: "setup" | "sign-in" }) {
                   </ContactErrorAlert>
                 )}
 
-                <form
-                  className="flex w-full items-center justify-center"
-                  onSubmit={handleContinueClick}
-                >
-                  <Button
-                    className="w-full min-w-80"
-                    type="submit"
-                    variant="default"
-                  >
-                    <SiGoogle />
-                    Continue with Google
-                  </Button>
-                </form>
+                <GoogleSignInButton className="w-full min-w-80" />
 
                 {mode === "setup" && (
-                  <div className="flex flex-col items-center justify-center">
-                    <div className="text-sm text-muted-foreground/50">or</div>
-                    <Button
-                      className="text-muted-foreground/80"
-                      onClick={() => {
-                        setShowAddProviderDialog(true);
-                      }}
-                      type="button"
-                      variant="ghost"
-                    >
-                      Add an AI provider manually
-                    </Button>
-                  </div>
+                  <ManualProviderButton
+                    onClick={() => {
+                      setShowAddProviderDialog(true);
+                    }}
+                  />
                 )}
               </>
             )}

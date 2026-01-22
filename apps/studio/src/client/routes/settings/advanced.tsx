@@ -1,3 +1,4 @@
+import { ExternalLink } from "@/client/components/external-link";
 import { Label } from "@/client/components/ui/label";
 import { Switch } from "@/client/components/ui/switch";
 import { rpcClient } from "@/client/rpc/client";
@@ -59,14 +60,12 @@ function UsageMetrics() {
             />
             <Label className="inline" htmlFor="usage-metrics">
               Help Quests improve by submitting anonymous{" "}
-              <a
+              <ExternalLink
                 className="text-blue-600 hover:underline dark:text-blue-400"
                 href={`${APP_REPO_URL}/blob/main/docs/usage-metrics.md`}
-                rel="noopener noreferrer"
-                target="_blank"
               >
                 usage metrics
-              </a>
+              </ExternalLink>
             </Label>
           </div>
         </div>

@@ -1,3 +1,5 @@
+import { ExternalLink } from "@/client/components/external-link";
+
 const S = {
   link: "inline-flex items-center gap-x-0.5 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 underline underline-offset-2",
 } as const;
@@ -16,38 +18,23 @@ export function ProviderLinks({
       {keyURL ? (
         <>
           <span>
-            <a
-              className={S.link}
-              href={keyURL}
-              rel="noopener noreferrer"
-              target="_blank"
-            >
+            <ExternalLink className={S.link} href={keyURL}>
               Get API key
-            </a>
+            </ExternalLink>
           </span>{" "}
           <span>or</span>{" "}
           <span>
-            <a
-              className={S.link}
-              href={url}
-              rel="noopener noreferrer"
-              target="_blank"
-            >
+            <ExternalLink className={S.link} href={url}>
               learn more
-            </a>{" "}
+            </ExternalLink>{" "}
             about {name}.
           </span>
         </>
       ) : (
         <span>
-          <a
-            className={S.link}
-            href={url}
-            rel="noopener noreferrer"
-            target="_blank"
-          >
+          <ExternalLink className={S.link} href={url}>
             Learn more
-          </a>{" "}
+          </ExternalLink>{" "}
           about {name}.
         </span>
       )}
