@@ -26,6 +26,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/client/components/ui/table";
+import { cn } from "@/client/lib/utils";
 import {
   flexRender,
   getCoreRowModel,
@@ -36,17 +37,23 @@ import {
 } from "@tanstack/react-table";
 import { useState } from "react";
 
+export const PROJECTS_PAGE_SIZE = 10;
+
 export function ProjectsDataTable({
   bulkActions,
   columns,
   data,
+  onPageChange,
   onRowSelectionChange,
+  page,
   rowSelection,
 }: {
   bulkActions?: React.ReactNode;
   columns: ColumnDef<WorkspaceAppProject>[];
   data: WorkspaceAppProject[];
+  onPageChange: (page: number) => void;
   onRowSelectionChange: OnChangeFn<RowSelectionState>;
+  page: number;
   rowSelection: RowSelectionState;
 }) {
   "use no memo"; // for useReactTable, see https://github.com/TanStack/table/issues/6137
@@ -71,6 +78,10 @@ export function ProjectsDataTable({
     state: {
       columnFilters,
       columnVisibility,
+      pagination: {
+        pageIndex: page - 1,
+        pageSize: PROJECTS_PAGE_SIZE,
+      },
       rowSelection,
       sorting,
     },
@@ -179,14 +190,24 @@ export function ProjectsDataTable({
           <PaginationContent>
             <PaginationItem>
               <PaginationPrevious
-                aria-disabled={!table.getCanPreviousPage()}
+                aria-disabled={
+                  !table.getCanPreviousPage() || table.getPageCount() <= 1
+                }
+                className={cn(
+                  (!table.getCanPreviousPage() || table.getPageCount() <= 1) &&
+                    "pointer-events-none opacity-50",
+                )}
                 onClick={(e) => {
                   e.preventDefault();
                   if (table.getCanPreviousPage()) {
-                    table.previousPage();
+                    onPageChange(page - 1);
                   }
                 }}
-                tabIndex={table.getCanPreviousPage() ? undefined : -1}
+                tabIndex={
+                  table.getCanPreviousPage() && table.getPageCount() > 1
+                    ? undefined
+                    : -1
+                }
               />
             </PaginationItem>
             {(() => {
@@ -220,21 +241,21 @@ export function ProjectsDataTable({
                 );
               }
 
-              return pages.map((page, index) =>
-                page === "ellipsis" ? (
+              return pages.map((pageNum, index) =>
+                pageNum === "ellipsis" ? (
                   <PaginationItem key={`ellipsis-${index}`}>
                     <PaginationEllipsis />
                   </PaginationItem>
                 ) : (
-                  <PaginationItem key={page}>
+                  <PaginationItem key={pageNum}>
                     <PaginationLink
-                      isActive={currentPage === page}
+                      isActive={currentPage === pageNum}
                       onClick={(e) => {
                         e.preventDefault();
-                        table.setPageIndex(page);
+                        onPageChange(pageNum + 1);
                       }}
                     >
-                      {page + 1}
+                      {pageNum + 1}
                     </PaginationLink>
                   </PaginationItem>
                 ),
@@ -242,14 +263,24 @@ export function ProjectsDataTable({
             })()}
             <PaginationItem>
               <PaginationNext
-                aria-disabled={!table.getCanNextPage()}
+                aria-disabled={
+                  !table.getCanNextPage() || table.getPageCount() <= 1
+                }
+                className={cn(
+                  (!table.getCanNextPage() || table.getPageCount() <= 1) &&
+                    "pointer-events-none opacity-50",
+                )}
                 onClick={(e) => {
                   e.preventDefault();
                   if (table.getCanNextPage()) {
-                    table.nextPage();
+                    onPageChange(page + 1);
                   }
                 }}
-                tabIndex={table.getCanNextPage() ? undefined : -1}
+                tabIndex={
+                  table.getCanNextPage() && table.getPageCount() > 1
+                    ? undefined
+                    : -1
+                }
               />
             </PaginationItem>
           </PaginationContent>

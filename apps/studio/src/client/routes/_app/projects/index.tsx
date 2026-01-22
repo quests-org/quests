@@ -1,7 +1,3 @@
-import type {
-  ProjectSubdomain,
-  WorkspaceAppProject,
-} from "@quests/workspace/client";
 import type { RowSelectionState } from "@tanstack/react-table";
 
 import { CommandMenuCTA } from "@/client/components/command-menu-cta";
@@ -9,7 +5,10 @@ import { DeleteWithProgressDialog } from "@/client/components/delete-with-progre
 import { InternalLink } from "@/client/components/internal-link";
 import { ProjectDeleteDialog } from "@/client/components/project-delete-dialog";
 import { ProjectSettingsDialog } from "@/client/components/project-settings-dialog";
-import { ProjectsDataTable } from "@/client/components/projects-data-table";
+import {
+  PROJECTS_PAGE_SIZE,
+  ProjectsDataTable,
+} from "@/client/components/projects-data-table";
 import { createColumns } from "@/client/components/projects-data-table/columns";
 import { Badge } from "@/client/components/ui/badge";
 import { Button } from "@/client/components/ui/button";
@@ -26,10 +25,15 @@ import { getTrashTerminology } from "@/client/lib/trash-terminology";
 import { rpcClient } from "@/client/rpc/client";
 import { createIconMeta } from "@/shared/tabs";
 import { EVAL_SUBDOMAIN_PREFIX } from "@quests/shared";
+import {
+  isProjectSubdomain,
+  type ProjectSubdomain,
+  type WorkspaceAppProject,
+} from "@quests/workspace/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { Circle, Loader2, Square, Trash2 } from "lucide-react";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -38,6 +42,7 @@ const projectsSearchSchema = z.object({
     .enum(["all", "evals", "active", "favorites"])
     .optional()
     .default("all"),
+  page: z.coerce.number().int().positive().optional().default(1),
 });
 
 export const Route = createFileRoute("/_app/projects/")({
@@ -101,19 +106,20 @@ function RouteComponent() {
 
   const favoriteProjectSubdomains = useMemo(() => {
     if (!favoriteProjects) {
-      return new Set<string>();
+      return new Set<ProjectSubdomain>();
     }
     return new Set(favoriteProjects.map((p) => p.subdomain));
   }, [favoriteProjects]);
 
   const activeProjectSubdomains = useMemo(() => {
     if (!appStates) {
-      return new Set();
+      return new Set<ProjectSubdomain>();
     }
-    return new Set(
+    return new Set<ProjectSubdomain>(
       appStates
         .filter((state) => state.sessionActors.length > 0)
-        .map((state) => state.app.subdomain as ProjectSubdomain),
+        .map((state) => state.app.subdomain)
+        .filter((subdomain) => isProjectSubdomain(subdomain)),
     );
   }, [appStates]);
 
@@ -158,12 +164,13 @@ function RouteComponent() {
     if (!appStates || selectedProjects.length === 0) {
       return false;
     }
-    const selectedSubdomains = new Set(
+    const selectedSubdomains = new Set<ProjectSubdomain>(
       selectedProjects.map((p) => p.subdomain),
     );
     return appStates.some(
       (state) =>
-        selectedSubdomains.has(state.app.subdomain as ProjectSubdomain) &&
+        isProjectSubdomain(state.app.subdomain) &&
+        selectedSubdomains.has(state.app.subdomain) &&
         state.sessionActors.some((actor) => actor.tags.includes("agent.alive")),
     );
   }, [appStates, selectedProjects]);
@@ -193,7 +200,11 @@ function RouteComponent() {
 
       const reader = new FileReader();
       reader.addEventListener("load", () => {
-        const dataUrl = reader.result as string;
+        const dataUrl = reader.result;
+        if (typeof dataUrl !== "string") {
+          toast.error("Failed to read file");
+          return;
+        }
         const base64 = dataUrl.split(",")[1] ?? "";
 
         importProjectMutation.mutate(
@@ -353,6 +364,18 @@ function RouteComponent() {
     ],
   );
 
+  useEffect(() => {
+    // Ensures we stay on a valid page when filtered projects change
+    const maxPage = Math.max(
+      1,
+      Math.ceil(filteredProjects.length / PROJECTS_PAGE_SIZE),
+    );
+
+    if (search.page > maxPage) {
+      void navigate({ replace: true, search: { ...search, page: maxPage } });
+    }
+  }, [filteredProjects.length, navigate, search]);
+
   return (
     <div className="mx-auto w-full max-w-7xl flex-1">
       <div>
@@ -386,41 +409,35 @@ function RouteComponent() {
                     {projects.length}
                   </Badge>
                 </TabsTrigger>
-                {evalsCount > 0 && (
-                  <TabsTrigger value="evals">
-                    Evals
-                    <Badge
-                      className="ml-2 px-1.5"
-                      variant={filterTab === "evals" ? "default" : "secondary"}
-                    >
-                      {evalsCount}
-                    </Badge>
-                  </TabsTrigger>
-                )}
-                {activeProjectSubdomains.size > 0 && (
-                  <TabsTrigger value="active">
-                    Active
-                    <Badge
-                      className="ml-2 px-1.5"
-                      variant={filterTab === "active" ? "default" : "secondary"}
-                    >
-                      {activeProjectSubdomains.size}
-                    </Badge>
-                  </TabsTrigger>
-                )}
-                {favoriteProjectSubdomains.size > 0 && (
-                  <TabsTrigger value="favorites">
-                    Favorites
-                    <Badge
-                      className="ml-2 px-1.5"
-                      variant={
-                        filterTab === "favorites" ? "default" : "secondary"
-                      }
-                    >
-                      {favoriteProjectSubdomains.size}
-                    </Badge>
-                  </TabsTrigger>
-                )}
+                <TabsTrigger value="evals">
+                  Evals
+                  <Badge
+                    className="ml-2 px-1.5"
+                    variant={filterTab === "evals" ? "default" : "secondary"}
+                  >
+                    {evalsCount}
+                  </Badge>
+                </TabsTrigger>
+                <TabsTrigger value="active">
+                  Active
+                  <Badge
+                    className="ml-2 px-1.5"
+                    variant={filterTab === "active" ? "default" : "secondary"}
+                  >
+                    {activeProjectSubdomains.size}
+                  </Badge>
+                </TabsTrigger>
+                <TabsTrigger value="favorites">
+                  Favorites
+                  <Badge
+                    className="ml-2 px-1.5"
+                    variant={
+                      filterTab === "favorites" ? "default" : "secondary"
+                    }
+                  >
+                    {favoriteProjectSubdomains.size}
+                  </Badge>
+                </TabsTrigger>
               </TabsList>
             </Tabs>
             <div className="flex gap-x-2">
@@ -494,7 +511,11 @@ function RouteComponent() {
               }
               columns={columns}
               data={filteredProjects}
+              onPageChange={(page) => {
+                void navigate({ replace: true, search: { ...search, page } });
+              }}
               onRowSelectionChange={setRowSelection}
+              page={search.page}
               rowSelection={rowSelection}
             />
           )}
