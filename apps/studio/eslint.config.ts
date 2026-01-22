@@ -26,4 +26,17 @@ export default [
       },
     },
   },
+  {
+    files: ["**/*.{js,jsx,ts,tsx}"],
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        {
+          message:
+            "Raw anchor tags <a> are not allowed the Electron app. Use ExternalLink component instead.",
+          selector: "JSXOpeningElement[name.name='a']",
+        },
+      ],
+    },
+  },
 ] satisfies ConfigArray;

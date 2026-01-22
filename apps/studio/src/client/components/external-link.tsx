@@ -48,6 +48,7 @@ export function ExternalLink(
   );
 
   return (
+    // eslint-disable-next-line no-restricted-syntax
     <a
       {...rest}
       className={cn("cursor-pointer!", className)}
