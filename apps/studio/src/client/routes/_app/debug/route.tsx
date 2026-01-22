@@ -53,6 +53,15 @@ function RouteComponent() {
             >
               Session Stream
             </InternalLink>
+            <InternalLink
+              activeProps={{
+                className: linkActiveClasses,
+              }}
+              className={linkBaseClasses}
+              to="/debug/errors"
+            >
+              Errors
+            </InternalLink>
           </div>
           <ThemeToggle />
         </nav>

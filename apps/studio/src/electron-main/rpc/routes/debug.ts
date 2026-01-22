@@ -1,6 +1,7 @@
 import { pnpmVersion } from "@/electron-main/lib/pnpm";
 import { base } from "@/electron-main/rpc/base";
 import { publisher } from "@/electron-main/rpc/publisher";
+import { z } from "zod";
 
 const systemInfo = base.handler(async ({ context }) => {
   const pnpmVersionValue = await pnpmVersion();
@@ -19,6 +20,20 @@ const systemInfo = base.handler(async ({ context }) => {
     },
   ];
 });
+
+const throwError = base
+  .input(
+    z.object({
+      type: z.enum(["known", "unknown"]),
+    }),
+  )
+  .handler(({ errors, input }) => {
+    const error =
+      input.type === "known"
+        ? errors.NOT_FOUND({ message: "This is a known error for testing" })
+        : new Error("This is an uncaught error for testing");
+    throw error;
+  });
 
 const live = {
   openAnalyticsToolbar: base.handler(async function* ({ signal }) {
@@ -72,4 +87,5 @@ const live = {
 export const debug = {
   live,
   systemInfo,
+  throwError,
 };
