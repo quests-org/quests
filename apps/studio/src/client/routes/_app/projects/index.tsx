@@ -476,7 +476,6 @@ function RouteComponent() {
             </div>
           ) : isBulkDeleting ? (
             <div className="flex flex-col items-center justify-center gap-y-4 rounded-md border bg-muted/20 py-12">
-              <Loader2 className="size-8 animate-spin text-muted-foreground" />
               <div className="text-sm text-muted-foreground">
                 Deleting {selectedProjects.length}{" "}
                 {selectedProjects.length === 1 ? "project" : "projects"}...
