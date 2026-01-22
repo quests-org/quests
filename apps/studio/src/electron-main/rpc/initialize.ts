@@ -22,12 +22,18 @@ EventEmitter.defaultMaxListeners = 100;
 const handler = new RPCHandler<InitialRPCContext>(router, {
   clientInterceptors: [
     createErrorClientInterceptor({
-      onAsyncIteratorError: (e) => {
-        captureServerException(e, { scopes: ["rpc"] });
+      onAsyncIteratorError: (e, options) => {
+        captureServerException(e, {
+          rpc_path: options.path,
+          scopes: ["rpc"],
+        });
         throw e;
       },
-      onError: (e) => {
-        captureServerException(e, { scopes: ["rpc"] });
+      onError: (e, options) => {
+        captureServerException(e, {
+          rpc_path: options.path,
+          scopes: ["rpc"],
+        });
         throw e;
       },
     }),

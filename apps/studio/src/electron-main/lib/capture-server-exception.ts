@@ -1,8 +1,6 @@
-import {
-  type CaptureExceptionFunction,
-  type ExceptionScope,
-} from "@quests/shared";
+import { type CaptureExceptionFunction } from "@quests/shared";
 import { app } from "electron";
+import { unique } from "radashi";
 
 import { getAppStateStore } from "../stores/app-state";
 import { isDeveloperMode, isUsageMetricsEnabled } from "../stores/preferences";
@@ -12,10 +10,8 @@ import { getSystemProperties } from "./system-properties";
 import { telemetry } from "./telemetry";
 
 export const captureServerException: CaptureExceptionFunction = function (
-  error: unknown,
-  additionalProperties?: {
-    scopes?: ExceptionScope[];
-  },
+  error,
+  additionalProperties,
 ) {
   const errorCode =
     error &&
@@ -37,11 +33,14 @@ export const captureServerException: CaptureExceptionFunction = function (
   const finalProperties = {
     ...additionalProperties,
     $process_person_profile: false, // Ensure anonymous, if at all
-    scopes: ["studio", ...(additionalProperties?.scopes ?? [])],
+    scopes: unique(["studio", ...(additionalProperties?.scopes ?? [])]),
     version: app.getVersion(),
     ...getSystemProperties(),
     ...(errorCode ? { error_code: errorCode } : {}),
     ...(errorData ? { error_data: errorData } : {}),
+    ...(additionalProperties?.rpc_path
+      ? { rpc_path: additionalProperties.rpc_path.join(".") }
+      : {}),
   };
   const appStateStore = getAppStateStore();
   const telemetryId = appStateStore.get("telemetryId");
@@ -50,9 +49,12 @@ export const captureServerException: CaptureExceptionFunction = function (
     /* eslint-disable no-console */
     const errorMessage = error instanceof Error ? error.message : String(error);
     const errorStack = error instanceof Error ? error.stack : undefined;
+    const pathPrefix = additionalProperties?.rpc_path
+      ? `[${additionalProperties.rpc_path.join(".")}] `
+      : "";
     const displayMessage = errorCode
-      ? `[${errorCode}] ${errorMessage}`
-      : errorMessage;
+      ? `${pathPrefix}[${errorCode}] ${errorMessage}`
+      : `${pathPrefix}${errorMessage}`;
 
     console.groupCollapsed(`%c[Exception] ${displayMessage}`, "color: #b71c1c");
 

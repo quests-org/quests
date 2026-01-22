@@ -16,8 +16,22 @@ export function createErrorClientInterceptor<
   TContext extends Context,
   TResult,
 >(options: {
-  onAsyncIteratorError?: (e: unknown) => IteratorResult<TResult> | never;
-  onError: (e: unknown) => never | TResult;
+  onAsyncIteratorError?: (
+    e: unknown,
+    options: ProcedureClientInterceptorOptions<
+      TContext,
+      Record<never, never>,
+      Meta
+    >,
+  ) => IteratorResult<TResult> | never;
+  onError: (
+    e: unknown,
+    options: ProcedureClientInterceptorOptions<
+      TContext,
+      Record<never, never>,
+      Meta
+    >,
+  ) => never | TResult;
 }): Interceptor<
   ProcedureClientInterceptorOptions<TContext, Record<never, never>, Meta>,
   Promise<unknown>
@@ -39,7 +53,7 @@ export function createErrorClientInterceptor<
               if (o.signal?.aborted && o.signal.reason === error) {
                 // Signal aborted - pass through
               } else if (onAsyncIteratorError) {
-                return onAsyncIteratorError(error);
+                return onAsyncIteratorError(error, o);
               }
               return error;
             },
@@ -50,7 +64,7 @@ export function createErrorClientInterceptor<
       }
       return output;
     } catch (error) {
-      return onError(error);
+      return onError(error, o);
     }
   };
 }

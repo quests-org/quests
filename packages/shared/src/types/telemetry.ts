@@ -120,6 +120,7 @@ export type CaptureExceptionFunction = (
     existing_part_state?: string;
     machine_name?: string;
     machine_state?: string;
+    rpc_path?: readonly string[];
     scopes?: ExceptionScope[];
     tool_name?: string;
     unhandled_event?: string;
