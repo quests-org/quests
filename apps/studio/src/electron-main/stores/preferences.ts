@@ -61,6 +61,11 @@ export function isDeveloperMode() {
   return store.get("developerMode");
 }
 
+export function isUsageMetricsEnabled() {
+  const store = getPreferencesStore();
+  return store.get("enableUsageMetrics");
+}
+
 export function setDefaultModelURI(modelURI: AIGatewayModelURI.Type): void {
   const store = getPreferencesStore();
   store.set("defaultModelURI", modelURI);

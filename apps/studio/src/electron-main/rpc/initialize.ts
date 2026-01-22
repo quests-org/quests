@@ -1,5 +1,4 @@
 import { logger } from "@/electron-main/lib/electron-logger";
-import { isDefinedError } from "@orpc/server";
 import { RPCHandler } from "@orpc/server/message-port";
 import { fetchAISDKModel } from "@quests/ai-gateway";
 import {
@@ -24,19 +23,11 @@ const handler = new RPCHandler<InitialRPCContext>(router, {
   clientInterceptors: [
     createErrorClientInterceptor({
       onAsyncIteratorError: (e) => {
-        if (isDefinedError(e)) {
-          logger.error(e);
-        } else {
-          captureServerException(e, { scopes: ["rpc"] });
-        }
+        captureServerException(e, { scopes: ["rpc"] });
         throw e;
       },
       onError: (e) => {
-        if (isDefinedError(e)) {
-          logger.error(e);
-        } else {
-          captureServerException(e, { scopes: ["rpc"] });
-        }
+        captureServerException(e, { scopes: ["rpc"] });
         throw e;
       },
     }),

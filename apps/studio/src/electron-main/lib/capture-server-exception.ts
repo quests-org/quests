@@ -5,7 +5,8 @@ import {
 import { app } from "electron";
 
 import { getAppStateStore } from "../stores/app-state";
-import { isDeveloperMode } from "../stores/preferences";
+import { isDeveloperMode, isUsageMetricsEnabled } from "../stores/preferences";
+import { logger } from "./electron-logger";
 import { addServerException } from "./server-exceptions";
 import { getSystemProperties } from "./system-properties";
 import { telemetry } from "./telemetry";
@@ -57,7 +58,7 @@ export const captureServerException: CaptureExceptionFunction = function (
 
     if (error instanceof Error) {
       if (errorStack) {
-        console.error(errorStack);
+        logger.error(errorStack);
       }
 
       if (error.cause) {
@@ -69,17 +70,17 @@ export const captureServerException: CaptureExceptionFunction = function (
           "%c▶︎ Cause: " + causeMessage,
           "color: #f44336",
         );
-        console.error(error.cause);
+        logger.error(error.cause);
         console.groupEnd();
       }
     } else {
-      console.error(error);
+      logger.error(error);
     }
 
     // Log additional error data if present (e.g., validation issues)
     if (errorData) {
       console.groupCollapsed("%c▶︎ Error Data", "color: #ff9800");
-      console.error(errorData);
+      logger.error(errorData);
       console.groupEnd();
     }
 
@@ -91,5 +92,7 @@ export const captureServerException: CaptureExceptionFunction = function (
       stack: errorStack,
     });
     /* eslint-enable no-console */
+  } else if (!isUsageMetricsEnabled()) {
+    logger.error(error);
   }
 };
