@@ -1,10 +1,11 @@
+import { openExternal } from "@/electron-main/lib/open-external";
 import { publisher } from "@/electron-main/rpc/publisher";
 import { getTabsManager } from "@/electron-main/tabs";
 import { getMainWindow } from "@/electron-main/windows/main/instance";
 import { openSettingsWindow } from "@/electron-main/windows/settings";
 import { getToolbarView } from "@/electron-main/windows/toolbar";
 import { NEW_ISSUE_URL } from "@quests/shared";
-import { app, type MenuItemConstructorOptions, shell } from "electron";
+import { app, type MenuItemConstructorOptions } from "electron";
 
 export function createAppMenu(): MenuItemConstructorOptions {
   return {
@@ -245,13 +246,13 @@ export function createHelpMenu(): MenuItemConstructorOptions {
     submenu: [
       {
         click: () => {
-          void shell.openExternal("https://quests.dev");
+          void openExternal("https://quests.dev");
         },
         label: "Learn More",
       },
       {
         click: () => {
-          void shell.openExternal(NEW_ISSUE_URL);
+          void openExternal(NEW_ISSUE_URL);
         },
         label: "Report an Issue",
       },

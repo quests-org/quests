@@ -17,7 +17,7 @@ import {
 } from "@/electron-main/windows/main/instance";
 import { createToolbar, resizeToolbar } from "@/electron-main/windows/toolbar";
 import { is } from "@electron-toolkit/utils";
-import { type BaseWindow, BrowserWindow, shell } from "electron";
+import { type BaseWindow, BrowserWindow } from "electron";
 import path from "node:path";
 import { debounce } from "radashi";
 
@@ -134,8 +134,7 @@ export async function createMainWindow() {
     windowOrWebContentsView: mainWindow,
   });
 
-  mainWindow.webContents.setWindowOpenHandler((details) => {
-    void shell.openExternal(details.url);
+  mainWindow.webContents.setWindowOpenHandler(() => {
     return { action: "deny" };
   });
 

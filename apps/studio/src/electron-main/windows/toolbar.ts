@@ -1,6 +1,6 @@
 import { createContextMenu } from "@/electron-main/lib/context-menu";
 import { TOOLBAR_HEIGHT } from "@/shared/constants";
-import { type BaseWindow, shell, WebContentsView } from "electron";
+import { type BaseWindow, WebContentsView } from "electron";
 import path from "node:path";
 
 import { getBackgroundColor } from "../lib/theme-utils";
@@ -34,8 +34,7 @@ export function createToolbar({
 
   toolbarView.setBackgroundColor(getBackgroundColor());
 
-  toolbarView.webContents.setWindowOpenHandler((details) => {
-    void shell.openExternal(details.url);
+  toolbarView.webContents.setWindowOpenHandler(() => {
     return { action: "deny" };
   });
 

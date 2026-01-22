@@ -35,6 +35,7 @@ declare namespace NodeJS {
       ELECTRON_USE_NEW_USER_FOLDER: string | undefined;
       ELECTRON_USER_DATA_DIR: string | undefined;
       FORCE_DEV_AUTO_UPDATE: string | undefined;
+      GDK_BACKEND: string | undefined;
       NODE_ENV: string | undefined;
       PATH: string | undefined;
       SIGNTOOL_PATH: string | undefined;
@@ -42,6 +43,7 @@ declare namespace NodeJS {
       WIN_CERT_PATH: string | undefined;
       WIN_GCP_KMS_KEY_VERSION: string | undefined;
       WIN_TIMESTAMP_URL: string | undefined;
+      XDG_CURRENT_DESKTOP: string | undefined;
     };
   }
 }

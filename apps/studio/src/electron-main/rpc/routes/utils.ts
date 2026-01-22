@@ -6,6 +6,7 @@ import type {
 
 import { captureServerEvent } from "@/electron-main/lib/capture-server-event";
 import { captureServerException } from "@/electron-main/lib/capture-server-exception";
+import { openExternal } from "@/electron-main/lib/open-external";
 import {
   clearServerExceptions,
   getServerExceptions,
@@ -205,7 +206,8 @@ const openExternalLink = base
     if (!SAFE_PROTOCOLS.has(url.protocol)) {
       throw errors.INVALID_PROTOCOL();
     }
-    await shell.openExternal(input.url);
+
+    await openExternal(input.url);
   });
 
 const imageDataURI = base

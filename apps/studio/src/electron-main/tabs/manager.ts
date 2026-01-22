@@ -12,7 +12,7 @@ import {
 } from "@/shared/tabs";
 import { TabIconsSchema } from "@quests/shared/icons";
 import { ProjectSubdomainSchema } from "@quests/workspace/client";
-import { type BaseWindow, shell, WebContentsView } from "electron";
+import { type BaseWindow, WebContentsView } from "electron";
 import { type LogFunctions } from "electron-log";
 import Store from "electron-store";
 import path from "node:path";
@@ -329,8 +329,7 @@ export class TabsManager {
     // Set initial bounds respecting sidebar width
     newContentView.setBounds(this.computeTabBounds());
 
-    newContentView.webContents.setWindowOpenHandler((details) => {
-      void shell.openExternal(details.url);
+    newContentView.webContents.setWindowOpenHandler(() => {
       return { action: "deny" };
     });
 

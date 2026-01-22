@@ -2,7 +2,7 @@ import { createContextMenu } from "@/electron-main/lib/context-menu";
 import { getBackgroundColor } from "@/electron-main/lib/theme-utils";
 import { publisher } from "@/electron-main/rpc/publisher";
 import { type StudioPath } from "@/shared/studio-path";
-import { BrowserWindow, shell } from "electron";
+import { BrowserWindow } from "electron";
 import path from "node:path";
 
 import { studioURL } from "../lib/urls";
@@ -55,9 +55,7 @@ export function openSettingsWindow(
 
   settingsWindow.setBackgroundColor(getBackgroundColor());
 
-  // Handle external links
-  settingsWindow.webContents.setWindowOpenHandler((details) => {
-    void shell.openExternal(details.url);
+  settingsWindow.webContents.setWindowOpenHandler(() => {
     return { action: "deny" };
   });
 
