@@ -90,6 +90,9 @@ function RenameForm({
                 if (!value.trim()) {
                   return "Name is required.";
                 }
+                if (value.length > 1024) {
+                  return "Name must be 1024 characters or less.";
+                }
                 return;
               },
             }}
@@ -104,6 +107,7 @@ function RenameForm({
                     aria-invalid={isInvalid}
                     disabled={isPending}
                     id={field.name}
+                    maxLength={1024}
                     name={field.name}
                     onBlur={field.handleBlur}
                     onChange={(e) => {
