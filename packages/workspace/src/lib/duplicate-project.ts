@@ -122,7 +122,7 @@ export async function duplicateProject(
 
     const existingManifest = await getProjectManifest(projectConfig.appDir);
 
-    await updateProjectManifest(projectConfig, {
+    yield* updateProjectManifest(projectConfig, {
       ...(existingManifest && { iconName: existingManifest.iconName }),
       name: duplicateName,
     });

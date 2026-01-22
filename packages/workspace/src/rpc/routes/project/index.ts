@@ -24,6 +24,7 @@ import { resolveModel } from "../../../lib/resolve-model";
 import { trashProject } from "../../../lib/trash-project";
 import { WorkspaceAppProjectSchema } from "../../../schemas/app";
 import { AbsolutePathSchema } from "../../../schemas/paths";
+import { ProjectManifestUpdateSchema } from "../../../schemas/project-manifest";
 import { StoreId } from "../../../schemas/store-id";
 import { SubdomainPartSchema } from "../../../schemas/subdomain-part";
 import { ProjectSubdomainSchema } from "../../../schemas/subdomains";
@@ -190,10 +191,15 @@ const create = base
       }
       const message = messageResult.value;
 
-      await updateProjectManifest(projectConfig, {
+      const manifestResult = await updateProjectManifest(projectConfig, {
         iconName,
         name: name ?? defaultProjectName(message),
       });
+
+      if (manifestResult.isErr()) {
+        context.workspaceConfig.captureException(manifestResult.error);
+        throw toORPCError(manifestResult.error, errors);
+      }
 
       if (!name) {
         // Intentionally non blocking
@@ -205,9 +211,15 @@ const create = base
             templateName === DEFAULT_TEMPLATE_NAME ? undefined : templateName,
         }).then(async (title) => {
           if (title.isOk()) {
-            await updateProjectManifest(projectConfig, {
-              name: title.value,
-            });
+            const secondManifestResult = await updateProjectManifest(
+              projectConfig,
+              { name: title.value },
+            );
+            if (secondManifestResult.isErr()) {
+              context.workspaceConfig.captureException(
+                secondManifestResult.error,
+              );
+            }
           } else {
             context.workspaceConfig.captureException(title.error);
           }
@@ -342,24 +354,22 @@ const trash = base
 
 const update = base
   .input(
-    z.object({
-      name: z.string().trim().min(1),
+    ProjectManifestUpdateSchema.extend({
       subdomain: ProjectSubdomainSchema,
     }),
   )
   .output(z.void())
-  .handler(async ({ context, input }) => {
+  .handler(async ({ context, errors, input: { subdomain, ...updates } }) => {
     const projectConfig = createAppConfig({
-      subdomain: input.subdomain,
+      subdomain,
       workspaceConfig: context.workspaceConfig,
     });
-    await updateProjectManifest(projectConfig, {
-      name: input.name,
-    });
+    const result = await updateProjectManifest(projectConfig, updates);
 
-    publisher.publish("project.updated", {
-      subdomain: input.subdomain,
-    });
+    if (result.isErr()) {
+      context.workspaceConfig.captureException(result.error);
+      throw toORPCError(result.error, errors);
+    }
 
     context.workspaceConfig.captureEvent("project.updated");
   });
