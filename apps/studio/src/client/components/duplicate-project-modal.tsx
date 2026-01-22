@@ -1,5 +1,4 @@
 import { Button } from "@/client/components/ui/button";
-import { Checkbox } from "@/client/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -12,7 +11,6 @@ import { useTabActions } from "@/client/hooks/use-tab-actions";
 import { rpcClient } from "@/client/rpc/client";
 import { type ProjectSubdomain } from "@quests/workspace/client";
 import { useMutation } from "@tanstack/react-query";
-import { useState } from "react";
 import { toast } from "sonner";
 
 interface DuplicateProjectModalProps {
@@ -28,7 +26,6 @@ export function DuplicateProjectModal({
   projectName,
   projectSubdomain,
 }: DuplicateProjectModalProps) {
-  const [keepHistory, setKeepHistory] = useState(true);
   const { addTab } = useTabActions();
 
   const duplicateMutation = useMutation(
@@ -39,9 +36,6 @@ export function DuplicateProjectModal({
         });
       },
       onSuccess: (duplicatedProject) => {
-        toast.success("Project duplicated successfully", {
-          description: `From "${projectName}"`,
-        });
         onClose();
 
         void addTab({
@@ -54,7 +48,7 @@ export function DuplicateProjectModal({
 
   const handleDuplicate = () => {
     duplicateMutation.mutate({
-      keepHistory,
+      keepHistory: true,
       sourceSubdomain: projectSubdomain,
     });
   };
@@ -68,22 +62,6 @@ export function DuplicateProjectModal({
             {`This will create a copy of "${projectName}" as a new project.`}
           </DialogDescription>
         </DialogHeader>
-
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            checked={keepHistory}
-            id="keep-history"
-            onCheckedChange={(checked) => {
-              setKeepHistory(checked === true);
-            }}
-          />
-          <label
-            className="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            htmlFor="keep-history"
-          >
-            Keep chat and version history
-          </label>
-        </div>
 
         <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
           <Button onClick={onClose} variant="outline">
