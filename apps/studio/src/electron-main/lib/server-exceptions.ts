@@ -6,6 +6,7 @@ interface ServerException {
   code?: string;
   id: string;
   message: string;
+  rpcPath?: string;
   stack?: string;
   timestamp: number;
 }
@@ -15,6 +16,7 @@ const EXCEPTIONS: ServerException[] = [];
 export function addServerException(exception: {
   code?: string;
   message: string;
+  rpcPath?: string;
   stack?: string;
 }) {
   EXCEPTIONS.push({

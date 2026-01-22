@@ -91,6 +91,9 @@ export const captureServerException: CaptureExceptionFunction = function (
     addServerException({
       code: errorCode,
       message: errorMessage,
+      rpcPath: additionalProperties?.rpc_path
+        ? additionalProperties.rpc_path.join(".")
+        : undefined,
       stack: errorStack,
     });
     /* eslint-enable no-console */

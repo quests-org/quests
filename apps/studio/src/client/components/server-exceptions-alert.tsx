@@ -23,6 +23,7 @@ interface GroupedExceptionItem {
   count: number;
   firstLine: string;
   id: string;
+  rpcPath?: string;
 }
 
 export function ServerExceptionsAlert() {
@@ -48,11 +49,13 @@ export function ServerExceptionsAlert() {
             code: group.code,
             content: group.content,
             firstLine: group.firstLine,
+            rpcPath: group.rpcPath,
           },
           {
             code: exception.code,
             content,
             firstLine: firstLineWithoutErrorPrefix,
+            rpcPath: exception.rpcPath,
           },
         ),
       );
@@ -66,6 +69,7 @@ export function ServerExceptionsAlert() {
           count: 1,
           firstLine: firstLineWithoutErrorPrefix,
           id: exception.id,
+          rpcPath: exception.rpcPath,
         });
       }
     }
@@ -126,11 +130,11 @@ export function ServerExceptionsAlert() {
               key={exception.id}
               value={exception.id}
             >
-              <AccordionTrigger className="min-w-0 gap-2 px-3 py-1.5 transition-colors hover:bg-muted/50 hover:no-underline data-[state=open]:bg-muted/50">
-                <div className="flex min-w-0 flex-1 items-center gap-1.5">
+              <AccordionTrigger className="min-w-0 gap-2 px-1 py-1.5 transition-colors hover:bg-muted/50 hover:no-underline data-[state=open]:bg-muted/50">
+                <div className="flex min-w-0 flex-1 items-center gap-0.5">
                   {exception.count > 1 && (
                     <Badge
-                      className="flex h-3.5 min-w-[14px] shrink-0 items-center justify-center px-1 py-0 text-[9px] tabular-nums"
+                      className="flex h-3.5 min-w-[14px] shrink-0 items-center justify-center px-0 py-0 text-[9px] tabular-nums"
                       variant="secondary"
                     >
                       {exception.count}
@@ -138,11 +142,25 @@ export function ServerExceptionsAlert() {
                   )}
                   <span className="block truncate overflow-hidden text-left font-mono text-[11px] leading-tight text-foreground/90">
                     {exception.code ? `[${exception.code}] ` : ""}
+                    {exception.rpcPath ? `[${exception.rpcPath}] ` : ""}
                     {exception.firstLine}
                   </span>
                 </div>
               </AccordionTrigger>
               <AccordionContent className="px-3 pt-0 pb-2">
+                <div className="mb-2 rounded border bg-muted/50 p-1.5 font-mono text-[11px] leading-relaxed wrap-break-word text-foreground/90">
+                  {exception.rpcPath && (
+                    <span className="text-blue-600 dark:text-blue-400">
+                      [{exception.rpcPath}]{" "}
+                    </span>
+                  )}
+                  {exception.code && (
+                    <span className="text-orange-600 dark:text-orange-400">
+                      [{exception.code}]{" "}
+                    </span>
+                  )}
+                  <span>{exception.firstLine}</span>
+                </div>
                 <pre className="rounded border bg-muted/50 p-1.5 font-mono text-[10px] leading-snug wrap-break-word whitespace-pre-wrap text-foreground/80">
                   {exception.content}
                 </pre>

@@ -390,6 +390,7 @@ const live = {
             code: z.string().optional(),
             id: z.string(),
             message: z.string(),
+            rpcPath: z.string().optional(),
             stack: z.string().optional(),
             timestamp: z.number(),
           }),
