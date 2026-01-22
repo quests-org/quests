@@ -171,6 +171,34 @@ function SubscribePage() {
     setShowPlanChangePreview(false);
   };
 
+  if (plansError ?? subscriptionError) {
+    return (
+      <div className="min-h-screen bg-linear-to-br from-background via-background to-accent/20 p-8">
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-8 text-center">
+            <div className="mt-6 mb-6 flex justify-center">
+              <QuestsAnimatedLogo size={64} />
+            </div>
+            <h1 className="mb-2 bg-linear-to-r from-foreground to-foreground/70 bg-clip-text text-4xl font-bold text-transparent">
+              Choose your plan
+            </h1>
+            <p className="mx-auto max-w-2xl text-sm text-muted-foreground">
+              Unlock access to hundreds of the most popular AI models
+            </p>
+          </div>
+
+          <div className="flex justify-center">
+            <ErrorCard
+              description="We couldn't load the subscription information"
+              error={[plansError, subscriptionError]}
+              title="Failed to load subscription data"
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-linear-to-br from-background via-background to-accent/20 p-8">
       <div className="mx-auto max-w-7xl">
@@ -186,23 +214,11 @@ function SubscribePage() {
           </p>
         </div>
 
-        {(plansError ?? subscriptionError) && (
-          <div className="flex justify-center">
-            <ErrorCard
-              description="We couldn't load the subscription information"
-              error={[plansError, subscriptionError]}
-              title="Failed to load subscription data"
-            />
+        {(isPlansLoading || isSubscriptionLoading) && (
+          <div className="flex justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin" />
           </div>
         )}
-
-        {!plansError &&
-          !subscriptionError &&
-          (isPlansLoading || isSubscriptionLoading) && (
-            <div className="flex justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin" />
-            </div>
-          )}
 
         {plans && (
           <>
