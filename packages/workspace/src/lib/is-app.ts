@@ -1,33 +1,34 @@
 import {
-  type AppSubdomain,
-  PREVIEW_SUBDOMAIN_PART,
   type PreviewSubdomain,
+  PreviewSubdomainSchema,
   type ProjectSubdomain,
+  ProjectSubdomainSchema,
   type SandboxSubdomain,
+  SandboxSubdomainSchema,
   type VersionSubdomain,
+  VersionSubdomainSchema,
 } from "../schemas/subdomains";
 
 export function isPreviewSubdomain(
-  subdomain: AppSubdomain,
+  subdomain: string,
 ): subdomain is PreviewSubdomain {
-  return subdomain.endsWith(`.${PREVIEW_SUBDOMAIN_PART}`);
+  return PreviewSubdomainSchema.safeParse(subdomain).success;
 }
 
 export function isProjectSubdomain(
-  subdomain: AppSubdomain,
+  subdomain: string,
 ): subdomain is ProjectSubdomain {
-  // Project subdomains are top level subdomains and not "preview"
-  return !subdomain.includes(".") && subdomain !== PREVIEW_SUBDOMAIN_PART;
+  return ProjectSubdomainSchema.safeParse(subdomain).success;
 }
 
 export function isSandboxSubdomain(
-  subdomain: AppSubdomain,
+  subdomain: string,
 ): subdomain is SandboxSubdomain {
-  return subdomain.startsWith("sandbox-");
+  return SandboxSubdomainSchema.safeParse(subdomain).success;
 }
 
 export function isVersionSubdomain(
-  subdomain: AppSubdomain,
+  subdomain: string,
 ): subdomain is VersionSubdomain {
-  return subdomain.startsWith("version-");
+  return VersionSubdomainSchema.safeParse(subdomain).success;
 }

@@ -77,12 +77,39 @@ export const ProjectSubdomainSchema = z
       return;
     }
 
+    if (val.includes(".")) {
+      ctx.addIssue({
+        code: "custom",
+        fatal: true,
+        input: val,
+        message: "Project subdomains cannot contain dots",
+      });
+    }
+
     if (val === PREVIEW_SUBDOMAIN_PART) {
       ctx.addIssue({
         code: "custom",
         fatal: true,
         input: val,
-        message: "Project subdomains cannot be 'preview'",
+        message: `Project subdomains cannot be '${PREVIEW_SUBDOMAIN_PART}'`,
+      });
+    }
+
+    if (val.startsWith("sandbox-")) {
+      ctx.addIssue({
+        code: "custom",
+        fatal: true,
+        input: val,
+        message: "Project subdomains cannot start with 'sandbox-'",
+      });
+    }
+
+    if (val.startsWith("version-")) {
+      ctx.addIssue({
+        code: "custom",
+        fatal: true,
+        input: val,
+        message: "Project subdomains cannot start with 'version-'",
       });
     }
 
@@ -111,6 +138,7 @@ export const SandboxSubdomainSchema = z
         message:
           "Sandbox subdomains must have exactly two parts (e.g., sandbox-name.project-name)",
       });
+      return;
     }
 
     const [sandboxPart, projectPart] = parts as [string, string];
@@ -151,6 +179,7 @@ export const VersionSubdomainSchema = z
         message:
           "Version subdomains must have exactly two parts (e.g., version-commit.project-name)",
       });
+      return;
     }
 
     const [versionPart, projectPart] = parts as [string, string];
