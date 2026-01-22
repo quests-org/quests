@@ -75,6 +75,7 @@ function RouteComponent() {
     useState<null | WorkspaceAppProject>(null);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
+  const [isSingleDeleting, setIsSingleDeleting] = useState(false);
   const filterTab = search.filter;
   const trashTerminology = getTrashTerminology();
 
@@ -94,11 +95,11 @@ function RouteComponent() {
     [projects],
   );
 
-  const { data: appStates } = useQuery(
-    rpcClient.workspace.app.state.bySubdomains.queryOptions({
+  const { data: appStates } = useQuery({
+    ...rpcClient.workspace.app.state.bySubdomains.queryOptions({
       input: { subdomains: projectSubdomains },
     }),
-  );
+  });
 
   const { data: favoriteProjects } = useQuery(
     rpcClient.favorites.live.listProjects.experimental_liveOptions(),
@@ -474,11 +475,12 @@ function RouteComponent() {
             <div className="flex items-center justify-center py-12">
               <Loader2 className="size-6 animate-spin text-muted-foreground" />
             </div>
-          ) : isBulkDeleting ? (
+          ) : isBulkDeleting || isSingleDeleting ? (
             <div className="flex flex-col items-center justify-center gap-y-4 rounded-md border bg-muted/20 py-12">
               <div className="text-sm text-muted-foreground">
-                Deleting {selectedProjects.length}{" "}
-                {selectedProjects.length === 1 ? "project" : "projects"}...
+                {isBulkDeleting
+                  ? `Deleting ${selectedProjects.length} ${selectedProjects.length === 1 ? "project" : "projects"}...`
+                  : "Deleting project..."}
               </div>
             </div>
           ) : (
@@ -533,6 +535,12 @@ function RouteComponent() {
       {projectToDelete && (
         <ProjectDeleteDialog
           navigateOnDelete={false}
+          onDeleteEnd={() => {
+            setIsSingleDeleting(false);
+          }}
+          onDeleteStart={() => {
+            setIsSingleDeleting(true);
+          }}
           onOpenChange={(open) => {
             setDeleteDialogOpen(open);
             if (!open) {

@@ -1,5 +1,6 @@
 import { type ProjectSubdomain } from "@quests/workspace/client";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
 import { useCallback } from "react";
 
 import { rpcClient } from "../rpc/client";
@@ -11,11 +12,13 @@ export function useTrashApp({
 }: {
   navigateOnDelete?: boolean;
 }) {
+  const queryClient = useQueryClient();
   const trashProjectMutation = useMutation(
     rpcClient.workspace.project.trash.mutationOptions(),
   );
-  const { addTab, closeTab, selectTab } = useTabActions();
+  const { closeTab } = useTabActions();
   const tabs = useTabs();
+  const navigate = useNavigate();
 
   const trashApp = useCallback(
     async (projectSubdomain: ProjectSubdomain) => {
@@ -23,25 +26,37 @@ export function useTrashApp({
         subdomain: projectSubdomain,
       });
 
-      const projectTabs = tabs.filter((tab) =>
-        tab.pathname.includes(`/projects/${projectSubdomain}`),
-      );
+      // Not invalidating because live queries cannot be awaited
+      // and the goal is to make callers go back into loading state
+      queryClient.removeQueries({
+        // .key() generates a wildcard key for any params
+        queryKey: rpcClient.workspace.project.live.list.key(),
+      });
+      queryClient.removeQueries({
+        // .key() generates a wildcard key for any params
+        queryKey: rpcClient.workspace.app.state.bySubdomains.key(),
+      });
 
       if (navigateOnDelete) {
-        const newTab = tabs.find(
-          (tab) => tab.pathname === "/new-tab" || tab.pathname === "/",
+        await navigate({ replace: true, to: "/new-tab" });
+      } else {
+        const projectTabs = tabs.filter((tab) =>
+          tab.pathname.includes(`/projects/${projectSubdomain}`),
         );
 
-        await (newTab
-          ? selectTab({ id: newTab.id })
-          : addTab({ to: "/new-tab" }));
-      }
-
-      for (const tab of projectTabs) {
-        await closeTab({ id: tab.id });
+        for (const tab of projectTabs) {
+          await closeTab({ id: tab.id });
+        }
       }
     },
-    [trashProjectMutation, tabs, closeTab, addTab, selectTab, navigateOnDelete],
+    [
+      trashProjectMutation,
+      queryClient,
+      tabs,
+      closeTab,
+      navigate,
+      navigateOnDelete,
+    ],
   );
 
   return {

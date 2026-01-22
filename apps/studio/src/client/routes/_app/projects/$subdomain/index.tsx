@@ -127,6 +127,10 @@ function RouteComponent() {
   const navigate = useNavigate();
 
   const handleDeleteDialogChange = (open: boolean) => {
+    if (showDelete && !open) {
+      // Don't navigate when closing delete dialog - navigation will be handled by deletion
+      return;
+    }
     void navigate({
       from: "/projects/$subdomain",
       params: {

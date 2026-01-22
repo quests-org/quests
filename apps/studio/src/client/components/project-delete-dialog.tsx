@@ -8,11 +8,15 @@ import { ProjectStatsCard } from "./project-stats-card";
 
 export function ProjectDeleteDialog({
   navigateOnDelete,
+  onDeleteEnd,
+  onDeleteStart,
   onOpenChange,
   open,
   project,
 }: {
   navigateOnDelete: boolean;
+  onDeleteEnd?: () => void;
+  onDeleteStart?: () => void;
   onOpenChange: (open: boolean) => void;
   open: boolean;
   project: WorkspaceAppProject;
@@ -22,6 +26,7 @@ export function ProjectDeleteDialog({
 
   const handleDelete = async () => {
     try {
+      onDeleteStart?.();
       await trashApp(project.subdomain);
     } catch {
       toast.error("Failed to delete project", {
@@ -29,6 +34,8 @@ export function ProjectDeleteDialog({
           "Please close any external applications that might be using this folder (editors, terminals, servers, etc.) and try again.",
       });
       throw new Error("Failed to delete project");
+    } finally {
+      onDeleteEnd?.();
     }
   };
 
