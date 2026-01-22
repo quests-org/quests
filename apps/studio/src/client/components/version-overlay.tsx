@@ -1,6 +1,5 @@
 import {
   type ProjectSubdomain,
-  ProjectSubdomainSchema,
   VersionSubdomainSchema,
 } from "@quests/workspace/client";
 import { useQuery } from "@tanstack/react-query";
@@ -70,7 +69,7 @@ export function VersionOverlay({
             className="text-sm text-primary hover:underline"
             from="/projects/$subdomain"
             params={{
-              subdomain: ProjectSubdomainSchema.parse(projectSubdomain),
+              subdomain: projectSubdomain,
             }}
             search={(prev) => ({ ...prev, selectedVersion: undefined })}
           >
