@@ -2,6 +2,7 @@ import { rpcClient } from "@/client/rpc/client";
 import { type WorkspaceAppProject } from "@quests/workspace/client";
 import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 import { Button } from "./ui/button";
 import {
@@ -45,7 +46,13 @@ function RenameForm({
   project: WorkspaceAppProject;
 }) {
   const { isPending, mutateAsync: updateProject } = useMutation(
-    rpcClient.workspace.project.update.mutationOptions(),
+    rpcClient.workspace.project.update.mutationOptions({
+      onError: (error) => {
+        toast.error("Failed to rename project", {
+          description: error.message,
+        });
+      },
+    }),
   );
 
   const form = useForm({
