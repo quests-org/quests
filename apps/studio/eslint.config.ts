@@ -39,4 +39,44 @@ export default [
       ],
     },
   },
+  {
+    files: ["src/{client,shared}/**/*.{js,jsx,ts,tsx}"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          message: "@quests/merge-generators cannot run on the client",
+          name: "@quests/merge-generators",
+        },
+        {
+          message: "@quests/workspace/electron cannot run on the client",
+          name: "@quests/workspace/electron",
+        },
+        {
+          message: "@quests/workspace/for-shim is not intended for the Studio",
+          name: "@quests/workspace/for-shim",
+        },
+        {
+          message: "@quests/ai-gateway cannot run on the client",
+          name: "@quests/ai-gateway",
+        },
+      ],
+    },
+  },
+  {
+    files: ["src/{electron-main,electron-preload}/**/*.{js,jsx,ts,tsx}"],
+    rules: {
+      "no-restricted-imports": [
+        "warn",
+        {
+          message: "@quests/workspace/client is only intended for the client",
+          name: "@quests/workspace/client",
+        },
+        {
+          message: "@quests/ai-gateway/client is only intended for the client",
+          name: "@quests/ai-gateway/client",
+        },
+      ],
+    },
+  },
 ] satisfies ConfigArray;

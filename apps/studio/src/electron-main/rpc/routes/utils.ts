@@ -18,8 +18,11 @@ import {
   SupportedEditorSchema,
 } from "@/shared/schemas/editors";
 import { call, eventIterator } from "@orpc/server";
-import { ProjectSubdomainSchema } from "@quests/workspace/client";
-import { createAppConfig, workspaceRouter } from "@quests/workspace/electron";
+import {
+  createAppConfig,
+  ProjectSubdomainSchema,
+  workspaceRouter,
+} from "@quests/workspace/electron";
 import { app, shell } from "electron";
 import { exec } from "node:child_process";
 import fs from "node:fs/promises";

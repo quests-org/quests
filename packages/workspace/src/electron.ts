@@ -15,5 +15,6 @@ export {
   type AppSubdomain,
   type PreviewSubdomain,
   type ProjectSubdomain,
+  ProjectSubdomainSchema,
 } from "./schemas/subdomains";
 export type { WorkspaceConfig } from "./types";

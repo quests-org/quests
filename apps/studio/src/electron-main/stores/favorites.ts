@@ -1,7 +1,9 @@
 import { logger } from "@/electron-main/lib/electron-logger";
 import { publisher } from "@/electron-main/rpc/publisher";
-import { ProjectSubdomainSchema } from "@quests/workspace/client";
-import { workspacePublisher } from "@quests/workspace/electron";
+import {
+  ProjectSubdomainSchema,
+  workspacePublisher,
+} from "@quests/workspace/electron";
 import Store from "electron-store";
 import { z } from "zod";
 

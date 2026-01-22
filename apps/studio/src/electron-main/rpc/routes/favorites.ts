@@ -3,7 +3,7 @@ import { publisher } from "@/electron-main/rpc/publisher";
 import { getFavoritesStore } from "@/electron-main/stores/favorites";
 import { call } from "@orpc/server";
 import { mergeGenerators } from "@quests/shared/merge-generators";
-import { ProjectSubdomainSchema } from "@quests/workspace/client";
+import { ProjectSubdomainSchema } from "@quests/workspace/electron";
 import {
   type ProjectSubdomain,
   workspacePublisher,
