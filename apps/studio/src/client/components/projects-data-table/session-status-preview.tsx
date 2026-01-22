@@ -10,12 +10,7 @@ import { cn } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
 import { getToolNameByType, isToolPart } from "@quests/workspace/client";
 import { useQuery } from "@tanstack/react-query";
-import {
-  Brain,
-  GitCommitVertical,
-  HelpCircle,
-  MessageSquare,
-} from "lucide-react";
+import { Brain, HelpCircle, MessageSquare } from "lucide-react";
 
 export function SessionStatusPreview({
   subdomain,
@@ -72,7 +67,7 @@ function SessionStatusText({
     return (
       <StatusBadge
         animate={isAgentAlive}
-        text={isAgentAlive ? "Working..." : "Done"}
+        text={isAgentAlive ? "Planning…" : "Done"}
       />
     );
   }
@@ -89,7 +84,7 @@ function SessionStatusText({
     return (
       <StatusBadge
         animate={isAgentAlive}
-        text={isAgentAlive ? "Working..." : "Done"}
+        text={isAgentAlive ? "Planning…" : "Done"}
       />
     );
   }
@@ -102,9 +97,6 @@ function SessionStatusText({
     const textContent = latestPart.text.trim();
     displayText = textContent;
     Icon = MessageSquare;
-  } else if (latestPart.type === "data-gitCommit") {
-    displayText = "Version";
-    Icon = GitCommitVertical;
   } else if (isToolPart(latestPart)) {
     const toolName = getToolNameByType(latestPart.type);
     Icon = TOOL_ICONS[toolName] ?? HelpCircle;
