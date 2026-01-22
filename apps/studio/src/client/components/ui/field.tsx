@@ -52,7 +52,7 @@ function FieldSet({ className, ...props }: React.ComponentProps<"fieldset">) {
 }
 
 const fieldVariants = tv({
-  base: "group/field flex w-full gap-3 data-[invalid=true]:text-destructive",
+  base: "group/field flex w-full gap-3",
   defaultVariants: {
     orientation: "vertical",
   },
