@@ -1,4 +1,3 @@
-import { migrateProjectSubdomain } from "@/client/lib/migrate-project-subdomain";
 import { base } from "@/electron-main/rpc/base";
 import { publisher } from "@/electron-main/rpc/publisher";
 import { getFavoritesStore } from "@/electron-main/stores/favorites";
@@ -59,48 +58,14 @@ const live = {
         .filter((r) => r.ok)
         .map((r) => r.data);
 
-      // Check for missing projects - try migration for each missing one
-      const missingSubdomains = subdomains.filter(
-        (subdomain) =>
-          !favoriteProjectsThatExist.some((p) => p.subdomain === subdomain),
-      );
-
-      const migratedProjects: typeof favoriteProjectsThatExist = [];
-      let hasMigrations = false;
-
-      if (missingSubdomains.length > 0) {
-        const migrationCandidates = missingSubdomains
-          .map((subdomain) => migrateProjectSubdomain(subdomain))
-          .filter((migration) => migration.didMigrate)
-          .map((migration) => migration.subdomain);
-
-        if (migrationCandidates.length > 0) {
-          hasMigrations = true;
-          const migrationResults = await call(
-            workspaceRouter.project.bySubdomains,
-            { subdomains: migrationCandidates },
-            { context, signal },
-          );
-
-          migratedProjects.push(
-            ...migrationResults.filter((r) => r.ok).map((r) => r.data),
-          );
-        }
-      }
-
-      const allFoundProjects = [
-        ...favoriteProjectsThatExist,
-        ...migratedProjects,
-      ];
-
-      if (allFoundProjects.length !== subdomains.length || hasMigrations) {
+      if (favoriteProjectsThatExist.length !== subdomains.length) {
         favoritesStore.set(
           "favorites",
-          allFoundProjects.map((p) => p.subdomain),
+          favoriteProjectsThatExist.map((p) => p.subdomain),
         );
       }
 
-      return allFoundProjects;
+      return favoriteProjectsThatExist;
     };
 
     const favorites = favoritesStore.get("favorites");

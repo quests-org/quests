@@ -4,7 +4,6 @@ import { ProjectDeleteDialog } from "@/client/components/project-delete-dialog";
 import { ProjectSettingsDialog } from "@/client/components/project-settings-dialog";
 import { ProjectView } from "@/client/components/project-view";
 import { useProjectRouteSync } from "@/client/hooks/use-project-route-sync";
-import { migrateProjectSubdomain } from "@/client/lib/migrate-project-subdomain";
 import { rpcClient } from "@/client/rpc/client";
 import { createIconMeta, createProjectSubdomainMeta } from "@/shared/tabs";
 import { safe } from "@orpc/client";
@@ -65,17 +64,6 @@ export const Route = createFileRoute("/_app/projects/$subdomain/")({
 
     if (error) {
       if (isDefined && error.code === "NOT_FOUND") {
-        const migration = migrateProjectSubdomain(params.subdomain);
-
-        if (migration.didMigrate) {
-          // eslint-disable-next-line @typescript-eslint/only-throw-error
-          throw redirect({
-            to: "/projects/$subdomain",
-            params: {
-              subdomain: migration.subdomain,
-            },
-          });
-        }
         // eslint-disable-next-line @typescript-eslint/only-throw-error
         throw notFound();
       }
