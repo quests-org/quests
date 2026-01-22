@@ -77,6 +77,12 @@ export function ServerExceptionsAlert() {
     rpcClient.utils.clearExceptions.mutationOptions({}),
   );
 
+  const totalExceptionCount = useMemo(
+    () =>
+      groupedExceptions.reduce((sum, exception) => sum + exception.count, 0),
+    [groupedExceptions],
+  );
+
   if (groupedExceptions.length === 0) {
     return null;
   }
@@ -88,6 +94,12 @@ export function ServerExceptionsAlert() {
         <span className="flex-1 text-xs font-medium text-foreground">
           Server {groupedExceptions.length === 1 ? "Exception" : "Exceptions"}
         </span>
+        <Badge
+          className="h-4 min-w-[16px] shrink-0 px-1 py-0 text-[10px] tabular-nums"
+          variant="destructive"
+        >
+          {totalExceptionCount}
+        </Badge>
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
