@@ -138,6 +138,9 @@ export async function createMainWindow() {
     return { action: "deny" };
   });
 
+  // Required or the initial size may be wrong
+  debouncedResizeViews();
+
   return mainWindow;
 }
 
