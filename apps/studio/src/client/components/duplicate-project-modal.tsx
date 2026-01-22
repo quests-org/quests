@@ -1,30 +1,31 @@
-import { Button } from "@/client/components/ui/button";
+import { ProjectStatsCard } from "@/client/components/project-stats-card";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/client/components/ui/dialog";
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/client/components/ui/alert-dialog";
+import { Button } from "@/client/components/ui/button";
 import { useTabActions } from "@/client/hooks/use-tab-actions";
 import { rpcClient } from "@/client/rpc/client";
-import { type ProjectSubdomain } from "@quests/workspace/client";
+import { type WorkspaceAppProject } from "@quests/workspace/client";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 interface DuplicateProjectModalProps {
   isOpen: boolean;
   onClose: () => void;
-  projectName: string;
-  projectSubdomain: ProjectSubdomain;
+  project: WorkspaceAppProject;
 }
 
 export function DuplicateProjectModal({
   isOpen,
   onClose,
-  projectName,
-  projectSubdomain,
+  project,
 }: DuplicateProjectModalProps) {
   const { addTab } = useTabActions();
 
@@ -46,37 +47,39 @@ export function DuplicateProjectModal({
     }),
   );
 
-  const handleDuplicate = () => {
+  const handleDuplicate = (e: React.MouseEvent) => {
+    e.preventDefault();
     duplicateMutation.mutate({
       keepHistory: true,
-      sourceSubdomain: projectSubdomain,
+      sourceSubdomain: project.subdomain,
     });
   };
 
   return (
-    <Dialog onOpenChange={onClose} open={isOpen}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Duplicate Project</DialogTitle>
-          <DialogDescription className="text-left">
-            {`This will create a copy of "${projectName}" as a new project.`}
-          </DialogDescription>
-        </DialogHeader>
-
-        <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
-          <Button onClick={onClose} variant="outline">
-            Cancel
-          </Button>
-          <Button
-            disabled={duplicateMutation.isPending}
-            onClick={handleDuplicate}
-          >
-            {duplicateMutation.isPending
-              ? "Duplicating..."
-              : "Duplicate Project"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <AlertDialog onOpenChange={onClose} open={isOpen}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Duplicate Project?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This will create a copy of the project with all of its messages and
+            files as a new project.
+          </AlertDialogDescription>
+          <ProjectStatsCard project={project} />
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction asChild>
+            <Button
+              disabled={duplicateMutation.isPending}
+              onClick={handleDuplicate}
+            >
+              {duplicateMutation.isPending
+                ? "Duplicating..."
+                : "Duplicate project"}
+            </Button>
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }

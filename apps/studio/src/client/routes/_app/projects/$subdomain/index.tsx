@@ -234,8 +234,7 @@ function RouteComponent() {
         onClose={() => {
           handleDuplicateDialogChange(false);
         }}
-        projectName={project.title}
-        projectSubdomain={project.subdomain}
+        project={project}
       />
 
       <ProjectSettingsDialog

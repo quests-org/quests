@@ -40,7 +40,7 @@ export function ProjectDeleteDialog({
       onDelete={handleDelete}
       onOpenChange={onOpenChange}
       open={open}
-      title={`Delete "${project.title}" project?`}
+      title="Delete Project?"
     />
   );
 }

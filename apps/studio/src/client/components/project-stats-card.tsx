@@ -23,11 +23,13 @@ export function ProjectStatsCard({
   });
 
   return (
-    <div className="flex items-center gap-3 rounded-lg border bg-muted/50 p-4">
+    <div className="flex items-center gap-3 overflow-hidden rounded-lg border bg-muted/50 p-4">
       <AppIcon name={project.iconName} size="lg" />
-      <div className="flex flex-col gap-2">
-        <div className="font-medium text-foreground">{project.title}</div>
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+      <div className="min-w-0 flex-1 overflow-hidden">
+        <div className="truncate font-medium text-foreground">
+          {project.title}
+        </div>
+        <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
           <div className="flex items-center gap-1">
             <Calendar className="size-3" />
             <span>Created {format(project.createdAt, "MMM d, yyyy")}</span>
