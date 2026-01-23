@@ -1,5 +1,6 @@
 import { openFilePreviewAtom } from "@/client/atoms/file-preview";
 import { useSetAtom } from "jotai";
+import { ImageIcon } from "lucide-react";
 import { memo, useCallback } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeKatex from "rehype-katex";
@@ -57,6 +58,35 @@ const CodeBlock = ({ code, language }: { code: string; language: string }) => {
   );
 };
 
+const ALLOWED_IMAGE_PATTERNS = [
+  /^data:/,
+  /^http:\/\/.*\.localhost(:\d+)?\//,
+  /^https:\/\/images\.google\.com\//,
+  /^https:\/\/github\.com\//,
+  /^https:\/\/.*\.github\.com\//,
+  /^https:\/\/.*\.githubusercontent\.com\//,
+];
+
+const isImageAllowed = (src: string | undefined): boolean => {
+  if (!src) {
+    return false;
+  }
+  if (src.startsWith("/") || src.startsWith("./") || src.startsWith("../")) {
+    return true;
+  }
+  return ALLOWED_IMAGE_PATTERNS.some((pattern) => pattern.test(src));
+};
+
+const ImagePlaceholder = ({ alt, src }: { alt?: string; src?: string }) => (
+  <div className="flex max-w-full items-center gap-2 rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-muted-foreground">
+    <ImageIcon className="size-4 shrink-0" />
+    <div className="min-w-0 flex-1">
+      <div className="truncate">{alt || "Image"}</div>
+      {src && <div className="truncate text-xs opacity-70">{src}</div>}
+    </div>
+  </div>
+);
+
 export const Markdown = memo(({ allowRawHtml, markdown }: MarkdownProps) => {
   const openFilePreview = useSetAtom(openFilePreviewAtom);
 
@@ -108,6 +138,10 @@ export const Markdown = memo(({ allowRawHtml, markdown }: MarkdownProps) => {
           );
         },
         img: ({ alt, className, node: _node, ref: _ref, src, ...props }) => {
+          if (!isImageAllowed(src)) {
+            return <ImagePlaceholder alt={alt} src={src} />;
+          }
+
           return (
             <img
               {...props}
