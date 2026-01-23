@@ -25,6 +25,8 @@ export function FilePreviewCard({
   const videoTimeoutRef = useRef<null | number>(null);
   const [videoProgress, setVideoProgress] = useState(0);
   const [timeRemaining, setTimeRemaining] = useState<null | number>(null);
+  const [videoDuration, setVideoDuration] = useState<null | number>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   const fileType = getFileType({ filename, mimeType });
 
@@ -32,6 +34,7 @@ export function FilePreviewCard({
     if (fileType === "video" && videoRef.current) {
       videoTimeoutRef.current = window.setTimeout(() => {
         void videoRef.current?.play();
+        setIsPlaying(true);
       }, 500);
     }
   };
@@ -44,6 +47,7 @@ export function FilePreviewCard({
       }
       videoRef.current.pause();
       videoRef.current.currentTime = 0;
+      setIsPlaying(false);
     }
   };
 
@@ -111,6 +115,10 @@ export function FilePreviewCard({
               className="size-full bg-black object-contain"
               loop
               muted
+              onLoadedMetadata={(e) => {
+                const video = e.currentTarget;
+                setVideoDuration(video.duration);
+              }}
               onTimeUpdate={(e) => {
                 const video = e.currentTarget;
                 const progress = video.duration
@@ -126,26 +134,34 @@ export function FilePreviewCard({
               src={url}
             />
             <div className="absolute inset-0 flex items-center justify-center bg-black/20 transition-opacity group-hover:opacity-0">
-              <div className="rounded-full bg-white/90 p-4 shadow-lg">
-                <Play className="size-8 fill-black text-black" />
+              <div className="rounded-full bg-white/90 p-2 shadow-lg">
+                <Play className="size-4 fill-black text-black" />
               </div>
             </div>
-            {timeRemaining !== null && timeRemaining > 0 && (
-              <div className="absolute right-2 bottom-2 opacity-0 transition-opacity group-hover:opacity-100">
+            {(isPlaying
+              ? timeRemaining !== null && timeRemaining > 0
+              : videoDuration !== null) && (
+              <div className="absolute right-2 bottom-2">
                 <Badge
                   className="bg-black/70 text-white hover:bg-black/70"
                   variant="secondary"
                 >
-                  {formatTime(timeRemaining)}
+                  {formatTime(
+                    isPlaying && timeRemaining !== null
+                      ? timeRemaining
+                      : (videoDuration ?? 0),
+                  )}
                 </Badge>
               </div>
             )}
-            <div className="absolute right-0 bottom-0 left-0 h-1 bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
-              <div
-                className="h-full bg-white transition-all duration-100"
-                style={{ width: `${videoProgress}%` }}
-              />
-            </div>
+            {isPlaying && (
+              <div className="absolute right-0 bottom-0 left-0 h-1 bg-black/50">
+                <div
+                  className="h-full bg-white transition-all duration-100"
+                  style={{ width: `${videoProgress}%` }}
+                />
+              </div>
+            )}
           </>
         ) : (
           <div className="flex size-full items-center justify-center">
