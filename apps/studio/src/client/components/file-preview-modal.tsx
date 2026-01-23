@@ -2,6 +2,7 @@ import {
   closeFilePreviewAtom,
   filePreviewAtom,
 } from "@/client/atoms/file-preview";
+import { getFileType } from "@/client/lib/get-file-type";
 import { formatBytes } from "@quests/workspace/client";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { useRouter } from "@tanstack/react-router";
@@ -36,9 +37,9 @@ export function FilePreviewModal() {
     return null;
   }
 
-  const hasExtension = file.name.includes(".");
-  const isImage =
-    file.mimeType?.startsWith("image/") || (!file.mimeType && !hasExtension);
+  const fileType = getFileType(file);
+  const hasExtension = file.filename.includes(".");
+  const isImage = fileType === "image" || (!file.mimeType && !hasExtension);
 
   return (
     <DialogPrimitive.Root
@@ -53,7 +54,7 @@ export function FilePreviewModal() {
         <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/80 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0" />
         <DialogPrimitive.Content className="fixed inset-0 z-50 flex items-center justify-center data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0">
           <DialogPrimitive.Title className="sr-only">
-            {file.name}
+            {file.filename}
           </DialogPrimitive.Title>
           <DialogPrimitive.Description className="sr-only">
             File preview
@@ -68,8 +69,11 @@ export function FilePreviewModal() {
           >
             <div className="absolute top-4 right-4 left-4 z-10 flex items-center justify-center gap-2 text-white">
               <div className="flex items-center gap-2 rounded bg-black/50 px-3 py-1.5">
-                <FileIcon className="size-4 shrink-0" filename={file.name} />
-                <span className="truncate text-xs">{file.name}</span>
+                <FileIcon
+                  className="size-4 shrink-0"
+                  filename={file.filename}
+                />
+                <span className="truncate text-xs">{file.filename}</span>
                 {/* eslint-disable-next-line unicorn/explicit-length-check */}
                 {file.size && (
                   <span className="text-xs text-white/60">
@@ -107,7 +111,7 @@ export function FilePreviewModal() {
               >
                 {isImage ? (
                   <ImageWithFallback
-                    alt={file.name}
+                    alt={file.filename}
                     className="h-auto max-h-full w-auto max-w-full rounded object-contain"
                     fallback={
                       <div className="flex w-full max-w-md flex-col items-center justify-center gap-4 p-8 text-center">
@@ -115,7 +119,7 @@ export function FilePreviewModal() {
                           <FileIcon
                             className="size-16"
                             fallbackExtension="jpg"
-                            filename={file.name}
+                            filename={file.filename}
                           />
                         </div>
                         <div>
@@ -129,7 +133,7 @@ export function FilePreviewModal() {
                       </div>
                     }
                     fallbackClassName="size-32 rounded-lg"
-                    filename={file.name}
+                    filename={file.filename}
                     onClick={closePreview}
                     showCheckerboard
                     src={file.url}
@@ -137,11 +141,11 @@ export function FilePreviewModal() {
                 ) : (
                   <div className="flex w-full max-w-md flex-col items-center justify-center gap-4 p-8 text-center">
                     <div className="flex size-32 items-center justify-center rounded-lg bg-background">
-                      <FileIcon className="size-16" filename={file.name} />
+                      <FileIcon className="size-16" filename={file.filename} />
                     </div>
                     <div>
                       <p className="text-sm font-medium text-white">
-                        {file.name}
+                        {file.filename}
                       </p>
                       {/* eslint-disable-next-line unicorn/explicit-length-check */}
                       {file.size && (

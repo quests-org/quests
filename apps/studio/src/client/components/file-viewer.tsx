@@ -1,5 +1,6 @@
+import { type ProjectFileViewerFile } from "@/client/atoms/project-file-viewer";
 import { getLanguageFromFilePath } from "@/client/lib/file-extension-to-language";
-import { type ProjectSubdomain } from "@quests/workspace/client";
+import { getFileType } from "@/client/lib/get-file-type";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { Code2, Download, Eye, Loader2, X } from "lucide-react";
@@ -8,7 +9,6 @@ import { toast } from "sonner";
 import { tv } from "tailwind-variants";
 
 import { useSyntaxHighlighting } from "../hooks/use-syntax-highlighting";
-import { isTextMimeType } from "../lib/is-text-mime-type";
 import { FileActionsMenu } from "./file-actions-menu";
 import { FileIcon } from "./file-icon";
 import { FilePreviewFallback } from "./file-preview-fallback";
@@ -154,24 +154,16 @@ const fileViewerVariants = tv({
 });
 
 export function FileViewer({
-  filename,
-  filePath,
-  mimeType,
+  file,
   onClose,
   onDownload,
-  projectSubdomain,
-  url,
-  versionRef,
 }: {
-  filename: string;
-  filePath: string;
-  mimeType: string;
+  file: ProjectFileViewerFile;
   onClose: () => void;
   onDownload?: () => void;
-  projectSubdomain: ProjectSubdomain;
-  url: string;
-  versionRef: string;
 }) {
+  const { filename, filePath, mimeType, projectSubdomain, url, versionRef } =
+    file;
   const [viewMode, setViewMode] = useState<"preview" | "raw">("preview");
   const [mediaLoadError, setMediaLoadError] = useState(false);
   const [mediaErrorType, setMediaErrorType] = useState<string | undefined>();
@@ -181,15 +173,8 @@ export function FileViewer({
     contentRef.current?.scrollTo({ behavior: "instant", top: 0 });
   }, [viewMode]);
 
-  const isText = isTextMimeType(mimeType);
-  const isPdf = mimeType === "application/pdf";
-  const isVideo = mimeType.startsWith("video/");
-  const isAudio = mimeType.startsWith("audio/");
-
-  const isMarkdown =
-    isText && /\.(?:md|markdown|mdown|mkd|mdx)$/i.test(filename);
-  const isHtml = isText && /\.html?$/i.test(filename);
-  const hasPreview = isMarkdown || isHtml;
+  const fileType = getFileType(file);
+  const hasPreview = fileType === "markdown" || fileType === "html";
 
   const handleCopy = async () => {
     try {
@@ -207,14 +192,14 @@ export function FileViewer({
     }
   };
 
-  const getFileType = () => {
-    if (isAudio) {
+  const getViewerLayoutType = () => {
+    if (fileType === "audio") {
       return "audio";
     }
-    if (isText && !isHtml) {
+    if (fileType === "code" || fileType === "text") {
       return "text";
     }
-    if (isHtml && !mediaLoadError) {
+    if (fileType === "html" && !mediaLoadError) {
       return "html";
     }
     return "default";
@@ -246,26 +231,17 @@ export function FileViewer({
   }
 
   if (filePath && projectSubdomain && versionRef) {
-    if (isText) {
-      toolbarActions.push(
-        <FileActionsMenu
-          filePath={filePath}
-          key="actions"
-          onCopy={handleCopy}
-          projectSubdomain={projectSubdomain}
-          versionRef={versionRef}
-        />,
-      );
-    } else {
-      toolbarActions.push(
-        <FileActionsMenu
-          filePath={filePath}
-          key="actions"
-          projectSubdomain={projectSubdomain}
-          versionRef={versionRef}
-        />,
-      );
-    }
+    toolbarActions.push(
+      <FileActionsMenu
+        filePath={filePath}
+        key="actions"
+        onCopy={
+          fileType === "code" || fileType === "text" ? handleCopy : undefined
+        }
+        projectSubdomain={projectSubdomain}
+        versionRef={versionRef}
+      />,
+    );
   }
 
   toolbarActions.push(
@@ -278,7 +254,7 @@ export function FileViewer({
     <div
       className={fileViewerVariants({
         error: false,
-        fileType: getFileType(),
+        fileType: getViewerLayoutType(),
       })}
     >
       <div className="flex shrink-0 items-center gap-2 border-b border-border bg-muted/30 px-4 py-2">
@@ -308,7 +284,7 @@ export function FileViewer({
           />
         )}
         <div className="ml-auto flex items-center gap-1">
-          {isText && hasPreview && (
+          {hasPreview && (
             <Tabs
               onValueChange={(value) => {
                 setViewMode(value as "preview" | "raw");
@@ -339,21 +315,21 @@ export function FileViewer({
               filename={filename}
             />
           </div>
-        ) : isMarkdown && viewMode === "preview" ? (
+        ) : fileType === "markdown" && viewMode === "preview" ? (
           <MarkdownPreview url={url} />
-        ) : isHtml && viewMode === "preview" ? (
+        ) : fileType === "html" && viewMode === "preview" ? (
           <SandboxedHtmlIframe
             className="absolute inset-0 size-full border-0 bg-background"
             src={url}
             title={filename}
           />
-        ) : isText ? (
+        ) : fileType === "code" || fileType === "text" ? (
           <TextView filename={filename} url={url}>
             {(text) => (
               <pre className="p-4 text-sm text-foreground">{text}</pre>
             )}
           </TextView>
-        ) : isPdf ? (
+        ) : fileType === "pdf" ? (
           <iframe
             className="absolute inset-0 size-full border-0"
             key={url}
@@ -364,7 +340,7 @@ export function FileViewer({
             src={url}
             title={filename}
           />
-        ) : isVideo ? (
+        ) : fileType === "video" ? (
           <video
             autoPlay
             className="size-full object-contain p-4"
@@ -376,7 +352,7 @@ export function FileViewer({
             }}
             src={url}
           />
-        ) : isAudio ? (
+        ) : fileType === "audio" ? (
           <div className="flex size-full items-center justify-center p-8">
             <audio
               autoPlay

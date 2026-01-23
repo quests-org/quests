@@ -366,8 +366,8 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
                   onClick={() => {
                     if (file.url) {
                       openFilePreview({
+                        filename: file.name,
                         mimeType: file.mimeType,
-                        name: file.name,
                         size: file.size,
                         url: file.url,
                       });

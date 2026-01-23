@@ -1,4 +1,5 @@
 import { type ProjectFileViewerFile } from "@/client/atoms/project-file-viewer";
+import { getFileType } from "@/client/lib/get-file-type";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, Play } from "lucide-react";
 import { useRef, useState } from "react";
@@ -25,15 +26,10 @@ export function FilePreviewCard({
   const [videoProgress, setVideoProgress] = useState(0);
   const [timeRemaining, setTimeRemaining] = useState<null | number>(null);
 
-  const isImage = mimeType.startsWith("image/");
-  const isHtml = mimeType === "text/html";
-  const isPdf = mimeType === "application/pdf";
-  const isVideo = mimeType.startsWith("video/");
-  const isMarkdown = mimeType === "text/markdown";
-  const isText = filename.toLowerCase().endsWith(".txt");
+  const fileType = getFileType({ filename, mimeType });
 
   const handleMouseEnter = () => {
-    if (isVideo && videoRef.current) {
+    if (fileType === "video" && videoRef.current) {
       videoTimeoutRef.current = window.setTimeout(() => {
         void videoRef.current?.play();
       }, 500);
@@ -41,7 +37,7 @@ export function FilePreviewCard({
   };
 
   const handleMouseLeave = () => {
-    if (isVideo && videoRef.current) {
+    if (fileType === "video" && videoRef.current) {
       if (videoTimeoutRef.current !== null) {
         clearTimeout(videoTimeoutRef.current);
         videoTimeoutRef.current = null;
@@ -51,13 +47,13 @@ export function FilePreviewCard({
     }
   };
 
-  if (isMarkdown || isText) {
+  if (fileType === "markdown" || fileType === "text") {
     return (
       <div className="group relative overflow-hidden rounded-lg border border-border bg-background">
         <PreviewHeader file={file} onClick={onClick} />
         <div className="relative w-full overflow-hidden">
           <div className="max-h-64 overflow-hidden bg-background">
-            {isMarkdown ? (
+            {fileType === "markdown" ? (
               <MarkdownPreview url={url} />
             ) : (
               <TextPreview url={url} />
@@ -82,7 +78,7 @@ export function FilePreviewCard({
     >
       <PreviewHeader file={file} onClick={onClick} />
       <div className="relative aspect-video w-full overflow-hidden">
-        {isImage && (
+        {fileType === "image" ? (
           <div className="flex size-full items-center justify-center">
             <ImageWithFallback
               alt={filename}
@@ -93,8 +89,7 @@ export function FilePreviewCard({
               src={url}
             />
           </div>
-        )}
-        {isHtml && (
+        ) : fileType === "html" ? (
           <SandboxedHtmlIframe
             className="absolute top-0 left-0 h-[300%] w-[300%] origin-top-left border-0"
             restrictInteractive
@@ -102,8 +97,7 @@ export function FilePreviewCard({
             style={{ transform: "scale(0.333)" }}
             title={filename}
           />
-        )}
-        {isPdf && (
+        ) : fileType === "pdf" ? (
           <iframe
             className="absolute top-0 left-0 h-[300%] w-[300%] origin-top-left border-0"
             // cspell:ignore navpanes
@@ -111,8 +105,7 @@ export function FilePreviewCard({
             style={{ transform: "scale(0.333)" }}
             title={filename}
           />
-        )}
-        {isVideo && (
+        ) : fileType === "video" ? (
           <>
             <video
               className="size-full bg-black object-contain"
@@ -154,8 +147,7 @@ export function FilePreviewCard({
               />
             </div>
           </>
-        )}
-        {!isImage && !isHtml && !isPdf && !isVideo && (
+        ) : (
           <div className="flex size-full items-center justify-center">
             <FileIcon
               className="size-16 text-muted-foreground"

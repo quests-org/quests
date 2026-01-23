@@ -2,6 +2,7 @@ import {
   openProjectFileViewerAtom,
   type ProjectFileViewerFile,
 } from "@/client/atoms/project-file-viewer";
+import { getFileType, isReadableText } from "@/client/lib/get-file-type";
 import { cn } from "@/client/lib/utils";
 import { useSetAtom } from "jotai";
 import { ChevronDown, ChevronUp } from "lucide-react";
@@ -44,12 +45,12 @@ export function FilesGrid({
   const hasHiddenFiles = hiddenFiles.length > 0;
   const filesToShow = isExpanded ? sortedFiles : visibleFiles;
 
-  const richPreviewFiles = filesToShow.filter(hasRichPreview).map((file) => ({
-    ...file,
-    shouldSpanTwo:
-      file.mimeType === "text/markdown" ||
-      file.filename.toLowerCase().endsWith(".txt"),
-  }));
+  const richPreviewFiles = filesToShow.filter(hasRichPreview).map((file) => {
+    return {
+      ...file,
+      shouldSpanTwo: isReadableText(file),
+    };
+  });
 
   const otherFiles = filesToShow.filter((file) => !hasRichPreview(file));
 
@@ -128,12 +129,13 @@ export function FilesGrid({
 }
 
 function hasRichPreview(file: ProjectFileViewerFile) {
+  const fileType = getFileType(file);
   return (
-    file.mimeType.startsWith("image/") ||
-    file.mimeType === "text/html" ||
-    file.mimeType === "application/pdf" ||
-    file.mimeType.startsWith("video/") ||
-    file.mimeType === "text/markdown" ||
-    file.filename.toLowerCase().endsWith(".txt")
+    fileType === "image" ||
+    fileType === "html" ||
+    fileType === "pdf" ||
+    fileType === "video" ||
+    fileType === "markdown" ||
+    fileType === "text"
   );
 }

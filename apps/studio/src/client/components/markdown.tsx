@@ -65,10 +65,7 @@ export const Markdown = memo(({ allowRawHtml, markdown }: MarkdownProps) => {
       const src = event.currentTarget.src;
       const alt = event.currentTarget.alt || "image";
       if (src) {
-        openFilePreview({
-          name: alt,
-          url: src,
-        });
+        openFilePreview({ filename: alt, url: src });
       }
     },
     [openFilePreview],

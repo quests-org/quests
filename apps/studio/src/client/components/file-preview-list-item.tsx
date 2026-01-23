@@ -1,4 +1,5 @@
 import { type ProjectFileViewerFile } from "@/client/atoms/project-file-viewer";
+import { getFileType } from "@/client/lib/get-file-type";
 import { cn } from "@/client/lib/utils";
 
 import { FileIcon } from "./file-icon";
@@ -18,10 +19,9 @@ export function FilePreviewListItem({
 }) {
   const { filename, filePath, mimeType, projectSubdomain, url, versionRef } =
     file;
-  const isImage = mimeType.startsWith("image/");
-  const hasPreview = Boolean(url);
+  const fileType = getFileType(file);
 
-  if (hasPreview && isImage) {
+  if (url && fileType === "image") {
     return (
       <Tooltip>
         <TooltipTrigger asChild>

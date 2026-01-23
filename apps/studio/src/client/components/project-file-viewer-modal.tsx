@@ -8,6 +8,7 @@ import {
   downloadFile,
   isFileDownloadable,
 } from "@/client/lib/file-actions";
+import { getFileType } from "@/client/lib/get-file-type";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { useRouter } from "@tanstack/react-router";
 import { useAtomValue, useSetAtom } from "jotai";
@@ -35,9 +36,8 @@ export function ProjectFileViewerModal() {
   const isDownloadable = currentFile
     ? isFileDownloadable(currentFile.url)
     : false;
-  const isImage = currentFile
-    ? currentFile.mimeType.startsWith("image/")
-    : false;
+  const fileType = currentFile ? getFileType(currentFile) : null;
+  const isImage = fileType === "image";
 
   const handleDownload = async () => {
     if (!currentFile?.projectSubdomain || !currentFile.filePath) {
@@ -282,9 +282,7 @@ export function ProjectFileViewerModal() {
                   />
                 ) : (
                   <FileViewer
-                    filename={currentFile.filename}
-                    filePath={currentFile.filePath}
-                    mimeType={currentFile.mimeType}
+                    file={currentFile}
                     onClose={closeViewer}
                     onDownload={
                       isDownloadable &&
@@ -293,9 +291,6 @@ export function ProjectFileViewerModal() {
                         ? handleDownload
                         : undefined
                     }
-                    projectSubdomain={currentFile.projectSubdomain}
-                    url={currentFile.url}
-                    versionRef={currentFile.versionRef}
                   />
                 )}
               </div>
