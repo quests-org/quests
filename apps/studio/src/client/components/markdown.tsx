@@ -107,7 +107,7 @@ export const Markdown = memo(({ allowRawHtml, markdown }: MarkdownProps) => {
             </CodeWithCopy>
           );
         },
-        img: ({ alt, className, src, ...props }) => {
+        img: ({ alt, className, node: _node, ref: _ref, src, ...props }) => {
           return (
             <img
               {...props}
