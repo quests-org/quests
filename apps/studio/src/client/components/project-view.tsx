@@ -97,10 +97,6 @@ export function ProjectView({
     showVersions,
   };
 
-  // TODO: Remove chat- after 2026-03-01
-  const isChatOnly =
-    !hasAppModifications || project.subdomain.startsWith("chat-");
-
   return (
     <div className="flex h-dvh w-full flex-col overflow-hidden">
       <ProjectHeaderToolbar
@@ -110,13 +106,7 @@ export function ProjectView({
         selectedVersion={selectedVersion}
       />
 
-      {isChatOnly ? (
-        <div className="flex h-full w-full flex-1 items-start justify-center overflow-hidden border-t">
-          <div className="flex h-full w-full max-w-3xl flex-col bg-background">
-            <ProjectChat {...sidebarProps} />
-          </div>
-        </div>
-      ) : (
+      {hasAppModifications ? (
         <div className="flex flex-1 overflow-hidden">
           <ResizablePanelGroup orientation="horizontal">
             <ResizablePanel
@@ -191,6 +181,12 @@ export function ProjectView({
               </div>
             </ResizablePanel>
           </ResizablePanelGroup>
+        </div>
+      ) : (
+        <div className="flex h-full w-full flex-1 items-start justify-center overflow-hidden border-t">
+          <div className="flex h-full w-full max-w-3xl flex-col bg-background">
+            <ProjectChat {...sidebarProps} />
+          </div>
         </div>
       )}
     </div>

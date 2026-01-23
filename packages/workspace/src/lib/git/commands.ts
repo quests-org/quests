@@ -75,6 +75,10 @@ export namespace GitCommands {
     return ["init"];
   }
 
+  export function isInsideWorkTree() {
+    return ["rev-parse", "--is-inside-work-tree"];
+  }
+
   export function logFileAllRefs(filePath: string) {
     return ["log", "--format=%H", "--reverse", "--all", "--", filePath];
   }

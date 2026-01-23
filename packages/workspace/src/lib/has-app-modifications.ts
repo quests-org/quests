@@ -1,9 +1,13 @@
 import { ok, safeTry } from "neverthrow";
 
-import { APP_FOLDER_NAMES } from "../constants";
+import {
+  APP_FOLDER_NAMES,
+  LEGACY_PROJECT_SUBDOMAIN_MODE_PREFIXES,
+} from "../constants";
 import { type ProjectSubdomain } from "../schemas/subdomains";
 import { type WorkspaceConfig } from "../types";
 import { createAppConfig } from "./app-config/create";
+import { isRunnable } from "./app-dir-utils";
 import { git } from "./git";
 import { GitCommands } from "./git/commands";
 
@@ -16,6 +20,28 @@ export async function hasAppModifications(
       subdomain: projectSubdomain,
       workspaceConfig,
     });
+
+    // Step 0: Check if git repo exists
+    const hasGitRepo = await git(
+      GitCommands.isInsideWorkTree(),
+      projectConfig.appDir,
+      { signal: AbortSignal.timeout(10_000) },
+    );
+
+    if (hasGitRepo.isErr()) {
+      if (
+        projectSubdomain.startsWith(
+          `${LEGACY_PROJECT_SUBDOMAIN_MODE_PREFIXES.chat}-`,
+        )
+      ) {
+        return ok(false);
+      }
+      if (await isRunnable(projectConfig.appDir)) {
+        // Runnable, no git repo, assume modifications exist
+        return ok(true);
+      }
+      return ok(false);
+    }
 
     // Step 1: Check for uncommitted changes in src/ directory
     const statusResult = yield* git(

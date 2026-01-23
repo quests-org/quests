@@ -12,11 +12,9 @@ export function ensureGitRepo({
   signal?: AbortSignal;
 }) {
   return safeTry(async function* () {
-    const checkResult = await git(
-      ["rev-parse", "--is-inside-work-tree"],
-      appDir,
-      { signal },
-    );
+    const checkResult = await git(GitCommands.isInsideWorkTree(), appDir, {
+      signal,
+    });
 
     if (checkResult.isOk()) {
       return ok({ created: false });
