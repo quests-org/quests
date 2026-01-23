@@ -15,8 +15,10 @@ import { useAtomValue, useSetAtom } from "jotai";
 import { ChevronLeft, ChevronRight, Download, X } from "lucide-react";
 import { useCallback, useEffect } from "react";
 
+import { cn } from "../lib/utils";
 import { FileActionsMenu } from "./file-actions-menu";
 import { FileIcon } from "./file-icon";
+import { FilePreviewFallback } from "./file-preview-fallback";
 import { FilePreviewListItem } from "./file-preview-list-item";
 import { FileVersionBadge } from "./file-version-badge";
 import { FileViewer } from "./file-viewer";
@@ -138,7 +140,7 @@ export function ProjectFileViewerModal() {
       open={state.isOpen}
     >
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/80 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0" />
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/90 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0" />
         <DialogPrimitive.Content className="fixed inset-0 z-50 flex items-center justify-center data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0">
           <DialogPrimitive.Title className="sr-only">
             {currentFile.filename}
@@ -155,8 +157,8 @@ export function ProjectFileViewerModal() {
             }}
           >
             {isImage && (
-              <div className="absolute top-4 right-4 left-4 z-10 flex items-center justify-center gap-2 text-white">
-                <div className="flex items-center gap-2 rounded bg-black/50 px-3 py-1.5">
+              <div className="dark absolute top-4 right-4 left-4 z-10 flex items-center justify-center gap-2 text-foreground">
+                <div className="flex items-center gap-2">
                   <FileIcon
                     className="size-4 shrink-0"
                     filename={currentFile.filename}
@@ -166,7 +168,6 @@ export function ProjectFileViewerModal() {
                     {currentFile.filePath}
                   </span>
                   <FileVersionBadge
-                    className="bg-white/10 text-white hover:bg-white/20"
                     filePath={currentFile.filePath}
                     projectSubdomain={currentFile.projectSubdomain}
                     versionRef={currentFile.versionRef}
@@ -254,25 +255,11 @@ export function ProjectFileViewerModal() {
                     alt={currentFile.filename}
                     className="h-auto max-h-full w-auto max-w-full rounded object-contain select-none"
                     fallback={
-                      <div className="flex w-full max-w-md flex-col items-center justify-center gap-4 p-8 text-center">
-                        <div className="flex size-32 items-center justify-center rounded-lg bg-background">
-                          <FileIcon
-                            className="size-16"
-                            fallbackExtension="jpg"
-                            filename={currentFile.filename}
-                            mimeType={currentFile.mimeType}
-                          />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-white">
-                            Failed to load image
-                          </p>
-                          <p className="mt-1 text-xs text-white/60">
-                            The image could not be displayed.
-                            {isDownloadable && " Try downloading it."}
-                          </p>
-                        </div>
-                      </div>
+                      <FilePreviewFallback
+                        fallbackExtension="jpg"
+                        filename={currentFile.filename}
+                        onDownload={isDownloadable ? handleDownload : undefined}
+                      />
                     }
                     fallbackClassName="size-32 rounded-lg"
                     filename={currentFile.filename}
@@ -284,20 +271,14 @@ export function ProjectFileViewerModal() {
                   <FileViewer
                     file={currentFile}
                     onClose={closeViewer}
-                    onDownload={
-                      isDownloadable &&
-                      currentFile.projectSubdomain &&
-                      currentFile.filePath
-                        ? handleDownload
-                        : undefined
-                    }
+                    onDownload={isDownloadable ? handleDownload : undefined}
                   />
                 )}
               </div>
             </div>
 
             {hasMultipleFiles && (
-              <div className="flex shrink-0 justify-center px-4 pb-8">
+              <div className="dark flex shrink-0 justify-center px-4 pb-8 text-foreground">
                 <div className="flex gap-x-2 overflow-x-auto px-1 py-2">
                   {state.files.map((file, index) => (
                     <div

@@ -313,6 +313,7 @@ export function FileViewer({
             <FilePreviewFallback
               fallbackExtension={mediaErrorType}
               filename={filename}
+              onDownload={onDownload}
             />
           </div>
         ) : fileType === "markdown" && viewMode === "preview" ? (
@@ -368,7 +369,11 @@ export function FileViewer({
           </div>
         ) : (
           <div className="flex size-full items-center justify-center">
-            <FilePreviewFallback fallbackExtension="bin" filename={filename} />
+            <FilePreviewFallback
+              fallbackExtension="bin"
+              filename={filename}
+              onDownload={onDownload}
+            />
           </div>
         )}
       </div>

@@ -11,6 +11,7 @@ import { X } from "lucide-react";
 import { useEffect } from "react";
 
 import { FileIcon } from "./file-icon";
+import { FilePreviewFallback } from "./file-preview-fallback";
 import { ImageWithFallback } from "./image-with-fallback";
 import { Button } from "./ui/button";
 
@@ -114,23 +115,10 @@ export function FilePreviewModal() {
                     alt={file.filename}
                     className="h-auto max-h-full w-auto max-w-full rounded object-contain"
                     fallback={
-                      <div className="flex w-full max-w-md flex-col items-center justify-center gap-4 p-8 text-center">
-                        <div className="flex size-32 items-center justify-center rounded-lg bg-background">
-                          <FileIcon
-                            className="size-16"
-                            fallbackExtension="jpg"
-                            filename={file.filename}
-                          />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-white">
-                            Failed to load image
-                          </p>
-                          <p className="mt-1 text-xs text-white/60">
-                            The image could not be displayed
-                          </p>
-                        </div>
-                      </div>
+                      <FilePreviewFallback
+                        fallbackExtension="jpg"
+                        filename={file.filename}
+                      />
                     }
                     fallbackClassName="size-32 rounded-lg"
                     filename={file.filename}
@@ -139,22 +127,7 @@ export function FilePreviewModal() {
                     src={file.url}
                   />
                 ) : (
-                  <div className="flex w-full max-w-md flex-col items-center justify-center gap-4 p-8 text-center">
-                    <div className="flex size-32 items-center justify-center rounded-lg bg-background">
-                      <FileIcon className="size-16" filename={file.filename} />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-white">
-                        {file.filename}
-                      </p>
-                      {/* eslint-disable-next-line unicorn/explicit-length-check */}
-                      {file.size && (
-                        <p className="mt-1 text-xs text-white/60">
-                          {formatBytes(file.size)}
-                        </p>
-                      )}
-                    </div>
-                  </div>
+                  <FilePreviewFallback filename={file.filename} />
                 )}
               </div>
             </div>
