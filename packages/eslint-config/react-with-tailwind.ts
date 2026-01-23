@@ -23,7 +23,7 @@ const config: ReturnType<typeof tseslint.config> = tseslint.config(
         // Slow rule
         ERROR_IN_CI,
         {
-          ignore: ["shiny-text", "toaster"],
+          ignore: ["shiny-text", "toaster", "dark"],
         },
       ],
     },
