@@ -21,7 +21,7 @@ export async function hasAppModifications(
       workspaceConfig,
     });
 
-    // Step 0: Check if git repo exists
+    // Check if git repo exists
     const hasGitRepo = await git(
       GitCommands.isInsideWorkTree(),
       projectConfig.appDir,
@@ -43,7 +43,7 @@ export async function hasAppModifications(
       return ok(false);
     }
 
-    // Step 1: Check for uncommitted changes in src/ directory
+    // Check for uncommitted changes in src/ directory
     const statusResult = yield* git(
       GitCommands.statusPath(`${APP_FOLDER_NAMES.src}/`),
       projectConfig.appDir,
@@ -56,7 +56,7 @@ export async function hasAppModifications(
       return ok(true);
     }
 
-    // Step 2: Find the initial commit using the trailer
+    // Find the initial commit using the trailer
     const findInitialResult = yield* git(
       GitCommands.findInitialCommit(),
       projectConfig.appDir,
@@ -69,7 +69,7 @@ export async function hasAppModifications(
       return ok(true);
     }
 
-    // Step 3: Check for commits modifying src/ since the initial commit
+    // Check for commits modifying src/ since the initial commit
     const logResult = yield* git(
       GitCommands.logPathSinceCommit(
         initialCommitHash,
