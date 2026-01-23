@@ -26,13 +26,7 @@ import { getInitials } from "@/client/lib/get-initials";
 import { isLowOnCredits } from "@/client/lib/is-low-on-credits";
 import { signOut } from "@/client/lib/sign-out";
 import { rpcClient } from "@/client/rpc/client";
-import { useQuery } from "@tanstack/react-query";
-import {
-  ChevronsUpDown,
-  KeyIcon,
-  LogOutIcon,
-  SettingsIcon,
-} from "lucide-react";
+import { ChevronsUpDown, LogOutIcon, SettingsIcon } from "lucide-react";
 import { startTransition } from "react";
 
 import { useLiveSubscriptionStatus } from "../hooks/use-live-subscription-status";
@@ -41,9 +35,6 @@ import { useLiveUser } from "../hooks/use-live-user";
 export function NavUser() {
   const { isMobile } = useSidebar();
   const { addTab } = useTabActions();
-  const { data: providerConfigs } = useQuery(
-    rpcClient.providerConfig.live.list.experimental_liveOptions(),
-  );
   const { data: user, refetch: refetchUser } = useLiveUser();
   const { data: subscription, refetch: refetchSubscription } =
     useLiveSubscriptionStatus();
@@ -180,20 +171,6 @@ export function NavUser() {
                 <SettingsIcon className="h-4 w-4" />
                 <span>Settings</span>
               </DropdownMenuItem>
-
-              {providerConfigs?.length === 0 && (
-                <DropdownMenuItem
-                  onClick={() => {
-                    void rpcClient.preferences.openSettingsWindow.call({
-                      showNewProviderDialog: true,
-                      tab: "Providers",
-                    });
-                  }}
-                >
-                  <KeyIcon className="h-4 w-4" />
-                  <span>Configure a provider</span>
-                </DropdownMenuItem>
-              )}
             </DropdownMenuGroup>
 
             <DropdownMenuSeparator />
