@@ -89,6 +89,10 @@ export function isFileCopyable(mimeType: string, url: string) {
 }
 
 export function isFileDownloadable(url: string) {
+  if (!url.trim()) {
+    return false;
+  }
+
   if (url.startsWith("data:")) {
     return true;
   }
