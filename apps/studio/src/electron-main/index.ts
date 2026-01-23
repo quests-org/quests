@@ -13,7 +13,14 @@ import {
 import { getMainWindow } from "@/electron-main/windows/main/instance";
 import { is, optimizer } from "@electron-toolkit/utils";
 import { APP_PROTOCOL } from "@quests/shared";
-import { app, BrowserWindow, dialog, nativeTheme, protocol } from "electron";
+import {
+  app,
+  BrowserWindow,
+  dialog,
+  nativeTheme,
+  protocol,
+  session,
+} from "electron";
 
 import { createWorkspaceActor } from "./lib/create-workspace-actor";
 import { generateUserAgent } from "./lib/generate-user-agent";
@@ -109,6 +116,17 @@ void app.whenReady().then(async () => {
       }
     }
   }
+
+  session.defaultSession.setPermissionRequestHandler(
+    (_webContents, permission, callback) => {
+      // Disable fullscreen API for things like video players
+      if (permission === "fullscreen") {
+        callback(false);
+      } else {
+        callback(true);
+      }
+    },
+  );
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
