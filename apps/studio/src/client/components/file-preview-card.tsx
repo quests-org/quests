@@ -30,7 +30,7 @@ export function FilePreviewCard({
   const isPdf = mimeType === "application/pdf";
   const isVideo = mimeType.startsWith("video/");
   const isMarkdown = mimeType === "text/markdown";
-  const isPlainText = mimeType === "text/plain";
+  const isText = filename.toLowerCase().endsWith(".txt");
 
   const handleMouseEnter = () => {
     if (isVideo && videoRef.current) {
@@ -51,7 +51,7 @@ export function FilePreviewCard({
     }
   };
 
-  if (isMarkdown || isPlainText) {
+  if (isMarkdown || isText) {
     return (
       <div className="group relative overflow-hidden rounded-lg border border-border bg-background">
         <PreviewHeader file={file} onClick={onClick} />

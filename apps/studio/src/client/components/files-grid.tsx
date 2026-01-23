@@ -47,7 +47,8 @@ export function FilesGrid({
   const richPreviewFiles = filesToShow.filter(hasRichPreview).map((file) => ({
     ...file,
     shouldSpanTwo:
-      file.mimeType === "text/markdown" || file.mimeType === "text/plain",
+      file.mimeType === "text/markdown" ||
+      file.filename.toLowerCase().endsWith(".txt"),
   }));
 
   const otherFiles = filesToShow.filter((file) => !hasRichPreview(file));
@@ -133,6 +134,6 @@ function hasRichPreview(file: ProjectFileViewerFile) {
     file.mimeType === "application/pdf" ||
     file.mimeType.startsWith("video/") ||
     file.mimeType === "text/markdown" ||
-    file.mimeType === "text/plain"
+    file.filename.toLowerCase().endsWith(".txt")
   );
 }
