@@ -40,8 +40,12 @@ export function AISetupView({ mode }: { mode: "setup" | "sign-in" }) {
   const hasProvider = (providerConfigs?.length ?? 0) > 0;
   const isReady = mode === "setup" ? hasToken || hasProvider : hasToken;
 
-  const handleGetStarted = () => {
-    void navigate({ replace: true, to: "/new-tab" });
+  const handleGetStarted = async () => {
+    await navigate({ replace: true, to: "/new-tab" });
+    if (mode === "setup") {
+      // Open the sidebar after first-time setup
+      void rpcClient.sidebar.open.call({});
+    }
   };
 
   const title = mode === "setup" ? "Sign in to Quests" : "Sign in to Quests";
