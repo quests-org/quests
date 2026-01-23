@@ -21,6 +21,14 @@ export async function hasAppModifications(
       workspaceConfig,
     });
 
+    if (
+      projectSubdomain.startsWith(
+        `${LEGACY_PROJECT_SUBDOMAIN_MODE_PREFIXES.chat}-`,
+      )
+    ) {
+      return ok(false);
+    }
+
     // Check if git repo exists
     const hasGitRepo = await git(
       GitCommands.isInsideWorkTree(),
@@ -29,13 +37,6 @@ export async function hasAppModifications(
     );
 
     if (hasGitRepo.isErr()) {
-      if (
-        projectSubdomain.startsWith(
-          `${LEGACY_PROJECT_SUBDOMAIN_MODE_PREFIXES.chat}-`,
-        )
-      ) {
-        return ok(false);
-      }
       if (await isRunnable(projectConfig.appDir)) {
         // Runnable, no git repo, assume modifications exist
         return ok(true);
