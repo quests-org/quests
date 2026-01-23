@@ -151,17 +151,14 @@ export function AssistantMessagesFooter({
       >
         <Tooltip>
           <TooltipTrigger asChild>
-            <CopyButton
-              className="rounded p-0.5 text-muted-foreground/50 transition-colors hover:bg-muted/50 hover:text-foreground disabled:opacity-50"
-              onCopy={handleCopy}
-            />
+            <CopyButton className="text-muted-foreground" onCopy={handleCopy} />
           </TooltipTrigger>
           <TooltipContent>Copy message</TooltipContent>
         </Tooltip>
         {totalDuration > 0 && (
           <Tooltip disableHoverableContent={!isDeveloperMode}>
             <TooltipTrigger asChild disabled={!isDeveloperMode}>
-              <span className="cursor-default text-xs text-muted-foreground/60">
+              <span className="cursor-default text-xs text-muted-foreground">
                 {formatDuration(totalDuration)}
               </span>
             </TooltipTrigger>
@@ -241,7 +238,7 @@ export function AssistantMessagesFooter({
         )}
         {latestCreatedAt && (
           <RelativeTime
-            className="ml-auto cursor-default text-xs text-muted-foreground/60"
+            className="ml-auto cursor-default text-xs text-muted-foreground"
             date={latestCreatedAt}
           />
         )}
