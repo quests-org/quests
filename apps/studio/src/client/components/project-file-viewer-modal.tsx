@@ -15,7 +15,6 @@ import { useAtomValue, useSetAtom } from "jotai";
 import { ChevronLeft, ChevronRight, Download, X } from "lucide-react";
 import { useCallback, useEffect } from "react";
 
-import { cn } from "../lib/utils";
 import { FileActionsMenu } from "./file-actions-menu";
 import { FileIcon } from "./file-icon";
 import { FilePreviewFallback } from "./file-preview-fallback";
@@ -40,6 +39,8 @@ export function ProjectFileViewerModal() {
     : false;
   const fileType = currentFile ? getFileType(currentFile) : null;
   const isImage = fileType === "image";
+  const isVideo = fileType === "video";
+  const isMediaFile = isImage || isVideo;
 
   const handleDownload = async () => {
     if (!currentFile?.projectSubdomain || !currentFile.filePath) {
@@ -156,7 +157,7 @@ export function ProjectFileViewerModal() {
               }
             }}
           >
-            {isImage && (
+            {isMediaFile && (
               <div className="dark absolute top-4 right-4 left-4 z-10 flex items-center justify-center gap-2 text-foreground">
                 <div className="flex items-center gap-2">
                   <FileIcon
@@ -194,7 +195,9 @@ export function ProjectFileViewerModal() {
                   {currentFile.projectSubdomain && currentFile.filePath && (
                     <FileActionsMenu
                       filePath={currentFile.filePath}
-                      onCopy={isDownloadable ? handleCopy : undefined}
+                      onCopy={
+                        isImage && isDownloadable ? handleCopy : undefined
+                      }
                       projectSubdomain={currentFile.projectSubdomain}
                       variant="ghost-overlay"
                       versionRef={currentFile.versionRef}
@@ -265,6 +268,16 @@ export function ProjectFileViewerModal() {
                     filename={currentFile.filename}
                     onClick={closeViewer}
                     showCheckerboard
+                    src={currentFile.url}
+                  />
+                ) : isVideo ? (
+                  <video
+                    autoPlay
+                    className="size-full bg-black/50 object-contain dark:bg-white/10"
+                    controls
+                    // cspell:ignore nofullscreen
+                    controlsList="nofullscreen"
+                    key={currentFile.url}
                     src={currentFile.url}
                   />
                 ) : (
