@@ -2,7 +2,7 @@ import {
   type ProjectSubdomain,
   VersionSubdomainSchema,
 } from "@quests/workspace/client";
-import { useQuery } from "@tanstack/react-query";
+import { skipToken, useQuery } from "@tanstack/react-query";
 import ColorHash from "color-hash";
 import { useMemo } from "react";
 
@@ -21,7 +21,7 @@ export function VersionOverlay({
   projectSubdomain,
   versionRef,
 }: VersionOverlayProps) {
-  const versionSubdomain = VersionSubdomainSchema.parse(
+  const versionSubdomainResult = VersionSubdomainSchema.safeParse(
     `version-${versionRef}.${projectSubdomain}`,
   );
 
@@ -32,7 +32,9 @@ export function VersionOverlay({
 
   const { data: app, isLoading } = useQuery(
     rpcClient.workspace.app.bySubdomain.queryOptions({
-      input: { subdomain: versionSubdomain },
+      input: versionSubdomainResult.success
+        ? { subdomain: versionSubdomainResult.data }
+        : skipToken,
     }),
   );
 
