@@ -1,6 +1,6 @@
 import { cn } from "@/client/lib/utils";
 import { ChevronUp } from "lucide-react";
-import { forwardRef, type ReactNode } from "react";
+import { type ReactNode } from "react";
 
 import { Button } from "./ui/button";
 
@@ -27,6 +27,26 @@ export function CollapsiblePartMainContent({
         {children}
       </div>
     </div>
+  );
+}
+
+export function CollapsiblePartTrigger({
+  children,
+  ref,
+  ...props
+}: {
+  children: ReactNode;
+  ref?: React.Ref<HTMLButtonElement>;
+}) {
+  return (
+    <Button
+      className="h-6 w-full justify-start rounded-sm px-1 py-0 hover:bg-accent/30 disabled:opacity-100"
+      ref={ref}
+      variant="ghost"
+      {...props}
+    >
+      {children}
+    </Button>
   );
 }
 
@@ -89,21 +109,3 @@ export function ToolCallItem({
     </div>
   );
 }
-
-export const CollapsiblePartTrigger = forwardRef<
-  HTMLButtonElement,
-  { children: ReactNode }
->(({ children, ...props }, ref) => {
-  return (
-    <Button
-      className="h-6 w-full justify-start rounded-sm px-1 py-0 hover:bg-accent/30 disabled:opacity-100"
-      ref={ref}
-      variant="ghost"
-      {...props}
-    >
-      {children}
-    </Button>
-  );
-});
-
-CollapsiblePartTrigger.displayName = "CollapsiblePartTrigger";

@@ -1,15 +1,17 @@
 import { cn } from "@/client/lib/utils";
-import { forwardRef } from "react";
+import { type Ref } from "react";
 
 import { Markdown } from "./markdown";
 
-export const SessionMarkdown = forwardRef<
-  HTMLDivElement,
-  {
-    className?: string;
-    markdown: string;
-  }
->(({ className, markdown }, ref) => {
+export const SessionMarkdown = ({
+  className,
+  markdown,
+  ref,
+}: {
+  className?: string;
+  markdown: string;
+  ref?: Ref<HTMLDivElement>;
+}) => {
   return (
     <div
       className={cn(
@@ -21,6 +23,6 @@ export const SessionMarkdown = forwardRef<
       <Markdown markdown={markdown} />
     </div>
   );
-});
+};
 
 SessionMarkdown.displayName = "MarkdownProse";

@@ -14,16 +14,17 @@ import {
   Terminal,
 } from "lucide-react";
 
-export const IconMap: Record<TabIconName, LucideIcon> = {
-  "credit-card": CreditCard,
-  "file-text": FileText,
-  "flask-conical": FlaskConical,
-  globe: Globe,
-  "message-circle": MessageCircle,
-  quests: QuestsLogoIcon,
-  "square-dashed": SquareDashed,
-  squircle: Squircle,
-  "table-properties": TableProperties,
-  telescope: Telescope,
-  terminal: Terminal,
-} as const;
+export const IconMap: Record<TabIconName, LucideIcon | typeof QuestsLogoIcon> =
+  {
+    "credit-card": CreditCard,
+    "file-text": FileText,
+    "flask-conical": FlaskConical,
+    globe: Globe,
+    "message-circle": MessageCircle,
+    quests: QuestsLogoIcon,
+    "square-dashed": SquareDashed,
+    squircle: Squircle,
+    "table-properties": TableProperties,
+    telescope: Telescope,
+    terminal: Terminal,
+  } as const;

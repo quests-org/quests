@@ -3,14 +3,17 @@ import * as React from "react";
 export interface QuestsLogoIconProps extends React.SVGProps<SVGSVGElement> {
   absoluteStrokeWidth?: boolean;
   color?: string;
+  ref?: React.Ref<SVGSVGElement>;
   size?: number | string;
   strokeWidth?: number | string;
 }
 
-export const QuestsLogoIcon = React.forwardRef<
-  SVGSVGElement,
-  QuestsLogoIconProps
->(({ className, size = 202, ...props }, ref) => {
+export const QuestsLogoIcon = ({
+  className,
+  ref,
+  size = 202,
+  ...props
+}: QuestsLogoIconProps) => {
   return (
     <svg
       className={className}
@@ -1114,6 +1117,6 @@ export const QuestsLogoIcon = React.forwardRef<
       </defs>
     </svg>
   );
-});
+};
 
 QuestsLogoIcon.displayName = "QuestsLogoIcon";

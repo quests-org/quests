@@ -2,13 +2,16 @@ import * as React from "react";
 
 export interface QuestsLogoSimpleIconProps
   extends React.SVGProps<SVGSVGElement> {
+  ref?: React.Ref<SVGSVGElement>;
   size?: number | string;
 }
 
-export const QuestsLogoSimpleIcon = React.forwardRef<
-  SVGSVGElement,
-  QuestsLogoSimpleIconProps
->(({ className, color = "#0CAFFD", ...props }, ref) => {
+export const QuestsLogoSimpleIcon = ({
+  className,
+  color = "#0CAFFD",
+  ref,
+  ...props
+}: QuestsLogoSimpleIconProps) => {
   return (
     <svg
       className={className}
@@ -36,6 +39,6 @@ export const QuestsLogoSimpleIcon = React.forwardRef<
       />
     </svg>
   );
-});
+};
 
 QuestsLogoSimpleIcon.displayName = "QuestsLogoSimpleIcon";
