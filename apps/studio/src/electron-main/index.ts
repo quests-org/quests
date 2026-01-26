@@ -2,7 +2,6 @@
 
 import "@/electron-main/setup-environment"; // This must be imported first
 import { startAuthCallbackServer } from "@/electron-main/auth/server";
-import { captureServerException } from "@/electron-main/lib/capture-server-exception";
 import { StudioAppUpdater } from "@/electron-main/lib/update";
 import { createApplicationMenu } from "@/electron-main/menus";
 import { getTabsManager } from "@/electron-main/tabs";
@@ -23,6 +22,7 @@ import {
 } from "electron";
 
 import { createWorkspaceActor } from "./lib/create-workspace-actor";
+import { logger } from "./lib/electron-logger";
 import { generateUserAgent } from "./lib/generate-user-agent";
 import { registerTelemetry } from "./lib/register-telemetry";
 import { runMigrations } from "./lib/run-migrations";
@@ -71,7 +71,9 @@ if (gotTheLock) {
     }
   });
 } else {
-  captureServerException(new Error("Failed to acquire single instance lock"));
+  if (is.dev) {
+    logger.info("App already running, quitting");
+  }
   app.quit();
 }
 
