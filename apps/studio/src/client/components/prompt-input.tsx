@@ -338,7 +338,12 @@ export const PromptInput = ({
   return (
     <>
       <TextareaContainer
-        className={cn("relative overflow-hidden", className)}
+        className={cn(
+          "relative overflow-hidden",
+          // Equivalent of transparent and dark:bg-input/30, but opaque
+          "bg-background dark:bg-[#212226]",
+          className,
+        )}
         ref={textareaRef}
         style={{ maxHeight: `${autoResizeMaxHeight}px` }}
       >

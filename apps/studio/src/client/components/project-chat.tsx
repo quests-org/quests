@@ -12,6 +12,7 @@ import { useStickToBottom } from "use-stick-to-bottom";
 
 import { useAppState } from "../hooks/use-app-state";
 import { useContinueSession } from "../hooks/use-continue-session";
+import { cn } from "../lib/utils";
 import { rpcClient } from "../rpc/client";
 import { ChatZeroState } from "./chat-zero-state";
 import { ProjectSessionStream } from "./project-session-stream";
@@ -19,12 +20,14 @@ import { PromptInput } from "./prompt-input";
 import { Button } from "./ui/button";
 
 export function ProjectChat({
+  isStandalone = false,
   project,
   selectedModelURI: initialSelectedModelURI,
   selectedSessionId,
   selectedVersion,
   showVersions,
 }: {
+  isStandalone?: boolean;
   project: WorkspaceAppProject;
   selectedModelURI?: AIGatewayModelURI.Type;
   selectedSessionId?: StoreId.Session;
@@ -108,9 +111,18 @@ export function ProjectChat({
   }, []);
 
   return (
-    <div className="relative flex size-full flex-col bg-background transition-all duration-300 ease-in-out">
-      <div className="flex-1 overflow-y-auto p-4" ref={scrollRef}>
-        <div className="flex flex-col gap-4" ref={contentRef}>
+    <div className="relative flex size-full flex-col">
+      <div
+        className={cn("flex-1 px-2", !isStandalone && "overflow-y-auto")}
+        ref={scrollRef}
+      >
+        <div
+          className={cn(
+            "flex flex-col gap-4",
+            isStandalone && "mx-auto w-full max-w-3xl",
+          )}
+          ref={contentRef}
+        >
           {selectedSessionId ? (
             <ProjectSessionStream
               onContinue={handleContinue}
@@ -143,7 +155,15 @@ export function ProjectChat({
         </Button>
       )}
 
-      <div className="px-2 pb-4" ref={bottomSectionRef}>
+      <div
+        className={cn(
+          "bg-background px-2 pb-4",
+          isStandalone &&
+            // Create a custom breakpoint that is max-w-3xl + px-2 (0.5rem * 2)
+            "sticky bottom-0 mx-auto w-full max-w-3xl min-[calc(48rem+1rem)]:px-0",
+        )}
+        ref={bottomSectionRef}
+      >
         <PromptInput
           atomKey={project.subdomain}
           autoFocus
