@@ -1,14 +1,8 @@
-import { AI_GATEWAY_API_PATH, type WorkspaceServerURL } from "@quests/shared";
+import { type WorkspaceServerURL } from "@quests/shared";
 
-import {
-  DEFAULT_OPENAI_MODEL,
-  OPENAI_COMPATIBLE_PATH,
-  PROVIDERS_PATH,
-} from "../constants";
 import { internalAPIKey } from "../lib/key-for-provider";
 import { type AIGatewayProviderConfig } from "../schemas/provider-config";
 import { internalURL } from "./internal-url";
-import { isOpenAICompatible } from "./providers/is-openai-compatible";
 
 export function envForProviderConfigs({
   configs,
@@ -148,25 +142,6 @@ export function envForProviderConfigs({
         });
         break;
       }
-    }
-  }
-
-  const openAICompatibleConfig = configs.find((config) =>
-    isOpenAICompatible(config.type),
-  );
-  if (openAICompatibleConfig) {
-    env.OPENAI_DEFAULT_MODEL = DEFAULT_OPENAI_MODEL;
-    const hasNonOpenAICompatibleConfig = configs.some(
-      (config) => config.type !== "openai" && isOpenAICompatible(config.type),
-    );
-    if (hasNonOpenAICompatibleConfig) {
-      env.OPENAI_API_KEY = internalAPIKey();
-      env.OPENAI_BASE_URL = [
-        workspaceServerURL,
-        AI_GATEWAY_API_PATH,
-        PROVIDERS_PATH,
-        OPENAI_COMPATIBLE_PATH,
-      ].join("");
     }
   }
 

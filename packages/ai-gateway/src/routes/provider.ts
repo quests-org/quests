@@ -2,17 +2,14 @@ import { AI_GATEWAY_API_PATH } from "@quests/shared";
 import { Hono } from "hono";
 import { proxy } from "hono/proxy";
 
-import { OPENAI_COMPATIBLE_PATH, PROVIDERS_PATH } from "../constants";
+import { PROVIDERS_PATH } from "../constants";
 import { apiURL } from "../lib/providers/api-url";
 import { setProviderAuthHeaders } from "../lib/providers/set-auth-headers";
 import { setAttributionHeaders } from "../lib/set-attribution-headers";
 import { SlashPrefixedPathSchema } from "../schemas/slash-prefixed-path";
 import { type AIGatewayEnv } from "../types";
-import { openaiCompatibleApp } from "./openai-compatible";
 
 export const providerApp = new Hono<AIGatewayEnv>();
-
-providerApp.route(OPENAI_COMPATIBLE_PATH, openaiCompatibleApp);
 
 providerApp.all("/:providerConfigId/*", async (context) => {
   const { providerConfigId } = context.req.param();

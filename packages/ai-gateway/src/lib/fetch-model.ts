@@ -4,26 +4,7 @@ import { Result } from "typescript-result";
 import { AIGatewayModelURI } from "../schemas/model-uri";
 import { type AIGatewayProviderConfig } from "../schemas/provider-config";
 import { TypedError } from "./errors";
-import { fetchModelsForProviders } from "./fetch-models";
-import { findModelByString } from "./find-model-by-string";
 import { fetchModels } from "./models";
-
-export async function fetchModelByString(
-  {
-    configs,
-    id,
-  }: {
-    configs: AIGatewayProviderConfig.Type[];
-    id: string;
-  },
-  { captureException }: { captureException: CaptureExceptionFunction },
-) {
-  const allModels = await fetchModelsForProviders(configs, {
-    captureException,
-  });
-
-  return findModelByString(id, allModels).model;
-}
 
 export async function fetchModelByURI(
   modelURI: AIGatewayModelURI.Type,
