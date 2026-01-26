@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as ToolbarRouteImport } from './routes/toolbar'
 import { Route as SidebarRouteImport } from './routes/sidebar'
 import { Route as SettingsRouteImport } from './routes/settings'
-import { Route as BrowserRouteImport } from './routes/browser'
 import { Route as AppRouteRouteImport } from './routes/_app/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SettingsIndexRouteImport } from './routes/settings/index'
@@ -57,11 +56,6 @@ const SidebarRoute = SidebarRouteImport.update({
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BrowserRoute = BrowserRouteImport.update({
-  id: '/browser',
-  path: '/browser',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppRouteRoute = AppRouteRouteImport.update({
@@ -222,7 +216,6 @@ const AppDiscoverAppsFolderNameRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/browser': typeof BrowserRoute
   '/settings': typeof SettingsRouteWithChildren
   '/sidebar': typeof SidebarRoute
   '/toolbar': typeof ToolbarRoute
@@ -255,7 +248,6 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/browser': typeof BrowserRoute
   '/sidebar': typeof SidebarRoute
   '/toolbar': typeof ToolbarRoute
   '/checkout': typeof AppCheckoutRoute
@@ -288,7 +280,6 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_app': typeof AppRouteRouteWithChildren
-  '/browser': typeof BrowserRoute
   '/settings': typeof SettingsRouteWithChildren
   '/sidebar': typeof SidebarRoute
   '/toolbar': typeof ToolbarRoute
@@ -325,7 +316,6 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/browser'
     | '/settings'
     | '/sidebar'
     | '/toolbar'
@@ -358,7 +348,6 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/browser'
     | '/sidebar'
     | '/toolbar'
     | '/checkout'
@@ -390,7 +379,6 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_app'
-    | '/browser'
     | '/settings'
     | '/sidebar'
     | '/toolbar'
@@ -427,7 +415,6 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRouteRoute: typeof AppRouteRouteWithChildren
-  BrowserRoute: typeof BrowserRoute
   SettingsRoute: typeof SettingsRouteWithChildren
   SidebarRoute: typeof SidebarRoute
   ToolbarRoute: typeof ToolbarRoute
@@ -454,13 +441,6 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/browser': {
-      id: '/browser'
-      path: '/browser'
-      fullPath: '/browser'
-      preLoaderRoute: typeof BrowserRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app': {
@@ -788,7 +768,6 @@ const SettingsRouteWithChildren = SettingsRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRouteRoute: AppRouteRouteWithChildren,
-  BrowserRoute: BrowserRoute,
   SettingsRoute: SettingsRouteWithChildren,
   SidebarRoute: SidebarRoute,
   ToolbarRoute: ToolbarRoute,

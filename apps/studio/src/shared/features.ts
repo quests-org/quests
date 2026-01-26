@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const FeatureNameSchema = z.enum(["browser"]);
+export const FeatureNameSchema = z.enum(["na"]);
 export type FeatureName = z.output<typeof FeatureNameSchema>;
 
 export const FeaturesSchema = z.record(FeatureNameSchema, z.boolean());
@@ -11,8 +11,8 @@ export const FEATURE_METADATA: Record<
   FeatureName,
   { description: string; title: string }
 > = {
-  browser: {
-    description: "Enable the browser page and sidebar item.",
-    title: "Browser",
+  na: {
+    description: "Not yet implemented",
+    title: "N/A",
   },
 };

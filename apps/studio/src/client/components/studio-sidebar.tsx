@@ -1,4 +1,3 @@
-import { featuresAtom } from "@/client/atoms/features";
 import { NavControls } from "@/client/components/nav-controls";
 import { NavPrimary } from "@/client/components/nav-primary";
 import { NavProjects } from "@/client/components/nav-projects";
@@ -17,11 +16,9 @@ import { logger } from "@/client/lib/logger";
 import { cn, isMacOS, isWindows } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useAtomValue } from "jotai";
 import {
   Bug,
   FlaskConical,
-  Globe,
   PlusIcon,
   SidebarIcon,
   Telescope,
@@ -32,8 +29,6 @@ export function StudioSidebar({
   isOpen,
   ...props
 }: React.ComponentProps<typeof Sidebar> & { isOpen: boolean }) {
-  const features = useAtomValue(featuresAtom);
-
   const { data: preferences } = useQuery(
     rpcClient.preferences.live.get.experimental_liveOptions(),
   );
@@ -64,16 +59,6 @@ export function StudioSidebar({
         title: "Evals",
         url: "/evals" as const,
       },
-      ...(features.browser
-        ? [
-            {
-              icon: Globe,
-              isActive: matches.some((match) => match.routeId === "/browser"),
-              title: "Browser",
-              url: "/browser" as const,
-            },
-          ]
-        : []),
       ...(preferences?.developerMode
         ? [
             {
@@ -88,7 +73,7 @@ export function StudioSidebar({
           ]
         : []),
     ],
-    [features.browser, preferences?.developerMode, matches],
+    [preferences?.developerMode, matches],
   );
 
   const { data: favorites } = useQuery(
