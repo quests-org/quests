@@ -14,19 +14,16 @@ export const Route = createFileRoute("/_app/discover/")({
     ],
   }),
   loader: async () => {
-    const [apps, templates] = await Promise.all([
-      rpcClient.workspace.registry.template.listApps.call(),
-      rpcClient.workspace.registry.template.listTemplates.call(),
-    ]);
+    const templates =
+      await rpcClient.workspace.registry.template.listTemplates.call();
     return {
-      apps,
       templates,
     };
   },
 });
 
 function RouteComponent() {
-  const { apps, templates } = Route.useLoaderData();
+  const { templates } = Route.useLoaderData();
 
   return (
     <div className="mx-auto w-full max-w-7xl flex-1">
@@ -37,7 +34,7 @@ function RouteComponent() {
               Discover
             </h1>
             <p className="mx-auto mt-4 max-w-lg text-base leading-7 text-muted-foreground">
-              Explore our collection of built-in templates and apps.
+              Explore our collection of built-in templates.
               <br />
               Start building in seconds.
             </p>
@@ -52,14 +49,6 @@ function RouteComponent() {
           items={templates}
           title="Templates"
           viewAllHref="/discover/templates"
-        />
-
-        <DiscoverHorizontalSection
-          category="apps"
-          description="Explore example apps"
-          items={apps}
-          title="Apps"
-          viewAllHref="/discover/apps"
         />
       </div>
     </div>

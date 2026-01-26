@@ -11,7 +11,7 @@ export function RegistryAppCard({
   folderName,
   ...props
 }: React.HTMLAttributes<HTMLDivElement> & {
-  category: "apps" | "templates";
+  category: "templates";
   folderName: string;
 }) {
   const { data: appDetails } = useQuery(

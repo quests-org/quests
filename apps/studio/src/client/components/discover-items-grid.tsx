@@ -1,7 +1,7 @@
 import { RegistryAppCard } from "@/client/components/registry-app-card";
 
 interface DiscoverItemsGridProps {
-  category: "apps" | "templates";
+  category: "templates";
   items: { folderName: string }[];
 }
 

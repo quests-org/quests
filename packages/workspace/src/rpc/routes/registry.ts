@@ -41,25 +41,6 @@ const listAll = base
     return getRegistryTemplates(context.workspaceConfig);
   });
 
-const listApps = base
-  .output(z.array(RegistryTemplateSchema))
-  .handler(async ({ context, errors }) => {
-    const directoryData = await loadDirectoryData(
-      context.workspaceConfig.registryDir,
-    );
-
-    if (directoryData.isErr()) {
-      context.workspaceConfig.captureException(directoryData.error);
-      throw toORPCError(directoryData.error, errors);
-    }
-
-    const apps = sift(
-      directoryData.value.apps.map((app) => last(app.path.split("/"))),
-    );
-
-    return getRegistryTemplatesByName(apps, context.workspaceConfig);
-  });
-
 const listTemplates = base
   .output(z.array(RegistryTemplateSchema))
   .handler(async ({ context, errors }) => {
@@ -113,7 +94,6 @@ const DirectoryAPITemplateSchema = z.object({
 });
 
 const DirectoryAPISchema = z.object({
-  apps: z.array(DirectoryAPITemplateSchema),
   templates: z.array(DirectoryAPITemplateSchema),
 });
 
@@ -178,7 +158,6 @@ export const registry = {
   template: {
     byFolderName,
     listAll,
-    listApps,
     listTemplates,
     packageJson,
     screenshot,

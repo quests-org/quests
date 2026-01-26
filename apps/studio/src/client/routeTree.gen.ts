@@ -39,9 +39,7 @@ import { Route as AppNot_authenticatedSignInRouteImport } from './routes/_app/_n
 import { Route as AppAuthenticatedSubscribeRouteImport } from './routes/_app/_authenticated/subscribe'
 import { Route as AppProjectsSubdomainIndexRouteImport } from './routes/_app/projects/$subdomain/index'
 import { Route as AppDiscoverTemplatesIndexRouteImport } from './routes/_app/discover/templates/index'
-import { Route as AppDiscoverAppsIndexRouteImport } from './routes/_app/discover/apps/index'
 import { Route as AppDiscoverTemplatesFolderNameRouteImport } from './routes/_app/discover/templates/$folderName'
-import { Route as AppDiscoverAppsFolderNameRouteImport } from './routes/_app/discover/apps/$folderName'
 
 const ToolbarRoute = ToolbarRouteImport.update({
   id: '/toolbar',
@@ -196,21 +194,10 @@ const AppDiscoverTemplatesIndexRoute =
     path: '/discover/templates/',
     getParentRoute: () => AppRouteRoute,
   } as any)
-const AppDiscoverAppsIndexRoute = AppDiscoverAppsIndexRouteImport.update({
-  id: '/discover/apps/',
-  path: '/discover/apps/',
-  getParentRoute: () => AppRouteRoute,
-} as any)
 const AppDiscoverTemplatesFolderNameRoute =
   AppDiscoverTemplatesFolderNameRouteImport.update({
     id: '/discover/templates/$folderName',
     path: '/discover/templates/$folderName',
-    getParentRoute: () => AppRouteRoute,
-  } as any)
-const AppDiscoverAppsFolderNameRoute =
-  AppDiscoverAppsFolderNameRouteImport.update({
-    id: '/discover/apps/$folderName',
-    path: '/discover/apps/$folderName',
     getParentRoute: () => AppRouteRoute,
   } as any)
 
@@ -240,9 +227,7 @@ export interface FileRoutesByFullPath {
   '/discover': typeof AppDiscoverIndexRoute
   '/evals': typeof AppEvalsIndexRoute
   '/projects': typeof AppProjectsIndexRoute
-  '/discover/apps/$folderName': typeof AppDiscoverAppsFolderNameRoute
   '/discover/templates/$folderName': typeof AppDiscoverTemplatesFolderNameRoute
-  '/discover/apps': typeof AppDiscoverAppsIndexRoute
   '/discover/templates': typeof AppDiscoverTemplatesIndexRoute
   '/projects/$subdomain': typeof AppProjectsSubdomainIndexRoute
 }
@@ -270,9 +255,7 @@ export interface FileRoutesByTo {
   '/discover': typeof AppDiscoverIndexRoute
   '/evals': typeof AppEvalsIndexRoute
   '/projects': typeof AppProjectsIndexRoute
-  '/discover/apps/$folderName': typeof AppDiscoverAppsFolderNameRoute
   '/discover/templates/$folderName': typeof AppDiscoverTemplatesFolderNameRoute
-  '/discover/apps': typeof AppDiscoverAppsIndexRoute
   '/discover/templates': typeof AppDiscoverTemplatesIndexRoute
   '/projects/$subdomain': typeof AppProjectsSubdomainIndexRoute
 }
@@ -306,9 +289,7 @@ export interface FileRoutesById {
   '/_app/discover/': typeof AppDiscoverIndexRoute
   '/_app/evals/': typeof AppEvalsIndexRoute
   '/_app/projects/': typeof AppProjectsIndexRoute
-  '/_app/discover/apps/$folderName': typeof AppDiscoverAppsFolderNameRoute
   '/_app/discover/templates/$folderName': typeof AppDiscoverTemplatesFolderNameRoute
-  '/_app/discover/apps/': typeof AppDiscoverAppsIndexRoute
   '/_app/discover/templates/': typeof AppDiscoverTemplatesIndexRoute
   '/_app/projects/$subdomain/': typeof AppProjectsSubdomainIndexRoute
 }
@@ -340,9 +321,7 @@ export interface FileRouteTypes {
     | '/discover'
     | '/evals'
     | '/projects'
-    | '/discover/apps/$folderName'
     | '/discover/templates/$folderName'
-    | '/discover/apps'
     | '/discover/templates'
     | '/projects/$subdomain'
   fileRoutesByTo: FileRoutesByTo
@@ -370,9 +349,7 @@ export interface FileRouteTypes {
     | '/discover'
     | '/evals'
     | '/projects'
-    | '/discover/apps/$folderName'
     | '/discover/templates/$folderName'
-    | '/discover/apps'
     | '/discover/templates'
     | '/projects/$subdomain'
   id:
@@ -405,9 +382,7 @@ export interface FileRouteTypes {
     | '/_app/discover/'
     | '/_app/evals/'
     | '/_app/projects/'
-    | '/_app/discover/apps/$folderName'
     | '/_app/discover/templates/$folderName'
-    | '/_app/discover/apps/'
     | '/_app/discover/templates/'
     | '/_app/projects/$subdomain/'
   fileRoutesById: FileRoutesById
@@ -632,25 +607,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDiscoverTemplatesIndexRouteImport
       parentRoute: typeof AppRouteRoute
     }
-    '/_app/discover/apps/': {
-      id: '/_app/discover/apps/'
-      path: '/discover/apps'
-      fullPath: '/discover/apps'
-      preLoaderRoute: typeof AppDiscoverAppsIndexRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
     '/_app/discover/templates/$folderName': {
       id: '/_app/discover/templates/$folderName'
       path: '/discover/templates/$folderName'
       fullPath: '/discover/templates/$folderName'
       preLoaderRoute: typeof AppDiscoverTemplatesFolderNameRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
-    '/_app/discover/apps/$folderName': {
-      id: '/_app/discover/apps/$folderName'
-      path: '/discover/apps/$folderName'
-      fullPath: '/discover/apps/$folderName'
-      preLoaderRoute: typeof AppDiscoverAppsFolderNameRouteImport
       parentRoute: typeof AppRouteRoute
     }
   }
@@ -716,9 +677,7 @@ interface AppRouteRouteChildren {
   AppDiscoverIndexRoute: typeof AppDiscoverIndexRoute
   AppEvalsIndexRoute: typeof AppEvalsIndexRoute
   AppProjectsIndexRoute: typeof AppProjectsIndexRoute
-  AppDiscoverAppsFolderNameRoute: typeof AppDiscoverAppsFolderNameRoute
   AppDiscoverTemplatesFolderNameRoute: typeof AppDiscoverTemplatesFolderNameRoute
-  AppDiscoverAppsIndexRoute: typeof AppDiscoverAppsIndexRoute
   AppDiscoverTemplatesIndexRoute: typeof AppDiscoverTemplatesIndexRoute
   AppProjectsSubdomainIndexRoute: typeof AppProjectsSubdomainIndexRoute
 }
@@ -734,9 +693,7 @@ const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppDiscoverIndexRoute: AppDiscoverIndexRoute,
   AppEvalsIndexRoute: AppEvalsIndexRoute,
   AppProjectsIndexRoute: AppProjectsIndexRoute,
-  AppDiscoverAppsFolderNameRoute: AppDiscoverAppsFolderNameRoute,
   AppDiscoverTemplatesFolderNameRoute: AppDiscoverTemplatesFolderNameRoute,
-  AppDiscoverAppsIndexRoute: AppDiscoverAppsIndexRoute,
   AppDiscoverTemplatesIndexRoute: AppDiscoverTemplatesIndexRoute,
   AppProjectsSubdomainIndexRoute: AppProjectsSubdomainIndexRoute,
 }

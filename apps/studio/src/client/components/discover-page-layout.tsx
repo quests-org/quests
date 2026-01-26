@@ -6,7 +6,7 @@ import { DiscoverItemsGrid } from "@/client/components/discover-items-grid";
 
 interface DiscoverPageLayoutProps {
   breadcrumbs?: BreadcrumbItem[];
-  category: "apps" | "templates";
+  category: "templates";
   description: string;
   items: { folderName: string }[];
   showHero?: boolean;

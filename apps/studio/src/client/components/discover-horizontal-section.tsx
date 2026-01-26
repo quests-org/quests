@@ -5,7 +5,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 interface DiscoverHorizontalSectionProps {
-  category: "apps" | "templates";
+  category: "templates";
   description: string;
   items: { folderName: string }[];
   title: string;

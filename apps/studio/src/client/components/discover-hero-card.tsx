@@ -15,29 +15,18 @@ interface DiscoverHeroCardProps {
 }
 
 export function NewTabDiscoverHeroCards() {
-  const { data: appsHeroImageDataUrl } = useQuery(
-    rpcClient.utils.imageDataURI.queryOptions({
-      input: { filePath: "apps-hero.jpg" },
-    }),
-  );
   const { data: templatesHeroImageDataUrl } = useQuery(
     rpcClient.utils.imageDataURI.queryOptions({
       input: { filePath: "templates-hero.jpg" },
     }),
   );
   return (
-    <div className="grid gap-6 md:grid-cols-3">
+    <div className="grid gap-6 md:grid-cols-2">
       <NewTabDiscoverHeroCard
         heroImageDataUrl={templatesHeroImageDataUrl}
         href="/discover/templates"
         subtitle="Next.js, Svelte, Vue, and more"
         title="Templates"
-      />
-      <NewTabDiscoverHeroCard
-        heroImageDataUrl={appsHeroImageDataUrl}
-        href="/discover/apps"
-        subtitle="Explore example apps"
-        title="Apps"
       />
       <NewTabDiscoverHeroCard
         href="/evals"
