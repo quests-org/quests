@@ -1,6 +1,9 @@
 import { pnpmVersion } from "@/electron-main/lib/pnpm";
 import { base } from "@/electron-main/rpc/base";
 import { publisher } from "@/electron-main/rpc/publisher";
+import { nativeImage } from "electron";
+import openWith from "mac-open-with";
+import os from "node:os";
 import { z } from "zod";
 
 const systemInfo = base.handler(async ({ context }) => {
@@ -33,6 +36,97 @@ const throwError = base
         ? errors.NOT_FOUND({ message: "This is a known error for testing" })
         : new Error("This is an uncaught error for testing");
     throw error;
+  });
+
+const getFileAssociations = base
+  .input(
+    z.object({
+      extensions: z.array(z.string()),
+    }),
+  )
+  .handler(async ({ input }) => {
+    const platform = os.platform();
+
+    if (platform !== "darwin") {
+      return [];
+    }
+
+    const results = await Promise.all(
+      input.extensions.map(async (ext) => {
+        try {
+          // Get apps that can open this extension using mac-open-with
+          const apps = await openWith.getAppsThatOpenExtension(ext);
+
+          if (apps.length === 0) {
+            return {
+              appIcon: null,
+              appName: null,
+              extension: ext,
+            };
+          }
+
+          // Find the default app (isDefault: true)
+          const defaultApp = apps.find((app) => app.isDefault) ?? apps[0];
+
+          if (!defaultApp) {
+            return {
+              appIcon: null,
+              appName: null,
+              extension: ext,
+            };
+          }
+
+          // Extract app name from URL (e.g., "file:///Applications/Safari.app/" -> "Safari")
+          const appUrl = defaultApp.url;
+          const appName =
+            decodeURIComponent(appUrl)
+              .split("/")
+              .pop()
+              ?.replace(/\.app\/?$/, "") ?? null;
+
+          // The mac-open-with package already provides the icon as a base64 data URL
+          const appIcon = defaultApp.icon || null;
+
+          return {
+            appIcon,
+            appName,
+            extension: ext,
+          };
+        } catch {
+          return {
+            appIcon: null,
+            appName: null,
+            extension: ext,
+          };
+        }
+      }),
+    );
+
+    return results;
+  });
+
+const getSystemAppIcon = base
+  .input(
+    z.object({
+      appPath: z.string(),
+    }),
+  )
+  .handler(async ({ input }) => {
+    const platform = os.platform();
+
+    if (platform !== "darwin") {
+      return null;
+    }
+
+    try {
+      const icon = await nativeImage.createThumbnailFromPath(input.appPath, {
+        height: 64,
+        width: 64,
+      });
+      return icon.toDataURL();
+    } catch {
+      return null;
+    }
   });
 
 const live = {
@@ -85,6 +179,8 @@ const live = {
 };
 
 export const debug = {
+  getFileAssociations,
+  getSystemAppIcon,
   live,
   systemInfo,
   throwError,

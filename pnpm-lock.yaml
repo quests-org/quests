@@ -237,6 +237,9 @@ importers:
       hono:
         specifier: 'catalog:'
         version: 4.8.5
+      mac-open-with:
+        specifier: ^1.2.3
+        version: 1.2.3
       ms:
         specifier: ^2.1.3
         version: 2.1.3
@@ -4883,6 +4886,9 @@ packages:
     resolution: {integrity: sha512-USiB9816d2JzKv0LiSbreRfTg5lDk3lWh0vlx/gugCO92ZIJkHVH0UM18EHvKeadErP6Xn4yiTphWzYfbA2Ong==}
     engines: {node: '>=18'}
 
+  electron-is-dev@1.2.0:
+    resolution: {integrity: sha512-R1oD5gMBPS7PVU8gJwH6CtT0e6VSoD0+SzSnYpNm+dBkcijgA+K7VAMHDfnRq/lkKPZArpzplTW6jfiMYosdzw==}
+
   electron-is-dev@3.0.1:
     resolution: {integrity: sha512-8TjjAh8Ec51hUi3o4TaU0mD3GMTOESi866oRNavj9A3IQJ7pmv+MJVmdZBFGw4GFT36X7bkqnuDNYvkQgvyI8Q==}
     engines: {node: '>=18'}
@@ -4906,6 +4912,9 @@ packages:
 
   electron-updater@6.6.8:
     resolution: {integrity: sha512-n8FeXRc7Q7BBweS85+H5h4/uzBz8hSSOYhDnwOumpbIhYdPk9EEzWLKDyoArMyf4RebywqWBUE96QDn9TETRhQ==}
+
+  electron-util@0.12.3:
+    resolution: {integrity: sha512-6Vq8UzUFcwghVpXazIY4cD5TkTvqXOTvJpzsoeiQY051Twdwu6ofHHP/shEFkpxf8X81M6F8/cdeoT+2XYpTBg==}
 
   electron-vite@5.0.0:
     resolution: {integrity: sha512-OHp/vjdlubNlhNkPkL/+3JD34ii5ov7M0GpuXEVdQeqdQ3ulvVR7Dg/rNBLfS5XPIFwgoBLDf9sjjrL+CuDyRQ==}
@@ -5286,6 +5295,10 @@ packages:
   eventsource-parser@3.0.6:
     resolution: {integrity: sha512-Vo1ab+QXPzZ4tCa8SwIHJFaSzy4R6SHf7BY79rFBDf0idraZWAkYrDjDj8uWaSm3S2TK+hJ7/t1CEmZ7jXw+pg==}
     engines: {node: '>=18.0.0'}
+
+  execa@2.1.0:
+    resolution: {integrity: sha512-Y/URAVapfbYy2Xp/gb6A0E7iR8xeqOCXsuuaoMn7A5PzrXUK84E1gyiEfq0wQd/GHA6GsoHWwhNq8anb0mleIw==}
+    engines: {node: ^8.12.0 || >=9.7.0}
 
   execa@5.1.1:
     resolution: {integrity: sha512-8uSpZZocAZRBAPIEINJj3Lo9HyGitllczc27Eh5YYojjMFMn8yHMDMaUHE2Jqfq05D/wucwI4JGURyXt1vchyg==}
@@ -6405,6 +6418,14 @@ packages:
     peerDependencies:
       react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
+  mac-open-with@1.2.3:
+    resolution: {integrity: sha512-1zz1P4k3dh/8rEeokA3XsZybvVBeZ8cEavDxI66HS+ROFy8s2MQiWK5bP/8ctJ5Av9FTOqAjr97384sGZin8ZA==}
+    engines: {node: '>=8'}
+
+  macos-version@5.2.1:
+    resolution: {integrity: sha512-OHJU8nTNxHYL1FQhD+nZawWgXKXAqDGr4kluLtaqKO4au3cR41y1mKuVShOU5U4rOYiuPanljq6oFGmV2B9DFA==}
+    engines: {node: '>=6'}
+
   magic-string@0.30.21:
     resolution: {integrity: sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ==}
 
@@ -6810,6 +6831,10 @@ packages:
     resolution: {integrity: sha512-kOCT/1MCPAxY5iUV3wytNFUMUolzuwd/VF/1KCx7kf6CutrOsTie+84zTGTpgQycjvfLdBBdvBvFLqFD2c0wkQ==}
     engines: {node: '>=18'}
 
+  new-github-issue-url@0.2.1:
+    resolution: {integrity: sha512-md4cGoxuT4T4d/HDOXbrUHkTKrp/vp+m3aOA7XXVYwNsUNMK49g3SQicTSeV5GIz/5QVGAeYRAOlyp9OvlgsYA==}
+    engines: {node: '>=10'}
+
   node-abi@3.85.0:
     resolution: {integrity: sha512-zsFhmbkAzwhTft6nd3VxcG0cvJsT70rL+BIGHWVq5fi6MwGrHwzqKaxXE+Hl2GmnGItnDKPPkO5/LQqjVkIdFg==}
     engines: {node: '>=10'}
@@ -6883,6 +6908,10 @@ packages:
   normalize-url@6.1.0:
     resolution: {integrity: sha512-DlL+XwOy3NxAQ8xuC0okPgK46iuVNAK01YN7RueYBqqFeGsBjV9XmCAzAdgt+667bCl5kPh9EqKKDwnaPG1I7A==}
     engines: {node: '>=10'}
+
+  npm-run-path@3.1.0:
+    resolution: {integrity: sha512-Dbl4A/VfiVGLgQv29URL9xshU8XDY1GeLy+fsaZ1AA8JDSfjvr5P5+pzRbWqRSBxk6/DW7MIh8lTM/PaGnP2kg==}
+    engines: {node: '>=8'}
 
   npm-run-path@4.0.1:
     resolution: {integrity: sha512-S48WzZW777zhNIrn7gxOlISNAqi9ZC/uQFnRdbeIHhZhCA6UqpkOT8T1G7BvfdgP4Er8gF4sUbaS0i7QvIfCWw==}
@@ -6973,6 +7002,10 @@ packages:
 
   p-cancelable@2.1.1:
     resolution: {integrity: sha512-BZOr3nRQHOntUjTrH8+Lh54smKHoHyur8We1V8DSMVrl5A2malOOwuJRnKRDjSnkoeBh4at6BwEnb5I7Jl31wg==}
+    engines: {node: '>=8'}
+
+  p-finally@2.0.1:
+    resolution: {integrity: sha512-vpm09aKwq6H9phqRQzecoDpD8TmVyGw70qmWlyq5onxY7tqyTTFVvxMykxQSQKILBSFlbXpypIw2T1Ml7+DDtw==}
     engines: {node: '>=8'}
 
   p-limit@2.3.0:
@@ -11902,14 +11935,14 @@ snapshots:
       msw: 2.7.5(@types/node@22.19.2)(typescript@5.9.3)
       vite: 7.2.7(@types/node@22.19.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.39.0)(tsx@4.20.3)(yaml@2.8.1)
 
-  '@vitest/mocker@3.2.4(msw@2.7.5(@types/node@25.0.3)(typescript@5.9.2))(vite@7.2.7(@types/node@22.19.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.39.0)(tsx@4.20.3)(yaml@2.8.1))':
+  '@vitest/mocker@3.2.4(msw@2.7.5(@types/node@25.0.3)(typescript@5.9.2))(vite@7.2.7(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.39.0)(tsx@4.20.3)(yaml@2.8.1))':
     dependencies:
       '@vitest/spy': 3.2.4
       estree-walker: 3.0.3
       magic-string: 0.30.21
     optionalDependencies:
       msw: 2.7.5(@types/node@25.0.3)(typescript@5.9.2)
-      vite: 7.2.7(@types/node@22.19.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.39.0)(tsx@4.20.3)(yaml@2.8.1)
+      vite: 7.2.7(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.39.0)(tsx@4.20.3)(yaml@2.8.1)
     optional: true
 
   '@vitest/pretty-format@3.2.4':
@@ -13197,6 +13230,8 @@ snapshots:
       pupa: 3.3.0
       unused-filename: 4.0.1
 
+  electron-is-dev@1.2.0: {}
+
   electron-is-dev@3.0.1: {}
 
   electron-log@5.4.1: {}
@@ -13246,6 +13281,11 @@ snapshots:
       tiny-typed-emitter: 2.1.0
     transitivePeerDependencies:
       - supports-color
+
+  electron-util@0.12.3:
+    dependencies:
+      electron-is-dev: 1.2.0
+      new-github-issue-url: 0.2.1
 
   electron-vite@5.0.0(@swc/core@1.11.24)(vite@7.2.7(@types/node@22.19.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.39.0)(tsx@4.20.3)(yaml@2.8.1)):
     dependencies:
@@ -13828,6 +13868,18 @@ snapshots:
   esutils@2.0.3: {}
 
   eventsource-parser@3.0.6: {}
+
+  execa@2.1.0:
+    dependencies:
+      cross-spawn: 7.0.6
+      get-stream: 5.2.0
+      is-stream: 2.0.1
+      merge-stream: 2.0.0
+      npm-run-path: 3.1.0
+      onetime: 5.1.2
+      p-finally: 2.0.1
+      signal-exit: 3.0.7
+      strip-final-newline: 2.0.0
 
   execa@5.1.1:
     dependencies:
@@ -15016,6 +15068,16 @@ snapshots:
     dependencies:
       react: 19.2.1
 
+  mac-open-with@1.2.3:
+    dependencies:
+      electron-util: 0.12.3
+      execa: 2.1.0
+      macos-version: 5.2.1
+
+  macos-version@5.2.1:
+    dependencies:
+      semver: 5.7.2
+
   magic-string@0.30.21:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.5
@@ -15751,6 +15813,8 @@ snapshots:
     optionalDependencies:
       '@rollup/rollup-linux-x64-gnu': 4.53.3
 
+  new-github-issue-url@0.2.1: {}
+
   node-abi@3.85.0:
     dependencies:
       semver: 7.7.3
@@ -15830,6 +15894,10 @@ snapshots:
   normalize-path@3.0.0: {}
 
   normalize-url@6.1.0: {}
+
+  npm-run-path@3.1.0:
+    dependencies:
+      path-key: 3.1.1
 
   npm-run-path@4.0.1:
     dependencies:
@@ -15971,6 +16039,8 @@ snapshots:
       '@oxc-resolver/binding-win32-x64-msvc': 11.16.0
 
   p-cancelable@2.1.1: {}
+
+  p-finally@2.0.1: {}
 
   p-limit@2.3.0:
     dependencies:
@@ -17873,7 +17943,7 @@ snapshots:
     dependencies:
       '@types/chai': 5.2.2
       '@vitest/expect': 3.2.4
-      '@vitest/mocker': 3.2.4(msw@2.7.5(@types/node@25.0.3)(typescript@5.9.2))(vite@7.2.7(@types/node@22.19.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.39.0)(tsx@4.20.3)(yaml@2.8.1))
+      '@vitest/mocker': 3.2.4(msw@2.7.5(@types/node@25.0.3)(typescript@5.9.2))(vite@7.2.7(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.39.0)(tsx@4.20.3)(yaml@2.8.1))
       '@vitest/pretty-format': 3.2.4
       '@vitest/runner': 3.2.4
       '@vitest/snapshot': 3.2.4

@@ -82,6 +82,7 @@
     "electron-updater": "^6.6.8",
     "fix-path": "^5.0.0",
     "hono": "catalog:",
+    "mac-open-with": "^1.2.3",
     "ms": "^2.1.3",
     "pnpm": "^10.26.2",
     "posthog-node": "^5.11.2",

@@ -32,6 +32,7 @@ import { Route as AppEvalsIndexRouteImport } from './routes/_app/evals/index'
 import { Route as AppDiscoverIndexRouteImport } from './routes/_app/discover/index'
 import { Route as AppDebugIndexRouteImport } from './routes/_app/debug/index'
 import { Route as AppDebugSessionStreamRouteImport } from './routes/_app/debug/session-stream'
+import { Route as AppDebugFileAssociationsRouteImport } from './routes/_app/debug/file-associations'
 import { Route as AppDebugErrorsRouteImport } from './routes/_app/debug/errors'
 import { Route as AppDebugComponentsRouteImport } from './routes/_app/debug/components'
 import { Route as AppDebugColorsRouteImport } from './routes/_app/debug/colors'
@@ -157,6 +158,12 @@ const AppDebugSessionStreamRoute = AppDebugSessionStreamRouteImport.update({
   path: '/session-stream',
   getParentRoute: () => AppDebugRouteRoute,
 } as any)
+const AppDebugFileAssociationsRoute =
+  AppDebugFileAssociationsRouteImport.update({
+    id: '/file-associations',
+    path: '/file-associations',
+    getParentRoute: () => AppDebugRouteRoute,
+  } as any)
 const AppDebugErrorsRoute = AppDebugErrorsRouteImport.update({
   id: '/errors',
   path: '/errors',
@@ -242,6 +249,7 @@ export interface FileRoutesByFullPath {
   '/debug/colors': typeof AppDebugColorsRoute
   '/debug/components': typeof AppDebugComponentsRoute
   '/debug/errors': typeof AppDebugErrorsRoute
+  '/debug/file-associations': typeof AppDebugFileAssociationsRoute
   '/debug/session-stream': typeof AppDebugSessionStreamRoute
   '/debug/': typeof AppDebugIndexRoute
   '/discover': typeof AppDiscoverIndexRoute
@@ -273,6 +281,7 @@ export interface FileRoutesByTo {
   '/debug/colors': typeof AppDebugColorsRoute
   '/debug/components': typeof AppDebugComponentsRoute
   '/debug/errors': typeof AppDebugErrorsRoute
+  '/debug/file-associations': typeof AppDebugFileAssociationsRoute
   '/debug/session-stream': typeof AppDebugSessionStreamRoute
   '/debug': typeof AppDebugIndexRoute
   '/discover': typeof AppDiscoverIndexRoute
@@ -310,6 +319,7 @@ export interface FileRoutesById {
   '/_app/debug/colors': typeof AppDebugColorsRoute
   '/_app/debug/components': typeof AppDebugComponentsRoute
   '/_app/debug/errors': typeof AppDebugErrorsRoute
+  '/_app/debug/file-associations': typeof AppDebugFileAssociationsRoute
   '/_app/debug/session-stream': typeof AppDebugSessionStreamRoute
   '/_app/debug/': typeof AppDebugIndexRoute
   '/_app/discover/': typeof AppDiscoverIndexRoute
@@ -345,6 +355,7 @@ export interface FileRouteTypes {
     | '/debug/colors'
     | '/debug/components'
     | '/debug/errors'
+    | '/debug/file-associations'
     | '/debug/session-stream'
     | '/debug/'
     | '/discover'
@@ -376,6 +387,7 @@ export interface FileRouteTypes {
     | '/debug/colors'
     | '/debug/components'
     | '/debug/errors'
+    | '/debug/file-associations'
     | '/debug/session-stream'
     | '/debug'
     | '/discover'
@@ -412,6 +424,7 @@ export interface FileRouteTypes {
     | '/_app/debug/colors'
     | '/_app/debug/components'
     | '/_app/debug/errors'
+    | '/_app/debug/file-associations'
     | '/_app/debug/session-stream'
     | '/_app/debug/'
     | '/_app/discover/'
@@ -596,6 +609,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDebugSessionStreamRouteImport
       parentRoute: typeof AppDebugRouteRoute
     }
+    '/_app/debug/file-associations': {
+      id: '/_app/debug/file-associations'
+      path: '/file-associations'
+      fullPath: '/debug/file-associations'
+      preLoaderRoute: typeof AppDebugFileAssociationsRouteImport
+      parentRoute: typeof AppDebugRouteRoute
+    }
     '/_app/debug/errors': {
       id: '/_app/debug/errors'
       path: '/errors'
@@ -709,6 +729,7 @@ interface AppDebugRouteRouteChildren {
   AppDebugColorsRoute: typeof AppDebugColorsRoute
   AppDebugComponentsRoute: typeof AppDebugComponentsRoute
   AppDebugErrorsRoute: typeof AppDebugErrorsRoute
+  AppDebugFileAssociationsRoute: typeof AppDebugFileAssociationsRoute
   AppDebugSessionStreamRoute: typeof AppDebugSessionStreamRoute
   AppDebugIndexRoute: typeof AppDebugIndexRoute
 }
@@ -717,6 +738,7 @@ const AppDebugRouteRouteChildren: AppDebugRouteRouteChildren = {
   AppDebugColorsRoute: AppDebugColorsRoute,
   AppDebugComponentsRoute: AppDebugComponentsRoute,
   AppDebugErrorsRoute: AppDebugErrorsRoute,
+  AppDebugFileAssociationsRoute: AppDebugFileAssociationsRoute,
   AppDebugSessionStreamRoute: AppDebugSessionStreamRoute,
   AppDebugIndexRoute: AppDebugIndexRoute,
 }

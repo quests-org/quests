@@ -62,6 +62,15 @@ function RouteComponent() {
             >
               Errors
             </InternalLink>
+            <InternalLink
+              activeProps={{
+                className: linkActiveClasses,
+              }}
+              className={linkBaseClasses}
+              to="/debug/file-associations"
+            >
+              File Associations
+            </InternalLink>
           </div>
           <ThemeToggle />
         </nav>
