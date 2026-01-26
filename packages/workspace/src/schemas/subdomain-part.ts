@@ -7,6 +7,8 @@ export const SubdomainPartSchema = z
 
 export type SubdomainPart = z.output<typeof SubdomainPartSchema>;
 
+const SUBDOMAIN_REGEX = /^[a-z0-9-]+$/;
+
 export function validateSubdomainPart(
   subdomainPart: string,
   ctx: z.core.$RefinementCtx,
@@ -29,8 +31,7 @@ export function validateSubdomainPart(
     });
   }
 
-  const subdomainRegex = /^[a-z0-9-]+$/;
-  if (!subdomainRegex.test(subdomainPart)) {
+  if (!SUBDOMAIN_REGEX.test(subdomainPart)) {
     ctx.addIssue({
       code: "custom",
       fatal: true,
