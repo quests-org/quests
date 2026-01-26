@@ -6,6 +6,7 @@ import {
   type StoreId,
   type WorkspaceAppProject,
 } from "@quests/workspace/client";
+import { useNavigate } from "@tanstack/react-router";
 import { AlertTriangle } from "lucide-react";
 import { useCallback, useMemo } from "react";
 
@@ -50,6 +51,7 @@ export function SessionStream({
   project,
   selectedVersion,
 }: SessionEventListProps) {
+  const navigate = useNavigate();
   const gitCommitParts = useMemo(() => {
     return messages.flatMap((message) =>
       message.parts.filter((part) => part.type === "data-gitCommit"),
@@ -133,16 +135,29 @@ export function SessionStream({
       if (part.type === "data-gitCommit") {
         const lastGitCommitPart = gitCommitParts.at(-1);
         const isLastVersion = lastGitCommitPart?.data.ref === part.data.ref;
+        const isSelected =
+          selectedVersion === part.data.ref ||
+          (isLastVersion && !selectedVersion);
+        const shouldSetVersion = !isSelected && !isLastVersion;
+
         return (
           <VersionAndFilesCard
             assetBaseUrl={project.urls.assetBase}
             className="mt-2"
             isLastGitCommit={isLastVersion}
-            isSelected={
-              selectedVersion === part.data.ref ||
-              (isLastVersion && !selectedVersion)
-            }
+            isSelected={isSelected}
             key={part.metadata.id}
+            onVersionClick={() => {
+              void navigate({
+                from: "/projects/$subdomain",
+                params: { subdomain: project.subdomain },
+                replace: true,
+                search: (prev) => ({
+                  ...prev,
+                  selectedVersion: shouldSetVersion ? part.data.ref : undefined,
+                }),
+              });
+            }}
             projectSubdomain={project.subdomain}
             restoredFromRef={part.data.restoredFromRef}
             versionRef={part.data.ref}
@@ -213,6 +228,7 @@ export function SessionStream({
       selectedVersion,
       isAgentRunning,
       lastPartId,
+      navigate,
     ],
   );
 

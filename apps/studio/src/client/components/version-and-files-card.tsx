@@ -22,6 +22,7 @@ interface VersionCardProps {
   className?: string;
   isLastGitCommit?: boolean;
   isSelected?: boolean;
+  onVersionClick?: () => void;
   projectSubdomain: ProjectSubdomain;
   restoredFromRef?: string;
   versionRef: string;
@@ -32,6 +33,7 @@ export function VersionAndFilesCard({
   className,
   isLastGitCommit = false,
   isSelected = false,
+  onVersionClick,
   projectSubdomain,
   restoredFromRef,
   versionRef,
@@ -107,14 +109,17 @@ export function VersionAndFilesCard({
   return (
     <div className={cn("flex flex-col gap-2", className)}>
       {hasFilesInSrc && (
-        <div
+        <button
           className={cn(
             "flex flex-col gap-6 overflow-hidden rounded-lg border bg-card py-0 text-card-foreground shadow-sm",
-            "relative p-3 transition-colors",
+            "relative p-3 text-left transition-colors",
             isSelected
               ? "border-secondary-foreground hover:bg-muted/30"
               : "hover:bg-muted/50",
           )}
+          disabled={!onVersionClick}
+          onClick={onVersionClick}
+          type="button"
         >
           <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
@@ -144,7 +149,7 @@ export function VersionAndFilesCard({
               />
             )}
           </div>
-        </div>
+        </button>
       )}
 
       {hasFilesOutsideSrc && <FilesGrid files={fileItems} />}
