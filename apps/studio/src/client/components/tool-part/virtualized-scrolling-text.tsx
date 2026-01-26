@@ -20,7 +20,7 @@ const viewportStyles = tv({
       "pointer-events-none absolute top-0 right-0 left-0 z-10 h-4 bg-linear-to-b from-background to-transparent",
     scroll: "",
     triggerButton:
-      "group flex cursor-pointer items-center justify-center py-0.5 text-xs text-muted-foreground transition-colors hover:text-foreground",
+      "flex cursor-pointer items-center justify-center py-0.5 text-xs text-muted-foreground transition-colors hover:text-foreground",
   },
   variants: {
     mode: {
@@ -179,15 +179,13 @@ export function VirtualizedScrollingText({
 
   if (!needsCollapsible) {
     return (
-      <div>
-        <div className={container()}>
-          <div
-            className={scroll({ mode: "static" })}
-            ref={scrollContainerRef}
-            style={{ overflowY: "hidden" }}
-          >
-            {contentInner}
-          </div>
+      <div className={container()}>
+        <div
+          className={scroll({ mode: "static" })}
+          ref={scrollContainerRef}
+          style={{ overflowY: "hidden" }}
+        >
+          {contentInner}
         </div>
       </div>
     );
@@ -196,7 +194,7 @@ export function VirtualizedScrollingText({
   return (
     <Collapsible onOpenChange={setIsExpanded} open={isExpanded}>
       {isExpanded ? (
-        <div>
+        <>
           <div className={container()}>
             <div
               className={scroll({ mode: "expanded" })}
@@ -205,37 +203,35 @@ export function VirtualizedScrollingText({
               {contentInner}
             </div>
           </div>
-        </div>
+          <CollapsibleContent>
+            <div
+              className={triggerButton()}
+              onClick={() => {
+                setIsExpanded(false);
+              }}
+            >
+              <ChevronUp className="size-3" />
+            </div>
+          </CollapsibleContent>
+        </>
       ) : (
-        <CollapsibleTrigger asChild>
-          <div className="cursor-pointer">
-            <div className={container()}>
-              <div
-                className={scroll({ mode: "collapsed" })}
-                ref={scrollContainerRef}
-              >
-                {contentInner}
-              </div>
-              <div className={fadeBottomLarge()} />
+        <>
+          <div className={container()}>
+            <div
+              className={scroll({ mode: "collapsed" })}
+              ref={scrollContainerRef}
+            >
+              {contentInner}
             </div>
-            <div className={triggerButton()}>
-              <ChevronDown className="size-3 transition-colors group-hover:text-foreground" />
-            </div>
+            <div className={fadeBottomLarge()} />
           </div>
-        </CollapsibleTrigger>
+          <CollapsibleTrigger asChild>
+            <div className={triggerButton()}>
+              <ChevronDown className="size-3" />
+            </div>
+          </CollapsibleTrigger>
+        </>
       )}
-
-      <CollapsibleContent>
-        <div
-          className={triggerButton()}
-          onClick={() => {
-            setIsExpanded(false);
-          }}
-          title="Click to collapse"
-        >
-          <ChevronUp className="size-3 transition-colors group-hover:text-foreground" />
-        </div>
-      </CollapsibleContent>
     </Collapsible>
   );
 }
