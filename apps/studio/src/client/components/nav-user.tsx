@@ -18,7 +18,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  useSidebar,
 } from "@/client/components/ui/sidebar";
 import { useTabActions } from "@/client/hooks/use-tab-actions";
 import { captureClientEvent } from "@/client/lib/capture-client-event";
@@ -33,7 +32,6 @@ import { useLiveSubscriptionStatus } from "../hooks/use-live-subscription-status
 import { useLiveUser } from "../hooks/use-live-user";
 
 export function NavUser() {
-  const { isMobile } = useSidebar();
   const { addTab } = useTabActions();
   const { data: user, refetch: refetchUser } = useLiveUser();
   const { data: subscription, refetch: refetchSubscription } =
@@ -122,7 +120,7 @@ export function NavUser() {
           <DropdownMenuContent
             align="end"
             className="w-58 rounded-lg"
-            side={isMobile ? "bottom" : "top"}
+            side="top"
             sideOffset={4}
           >
             <DropdownMenuLabel className="p-0 font-normal">
