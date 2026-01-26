@@ -1,3 +1,9 @@
+---
+name: pre-push-review
+description: Pre-Push Review
+disable-model-invocation: true
+---
+
 # Pre-Push Review
 
 Review all changes that have been committed but not yet pushed from the current branch.

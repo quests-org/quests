@@ -1,3 +1,9 @@
+---
+name: changelog
+description: Generate changelog from git commits
+disable-model-invocation: true
+---
+
 ## Approach
 
 1. Use `git` to look for the most recent tagged non-beta version.
