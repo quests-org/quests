@@ -1,7 +1,7 @@
 import { type WorkspaceApp } from "@quests/workspace/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { atom, useAtom } from "jotai";
-import React, { useCallback, useMemo, useRef, useState } from "react";
+import React, { Activity, useCallback, useMemo, useRef, useState } from "react";
 
 import { useReload } from "../hooks/use-reload";
 import { useShimIFrame } from "../hooks/use-shim-iframe";
@@ -89,7 +89,7 @@ export function AppView({
           }}
         />
 
-        {isConsoleOpen && (
+        <Activity mode={isConsoleOpen ? "visible" : "hidden"}>
           <div className="h-66 shrink-0 border-t">
             <ConsoleWithLogs
               app={app}
@@ -99,7 +99,7 @@ export function AppView({
               }}
             />
           </div>
-        )}
+        </Activity>
       </div>
     </div>
   );

@@ -20,7 +20,7 @@ import {
 import { useNavigate } from "@tanstack/react-router";
 import { useAtomValue, useSetAtom } from "jotai";
 import { X } from "lucide-react";
-import { useCallback, useEffect, useRef } from "react";
+import { Activity, useCallback, useEffect, useRef } from "react";
 import { usePanelRef } from "react-resizable-panels";
 
 export function ProjectView({
@@ -129,7 +129,7 @@ export function ProjectView({
               }}
               panelRef={panelRef}
             >
-              {showVersions ? (
+              {showVersions && (
                 <div className="flex h-full flex-col overflow-hidden bg-background">
                   <div className="flex items-center justify-between border-b p-2">
                     <h2 className="px-2 font-semibold">Versions</h2>
@@ -148,9 +148,10 @@ export function ProjectView({
                     />
                   </div>
                 </div>
-              ) : (
-                <ProjectChat {...sidebarProps} />
               )}
+              <Activity mode={showVersions ? "hidden" : "visible"}>
+                <ProjectChat {...sidebarProps} />
+              </Activity>
             </ResizablePanel>
 
             <ResizableHandle className="bg-transparent transition-all duration-200 focus-visible:ring-0 focus-visible:ring-offset-0 data-[separator='active']:bg-primary/50 data-[separator='hover']:scale-x-[3] data-[separator='hover']:bg-muted-foreground" />
