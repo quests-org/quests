@@ -20,14 +20,14 @@ import { PromptInput } from "./prompt-input";
 import { Button } from "./ui/button";
 
 export function ProjectChat({
-  isStandalone = false,
+  isChatOnly = false,
   project,
   selectedModelURI: initialSelectedModelURI,
   selectedSessionId,
   selectedVersion,
   showVersions,
 }: {
-  isStandalone?: boolean;
+  isChatOnly?: boolean;
   project: WorkspaceAppProject;
   selectedModelURI?: AIGatewayModelURI.Type;
   selectedSessionId?: StoreId.Session;
@@ -111,35 +111,38 @@ export function ProjectChat({
   }, []);
 
   return (
-    <div className="relative flex size-full flex-col">
+    <div
+      className={cn(
+        "relative flex flex-col overflow-y-auto",
+        isChatOnly ? "min-h-0 flex-1" : "h-full",
+      )}
+      ref={scrollRef}
+    >
       <div
-        className={cn("flex-1 px-2", !isStandalone && "overflow-y-auto")}
-        ref={scrollRef}
+        className={cn(
+          "flex w-full flex-col gap-4 px-4 py-4",
+          isChatOnly && "mx-auto max-w-3xl",
+        )}
+        ref={contentRef}
       >
-        <div
-          className={cn(
-            "flex flex-col gap-4",
-            isStandalone && "mx-auto w-full max-w-3xl",
-          )}
-          ref={contentRef}
-        >
-          {selectedSessionId ? (
-            <ProjectSessionStream
-              onContinue={handleContinue}
-              onModelChange={setSelectedModelURI}
-              onRetry={handleRetry}
-              project={project}
-              selectedVersion={selectedVersion}
-              sessionId={selectedSessionId}
-            />
-          ) : (
-            <ChatZeroState
-              project={project}
-              selectedSessionId={selectedSessionId}
-            />
-          )}
-        </div>
+        {selectedSessionId ? (
+          <ProjectSessionStream
+            onContinue={handleContinue}
+            onModelChange={setSelectedModelURI}
+            onRetry={handleRetry}
+            project={project}
+            selectedVersion={selectedVersion}
+            sessionId={selectedSessionId}
+          />
+        ) : (
+          <ChatZeroState
+            project={project}
+            selectedSessionId={selectedSessionId}
+          />
+        )}
       </div>
+
+      <div className="flex-1" />
 
       {!isNearBottom && (
         <Button
@@ -156,58 +159,57 @@ export function ProjectChat({
       )}
 
       <div
-        className={cn(
-          "bg-background px-2 pb-4",
-          isStandalone &&
-            // Create a custom breakpoint that is max-w-3xl + px-2 (0.5rem * 2)
-            "sticky bottom-0 mx-auto w-full max-w-3xl min-[calc(48rem+1rem)]:px-0",
-        )}
+        className="sticky bottom-0 flex w-full bg-background"
         ref={bottomSectionRef}
       >
-        <PromptInput
-          atomKey={project.subdomain}
-          autoFocus
-          isLoading={createMessage.isPending}
-          isStoppable={isAgentAlive}
-          isSubmittable={!isAgentAlive}
-          modelURI={selectedModelURI}
-          onModelChange={setSelectedModelURI}
-          onStop={() => {
-            stopSessions.mutate({ subdomain: project.subdomain });
-          }}
-          onSubmit={({ files, modelURI, prompt }) => {
-            createMessage.mutate(
-              {
-                files,
-                modelURI,
-                prompt,
-                sessionId: selectedSessionId,
-                subdomain: project.subdomain,
-              },
-              {
-                onSuccess: ({ sessionId }) => {
-                  void scrollToBottom();
-                  if (selectedVersion || showVersions) {
-                    void navigate({
-                      params: {
-                        subdomain: project.subdomain,
-                      },
-                      replace: true,
-                      search: (prev) => ({
-                        ...prev,
-                        selectedSessionId: sessionId,
-                        selectedVersion: undefined,
-                        showVersions: undefined,
-                      }),
-                      to: "/projects/$subdomain",
-                    });
-                  }
+        <div
+          className={cn("w-full px-3 pb-4", isChatOnly && "mx-auto max-w-3xl")}
+        >
+          <PromptInput
+            atomKey={project.subdomain}
+            autoFocus
+            isLoading={createMessage.isPending}
+            isStoppable={isAgentAlive}
+            isSubmittable={!isAgentAlive}
+            modelURI={selectedModelURI}
+            onModelChange={setSelectedModelURI}
+            onStop={() => {
+              stopSessions.mutate({ subdomain: project.subdomain });
+            }}
+            onSubmit={({ files, modelURI, prompt }) => {
+              createMessage.mutate(
+                {
+                  files,
+                  modelURI,
+                  prompt,
+                  sessionId: selectedSessionId,
+                  subdomain: project.subdomain,
                 },
-              },
-            );
-          }}
-          placeholder="Type, paste, or drop some files here…"
-        />
+                {
+                  onSuccess: ({ sessionId }) => {
+                    void scrollToBottom();
+                    if (selectedVersion || showVersions) {
+                      void navigate({
+                        params: {
+                          subdomain: project.subdomain,
+                        },
+                        replace: true,
+                        search: (prev) => ({
+                          ...prev,
+                          selectedSessionId: sessionId,
+                          selectedVersion: undefined,
+                          showVersions: undefined,
+                        }),
+                        to: "/projects/$subdomain",
+                      });
+                    }
+                  },
+                },
+              );
+            }}
+            placeholder="Type, paste, or drop some files here…"
+          />
+        </div>
       </div>
     </div>
   );

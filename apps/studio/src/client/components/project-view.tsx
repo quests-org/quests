@@ -184,8 +184,8 @@ export function ProjectView({
           </ResizablePanelGroup>
         </div>
       ) : (
-        <div className="flex h-full w-full flex-1 flex-col overflow-y-auto border-t">
-          <ProjectChat {...sidebarProps} isStandalone />
+        <div className="flex min-h-0 w-full flex-1 border-t">
+          <ProjectChat {...sidebarProps} isChatOnly />
         </div>
       )}
     </div>
