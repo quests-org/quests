@@ -43,7 +43,6 @@ function RouteComponent() {
 
   const selectedSessionId = sessionParam ?? presetSessions[0]?.id ?? "basic";
 
-  const [isAgentAlive, setIsAgentAlive] = useState(false);
   const [isAgentRunning, setIsAgentRunning] = useState(false);
   const [isDeveloperMode, setIsDeveloperMode] = useState(false);
 
@@ -102,18 +101,6 @@ function RouteComponent() {
         <div className="flex gap-6 rounded-md border bg-muted/40 px-4 py-3">
           <div className="flex items-center gap-2">
             <Checkbox
-              checked={isAgentAlive}
-              id="agent-alive"
-              onCheckedChange={(checked) => {
-                setIsAgentAlive(checked === true);
-              }}
-            />
-            <Label className="cursor-pointer text-sm" htmlFor="agent-alive">
-              Agent Alive
-            </Label>
-          </div>
-          <div className="flex items-center gap-2">
-            <Checkbox
               checked={isAgentRunning}
               id="agent-running"
               onCheckedChange={(checked) => {
@@ -144,9 +131,7 @@ function RouteComponent() {
           <CardContent className="flex-1 overflow-y-auto">
             {selectedSession ? (
               <SessionStream
-                isAgentAlive={isAgentAlive}
                 isAgentRunning={isAgentRunning}
-                isDeveloperMode={isDeveloperMode}
                 messages={selectedSession.messages}
                 onContinue={createEventHandler("Continue")}
                 onModelChange={createEventHandler("Model Change")}

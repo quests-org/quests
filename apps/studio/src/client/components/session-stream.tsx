@@ -22,14 +22,11 @@ import { ToolPart } from "./tool-part";
 import { Alert, AlertDescription } from "./ui/alert";
 import { Button } from "./ui/button";
 import { UnknownPart } from "./unknown-part";
-import { UsageSummary } from "./usage-summary";
 import { UserMessage } from "./user-message";
 import { VersionAndFilesCard } from "./version-and-files-card";
 
 interface SessionEventListProps {
-  isAgentAlive?: boolean;
   isAgentRunning: boolean;
-  isDeveloperMode?: boolean;
   messages: SessionMessage.WithParts[];
   onContinue: () => void;
   onModelChange: (modelURI: AIGatewayModelURI.Type) => void;
@@ -40,9 +37,7 @@ interface SessionEventListProps {
 }
 
 export function SessionStream({
-  isAgentAlive = false,
   isAgentRunning,
-  isDeveloperMode = false,
   messages,
   onContinue,
   onModelChange,
@@ -440,12 +435,6 @@ export function SessionStream({
             </Button>
           </AlertDescription>
         </Alert>
-      )}
-
-      {!isAgentAlive && messages.length > 0 && isDeveloperMode && (
-        <div className="mt-4 border-t pt-4">
-          <UsageSummary messages={messages} />
-        </div>
       )}
     </div>
   );

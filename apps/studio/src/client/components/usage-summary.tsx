@@ -2,13 +2,16 @@ import { formatNumber } from "@/client/lib/format-number";
 import { type SessionMessage } from "@quests/workspace/client";
 import { useMemo } from "react";
 
+import { cn } from "../lib/utils";
 import { UsageStatsTooltip } from "./usage-stats-tooltip";
 
-interface UsageSummaryProps {
+export function UsageSummary({
+  className,
+  messages,
+}: {
+  className?: string;
   messages: SessionMessage.WithParts[];
-}
-
-export function UsageSummary({ messages }: UsageSummaryProps) {
+}) {
   const usage = useMemo(() => {
     const totals: SessionMessage.Usage = {
       cachedInputTokens: 0,
@@ -57,7 +60,12 @@ export function UsageSummary({ messages }: UsageSummaryProps) {
   }, [messages]);
 
   return (
-    <div className="flex w-full items-center gap-2 py-2 text-[10px] text-warning-foreground/60">
+    <div
+      className={cn(
+        "flex w-full items-center gap-2 text-[10px] text-warning-foreground/60",
+        className,
+      )}
+    >
       <UsageStatsTooltip
         stats={{
           cachedInputTokens: usage.cachedInputTokens,

@@ -3,9 +3,9 @@ import {
   type StoreId,
   type WorkspaceAppProject,
 } from "@quests/workspace/client";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useStickToBottom } from "use-stick-to-bottom";
@@ -15,9 +15,12 @@ import { useContinueSession } from "../hooks/use-continue-session";
 import { cn } from "../lib/utils";
 import { rpcClient } from "../rpc/client";
 import { ChatZeroState } from "./chat-zero-state";
-import { ProjectSessionStream } from "./project-session-stream";
 import { PromptInput } from "./prompt-input";
+import { SessionStream } from "./session-stream";
+import { Alert, AlertDescription } from "./ui/alert";
 import { Button } from "./ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
+import { UsageSummary } from "./usage-summary";
 
 export function ProjectChat({
   isChatOnly = false,
@@ -60,6 +63,29 @@ export function ProjectChat({
     subdomain: project.subdomain,
   });
 
+  const messagesQuery = useQuery(
+    rpcClient.workspace.message.live.listWithParts.experimental_liveOptions({
+      enabled: !!selectedSessionId,
+      input: selectedSessionId
+        ? {
+            sessionId: selectedSessionId,
+            subdomain: project.subdomain,
+          }
+        : (undefined as never),
+      retry: 1,
+    }),
+  );
+
+  const messages = messagesQuery.data ?? [];
+  const messageError = messagesQuery.error;
+  const isLoadingMessages = messagesQuery.isLoading;
+  const refetch = messagesQuery.refetch;
+
+  const { data: preferences } = useQuery(
+    rpcClient.preferences.live.get.experimental_liveOptions(),
+  );
+  const isDeveloperMode = preferences?.developerMode;
+
   useEffect(() => {
     setSelectedModelURI(initialSelectedModelURI);
   }, [initialSelectedModelURI]);
@@ -67,6 +93,10 @@ export function ProjectChat({
   const sessionActors = appState?.sessionActors ?? [];
   const isAgentAlive = sessionActors.some((session) =>
     session.tags.includes("agent.alive"),
+  );
+  const isAgentRunning = sessionActors.some(
+    (s) =>
+      s.sessionId === selectedSessionId && s.tags.includes("agent.running"),
   );
 
   const { handleContinue } = useContinueSession({
@@ -90,6 +120,36 @@ export function ProjectChat({
       sessionId: selectedSessionId,
       subdomain: project.subdomain,
     });
+  };
+
+  const createEmptySessionMutation = useMutation(
+    rpcClient.workspace.session.create.mutationOptions(),
+  );
+
+  const handleNewSession = () => {
+    createEmptySessionMutation.mutate(
+      { subdomain: project.subdomain },
+      {
+        onError: (error) => {
+          toast.error("Failed to create new chat", {
+            description: error.message,
+          });
+        },
+        onSuccess: (result) => {
+          void navigate({
+            params: {
+              subdomain: project.subdomain,
+            },
+            replace: true,
+            search: (prev) => ({
+              ...prev,
+              selectedSessionId: result.id,
+            }),
+            to: "/projects/$subdomain",
+          });
+        },
+      },
+    );
   };
 
   useEffect(() => {
@@ -126,14 +186,56 @@ export function ProjectChat({
         ref={contentRef}
       >
         {selectedSessionId ? (
-          <ProjectSessionStream
-            onContinue={handleContinue}
-            onModelChange={setSelectedModelURI}
-            onRetry={handleRetry}
-            project={project}
-            selectedVersion={selectedVersion}
-            sessionId={selectedSessionId}
-          />
+          isLoadingMessages ? (
+            <div className="flex justify-center py-4">
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            </div>
+          ) : messageError ? (
+            <Alert className="mt-4" variant="warning">
+              <AlertDescription className="flex flex-col gap-4">
+                <div className="font-semibold">Failed to load messages</div>
+                <div className="text-sm">
+                  {messageError.message || "Unknown error occurred"}
+                </div>
+                <div className="flex gap-2">
+                  <Tooltip delayDuration={0}>
+                    <TooltipTrigger asChild>
+                      <Button onClick={handleNewSession} variant="secondary">
+                        Start new chat
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Starts a fresh chat in this project</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <Tooltip delayDuration={0}>
+                    <TooltipTrigger asChild>
+                      <Button onClick={() => refetch()}>Retry</Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Retry loading messages</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+              </AlertDescription>
+            </Alert>
+          ) : !isAgentRunning && messages.length === 0 ? (
+            <ChatZeroState
+              project={project}
+              selectedSessionId={selectedSessionId}
+            />
+          ) : (
+            <SessionStream
+              isAgentRunning={isAgentRunning}
+              messages={messages}
+              onContinue={handleContinue}
+              onModelChange={setSelectedModelURI}
+              onRetry={handleRetry}
+              onStartNewChat={handleNewSession}
+              project={project}
+              selectedVersion={selectedVersion}
+            />
+          )
         ) : (
           <ChatZeroState
             project={project}
@@ -163,7 +265,7 @@ export function ProjectChat({
         ref={bottomSectionRef}
       >
         <div
-          className={cn("w-full px-3 pb-4", isChatOnly && "mx-auto max-w-3xl")}
+          className={cn("w-full px-3 pb-3", isChatOnly && "mx-auto max-w-3xl")}
         >
           <PromptInput
             atomKey={project.subdomain}
@@ -209,6 +311,9 @@ export function ProjectChat({
             }}
             placeholder="Type, paste, or drop some files here…"
           />
+          {messages.length > 0 && isDeveloperMode && (
+            <UsageSummary className="mt-2" messages={messages} />
+          )}
         </div>
       </div>
     </div>
