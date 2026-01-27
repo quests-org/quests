@@ -11,11 +11,9 @@ export interface Agent<T extends AgentTools> {
   agentTools: T;
   getMessages: ({
     appConfig,
-    envVariableNames,
     sessionId,
   }: {
     appConfig: AppConfig;
-    envVariableNames: string[];
     sessionId: StoreId.Session;
   }) => Promise<SessionMessage.ContextWithParts[]>;
   getTools: () => Promise<AnyAgentTool[]>;

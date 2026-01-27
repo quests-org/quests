@@ -33,7 +33,7 @@ export async function fetchAISDKModel(
         new TypedError.NotFound(`Provider ${model.params.provider} not found`),
       );
     }
-    const sdk = aiSDKForProviderConfig(config, workspaceServerURL);
+    const sdk = await aiSDKForProviderConfig(config, workspaceServerURL);
     const aiSDKModel = sdk(model.providerId);
     const aiGatewayModel: AIGatewayLanguageModel = Object.assign(aiSDKModel, {
       __aiGatewayModel: model,

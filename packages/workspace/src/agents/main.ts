@@ -3,6 +3,7 @@ import { err, ok, safeTry } from "neverthrow";
 import { dedent, pick } from "radashi";
 
 import { APP_FOLDER_NAMES } from "../constants";
+import { buildAIProviderInstructions } from "../lib/build-ai-provider-instructions";
 import {
   buildStaticFileServingInstructions,
   detectStaticFileServing,
@@ -47,12 +48,16 @@ export const mainAgent = setupAgent({
   ]),
   name: "main",
 }).create(({ agentTools, name }) => ({
-  getMessages: async ({ appConfig, envVariableNames, sessionId }) => {
+  getMessages: async ({ appConfig, sessionId }) => {
     const now = getCurrentDate();
 
     const servedFolders = await detectStaticFileServing(appConfig.appDir);
     const staticFileServingInstructions =
       buildStaticFileServingInstructions(servedFolders);
+
+    const aiProviderInstructions = await buildAIProviderInstructions({
+      appConfig,
+    });
 
     const systemMessageId = StoreId.newMessageId();
 
@@ -154,7 +159,8 @@ export const mainAgent = setupAgent({
     
     # Scripts
     - Node.js and ${PNPM_COMMAND.name} are pre-installed for package management.
-    - The only built-in way to run scripts is by executing TypeScript files using the \`${agentTools.RunShellCommand.name}\` tool with the \`${TS_COMMAND.name}\` command.
+    - The only way to run scripts is by executing TypeScript files using the \`${agentTools.RunShellCommand.name}\` tool with the \`${TS_COMMAND.name}\` command.
+    - You MUST create the scripts before using ${TS_COMMAND.name} to run them.
     - No other runtimes are bundled with this product.
     - You can use the \`${agentTools.RunDiagnostics.name}\` tool to check for errors in your scripts.
     - You don't need to add shebangs to TypeScript script files.
@@ -177,6 +183,10 @@ export const mainAgent = setupAgent({
 
     if (staticFileServingInstructions) {
       text = text + "\n\n" + staticFileServingInstructions;
+    }
+
+    if (aiProviderInstructions) {
+      text = text + "\n\n" + aiProviderInstructions;
     }
 
     const systemMessage: SessionMessage.ContextWithParts = {
@@ -257,17 +267,6 @@ export const mainAgent = setupAgent({
               ${packageJsonContent}
               \`\`\`
               </package_json>
-            `
-                : ""
-            }
-            
-            ${
-              envVariableNames.length > 0
-                ? dedent`
-              <env_variables>
-              The following environment variables are available for the app and scripts.
-              ${envVariableNames.map((n) => `- ${n}`).join("\n")}
-              </env_variables>
             `
                 : ""
             }

@@ -1,5 +1,5 @@
 import { getBuildInfo } from "@netlify/build-info/node";
-import { envForProviders } from "@quests/ai-gateway";
+import { envForProviderConfigs } from "@quests/ai-gateway";
 import { ExecaError, type ResultPromise } from "execa";
 import ms from "ms";
 import {
@@ -168,7 +168,7 @@ export const spawnRuntimeLogic = fromCallback<
     await installProcess;
     installTimeout.cancel();
 
-    const providerEnv = envForProviders({
+    const providerEnv = envForProviderConfigs({
       configs: appConfig.workspaceConfig.getAIProviderConfigs(),
       workspaceServerURL: getWorkspaceServerURL(),
     });

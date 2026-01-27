@@ -1,4 +1,4 @@
-import { envForProviders } from "@quests/ai-gateway";
+import { envForProviderConfigs } from "@quests/ai-gateway";
 import { ok } from "neverthrow";
 import { parseArgs } from "node:util";
 
@@ -12,7 +12,7 @@ import { type FileOperationResult } from "./types";
 
 const COMMAND_NAME = "ts";
 export const TS_COMMAND = {
-  description: "Execute a TypeScript or JavaScript file directly.",
+  description: "Execute a TypeScript or JavaScript file.",
   examples: [`${COMMAND_NAME} scripts/setup.ts`],
   name: COMMAND_NAME,
 } as const;
@@ -61,7 +61,7 @@ export async function tsCommand(
     return executeError(`${TS_COMMAND.name} requires a file path argument.`);
   }
 
-  const providerEnv = envForProviders({
+  const providerEnv = envForProviderConfigs({
     configs: appConfig.workspaceConfig.getAIProviderConfigs(),
     workspaceServerURL: getWorkspaceServerURL(),
   });

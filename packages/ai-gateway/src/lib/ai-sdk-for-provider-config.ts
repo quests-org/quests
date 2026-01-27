@@ -1,153 +1,113 @@
-import { createAnthropic } from "@ai-sdk/anthropic";
-import { createCerebras } from "@ai-sdk/cerebras";
-import { createDeepInfra } from "@ai-sdk/deepinfra";
-import { createDeepSeek } from "@ai-sdk/deepseek";
-import { createFireworks } from "@ai-sdk/fireworks";
-import { createGateway } from "@ai-sdk/gateway";
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import { createGroq } from "@ai-sdk/groq";
-import { createMistral } from "@ai-sdk/mistral";
-import { createOpenAI } from "@ai-sdk/openai";
-import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
-import { createPerplexity } from "@ai-sdk/perplexity";
-import { createTogetherAI } from "@ai-sdk/togetherai";
-import { createXai } from "@ai-sdk/xai";
-import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import {
   ATTRIBUTION_NAME,
   ATTRIBUTION_URL,
   type WorkspaceServerURL,
 } from "@quests/shared";
-import { createOllama } from "ollama-ai-provider-v2";
 
 import { type AIGatewayProviderConfig } from "../schemas/provider-config";
+import { getPackageForProviderType } from "./bundled-providers";
 import { internalURL } from "./internal-url";
 import { internalAPIKey } from "./key-for-provider";
 
-export function aiSDKForProviderConfig(
+export async function aiSDKForProviderConfig(
   config: AIGatewayProviderConfig.Type,
   workspaceServerURL: WorkspaceServerURL,
 ) {
-  switch (config.type) {
-    case "anthropic": {
-      return createAnthropic({
-        apiKey: internalAPIKey(),
-        baseURL: internalURL({ config, workspaceServerURL }),
-      });
+  const baseURL = internalURL({ config, workspaceServerURL });
+  const apiKey = internalAPIKey();
+  const packageName = getPackageForProviderType(config.type);
+
+  switch (packageName) {
+    case "@ai-sdk/anthropic": {
+      const { createAnthropic } = await import("@ai-sdk/anthropic");
+      return createAnthropic({ apiKey, baseURL });
     }
-    case "cerebras": {
-      return createCerebras({
-        apiKey: internalAPIKey(),
-        baseURL: internalURL({ config, workspaceServerURL }),
-      });
+    case "@ai-sdk/cerebras": {
+      const { createCerebras } = await import("@ai-sdk/cerebras");
+      return createCerebras({ apiKey, baseURL });
     }
-    case "deepinfra": {
-      return createDeepInfra({
-        apiKey: internalAPIKey(),
-        baseURL: internalURL({ config, workspaceServerURL }),
-      });
+    case "@ai-sdk/deepinfra": {
+      const { createDeepInfra } = await import("@ai-sdk/deepinfra");
+      return createDeepInfra({ apiKey, baseURL });
     }
-    case "deepseek": {
-      return createDeepSeek({
-        apiKey: internalAPIKey(),
-        baseURL: internalURL({ config, workspaceServerURL }),
-      });
+    case "@ai-sdk/deepseek": {
+      const { createDeepSeek } = await import("@ai-sdk/deepseek");
+      return createDeepSeek({ apiKey, baseURL });
     }
-    case "fireworks": {
-      return createFireworks({
-        apiKey: internalAPIKey(),
-        baseURL: internalURL({ config, workspaceServerURL }),
-      });
+    case "@ai-sdk/fireworks": {
+      const { createFireworks } = await import("@ai-sdk/fireworks");
+      return createFireworks({ apiKey, baseURL });
     }
-    case "google": {
-      return createGoogleGenerativeAI({
-        apiKey: internalAPIKey(),
-        baseURL: internalURL({ config, workspaceServerURL }),
-      });
-    }
-    case "groq": {
-      return createGroq({
-        apiKey: internalAPIKey(),
-        baseURL: internalURL({ config, workspaceServerURL }),
-      });
-    }
-    case "mistral": {
-      return createMistral({
-        apiKey: internalAPIKey(),
-        baseURL: internalURL({ config, workspaceServerURL }),
-      });
-    }
-    case "ollama": {
-      return createOllama({
-        baseURL: internalURL({ config, workspaceServerURL }),
-        headers: {
-          Authorization: `Bearer ${internalAPIKey()}`,
-        },
-      });
-    }
-    case "openai": {
-      return createOpenAI({
-        apiKey: internalAPIKey(),
-        baseURL: internalURL({ config, workspaceServerURL }),
-      });
-    }
-    case "openrouter": {
-      return createOpenRouter({
-        apiKey: internalAPIKey(),
-        baseURL: internalURL({ config, workspaceServerURL }),
-        extraBody: {
-          user: config.cacheIdentifier,
-        },
-        headers: {
-          "HTTP-Referer": ATTRIBUTION_URL,
-          "X-Title": ATTRIBUTION_NAME,
-        },
-      });
-    }
-    case "perplexity": {
-      return createPerplexity({
-        apiKey: internalAPIKey(),
-        baseURL: internalURL({ config, workspaceServerURL }),
-      });
-    }
-    case "quests": {
-      // Main difference is the lack of a cache identifier, which will be set by the server.
-      return createOpenRouter({
-        apiKey: internalAPIKey(),
-        baseURL: internalURL({ config, workspaceServerURL }),
-        headers: {
-          "HTTP-Referer": ATTRIBUTION_URL,
-          "X-Title": ATTRIBUTION_NAME,
-        },
-      });
-    }
-    case "together": {
-      return createTogetherAI({
-        apiKey: internalAPIKey(),
-        baseURL: internalURL({ config, workspaceServerURL }),
-      });
-    }
-    case "vercel": {
+    case "@ai-sdk/gateway": {
+      const { createGateway } = await import("@ai-sdk/gateway");
       return createGateway({
-        apiKey: internalAPIKey(),
-        baseURL: internalURL({ config, workspaceServerURL }),
+        apiKey,
+        baseURL,
         headers: {
           "http-referer": ATTRIBUTION_URL,
           "x-title": ATTRIBUTION_NAME,
         },
       });
     }
-    case "x-ai": {
-      return createXai({
-        apiKey: internalAPIKey(),
-        baseURL: internalURL({ config, workspaceServerURL }),
+    case "@ai-sdk/google": {
+      const { createGoogleGenerativeAI } = await import("@ai-sdk/google");
+      return createGoogleGenerativeAI({ apiKey, baseURL });
+    }
+    case "@ai-sdk/groq": {
+      const { createGroq } = await import("@ai-sdk/groq");
+      return createGroq({ apiKey, baseURL });
+    }
+    case "@ai-sdk/mistral": {
+      const { createMistral } = await import("@ai-sdk/mistral");
+      return createMistral({ apiKey, baseURL });
+    }
+    case "@ai-sdk/openai": {
+      const { createOpenAI } = await import("@ai-sdk/openai");
+      return createOpenAI({ apiKey, baseURL });
+    }
+    case "@ai-sdk/openai-compatible": {
+      const { createOpenAICompatible } = await import(
+        "@ai-sdk/openai-compatible"
+      );
+      return createOpenAICompatible({
+        apiKey,
+        baseURL,
+        name: config.type,
       });
     }
-    default: {
-      return createOpenAICompatible({
-        apiKey: internalAPIKey(),
-        baseURL: internalURL({ config, workspaceServerURL }),
-        name: config.type,
+    case "@ai-sdk/perplexity": {
+      const { createPerplexity } = await import("@ai-sdk/perplexity");
+      return createPerplexity({ apiKey, baseURL });
+    }
+    case "@ai-sdk/togetherai": {
+      const { createTogetherAI } = await import("@ai-sdk/togetherai");
+      return createTogetherAI({ apiKey, baseURL });
+    }
+    case "@ai-sdk/xai": {
+      const { createXai } = await import("@ai-sdk/xai");
+      return createXai({ apiKey, baseURL });
+    }
+    case "@openrouter/ai-sdk-provider": {
+      const { createOpenRouter } = await import("@openrouter/ai-sdk-provider");
+      const extraConfig =
+        config.type === "openrouter"
+          ? { extraBody: { user: config.cacheIdentifier } }
+          : {};
+      return createOpenRouter({
+        apiKey,
+        baseURL,
+        ...extraConfig,
+        headers: {
+          "HTTP-Referer": ATTRIBUTION_URL,
+          "X-Title": ATTRIBUTION_NAME,
+        },
+      });
+    }
+    case "ollama-ai-provider-v2": {
+      const { createOllama } = await import("ollama-ai-provider-v2");
+      return createOllama({
+        baseURL,
+        headers: { Authorization: `Bearer ${apiKey}` },
       });
     }
   }

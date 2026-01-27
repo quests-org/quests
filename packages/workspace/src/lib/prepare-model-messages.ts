@@ -1,10 +1,9 @@
-import { type AIGatewayModel, envForProviders } from "@quests/ai-gateway";
+import { type AIGatewayModel } from "@quests/ai-gateway";
 import { differenceInMinutes } from "date-fns";
 import { ok, Result } from "neverthrow";
 import { alphabetical } from "radashi";
 
 import { type AnyAgent } from "../agents/types";
-import { getWorkspaceServerURL } from "../logic/server/url";
 import { SessionMessage } from "../schemas/session/message";
 import { type StoreId } from "../schemas/store-id";
 import { ALL_AI_SDK_TOOLS } from "../tools/all";
@@ -30,11 +29,6 @@ export async function prepareModelMessages({
   sessionId: StoreId.Session;
   signal: AbortSignal;
 }) {
-  const env = envForProviders({
-    configs: appConfig.workspaceConfig.getAIProviderConfigs(),
-    workspaceServerURL: getWorkspaceServerURL(),
-  });
-
   const messageResults = await Store.getMessagesWithParts(
     { appConfig, sessionId },
     { signal },
@@ -69,7 +63,6 @@ export async function prepareModelMessages({
   async function createAndSaveContextMessages() {
     const newContextMessages = await agent.getMessages({
       appConfig,
-      envVariableNames: Object.keys(env),
       sessionId,
     });
 
