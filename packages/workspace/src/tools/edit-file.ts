@@ -14,7 +14,7 @@ import { executeError } from "../lib/execute-error";
 import { pathExists } from "../lib/path-exists";
 import { writeFileWithDir } from "../lib/write-file-with-dir";
 import { RelativePathSchema } from "../schemas/paths";
-import { BaseInputSchema } from "./base";
+import { BaseInputSchema, TOOL_EXPLANATION_PARAM_NAME } from "./base";
 import { createTool } from "./create-tool";
 import { ReadFile } from "./read-file";
 import { diagnosticsReminder } from "./run-diagnostics";
@@ -740,7 +740,7 @@ export const EditFile = createTool({
   },
   inputSchema: BaseInputSchema.extend({
     [INPUT_PARAMS.filePath]: z.string().meta({
-      description: "Relative path to the file to modify. Generate this first.",
+      description: `Relative path to the file to modify. Generate this after ${TOOL_EXPLANATION_PARAM_NAME}.`,
     }),
     [INPUT_PARAMS.newString]: z.string().meta({
       description:

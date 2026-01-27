@@ -8,6 +8,7 @@ export const BaseInputSchema = z.object({
     .string()
     .optional() // Some LLMs leave it out on accident
     .meta({
-      description: "One short sentence about why you are using this tool",
+      description:
+        "One short sentence about why you are using this tool. Generate this first.",
     }),
 });
