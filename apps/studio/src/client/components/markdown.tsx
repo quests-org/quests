@@ -9,6 +9,7 @@ import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import remend from "remend";
 
+import { useHashLinkScroll } from "../hooks/use-hash-link-scroll";
 import { useSyntaxHighlighting } from "../hooks/use-syntax-highlighting";
 import { cn } from "../lib/utils";
 import { CopyButton } from "./copy-button";
@@ -101,16 +102,34 @@ export const Markdown = memo(({ allowRawHtml, markdown }: MarkdownProps) => {
     [openFilePreview],
   );
 
+  const handleHashLinkClick = useHashLinkScroll();
+
   const rehypePlugins = allowRawHtml ? [rehypeRaw, rehypeKatex] : [rehypeKatex];
 
   return (
     <ReactMarkdown
       components={{
-        a: ({ children, className, href, ...props }) => (
-          <ExternalLink {...props} className={className} href={href}>
-            {children}
-          </ExternalLink>
-        ),
+        a: ({ children, className, href, ...props }) => {
+          if (href?.startsWith("#")) {
+            return (
+              // eslint-disable-next-line no-restricted-syntax
+              <a
+                {...props}
+                className={cn("cursor-pointer!", className)}
+                href={href}
+                onClick={handleHashLinkClick}
+              >
+                {children}
+              </a>
+            );
+          }
+
+          return (
+            <ExternalLink {...props} className={className} href={href}>
+              {children}
+            </ExternalLink>
+          );
+        },
         code: ({ children, className, node: _node, ref: _ref, ...props }) => {
           const match = /language-(\w+)/.exec(className ?? "");
           const language = match?.[1];
