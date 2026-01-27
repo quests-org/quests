@@ -6,7 +6,7 @@ import {
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { ChevronDown, Loader2 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useStickToBottom } from "use-stick-to-bottom";
 
@@ -53,8 +53,6 @@ export function ProjectChat({
     rpcClient.workspace.session.stop.mutationOptions(),
   );
 
-  const bottomSectionRef = useRef<HTMLDivElement>(null);
-  const [bottomSectionHeight, setBottomSectionHeight] = useState(0);
   const [selectedModelURI, setSelectedModelURI] = useState<
     AIGatewayModelURI.Type | undefined
   >(initialSelectedModelURI);
@@ -152,24 +150,6 @@ export function ProjectChat({
     );
   };
 
-  useEffect(() => {
-    if (!bottomSectionRef.current) {
-      return;
-    }
-
-    const resizeObserver = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        setBottomSectionHeight(entry.contentRect.height);
-      }
-    });
-
-    resizeObserver.observe(bottomSectionRef.current);
-
-    return () => {
-      resizeObserver.disconnect();
-    };
-  }, []);
-
   return (
     <div
       className={cn(
@@ -246,24 +226,19 @@ export function ProjectChat({
 
       <div className="flex-1" />
 
-      {!isNearBottom && (
-        <Button
-          className="absolute left-1/2 z-10 -translate-x-1/2 transform border border-border shadow-lg"
-          onClick={() => scrollToBottom()}
-          size="icon"
-          style={{
-            bottom: `${bottomSectionHeight + 48}px`, // 16px gap above the bottom section
-          }}
-          variant="secondary"
-        >
-          <ChevronDown className="h-3 w-3" />
-        </Button>
-      )}
-
-      <div
-        className="sticky bottom-0 flex w-full bg-background"
-        ref={bottomSectionRef}
-      >
+      <div className="sticky bottom-0 flex w-full bg-background">
+        {!isNearBottom && (
+          <div className="pointer-events-none absolute inset-x-0 bottom-full flex justify-center pb-4">
+            <Button
+              className="pointer-events-auto border border-border shadow-lg"
+              onClick={() => scrollToBottom()}
+              size="icon"
+              variant="secondary"
+            >
+              <ChevronDown className="h-3 w-3" />
+            </Button>
+          </div>
+        )}
         <div
           className={cn("w-full px-3 pb-3", isChatOnly && "mx-auto max-w-3xl")}
         >
