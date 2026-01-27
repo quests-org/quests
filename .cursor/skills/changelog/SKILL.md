@@ -70,7 +70,7 @@ More will follow.
 
 ## Water Vehicle
 
-<img width="512" height="512" alt="create_an_art_deco_abstract_painting_of_a_streamlined_boat_gliding_through_geometric_luxury_incorpo_2zoya69fyv6xzft55rlj_1" src="https://github.com/user-attachments/assets/51ee86dc-f5d8-4489-b9ba-fc308d932b90" />
+<!-- Image placeholder -->
 
 _23 commits since v1.4.2_
 ```
