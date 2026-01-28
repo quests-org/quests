@@ -240,6 +240,12 @@ function renderAuthPage({
       <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link
+          rel="icon"
+          href="https://quests.dev/favicon.ico"
+          type="image/x-icon"
+          sizes="16x16"
+        />
         <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
         <title>Sign in to Quests</title>
       </head>
