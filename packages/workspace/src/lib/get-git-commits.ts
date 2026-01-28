@@ -2,6 +2,7 @@ import { err, ok } from "neverthrow";
 import { sift } from "radashi";
 import { z } from "zod";
 
+import { type RelativePath } from "../schemas/paths";
 import { type ProjectSubdomain } from "../schemas/subdomains";
 import { type WorkspaceConfig } from "../types";
 import { createAppConfig } from "./app-config/create";
@@ -25,6 +26,7 @@ export async function getGitCommits(
   projectSubdomain: ProjectSubdomain,
   workspaceConfig: WorkspaceConfig,
   limit?: number,
+  filterByPath?: RelativePath,
 ) {
   const projectConfig = createAppConfig({
     subdomain: projectSubdomain,
@@ -32,7 +34,7 @@ export async function getGitCommits(
   });
 
   const logResult = await git(
-    GitCommands.logWithDetails(limit),
+    GitCommands.logWithDetails({ limit, path: filterByPath }),
     projectConfig.appDir,
     { signal: AbortSignal.timeout(10_000) },
   );

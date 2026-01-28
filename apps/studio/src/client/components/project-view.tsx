@@ -143,6 +143,8 @@ export function ProjectView({
                   </div>
                   <div className="flex-1 overflow-y-auto p-4">
                     <VersionList
+                      // Very basic filtering for now
+                      filterByPath="./src"
                       projectSubdomain={project.subdomain}
                       selectedVersion={selectedVersion}
                     />

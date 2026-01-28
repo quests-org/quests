@@ -9,15 +9,18 @@ import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { rpcClient } from "../rpc/client";
+import { ErrorCard } from "./error-card";
 import { InternalLink } from "./internal-link";
 import { Avatar, AvatarFallback } from "./ui/avatar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { ViewIndicator } from "./view-indicator";
 
 export function VersionList({
+  filterByPath,
   projectSubdomain,
   selectedVersion,
 }: {
+  filterByPath?: string;
   projectSubdomain: ProjectSubdomain;
   selectedVersion?: string;
 }) {
@@ -29,7 +32,7 @@ export function VersionList({
     isLoading,
   } = useQuery(
     rpcClient.workspace.project.git.commits.live.list.experimental_liveOptions({
-      input: { projectSubdomain },
+      input: { filterByPath, projectSubdomain },
     }),
   );
 
@@ -62,9 +65,11 @@ export function VersionList({
   if (error) {
     return (
       <div className="flex items-center justify-center py-8">
-        <div className="text-center text-muted-foreground">
-          Failed to load versions: {error.message}
-        </div>
+        <ErrorCard
+          description="We couldn't load the version history for this project"
+          error={error}
+          title="Failed to load versions"
+        />
       </div>
     );
   }

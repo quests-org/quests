@@ -37,24 +37,32 @@ const ref = base
 const commitsList = base
   .input(
     z.object({
+      filterByPath: RelativePathSchema.optional(),
       limit: z.number().optional(),
       projectSubdomain: ProjectSubdomainSchema,
     }),
   )
   .output(GitCommitsSchema)
-  .handler(async ({ context, errors, input: { limit, projectSubdomain } }) => {
-    const result = await getGitCommits(
-      projectSubdomain,
-      context.workspaceConfig,
-      limit,
-    );
+  .handler(
+    async ({
+      context,
+      errors,
+      input: { filterByPath, limit, projectSubdomain },
+    }) => {
+      const result = await getGitCommits(
+        projectSubdomain,
+        context.workspaceConfig,
+        limit,
+        filterByPath,
+      );
 
-    if (result.isErr()) {
-      throw toORPCError(result.error, errors);
-    }
+      if (result.isErr()) {
+        throw toORPCError(result.error, errors);
+      }
 
-    return result.value;
-  });
+      return result.value;
+    },
+  );
 
 const commits = {
   list: commitsList,
@@ -62,6 +70,7 @@ const commits = {
     list: base
       .input(
         z.object({
+          filterByPath: RelativePathSchema.optional(),
           limit: z.number().optional(),
           projectSubdomain: ProjectSubdomainSchema,
         }),

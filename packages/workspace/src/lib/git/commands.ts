@@ -87,10 +87,19 @@ export namespace GitCommands {
     return ["log", "--format=%H", `${commitRef}..HEAD`, "--", path];
   }
 
-  export function logWithDetails(limit?: number) {
+  export function logWithDetails({
+    limit,
+    path,
+  }: {
+    limit?: number;
+    path?: RelativePath;
+  }) {
     const args = ["log", "--pretty=format:%H|%an|%ae|%at|%s"];
     if (limit) {
       args.push("-n", String(limit));
+    }
+    if (path) {
+      args.push("--", path);
     }
     return args;
   }
