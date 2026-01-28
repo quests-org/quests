@@ -83,10 +83,10 @@ export function VersionList({
     <div className="flex flex-col gap-1">
       {isAgentRunning && <InProgressVersionCard />}
       {commitsData.commits.map((commit, index) => {
+        // Render current working copy if last version instead of ref
         const isLast = index === 0;
         const isSelected =
           selectedVersion === commit.hash || (isLast && !selectedVersion);
-        const shouldSetVersion = !isSelected && !isLast;
 
         const colorHash = new ColorHash();
         const hashColor = colorHash.hex(commit.hash);
@@ -99,7 +99,7 @@ export function VersionList({
             params={{ subdomain: projectSubdomain }}
             search={(prev) => ({
               ...prev,
-              selectedVersion: shouldSetVersion ? commit.hash : undefined,
+              selectedVersion: isLast ? undefined : commit.hash,
             })}
           >
             <div
