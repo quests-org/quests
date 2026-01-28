@@ -106,6 +106,11 @@ describe("addHeuristicTags", () => {
     { expected: [], modelId: "glm-4.1v-9b-thinking" },
     { expected: ["coding", "recommended"], modelId: "glm-5" },
     { expected: ["coding", "recommended"], modelId: "claude-sonnet-5.5" },
+    { expected: [], modelId: "kimi-k1" },
+    { expected: [], modelId: "kimi-k2" },
+    { expected: ["coding", "recommended"], modelId: "kimi-k2.5" },
+    { expected: ["coding", "recommended"], modelId: "kimi-k2-0905" },
+    { expected: ["coding", "recommended"], modelId: "kimi-k3" },
   ].map(({ expected, modelId }) => ({
     expected: expected.map((tag) => AIGatewayModel.ModelTagSchema.parse(tag)),
     modelId,

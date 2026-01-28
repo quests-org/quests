@@ -11,7 +11,6 @@ const MODEL_TAGS: Record<string, AIGatewayModel.ModelTag[]> = {
   "gemini-2.5-flash": ["recommended"],
   "gemini-2.5-pro": ["coding"],
   "grok-code-fast-1": ["coding", "recommended"],
-  "kimi-k2": ["coding"],
   "kimi-k2-0905": ["coding", "recommended"],
   "qwen3-coder": ["coding", "recommended"],
   "qwen3-coder-plus": ["coding", "recommended"],
@@ -40,7 +39,7 @@ export function addHeuristicTags(
 
   let tags = [...model.tags, ...dynamicTags, ...staticTags];
 
-  if (isSuperseded(canonicalId)) {
+  if (isLegacy(canonicalId)) {
     tags = [...tags.filter((tag) => tag !== "recommended"), "legacy"];
   }
 
@@ -124,10 +123,15 @@ function getDynamicTags(
     return ["coding", "recommended"];
   }
 
+  // Kimi models
+  if (matchesVersionFloor(canonicalId, "kimi-k", 2.5)) {
+    return ["coding", "recommended"];
+  }
+
   return [];
 }
 
-function isSuperseded(canonicalId: AIGatewayModel.CanonicalId): boolean {
+function isLegacy(canonicalId: AIGatewayModel.CanonicalId): boolean {
   if (
     (canonicalId.startsWith("claude-sonnet-4") ||
       canonicalId.startsWith("claude-haiku-4") ||
