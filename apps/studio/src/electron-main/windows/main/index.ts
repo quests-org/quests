@@ -1,3 +1,4 @@
+import { captureServerException } from "@/electron-main/lib/capture-server-exception";
 import { createContextMenu } from "@/electron-main/lib/context-menu";
 import {
   getMainWindowBackgroundColor,
@@ -21,18 +22,26 @@ import { type BaseWindow, BrowserWindow } from "electron";
 import path from "node:path";
 import { debounce } from "radashi";
 
-import icon from "../../../../resources/icon.png?asset";
-
 let toolbar: Electron.CrossProcessExports.WebContentsView | null = null;
 let wasWindowBlurred = false;
 
 export async function createMainWindow() {
+  let icon: string | undefined;
+  try {
+    const iconModule = await import("../../../../resources/icon.png?asset");
+    icon = iconModule.default;
+  } catch (error) {
+    captureServerException(
+      new Error("Failed to load app icon", { cause: error }),
+    );
+  }
+
   const mainWindow = new BrowserWindow({
     ...getWindowState().bounds,
     show: false,
     titleBarStyle: process.platform === "darwin" ? "hiddenInset" : "hidden",
     trafficLightPosition: { x: 12, y: 12 },
-    ...(process.platform === "linux" ? { icon } : {}),
+    ...(process.platform === "linux" && icon ? { icon } : {}),
     backgroundColor: getMainWindowBackgroundColor(),
     frame: false,
     titleBarOverlay: getTitleBarOverlay(),
