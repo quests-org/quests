@@ -1,7 +1,7 @@
 import type { KnipConfig } from "knip";
 
 const config: KnipConfig = {
-  ignore: ["registry/**/*"],
+  ignore: ["registry/**/*", ".cursor/**/*"],
   workspaces: {
     ".": {
       // Required because tailwindcss is loaded in root by Knip because of
