@@ -18,7 +18,9 @@ function main() {
     execSync("git add registry", { stdio: "inherit" });
 
     const commitMessage = "feat(registry): update to latest";
-    execSync(`git commit -m "${commitMessage}"`, { stdio: "inherit" });
+    execSync(`git commit -m "${commitMessage}" -- registry`, {
+      stdio: "inherit",
+    });
 
     console.log("Successfully updated registry");
     console.log(`Commit: ${commitMessage}`);
