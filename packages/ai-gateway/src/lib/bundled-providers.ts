@@ -128,8 +128,8 @@ const PROVIDER_TYPE_TO_AI_SDK_INFO: Partial<
   },
   quests: {
     envVars: {
-      apiKey: "OPENROUTER_API_KEY",
-      baseURL: "OPENROUTER_BASE_URL",
+      apiKey: "QUESTS_AI_API_KEY",
+      baseURL: "QUESTS_AI_BASE_URL",
     },
     exportName: "createOpenRouter",
     package: "@openrouter/ai-sdk-provider",
