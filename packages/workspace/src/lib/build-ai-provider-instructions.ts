@@ -37,7 +37,7 @@ export async function buildAIProviderInstructions({
 
         const questsNote =
           config.type === "quests"
-            ? " (first-party provider; behaves like OpenRouter and can be substituted for OpenRouter API key for common APIs)"
+            ? "_Preferred first-party provider; behaves like OpenRouter and works for their common APIs._"
             : "";
 
         const importText = "import"; // Required or code will be mistakenly transpiled by Electron Vite
@@ -45,16 +45,14 @@ export async function buildAIProviderInstructions({
           \`\`\`typescript
           ${importText} { ${aiSDKInfo.exportName} } from "${aiSDKInfo.package}";
           const provider = ${aiSDKInfo.exportName}({ apiKey: process.env.${aiSDKInfo.envVars.apiKey}, baseURL: process.env.${aiSDKInfo.envVars.baseURL} });
-          const text = await generateText({
-            model: provider("${recommendedModelId}"),
-            prompt: "Hello, world!",
-          });
+          const text = await generateText({ model: provider("${recommendedModelId}"), prompt: "Hello, world!" });
           \`\`\`
         `.trim();
 
         return dedent`
-        ## ${name}${questsNote}
-        Environment variables: ${envVarsText}
+        ## ${name}
+        ${questsNote}
+        Env vars: ${envVarsText}
         ${recommendedModelId ? `${modelIdLabel}: \`${recommendedModelId}\`` : ""}
         ${usageExample}
       `.trim();
@@ -64,7 +62,6 @@ export async function buildAIProviderInstructions({
 
   return dedent`
     # AI Providers
-    The following AI providers are available:
 
     ${providerSections}
 
