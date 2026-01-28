@@ -3,6 +3,7 @@ import { z } from "zod";
 export const ToolNameSchema = z.enum([
   "choose",
   "edit_file",
+  "generate_image",
   "glob",
   "grep",
   "read_file",

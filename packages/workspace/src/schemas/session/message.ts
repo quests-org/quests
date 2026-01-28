@@ -186,10 +186,10 @@ export namespace SessionMessage {
     parts: SessionMessagePart.Type[];
   };
 
-  export function toModelMessages(
+  export async function toModelMessages(
     messages: WithParts[],
     tools: ToolSet,
-  ): ModelMessage[] {
+  ): Promise<ModelMessage[]> {
     const uiMessages: UIMessage[] = messages.map((message) => {
       const filteredParts = message.parts
         .filter(

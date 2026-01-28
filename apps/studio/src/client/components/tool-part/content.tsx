@@ -61,6 +61,13 @@ export function ToolContent({
         </div>
       );
     }
+    case "tool-generate_image": {
+      return (
+        <div>
+          <SectionHeader>Generated {part.output.filePath}</SectionHeader>
+        </div>
+      );
+    }
     case "tool-glob": {
       const files = part.output.files;
       return (

@@ -1,4 +1,4 @@
-import { type LanguageModelV2 } from "@ai-sdk/provider";
+import { type LanguageModelV3 } from "@ai-sdk/provider";
 import { type AIGatewayModelURI } from "@quests/ai-gateway";
 import { ok } from "neverthrow";
 
@@ -20,7 +20,7 @@ export async function newMessage({
 }: {
   appConfig: AppConfig;
   files?: Upload.Type[];
-  model: LanguageModelV2;
+  model: LanguageModelV3;
   modelURI: AIGatewayModelURI.Type;
   prompt: string;
   sessionId: StoreId.Session;

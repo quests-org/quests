@@ -519,8 +519,22 @@ export const llmRequestLogic = fromPromise<
           await scopedStore.savePart(newPart);
           break;
         }
+        case "tool-output-denied": {
+          input.appConfig.workspaceConfig.captureException(
+            new Error(`Unexpected tool output denied: ${JSON.stringify(part)}`),
+          );
+          break;
+        }
         case "tool-result": {
           throw new Error(`Unexpected tool result: ${JSON.stringify(part)}`);
+        }
+        case "tool-approval-request": {
+          input.appConfig.workspaceConfig.captureException(
+            new Error(
+              `Unexpected tool approval request: ${JSON.stringify(part)}`,
+            ),
+          );
+          break;
         }
         default: {
           const _exhaustiveCheck: never = part;

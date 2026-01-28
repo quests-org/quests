@@ -4,6 +4,7 @@ import {
   Eye,
   FilePlus,
   HelpCircle,
+  Image,
   List,
   type LucideIcon,
   Pencil,
@@ -17,6 +18,7 @@ import {
 const TOOL_DISPLAY_NAMES: Record<ToolName, string | undefined> = {
   choose: "Waiting for answer",
   edit_file: "Edited",
+  generate_image: "Generated image",
   glob: "Searched files",
   grep: "Searched text",
   read_file: "Read",
@@ -30,6 +32,7 @@ const TOOL_DISPLAY_NAMES: Record<ToolName, string | undefined> = {
 const TOOL_STREAMING_DISPLAY_NAMES: Record<ToolName, string | undefined> = {
   choose: "Thinking about answer",
   edit_file: "Editing a file",
+  generate_image: "Generating an image",
   glob: "Searching files",
   grep: "Searching text",
   read_file: "Reading file",
@@ -46,6 +49,7 @@ const TOOL_STREAMING_DISPLAY_NAMES_WITH_VALUE: Record<
 > = {
   choose: TOOL_STREAMING_DISPLAY_NAMES.choose,
   edit_file: "Editing",
+  generate_image: "Generating",
   glob: "Searching for",
   grep: "Searching for",
   read_file: "Reading",
@@ -59,6 +63,7 @@ const TOOL_STREAMING_DISPLAY_NAMES_WITH_VALUE: Record<
 export const TOOL_ICONS: Record<ToolName, LucideIcon | undefined> = {
   choose: HelpCircle,
   edit_file: Pencil,
+  generate_image: Image,
   glob: List,
   grep: Search,
   read_file: Eye,

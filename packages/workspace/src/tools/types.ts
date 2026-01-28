@@ -26,7 +26,9 @@ export interface AgentTool<
   readOnly: boolean;
   timeoutMs: ((options: { input: z.output<TInputSchema> }) => number) | number;
   toModelOutput: (options: {
+    input: z.output<TInputSchema>;
     output: z.output<TOutputSchema>;
+    toolCallId: string;
   }) => LanguageModelV2ToolResultOutput;
 }
 

@@ -18,7 +18,7 @@ catalog:
   "@types/react": ^19.2.7
   "@types/react-dom": ^19.2.3
   "@vitejs/plugin-react": ^5.1.2
-  ai: ^5.0.97
+  ai: ^6
   better-auth: ^1.2.12
   hono: ^4.7.8
   lucide-react: ^0.525.0
@@ -34,7 +34,6 @@ configDependencies:
   "@pnpm/plugin-trusted-deps": 0.2.0+sha512-jqiCC8kyrwOERwMWPo2RB1YlDMMS5WsPSA8Uwi3EXAYwyOSNtqKhrB9bs543JGUiz4yaA9h6nE3q98fG14AEyQ==
 
 patchedDependencies:
-  "@openrouter/ai-sdk-provider": patches/@openrouter__ai-sdk-provider.patch
   conf@14.0.0: patches/conf@14.0.0.patch
 
 sideEffectsCache: false

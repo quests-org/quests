@@ -1,10 +1,10 @@
 import {
   APICallError,
-  type LanguageModelV2Prompt,
-  type LanguageModelV2StreamPart,
+  type LanguageModelV3Prompt,
+  type LanguageModelV3StreamPart,
 } from "@ai-sdk/provider";
 import { simulateReadableStream } from "ai";
-import { MockLanguageModelV2 } from "ai/test";
+import { MockLanguageModelV3 } from "ai/test";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   type ActorRefFrom,
@@ -37,13 +37,26 @@ describe("llmRequestLogic", () => {
   );
   const sessionId = StoreId.newSessionId();
   const mockUsage = {
+    inputTokens: {
+      cacheRead: 1,
+      cacheWrite: undefined,
+      noCache: undefined,
+      total: 2,
+    },
+    outputTokens: {
+      reasoning: 4,
+      text: undefined,
+      total: 3,
+    },
+  };
+  const mockUsageV2 = {
     cachedInputTokens: 1,
     inputTokens: 2,
     outputTokens: 3,
     reasoningTokens: 4,
     totalTokens: 9,
   };
-  let prompts: LanguageModelV2Prompt[] = [];
+  let prompts: LanguageModelV3Prompt[] = [];
   const mockDate = new Date("2013-08-31T12:00:00.000Z");
   const mockMessageId = StoreId.newMessageId();
   const mockMessages: SessionMessage.ContextWithParts[] = [
@@ -90,11 +103,11 @@ describe("llmRequestLogic", () => {
     provider = "mock-provider",
   }: {
     beforeStream?: () => Promise<void>;
-    chunks: LanguageModelV2StreamPart[];
+    chunks: LanguageModelV3StreamPart[];
     getMessages?: () => Promise<SessionMessage.ContextWithParts[]>;
     provider?: string;
   }) {
-    const mockLanguageModel = new MockLanguageModelV2({
+    const mockLanguageModel = new MockLanguageModelV3({
       doStream: async ({ prompt }) => {
         if (beforeStream) {
           await beforeStream();
@@ -105,15 +118,21 @@ describe("llmRequestLogic", () => {
             chunks: [
               ...chunks,
               {
-                finishReason: "stop",
+                finishReason: { raw: "stop", unified: "stop" },
                 logprobs: undefined,
                 type: "finish",
                 usage: {
-                  cachedInputTokens: 0,
-                  inputTokens: 3,
-                  outputTokens: 10,
-                  reasoningTokens: 0,
-                  totalTokens: 13,
+                  inputTokens: {
+                    cacheRead: undefined,
+                    cacheWrite: undefined,
+                    noCache: undefined,
+                    total: 3,
+                  },
+                  outputTokens: {
+                    reasoning: undefined,
+                    text: undefined,
+                    total: 10,
+                  },
                 },
               },
             ],
@@ -224,7 +243,7 @@ describe("llmRequestLogic", () => {
         { delta: "world!", id: "1", type: "text-delta" },
         { id: "1", type: "text-end" },
         {
-          finishReason: "stop",
+          finishReason: { raw: "stop", unified: "stop" },
           type: "finish",
           usage: mockUsage,
         },
@@ -307,7 +326,7 @@ describe("llmRequestLogic", () => {
           type: "tool-call",
         },
         {
-          finishReason: "stop",
+          finishReason: { raw: "stop", unified: "stop" },
           type: "finish",
           usage: mockUsage,
         },
@@ -392,7 +411,7 @@ describe("llmRequestLogic", () => {
         { delta: " and then proceed", id: "1", type: "reasoning-delta" },
         { id: "1", type: "reasoning-end" },
         {
-          finishReason: "stop",
+          finishReason: { raw: "stop", unified: "stop" },
           type: "finish",
           usage: mockUsage,
         },
@@ -960,7 +979,7 @@ describe("llmRequestLogic", () => {
               "type": "step-start",
             },
             {
-              "errorText": "Model tried to call unavailable tool 'non_existent_tool'. Available tools: choose, edit_file, glob, grep, read_file, run_diagnostics, run_shell_command, think, unavailable, write_file.",
+              "errorText": "Model tried to call unavailable tool 'non_existent_tool'. Available tools: choose, edit_file, generate_image, glob, grep, read_file, run_diagnostics, run_shell_command, think, unavailable, write_file.",
               "input": undefined,
               "metadata": {
                 "createdAt": 2013-08-31T12:00:04.000Z,
@@ -1044,7 +1063,7 @@ describe("llmRequestLogic", () => {
               "type": "step-start",
             },
             {
-              "errorText": "Model tried to call unavailable tool 'non_existent_tool'. Available tools: choose, edit_file, glob, grep, read_file, run_diagnostics, run_shell_command, think, unavailable, write_file.",
+              "errorText": "Model tried to call unavailable tool 'non_existent_tool'. Available tools: choose, edit_file, generate_image, glob, grep, read_file, run_diagnostics, run_shell_command, think, unavailable, write_file.",
               "input": undefined,
               "metadata": {
                 "createdAt": 2013-08-31T12:00:04.000Z,
@@ -1123,7 +1142,7 @@ describe("llmRequestLogic", () => {
               "type": "step-start",
             },
             {
-              "errorText": "Model tried to call unavailable tool 'non_existent_tool'. Available tools: choose, edit_file, glob, grep, read_file, run_diagnostics, run_shell_command, think, unavailable, write_file.",
+              "errorText": "Model tried to call unavailable tool 'non_existent_tool'. Available tools: choose, edit_file, generate_image, glob, grep, read_file, run_diagnostics, run_shell_command, think, unavailable, write_file.",
               "input": {
                 "filePath": "test.txt",
               },
@@ -1169,7 +1188,7 @@ describe("llmRequestLogic", () => {
           type: "tool-call",
         },
         {
-          finishReason: "stop",
+          finishReason: { raw: "stop", unified: "stop" },
           type: "finish",
           usage: mockUsage,
         },
@@ -1460,7 +1479,7 @@ describe("llmRequestLogic", () => {
       modelId: "mock-model-id",
       providerId: "mock-provider",
       sessionId,
-      usage: mockUsage,
+      usage: mockUsageV2,
     };
     const readFilePart: SessionMessagePart.Type = {
       input: {

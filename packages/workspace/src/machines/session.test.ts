@@ -1,6 +1,6 @@
-import { type LanguageModelV2StreamPart } from "@ai-sdk/provider";
+import { type LanguageModelV3StreamPart } from "@ai-sdk/provider";
 import { simulateReadableStream } from "ai";
-import { MockLanguageModelV2 } from "ai/test";
+import { MockLanguageModelV3 } from "ai/test";
 import mockFs from "mock-fs";
 import { ok } from "neverthrow";
 import path from "node:path";
@@ -49,7 +49,7 @@ vi.mock(import("execa"), () => ({
 
 type Part =
   Awaited<
-    ReturnType<MockLanguageModelV2["doStream"]>
+    ReturnType<MockLanguageModelV3["doStream"]>
   >["stream"] extends ReadableStream<infer T>
     ? T
     : never;
@@ -83,11 +83,17 @@ describe("sessionMachine", () => {
     role: "user",
   };
   const mockUsage = {
-    cachedInputTokens: 1,
-    inputTokens: 2,
-    outputTokens: 3,
-    reasoningTokens: 4,
-    totalTokens: 9,
+    inputTokens: {
+      cacheRead: 1,
+      cacheWrite: undefined,
+      noCache: undefined,
+      total: 2,
+    },
+    outputTokens: {
+      reasoning: 4,
+      text: undefined,
+      total: 3,
+    },
   };
 
   const readFileChunks = [
@@ -104,7 +110,7 @@ describe("sessionMachine", () => {
       toolName: "read_file",
       type: "tool-call",
     },
-  ] as const satisfies LanguageModelV2StreamPart[];
+  ] as const satisfies LanguageModelV3StreamPart[];
 
   const writeFileChunks = [
     {
@@ -121,14 +127,18 @@ describe("sessionMachine", () => {
       toolName: "write_file",
       type: "tool-call",
     },
-  ] as const satisfies LanguageModelV2StreamPart[];
+  ] as const satisfies LanguageModelV3StreamPart[];
 
   const finishChunks = [
     { id: "1", type: "text-start" },
     { delta: "I'm done.", id: "1", type: "text-delta" },
     { id: "1", type: "text-end" },
-    { finishReason: "stop", type: "finish", usage: mockUsage },
-  ] as const satisfies LanguageModelV2StreamPart[];
+    {
+      finishReason: { raw: "stop", unified: "stop" },
+      type: "finish",
+      usage: mockUsage,
+    },
+  ] as const satisfies LanguageModelV3StreamPart[];
 
   const chooseToolCallId = "test-call-choose";
   const chooseChunks = [
@@ -146,7 +156,7 @@ describe("sessionMachine", () => {
       toolName: "choose",
       type: "tool-call",
     },
-  ] as const satisfies LanguageModelV2StreamPart[];
+  ] as const satisfies LanguageModelV3StreamPart[];
 
   beforeEach(async () => {
     const { execa } = await import("execa");
@@ -198,7 +208,7 @@ describe("sessionMachine", () => {
     sessionId?: StoreId.Session;
   }) {
     let currentChunkIndex = 0;
-    const mockLanguageModel = new MockLanguageModelV2({
+    const mockLanguageModel = new MockLanguageModelV3({
       // eslint-disable-next-line @typescript-eslint/require-await
       doStream: async () => {
         const currentChunks = chunkSets[currentChunkIndex];
@@ -216,15 +226,21 @@ describe("sessionMachine", () => {
             chunks: [
               ...currentChunks,
               {
-                finishReason: "stop",
+                finishReason: { raw: "stop", unified: "stop" },
                 logprobs: undefined,
                 type: "finish",
                 usage: {
-                  cachedInputTokens: 0,
-                  inputTokens: 3,
-                  outputTokens: 10,
-                  reasoningTokens: 0,
-                  totalTokens: 0,
+                  inputTokens: {
+                    cacheRead: undefined,
+                    cacheWrite: undefined,
+                    noCache: undefined,
+                    total: 3,
+                  },
+                  outputTokens: {
+                    reasoning: undefined,
+                    text: undefined,
+                    total: 10,
+                  },
                 },
               },
             ],
@@ -351,7 +367,7 @@ describe("sessionMachine", () => {
           <user>
             <text>Hello, I need help with something.</text>
           </user>
-          <assistant finishReason="stop" tokens="0" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
             <step-start step="1" />
             <tool tool="read_file" state="output-available" callId="test-call-1">
               <input>
@@ -372,7 +388,7 @@ describe("sessionMachine", () => {
               </output>
             </tool>
           </assistant>
-          <assistant finishReason="stop" tokens="0" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
             <step-start step="2" />
             <tool tool="write_file" state="output-available" callId="test-call-2">
               <input>
@@ -390,7 +406,7 @@ describe("sessionMachine", () => {
               </output>
             </tool>
           </assistant>
-          <assistant finishReason="stop" tokens="0" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
             <step-start step="3" />
             <text state="done">I'm done.</text>
             <data-gitCommit ref="rev-parse HEAD executed successfully in /tmp/workspace/projects/pj-test" />
@@ -430,7 +446,7 @@ describe("sessionMachine", () => {
           <user>
             <text>Hello, I need help with something.</text>
           </user>
-          <assistant finishReason="stop" tokens="0" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
             <step-start step="1" />
             <tool tool="read_file" state="output-available" callId="test-call-image">
               <input>
@@ -448,7 +464,7 @@ describe("sessionMachine", () => {
               </output>
             </tool>
           </assistant>
-          <assistant finishReason="stop" tokens="0" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
             <step-start step="2" />
             <text state="done">I'm done.</text>
           </assistant>
@@ -465,7 +481,11 @@ describe("sessionMachine", () => {
             { id: "1", type: "text-start" },
             { delta: "First session", id: "1", type: "text-delta" },
             { id: "1", type: "text-end" },
-            { finishReason: "stop", type: "finish", usage: mockUsage },
+            {
+              finishReason: { raw: "stop", unified: "stop" },
+              type: "finish",
+              usage: mockUsage,
+            },
           ],
         ],
         sessionId: defaultSessionId,
@@ -487,7 +507,11 @@ describe("sessionMachine", () => {
             { id: "1", type: "text-start" },
             { delta: "Second assistant message", id: "1", type: "text-delta" },
             { id: "1", type: "text-end" },
-            { finishReason: "stop", type: "finish", usage: mockUsage },
+            {
+              finishReason: { raw: "stop", unified: "stop" },
+              type: "finish",
+              usage: mockUsage,
+            },
           ],
         ],
         queuedMessages: [
@@ -529,7 +553,7 @@ describe("sessionMachine", () => {
           <user>
             <text>Hello, I need help with something.</text>
           </user>
-          <assistant finishReason="stop" tokens="0" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
             <step-start step="1" />
             <text state="done">First session</text>
           </assistant>
@@ -548,7 +572,7 @@ describe("sessionMachine", () => {
           <user>
             <text>Second user message</text>
           </user>
-          <assistant finishReason="stop" tokens="0" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
             <step-start step="1" />
             <text state="done">Second assistant message</text>
           </assistant>
@@ -580,7 +604,7 @@ describe("sessionMachine", () => {
           <user>
             <text>Hello, I need help with something.</text>
           </user>
-          <assistant finishReason="stop" tokens="0" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
             <step-start step="1" />
             <tool tool="read_file" state="output-error" callId="test-call-1">
               <input>
@@ -588,10 +612,10 @@ describe("sessionMachine", () => {
                   "filePath": "test.txt"
                 }
               </input>
-              <error>Model tried to call unavailable tool 'invalid_tool_name'. Available tools: edit_file, glob, grep, read_file, run_diagnostics, run_shell_command, write_file.</error>
+              <error>Model tried to call unavailable tool 'invalid_tool_name'. Available tools: edit_file, generate_image, glob, grep, read_file, run_diagnostics, run_shell_command, write_file.</error>
             </tool>
           </assistant>
-          <assistant finishReason="stop" tokens="0" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
             <step-start step="2" />
             <tool tool="read_file" state="output-available" callId="test-call-1">
               <input>
@@ -612,7 +636,7 @@ describe("sessionMachine", () => {
               </output>
             </tool>
           </assistant>
-          <assistant finishReason="stop" tokens="0" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
             <step-start step="3" />
             <text state="done">I'm done.</text>
           </assistant>
@@ -646,7 +670,7 @@ describe("sessionMachine", () => {
           <user>
             <text>Hello, I need help with something.</text>
           </user>
-          <assistant finishReason="stop" tokens="0" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
             <step-start step="1" />
             <tool tool="read_file" state="output-available" callId="test-call-1">
               <input>
@@ -663,7 +687,7 @@ describe("sessionMachine", () => {
               </output>
             </tool>
           </assistant>
-          <assistant finishReason="stop" tokens="0" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
             <step-start step="2" />
             <tool tool="read_file" state="output-available" callId="test-call-1">
               <input>
@@ -684,7 +708,7 @@ describe("sessionMachine", () => {
               </output>
             </tool>
           </assistant>
-          <assistant finishReason="stop" tokens="0" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
             <step-start step="3" />
             <text state="done">I'm done.</text>
           </assistant>
@@ -705,7 +729,11 @@ describe("sessionMachine", () => {
             { id: "1", type: "text-start" },
             { delta: neverMessage, id: "1", type: "text-delta" },
             { id: "1", type: "text-end" },
-            { finishReason: "stop", type: "finish", usage: mockUsage },
+            {
+              finishReason: { raw: "stop", unified: "stop" },
+              type: "finish",
+              usage: mockUsage,
+            },
           ],
         ],
       });
@@ -720,7 +748,7 @@ describe("sessionMachine", () => {
           <user>
             <text>Hello, I need help with something.</text>
           </user>
-          <assistant finishReason="stop" tokens="0" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
             <step-start step="1" />
             <tool tool="read_file" state="output-available" callId="test-call-1">
               <input>
@@ -741,7 +769,7 @@ describe("sessionMachine", () => {
               </output>
             </tool>
           </assistant>
-          <assistant finishReason="stop" tokens="0" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
             <step-start step="2" />
             <tool tool="read_file" state="output-available" callId="test-call-1">
               <input>
@@ -762,7 +790,7 @@ describe("sessionMachine", () => {
               </output>
             </tool>
           </assistant>
-          <assistant finishReason="stop" tokens="0" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
             <step-start step="3" />
             <text state="done">I'm done.</text>
           </assistant>
@@ -783,7 +811,7 @@ describe("sessionMachine", () => {
           <user>
             <text>Hello, I need help with something.</text>
           </user>
-          <assistant finishReason="stop" tokens="0" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
             <step-start step="1" />
             <text state="done">I'm done.</text>
           </assistant>
@@ -857,7 +885,7 @@ describe("sessionMachine", () => {
           <user>
             <text>Hello, I need help with something.</text>
           </user>
-          <assistant finishReason="stop" tokens="0" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
             <step-start step="1" />
             <tool tool="choose" state="output-available" callId="test-call-choose">
               <input>
@@ -877,7 +905,7 @@ describe("sessionMachine", () => {
               </output>
             </tool>
           </assistant>
-          <assistant finishReason="stop" tokens="0" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
             <step-start step="2" />
             <text state="done">I'm done.</text>
           </assistant>
@@ -912,7 +940,7 @@ describe("sessionMachine", () => {
           <assistant finishReason="aborted" model="mock-model-id" provider="mock-provider">
             <step-start step="1" />
           </assistant>
-          <assistant finishReason="stop" tokens="0" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
             <step-start step="1" />
             <tool tool="read_file" state="output-available" callId="test-call-1">
               <input>
@@ -933,7 +961,7 @@ describe("sessionMachine", () => {
               </output>
             </tool>
           </assistant>
-          <assistant finishReason="stop" tokens="0" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
             <step-start step="2" />
             <text state="done">I'm done.</text>
           </assistant>
@@ -967,7 +995,7 @@ describe("sessionMachine", () => {
             <step-start step="1" />
             <tool tool="read_file" state="input-streaming" callId="test-call-1"></tool>
           </assistant>
-          <assistant finishReason="stop" tokens="0" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
             <step-start step="1" />
             <tool tool="read_file" state="output-available" callId="test-call-1">
               <input>
@@ -988,7 +1016,7 @@ describe("sessionMachine", () => {
               </output>
             </tool>
           </assistant>
-          <assistant finishReason="stop" tokens="0" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
             <step-start step="2" />
             <text state="done">I'm done.</text>
           </assistant>
@@ -1045,7 +1073,7 @@ describe("sessionMachine", () => {
             <user>
               <text>Hello, I need help with something.</text>
             </user>
-            <assistant finishReason="stop" tokens="0" model="mock-model-id" provider="mock-provider">
+            <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
               <step-start step="1" />
               <tool tool="read_file" state="input-available" callId="test-call-1">
                 <input>
@@ -1079,7 +1107,7 @@ describe("sessionMachine", () => {
           <user>
             <text>Hello, I need help with something.</text>
           </user>
-          <assistant finishReason="stop" tokens="0" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
             <step-start step="1" />
             <tool tool="read_file" state="output-available" callId="test-call-1">
               <input>
@@ -1100,7 +1128,7 @@ describe("sessionMachine", () => {
               </output>
             </tool>
           </assistant>
-          <assistant finishReason="stop" tokens="0" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
             <step-start step="2" />
             <tool tool="read_file" state="output-available" callId="test-call-1">
               <input>
