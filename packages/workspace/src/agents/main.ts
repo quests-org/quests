@@ -3,6 +3,7 @@ import { err, ok, safeTry } from "neverthrow";
 import { dedent, pick } from "radashi";
 
 import { APP_FOLDER_NAMES } from "../constants";
+import { absolutePathJoin } from "../lib/absolute-path-join";
 import { buildAIProviderInstructions } from "../lib/build-ai-provider-instructions";
 import {
   buildStaticFileServingInstructions,
@@ -16,6 +17,7 @@ import { git } from "../lib/git";
 import { GitCommands } from "../lib/git/commands";
 import { ensureGitRepo } from "../lib/git/ensure-git-repo";
 import { isToolPart } from "../lib/is-tool-part";
+import { pathExists } from "../lib/path-exists";
 import { readFileWithAnyCase } from "../lib/read-file-with-any-case";
 import { PNPM_COMMAND, TS_COMMAND } from "../lib/shell-commands";
 import { Store } from "../lib/store";
@@ -222,6 +224,10 @@ export const mainAgent = setupAgent({
       "package.json",
     );
 
+    const nodeModulesStatus = await pathExists(
+      absolutePathJoin(appConfig.appDir, "node_modules"),
+    );
+
     const userMessageId = StoreId.newMessageId();
     const userMessage: SessionMessage.ContextWithParts = {
       id: userMessageId,
@@ -246,6 +252,16 @@ export const mainAgent = setupAgent({
             Operating system: ${getSystemInfo()}
             Current date: ${now.toLocaleDateString("en-US", { day: "numeric", month: "long", weekday: "long", year: "numeric" })}
             </system_info>
+
+            ${
+              nodeModulesStatus
+                ? ""
+                : dedent`
+              <dependencies>
+              Dependencies have not yet been installed for this project. If you need to run scripts that require dependencies, you can install them by running \`${PNPM_COMMAND.name} install\` using the \`${agentTools.RunShellCommand.name}\` tool.
+              </dependencies>
+            `
+            }
 
             ${fileTreeResult.match(
               (tree) => dedent`
