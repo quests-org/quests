@@ -88,6 +88,6 @@ export async function tsCommand(
   return ok({
     combined,
     command: `${TS_COMMAND.name} ${args.join(" ")}`,
-    exitCode: execResult.exitCode ?? 0,
+    exitCode: execResult.exitCode ?? 1,
   });
 }

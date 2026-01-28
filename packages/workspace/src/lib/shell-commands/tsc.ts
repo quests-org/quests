@@ -33,6 +33,6 @@ export async function tscCommand(
   return ok({
     combined,
     command: `${TSC_COMMAND.name} ${args.join(" ")}`,
-    exitCode: execResult.exitCode ?? 0,
+    exitCode: execResult.exitCode ?? 1,
   });
 }

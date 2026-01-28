@@ -45,6 +45,6 @@ export async function pnpmCommand(
   return ok({
     combined,
     command: `${PNPM_COMMAND.name} ${args.join(" ")}`,
-    exitCode: execResult.exitCode ?? 0,
+    exitCode: execResult.exitCode ?? 1,
   });
 }
