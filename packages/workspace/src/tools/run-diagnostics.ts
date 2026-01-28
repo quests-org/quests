@@ -3,7 +3,7 @@ import { ok } from "neverthrow";
 import { dedent } from "radashi";
 import { z } from "zod";
 
-import { runDiagnostics, supportsDiagnostics } from "../lib/run-diagnostics";
+import { runDiagnostics } from "../lib/run-diagnostics";
 import { BaseInputSchema } from "./base";
 import { createTool } from "./create-tool";
 
@@ -42,9 +42,3 @@ export const RunDiagnostics = createTool({
     };
   },
 });
-
-const DIAGNOSTICS_HELPER_MESSAGE = `When you're done with your current set of changes to this file, you should call the ${RunDiagnostics.name} tool to check for any new errors.`;
-
-export function diagnosticsReminder(filePath: string): null | string {
-  return supportsDiagnostics(filePath) ? DIAGNOSTICS_HELPER_MESSAGE : null;
-}

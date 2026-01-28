@@ -7,6 +7,7 @@ import { z } from "zod";
 
 import { APP_FOLDER_NAMES } from "../constants";
 import { absolutePathJoin } from "../lib/absolute-path-join";
+import { checkReminder } from "../lib/check-reminder";
 import { ensureRelativePath } from "../lib/ensure-relative-path";
 import { executeError } from "../lib/execute-error";
 import { pathExists } from "../lib/path-exists";
@@ -16,7 +17,6 @@ import { RelativePathSchema } from "../schemas/paths";
 import { BaseInputSchema, TOOL_EXPLANATION_PARAM_NAME } from "./base";
 import { createTool } from "./create-tool";
 import { ReadFile } from "./read-file";
-import { diagnosticsReminder } from "./run-diagnostics";
 import { RunShellCommand } from "./run-shell-command";
 
 const INPUT_PARAMS = {
@@ -98,7 +98,7 @@ export const WriteFile = createTool({
       type: "text",
       value: sift([
         `${baseContent} ${output.filePath}`,
-        diagnosticsReminder(output.filePath),
+        checkReminder(output.filePath),
         scriptsDirectoryReminder(output.filePath),
       ]).join("\n\n"),
     };

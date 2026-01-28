@@ -9,6 +9,7 @@ import { dedent, sift } from "radashi";
 import { z } from "zod";
 
 import { absolutePathJoin } from "../lib/absolute-path-join";
+import { checkReminder } from "../lib/check-reminder";
 import { ensureRelativePath } from "../lib/ensure-relative-path";
 import { executeError } from "../lib/execute-error";
 import { pathExists } from "../lib/path-exists";
@@ -17,7 +18,6 @@ import { RelativePathSchema } from "../schemas/paths";
 import { BaseInputSchema, TOOL_EXPLANATION_PARAM_NAME } from "./base";
 import { createTool } from "./create-tool";
 import { ReadFile } from "./read-file";
-import { diagnosticsReminder } from "./run-diagnostics";
 
 const MAX_FILE_SIZE = 250 * 1024; // 250KB
 
@@ -765,7 +765,7 @@ export const EditFile = createTool({
       type: "text",
       value: sift([
         `Successfully edited file ${result.filePath}`,
-        diagnosticsReminder(result.filePath),
+        checkReminder(result.filePath),
       ]).join("\n\n"),
     };
   },
