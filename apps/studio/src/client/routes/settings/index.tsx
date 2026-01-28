@@ -10,7 +10,7 @@ import { rpcClient } from "@/client/rpc/client";
 import { APP_REPO_URL, DISCORD_URL } from "@quests/shared";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { Download, ExternalLink as ExternalLinkIcon } from "lucide-react";
+import { ExternalLink as ExternalLinkIcon } from "lucide-react";
 
 export const Route = createFileRoute("/settings/")({
   component: SettingsGeneralPage,
@@ -162,33 +162,46 @@ function About() {
 
   const getActionButton = () => {
     switch (updateState?.type) {
+      case "available":
       case "checking":
       case "downloading": {
         return (
           <Button disabled>
-            {updateState.type === "checking" ? "Checking..." : "Downloading..."}
+            {updateState.type === "checking" && "Checking..."}
+            {updateState.type === "downloading" && "Downloading..."}
+            {updateState.type === "available" && "Preparing..."}
+          </Button>
+        );
+      }
+      case "cancelled": {
+        return (
+          <Button onClick={handleCheckForUpdates} variant="secondary">
+            Try again
           </Button>
         );
       }
       case "downloaded": {
-        return (
-          <Button onClick={handleInstallUpdate}>
-            <Download className="h-4 w-4" />
-            Install now
-          </Button>
-        );
+        return <Button onClick={handleInstallUpdate}>Install now</Button>;
       }
       case "error": {
         return (
-          <Button
-            onClick={() => {
-              window.open("https://quests.dev/download", "_blank");
-            }}
-            variant="outline"
-          >
-            Download manually
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={handleCheckForUpdates} variant="ghost">
+              Try again
+            </Button>
+            <Button
+              onClick={() => {
+                window.open("https://quests.dev/download", "_blank");
+              }}
+              variant="outline"
+            >
+              Download manually
+            </Button>
+          </div>
         );
+      }
+      case "installing": {
+        return <Button disabled>Installing...</Button>;
       }
       default: {
         return (
