@@ -18,11 +18,9 @@ import { getMainWindow } from "@/electron-main/windows/main/instance";
 import { serve } from "@hono/node-server";
 import { APP_PROTOCOL, SUPPORT_EMAIL } from "@quests/shared";
 import { detect } from "detect-port";
-import { app as electronApp } from "electron";
 import { Hono } from "hono";
 import { html } from "hono/html";
-import fs from "node:fs";
-import path from "node:path";
+import fs from "node:fs/promises";
 import { tv } from "tailwind-variants";
 
 function focusMainWindow() {
@@ -39,14 +37,7 @@ function focusMainWindow() {
   }
 }
 
-const resourcesPath = electronApp.isPackaged
-  ? path.join(process.resourcesPath, "app.asar.unpacked", "resources")
-  : path.join(process.cwd(), "resources");
-
 const DEFAULT_PORT = process.env.NODE_ENV === "development" ? 5605 : 5705;
-
-const appIconPath = path.join(resourcesPath, "icon.png");
-const appIconBase64 = fs.readFileSync(appIconPath, { encoding: "base64" });
 
 export async function startAuthCallbackServer() {
   const existingServer = getAuthServer();
@@ -58,6 +49,25 @@ export async function startAuthCallbackServer() {
   setAuthServerPort(port);
 
   const app = new Hono();
+
+  app.get("/icon.png", async (c) => {
+    try {
+      const { default: appIconPath } = await import(
+        "../../../resources/icon.png?asset"
+      );
+      const iconBuffer = await fs.readFile(appIconPath);
+      return c.body(iconBuffer, 200, {
+        "Content-Type": "image/png",
+      });
+    } catch (error) {
+      captureServerException(
+        new Error("Failed to load app icon", { cause: error }),
+        { scopes: ["auth"] },
+      );
+      return c.body(null, 404);
+    }
+  });
+
   app.get("/auth/callback/google", async (c) => {
     const code = c.req.query("code");
     const state = c.req.query("state");
@@ -237,15 +247,19 @@ function renderAuthPage({
         <div
           class="flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10"
         >
-          <div class="w-24 h-24 overflow-hidden">
-            <div class="w-full h-full flex items-center justify-center">
-              <div style="width: 100%; height: 100%;">
-                <img src="data:image/png;base64,${appIconBase64}" />
-              </div>
-            </div>
+          <div id="icon-container" class="flex items-center justify-center">
+            <img id="app-icon" src="/icon.png" alt="Quests" class="w-24 h-24" />
           </div>
           ${renderContent()}
         </div>
+        <script>
+          document
+            .getElementById("app-icon")
+            .addEventListener("error", function () {
+              document.getElementById("icon-container").innerHTML =
+                '<h1 class="text-3xl font-bold">Quests</h1>';
+            });
+        </script>
       </body>
     </html>`;
 }
