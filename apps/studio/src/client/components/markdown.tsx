@@ -5,6 +5,7 @@ import { memo, useCallback } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeKatex from "rehype-katex";
 import rehypeRaw from "rehype-raw";
+import remarkBreaks from "remark-breaks";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import remend from "remend";
@@ -176,7 +177,7 @@ export const Markdown = memo(({ allowRawHtml, markdown }: MarkdownProps) => {
         },
       }}
       rehypePlugins={rehypePlugins}
-      remarkPlugins={[remarkGfm, remarkMath]}
+      remarkPlugins={[remarkGfm, remarkMath, remarkBreaks]}
     >
       {remend(markdown)}
     </ReactMarkdown>

@@ -87,6 +87,7 @@
     "posthog-node": "^5.11.2",
     "radashi": "^12.6.0",
     "read-pkg": "^9.0.1",
+    "remark-breaks": "^4.0.0",
     "semver": "^7.7.2",
     "shiki": "^3.21.0",
     "tailwind-merge": "^3.3.1",
