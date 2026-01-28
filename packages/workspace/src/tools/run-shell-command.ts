@@ -264,6 +264,26 @@ export const RunShellCommand = createTool({
       );
     }
 
+    const isTsCommand = result.command.startsWith(`${TS_COMMAND.name} `);
+    const hasModuleNotFoundError =
+      hasErrors &&
+      output &&
+      (output.includes("Cannot find module") ||
+        output.includes("Cannot find package") ||
+        output.includes("ERR_MODULE_NOT_FOUND"));
+
+    if (hasModuleNotFoundError && isTsCommand) {
+      outputParts.push(
+        dedent`
+          
+          <quests-system-note>
+          This error indicates a required module is missing. You may need to install dependencies by running:
+          \`${PNPM_COMMAND.name} install\`
+          </quests-system-note>
+        `,
+      );
+    }
+
     const finalOutput = outputParts.join("\n");
 
     return {
