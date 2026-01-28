@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto";
 
-export const INTERNAL_KEY_PREFIX = "quests-internal-";
+const INTERNAL_KEY_PREFIX = "quests-internal-";
 
 const INTERNAL_KEY = `${INTERNAL_KEY_PREFIX}${randomBytes(32).toString("hex")}`;
 

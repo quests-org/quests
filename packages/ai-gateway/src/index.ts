@@ -9,7 +9,6 @@ export type { TypedError as AIGatewayTypedError } from "./lib/errors";
 export * from "./lib/fetch-ai-sdk-model";
 export * from "./lib/fetch-models";
 export * from "./lib/get-provider-details";
-export { INTERNAL_KEY_PREFIX } from "./lib/key-for-provider";
 export * from "./lib/migrate-model-uri";
 export { baseURLWithDefault } from "./lib/providers/base-url-with-default";
 export { fetchCredits } from "./lib/providers/fetch-credits";

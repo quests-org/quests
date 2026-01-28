@@ -1,4 +1,4 @@
-import { getProviderDetails, INTERNAL_KEY_PREFIX } from "@quests/ai-gateway";
+import { getProviderDetails } from "@quests/ai-gateway";
 import { dedent } from "radashi";
 
 import { getWorkspaceServerURL } from "../logic/server/url";
@@ -25,13 +25,7 @@ export async function buildAIProviderInstructions({
 
   const providerSections = providerDetails
     .map(
-      ({
-        aiSDKPackage,
-        config,
-        envVariables,
-        metadata,
-        recommendedModelId,
-      }) => {
+      ({ aiSDKInfo, config, envVariables, metadata, recommendedModelId }) => {
         const name =
           metadata.name &&
           config.displayName &&
@@ -39,20 +33,30 @@ export async function buildAIProviderInstructions({
             ? `${metadata.name} (${config.displayName})`
             : metadata.name;
 
-        const envVarNames = Object.keys(envVariables);
-        const envVarsText =
-          envVarNames.length > 0 ? envVarNames.join(", ") : "none";
+        const envVarsText = Object.keys(envVariables).join(", ");
 
         const questsNote =
           config.type === "quests"
             ? " (first-party provider; behaves like OpenRouter and can be substituted for OpenRouter API key for common APIs)"
             : "";
 
+        const importText = "import"; // Required or code will be mistakenly transpiled by Electron Vite
+        const usageExample = dedent`
+          \`\`\`typescript
+          ${importText} { ${aiSDKInfo.exportName} } from "${aiSDKInfo.package}";
+          const provider = ${aiSDKInfo.exportName}({ apiKey: process.env.${aiSDKInfo.envVars.apiKey}, baseURL: process.env.${aiSDKInfo.envVars.baseURL} });
+          const text = await generateText({
+            model: provider("${recommendedModelId}"),
+            prompt: "Hello, world!",
+          });
+          \`\`\`
+        `.trim();
+
         return dedent`
         ## ${name}${questsNote}
         Environment variables: ${envVarsText}
         ${recommendedModelId ? `${modelIdLabel}: \`${recommendedModelId}\`` : ""}
-        AI SDK package: \`${aiSDKPackage}\`
+        ${usageExample}
       `.trim();
       },
     )
@@ -70,6 +74,6 @@ export async function buildAIProviderInstructions({
     - Do NOT default to familiar models (e.g., gpt-4o-mini, claude-3-5-sonnet-20241022)
     - Suggested models are guaranteed to work; others may have billing/compatibility issues
     - Always supply the \`*_BASE_URL\` environment variable for the API client as calls route through the internal proxy and will not work otherwise
-    - \`*_API_KEY\` environment variables contain placeholder keys (e.g., "${INTERNAL_KEY_PREFIX}...") that are swapped at the gateway for actual provider keys
+    - \`*_API_KEY\` environment variables contain a placeholder key that is swapped at the gateway for the actual provider key
   `.trim();
 }

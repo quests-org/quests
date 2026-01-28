@@ -6,7 +6,7 @@ import { parallel } from "radashi";
 
 import { type AIGatewayModel } from "../schemas/model";
 import { type AIGatewayProviderConfig } from "../schemas/provider-config";
-import { getPackageForProviderType } from "./bundled-providers";
+import { getAISDKProviderInfo } from "./bundled-providers";
 import { envForProviderConfig } from "./env-for-provider-configs";
 import { fetchModelsForProvider } from "./fetch-models";
 import { getProviderMetadata } from "./providers/metadata";
@@ -40,10 +40,10 @@ export async function getProviderDetails({
     });
 
     const metadata = getProviderMetadata(config.type);
-    const aiSDKPackage = getPackageForProviderType(config.type);
+    const aiSDKInfo = getAISDKProviderInfo(config.type);
 
     return {
-      aiSDKPackage,
+      aiSDKInfo,
       config,
       envVariables,
       metadata,
