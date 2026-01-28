@@ -68,11 +68,10 @@ export async function buildAIProviderInstructions({
 
     ${providerSections}
 
-    ## CRITICAL: Using AI Providers
-    You MUST use the "${modelIdLabel}" listed above unless the user explicitly requests a different model.
-    - Verify you're using the exact suggested model ID before writing code
-    - Do NOT default to familiar models (e.g., gpt-4o-mini, claude-3-5-sonnet-20241022)
-    - Suggested models are guaranteed to work; others may have billing/compatibility issues
+    ## Using AI Providers
+    When writing code that uses AI models:
+    - The "${modelIdLabel}" listed above is recommended and guaranteed to work with billing/compatibility
+    - You may use other models if the user explicitly requests them
     - Always supply the \`*_BASE_URL\` environment variable for the API client as calls route through the internal proxy and will not work otherwise
     - \`*_API_KEY\` environment variables contain a placeholder key that is swapped at the gateway for the actual provider key
   `.trim();
