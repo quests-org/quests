@@ -65,9 +65,11 @@ export function ShellCommandCard({
     );
   };
 
+  const hasError = isError || (hasOutput && part.output.exitCode !== 0);
+
   const statusText = isLoading
     ? "Running..."
-    : isError
+    : hasError
       ? "Error"
       : hasOutput
         ? "Success"
