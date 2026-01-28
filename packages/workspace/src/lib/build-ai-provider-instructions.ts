@@ -1,4 +1,4 @@
-import { getProviderDetails } from "@quests/ai-gateway";
+import { getProviderDetails, INTERNAL_KEY_PREFIX } from "@quests/ai-gateway";
 import { dedent } from "radashi";
 
 import { getWorkspaceServerURL } from "../logic/server/url";
@@ -69,5 +69,7 @@ export async function buildAIProviderInstructions({
     - Verify you're using the exact suggested model ID before writing code
     - Do NOT default to familiar models (e.g., gpt-4o-mini, claude-3-5-sonnet-20241022)
     - Suggested models are guaranteed to work; others may have billing/compatibility issues
+    - Always supply the \`*_BASE_URL\` environment variable for the API client as calls route through the internal proxy and will not work otherwise
+    - \`*_API_KEY\` environment variables contain placeholder keys (e.g., "${INTERNAL_KEY_PREFIX}...") that are swapped at the gateway for actual provider keys
   `.trim();
 }
