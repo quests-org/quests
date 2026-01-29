@@ -81,11 +81,29 @@ describe("Studio Smoke Test", () => {
       args: platform === "linux" ? ["--no-sandbox", "--disable-gpu"] : [],
       env: {
         ...(process.env as Record<string, string>),
+        ELECTRON_ENABLE_CONSOLE_LOGGING: "true",
         ELECTRON_USER_DATA_DIR: tempUserDataDir,
         SKIP_MOVE_TO_APPLICATIONS: "true",
       },
       executablePath,
       timeout: 60_000,
+    });
+
+    const childProcess = electronApp.process();
+
+    childProcess.stdout?.on("data", (data: Buffer | string) => {
+      // eslint-disable-next-line no-console
+      console.log(Buffer.isBuffer(data) ? data.toString("utf8") : data);
+    });
+
+    childProcess.stderr?.on("data", (data: Buffer | string) => {
+      // eslint-disable-next-line no-console
+      console.error(Buffer.isBuffer(data) ? data.toString("utf8") : data);
+    });
+
+    electronApp.on("console", (msg) => {
+      // eslint-disable-next-line no-console
+      console.log(msg.text());
     });
 
     expect(electronApp).toBeDefined();

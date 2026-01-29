@@ -2,18 +2,19 @@ import { app } from "electron";
 import log from "electron-log";
 import path from "node:path";
 
-// Configure electron-log
+const ENABLE_CONSOLE_LOGGING =
+  process.env.NODE_ENV === "development" ||
+  process.env.ELECTRON_ENABLE_CONSOLE_LOGGING === "true";
+
 log.transports.file.resolvePathFn = () => {
   return path.join(app.getPath("userData"), "logs", "main.log");
 };
 
-// Configure log level based on environment
 log.transports.file.level =
   process.env.NODE_ENV === "development" ? false : "info";
 
-// Also log to console in development
-log.transports.console.level =
-  process.env.NODE_ENV === "development" ? "silly" : false;
+// Enable console logging in development or when explicitly requested
+log.transports.console.level = ENABLE_CONSOLE_LOGGING ? "silly" : false;
 
 export { default as logger } from "electron-log";
 
