@@ -119,8 +119,9 @@ const config: Configuration = {
   win: {
     executableName: "quests",
     signtoolOptions: {
-      publisherName:
-        "CN=Finalpoint, LLC, O=Finalpoint, LLC, L=Newark, ST=Delaware, C=US, serialNumber=5595509, businessCategory=Private Organization, jurisdictionC=US, jurisdictionST=Delaware",
+      publisherName: [
+        'E=contact@finalpoint.co, CN="Finalpoint, LLC", O="Finalpoint, LLC", L=Newark, S=Delaware, C=US, OID.1.3.6.1.4.1.311.60.2.1.2=Delaware, OID.1.3.6.1.4.1.311.60.2.1.3=US, SERIALNUMBER=5595509, OID.2.5.4.15=Private Organization',
+      ],
       sign: "scripts/win-cloud-hsm-sign.js",
     },
     target: ["nsis"],
