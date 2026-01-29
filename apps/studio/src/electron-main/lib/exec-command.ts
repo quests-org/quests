@@ -27,12 +27,12 @@ export async function forkExecCommand(
       });
     }
 
-    child.stdout?.on("data", (data) => {
-      stdout += `${data}`;
+    child.stdout?.on("data", (data: Buffer) => {
+      stdout += data.toString();
     });
 
-    child.stderr?.on("data", (data) => {
-      stderr += `${data}`;
+    child.stderr?.on("data", (data: Buffer) => {
+      stderr += data.toString();
     });
 
     child.on("close", (code) => {

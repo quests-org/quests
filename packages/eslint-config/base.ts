@@ -120,9 +120,12 @@ export default tseslint.config(
               name: ["Error", "URL", "URLSearchParams"],
             },
           ],
-          allowBoolean: true,
+          allowAny: false,
+          allowBoolean: false,
+          allowNever: false,
           allowNullish: false,
           allowNumber: true,
+          allowRegExp: false,
         },
       ],
       // --------
