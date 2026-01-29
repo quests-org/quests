@@ -108,11 +108,19 @@ const config: Configuration = {
     uninstallDisplayName: "${productName}",
   },
   productName: "Quests",
+  protocols: [
+    {
+      // Required for Linux deep linking
+      name: "Quests",
+      schemes: ["quests"],
+    },
+  ],
   publish: publishConfig,
   win: {
     executableName: "quests",
     signtoolOptions: {
-      publisherName: "Finalpoint, LLC",
+      publisherName:
+        "CN=Finalpoint, LLC, O=Finalpoint, LLC, L=Newark, ST=Delaware, C=US, serialNumber=5595509, businessCategory=Private Organization, jurisdictionC=US, jurisdictionST=Delaware",
       sign: "scripts/win-cloud-hsm-sign.js",
     },
     target: ["nsis"],
