@@ -1,17 +1,15 @@
 import { logger } from "@/electron-main/lib/electron-logger";
 import { publisher } from "@/electron-main/rpc/publisher";
 import { app } from "electron";
-import {
-  autoUpdater,
-  type ProgressInfo,
-  type UpdateInfo,
-} from "electron-updater";
+import pkg, { type ProgressInfo, type UpdateInfo } from "electron-updater";
 import ms from "ms";
 import fs from "node:fs";
 import os from "node:os";
 
 import { getPreferencesStore, setLastUpdateCheck } from "../stores/preferences";
 
+// Required due to https://github.com/electron-userland/electron-builder/issues/7976
+const { autoUpdater } = pkg;
 const scopedLogger = logger.scope("appUpdater");
 
 const IS_MACOS_INTEL = os.platform() === "darwin" && os.arch() === "x64";
