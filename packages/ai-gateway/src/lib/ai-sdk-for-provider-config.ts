@@ -1,3 +1,6 @@
+// Static import because @ai-sdk/gateway is already statically imported by the ai package,
+// so dynamic import won't code-split it into a separate chunk
+import { createGateway } from "@ai-sdk/gateway";
 import {
   ATTRIBUTION_NAME,
   ATTRIBUTION_URL,
@@ -39,7 +42,6 @@ export async function aiSDKForProviderConfig(
       return createFireworks({ apiKey, baseURL });
     }
     case "@ai-sdk/gateway": {
-      const { createGateway } = await import("@ai-sdk/gateway");
       return createGateway({
         apiKey,
         baseURL,

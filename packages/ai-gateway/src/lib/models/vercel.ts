@@ -1,3 +1,6 @@
+// Static import because @ai-sdk/gateway is already statically imported by the ai package,
+// so dynamic import won't code-split it into a separate chunk
+import { createGateway } from "@ai-sdk/gateway";
 import { unique } from "radashi";
 import { Result } from "typescript-result";
 
@@ -11,7 +14,7 @@ import { getModelFeatures } from "../get-model-features";
 import { getProviderMetadata } from "../providers/metadata";
 
 export function fetchModelsForVercel(config: AIGatewayProviderConfig.Type) {
-  return Result.gen(async function* () {
+  return Result.gen(function* () {
     const metadata = getProviderMetadata(config.type);
     const cacheKey = `vercel-models-${config.apiKey}`;
     const cachedModels = getCachedResult<AIGatewayModel.Type[]>(cacheKey);
@@ -20,8 +23,6 @@ export function fetchModelsForVercel(config: AIGatewayProviderConfig.Type) {
       return cachedModels;
     }
 
-    // Avoids loading the entire @ai-sdk/gateway package unnecessarily
-    const { createGateway } = await import("@ai-sdk/gateway");
     const gatewayProvider = createGateway({ apiKey: config.apiKey });
     const { models } = yield* Result.try(
       async () => await gatewayProvider.getAvailableModels(),
