@@ -1,5 +1,6 @@
 import { formatNumber } from "@/client/lib/format-number";
 import { formatDuration } from "@/client/lib/format-time";
+import { isValidNumber } from "@/client/lib/usage-utils";
 import { type SessionMessage } from "@quests/workspace/client";
 import { type ReactNode } from "react";
 
@@ -11,7 +12,7 @@ interface StatRow {
   value: number | undefined;
 }
 
-interface UsageStats extends Partial<SessionMessage.Usage> {
+interface UsageStats extends SessionMessage.Usage {
   msToFirstChunk?: number;
   totalDuration?: number;
 }
@@ -42,12 +43,12 @@ export function UsageStatsTooltip({
     {
       formatter: formatNumber,
       label: "Reasoning tokens:",
-      value: stats.reasoningTokens,
+      value: stats.outputTokenDetails.reasoningTokens,
     },
     {
       formatter: formatNumber,
       label: "Cached tokens:",
-      value: stats.cachedInputTokens,
+      value: stats.inputTokenDetails.cacheReadTokens,
     },
     {
       formatter: formatNumber,
@@ -61,9 +62,7 @@ export function UsageStatsTooltip({
     },
   ];
 
-  const visibleRows = rows.filter(
-    (row) => row.value !== undefined && !Number.isNaN(row.value),
-  );
+  const visibleRows = rows.filter((row) => isValidNumber(row.value));
 
   if (visibleRows.length === 0) {
     return <>{children}</>;

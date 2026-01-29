@@ -126,7 +126,7 @@ export async function prepareModelMessages({
 
   // Including all tools so they can run their toModelOutput even if they are
   // not used in this session
-  const modelMessages = SessionMessage.toModelMessages(
+  const modelMessages = await SessionMessage.toModelMessages(
     orderedMessages,
     ALL_AI_SDK_TOOLS,
   );

@@ -1,4 +1,4 @@
-import { type LanguageModelV2 } from "@ai-sdk/provider";
+import { type LanguageModelV3 } from "@ai-sdk/provider";
 import { type CaptureExceptionFunction } from "@quests/shared";
 
 import { type AIGatewayModel } from "./schemas/model";
@@ -11,7 +11,7 @@ export interface AIGatewayEnv {
   };
 }
 
-export interface AIGatewayLanguageModel extends LanguageModelV2 {
+export interface AIGatewayLanguageModel extends LanguageModelV3 {
   __aiGatewayModel: AIGatewayModel.Type;
 }
 

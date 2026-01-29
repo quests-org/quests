@@ -1,4 +1,4 @@
-import type { LanguageModelV2 } from "@ai-sdk/provider";
+import type { LanguageModelV3 } from "@ai-sdk/provider";
 
 import {
   type AIGatewayLanguageModel,
@@ -7,7 +7,7 @@ import {
 import { AIProviderConfigIdSchema, type AIProviderType } from "@quests/shared";
 
 export function createMockAIGatewayModel(
-  baseModel: LanguageModelV2,
+  baseModel: LanguageModelV3,
   options: {
     features?: AIGatewayModel.ModelFeatures[];
     provider?: AIProviderType;

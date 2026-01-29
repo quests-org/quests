@@ -200,6 +200,11 @@ function getToolInputValue(
         ? filenameFromFilePath(part.input.filePath)
         : undefined;
     }
+    case "tool-generate_image": {
+      return part.input.filePath
+        ? filenameFromFilePath(part.input.filePath)
+        : undefined;
+    }
     case "tool-glob": {
       return part.input.pattern;
     }
@@ -248,6 +253,9 @@ function getToolOutputDescription(
     }
     case "tool-edit_file": {
       return filenameFromFilePath(part.output.filePath) || "file edited";
+    }
+    case "tool-generate_image": {
+      return filenameFromFilePath(part.output.filePath) || "unknown location";
     }
     case "tool-glob": {
       const files = part.output.files;

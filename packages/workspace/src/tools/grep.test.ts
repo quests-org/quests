@@ -41,11 +41,15 @@ describe("Grep", () => {
   describe("resultToPrompt", () => {
     it("should return 'No matches found' when there are no matches", () => {
       const result = Grep.toModelOutput({
+        input: {
+          pattern: "",
+        },
         output: {
           matches: [],
           totalMatches: 0,
           truncated: false,
         },
+        toolCallId: "123",
       });
       expect(result).toMatchInlineSnapshot(`
         {
@@ -57,6 +61,9 @@ describe("Grep", () => {
 
     it("should format matches grouped by file and sorted by modification time", () => {
       const result = Grep.toModelOutput({
+        input: {
+          pattern: "",
+        },
         output: {
           matches: [
             // Older file first in input (should be moved to end after sorting)
@@ -83,6 +90,7 @@ describe("Grep", () => {
           totalMatches: 3,
           truncated: false,
         },
+        toolCallId: "123",
       });
       expect(result).toMatchInlineSnapshot(`
         {
@@ -100,6 +108,9 @@ describe("Grep", () => {
 
     it("should show truncation warning when results are truncated", () => {
       const result = Grep.toModelOutput({
+        input: {
+          pattern: "",
+        },
         output: {
           matches: [
             {
@@ -112,6 +123,7 @@ describe("Grep", () => {
           totalMatches: 150,
           truncated: true,
         },
+        toolCallId: "123",
       });
       expect(result).toMatchInlineSnapshot(`
         {
@@ -127,6 +139,9 @@ describe("Grep", () => {
 
     it("should handle single match in single file", () => {
       const result = Grep.toModelOutput({
+        input: {
+          pattern: "",
+        },
         output: {
           matches: [
             {
@@ -139,6 +154,7 @@ describe("Grep", () => {
           totalMatches: 1,
           truncated: false,
         },
+        toolCallId: "123",
       });
       expect(result).toMatchInlineSnapshot(`
         {

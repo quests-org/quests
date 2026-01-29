@@ -200,18 +200,20 @@ export const llmRequestLogic = fromPromise<
             completionTokensPerSecond;
           await scopedStore.saveMessage(assistantMessage);
           captureEvent("llm.request_finished", {
-            cached_input_tokens: part.totalUsage.cachedInputTokens,
+            cached_input_tokens:
+              part.totalUsage.inputTokenDetails.cacheReadTokens ?? 0,
             completion_tokens_per_second: completionTokensPerSecond,
             finish_reason: part.finishReason,
-            input_tokens: part.totalUsage.inputTokens,
+            input_tokens: part.totalUsage.inputTokens ?? 0,
             modelId,
             ms_to_finish: msToFinish,
             ms_to_first_chunk: msToFirstChunk ?? 0,
-            output_tokens: part.totalUsage.outputTokens,
+            output_tokens: part.totalUsage.outputTokens ?? 0,
             providerId,
-            reasoning_tokens: part.totalUsage.reasoningTokens,
+            reasoning_tokens:
+              part.totalUsage.outputTokenDetails.reasoningTokens ?? 0,
             step_count: input.stepCount,
-            total_tokens: part.totalUsage.totalTokens,
+            total_tokens: part.totalUsage.totalTokens ?? 0,
           });
           break;
         }
@@ -519,8 +521,22 @@ export const llmRequestLogic = fromPromise<
           await scopedStore.savePart(newPart);
           break;
         }
+        case "tool-output-denied": {
+          input.appConfig.workspaceConfig.captureException(
+            new Error(`Unexpected tool output denied: ${JSON.stringify(part)}`),
+          );
+          break;
+        }
         case "tool-result": {
           throw new Error(`Unexpected tool result: ${JSON.stringify(part)}`);
+        }
+        case "tool-approval-request": {
+          input.appConfig.workspaceConfig.captureException(
+            new Error(
+              `Unexpected tool approval request: ${JSON.stringify(part)}`,
+            ),
+          );
+          break;
         }
         default: {
           const _exhaustiveCheck: never = part;

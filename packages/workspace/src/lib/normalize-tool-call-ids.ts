@@ -15,25 +15,40 @@ export function normalizeToolCallIds({
   }
 
   return messages.map((message) => {
-    if (
-      (message.role === "assistant" || message.role === "tool") &&
-      Array.isArray(message.content)
-    ) {
-      message.content = message.content.map((part) => {
-        if (
-          (part.type === "tool-call" || part.type === "tool-result") &&
-          "toolCallId" in part
-        ) {
-          return {
-            ...part,
-            // Anthropic doesn't support tool call IDs with special characters
-            // and will error "String should match pattern '^[a-zA-Z0-9_-]+$'"
-            toolCallId: part.toolCallId.replaceAll(/[^\w-]/g, "_"),
-          };
-        }
-        return part;
-      });
+    if (message.role === "assistant" && Array.isArray(message.content)) {
+      return {
+        ...message,
+        content: message.content.map((part) => {
+          if (part.type === "tool-call") {
+            return {
+              ...part,
+              toolCallId: normalizeToolCallId(part.toolCallId),
+            };
+          }
+          return part;
+        }),
+      };
+    }
+    if (message.role === "tool" && Array.isArray(message.content)) {
+      return {
+        ...message,
+        content: message.content.map((part) => {
+          if (part.type === "tool-result") {
+            return {
+              ...part,
+              toolCallId: normalizeToolCallId(part.toolCallId),
+            };
+          }
+          return part;
+        }),
+      };
     }
     return message;
   });
+}
+
+function normalizeToolCallId(toolCallId: string) {
+  // Anthropic doesn't support tool call IDs with special characters
+  // and will error "String should match pattern '^[a-zA-Z0-9_-]+$'"
+  return toolCallId.replaceAll(/[^\w-]/g, "_");
 }

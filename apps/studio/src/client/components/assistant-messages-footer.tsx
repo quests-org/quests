@@ -8,6 +8,7 @@ import { guard, sift } from "radashi";
 import { useMemo, useState } from "react";
 
 import { formatDuration } from "../lib/format-time";
+import { isValidNumber, safeAdd } from "../lib/usage-utils";
 import { cn } from "../lib/utils";
 import { rpcClient } from "../rpc/client";
 import { CopyButton } from "./copy-button";
@@ -89,25 +90,49 @@ export function AssistantMessagesFooter({
             label,
             modelId,
             stats: {
-              cachedInputTokens:
-                (existing?.stats.cachedInputTokens || 0) +
-                (usage?.cachedInputTokens || 0),
-              inputTokens:
-                (existing?.stats.inputTokens || 0) + (usage?.inputTokens || 0),
-              msToFinish:
-                (existing?.stats.msToFinish || 0) +
-                (message.metadata.msToFinish || 0),
+              inputTokenDetails: {
+                cacheReadTokens: safeAdd(
+                  existing?.stats.inputTokenDetails.cacheReadTokens,
+                  usage?.inputTokenDetails.cacheReadTokens,
+                ),
+                cacheWriteTokens: safeAdd(
+                  existing?.stats.inputTokenDetails.cacheWriteTokens,
+                  usage?.inputTokenDetails.cacheWriteTokens,
+                ),
+                noCacheTokens: safeAdd(
+                  existing?.stats.inputTokenDetails.noCacheTokens,
+                  usage?.inputTokenDetails.noCacheTokens,
+                ),
+              },
+              inputTokens: safeAdd(
+                existing?.stats.inputTokens,
+                usage?.inputTokens,
+              ),
+              msToFinish: safeAdd(
+                existing?.stats.msToFinish,
+                message.metadata.msToFinish,
+              ),
               msToFirstChunk:
                 existing?.stats.msToFirstChunk ??
                 message.metadata.msToFirstChunk,
-              outputTokens:
-                (existing?.stats.outputTokens || 0) +
-                (usage?.outputTokens || 0),
-              reasoningTokens:
-                (existing?.stats.reasoningTokens || 0) +
-                (usage?.reasoningTokens || 0),
-              totalTokens:
-                (existing?.stats.totalTokens || 0) + (usage?.totalTokens || 0),
+              outputTokenDetails: {
+                reasoningTokens: safeAdd(
+                  existing?.stats.outputTokenDetails.reasoningTokens,
+                  usage?.outputTokenDetails.reasoningTokens,
+                ),
+                textTokens: safeAdd(
+                  existing?.stats.outputTokenDetails.textTokens,
+                  usage?.outputTokenDetails.textTokens,
+                ),
+              },
+              outputTokens: safeAdd(
+                existing?.stats.outputTokens,
+                usage?.outputTokens,
+              ),
+              totalTokens: safeAdd(
+                existing?.stats.totalTokens,
+                usage?.totalTokens,
+              ),
             },
           });
         }
@@ -334,7 +359,7 @@ const formatTokenCount = (count: number) =>
   guard(() => count > 0 && count.toLocaleString());
 
 const formatTimeMs = (ms: number | undefined) =>
-  guard(() => ms !== undefined && !Number.isNaN(ms) && formatDuration(ms));
+  guard(() => isValidNumber(ms) && formatDuration(ms));
 
 function getDeveloperModeRows(model: ModelUsageData): {
   isWarning?: boolean;
@@ -347,17 +372,26 @@ function getDeveloperModeRows(model: ModelUsageData): {
       "Time to first chunk:",
       formatTimeMs(model.stats.msToFirstChunk),
     ),
-    makeStatRow("Input tokens:", formatTokenCount(model.stats.inputTokens)),
-    makeStatRow("Output tokens:", formatTokenCount(model.stats.outputTokens)),
+    makeStatRow(
+      "Input tokens:",
+      formatTokenCount(model.stats.inputTokens ?? 0),
+    ),
+    makeStatRow(
+      "Output tokens:",
+      formatTokenCount(model.stats.outputTokens ?? 0),
+    ),
     makeStatRow(
       "Reasoning tokens:",
-      formatTokenCount(model.stats.reasoningTokens),
+      formatTokenCount(model.stats.outputTokenDetails.reasoningTokens ?? 0),
     ),
     makeStatRow(
       "Cached tokens:",
-      formatTokenCount(model.stats.cachedInputTokens),
+      formatTokenCount(model.stats.inputTokenDetails.cacheReadTokens ?? 0),
     ),
-    makeStatRow("Total tokens:", formatTokenCount(model.stats.totalTokens)),
+    makeStatRow(
+      "Total tokens:",
+      formatTokenCount(model.stats.totalTokens ?? 0),
+    ),
     makeStatRow("Duration:", formatTimeMs(model.stats.msToFinish)),
   ]).map((stat) => ({
     ...stat,

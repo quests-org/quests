@@ -48,7 +48,13 @@ export function addCacheControlToMessages({
 
       if (shouldUseContentOptions) {
         const lastContent = message.content.at(-1);
-        if (lastContent && typeof lastContent === "object") {
+        if (
+          lastContent &&
+          typeof lastContent === "object" &&
+          "type" in lastContent &&
+          lastContent.type !== "tool-approval-request" &&
+          lastContent.type !== "tool-approval-response"
+        ) {
           lastContent.providerOptions = {
             ...lastContent.providerOptions,
             ...providerOptions,

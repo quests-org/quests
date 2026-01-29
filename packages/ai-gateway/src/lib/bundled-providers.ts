@@ -25,7 +25,7 @@ type BundledProviderPackage =
   | "@ai-sdk/togetherai"
   | "@ai-sdk/xai"
   | "@openrouter/ai-sdk-provider"
-  | "ollama-ai-provider-v2";
+  | "ai-sdk-ollama";
 
 const PROVIDER_TYPE_TO_AI_SDK_INFO: Partial<
   Record<AIGatewayProviderConfig.Type["type"], AISDKProviderInfo>
@@ -100,7 +100,7 @@ const PROVIDER_TYPE_TO_AI_SDK_INFO: Partial<
       baseURL: "OLLAMA_BASE_URL",
     },
     exportName: "createOllama",
-    package: "ollama-ai-provider-v2",
+    package: "ai-sdk-ollama",
   },
   openai: {
     envVars: {

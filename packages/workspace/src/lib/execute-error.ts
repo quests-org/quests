@@ -1,5 +1,16 @@
 import { err } from "neverthrow";
 
-export function executeError(message: string) {
-  return err({ message, type: "execute-error" as const });
+export type ExecuteError =
+  | { code: ExecuteErrorCodes; message: string; type: "execute-error" }
+  | { message: string; type: "execute-error" };
+
+export type ExecuteErrorCodes = "no-image-generation-provider";
+
+export function executeError(
+  errorOrMessage: string | { code: ExecuteErrorCodes; message: string },
+) {
+  if (typeof errorOrMessage === "string") {
+    return err({ message: errorOrMessage, type: "execute-error" as const });
+  }
+  return err({ ...errorOrMessage, type: "execute-error" as const });
 }

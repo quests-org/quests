@@ -5,7 +5,7 @@ import { type AbsolutePath } from "../schemas/paths";
 
 export async function writeFileWithDir(
   filePath: AbsolutePath,
-  content: string,
+  content: Parameters<typeof fs.writeFile>[1],
   options?: { signal?: AbortSignal },
 ) {
   const dirPath = path.dirname(filePath);

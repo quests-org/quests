@@ -1,4 +1,4 @@
-import { MockLanguageModelV2 } from "ai/test";
+import { MockLanguageModelV3 } from "ai/test";
 import { describe, expect, it } from "vitest";
 
 import { StoreId } from "../schemas/store-id";
@@ -28,17 +28,23 @@ function createMockMessage(text: string) {
 }
 
 function createMockModel(text: string) {
-  return new MockLanguageModelV2({
+  return new MockLanguageModelV3({
     doGenerate: () =>
       Promise.resolve({
         content: [{ text, type: "text" }],
-        finishReason: "stop",
+        finishReason: { raw: "stop", unified: "stop" },
         usage: {
-          cachedInputTokens: 0,
-          inputTokens: 10,
-          outputTokens: 15,
-          reasoningTokens: 0,
-          totalTokens: 25,
+          inputTokens: {
+            cacheRead: undefined,
+            cacheWrite: undefined,
+            noCache: undefined,
+            total: 10,
+          },
+          outputTokens: {
+            reasoning: undefined,
+            text: undefined,
+            total: 15,
+          },
         },
         warnings: [],
       }),

@@ -40,13 +40,14 @@ function formatCommitMessage(text: string): string {
 export const mainAgent = setupAgent({
   agentTools: pick(TOOLS, [
     "EditFile",
+    "GenerateImage",
     "Glob",
     "Grep",
     "ReadFile",
     "RunDiagnostics",
     "RunShellCommand",
-    // "Think", // Removed on 2026-01-08, as most models don't use it
     "WriteFile",
+    // "Think", // Removed on 2026-01-08, as most models don't use it
   ]),
   name: "main",
 }).create(({ agentTools, name }) => ({
