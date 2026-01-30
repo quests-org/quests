@@ -82,11 +82,18 @@ export function ToolContent({
               : `Generated ${imageCount} images`}
           </SectionHeader>
           <div className="space-y-1">
-            {part.output.images.map((image, index) => (
-              <MonoText className="text-xs" key={index}>
-                {image.filePath} ({formatBytes(image.sizeBytes)})
-              </MonoText>
-            ))}
+            {part.output.images.map((image, index) => {
+              const dimensions =
+                image.width && image.height
+                  ? `, ${image.width}×${image.height}`
+                  : "";
+              return (
+                <MonoText className="text-xs" key={index}>
+                  {image.filePath} ({formatBytes(image.sizeBytes)}
+                  {dimensions})
+                </MonoText>
+              );
+            })}
           </div>
         </div>
       );

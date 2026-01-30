@@ -1,4 +1,5 @@
 import { AIGatewayProviderConfig, generateImages } from "@quests/ai-gateway";
+import { imageSize } from "image-size";
 import mime from "mime-types";
 import ms from "ms";
 import { err, ok } from "neverthrow";
@@ -101,8 +102,21 @@ export const GenerateImage = createTool({
 
           await writeFileWithDir(absolutePath, imageBuffer, { signal });
 
+          // Try to get image dimensions, but don't fail if it doesn't work
+          let dimensions: { height?: number; width?: number } = {};
+          try {
+            const size = imageSize(imageBuffer);
+            dimensions = {
+              height: size.height,
+              width: size.width,
+            };
+          } catch {
+            // Gracefully handle if image-size fails
+          }
+
           return {
             filePath: RelativePathSchema.parse(filename),
+            ...dimensions,
             sizeBytes: imageBuffer.length,
           };
         }),
@@ -141,7 +155,9 @@ export const GenerateImage = createTool({
     images: z.array(
       z.object({
         filePath: RelativePathSchema,
+        height: z.number().optional(),
         sizeBytes: z.number(),
+        width: z.number().optional(),
       }),
     ),
     modelId: z.string(),
@@ -172,10 +188,14 @@ export const GenerateImage = createTool({
     }
 
     const imageList = output.images
-      .map(
-        (image) =>
-          `${image.filePath} (${Math.round(image.sizeBytes / 1024)}KB)`,
-      )
+      .map((image) => {
+        const size = `${Math.round(image.sizeBytes / 1024)}KB`;
+        const dimensions =
+          image.width && image.height
+            ? `, ${image.width}x${image.height}`
+            : "";
+        return `${image.filePath} (${size}${dimensions})`;
+      })
       .join("\n");
 
     if (imageCount === 1) {

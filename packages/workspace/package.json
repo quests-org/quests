@@ -48,6 +48,7 @@
     "glob": "^11.0.1",
     "hono": "catalog:",
     "ignore": "^7.0.3",
+    "image-size": "^2.0.2",
     "isbinaryfile": "^6.0.0",
     "mime-types": "^3.0.2",
     "ms": "^2.1.3",
