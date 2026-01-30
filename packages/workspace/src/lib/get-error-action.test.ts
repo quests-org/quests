@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { type SessionMessage } from "../schemas/session/message";
 import { StoreId } from "../schemas/store-id";
-import { createMockAIGatewayModelType } from "../test/helpers/mock-ai-gateway-model";
+import { createMockAIGatewayModel } from "../test/helpers/mock-ai-gateway-model";
 import { getErrorAction } from "./get-error-action";
 
 const createMessage = (
@@ -12,7 +12,7 @@ const createMessage = (
 ): SessionMessage.Assistant => ({
   id: StoreId.newMessageId(),
   metadata: {
-    aiGatewayModel: createMockAIGatewayModelType({ provider }),
+    aiGatewayModel: createMockAIGatewayModel({ provider }),
     createdAt: new Date(),
     error,
     finishReason: "stop",

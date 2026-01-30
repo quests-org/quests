@@ -15,7 +15,7 @@ import { type StoreId } from "../store-id";
 import { type SessionMessageDataPart } from "./message-data-part";
 import { SessionMessageRelaxedPart } from "./message-relaxed-part";
 
-interface BaseMetadata {
+interface BaseMetadata extends Record<string, unknown> {
   createdAt: Date;
   id: StoreId.Part;
   messageId: StoreId.Message;

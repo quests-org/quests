@@ -1,4 +1,5 @@
 import { formatNumber } from "@/client/lib/format-number";
+import { isValidNumber, safeAdd } from "@/client/lib/usage-utils";
 import { type SessionMessage } from "@quests/workspace/client";
 import { useMemo } from "react";
 
@@ -14,30 +15,52 @@ export function UsageSummary({
 }) {
   const usage = useMemo(() => {
     const totals: SessionMessage.Usage = {
-      cachedInputTokens: 0,
+      inputTokenDetails: {
+        cacheReadTokens: 0,
+        cacheWriteTokens: 0,
+        noCacheTokens: 0,
+      },
       inputTokens: 0,
+      outputTokenDetails: {
+        reasoningTokens: 0,
+        textTokens: 0,
+      },
       outputTokens: 0,
-      reasoningTokens: 0,
       totalTokens: 0,
     };
 
     for (const message of messages) {
       if (message.role === "assistant" && message.metadata.usage) {
         const messageUsage = message.metadata.usage;
-        if (!Number.isNaN(messageUsage.inputTokens)) {
-          totals.inputTokens += messageUsage.inputTokens || 0;
+        if (isValidNumber(messageUsage.inputTokens)) {
+          totals.inputTokens = safeAdd(
+            totals.inputTokens,
+            messageUsage.inputTokens,
+          );
         }
-        if (!Number.isNaN(messageUsage.outputTokens)) {
-          totals.outputTokens += messageUsage.outputTokens || 0;
+        if (isValidNumber(messageUsage.outputTokens)) {
+          totals.outputTokens = safeAdd(
+            totals.outputTokens,
+            messageUsage.outputTokens,
+          );
         }
-        if (!Number.isNaN(messageUsage.totalTokens)) {
-          totals.totalTokens += messageUsage.totalTokens || 0;
+        if (isValidNumber(messageUsage.totalTokens)) {
+          totals.totalTokens = safeAdd(
+            totals.totalTokens,
+            messageUsage.totalTokens,
+          );
         }
-        if (!Number.isNaN(messageUsage.reasoningTokens)) {
-          totals.reasoningTokens += messageUsage.reasoningTokens || 0;
+        if (isValidNumber(messageUsage.outputTokenDetails.reasoningTokens)) {
+          totals.outputTokenDetails.reasoningTokens = safeAdd(
+            totals.outputTokenDetails.reasoningTokens,
+            messageUsage.outputTokenDetails.reasoningTokens,
+          );
         }
-        if (!Number.isNaN(messageUsage.cachedInputTokens)) {
-          totals.cachedInputTokens += messageUsage.cachedInputTokens || 0;
+        if (isValidNumber(messageUsage.inputTokenDetails.cacheReadTokens)) {
+          totals.inputTokenDetails.cacheReadTokens = safeAdd(
+            totals.inputTokenDetails.cacheReadTokens,
+            messageUsage.inputTokenDetails.cacheReadTokens,
+          );
         }
       }
     }
@@ -68,10 +91,10 @@ export function UsageSummary({
     >
       <UsageStatsTooltip
         stats={{
-          cachedInputTokens: usage.cachedInputTokens,
+          inputTokenDetails: usage.inputTokenDetails,
           inputTokens: usage.inputTokens,
+          outputTokenDetails: usage.outputTokenDetails,
           outputTokens: usage.outputTokens,
-          reasoningTokens: usage.reasoningTokens,
           totalDuration: timing.totalMsToFinishDuration,
           totalTokens: usage.totalTokens,
         }}
@@ -80,9 +103,9 @@ export function UsageSummary({
           <span className="whitespace-nowrap">
             {messages.length} {messages.length === 1 ? "message" : "messages"}
           </span>
-          {usage.totalTokens > 0 && (
+          {(usage.totalTokens ?? 0) > 0 && (
             <span className="whitespace-nowrap tabular-nums">
-              {formatNumber(usage.totalTokens)}{" "}
+              {formatNumber(usage.totalTokens ?? 0)}{" "}
               {usage.totalTokens === 1 ? "token" : "tokens"}
             </span>
           )}

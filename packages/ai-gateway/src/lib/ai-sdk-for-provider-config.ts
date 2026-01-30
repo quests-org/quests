@@ -1,3 +1,6 @@
+// Static import because @ai-sdk/gateway is already statically imported by the ai package,
+// so dynamic import won't code-split it into a separate chunk
+import { createGateway } from "@ai-sdk/gateway";
 import {
   ATTRIBUTION_NAME,
   ATTRIBUTION_URL,
@@ -35,23 +38,13 @@ export async function aiSDKForProviderConfig(
       return createDeepSeek({ apiKey, baseURL });
     }
     case "@ai-sdk/fireworks": {
-      const { createFireworks } = await import("@ai-sdk/fireworks");
-      return createFireworks({ apiKey, baseURL });
+      return createFireworksSDK(config, workspaceServerURL);
     }
     case "@ai-sdk/gateway": {
-      const { createGateway } = await import("@ai-sdk/gateway");
-      return createGateway({
-        apiKey,
-        baseURL,
-        headers: {
-          "http-referer": ATTRIBUTION_URL,
-          "x-title": ATTRIBUTION_NAME,
-        },
-      });
+      return createVercelSDK(config, workspaceServerURL);
     }
     case "@ai-sdk/google": {
-      const { createGoogleGenerativeAI } = await import("@ai-sdk/google");
-      return createGoogleGenerativeAI({ apiKey, baseURL });
+      return createGoogleSDK(config, workspaceServerURL);
     }
     case "@ai-sdk/groq": {
       const { createGroq } = await import("@ai-sdk/groq");
@@ -62,8 +55,7 @@ export async function aiSDKForProviderConfig(
       return createMistral({ apiKey, baseURL });
     }
     case "@ai-sdk/openai": {
-      const { createOpenAI } = await import("@ai-sdk/openai");
-      return createOpenAI({ apiKey, baseURL });
+      return createOpenAISDK(config, workspaceServerURL);
     }
     case "@ai-sdk/openai-compatible": {
       const { createOpenAICompatible } = await import(
@@ -84,31 +76,95 @@ export async function aiSDKForProviderConfig(
       return createTogetherAI({ apiKey, baseURL });
     }
     case "@ai-sdk/xai": {
-      const { createXai } = await import("@ai-sdk/xai");
-      return createXai({ apiKey, baseURL });
+      return createXAISDK(config, workspaceServerURL);
     }
     case "@openrouter/ai-sdk-provider": {
-      const { createOpenRouter } = await import("@openrouter/ai-sdk-provider");
-      const extraConfig =
-        config.type === "openrouter"
-          ? { extraBody: { user: config.cacheIdentifier } }
-          : {};
-      return createOpenRouter({
-        apiKey,
-        baseURL,
-        ...extraConfig,
-        headers: {
-          "HTTP-Referer": ATTRIBUTION_URL,
-          "X-Title": ATTRIBUTION_NAME,
-        },
-      });
+      return createOpenRouterSDK(config, workspaceServerURL);
     }
-    case "ollama-ai-provider-v2": {
-      const { createOllama } = await import("ollama-ai-provider-v2");
+    case "ai-sdk-ollama": {
+      const { createOllama } = await import("ai-sdk-ollama");
       return createOllama({
         baseURL,
         headers: { Authorization: `Bearer ${apiKey}` },
       });
     }
   }
+}
+
+export async function createGoogleSDK(
+  config: AIGatewayProviderConfig.Type,
+  workspaceServerURL: WorkspaceServerURL,
+) {
+  const baseURL = internalURL({ config, workspaceServerURL });
+  const apiKey = internalAPIKey();
+  const { createGoogleGenerativeAI } = await import("@ai-sdk/google");
+  return createGoogleGenerativeAI({ apiKey, baseURL });
+}
+
+export async function createOpenAISDK(
+  config: AIGatewayProviderConfig.Type,
+  workspaceServerURL: WorkspaceServerURL,
+) {
+  const baseURL = internalURL({ config, workspaceServerURL });
+  const apiKey = internalAPIKey();
+  const { createOpenAI } = await import("@ai-sdk/openai");
+  return createOpenAI({ apiKey, baseURL });
+}
+
+export async function createOpenRouterSDK(
+  config: AIGatewayProviderConfig.Type,
+  workspaceServerURL: WorkspaceServerURL,
+) {
+  const baseURL = internalURL({ config, workspaceServerURL });
+  const apiKey = internalAPIKey();
+  const { createOpenRouter } = await import("@openrouter/ai-sdk-provider");
+  const extraConfig =
+    config.type === "openrouter"
+      ? { extraBody: { user: config.cacheIdentifier } }
+      : {};
+  return createOpenRouter({
+    apiKey,
+    baseURL,
+    ...extraConfig,
+    headers: {
+      "HTTP-Referer": ATTRIBUTION_URL,
+      "X-Title": ATTRIBUTION_NAME,
+    },
+  });
+}
+
+export function createVercelSDK(
+  config: AIGatewayProviderConfig.Type,
+  workspaceServerURL: WorkspaceServerURL,
+) {
+  const baseURL = internalURL({ config, workspaceServerURL });
+  const apiKey = internalAPIKey();
+  return createGateway({
+    apiKey,
+    baseURL,
+    headers: {
+      "http-referer": ATTRIBUTION_URL,
+      "x-title": ATTRIBUTION_NAME,
+    },
+  });
+}
+
+export async function createXAISDK(
+  config: AIGatewayProviderConfig.Type,
+  workspaceServerURL: WorkspaceServerURL,
+) {
+  const baseURL = internalURL({ config, workspaceServerURL });
+  const apiKey = internalAPIKey();
+  const { createXai } = await import("@ai-sdk/xai");
+  return createXai({ apiKey, baseURL });
+}
+
+async function createFireworksSDK(
+  config: AIGatewayProviderConfig.Type,
+  workspaceServerURL: WorkspaceServerURL,
+) {
+  const baseURL = internalURL({ config, workspaceServerURL });
+  const apiKey = internalAPIKey();
+  const { createFireworks } = await import("@ai-sdk/fireworks");
+  return createFireworks({ apiKey, baseURL });
 }

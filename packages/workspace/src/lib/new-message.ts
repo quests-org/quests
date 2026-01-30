@@ -1,5 +1,7 @@
-import { type LanguageModelV2 } from "@ai-sdk/provider";
-import { type AIGatewayModelURI } from "@quests/ai-gateway";
+import {
+  type AIGatewayModel,
+  type AIGatewayModelURI,
+} from "@quests/ai-gateway";
 import { ok } from "neverthrow";
 
 import { type SessionMessage } from "../schemas/session/message";
@@ -20,7 +22,7 @@ export async function newMessage({
 }: {
   appConfig: AppConfig;
   files?: Upload.Type[];
-  model: LanguageModelV2;
+  model: AIGatewayModel.Type;
   modelURI: AIGatewayModelURI.Type;
   prompt: string;
   sessionId: StoreId.Session;
@@ -67,8 +69,8 @@ export async function newMessage({
 
   appConfig.workspaceConfig.captureEvent("message.created", {
     files_count: files?.length ?? 0,
-    modelId: model.modelId,
-    providerId: model.provider,
+    modelId: model.canonicalId,
+    providerId: model.params.provider,
   });
 
   return ok(message);

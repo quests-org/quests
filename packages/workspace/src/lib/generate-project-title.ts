@@ -1,9 +1,12 @@
+import { type AIGatewayModel, fetchAISDKModel } from "@quests/ai-gateway";
 import { generateText } from "ai";
-import { type LanguageModel } from "ai";
 import { ResultAsync } from "neverthrow";
 import { dedent } from "radashi";
 
+import { getWorkspaceServerURL } from "../logic/server/url";
 import { type SessionMessage } from "../schemas/session/message";
+import { type WorkspaceConfig } from "../types";
+import { TypedError } from "./errors";
 import { textForMessage } from "./text-for-message";
 
 const MAX_TITLE_WORDS = 5;
@@ -12,10 +15,12 @@ export function generateProjectTitle({
   message,
   model,
   templateTitle,
+  workspaceConfig,
 }: {
   message: SessionMessage.UserWithParts;
-  model: LanguageModel;
+  model: AIGatewayModel.Type;
   templateTitle?: string;
+  workspaceConfig: WorkspaceConfig;
 }) {
   return ResultAsync.fromPromise(
     (async () => {
@@ -24,8 +29,22 @@ export function generateProjectTitle({
         throw new Error("No user message");
       }
 
+      const aiSDKModelResult = await fetchAISDKModel({
+        configs: workspaceConfig.getAIProviderConfigs(),
+        modelURI: model.uri,
+        workspaceServerURL: getWorkspaceServerURL(),
+      });
+
+      if (!aiSDKModelResult.ok) {
+        throw new TypedError.Unknown(
+          `Failed to fetch AI SDK model: ${aiSDKModelResult.error.message}`,
+        );
+      }
+
+      const aiSDKModel = aiSDKModelResult.value;
+
       const title = await generateText({
-        model,
+        model: aiSDKModel,
         prompt: userMessage,
         system: buildSystemPrompt(templateTitle),
       });

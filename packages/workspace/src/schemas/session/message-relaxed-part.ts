@@ -1,14 +1,19 @@
+import { type ProviderMetadata } from "ai";
 import { z } from "zod";
+
+import { type ToolName } from "../../tools/types";
+
+type JSONObject = ProviderMetadata[string];
 
 // A schema that is compatible with AI SDK for validation during persistence
 // and outbound API calls.
 export namespace SessionMessageRelaxedPart {
   const ProviderMetadataSchema = z.record(
     z.string(),
-    z.record(z.string(), z.json()),
+    z.custom<JSONObject>((v) => typeof v === "object" && v !== null),
   );
 
-  const MetadataSchema = z.unknown();
+  const MetadataSchema = z.record(z.string(), z.unknown());
 
   const TextPartSchema = z.object({
     metadata: MetadataSchema,
@@ -73,16 +78,25 @@ export namespace SessionMessageRelaxedPart {
   export type DataPart = z.output<typeof DataPartSchema>;
 
   const ToolPartSchema = z.object({
+    approval: z
+      .object({
+        approved: z.boolean().optional(),
+        id: z.string(),
+        reason: z.string().optional(),
+      })
+      .optional(),
     callProviderMetadata: ProviderMetadataSchema.optional(),
     errorText: z.string().optional(),
     input: z.unknown().optional(),
     metadata: MetadataSchema,
     output: z.unknown().optional(),
+    preliminary: z.boolean().optional(),
     providerExecuted: z.boolean().optional(),
     rawInput: z.unknown().optional(),
     state: z.string(),
+    title: z.string().optional(),
     toolCallId: z.string(),
-    type: z.custom<`tool-${string}`>(
+    type: z.custom<`tool-${ToolName}`>(
       (v) => typeof v === "string" && v.startsWith("tool-"),
     ),
   });

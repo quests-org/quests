@@ -1,9 +1,9 @@
 import { addRef, type AIProviderType } from "@quests/shared";
 
-import { RECOMMENDED_TAG } from "../../constants";
 import {
   type ProviderMetadata,
   type ProviderMetadataInput,
+  ProviderMetadataSchema,
 } from "../../schemas/provider-metadata";
 
 const PROVIDER_METADATA: Record<AIProviderType, ProviderMetadataInput> = {
@@ -73,6 +73,8 @@ const PROVIDER_METADATA: Record<AIProviderType, ProviderMetadataInput> = {
     description:
       "High-speed multimodal AI inference with advanced FireAttention technology",
     name: "Fireworks AI",
+    // Disabled until fixed
+    // tags: ["imageGeneration"],
     type: "fireworks",
     url: addRef("https://fireworks.ai"),
   },
@@ -84,7 +86,7 @@ const PROVIDER_METADATA: Record<AIProviderType, ProviderMetadataInput> = {
     },
     description: "Google AI Studio with Gemini and other models",
     name: "Google",
-    tags: ["Free tier"],
+    tags: ["imageGeneration"],
     type: "google",
     url: addRef("https://ai.google.dev/gemini-api/docs"),
   },
@@ -207,6 +209,7 @@ const PROVIDER_METADATA: Record<AIProviderType, ProviderMetadataInput> = {
     },
     description: "GPT-5 and other OpenAI models",
     name: "OpenAI",
+    tags: ["imageGeneration"],
     type: "openai",
     url: addRef("https://openai.com"),
   },
@@ -227,7 +230,7 @@ const PROVIDER_METADATA: Record<AIProviderType, ProviderMetadataInput> = {
     },
     description: "Access an extensive catalog of models across providers",
     name: "OpenRouter",
-    tags: [RECOMMENDED_TAG, "Free models"],
+    tags: ["recommended", "imageGeneration"],
     type: "openrouter",
     url: "https://openrouter.ai",
   },
@@ -246,8 +249,10 @@ const PROVIDER_METADATA: Record<AIProviderType, ProviderMetadataInput> = {
     api: {
       defaultBaseURL: "https://api.quests.dev/gateway/openrouter",
     },
+    canAddManually: false,
     description: "Quests AI Gateway",
     name: "Quests",
+    tags: ["imageGeneration"],
     type: "quests",
     url: addRef("https://quests.dev"),
   },
@@ -270,7 +275,7 @@ const PROVIDER_METADATA: Record<AIProviderType, ProviderMetadataInput> = {
     },
     description: "Access hundreds of models across many providers",
     name: "Vercel AI Gateway",
-    tags: ["$5 free credit with card"],
+    tags: ["imageGeneration"],
     type: "vercel",
     url: addRef("https://vercel.com/ai-gateway"),
   },
@@ -281,6 +286,7 @@ const PROVIDER_METADATA: Record<AIProviderType, ProviderMetadataInput> = {
     },
     description: "Grok models from xAI",
     name: "xAI Grok",
+    tags: ["imageGeneration"],
     type: "x-ai",
     url: addRef("https://x.ai"),
   },
@@ -296,12 +302,12 @@ const PROVIDER_METADATA: Record<AIProviderType, ProviderMetadataInput> = {
   },
 };
 
+const PARSED_PROVIDER_METADATA = Object.values(PROVIDER_METADATA).map(
+  (metadata) => ProviderMetadataSchema.parse(metadata),
+);
+
 export function getAllProviderMetadata(): ProviderMetadata[] {
-  return Object.values(PROVIDER_METADATA).map((metadata) => ({
-    ...metadata,
-    requiresAPIKey: metadata.requiresAPIKey ?? true,
-    tags: metadata.tags ?? [],
-  }));
+  return PARSED_PROVIDER_METADATA;
 }
 
 export function getProviderMetadata(providerType: AIProviderType) {

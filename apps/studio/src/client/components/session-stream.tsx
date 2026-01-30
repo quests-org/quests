@@ -30,7 +30,7 @@ interface SessionEventListProps {
   messages: SessionMessage.WithParts[];
   onContinue: () => void;
   onModelChange: (modelURI: AIGatewayModelURI.Type) => void;
-  onRetry: () => void;
+  onRetry: (prompt?: string) => void;
   onStartNewChat: () => void;
   project: WorkspaceAppProject;
   selectedVersion?: string;
@@ -174,6 +174,7 @@ export function SessionStream({
                 part.state === "input-available")
             }
             key={part.metadata.id}
+            onRetry={onRetry}
             part={part}
             projectSubdomain={project.subdomain}
           />
@@ -224,6 +225,7 @@ export function SessionStream({
       isAgentRunning,
       lastPartId,
       navigate,
+      onRetry,
     ],
   );
 

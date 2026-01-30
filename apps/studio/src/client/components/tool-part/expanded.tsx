@@ -4,8 +4,10 @@ import { ToolContent } from "./content";
 import { SectionHeader } from "./section-header";
 
 export function ToolPartExpanded({
+  onRetry,
   part,
 }: {
+  onRetry?: (message: string) => void;
   part: Extract<SessionMessagePart.ToolPart, { state: "output-available" }>;
 }) {
   const explanationObject =
@@ -24,7 +26,7 @@ export function ToolPartExpanded({
           </div>
         </div>
       )}
-      <ToolContent part={part} />
+      <ToolContent onRetry={onRetry} part={part} />
     </div>
   );
 }

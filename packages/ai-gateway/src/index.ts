@@ -7,7 +7,9 @@ export {
 } from "./lib/env-for-provider-configs";
 export type { TypedError as AIGatewayTypedError } from "./lib/errors";
 export * from "./lib/fetch-ai-sdk-model";
+export * from "./lib/fetch-model";
 export * from "./lib/fetch-models";
+export * from "./lib/generate-images";
 export * from "./lib/get-provider-details";
 export * from "./lib/migrate-model-uri";
 export { baseURLWithDefault } from "./lib/providers/base-url-with-default";

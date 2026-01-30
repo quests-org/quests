@@ -3,12 +3,17 @@ import { describe, expect, it } from "vitest";
 
 import { AppDirSchema } from "../schemas/paths";
 import { ProjectSubdomainSchema } from "../schemas/subdomains";
+import { createMockAIGatewayModel } from "../test/helpers/mock-ai-gateway-model";
 import { createMockAppConfig } from "../test/helpers/mock-app-config";
 import { TOOLS } from "./all";
 import { Grep } from "./grep";
 
+const model = createMockAIGatewayModel();
+
 function createFixturesAppConfig() {
-  const mockConfig = createMockAppConfig(ProjectSubdomainSchema.parse("test"));
+  const mockConfig = createMockAppConfig(ProjectSubdomainSchema.parse("test"), {
+    model,
+  });
   // Override appDir to point to fixtures directory
   const appDir = AppDirSchema.parse(
     path.join(import.meta.dirname, "../../fixtures/file-system"),
@@ -41,11 +46,15 @@ describe("Grep", () => {
   describe("resultToPrompt", () => {
     it("should return 'No matches found' when there are no matches", () => {
       const result = Grep.toModelOutput({
+        input: {
+          pattern: "",
+        },
         output: {
           matches: [],
           totalMatches: 0,
           truncated: false,
         },
+        toolCallId: "123",
       });
       expect(result).toMatchInlineSnapshot(`
         {
@@ -57,6 +66,9 @@ describe("Grep", () => {
 
     it("should format matches grouped by file and sorted by modification time", () => {
       const result = Grep.toModelOutput({
+        input: {
+          pattern: "",
+        },
         output: {
           matches: [
             // Older file first in input (should be moved to end after sorting)
@@ -83,6 +95,7 @@ describe("Grep", () => {
           totalMatches: 3,
           truncated: false,
         },
+        toolCallId: "123",
       });
       expect(result).toMatchInlineSnapshot(`
         {
@@ -100,6 +113,9 @@ describe("Grep", () => {
 
     it("should show truncation warning when results are truncated", () => {
       const result = Grep.toModelOutput({
+        input: {
+          pattern: "",
+        },
         output: {
           matches: [
             {
@@ -112,6 +128,7 @@ describe("Grep", () => {
           totalMatches: 150,
           truncated: true,
         },
+        toolCallId: "123",
       });
       expect(result).toMatchInlineSnapshot(`
         {
@@ -127,6 +144,9 @@ describe("Grep", () => {
 
     it("should handle single match in single file", () => {
       const result = Grep.toModelOutput({
+        input: {
+          pattern: "",
+        },
         output: {
           matches: [
             {
@@ -139,6 +159,7 @@ describe("Grep", () => {
           totalMatches: 1,
           truncated: false,
         },
+        toolCallId: "123",
       });
       expect(result).toMatchInlineSnapshot(`
         {
@@ -159,6 +180,7 @@ describe("Grep", () => {
           explanation: "Looking for async functions",
           pattern: "async function",
         },
+        model,
         signal: AbortSignal.timeout(10_000),
       });
 
@@ -203,6 +225,7 @@ describe("Grep", () => {
           explanation: "Looking for non-existent pattern",
           pattern: "nonexistent-pattern-xyz123",
         },
+        model,
         signal: AbortSignal.timeout(10_000),
       });
 
@@ -220,6 +243,7 @@ describe("Grep", () => {
         input: {
           pattern: "handles",
         },
+        model,
         signal: AbortSignal.timeout(10_000),
       });
 
@@ -268,6 +292,7 @@ describe("Grep", () => {
         input: {
           pattern: "Handles",
         },
+        model,
         signal: AbortSignal.timeout(10_000),
       });
 
@@ -301,6 +326,7 @@ describe("Grep", () => {
         input: {
           pattern: "zzz",
         },
+        model,
         signal: AbortSignal.timeout(10_000),
       });
 
@@ -329,6 +355,7 @@ describe("Grep", () => {
         input: {
           pattern: "vertical\\|bar",
         },
+        model,
         signal: AbortSignal.timeout(10_000),
       });
 

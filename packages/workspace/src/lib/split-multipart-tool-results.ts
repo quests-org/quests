@@ -39,6 +39,9 @@ export function splitMultipartToolResults({
     }
 
     const hasMultipartToolResult = message.content.some((part) => {
+      if (part.type !== "tool-result") {
+        return false;
+      }
       const output = part.output;
       return isContentOutput(output) && hasMediaParts(output);
     });
@@ -49,7 +52,7 @@ export function splitMultipartToolResults({
     }
 
     const modifiedContent = message.content.map((part) => {
-      if (isContentOutput(part.output)) {
+      if (part.type === "tool-result" && isContentOutput(part.output)) {
         const textParts = extractTextParts(part.output);
         return convertToTextOutput(part, textParts);
       }
@@ -62,6 +65,7 @@ export function splitMultipartToolResults({
     });
 
     const userMessageParts = message.content
+      .filter((part) => part.type !== "tool-approval-response")
       .filter((part) => isContentOutput(part.output))
       .flatMap((part) => {
         const output = part.output;

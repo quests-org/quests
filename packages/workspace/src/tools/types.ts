@@ -1,12 +1,14 @@
 import type { Tool } from "ai";
-import type { Result } from "neverthrow";
 
 import { type LanguageModelV2ToolResultOutput } from "@ai-sdk/provider";
+import { type AIGatewayModel } from "@quests/ai-gateway";
+import { type Result } from "neverthrow";
 import { type z } from "zod";
 
 import type { ToolNameSchema } from "./name";
 
 import { type AppConfig } from "../lib/app-config/types";
+import { type ExecuteError } from "../lib/execute-error";
 
 export interface AgentTool<
   TName extends ToolName,
@@ -18,6 +20,7 @@ export interface AgentTool<
   execute: (options: {
     appConfig: AppConfig;
     input: z.output<TInputSchema>;
+    model: AIGatewayModel.Type;
     signal: AbortSignal;
   }) => Promise<ExecuteResult<z.output<TOutputSchema>>>;
   inputSchema: TInputSchema;
@@ -26,7 +29,9 @@ export interface AgentTool<
   readOnly: boolean;
   timeoutMs: ((options: { input: z.output<TInputSchema> }) => number) | number;
   toModelOutput: (options: {
+    input: z.output<TInputSchema>;
     output: z.output<TOutputSchema>;
+    toolCallId: string;
   }) => LanguageModelV2ToolResultOutput;
 }
 
@@ -35,4 +40,4 @@ export type AnyAgentTool = AgentTool<any, any, any>;
 
 export type ToolName = z.output<typeof ToolNameSchema>;
 
-type ExecuteResult<T> = Result<T, { message: string; type: "execute-error" }>;
+type ExecuteResult<T> = Result<T, ExecuteError>;

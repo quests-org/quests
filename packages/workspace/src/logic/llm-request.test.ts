@@ -1,10 +1,11 @@
 import {
   APICallError,
-  type LanguageModelV2Prompt,
-  type LanguageModelV2StreamPart,
+  type LanguageModelV3Prompt,
+  type LanguageModelV3StreamPart,
 } from "@ai-sdk/provider";
+import { type AIProviderType } from "@quests/shared";
 import { simulateReadableStream } from "ai";
-import { MockLanguageModelV2 } from "ai/test";
+import { MockLanguageModelV3 } from "ai/test";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   type ActorRefFrom,
@@ -32,18 +33,35 @@ vi.mock(import("../lib/session-store-storage"));
 vi.mock(import("../lib/get-current-date"));
 
 describe("llmRequestLogic", () => {
-  const projectAppConfig = createMockAppConfig(
-    ProjectSubdomainSchema.parse(`mock`),
-  );
   const sessionId = StoreId.newSessionId();
   const mockUsage = {
-    cachedInputTokens: 1,
-    inputTokens: 2,
-    outputTokens: 3,
-    reasoningTokens: 4,
-    totalTokens: 9,
+    inputTokens: {
+      cacheRead: 1,
+      cacheWrite: undefined,
+      noCache: undefined,
+      total: 2,
+    },
+    outputTokens: {
+      reasoning: 4,
+      text: undefined,
+      total: 3,
+    },
   };
-  let prompts: LanguageModelV2Prompt[] = [];
+  const mockTotalUsage = {
+    inputTokenDetails: {
+      cacheReadTokens: 1,
+      cacheWriteTokens: undefined,
+      noCacheTokens: undefined,
+    },
+    inputTokens: 2,
+    outputTokenDetails: {
+      reasoningTokens: 4,
+      textTokens: undefined,
+    },
+    outputTokens: 3,
+    totalTokens: 5,
+  };
+  let prompts: LanguageModelV3Prompt[] = [];
   const mockDate = new Date("2013-08-31T12:00:00.000Z");
   const mockMessageId = StoreId.newMessageId();
   const mockMessages: SessionMessage.ContextWithParts[] = [
@@ -71,30 +89,22 @@ describe("llmRequestLogic", () => {
     },
   ];
 
-  beforeEach(async () => {
+  beforeEach(() => {
     prompts = [];
-    await Store.saveSession(
-      {
-        createdAt: mockDate,
-        id: sessionId,
-        title: "Test session",
-      },
-      projectAppConfig,
-    );
   });
 
-  function createTestMachine({
+  async function createTestMachine({
     beforeStream,
     chunks,
     getMessages = () => Promise.resolve(mockMessages),
-    provider = "mock-provider",
+    provider = "quests",
   }: {
     beforeStream?: () => Promise<void>;
-    chunks: LanguageModelV2StreamPart[];
+    chunks: LanguageModelV3StreamPart[];
     getMessages?: () => Promise<SessionMessage.ContextWithParts[]>;
-    provider?: string;
+    provider?: AIProviderType;
   }) {
-    const mockLanguageModel = new MockLanguageModelV2({
+    const mockLanguageModel = new MockLanguageModelV3({
       doStream: async ({ prompt }) => {
         if (beforeStream) {
           await beforeStream();
@@ -105,15 +115,21 @@ describe("llmRequestLogic", () => {
             chunks: [
               ...chunks,
               {
-                finishReason: "stop",
+                finishReason: { raw: "stop", unified: "stop" },
                 logprobs: undefined,
                 type: "finish",
                 usage: {
-                  cachedInputTokens: 0,
-                  inputTokens: 3,
-                  outputTokens: 10,
-                  reasoningTokens: 0,
-                  totalTokens: 13,
+                  inputTokens: {
+                    cacheRead: undefined,
+                    cacheWrite: undefined,
+                    noCache: undefined,
+                    total: 3,
+                  },
+                  outputTokens: {
+                    reasoning: undefined,
+                    text: undefined,
+                    total: 10,
+                  },
                 },
               },
             ],
@@ -123,9 +139,27 @@ describe("llmRequestLogic", () => {
       provider,
     });
 
-    const model = createMockAIGatewayModel(mockLanguageModel);
+    const model = createMockAIGatewayModel({
+      provider: provider === "anthropic" ? "anthropic" : "quests",
+    });
 
-    return setup({
+    const projectAppConfig = createMockAppConfig(
+      ProjectSubdomainSchema.parse(`mock`),
+      {
+        aiSDKModel: mockLanguageModel,
+        model,
+      },
+    );
+    await Store.saveSession(
+      {
+        createdAt: mockDate,
+        id: sessionId,
+        title: "Test session",
+      },
+      projectAppConfig,
+    );
+
+    const machine = setup({
       actors: { llmRequest: llmRequestLogic },
       types: {
         events: {} as { type: "stop" },
@@ -180,17 +214,29 @@ describe("llmRequestLogic", () => {
         Stopped: { type: "final" },
       },
     });
+
+    return { appConfig: projectAppConfig, machine };
   }
 
-  async function runTestMachine(machine: ReturnType<typeof createTestMachine>) {
+  async function runTestMachine({
+    appConfig,
+    machine,
+  }: Awaited<ReturnType<typeof createTestMachine>>) {
     const actor = createActor(machine);
     actor.start();
     await waitFor(actor, (state) => state.status === "done");
     const sessionResult = await Store.getSessionWithMessagesAndParts(
       sessionId,
-      projectAppConfig,
+      appConfig,
     );
     return sessionResult._unsafeUnwrap();
+  }
+
+  async function createAndRunTestMachine(
+    params: Parameters<typeof createTestMachine>[0],
+  ) {
+    const testMachine = await createTestMachine(params);
+    return runTestMachine(testMachine);
   }
 
   function messagesToSnapshot(messages: SessionMessage.Type[]) {
@@ -217,20 +263,19 @@ describe("llmRequestLogic", () => {
   }
 
   it("should handle text streaming", async () => {
-    const machine = createTestMachine({
+    const { messages } = await createAndRunTestMachine({
       chunks: [
         { id: "1", type: "text-start" },
         { delta: "Hello, ", id: "1", type: "text-delta" },
         { delta: "world!", id: "1", type: "text-delta" },
         { id: "1", type: "text-end" },
         {
-          finishReason: "stop",
+          finishReason: { raw: "stop", unified: "stop" },
           type: "finish",
           usage: mockUsage,
         },
       ],
     });
-    const { messages } = await runTestMachine(machine);
     expect(messagesToSnapshot(messages)).toMatchInlineSnapshot(`
       [
         {
@@ -293,7 +338,7 @@ describe("llmRequestLogic", () => {
   });
 
   it("should handle tool streaming", async () => {
-    const machine = createTestMachine({
+    const { messages } = await createAndRunTestMachine({
       chunks: [
         {
           id: "test-call-1",
@@ -307,13 +352,12 @@ describe("llmRequestLogic", () => {
           type: "tool-call",
         },
         {
-          finishReason: "stop",
+          finishReason: { raw: "stop", unified: "stop" },
           type: "finish",
           usage: mockUsage,
         },
       ],
     });
-    const { messages } = await runTestMachine(machine);
     expect(messagesToSnapshot(messages)).toMatchInlineSnapshot(`
       [
         {
@@ -379,7 +423,7 @@ describe("llmRequestLogic", () => {
   });
 
   it("should handle reasoning events", async () => {
-    const machine = createTestMachine({
+    const { messages } = await createAndRunTestMachine({
       chunks: [
         { id: "1", type: "reasoning-start" },
         {
@@ -392,13 +436,12 @@ describe("llmRequestLogic", () => {
         { delta: " and then proceed", id: "1", type: "reasoning-delta" },
         { id: "1", type: "reasoning-end" },
         {
-          finishReason: "stop",
+          finishReason: { raw: "stop", unified: "stop" },
           type: "finish",
           usage: mockUsage,
         },
       ],
     });
-    const { messages } = await runTestMachine(machine);
     expect(messagesToSnapshot(messages)).toMatchInlineSnapshot(`
       [
         {
@@ -461,7 +504,7 @@ describe("llmRequestLogic", () => {
   });
 
   it("should handle source events", async () => {
-    const machine = createTestMachine({
+    const { messages } = await createAndRunTestMachine({
       chunks: [
         {
           id: "test-source-id",
@@ -485,7 +528,6 @@ describe("llmRequestLogic", () => {
         },
       ],
     });
-    const { messages } = await runTestMachine(machine);
     expect(messagesToSnapshot(messages)).toMatchInlineSnapshot(`
       [
         {
@@ -561,7 +603,7 @@ describe("llmRequestLogic", () => {
   });
 
   it("should handle incorrect input key name for tool call", async () => {
-    const machine = createTestMachine({
+    const { messages } = await createAndRunTestMachine({
       chunks: [
         {
           id: "1",
@@ -576,7 +618,6 @@ describe("llmRequestLogic", () => {
         },
       ],
     });
-    const { messages } = await runTestMachine(machine);
     expect(messagesToSnapshot(messages)).toMatchInlineSnapshot(`
       [
         {
@@ -655,7 +696,7 @@ describe("llmRequestLogic", () => {
   });
 
   it("should handle invalid json for tool call", async () => {
-    const machine = createTestMachine({
+    const { messages } = await createAndRunTestMachine({
       chunks: [
         {
           id: "1",
@@ -670,7 +711,6 @@ describe("llmRequestLogic", () => {
         },
       ],
     });
-    const { messages } = await runTestMachine(machine);
     expect(messagesToSnapshot(messages)).toMatchInlineSnapshot(`
       [
         {
@@ -738,7 +778,7 @@ describe("llmRequestLogic", () => {
   });
 
   it("should handle incorrect input key name for tool call without start part", async () => {
-    const machine = createTestMachine({
+    const { messages } = await createAndRunTestMachine({
       chunks: [
         {
           input: JSON.stringify({ invalid: "params" }),
@@ -748,7 +788,6 @@ describe("llmRequestLogic", () => {
         },
       ],
     });
-    const { messages } = await runTestMachine(machine);
     expect(messagesToSnapshot(messages)).toMatchInlineSnapshot(`
       [
         {
@@ -828,7 +867,7 @@ describe("llmRequestLogic", () => {
   });
 
   it("should handle non-existent tool name", async () => {
-    const machine = createTestMachine({
+    const { messages } = await createAndRunTestMachine({
       chunks: [
         {
           id: "1",
@@ -837,7 +876,6 @@ describe("llmRequestLogic", () => {
         },
       ],
     });
-    const { messages } = await runTestMachine(machine);
     expect(messagesToSnapshot(messages)).toMatchInlineSnapshot(`
       [
         {
@@ -901,7 +939,7 @@ describe("llmRequestLogic", () => {
   });
 
   it("should handle non-existent tool name with call part", async () => {
-    const machine = createTestMachine({
+    const { messages } = await createAndRunTestMachine({
       chunks: [
         {
           id: "1",
@@ -916,7 +954,6 @@ describe("llmRequestLogic", () => {
         },
       ],
     });
-    const { messages } = await runTestMachine(machine);
     expect(messagesToSnapshot(messages)).toMatchInlineSnapshot(`
       [
         {
@@ -960,7 +997,7 @@ describe("llmRequestLogic", () => {
               "type": "step-start",
             },
             {
-              "errorText": "Model tried to call unavailable tool 'non_existent_tool'. Available tools: choose, edit_file, glob, grep, read_file, run_diagnostics, run_shell_command, think, unavailable, write_file.",
+              "errorText": "Model tried to call unavailable tool 'non_existent_tool'. Available tools: choose, edit_file, generate_image, glob, grep, read_file, run_diagnostics, run_shell_command, think, unavailable, write_file.",
               "input": undefined,
               "metadata": {
                 "createdAt": 2013-08-31T12:00:04.000Z,
@@ -985,7 +1022,7 @@ describe("llmRequestLogic", () => {
   });
 
   it("should handle non-existent tool name with start part", async () => {
-    const machine = createTestMachine({
+    const { messages } = await createAndRunTestMachine({
       chunks: [
         {
           id: "1",
@@ -1000,7 +1037,6 @@ describe("llmRequestLogic", () => {
         },
       ],
     });
-    const { messages } = await runTestMachine(machine);
     expect(messagesToSnapshot(messages)).toMatchInlineSnapshot(`
       [
         {
@@ -1044,7 +1080,7 @@ describe("llmRequestLogic", () => {
               "type": "step-start",
             },
             {
-              "errorText": "Model tried to call unavailable tool 'non_existent_tool'. Available tools: choose, edit_file, glob, grep, read_file, run_diagnostics, run_shell_command, think, unavailable, write_file.",
+              "errorText": "Model tried to call unavailable tool 'non_existent_tool'. Available tools: choose, edit_file, generate_image, glob, grep, read_file, run_diagnostics, run_shell_command, think, unavailable, write_file.",
               "input": undefined,
               "metadata": {
                 "createdAt": 2013-08-31T12:00:04.000Z,
@@ -1069,7 +1105,7 @@ describe("llmRequestLogic", () => {
   });
 
   it("should handle non-existent tool name without start part", async () => {
-    const machine = createTestMachine({
+    const { messages } = await createAndRunTestMachine({
       chunks: [
         {
           input: JSON.stringify({ filePath: "test.txt" }),
@@ -1079,7 +1115,6 @@ describe("llmRequestLogic", () => {
         },
       ],
     });
-    const { messages } = await runTestMachine(machine);
     expect(messagesToSnapshot(messages)).toMatchInlineSnapshot(`
       [
         {
@@ -1123,7 +1158,7 @@ describe("llmRequestLogic", () => {
               "type": "step-start",
             },
             {
-              "errorText": "Model tried to call unavailable tool 'non_existent_tool'. Available tools: choose, edit_file, glob, grep, read_file, run_diagnostics, run_shell_command, think, unavailable, write_file.",
+              "errorText": "Model tried to call unavailable tool 'non_existent_tool'. Available tools: choose, edit_file, generate_image, glob, grep, read_file, run_diagnostics, run_shell_command, think, unavailable, write_file.",
               "input": {
                 "filePath": "test.txt",
               },
@@ -1149,7 +1184,7 @@ describe("llmRequestLogic", () => {
   });
 
   it("should handle call provider metadata on tool part", async () => {
-    const machine = createTestMachine({
+    const { messages } = await createAndRunTestMachine({
       chunks: [
         {
           id: "test-call-1",
@@ -1169,13 +1204,12 @@ describe("llmRequestLogic", () => {
           type: "tool-call",
         },
         {
-          finishReason: "stop",
+          finishReason: { raw: "stop", unified: "stop" },
           type: "finish",
           usage: mockUsage,
         },
       ],
     });
-    const { messages } = await runTestMachine(machine);
     expect(messagesToSnapshot(messages)).toMatchInlineSnapshot(`
       [
         {
@@ -1257,13 +1291,12 @@ describe("llmRequestLogic", () => {
         url: "https://api.openai.com/v1/chat/completions",
       });
 
-      const machine = createTestMachine({
+      const { messages } = await createAndRunTestMachine({
         beforeStream: () => {
           throw mockError;
         },
         chunks: [],
       });
-      const { messages } = await runTestMachine(machine);
       expect(messagesToSnapshot(messages)).toMatchInlineSnapshot(`
         [
           {
@@ -1321,8 +1354,8 @@ describe("llmRequestLogic", () => {
     });
 
     it("should handle aborted errors", async () => {
-      let actor: ActorRefFrom<typeof machine> | null = null;
-      const machine = createTestMachine({
+      let actor: ActorRefFrom<typeof testMachine.machine> | null = null;
+      const testMachine = await createTestMachine({
         beforeStream: async () => {
           actor?.send({ type: "stop" });
           await Promise.resolve();
@@ -1330,12 +1363,12 @@ describe("llmRequestLogic", () => {
         chunks: [],
       });
 
-      actor = createActor(machine);
+      actor = createActor(testMachine.machine);
       actor.start();
       await waitFor(actor, (state) => state.status === "done");
       const sessionResult = await Store.getSessionWithMessagesAndParts(
         sessionId,
-        projectAppConfig,
+        testMachine.appConfig,
       );
       const messages = sessionResult._unsafeUnwrap().messages;
       expect(messagesToSnapshot(messages)).toMatchInlineSnapshot(`
@@ -1391,13 +1424,12 @@ describe("llmRequestLogic", () => {
     });
 
     it("should handle unknown errors", async () => {
-      const machine = createTestMachine({
+      const { messages } = await createAndRunTestMachine({
         beforeStream: () => {
           throw new Error("Unknown error");
         },
         chunks: [],
       });
-      const { messages } = await runTestMachine(machine);
       expect(messagesToSnapshot(messages)).toMatchInlineSnapshot(`
         [
           {
@@ -1460,7 +1492,7 @@ describe("llmRequestLogic", () => {
       modelId: "mock-model-id",
       providerId: "mock-provider",
       sessionId,
-      usage: mockUsage,
+      usage: mockTotalUsage,
     };
     const readFilePart: SessionMessagePart.Type = {
       input: {
@@ -1487,7 +1519,11 @@ describe("llmRequestLogic", () => {
       type: "tool-read_file",
     };
 
-    beforeEach(async () => {
+    async function setupPromptMessagesTest() {
+      const testMachine = await createTestMachine({
+        chunks: [],
+      });
+
       await Store.saveMessage(
         {
           id: userMessageId,
@@ -1497,7 +1533,7 @@ describe("llmRequestLogic", () => {
           },
           role: "user",
         },
-        projectAppConfig,
+        testMachine.appConfig,
       );
       await Store.saveParts(
         [
@@ -1513,7 +1549,7 @@ describe("llmRequestLogic", () => {
             type: "text",
           },
         ],
-        projectAppConfig,
+        testMachine.appConfig,
       );
 
       await Store.saveMessage(
@@ -1522,15 +1558,15 @@ describe("llmRequestLogic", () => {
           metadata: mockAssistantMessageMetadata,
           role: "assistant",
         },
-        projectAppConfig,
+        testMachine.appConfig,
       );
-    });
+
+      return testMachine;
+    }
 
     it("handles user and assistant messages", async () => {
-      const machine = createTestMachine({
-        chunks: [],
-      });
-      const actor = createActor(machine);
+      const testMachine = await setupPromptMessagesTest();
+      const actor = createActor(testMachine.machine);
       actor.start();
       await waitFor(actor, (state) => state.status === "done");
       expect(prompts).toMatchInlineSnapshot(`
@@ -1564,15 +1600,16 @@ describe("llmRequestLogic", () => {
     });
 
     it("handles one tool call", async () => {
+      const testMachine = await setupPromptMessagesTest();
       await Store.savePart(
         SessionMessagePart.coerce(readFilePart),
-        projectAppConfig,
+        testMachine.appConfig,
       );
 
-      const machine = createTestMachine({
-        chunks: [],
+      await runTestMachine({
+        appConfig: testMachine.appConfig,
+        machine: testMachine.machine,
       });
-      await runTestMachine(machine);
       expect(prompts).toMatchInlineSnapshot(`
         [
           [
@@ -1637,6 +1674,7 @@ describe("llmRequestLogic", () => {
     });
 
     it("handles two tool calls", async () => {
+      const testMachine = await setupPromptMessagesTest();
       await Store.saveParts(
         [
           readFilePart,
@@ -1662,13 +1700,10 @@ describe("llmRequestLogic", () => {
             type: "tool-write_file",
           },
         ],
-        projectAppConfig,
+        testMachine.appConfig,
       );
 
-      const machine = createTestMachine({
-        chunks: [],
-      });
-      await runTestMachine(machine);
+      await runTestMachine(testMachine);
       expect(prompts).toMatchInlineSnapshot(`
         [
           [
@@ -1754,6 +1789,7 @@ describe("llmRequestLogic", () => {
     });
 
     it("handles tool call with diagnostics reminder", async () => {
+      const testMachine = await setupPromptMessagesTest();
       await Store.saveParts(
         [
           {
@@ -1778,13 +1814,10 @@ describe("llmRequestLogic", () => {
             type: "tool-write_file",
           },
         ],
-        projectAppConfig,
+        testMachine.appConfig,
       );
 
-      const machine = createTestMachine({
-        chunks: [],
-      });
-      await runTestMachine(machine);
+      await runTestMachine(testMachine);
       expect(prompts).toMatchInlineSnapshot(`
         [
           [
@@ -1851,6 +1884,7 @@ describe("llmRequestLogic", () => {
     });
 
     it("handles tool call errors", async () => {
+      const testMachine = await setupPromptMessagesTest();
       await Store.saveParts(
         [
           {
@@ -1869,13 +1903,10 @@ describe("llmRequestLogic", () => {
             type: "tool-read_file",
           },
         ],
-        projectAppConfig,
+        testMachine.appConfig,
       );
 
-      const machine = createTestMachine({
-        chunks: [],
-      });
-      await runTestMachine(machine);
+      await runTestMachine(testMachine);
       expect(prompts).toMatchInlineSnapshot(`
         [
           [
@@ -1939,6 +1970,48 @@ describe("llmRequestLogic", () => {
     });
 
     it("adds cache control to messages for Anthropic models", async () => {
+      const testMachine = await createTestMachine({
+        chunks: [],
+        provider: "anthropic",
+      });
+
+      await Store.saveMessage(
+        {
+          id: userMessageId,
+          metadata: {
+            createdAt: mockDate,
+            sessionId,
+          },
+          role: "user",
+        },
+        testMachine.appConfig,
+      );
+      await Store.saveParts(
+        [
+          {
+            metadata: {
+              createdAt: mockDate,
+              id: StoreId.newPartId(),
+              messageId: userMessageId,
+              sessionId,
+            },
+            state: "done",
+            text: "Do something",
+            type: "text",
+          },
+        ],
+        testMachine.appConfig,
+      );
+
+      await Store.saveMessage(
+        {
+          id: assistantMessageId,
+          metadata: mockAssistantMessageMetadata,
+          role: "assistant",
+        },
+        testMachine.appConfig,
+      );
+
       const secondMessageId = StoreId.newMessageId();
       await Store.saveMessage(
         {
@@ -1946,7 +2019,7 @@ describe("llmRequestLogic", () => {
           metadata: mockAssistantMessageMetadata,
           role: "assistant",
         },
-        projectAppConfig,
+        testMachine.appConfig,
       );
       await Store.saveParts(
         [
@@ -1962,7 +2035,7 @@ describe("llmRequestLogic", () => {
             type: "text",
           },
         ],
-        projectAppConfig,
+        testMachine.appConfig,
       );
       const thirdMessageId = StoreId.newMessageId();
       await Store.saveMessage(
@@ -1971,7 +2044,7 @@ describe("llmRequestLogic", () => {
           metadata: mockAssistantMessageMetadata,
           role: "assistant",
         },
-        projectAppConfig,
+        testMachine.appConfig,
       );
       await Store.saveParts(
         [
@@ -1987,14 +2060,10 @@ describe("llmRequestLogic", () => {
             type: "text",
           },
         ],
-        projectAppConfig,
+        testMachine.appConfig,
       );
 
-      const machine = createTestMachine({
-        chunks: [],
-        provider: "anthropic",
-      });
-      await runTestMachine(machine);
+      await runTestMachine(testMachine);
       // Test that there are a maximum of 4 cache control markers
       const promptMessages = prompts[0];
       const anthropicCacheControlCount = promptMessages?.filter((message) => {
@@ -2037,7 +2106,28 @@ describe("llmRequestLogic", () => {
                   "type": "text",
                 },
               ],
-              "providerOptions": undefined,
+              "providerOptions": {
+                "anthropic": {
+                  "cacheControl": {
+                    "type": "ephemeral",
+                  },
+                },
+                "bedrock": {
+                  "cachePoint": {
+                    "type": "ephemeral",
+                  },
+                },
+                "openaiCompatible": {
+                  "cache_control": {
+                    "type": "ephemeral",
+                  },
+                },
+                "openrouter": {
+                  "cache_control": {
+                    "type": "ephemeral",
+                  },
+                },
+              },
               "role": "assistant",
             },
             {
@@ -2048,7 +2138,28 @@ describe("llmRequestLogic", () => {
                   "type": "text",
                 },
               ],
-              "providerOptions": undefined,
+              "providerOptions": {
+                "anthropic": {
+                  "cacheControl": {
+                    "type": "ephemeral",
+                  },
+                },
+                "bedrock": {
+                  "cachePoint": {
+                    "type": "ephemeral",
+                  },
+                },
+                "openaiCompatible": {
+                  "cache_control": {
+                    "type": "ephemeral",
+                  },
+                },
+                "openrouter": {
+                  "cache_control": {
+                    "type": "ephemeral",
+                  },
+                },
+              },
               "role": "assistant",
             },
           ],
@@ -2057,6 +2168,15 @@ describe("llmRequestLogic", () => {
     });
 
     it("replaces stale agent messages", async () => {
+      await setupPromptMessagesTest();
+      const testMachine = await createTestMachine({
+        chunks: [
+          { id: "1", type: "text-start" },
+          { delta: "Response text", id: "1", type: "text-delta" },
+          { id: "1", type: "text-end" },
+        ],
+      });
+
       const staleDate = new Date("2013-08-31T10:00:00.000Z");
       const staleMessageId = StoreId.newMessageId();
       const oldText = "You are an old assistant that should be replaced.";
@@ -2084,18 +2204,10 @@ describe("llmRequestLogic", () => {
           ],
           role: "session-context",
         },
-        projectAppConfig,
+        testMachine.appConfig,
       );
 
-      const machine = createTestMachine({
-        chunks: [
-          { id: "1", type: "text-start" },
-          { delta: "Response text", id: "1", type: "text-delta" },
-          { id: "1", type: "text-end" },
-        ],
-      });
-
-      const { messages } = await runTestMachine(machine);
+      const { messages } = await runTestMachine(testMachine);
       expect(
         JSON.stringify(messages),
         "Old message should be replaced",
@@ -2154,11 +2266,18 @@ describe("llmRequestLogic", () => {
               "providerId": "mock-provider",
               "sessionId": "ses_00000000018888888888888888",
               "usage": {
-                "cachedInputTokens": 1,
+                "inputTokenDetails": {
+                  "cacheReadTokens": 1,
+                  "cacheWriteTokens": undefined,
+                  "noCacheTokens": undefined,
+                },
                 "inputTokens": 2,
+                "outputTokenDetails": {
+                  "reasoningTokens": 4,
+                  "textTokens": undefined,
+                },
                 "outputTokens": 3,
-                "reasoningTokens": 4,
-                "totalTokens": 9,
+                "totalTokens": 5,
               },
             },
             "parts": [],

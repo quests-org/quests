@@ -23,8 +23,12 @@ export function createTool<
         description: options.description,
         inputSchema: options.inputSchema,
         outputSchema: options.outputSchema,
-        toModelOutput: (output: unknown) =>
-          options.toModelOutput({ output: output as z.output<TOutputSchema> }),
+        toModelOutput: ({ input, output, toolCallId }) =>
+          options.toModelOutput({
+            input: input as z.output<TInputSchema>,
+            output: output as z.output<TOutputSchema>,
+            toolCallId,
+          }),
         type: "function",
       }),
   };

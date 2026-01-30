@@ -15,13 +15,18 @@ import {
   PopoverTrigger,
 } from "@/client/components/ui/popover";
 import { captureClientEvent } from "@/client/lib/capture-client-event";
-import { RECOMMENDED_TAG } from "@quests/ai-gateway/client";
+import { type ProviderMetadata } from "@quests/ai-gateway/client";
 import { type AIProviderType } from "@quests/shared";
 import { useAtomValue } from "jotai";
 import { Award, ChevronDown } from "lucide-react";
 import { useState } from "react";
 
 import { AIProviderIcon } from "./ai-provider-icon";
+
+const TAG_TO_LABEL: Record<ProviderMetadata["tags"][number], string> = {
+  imageGeneration: "Image Generation",
+  recommended: "Recommended",
+};
 
 export function ProviderPicker({
   onSelect,
@@ -88,51 +93,53 @@ export function ProviderPicker({
         <Command>
           <CommandInput placeholder="Search providers..." />
           <CommandList>
-            <CommandEmpty>No providers found.</CommandEmpty>
+            <CommandEmpty>Error loading providers.</CommandEmpty>
             <CommandGroup>
-              {sortedProviderMetadata.map((provider) => {
-                return (
-                  <CommandItem
-                    key={provider.type}
-                    onSelect={() => {
-                      handleSelect(provider.type);
-                    }}
-                    value={provider.name}
-                  >
-                    <AIProviderIcon
-                      className="mr-2 size-5 shrink-0"
-                      type={provider.type}
-                    />
-                    <div className="flex min-w-0 flex-1 flex-col gap-y-0.5">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{provider.name}</span>
-                        {provider.tags.length > 0 && (
-                          <div className="flex flex-wrap gap-1">
-                            {provider.tags.map((tag) => (
-                              <Badge
-                                key={tag}
-                                variant={
-                                  tag === RECOMMENDED_TAG
-                                    ? "brand-outline"
-                                    : "outline"
-                                }
-                              >
-                                {tag === RECOMMENDED_TAG && (
-                                  <Award className="size-3 stroke-brand" />
-                                )}
-                                {tag}
-                              </Badge>
-                            ))}
-                          </div>
-                        )}
+              {sortedProviderMetadata
+                .filter((provider) => provider.canAddManually)
+                .map((provider) => {
+                  return (
+                    <CommandItem
+                      key={provider.type}
+                      onSelect={() => {
+                        handleSelect(provider.type);
+                      }}
+                      value={provider.name}
+                    >
+                      <AIProviderIcon
+                        className="mr-2 size-5 shrink-0"
+                        type={provider.type}
+                      />
+                      <div className="flex min-w-0 flex-1 flex-col gap-y-0.5">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">{provider.name}</span>
+                          {provider.tags.length > 0 && (
+                            <div className="flex flex-wrap gap-1">
+                              {provider.tags.map((tag) => (
+                                <Badge
+                                  key={tag}
+                                  variant={
+                                    tag === "recommended"
+                                      ? "brand-outline"
+                                      : "outline"
+                                  }
+                                >
+                                  {tag === "recommended" && (
+                                    <Award className="size-3 stroke-brand" />
+                                  )}
+                                  {TAG_TO_LABEL[tag]}
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {provider.description}
+                        </div>
                       </div>
-                      <div className="text-xs text-muted-foreground">
-                        {provider.description}
-                      </div>
-                    </div>
-                  </CommandItem>
-                );
-              })}
+                    </CommandItem>
+                  );
+                })}
             </CommandGroup>
           </CommandList>
         </Command>

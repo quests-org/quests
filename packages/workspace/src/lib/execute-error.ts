@@ -1,5 +1,14 @@
 import { err } from "neverthrow";
 
-export function executeError(message: string) {
-  return err({ message, type: "execute-error" as const });
+export interface ExecuteError {
+  message: string;
+  type: "execute-error";
+}
+
+export function executeError(errorOrMessage: string) {
+  const error: ExecuteError = {
+    message: errorOrMessage,
+    type: "execute-error",
+  };
+  return err(error);
 }

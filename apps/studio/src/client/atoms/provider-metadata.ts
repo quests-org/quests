@@ -1,22 +1,14 @@
 import { atomWithoutSuspense } from "@/client/lib/atom-without-suspense";
 import { logger } from "@/client/lib/logger";
 import { rpcClient } from "@/client/rpc/client";
-import {
-  type ProviderMetadata,
-  RECOMMENDED_TAG,
-} from "@quests/ai-gateway/client";
+import { type ProviderMetadata } from "@quests/ai-gateway/client";
 import { type AIProviderType } from "@quests/shared";
 import { atom } from "jotai";
 import { sort } from "radashi";
 
 interface ProviderMetadataData {
-  providerMetadataMap: Map<
-    AIProviderType,
-    ProviderMetadata & { type: AIProviderType }
-  >;
-  sortedProviderMetadata: (ProviderMetadata & {
-    type: AIProviderType;
-  })[];
+  providerMetadataMap: Map<AIProviderType, ProviderMetadata>;
+  sortedProviderMetadata: ProviderMetadata[];
 }
 
 const defaultProviderMetadata: ProviderMetadataData = {
@@ -34,10 +26,11 @@ const baseProviderMetadataAtom = atom(async () => {
       sortedProviderMetadata: sort(
         [...metadataMap.values()],
         (metadata) => {
+          // OpenAI compatible provider should be at the bottom
           if (metadata.type === "openai-compatible") {
             return -1;
           }
-          return Number(metadata.tags.includes(RECOMMENDED_TAG));
+          return Number(metadata.tags.includes("recommended"));
         },
         true,
       ),

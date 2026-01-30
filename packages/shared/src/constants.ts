@@ -27,3 +27,4 @@ export const PROJECT_MANIFEST_FILE_NAME = "quests.json";
 export const VERSION_REF_QUERY_PARAM = "versionRef";
 export const EVAL_SUBDOMAIN_PREFIX = "eval-";
 export const QUESTS_AUTO_MODEL_PROVIDER_ID = "quests/auto";
+export const QUESTS_AUTO_IMAGE_MODEL_ID = "quests/auto-image";

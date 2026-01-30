@@ -1,5 +1,6 @@
 import type { ActorRefFrom } from "xstate";
 
+import { type AIGatewayModel } from "@quests/ai-gateway";
 import { assign, fromPromise, log, setup } from "xstate";
 
 import { type AppConfig } from "../lib/app-config/types";
@@ -13,14 +14,16 @@ const executeToolLogic = fromPromise<
   void,
   {
     appConfig: AppConfig;
+    model: AIGatewayModel.Type;
     part: SessionMessagePart.ToolPartInputAvailable;
   }
->(async ({ input: { appConfig, part }, signal }) => {
+>(async ({ input: { appConfig, model, part }, signal }) => {
   const tool = getToolByType(part.type);
   try {
     const output = await tool.execute({
       appConfig,
       input: part.input as never,
+      model,
       signal,
     });
 
@@ -120,11 +123,13 @@ export const executeToolCallMachine = setup({
     context: {} as {
       appConfig: AppConfig;
       cancellationReason: string;
+      model: AIGatewayModel.Type;
       part: SessionMessagePart.ToolPartInputAvailable;
     },
     events: {} as { type: "stop" },
     input: {} as {
       appConfig: AppConfig;
+      model: AIGatewayModel.Type;
       part: SessionMessagePart.ToolPartInputAvailable;
     },
   },
@@ -132,6 +137,7 @@ export const executeToolCallMachine = setup({
   context: ({ input }) => ({
     appConfig: input.appConfig,
     cancellationReason: "unknown",
+    model: input.model,
     part: input.part,
   }),
   id: "executeToolCall",
@@ -168,6 +174,7 @@ export const executeToolCallMachine = setup({
       invoke: {
         input: ({ context }) => ({
           appConfig: context.appConfig,
+          model: context.model,
           part: context.part,
         }),
         onDone: "Done",

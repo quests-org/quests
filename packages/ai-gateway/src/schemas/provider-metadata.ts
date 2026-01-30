@@ -1,6 +1,8 @@
 import { AIProviderTypeSchema } from "@quests/shared";
 import { z } from "zod";
 
+const ProviderTagsSchema = z.enum(["imageGeneration", "recommended"]);
+
 export const ProviderMetadataSchema = z.object({
   api: z.object({
     // Usually this is the OpenAI API compatible URL, but sometimes it's the raw
@@ -10,10 +12,14 @@ export const ProviderMetadataSchema = z.object({
     keyFormat: z.string().optional(),
     keyURL: z.string().optional(),
   }),
+  canAddManually: z.boolean().optional().default(true).meta({
+    description:
+      "Whether the provider can be added manually (usually via API key) by the user",
+  }),
   description: z.string(),
   name: z.string(),
-  requiresAPIKey: z.boolean().optional().default(false),
-  tags: z.array(z.string()).optional().default([]),
+  requiresAPIKey: z.boolean().optional().default(true),
+  tags: z.array(ProviderTagsSchema).optional().default([]),
   type: AIProviderTypeSchema,
   url: z.string(),
 });

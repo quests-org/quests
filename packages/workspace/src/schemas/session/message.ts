@@ -55,13 +55,57 @@ export namespace SessionMessage {
   // -----
   // Usage
   // -----
-  export const UsageSchema = z.object({
+  const OptionalNumberOrNaNSchema = z.union([z.number(), z.nan()]).optional();
+
+  // AI SDK v5 usage schema
+  const LegacyUsageSchema = z.object({
     cachedInputTokens: z.union([z.number(), z.nan()]),
     inputTokens: z.union([z.number(), z.nan()]),
     outputTokens: z.union([z.number(), z.nan()]),
     reasoningTokens: z.union([z.number(), z.nan()]),
     totalTokens: z.union([z.number(), z.nan()]),
   });
+
+  // AI SDK v6 usage schema
+  const NewUsageSchema = z.object({
+    inputTokenDetails: z.object({
+      cacheReadTokens: OptionalNumberOrNaNSchema,
+      cacheWriteTokens: OptionalNumberOrNaNSchema,
+      noCacheTokens: OptionalNumberOrNaNSchema,
+    }),
+    inputTokens: OptionalNumberOrNaNSchema,
+    outputTokenDetails: z.object({
+      reasoningTokens: OptionalNumberOrNaNSchema,
+      textTokens: OptionalNumberOrNaNSchema,
+    }),
+    outputTokens: OptionalNumberOrNaNSchema,
+    totalTokens: OptionalNumberOrNaNSchema,
+  });
+
+  export const UsageSchema = z
+    .union([LegacyUsageSchema, NewUsageSchema])
+    .transform((value) => {
+      // Check if it's the legacy format by checking for cachedInputTokens
+      if ("cachedInputTokens" in value) {
+        // Transform legacy format to new format
+        return {
+          inputTokenDetails: {
+            cacheReadTokens: value.cachedInputTokens,
+            cacheWriteTokens: undefined,
+            noCacheTokens: undefined,
+          },
+          inputTokens: value.inputTokens,
+          outputTokenDetails: {
+            reasoningTokens: value.reasoningTokens,
+            textTokens: undefined,
+          },
+          outputTokens: value.outputTokens,
+          totalTokens: value.totalTokens,
+        };
+      }
+      // Already in new format
+      return value;
+    });
   export type Usage = z.output<typeof UsageSchema>;
 
   // --------
@@ -106,7 +150,8 @@ export namespace SessionMessage {
     msToFirstChunk: z.number().optional(),
     providerId: z.string(),
     synthetic: z.boolean().optional(), // When created by the workspace
-    usage: UsageSchema.partial().optional(),
+    // eslint-disable-next-line unicorn/prefer-top-level-await
+    usage: UsageSchema.optional().catch(undefined),
   });
 
   export const MetadataSchema = z.union([
@@ -186,10 +231,10 @@ export namespace SessionMessage {
     parts: SessionMessagePart.Type[];
   };
 
-  export function toModelMessages(
+  export async function toModelMessages(
     messages: WithParts[],
     tools: ToolSet,
-  ): ModelMessage[] {
+  ): Promise<ModelMessage[]> {
     const uiMessages: UIMessage[] = messages.map((message) => {
       const filteredParts = message.parts
         .filter(

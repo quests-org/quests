@@ -7,6 +7,7 @@ alwaysApply: true
 ## Project
 
 - The Studio is an Electron app.
+- The client is React 19, so use the newer APIs.
 - Becuase we are trying to behave as a desktop app, we don't use `cursor: pointer` for links.
 - The `src/client` folder contains the TanStack Router app, which is client-only code that only runs in the browser.
 - shadcn components are installed in `@/client/components/ui`.

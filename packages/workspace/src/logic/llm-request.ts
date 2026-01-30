@@ -2,7 +2,8 @@ import type { ToolSet } from "ai";
 import type { ActorRef, AnyMachineSnapshot } from "xstate";
 
 import {
-  type AIGatewayLanguageModel,
+  type AIGatewayModel,
+  fetchAISDKModel,
   providerOptionsForModel,
 } from "@quests/ai-gateway";
 import {
@@ -21,6 +22,7 @@ import { getCurrentDate } from "../lib/get-current-date";
 import { isToolPart } from "../lib/is-tool-part";
 import { prepareModelMessages } from "../lib/prepare-model-messages";
 import { Store } from "../lib/store";
+import { getWorkspaceServerURL } from "../logic/server/url";
 import { type SessionMessage } from "../schemas/session/message";
 import { type SessionMessagePart } from "../schemas/session/message-part";
 import { StoreId } from "../schemas/store-id";
@@ -29,7 +31,7 @@ import { ToolNameSchema } from "../tools/name";
 interface LLMRequestInput {
   agent: AnyAgent;
   appConfig: AppConfig;
-  model: AIGatewayLanguageModel;
+  model: AIGatewayModel.Type;
   self: ActorRef<AnyMachineSnapshot, { type: "llmRequest.chunkReceived" }>;
   sessionId: StoreId.Session;
   stepCount: number;
@@ -67,14 +69,12 @@ export const llmRequestLogic = fromPromise<
   };
 
   const captureEvent = input.appConfig.workspaceConfig.captureEvent;
-  const providerId =
-    typeof input.model === "string" ? "unknown" : input.model.provider;
-  const modelId =
-    typeof input.model === "string" ? input.model : input.model.modelId;
+  const providerId = input.model.params.provider;
+  const modelId = input.model.canonicalId;
   const assistantMessage: SessionMessage.Assistant = {
     id: StoreId.newMessageId(),
     metadata: {
-      aiGatewayModel: input.model.__aiGatewayModel,
+      aiGatewayModel: input.model,
       createdAt: getCurrentDate(),
       finishReason: "unknown",
       modelId,
@@ -118,7 +118,7 @@ export const llmRequestLogic = fromPromise<
   const messagesResult = await prepareModelMessages({
     agent: input.agent,
     appConfig: input.appConfig,
-    model: input.model.__aiGatewayModel,
+    model: input.model,
     sessionId: input.sessionId,
     signal,
   });
@@ -156,17 +156,32 @@ export const llmRequestLogic = fromPromise<
   const toolCalls: Record<string, SessionMessagePart.ToolPart> = {};
   const toolCallInputText: Record<string, string> = {};
   try {
+    // Fetch AI SDK model at the last moment before making the LLM request
+    const aiSDKModelResult = await fetchAISDKModel({
+      configs: input.appConfig.workspaceConfig.getAIProviderConfigs(),
+      modelURI: input.model.uri,
+      workspaceServerURL: getWorkspaceServerURL(),
+    });
+
+    if (!aiSDKModelResult.ok) {
+      throw new Error(
+        `Failed to fetch AI SDK model: ${aiSDKModelResult.error.message}`,
+      );
+    }
+
+    const aiSDKModel = aiSDKModelResult.value;
+
     const startTimestampMs = getCurrentDate().getTime();
     const result = streamText({
       abortSignal: signal,
       maxRetries: 0, // Handled outside this function
       messages: messagesResult.value,
-      model: input.model,
+      model: aiSDKModel,
       onError: () => {
         // These are thrown and handled by the catch block
         // no-op to avoid excessive logging
       },
-      providerOptions: providerOptionsForModel(input.model),
+      providerOptions: providerOptionsForModel(aiSDKModel),
       toolChoice: input.toolChoice,
       tools,
     });
@@ -200,18 +215,20 @@ export const llmRequestLogic = fromPromise<
             completionTokensPerSecond;
           await scopedStore.saveMessage(assistantMessage);
           captureEvent("llm.request_finished", {
-            cached_input_tokens: part.totalUsage.cachedInputTokens,
+            cached_input_tokens:
+              part.totalUsage.inputTokenDetails.cacheReadTokens ?? 0,
             completion_tokens_per_second: completionTokensPerSecond,
             finish_reason: part.finishReason,
-            input_tokens: part.totalUsage.inputTokens,
+            input_tokens: part.totalUsage.inputTokens ?? 0,
             modelId,
             ms_to_finish: msToFinish,
             ms_to_first_chunk: msToFirstChunk ?? 0,
-            output_tokens: part.totalUsage.outputTokens,
+            output_tokens: part.totalUsage.outputTokens ?? 0,
             providerId,
-            reasoning_tokens: part.totalUsage.reasoningTokens,
+            reasoning_tokens:
+              part.totalUsage.outputTokenDetails.reasoningTokens ?? 0,
             step_count: input.stepCount,
-            total_tokens: part.totalUsage.totalTokens,
+            total_tokens: part.totalUsage.totalTokens ?? 0,
           });
           break;
         }
@@ -519,8 +536,22 @@ export const llmRequestLogic = fromPromise<
           await scopedStore.savePart(newPart);
           break;
         }
+        case "tool-output-denied": {
+          input.appConfig.workspaceConfig.captureException(
+            new Error(`Unexpected tool output denied: ${JSON.stringify(part)}`),
+          );
+          break;
+        }
         case "tool-result": {
           throw new Error(`Unexpected tool result: ${JSON.stringify(part)}`);
+        }
+        case "tool-approval-request": {
+          input.appConfig.workspaceConfig.captureException(
+            new Error(
+              `Unexpected tool approval request: ${JSON.stringify(part)}`,
+            ),
+          );
+          break;
         }
         default: {
           const _exhaustiveCheck: never = part;

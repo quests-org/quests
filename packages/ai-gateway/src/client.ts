@@ -1,4 +1,3 @@
-export { RECOMMENDED_TAG } from "./constants";
 export type { AIGatewayModel } from "./schemas/model";
 export type { AIGatewayModelURI } from "./schemas/model-uri";
 export { AIGatewayProviderConfig } from "./schemas/provider-config";

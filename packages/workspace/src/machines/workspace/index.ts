@@ -1,6 +1,6 @@
 import {
   type AIGatewayApp,
-  type AIGatewayLanguageModel,
+  type AIGatewayModel,
   type GetProviderConfigs,
 } from "@quests/ai-gateway";
 import {
@@ -59,7 +59,7 @@ export type WorkspaceEvent =
       type: "addMessage";
       value: {
         message: SessionMessage.UserWithParts;
-        model: AIGatewayLanguageModel;
+        model: AIGatewayModel.Type;
         sessionId: StoreId.Session;
         subdomain: AppSubdomain;
       };
@@ -68,7 +68,7 @@ export type WorkspaceEvent =
       type: "createSession";
       value: {
         message: SessionMessage.UserWithParts;
-        model: AIGatewayLanguageModel;
+        model: AIGatewayModel.Type;
         sessionId: StoreId.Session;
         subdomain: AppSubdomain;
       };
@@ -86,7 +86,7 @@ export type WorkspaceEvent =
       value: {
         appConfig: AppConfig;
         message: SessionMessage.UserWithParts;
-        model: AIGatewayLanguageModel;
+        model: AIGatewayModel.Type;
         sessionId: StoreId.Session;
       };
     }

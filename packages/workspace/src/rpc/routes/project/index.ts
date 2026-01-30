@@ -1,5 +1,5 @@
 import { call, eventIterator } from "@orpc/server";
-import { AIGatewayModelURI } from "@quests/ai-gateway";
+import { AIGatewayModelURI, fetchModelByURI } from "@quests/ai-gateway";
 import { mergeGenerators } from "@quests/shared/merge-generators";
 import { z } from "zod";
 
@@ -20,7 +20,6 @@ import {
   getProjectManifest,
   updateProjectManifest,
 } from "../../../lib/project-manifest";
-import { resolveModel } from "../../../lib/resolve-model";
 import { trashProject } from "../../../lib/trash-project";
 import { WorkspaceAppProjectSchema } from "../../../schemas/app";
 import { AbsolutePathSchema } from "../../../schemas/paths";
@@ -145,7 +144,18 @@ const create = base
       },
       signal,
     }) => {
-      const model = await resolveModel(modelURI, context, errors);
+      const modelResult = await fetchModelByURI(
+        modelURI,
+        context.workspaceConfig.getAIProviderConfigs(),
+      );
+
+      if (!modelResult.ok) {
+        const error = modelResult.error;
+        context.workspaceConfig.captureException(error);
+        throw toORPCError(error, errors);
+      }
+
+      const model = modelResult.value;
 
       const projectConfig = await newProjectConfig({
         preferredFolderName,
@@ -206,6 +216,7 @@ const create = base
         generateProjectTitle({
           message,
           model,
+          workspaceConfig: context.workspaceConfig,
           // Only relevant for non default templates
           templateTitle:
             templateName === DEFAULT_TEMPLATE_NAME ? undefined : templateName,
@@ -242,8 +253,8 @@ const create = base
 
       context.workspaceConfig.captureEvent("project.created", {
         files_count: files?.length ?? 0,
-        modelId: model.modelId,
-        providerId: model.provider,
+        modelId: model.canonicalId,
+        providerId: model.params.provider,
         template_name: templateName,
       });
 
