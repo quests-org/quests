@@ -13,3 +13,7 @@ alwaysApply: true
 - Use shadcn Tailwind colors for styling, e.g. `bg-background` instead of `bg-white`.
 - The app communicates over oRPC to the main process.
 - We have a remote API for accounts that is also exposed via oRPC.
+- `rpcClient` methods can be called directly with `.call()`, but will throw unless wrapped in `import { safe } from "@orpc/client";`
+- Use `.call()` when imperative use outside React is desired.
+- Use `useQuery` and `rpcClient.method.name.here.queryOptions({ input: { ... } })` for queries.
+- External links can be opened with `<ExternalLink href="https://example.com" />` or `rpcClient.utils.openExternalLink`.
