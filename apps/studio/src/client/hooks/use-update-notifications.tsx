@@ -1,5 +1,6 @@
 import { Progress } from "@/client/components/ui/progress";
 import { rpcClient } from "@/client/rpc/client";
+import { MANUAL_DOWNLOAD_URL } from "@quests/shared";
 import { useQuery } from "@tanstack/react-query";
 import { Download } from "lucide-react";
 import { useEffect, useRef } from "react";
@@ -121,7 +122,9 @@ export function useUpdateNotifications() {
             action: {
               label: "Download manually",
               onClick: () => {
-                window.open("https://quests.dev/download", "_blank");
+                void rpcClient.utils.openExternalLink.call({
+                  url: `${MANUAL_DOWNLOAD_URL}?ref=studio-update-notifications-error`,
+                });
               },
             },
             closeButton: true,

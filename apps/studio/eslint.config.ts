@@ -29,6 +29,15 @@ export default [
   {
     files: ["**/*.{js,jsx,ts,tsx}"],
     rules: {
+      "no-restricted-properties": [
+        "error",
+        {
+          message:
+            "window.open is not allowed in the Electron app. Use shell.openExternal or ExternalLink component instead.",
+          object: "window",
+          property: "open",
+        },
+      ],
       "no-restricted-syntax": [
         "error",
         {
