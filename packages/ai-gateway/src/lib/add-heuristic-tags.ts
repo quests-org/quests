@@ -22,8 +22,9 @@ const MODEL_TAGS: Record<string, AIGatewayModel.ModelTag[]> = {
 const DEFAULT_MODELS_BY_CONFIG_TYPE: Partial<
   Record<AIGatewayProviderConfig.Type["type"], string[]>
 > = {
-  cerebras: ["glm-4.6"],
+  cerebras: ["glm-4.7", "gpt-oss-120b"],
   google: ["gemini-3-pro", "gemini-3-pro-preview"],
+  groq: ["gpt-oss-120b"],
   openai: ["gpt-5.1-codex-mini"],
   "x-ai": ["grok-code-fast-1"],
   "z-ai": ["glm-4.6"],
