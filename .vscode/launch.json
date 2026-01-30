@@ -16,7 +16,7 @@
       ],
       "name": "🐛 Studio with Renderer",
       "presentation": {
-        "order": 1
+        "order": 8
       },
       "stopAll": true
     },
