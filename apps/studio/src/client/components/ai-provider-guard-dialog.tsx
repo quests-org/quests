@@ -17,10 +17,12 @@ import { useState } from "react";
 export function AIProviderGuardDialog({
   description,
   onOpenChange,
+  onSuccess,
   open,
 }: {
   description: string;
   onOpenChange: (open: boolean) => void;
+  onSuccess?: () => void;
   open: boolean;
 }) {
   const [showAddProviderDialog, setShowAddProviderDialog] = useState(false);
@@ -44,13 +46,19 @@ export function AIProviderGuardDialog({
             <h2 className="text-center text-2xl font-bold">
               Add an AI provider
             </h2>
-            <p className="max-w-sm text-center text-sm text-muted-foreground">
+            <p className="text-center text-sm text-muted-foreground">
               {description}
             </p>
           </div>
 
-          <div className="flex w-full max-w-sm flex-col gap-4">
-            <GoogleSignInButton className="w-full" />
+          <div className="flex w-full max-w-xs flex-col gap-4">
+            <GoogleSignInButton
+              className="w-full"
+              onSuccess={() => {
+                onSuccess?.();
+                onOpenChange(false);
+              }}
+            />
 
             <ManualProviderButton
               onClick={() => {
@@ -63,13 +71,14 @@ export function AIProviderGuardDialog({
             onOpenChange={setShowAddProviderDialog}
             onSuccess={() => {
               setShowAddProviderDialog(false);
+              onSuccess?.();
               onOpenChange(false);
             }}
             open={showAddProviderDialog}
             providers={providerConfigs ?? []}
           />
 
-          <TermsFooter className="max-w-xs text-center text-xs text-muted-foreground/50" />
+          <TermsFooter className="text-center text-xs text-muted-foreground/50" />
         </div>
       </DialogContent>
     </Dialog>

@@ -9,7 +9,6 @@ import { z } from "zod";
 
 import { absolutePathJoin } from "../lib/absolute-path-join";
 import { ensureRelativePath } from "../lib/ensure-relative-path";
-import { executeError } from "../lib/execute-error";
 import { writeFileWithDir } from "../lib/write-file-with-dir";
 import { getWorkspaceServerURL } from "../logic/server/url";
 import { RelativePathSchema } from "../schemas/paths";
@@ -58,10 +57,10 @@ export const GenerateImage = createTool({
     );
 
     if (!preferredProviderConfig) {
-      return executeError({
-        code: "no-image-generation-provider",
-        message:
-          "No AI provider with image generation capability is available.",
+      return ok({
+        errorMessage: "No AI provider found for current model.",
+        errorType: "no-provider" as const,
+        state: "failure" as const,
       });
     }
 
@@ -76,10 +75,11 @@ export const GenerateImage = createTool({
       });
 
       if (!result.ok) {
-        return executeError({
-          code: "no-image-generation-provider",
-          message:
+        return ok({
+          errorMessage:
             "No AI provider with image generation capability is available.",
+          errorType: "no-image-generation-capability" as const,
+          state: "failure" as const,
         });
       }
 
@@ -130,6 +130,7 @@ export const GenerateImage = createTool({
           id: provider.id,
           type: provider.type,
         },
+        state: "success" as const,
         usage: {
           inputTokens: usage.inputTokens,
           outputTokens: usage.outputTokens,
@@ -137,9 +138,11 @@ export const GenerateImage = createTool({
         },
       });
     } catch (error) {
-      return executeError(
-        `Failed to generate image: ${error instanceof Error ? error.message : "Unknown error"}`,
-      );
+      return ok({
+        errorMessage: `Failed to generate image: ${error instanceof Error ? error.message : "Unknown error"}`,
+        errorType: "generation-failed" as const,
+        state: "failure" as const,
+      });
     }
   },
   inputSchema: BaseInputSchema.extend({
@@ -151,33 +154,52 @@ export const GenerateImage = createTool({
     }),
   }),
   name: "generate_image",
-  outputSchema: z.object({
-    images: z.array(
-      z.object({
-        filePath: RelativePathSchema,
-        height: z.number().optional(),
-        sizeBytes: z.number(),
-        width: z.number().optional(),
+  outputSchema: z.discriminatedUnion("state", [
+    z.object({
+      images: z.array(
+        z.object({
+          filePath: RelativePathSchema,
+          height: z.number().optional(),
+          sizeBytes: z.number(),
+          width: z.number().optional(),
+        }),
+      ),
+      modelId: z.string(),
+      provider: AIGatewayProviderConfig.Schema.pick({
+        displayName: true,
+        id: true,
+        type: true,
+      }).meta({
+        description:
+          "A limited set of provider configuration details to display in the UI",
       }),
-    ),
-    modelId: z.string(),
-    provider: AIGatewayProviderConfig.Schema.pick({
-      displayName: true,
-      id: true,
-      type: true,
-    }).meta({
-      description:
-        "A limited set of provider configuration details to display in the UI",
+      state: z.literal("success"),
+      usage: z.object({
+        inputTokens: z.union([z.number(), z.nan()]).optional(),
+        outputTokens: z.union([z.number(), z.nan()]).optional(),
+        totalTokens: z.union([z.number(), z.nan()]).optional(),
+      }),
     }),
-    usage: z.object({
-      inputTokens: z.union([z.number(), z.nan()]).optional(),
-      outputTokens: z.union([z.number(), z.nan()]).optional(),
-      totalTokens: z.union([z.number(), z.nan()]).optional(),
+    z.object({
+      errorMessage: z.string(),
+      errorType: z.enum([
+        "no-provider",
+        "no-image-generation-capability",
+        "generation-failed",
+      ]),
+      state: z.literal("failure"),
     }),
-  }),
+  ]),
   readOnly: false,
   timeoutMs: ms("60 seconds"),
   toModelOutput: ({ output }) => {
+    if (output.state === "failure") {
+      return {
+        type: "text",
+        value: output.errorMessage,
+      };
+    }
+
     const imageCount = output.images.length;
 
     if (imageCount === 0) {
@@ -191,9 +213,7 @@ export const GenerateImage = createTool({
       .map((image) => {
         const size = `${Math.round(image.sizeBytes / 1024)}KB`;
         const dimensions =
-          image.width && image.height
-            ? `, ${image.width}x${image.height}`
-            : "";
+          image.width && image.height ? `, ${image.width}x${image.height}` : "";
         return `${image.filePath} (${size}${dimensions})`;
       })
       .join("\n");

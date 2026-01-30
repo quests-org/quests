@@ -1,5 +1,8 @@
 import { type ImageModelV3, type LanguageModelV3 } from "@ai-sdk/provider";
-import { type WorkspaceServerURL } from "@quests/shared";
+import {
+  QUESTS_AUTO_IMAGE_MODEL_ID,
+  type WorkspaceServerURL,
+} from "@quests/shared";
 import { generateImage, generateText } from "ai";
 import { Result } from "typescript-result";
 
@@ -12,6 +15,12 @@ import {
   createVercelSDK,
   createXAISDK,
 } from "./ai-sdk-for-provider-config";
+import { getProviderMetadata } from "./providers/metadata";
+
+function supportsImageGeneration(type: AIGatewayProviderConfig.Type["type"]) {
+  const metadata = getProviderMetadata(type);
+  return metadata.tags?.includes("imageGeneration") ?? false;
+}
 
 // Ordered by quality of image provider as of 2026-01-30
 const ORDERED_PROVIDERS: AIGatewayProviderConfig.Type["type"][] = [
@@ -23,18 +32,6 @@ const ORDERED_PROVIDERS: AIGatewayProviderConfig.Type["type"][] = [
   "vercel",
   "fireworks",
 ];
-
-/* eslint-disable perfectionist/sort-sets */
-const IMAGE_GENERATION_PROVIDERS = new Set<(typeof ORDERED_PROVIDERS)[number]>([
-  "quests",
-  "openrouter",
-  "google",
-  "openai",
-  "vercel",
-  "x-ai",
-  "fireworks",
-]);
-/* eslint-enable perfectionist/sort-sets */
 
 export async function generateImages({
   configs,
@@ -55,7 +52,7 @@ export async function generateImages({
   const preferredConfig = configs.find(
     (c) => c.id === preferredProviderConfig.id,
   );
-  if (preferredConfig && IMAGE_GENERATION_PROVIDERS.has(preferredConfig.type)) {
+  if (preferredConfig && supportsImageGeneration(preferredConfig.type)) {
     const result = await tryGenerateWithConfig({
       config: preferredConfig,
       count,
@@ -71,12 +68,11 @@ export async function generateImages({
   // Fall back to type-based ordering
   const configsByType = new Map(configs.map((c) => [c.type, c]));
 
+  const shouldTryPreferredType =
+    !preferredConfig && supportsImageGeneration(preferredProviderConfig.type);
+
   const orderedProviderTypes = [
-    ...(preferredConfig
-      ? []
-      : IMAGE_GENERATION_PROVIDERS.has(preferredProviderConfig.type)
-        ? [preferredProviderConfig.type]
-        : []),
+    ...(shouldTryPreferredType ? [preferredProviderConfig.type] : []),
     ...ORDERED_PROVIDERS.filter((type) => type !== preferredConfig?.type),
   ];
 
@@ -158,15 +154,19 @@ async function tryGenerateWithConfig({
       imageModel = sdk.image("gpt-image-1-mini");
       break;
     }
-    case "openrouter":
-    case "quests": {
+    case "openrouter": {
       const sdk = await createOpenRouterSDK(config, workspaceServerURL);
       imageModel = sdk.imageModel("google/gemini-2.5-flash-image");
       break;
     }
+    case "quests": {
+      const sdk = await createOpenRouterSDK(config, workspaceServerURL);
+      imageModel = sdk.imageModel(QUESTS_AUTO_IMAGE_MODEL_ID);
+      break;
+    }
     case "x-ai": {
       const sdk = await createXAISDK(config, workspaceServerURL);
-      imageModel = sdk.imageModel("grok-image-2");
+      imageModel = sdk.imageModel("grok-imagine-image");
       break;
     }
   }

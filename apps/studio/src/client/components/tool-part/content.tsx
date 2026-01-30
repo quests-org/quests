@@ -1,7 +1,10 @@
 import { formatBytes, type SessionMessagePart } from "@quests/workspace/client";
+import { useState } from "react";
 
+import { AIProviderGuardDialog } from "../ai-provider-guard-dialog";
 import { AIProviderIcon } from "../ai-provider-icon";
 import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
 import { CodeBlock } from "./code-block";
 import { ToolPartFilePath } from "./file-path";
 import { MonoText } from "./mono-text";
@@ -10,8 +13,10 @@ import { ScrollableCodeBlock } from "./scrollable-code-block";
 import { SectionHeader } from "./section-header";
 
 export function ToolContent({
+  onRetry,
   part,
 }: {
+  onRetry?: (message: string) => void;
   part: Extract<SessionMessagePart.ToolPart, { state: "output-available" }>;
 }) {
   switch (part.type) {
@@ -63,6 +68,15 @@ export function ToolContent({
       );
     }
     case "tool-generate_image": {
+      if (part.output.state === "failure") {
+        return (
+          <GenerateImageFailure
+            input={part.input}
+            onRetry={onRetry}
+            output={part.output}
+          />
+        );
+      }
       const imageCount = part.output.images.length;
       return (
         <div>
@@ -277,4 +291,64 @@ export function ToolContent({
       );
     }
   }
+}
+
+function GenerateImageFailure({
+  input,
+  onRetry,
+  output,
+}: {
+  input: { explanation?: string; filePath: string; prompt: string };
+  onRetry?: (message: string) => void;
+  output: { errorMessage: string; errorType: string };
+}) {
+  const [showProviderGuard, setShowProviderGuard] = useState(false);
+  const [providerAdded, setProviderAdded] = useState(false);
+  const needsProvider =
+    output.errorType === "no-provider" ||
+    output.errorType === "no-image-generation-capability";
+
+  return (
+    <div>
+      <SectionHeader>Image generation failed</SectionHeader>
+      <div className="mb-3 text-sm text-muted-foreground">
+        {output.errorMessage}
+      </div>
+      {needsProvider && (
+        <div className="mt-3 flex gap-2">
+          {providerAdded ? (
+            <Button
+              onClick={() => {
+                onRetry?.(
+                  `I added an image generation provider. Retry generating an image with "${input.prompt}"`,
+                );
+              }}
+              size="sm"
+              variant="default"
+            >
+              Retry image generation
+            </Button>
+          ) : (
+            <Button
+              onClick={() => {
+                setShowProviderGuard(true);
+              }}
+              size="sm"
+              variant="default"
+            >
+              Add an AI Provider
+            </Button>
+          )}
+          <AIProviderGuardDialog
+            description="Sign up for Quests or add an AI provider that supports image generation."
+            onOpenChange={setShowProviderGuard}
+            onSuccess={() => {
+              setProviderAdded(true);
+            }}
+            open={showProviderGuard}
+          />
+        </div>
+      )}
+    </div>
+  );
 }

@@ -81,7 +81,7 @@ export function ToolCallItem({
   }
 
   return (
-    <div className="flex w-full min-w-0 items-center gap-2 text-xs leading-tight">
+    <div className="flex w-full min-w-0 items-center gap-2 overflow-hidden text-xs leading-tight">
       {icon && (
         <span className="shrink-0 text-accent-foreground/80">{icon}</span>
       )}
@@ -94,7 +94,9 @@ export function ToolCallItem({
         {label}
       </span>
       {value && (
-        <span className="min-w-0 truncate text-foreground/60">{value}</span>
+        <span className="min-w-0 shrink-0 truncate text-foreground/60">
+          {value}
+        </span>
       )}
       {reasoning && (
         <span className="ml-auto min-w-0 truncate text-muted-foreground/60">

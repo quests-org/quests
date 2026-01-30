@@ -27,10 +27,12 @@ import { ShellCommandCard } from "./shell-command-card";
 
 export function ToolPart({
   isLoading,
+  onRetry,
   part,
   projectSubdomain,
 }: {
   isLoading: boolean;
+  onRetry?: (message: string) => void;
   part: SessionMessagePart.ToolPart;
   projectSubdomain: ProjectSubdomain;
 }) {
@@ -62,6 +64,7 @@ export function ToolPart({
 
   let label: string;
   let value: string | undefined;
+  const reasoning = getExplanation(part.input);
 
   switch (part.state) {
     case "input-available": {
@@ -127,6 +130,7 @@ export function ToolPart({
       isExpanded={isExpandable && isExpanded}
       label={label}
       labelClassName={cn(isLoading && "shiny-text")}
+      reasoning={reasoning}
       value={value}
     />
   );
@@ -152,7 +156,7 @@ export function ToolPart({
       <CollapsibleContent>
         {isSuccess && (
           <CollapsiblePartMainContent>
-            <ToolPartExpanded part={part} />
+            <ToolPartExpanded onRetry={onRetry} part={part} />
           </CollapsiblePartMainContent>
         )}
 
@@ -181,6 +185,14 @@ export function ToolPart({
   );
 }
 
+function getExplanation(input: unknown): string | undefined {
+  if (input && typeof input === "object" && "explanation" in input) {
+    const explanation = (input as { explanation?: unknown }).explanation;
+    return typeof explanation === "string" ? explanation : undefined;
+  }
+  return undefined;
+}
+
 function getToolInputValue(
   part: Extract<
     SessionMessagePart.ToolPart,
@@ -201,9 +213,12 @@ function getToolInputValue(
         : undefined;
     }
     case "tool-generate_image": {
-      return part.input.filePath
-        ? filenameFromFilePath(part.input.filePath)
-        : undefined;
+      if (!part.input.filePath) {
+        return undefined;
+      }
+      const filename = filenameFromFilePath(part.input.filePath);
+      const hasExtension = filename.includes(".");
+      return hasExtension ? filename : `${filename} image`;
     }
     case "tool-glob": {
       return part.input.pattern;
@@ -255,12 +270,19 @@ function getToolOutputDescription(
       return filenameFromFilePath(part.output.filePath) || "file edited";
     }
     case "tool-generate_image": {
+      if (part.output.state === "failure") {
+        return part.output.errorMessage;
+      }
       const [firstImage] = part.output.images;
-      return part.output.images.length === 0
-        ? "No images generated"
-        : part.output.images.length === 1 && firstImage
-          ? filenameFromFilePath(firstImage.filePath)
-          : `${part.output.images.length} images generated`;
+      if (part.output.images.length === 0) {
+        return "No images generated";
+      }
+      if (part.output.images.length === 1 && firstImage) {
+        const filename = filenameFromFilePath(firstImage.filePath);
+        const hasExtension = filename.includes(".");
+        return hasExtension ? filename : `${filename} image`;
+      }
+      return `${part.output.images.length} images generated`;
     }
     case "tool-glob": {
       const files = part.output.files;
