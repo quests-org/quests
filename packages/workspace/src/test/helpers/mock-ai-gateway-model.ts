@@ -1,26 +1,7 @@
-import type { LanguageModelV3 } from "@ai-sdk/provider";
-
-import {
-  type AIGatewayLanguageModel,
-  AIGatewayModel,
-} from "@quests/ai-gateway";
+import { AIGatewayModel, AIGatewayModelURI } from "@quests/ai-gateway";
 import { AIProviderConfigIdSchema, type AIProviderType } from "@quests/shared";
 
 export function createMockAIGatewayModel(
-  baseModel: LanguageModelV3,
-  options: {
-    features?: AIGatewayModel.ModelFeatures[];
-    provider?: AIProviderType;
-  } = {},
-): AIGatewayLanguageModel {
-  const mockAIGatewayModel = createMockAIGatewayModelType(options);
-
-  return Object.assign(baseModel, {
-    __aiGatewayModel: mockAIGatewayModel,
-  }) satisfies AIGatewayLanguageModel;
-}
-
-export function createMockAIGatewayModelType(
   options: {
     author?: string;
     features?: AIGatewayModel.ModelFeatures[];
@@ -30,21 +11,33 @@ export function createMockAIGatewayModelType(
   const {
     author = "test",
     features = ["inputText", "outputText", "tools"],
-    provider = "openai",
+    provider = "quests",
   } = options;
+  const canonicalId = AIGatewayModel.CanonicalIdSchema.parse("mock-model-id");
+  const providerConfigId = AIProviderConfigIdSchema.parse(
+    "mock-provider-config-id",
+  );
+  const providerId = AIGatewayModel.ProviderIdSchema.parse("mock-provider-id");
 
   return AIGatewayModel.Schema.parse({
     author,
-    canonicalId: AIGatewayModel.CanonicalIdSchema.parse("test-model"),
+    canonicalId,
     features,
-    name: "Test Model",
+    name: "Mock Model",
     params: {
       provider,
-      providerConfigId: AIProviderConfigIdSchema.parse("test-config"),
+      providerConfigId,
     },
-    providerId: AIGatewayModel.ProviderIdSchema.parse("test-provider"),
+    providerId,
     providerName: "Test Provider",
     tags: ["default"],
-    uri: `test/test-model?provider=${provider}&providerConfigId=test-config`,
+    uri: AIGatewayModelURI.fromModel({
+      author,
+      canonicalId,
+      params: {
+        provider,
+        providerConfigId,
+      },
+    }),
   });
 }

@@ -2,6 +2,7 @@ import mockFs from "mock-fs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ProjectSubdomainSchema } from "../schemas/subdomains";
+import { createMockAIGatewayModel } from "../test/helpers/mock-ai-gateway-model";
 import {
   createMockAppConfig,
   MOCK_WORKSPACE_DIRS,
@@ -13,8 +14,10 @@ vi.mock(import("../lib/session-store-storage"));
 vi.mock(import("../lib/get-current-date"));
 
 describe("Glob", () => {
+  const model = createMockAIGatewayModel();
   const projectAppConfig = createMockAppConfig(
     ProjectSubdomainSchema.parse("test"),
+    { model },
   );
 
   beforeEach(() => {
@@ -58,6 +61,7 @@ describe("Glob", () => {
           explanation: "I want to find all test files",
           pattern,
         },
+        model,
         signal: AbortSignal.timeout(10_000),
       });
 

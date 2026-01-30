@@ -255,7 +255,12 @@ function getToolOutputDescription(
       return filenameFromFilePath(part.output.filePath) || "file edited";
     }
     case "tool-generate_image": {
-      return filenameFromFilePath(part.output.filePath) || "unknown location";
+      const [firstImage] = part.output.images;
+      return part.output.images.length === 0
+        ? "No images generated"
+        : part.output.images.length === 1 && firstImage
+          ? filenameFromFilePath(firstImage.filePath)
+          : `${part.output.images.length} images generated`;
     }
     case "tool-glob": {
       const files = part.output.files;

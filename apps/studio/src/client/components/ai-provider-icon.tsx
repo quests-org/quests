@@ -1,5 +1,6 @@
 import type { ComponentType } from "react";
 
+import { providerMetadataAtom } from "@/client/atoms/provider-metadata";
 import { Anyscale } from "@/client/components/icons/anyscale";
 import { Cerebras } from "@/client/components/icons/cerebras";
 import { DeepInfra } from "@/client/components/icons/deepinfra";
@@ -19,8 +20,14 @@ import { Together } from "@/client/components/icons/together";
 import { XAI } from "@/client/components/icons/x-ai";
 import { ZAI } from "@/client/components/icons/z-ai";
 import { OpenRouter } from "@/client/components/service-icons";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/client/components/ui/tooltip";
 import { QuestsLogoSimpleIcon } from "@quests/components/logo-simple";
 import { type AIProviderType } from "@quests/shared";
+import { useAtomValue } from "jotai";
 import { GrNodes } from "react-icons/gr";
 import {
   SiAnthropic,
@@ -64,11 +71,33 @@ const PROVIDER_ICON_MAP: Record<
 
 export function AIProviderIcon({
   className = "size-5",
+  displayName,
+  showTooltip = false,
   type,
 }: {
   className?: string;
+  displayName?: string;
+  showTooltip?: boolean;
   type: AIProviderType;
 }) {
   const Icon = PROVIDER_ICON_MAP[type] ?? GrNodes;
+  const { providerMetadataMap } = useAtomValue(providerMetadataAtom);
+  const metadata = providerMetadataMap.get(type);
+
+  if (showTooltip && metadata) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className="shrink-0">
+            <Icon className={className} />
+          </div>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>{displayName ?? metadata.name}</p>
+        </TooltipContent>
+      </Tooltip>
+    );
+  }
+
   return <Icon className={className} />;
 }

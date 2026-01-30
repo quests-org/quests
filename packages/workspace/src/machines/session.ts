@@ -1,4 +1,4 @@
-import { type AIGatewayLanguageModel } from "@quests/ai-gateway";
+import { type AIGatewayModel } from "@quests/ai-gateway";
 import { alphabetical, isEqual } from "radashi";
 import invariant from "tiny-invariant";
 import {
@@ -153,7 +153,7 @@ export const sessionMachine = setup({
       error?: unknown;
       llmRequestChunkTimeoutMs: number;
       maxStepCount: number;
-      model: AIGatewayLanguageModel;
+      model: AIGatewayModel.Type;
       parentRef: ParentActorRef;
       queuedMessages: SessionMessage.UserWithParts[];
       sessionId: StoreId.Session;
@@ -167,7 +167,7 @@ export const sessionMachine = setup({
       baseLLMRetryDelayMs: number;
       llmRequestChunkTimeoutMs: number;
       maxStepCount?: number;
-      model: AIGatewayLanguageModel;
+      model: AIGatewayModel.Type;
       parentRef: ParentActorRef;
       queuedMessages: SessionMessage.UserWithParts[];
       sessionId: StoreId.Session;

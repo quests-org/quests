@@ -1,5 +1,6 @@
-import { type SessionMessagePart } from "@quests/workspace/client";
+import { formatBytes, type SessionMessagePart } from "@quests/workspace/client";
 
+import { AIProviderIcon } from "../ai-provider-icon";
 import { Badge } from "../ui/badge";
 import { CodeBlock } from "./code-block";
 import { ToolPartFilePath } from "./file-path";
@@ -62,9 +63,31 @@ export function ToolContent({
       );
     }
     case "tool-generate_image": {
+      const imageCount = part.output.images.length;
       return (
         <div>
-          <SectionHeader>Generated {part.output.filePath}</SectionHeader>
+          <div className="mb-3 flex items-center gap-1.5">
+            <span className="text-xs text-muted-foreground">Model:</span>
+            <AIProviderIcon
+              className="size-3.5"
+              displayName={part.output.provider.displayName}
+              showTooltip
+              type={part.output.provider.type}
+            />
+            <MonoText className="text-xs">{part.output.modelId}</MonoText>
+          </div>
+          <SectionHeader>
+            {imageCount === 1
+              ? "Generated image"
+              : `Generated ${imageCount} images`}
+          </SectionHeader>
+          <div className="space-y-1">
+            {part.output.images.map((image, index) => (
+              <MonoText className="text-xs" key={index}>
+                {image.filePath} ({formatBytes(image.sizeBytes)})
+              </MonoText>
+            ))}
+          </div>
         </div>
       );
     }

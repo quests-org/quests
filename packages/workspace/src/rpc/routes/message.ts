@@ -1,12 +1,11 @@
 import { call, eventIterator } from "@orpc/server";
-import { AIGatewayModelURI } from "@quests/ai-gateway";
+import { AIGatewayModelURI, fetchModelByURI } from "@quests/ai-gateway";
 import { mergeGenerators } from "@quests/shared/merge-generators";
 import { z } from "zod";
 
 import { createAppConfig } from "../../lib/app-config/create";
 import { createSession } from "../../lib/create-session";
 import { newMessage } from "../../lib/new-message";
-import { resolveModel } from "../../lib/resolve-model";
 import { Store } from "../../lib/store";
 import { SessionMessage } from "../../schemas/session/message";
 import { StoreId } from "../../schemas/store-id";
@@ -63,7 +62,19 @@ const create = base
         subdomain,
         workspaceConfig: context.workspaceConfig,
       });
-      const model = await resolveModel(modelURI, context, errors);
+
+      const modelResult = await fetchModelByURI(
+        modelURI,
+        context.workspaceConfig.getAIProviderConfigs(),
+      );
+
+      if (!modelResult.ok) {
+        const error = modelResult.error;
+        context.workspaceConfig.captureException(error);
+        throw toORPCError(error, errors);
+      }
+
+      const model = modelResult.value;
 
       let finalSessionId: StoreId.Session;
       if (sessionId) {

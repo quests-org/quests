@@ -1,6 +1,15 @@
+import { type LanguageModelV3 } from "@ai-sdk/provider";
+import {
+  type AIGatewayModel,
+  AIGatewayProviderConfig,
+  TEST_MODEL_OVERRIDE_KEY,
+} from "@quests/ai-gateway";
+import { AI_GATEWAY_API_KEY_NOT_NEEDED } from "@quests/shared";
+
 import { createAppConfig } from "../../lib/app-config/create";
 import { AbsolutePathSchema, WorkspaceDirSchema } from "../../schemas/paths";
 import { type AppSubdomain } from "../../schemas/subdomains";
+import { createMockAIGatewayModel } from "./mock-ai-gateway-model";
 
 const MOCK_WORKSPACE_DIR = "/tmp/workspace";
 
@@ -11,7 +20,28 @@ export const MOCK_WORKSPACE_DIRS = {
   templates: `${MOCK_WORKSPACE_DIR}/registry/templates`,
 } as const;
 
-export function createMockAppConfig(subdomain: AppSubdomain) {
+export function createMockAppConfig(
+  subdomain: AppSubdomain,
+  options: {
+    aiSDKModel?: LanguageModelV3;
+    model?: AIGatewayModel.Type;
+  } = {},
+) {
+  const model = options.model ?? createMockAIGatewayModel();
+
+  const config = AIGatewayProviderConfig.Schema.parse({
+    apiKey: AI_GATEWAY_API_KEY_NOT_NEEDED,
+    cacheIdentifier: "test-cache",
+    id: model.params.providerConfigId,
+    type: model.params.provider,
+  });
+
+  if (options.aiSDKModel) {
+    (config as { [TEST_MODEL_OVERRIDE_KEY]?: LanguageModelV3 })[
+      TEST_MODEL_OVERRIDE_KEY
+    ] = options.aiSDKModel;
+  }
+
   return createAppConfig({
     subdomain,
     workspaceConfig: {
@@ -22,7 +52,7 @@ export function createMockAppConfig(subdomain: AppSubdomain) {
         // eslint-disable-next-line no-console
         console.error("captureException", args);
       },
-      getAIProviderConfigs: () => [],
+      getAIProviderConfigs: () => [config],
       nodeExecEnv: {},
       pnpmBinPath: AbsolutePathSchema.parse("/tmp/pnpm"),
       previewsDir: AbsolutePathSchema.parse(MOCK_WORKSPACE_DIRS.previews),

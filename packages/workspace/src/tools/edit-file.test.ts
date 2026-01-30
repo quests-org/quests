@@ -3,11 +3,16 @@ import { describe, expect, it } from "vitest";
 
 import { AppDirSchema } from "../schemas/paths";
 import { ProjectSubdomainSchema } from "../schemas/subdomains";
+import { createMockAIGatewayModel } from "../test/helpers/mock-ai-gateway-model";
 import { createMockAppConfig } from "../test/helpers/mock-app-config";
 import { TOOLS } from "./all";
 
+const model = createMockAIGatewayModel();
+
 function createFixturesAppConfig() {
-  const mockConfig = createMockAppConfig(ProjectSubdomainSchema.parse("test"));
+  const mockConfig = createMockAppConfig(ProjectSubdomainSchema.parse("test"), {
+    model,
+  });
   // Override appDir to point to fixtures directory
   const appDir = AppDirSchema.parse(
     path.join(import.meta.dirname, "../../fixtures/file-system"),
@@ -28,6 +33,7 @@ describe("EditFile", () => {
           newString: "new text",
           oldString: "old text",
         },
+        model,
         signal: AbortSignal.timeout(10_000),
       });
 
@@ -50,6 +56,7 @@ describe("EditFile", () => {
           newString: "new text",
           oldString: "old text",
         },
+        model,
         signal: AbortSignal.timeout(10_000),
       });
 
@@ -72,6 +79,7 @@ describe("EditFile", () => {
           newString: "new text",
           oldString: "this text does not exist in the file",
         },
+        model,
         signal: AbortSignal.timeout(10_000),
       });
 
@@ -94,6 +102,7 @@ describe("EditFile", () => {
           newString: "new text",
           oldString: "grep",
         },
+        model,
         signal: AbortSignal.timeout(10_000),
       });
 

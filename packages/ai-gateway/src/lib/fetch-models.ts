@@ -22,7 +22,7 @@ export function fetchModelsForProvider(
 ) {
   return Result.fromAsyncCatching(
     async () => {
-      return await fetchModels(config, { captureException });
+      return await fetchModels(config);
     },
     (error) => {
       return new TypedError.Unknown("Failed to fetch models for provider", {

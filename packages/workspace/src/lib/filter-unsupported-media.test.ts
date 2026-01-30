@@ -3,12 +3,12 @@ import type { ModelMessage } from "ai";
 
 import { describe, expect, it } from "vitest";
 
-import { createMockAIGatewayModelType } from "../test/helpers/mock-ai-gateway-model";
+import { createMockAIGatewayModel } from "../test/helpers/mock-ai-gateway-model";
 import { filterUnsupportedMedia } from "./filter-unsupported-media";
 
 const createModel = (
   features: AIGatewayModel.ModelFeatures[],
-): AIGatewayModel.Type => createMockAIGatewayModelType({ features });
+): AIGatewayModel.Type => createMockAIGatewayModel({ features });
 
 describe("filterUnsupportedMedia", () => {
   it("should pass through messages without file parts", () => {
@@ -542,7 +542,7 @@ describe("filterUnsupportedMedia", () => {
       },
     ];
 
-    const model = createMockAIGatewayModelType({
+    const model = createMockAIGatewayModel({
       author: "OpenAI",
       features: ["inputText", "inputFile", "outputText"],
       provider: "openrouter",

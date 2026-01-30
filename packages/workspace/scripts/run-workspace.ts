@@ -1,10 +1,6 @@
 import "dotenv/config";
 import { call } from "@orpc/server";
-import {
-  aiGatewayApp,
-  type AIGatewayProviderConfig,
-  fetchAISDKModel,
-} from "@quests/ai-gateway";
+import { aiGatewayApp, type AIGatewayProviderConfig } from "@quests/ai-gateway";
 import { AIProviderConfigIdSchema } from "@quests/shared";
 import { execa } from "execa";
 import path from "node:path";
@@ -198,9 +194,6 @@ rl.on("line", (input) => {
       : trimmedInput;
     const { files, prompt } = extractFilePrefix(textAfterChatPrefix);
     const context = {
-      modelRegistry: {
-        languageModel: fetchAISDKModel,
-      },
       workspaceConfig: actor.getSnapshot().context.config,
       workspaceRef: actor,
     };

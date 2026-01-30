@@ -38,18 +38,10 @@ export async function aiSDKForProviderConfig(
       return createDeepSeek({ apiKey, baseURL });
     }
     case "@ai-sdk/fireworks": {
-      const { createFireworks } = await import("@ai-sdk/fireworks");
-      return createFireworks({ apiKey, baseURL });
+      return createFireworksSDK(config, workspaceServerURL);
     }
     case "@ai-sdk/gateway": {
-      return createGateway({
-        apiKey,
-        baseURL,
-        headers: {
-          "http-referer": ATTRIBUTION_URL,
-          "x-title": ATTRIBUTION_NAME,
-        },
-      });
+      return createVercelSDK(config, workspaceServerURL);
     }
     case "@ai-sdk/google": {
       return createGoogleSDK(config, workspaceServerURL);
@@ -84,8 +76,7 @@ export async function aiSDKForProviderConfig(
       return createTogetherAI({ apiKey, baseURL });
     }
     case "@ai-sdk/xai": {
-      const { createXai } = await import("@ai-sdk/xai");
-      return createXai({ apiKey, baseURL });
+      return createXAISDK(config, workspaceServerURL);
     }
     case "@openrouter/ai-sdk-provider": {
       return createOpenRouterSDK(config, workspaceServerURL);
@@ -98,6 +89,16 @@ export async function aiSDKForProviderConfig(
       });
     }
   }
+}
+
+export async function createFireworksSDK(
+  config: AIGatewayProviderConfig.Type,
+  workspaceServerURL: WorkspaceServerURL,
+) {
+  const baseURL = internalURL({ config, workspaceServerURL });
+  const apiKey = internalAPIKey();
+  const { createFireworks } = await import("@ai-sdk/fireworks");
+  return createFireworks({ apiKey, baseURL });
 }
 
 export async function createGoogleSDK(
@@ -140,4 +141,30 @@ export async function createOpenRouterSDK(
       "X-Title": ATTRIBUTION_NAME,
     },
   });
+}
+
+export function createVercelSDK(
+  config: AIGatewayProviderConfig.Type,
+  workspaceServerURL: WorkspaceServerURL,
+) {
+  const baseURL = internalURL({ config, workspaceServerURL });
+  const apiKey = internalAPIKey();
+  return createGateway({
+    apiKey,
+    baseURL,
+    headers: {
+      "http-referer": ATTRIBUTION_URL,
+      "x-title": ATTRIBUTION_NAME,
+    },
+  });
+}
+
+export async function createXAISDK(
+  config: AIGatewayProviderConfig.Type,
+  workspaceServerURL: WorkspaceServerURL,
+) {
+  const baseURL = internalURL({ config, workspaceServerURL });
+  const apiKey = internalAPIKey();
+  const { createXai } = await import("@ai-sdk/xai");
+  return createXai({ apiKey, baseURL });
 }

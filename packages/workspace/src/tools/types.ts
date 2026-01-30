@@ -1,6 +1,7 @@
 import type { Tool } from "ai";
 
 import { type LanguageModelV2ToolResultOutput } from "@ai-sdk/provider";
+import { type AIGatewayModel } from "@quests/ai-gateway";
 import { type Result } from "neverthrow";
 import { type z } from "zod";
 
@@ -19,6 +20,7 @@ export interface AgentTool<
   execute: (options: {
     appConfig: AppConfig;
     input: z.output<TInputSchema>;
+    model: AIGatewayModel.Type;
     signal: AbortSignal;
   }) => Promise<ExecuteResult<z.output<TOutputSchema>>>;
   inputSchema: TInputSchema;

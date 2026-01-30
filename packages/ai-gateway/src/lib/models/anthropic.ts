@@ -1,4 +1,3 @@
-import { type CaptureExceptionFunction } from "@quests/shared";
 import { Result } from "typescript-result";
 import { z } from "zod";
 
@@ -40,7 +39,6 @@ type MinimalProviderConfig = Pick<
 
 export function fetchAndParseAnthropicModels(
   config: AIGatewayProviderConfig.Type,
-  { captureException }: { captureException: CaptureExceptionFunction },
 ) {
   return Result.gen(function* () {
     const data = yield* fetchAnthropicModels(config);
@@ -55,10 +53,9 @@ export function fetchAndParseAnthropicModels(
     );
 
     if (modelsResult.has_more) {
-      captureException(
-        new Error(
-          `Anthropic models response indicates pagination (has_more: true), but pagination is not supported`,
-        ),
+      // eslint-disable-next-line no-console
+      console.warn(
+        "Anthropic models response indicates pagination (has_more: true), but pagination is not supported",
       );
     }
 

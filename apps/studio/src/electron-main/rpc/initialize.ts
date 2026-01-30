@@ -1,6 +1,5 @@
 import { logger } from "@/electron-main/lib/electron-logger";
 import { RPCHandler } from "@orpc/server/message-port";
-import { fetchAISDKModel } from "@quests/ai-gateway";
 import {
   type WorkspaceActorRef,
   type WorkspaceConfig,
@@ -62,9 +61,6 @@ export function initializeRPC({
     handler.upgrade(serverPort, {
       context: {
         appUpdater,
-        modelRegistry: {
-          languageModel: fetchAISDKModel,
-        },
         webContentsId,
         workspaceConfig,
         workspaceRef,

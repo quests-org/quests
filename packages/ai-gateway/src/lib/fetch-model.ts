@@ -1,4 +1,3 @@
-import { type CaptureExceptionFunction } from "@quests/shared";
 import { Result } from "typescript-result";
 
 import { AIGatewayModelURI } from "../schemas/model-uri";
@@ -9,7 +8,6 @@ import { fetchModels } from "./models";
 export async function fetchModelByURI(
   modelURI: AIGatewayModelURI.Type,
   configs: AIGatewayProviderConfig.Type[],
-  { captureException }: { captureException: CaptureExceptionFunction },
 ) {
   return Result.gen(async function* () {
     const [modelURIDetails, error] =
@@ -31,9 +29,7 @@ export async function fetchModelByURI(
       );
     }
 
-    const models = yield* await fetchModels(config, {
-      captureException,
-    });
+    const models = yield* await fetchModels(config);
 
     const model = models.find((m) => m.uri === modelURI);
     if (!model) {

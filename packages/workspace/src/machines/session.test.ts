@@ -56,9 +56,6 @@ type Part =
 
 describe("sessionMachine", () => {
   const projectFolder = "pj-test";
-  const projectAppConfig = createMockAppConfig(
-    ProjectSubdomainSchema.parse(projectFolder),
-  );
   const defaultSessionId = StoreId.newSessionId();
   const mockDate = new Date("2025-01-01T00:00:00.000Z");
   const defaultMessageId = StoreId.newMessageId();
@@ -169,14 +166,6 @@ describe("sessionMachine", () => {
           stdout: "mocked stdout",
         }),
     );
-    await Store.saveSession(
-      {
-        createdAt: mockDate,
-        id: defaultSessionId,
-        title: "Test session",
-      },
-      projectAppConfig,
-    );
   });
 
   afterEach(() => {
@@ -184,9 +173,8 @@ describe("sessionMachine", () => {
     vi.restoreAllMocks();
   });
 
-  function createTestActor({
+  async function createActorAndApp({
     agent = mainAgent,
-    appConfig = projectAppConfig,
     baseLLMRetryDelayMs = 1000,
     chunkDelayInMs = [],
     chunkSets = [],
@@ -197,7 +185,6 @@ describe("sessionMachine", () => {
     sessionId = defaultSessionId,
   }: {
     agent?: AnyAgent;
-    appConfig?: AppConfig;
     baseLLMRetryDelayMs?: number;
     chunkDelayInMs?: number[];
     chunkSets?: Part[][];
@@ -250,12 +237,29 @@ describe("sessionMachine", () => {
       },
     });
 
-    const model = createMockAIGatewayModel(mockLanguageModel);
+    const model = createMockAIGatewayModel();
+
+    const testAppConfig = createMockAppConfig(
+      ProjectSubdomainSchema.parse(projectFolder),
+      {
+        aiSDKModel: mockLanguageModel,
+        model,
+      },
+    );
+
+    await Store.saveSession(
+      {
+        createdAt: mockDate,
+        id: sessionId,
+        title: "Test session",
+      },
+      testAppConfig,
+    );
 
     const actor = createActor(sessionMachine, {
       input: {
         agent,
-        appConfig,
+        appConfig: testAppConfig,
         baseLLMRetryDelayMs,
         llmRequestChunkTimeoutMs,
         maxStepCount,
@@ -318,16 +322,28 @@ describe("sessionMachine", () => {
       // },
     });
 
-    return actor;
+    return { actor, appConfig: testAppConfig, sessionId };
   }
 
-  async function runTestMachine(actor: ActorRefFrom<typeof sessionMachine>) {
+  async function runTestMachine({
+    actor,
+    appConfig,
+    sessionId,
+  }: {
+    actor: ActorRefFrom<typeof sessionMachine>;
+    appConfig: AppConfig;
+    sessionId: StoreId.Session;
+  }) {
     actor.start();
     await waitFor(actor, (state) => state.status === "done");
-    return Store.getSessionWithMessagesAndParts(
-      defaultSessionId,
-      projectAppConfig,
-    );
+    return Store.getSessionWithMessagesAndParts(sessionId, appConfig);
+  }
+
+  async function createAndRunTestMachine(
+    options: Parameters<typeof createActorAndApp>[0],
+  ) {
+    const result = await createActorAndApp(options);
+    return runTestMachine(result);
   }
 
   describe("with non empty repo", () => {
@@ -335,7 +351,7 @@ describe("sessionMachine", () => {
       mockFs({
         [MOCK_WORKSPACE_DIRS.previews]: {},
         [MOCK_WORKSPACE_DIRS.projects]: {
-          [projectAppConfig.folderName]: {
+          [projectFolder]: {
             "image.png": mockFs.load(
               path.resolve(
                 import.meta.dirname,
@@ -356,18 +372,16 @@ describe("sessionMachine", () => {
     });
 
     it("should read and write a file", async () => {
-      const actor = createTestActor({
+      const session = await createAndRunTestMachine({
         chunkSets: [readFileChunks, writeFileChunks, finishChunks],
       });
-
-      const session = await runTestMachine(actor);
       expect(sessionToShorthand(session)).toMatchInlineSnapshot(
         `
         "<session title="Test session" count="6">
           <user>
             <text>Hello, I need help with something.</text>
           </user>
-          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
             <step-start step="1" />
             <tool tool="read_file" state="output-available" callId="test-call-1">
               <input>
@@ -388,7 +402,7 @@ describe("sessionMachine", () => {
               </output>
             </tool>
           </assistant>
-          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
             <step-start step="2" />
             <tool tool="write_file" state="output-available" callId="test-call-2">
               <input>
@@ -406,7 +420,7 @@ describe("sessionMachine", () => {
               </output>
             </tool>
           </assistant>
-          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
             <step-start step="3" />
             <text state="done">I'm done.</text>
             <data-gitCommit ref="rev-parse HEAD executed successfully in /tmp/workspace/projects/pj-test" />
@@ -419,7 +433,7 @@ describe("sessionMachine", () => {
     });
 
     it("should read an image file", async () => {
-      const actor = createTestActor({
+      const session = await createAndRunTestMachine({
         chunkSets: [
           [
             {
@@ -440,13 +454,12 @@ describe("sessionMachine", () => {
         ],
       });
 
-      const session = await runTestMachine(actor);
       expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
         "<session title="Test session" count="5">
           <user>
             <text>Hello, I need help with something.</text>
           </user>
-          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
             <step-start step="1" />
             <tool tool="read_file" state="output-available" callId="test-call-image">
               <input>
@@ -464,7 +477,7 @@ describe("sessionMachine", () => {
               </output>
             </tool>
           </assistant>
-          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
             <step-start step="2" />
             <text state="done">I'm done.</text>
           </assistant>
@@ -475,7 +488,7 @@ describe("sessionMachine", () => {
     });
 
     it("should handle multiple actors running in parallel", async () => {
-      const actor1 = createTestActor({
+      const result1 = await createActorAndApp({
         chunkSets: [
           [
             { id: "1", type: "text-start" },
@@ -492,16 +505,8 @@ describe("sessionMachine", () => {
       });
 
       const secondSessionId = StoreId.newSessionId();
-      await Store.saveSession(
-        {
-          createdAt: mockDate,
-          id: secondSessionId,
-          title: "Second session",
-        },
-        projectAppConfig,
-      );
       const secondMessageId = StoreId.newMessageId();
-      const actor2 = createTestActor({
+      const result2 = await createActorAndApp({
         chunkSets: [
           [
             { id: "1", type: "text-start" },
@@ -539,21 +544,14 @@ describe("sessionMachine", () => {
         sessionId: secondSessionId,
       });
 
-      actor1.start();
-      actor2.start();
-      await waitFor(actor1, (state) => state.status === "done");
-      await waitFor(actor2, (state) => state.status === "done");
-
-      const sessionResult = await Store.getSessionWithMessagesAndParts(
-        defaultSessionId,
-        projectAppConfig,
-      );
-      expect(sessionToShorthand(sessionResult)).toMatchInlineSnapshot(`
+      const sessionResult1 = await runTestMachine(result1);
+      const sessionResult2 = await runTestMachine(result2);
+      expect(sessionToShorthand(sessionResult1)).toMatchInlineSnapshot(`
         "<session title="Test session" count="4">
           <user>
             <text>Hello, I need help with something.</text>
           </user>
-          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
             <step-start step="1" />
             <text state="done">First session</text>
           </assistant>
@@ -562,17 +560,13 @@ describe("sessionMachine", () => {
         </session>"
       `);
 
-      const sessionResult2 = await Store.getSessionWithMessagesAndParts(
-        secondSessionId,
-        projectAppConfig,
-      );
       expect(sessionToShorthand(sessionResult2)).toMatchInlineSnapshot(
         `
-        "<session title="Second session" count="4">
+        "<session title="Test session" count="4">
           <user>
             <text>Second user message</text>
           </user>
-          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
             <step-start step="1" />
             <text state="done">Second assistant message</text>
           </assistant>
@@ -584,7 +578,7 @@ describe("sessionMachine", () => {
     });
 
     it("retry with invalid tool name", async () => {
-      const actor = createTestActor({
+      const session = await createAndRunTestMachine({
         chunkSets: [
           [
             readFileChunks[0],
@@ -598,13 +592,12 @@ describe("sessionMachine", () => {
         ],
       });
 
-      const session = await runTestMachine(actor);
       expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
         "<session title="Test session" count="6">
           <user>
             <text>Hello, I need help with something.</text>
           </user>
-          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
             <step-start step="1" />
             <tool tool="read_file" state="output-error" callId="test-call-1">
               <input>
@@ -615,7 +608,7 @@ describe("sessionMachine", () => {
               <error>Model tried to call unavailable tool 'invalid_tool_name'. Available tools: edit_file, generate_image, glob, grep, read_file, run_diagnostics, run_shell_command, write_file.</error>
             </tool>
           </assistant>
-          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
             <step-start step="2" />
             <tool tool="read_file" state="output-available" callId="test-call-1">
               <input>
@@ -636,7 +629,7 @@ describe("sessionMachine", () => {
               </output>
             </tool>
           </assistant>
-          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
             <step-start step="3" />
             <text state="done">I'm done.</text>
           </assistant>
@@ -647,7 +640,7 @@ describe("sessionMachine", () => {
     });
 
     it("retry with invalid tool params", async () => {
-      const actor = createTestActor({
+      const session = await createAndRunTestMachine({
         chunkSets: [
           [
             readFileChunks[0],
@@ -664,13 +657,12 @@ describe("sessionMachine", () => {
         ],
       });
 
-      const session = await runTestMachine(actor);
       expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
         "<session title="Test session" count="6">
           <user>
             <text>Hello, I need help with something.</text>
           </user>
-          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
             <step-start step="1" />
             <tool tool="read_file" state="output-available" callId="test-call-1">
               <input>
@@ -687,7 +679,7 @@ describe("sessionMachine", () => {
               </output>
             </tool>
           </assistant>
-          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
             <step-start step="2" />
             <tool tool="read_file" state="output-available" callId="test-call-1">
               <input>
@@ -708,7 +700,7 @@ describe("sessionMachine", () => {
               </output>
             </tool>
           </assistant>
-          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
             <step-start step="3" />
             <text state="done">I'm done.</text>
           </assistant>
@@ -720,7 +712,7 @@ describe("sessionMachine", () => {
 
     it("should stop after two steps with file read success", async () => {
       const neverMessage = "NEVER";
-      const actor = createTestActor({
+      const session = await createAndRunTestMachine({
         chunkSets: [
           readFileChunks,
           readFileChunks,
@@ -738,17 +730,13 @@ describe("sessionMachine", () => {
         ],
       });
 
-      actor.start();
-      await waitFor(actor, (state) => state.status === "done");
-
-      const session = await runTestMachine(actor);
       expect(sessionToShorthand(session)).not.toContain(neverMessage);
       expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
         "<session title="Test session" count="6">
           <user>
             <text>Hello, I need help with something.</text>
           </user>
-          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
             <step-start step="1" />
             <tool tool="read_file" state="output-available" callId="test-call-1">
               <input>
@@ -769,7 +757,7 @@ describe("sessionMachine", () => {
               </output>
             </tool>
           </assistant>
-          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
             <step-start step="2" />
             <tool tool="read_file" state="output-available" callId="test-call-1">
               <input>
@@ -790,7 +778,7 @@ describe("sessionMachine", () => {
               </output>
             </tool>
           </assistant>
-          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
             <step-start step="3" />
             <text state="done">I'm done.</text>
           </assistant>
@@ -801,17 +789,16 @@ describe("sessionMachine", () => {
     });
 
     it("should immediately exit when no tools are called", async () => {
-      const actor = createTestActor({
+      const session = await createAndRunTestMachine({
         chunkSets: [finishChunks],
       });
 
-      const session = await runTestMachine(actor);
       expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
         "<session title="Test session" count="4">
           <user>
             <text>Hello, I need help with something.</text>
           </user>
-          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
             <step-start step="1" />
             <text state="done">I'm done.</text>
           </assistant>
@@ -822,17 +809,17 @@ describe("sessionMachine", () => {
     });
 
     it("should stop agents during llm request", async () => {
-      const actor = createTestActor({
+      const result = await createActorAndApp({
         chunkSets: [finishChunks],
       });
-      actor.start();
-      await waitFor(actor, (state) =>
+      result.actor.start();
+      await waitFor(result.actor, (state) =>
         state.matches({ Agent: "UsingReadOnlyTools" }),
       );
-      actor.send({ type: "stop" });
-      await waitFor(actor, (state) => state.status === "done");
+      result.actor.send({ type: "stop" });
+      await waitFor(result.actor, (state) => state.status === "done");
 
-      const session = await runTestMachine(actor);
+      const session = await runTestMachine(result);
       expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
         "<session title="Test session" count="1">
           <user>
@@ -843,7 +830,7 @@ describe("sessionMachine", () => {
     });
 
     it("should handle interactive tool calls with choose tool", async () => {
-      const actor = createTestActor({
+      const result = await createActorAndApp({
         agent: setupAgent({
           agentTools: pick(TOOLS, ["Choose"]),
           name: "main",
@@ -856,15 +843,15 @@ describe("sessionMachine", () => {
         chunkSets: [chooseChunks, finishChunks],
       });
 
-      actor.start();
+      result.actor.start();
 
       // Wait for the agent to reach the WaitingForPendingToolCalls state
-      await waitFor(actor, (state) =>
+      await waitFor(result.actor, (state) =>
         state.matches({ Agent: { UsingReadOnlyTools: "Paused" } }),
       );
 
       // Send the tool call update to simulate user selection
-      actor.send({
+      result.actor.send({
         type: "updateInteractiveToolCall",
         value: {
           toolCallId: chooseToolCallId,
@@ -877,15 +864,15 @@ describe("sessionMachine", () => {
       });
 
       // Wait for the actor to complete
-      await waitFor(actor, (state) => state.status === "done");
+      await waitFor(result.actor, (state) => state.status === "done");
 
-      const session = await runTestMachine(actor);
+      const session = await runTestMachine(result);
       expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
         "<session title="Test session" count="5">
           <user>
             <text>Hello, I need help with something.</text>
           </user>
-          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
             <step-start step="1" />
             <tool tool="choose" state="output-available" callId="test-call-choose">
               <input>
@@ -905,7 +892,7 @@ describe("sessionMachine", () => {
               </output>
             </tool>
           </assistant>
-          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
             <step-start step="2" />
             <text state="done">I'm done.</text>
           </assistant>
@@ -916,7 +903,7 @@ describe("sessionMachine", () => {
     });
 
     it("should retry and fail on timeout", async () => {
-      const actor = createTestActor({
+      const session = await createAndRunTestMachine({
         baseLLMRetryDelayMs: 0,
         chunkSets: [
           readFileChunks,
@@ -928,19 +915,18 @@ describe("sessionMachine", () => {
         llmRequestChunkTimeoutMs: 100,
       });
 
-      const session = await runTestMachine(actor);
       expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
         "<session title="Test session" count="7">
           <user>
             <text>Hello, I need help with something.</text>
           </user>
-          <assistant finishReason="aborted" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="aborted" model="mock-model-id" provider="quests" errorKind="aborted" errorMessage="Aborted">
             <step-start step="1" />
           </assistant>
-          <assistant finishReason="aborted" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="aborted" model="mock-model-id" provider="quests" errorKind="aborted" errorMessage="Aborted">
             <step-start step="1" />
           </assistant>
-          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
             <step-start step="1" />
             <tool tool="read_file" state="output-available" callId="test-call-1">
               <input>
@@ -961,7 +947,7 @@ describe("sessionMachine", () => {
               </output>
             </tool>
           </assistant>
-          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
             <step-start step="2" />
             <text state="done">I'm done.</text>
           </assistant>
@@ -972,30 +958,29 @@ describe("sessionMachine", () => {
     });
 
     it("should extend timeout when chunks are received", async () => {
-      const chunkTimeoutMs = 50;
+      const chunkTimeoutMs = 100;
 
-      const actor = createTestActor({
+      const session = await createAndRunTestMachine({
         baseLLMRetryDelayMs: 0,
         chunkDelayInMs: [
-          chunkTimeoutMs * 1.5,
-          chunkTimeoutMs * 0.1,
-          chunkTimeoutMs * 0.1,
+          chunkTimeoutMs * 2, // First attempt: should timeout (200ms > 100ms)
+          chunkTimeoutMs * 0.1, // Second attempt: should succeed (10ms < 100ms)
+          chunkTimeoutMs * 0.1, // Third attempt: should succeed (10ms < 100ms)
         ],
         chunkSets: [readFileChunks, readFileChunks, finishChunks],
         llmRequestChunkTimeoutMs: chunkTimeoutMs,
       });
 
-      const session = await runTestMachine(actor);
       expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
         "<session title="Test session" count="6">
           <user>
             <text>Hello, I need help with something.</text>
           </user>
-          <assistant finishReason="aborted" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="aborted" model="mock-model-id" provider="quests" errorKind="aborted" errorMessage="Aborted">
             <step-start step="1" />
             <tool tool="read_file" state="input-streaming" callId="test-call-1"></tool>
           </assistant>
-          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
             <step-start step="1" />
             <tool tool="read_file" state="output-available" callId="test-call-1">
               <input>
@@ -1016,7 +1001,7 @@ describe("sessionMachine", () => {
               </output>
             </tool>
           </assistant>
-          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
             <step-start step="2" />
             <text state="done">I'm done.</text>
           </assistant>
@@ -1044,18 +1029,18 @@ describe("sessionMachine", () => {
       });
 
       it("should stop agents during execution", async () => {
-        const actor = createTestActor({
+        const result = await createActorAndApp({
           chunkSets: [readFileChunks, writeFileChunks, finishChunks],
         });
-        actor.start();
+        result.actor.start();
 
         await waitFor(
-          actor,
+          result.actor,
           (state) =>
             state.matches({ Agent: "UsingReadOnlyTools" }) &&
             state.context.agentRef?.getSnapshot().context.agent.name === "main",
         ).then(async () => {
-          const agentRef = actor.getSnapshot().context.agentRef;
+          const agentRef = result.actor.getSnapshot().context.agentRef;
           if (!agentRef) {
             return;
           }
@@ -1064,16 +1049,16 @@ describe("sessionMachine", () => {
           );
         });
 
-        actor.send({ type: "stop" });
-        await waitFor(actor, (state) => state.status === "done");
+        result.actor.send({ type: "stop" });
+        await waitFor(result.actor, (state) => state.status === "done");
 
-        const session = await runTestMachine(actor);
+        const session = await runTestMachine(result);
         expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
           "<session title="Test session" count="4">
             <user>
               <text>Hello, I need help with something.</text>
             </user>
-            <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
+            <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
               <step-start step="1" />
               <tool tool="read_file" state="input-available" callId="test-call-1">
                 <input>
@@ -1091,7 +1076,7 @@ describe("sessionMachine", () => {
     });
 
     it("should enforce max step count when set to 2", async () => {
-      const actor = createTestActor({
+      const session = await createAndRunTestMachine({
         chunkSets: [
           readFileChunks,
           readFileChunks,
@@ -1101,13 +1086,12 @@ describe("sessionMachine", () => {
         maxStepCount: 2,
       });
 
-      const session = await runTestMachine(actor);
       expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
         "<session title="Test session" count="6">
           <user>
             <text>Hello, I need help with something.</text>
           </user>
-          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
             <step-start step="1" />
             <tool tool="read_file" state="output-available" callId="test-call-1">
               <input>
@@ -1128,7 +1112,7 @@ describe("sessionMachine", () => {
               </output>
             </tool>
           </assistant>
-          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="mock-provider">
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
             <step-start step="2" />
             <tool tool="read_file" state="output-available" callId="test-call-1">
               <input>

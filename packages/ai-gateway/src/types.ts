@@ -1,7 +1,5 @@
-import { type LanguageModelV3 } from "@ai-sdk/provider";
 import { type CaptureExceptionFunction } from "@quests/shared";
 
-import { type AIGatewayModel } from "./schemas/model";
 import { type AIGatewayProviderConfig } from "./schemas/provider-config";
 
 export interface AIGatewayEnv {
@@ -9,10 +7,6 @@ export interface AIGatewayEnv {
     captureException: CaptureExceptionFunction;
     getAIProviderConfigs: GetProviderConfigs;
   };
-}
-
-export interface AIGatewayLanguageModel extends LanguageModelV3 {
-  __aiGatewayModel: AIGatewayModel.Type;
 }
 
 export type GetProviderConfigs = () => AIGatewayProviderConfig.Type[];

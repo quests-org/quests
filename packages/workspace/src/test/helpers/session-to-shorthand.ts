@@ -118,15 +118,19 @@ function messageToShorthand(message: SessionMessage.WithParts): string {
 
   switch (message.role) {
     case "assistant": {
+      const error = message.metadata.error
+        ? ` errorKind="${message.metadata.error.kind}" errorMessage="${message.metadata.error.message}"`
+        : "";
       const finishReason = ` finishReason="${message.metadata.finishReason}"`;
       const usage = message.metadata.usage;
       const tokens = usage ? ` tokens="${usage.totalTokens || 0}"` : "";
       const modelId = ` model="${message.metadata.modelId}"`;
       const provider = ` provider="${message.metadata.providerId}"`;
+      const base = `assistant${finishReason}${tokens}${modelId}${provider}${error}`;
 
       return parts.length > 0
-        ? `<assistant${finishReason}${tokens}${modelId}${provider}>\n${indent(parts.join("\n"))}\n</assistant>`
-        : `<assistant${finishReason}${tokens}${modelId}${provider} />`;
+        ? `<${base}>\n${indent(parts.join("\n"))}\n</assistant>`
+        : `<${base} />`;
     }
     case "session-context": {
       return `<session-context ${message.metadata.agentName} realRole="${message.metadata.realRole}" />`;

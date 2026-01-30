@@ -6,6 +6,7 @@ import { Store } from "../lib/store";
 import { type SessionMessagePart } from "../schemas/session/message-part";
 import { StoreId } from "../schemas/store-id";
 import { ProjectSubdomainSchema } from "../schemas/subdomains";
+import { createMockAIGatewayModel } from "../test/helpers/mock-ai-gateway-model";
 import {
   createMockAppConfig,
   MOCK_WORKSPACE_DIRS,
@@ -20,8 +21,10 @@ vi.mock(import("../lib/execa-node-for-app"), () => ({
 }));
 
 describe("executeToolCallMachine", () => {
+  const model = createMockAIGatewayModel();
   const projectAppConfig = createMockAppConfig(
     ProjectSubdomainSchema.parse("test"),
+    { model },
   );
   const sessionId = StoreId.newSessionId();
   const messageId = StoreId.newMessageId();
@@ -109,6 +112,7 @@ describe("executeToolCallMachine", () => {
     const actor = createActor(executeToolCallMachine, {
       input: {
         appConfig: projectAppConfig,
+        model,
         part,
       },
     });

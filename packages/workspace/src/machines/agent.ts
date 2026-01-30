@@ -1,4 +1,4 @@
-import { type AIGatewayLanguageModel } from "@quests/ai-gateway";
+import { type AIGatewayModel } from "@quests/ai-gateway";
 import { type Result } from "neverthrow";
 import invariant from "tiny-invariant";
 import {
@@ -81,7 +81,7 @@ export const agentMachine = setup({
       {
         agent: AnyAgent;
         appConfig: AppConfig;
-        model: AIGatewayLanguageModel;
+        model: AIGatewayModel.Type;
         parentMessageId: StoreId.Message;
         sessionId: StoreId.Session;
       }
@@ -204,7 +204,7 @@ export const agentMachine = setup({
       llmRequestChunkTimeoutMs: number;
       maxRetryCount: number;
       maxStepCount: number;
-      model: AIGatewayLanguageModel;
+      model: AIGatewayModel.Type;
       parentMessageId: StoreId.Message;
       parentRef: ParentActorRef;
       pendingToolCalls: SessionMessagePart.ToolPartInputAvailable[];
@@ -222,7 +222,7 @@ export const agentMachine = setup({
       baseLLMRetryDelayMs: number;
       llmRequestChunkTimeoutMs: number;
       maxStepCount: number;
-      model: AIGatewayLanguageModel;
+      model: AIGatewayModel.Type;
       parentMessageId: StoreId.Message;
       parentRef: ParentActorRef;
       sessionId: StoreId.Session;
@@ -337,6 +337,7 @@ export const agentMachine = setup({
           });
           return {
             appConfig: context.appConfig,
+            model: context.model,
             part: nextToolCall,
           };
         },

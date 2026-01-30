@@ -18,7 +18,7 @@ export const ProviderMetadataSchema = z.object({
   }),
   description: z.string(),
   name: z.string(),
-  requiresAPIKey: z.boolean().optional().default(false),
+  requiresAPIKey: z.boolean().optional().default(true),
   tags: z.array(ProviderTagsSchema).optional().default([]),
   type: AIProviderTypeSchema,
   url: z.string(),

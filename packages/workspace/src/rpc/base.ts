@@ -1,17 +1,11 @@
 import { type ErrorMap, type ORPCErrorConstructorMap, os } from "@orpc/server";
-import {
-  type AIGatewayTypedError,
-  type fetchAISDKModel,
-} from "@quests/ai-gateway";
+import { type AIGatewayTypedError } from "@quests/ai-gateway";
 
 import { type TypedError } from "../lib/errors";
 import { type WorkspaceActorRef } from "../machines/workspace";
 import { type WorkspaceConfig } from "../types";
 
 export interface WorkspaceRPCContext {
-  modelRegistry: {
-    languageModel: typeof fetchAISDKModel;
-  };
   workspaceConfig: WorkspaceConfig;
   workspaceRef: WorkspaceActorRef;
 }
@@ -25,7 +19,7 @@ const ORPC_ERRORS = {
   UNKNOWN: {},
 } as const satisfies ErrorMap;
 
-export type WorkspaceErrorMap = ORPCErrorConstructorMap<typeof ORPC_ERRORS>;
+type WorkspaceErrorMap = ORPCErrorConstructorMap<typeof ORPC_ERRORS>;
 
 export const base = os.$context<WorkspaceRPCContext>().errors(ORPC_ERRORS);
 
