@@ -1,9 +1,9 @@
 import { addRef, type AIProviderType } from "@quests/shared";
 
-import { RECOMMENDED_TAG } from "../../constants";
 import {
   type ProviderMetadata,
   type ProviderMetadataInput,
+  ProviderMetadataSchema,
 } from "../../schemas/provider-metadata";
 
 const PROVIDER_METADATA: Record<AIProviderType, ProviderMetadataInput> = {
@@ -84,7 +84,6 @@ const PROVIDER_METADATA: Record<AIProviderType, ProviderMetadataInput> = {
     },
     description: "Google AI Studio with Gemini and other models",
     name: "Google",
-    tags: ["Free tier"],
     type: "google",
     url: addRef("https://ai.google.dev/gemini-api/docs"),
   },
@@ -227,7 +226,7 @@ const PROVIDER_METADATA: Record<AIProviderType, ProviderMetadataInput> = {
     },
     description: "Access an extensive catalog of models across providers",
     name: "OpenRouter",
-    tags: [RECOMMENDED_TAG, "Free models"],
+    tags: ["recommended"],
     type: "openrouter",
     url: "https://openrouter.ai",
   },
@@ -246,6 +245,7 @@ const PROVIDER_METADATA: Record<AIProviderType, ProviderMetadataInput> = {
     api: {
       defaultBaseURL: "https://api.quests.dev/gateway/openrouter",
     },
+    canAddManually: false,
     description: "Quests AI Gateway",
     name: "Quests",
     type: "quests",
@@ -270,7 +270,6 @@ const PROVIDER_METADATA: Record<AIProviderType, ProviderMetadataInput> = {
     },
     description: "Access hundreds of models across many providers",
     name: "Vercel AI Gateway",
-    tags: ["$5 free credit with card"],
     type: "vercel",
     url: addRef("https://vercel.com/ai-gateway"),
   },
@@ -297,11 +296,9 @@ const PROVIDER_METADATA: Record<AIProviderType, ProviderMetadataInput> = {
 };
 
 export function getAllProviderMetadata(): ProviderMetadata[] {
-  return Object.values(PROVIDER_METADATA).map((metadata) => ({
-    ...metadata,
-    requiresAPIKey: metadata.requiresAPIKey ?? true,
-    tags: metadata.tags ?? [],
-  }));
+  return Object.values(PROVIDER_METADATA).map((metadata) =>
+    ProviderMetadataSchema.parse(metadata),
+  );
 }
 
 export function getProviderMetadata(providerType: AIProviderType) {
