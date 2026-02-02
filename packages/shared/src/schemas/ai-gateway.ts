@@ -30,7 +30,9 @@ export const AIProviderTypeSchema = z.enum([
 ]);
 export type AIProviderType = z.infer<typeof AIProviderTypeSchema>;
 
-export const AIProviderConfigIdSchema = z
-  .custom<"quests" | (string & {})>((val) => typeof val === "string")
-  .brand("AIProviderConfigId");
+// Quests is a special case and only has one config ID that correlates to the
+// logged in user.
+export const AIProviderConfigIdSchema = z.custom<
+  "quests" | (string & z.$brand<"AIProviderConfigId">)
+>((val) => typeof val === "string");
 export type AIProviderConfigId = z.output<typeof AIProviderConfigIdSchema>;
