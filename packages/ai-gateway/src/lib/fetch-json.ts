@@ -1,3 +1,4 @@
+import ms from "ms";
 import { type AsyncResult, Result } from "typescript-result";
 
 import { getCachedResult, setCachedResult } from "./cache";
@@ -8,6 +9,8 @@ const inFlightRequests = new Map<
   string,
   AsyncResult<unknown, TypedError.Fetch | TypedError.Parse>
 >();
+
+const ERROR_CACHE_TTL = ms("5 seconds");
 
 export function fetchJson({
   cache = true,
@@ -21,9 +24,14 @@ export function fetchJson({
   const cacheKey = createCacheKey(url, headers);
 
   if (cache) {
-    const cachedData = getCachedResult<object>(cacheKey);
+    const cachedData = getCachedResult<
+      { error: TypedError.Fetch | TypedError.Parse } | { success: object }
+    >(cacheKey);
     if (cachedData !== undefined) {
-      return Result.ok(cachedData);
+      if ("error" in cachedData) {
+        return Result.error(cachedData.error);
+      }
+      return Result.ok(cachedData.success);
     }
   }
 
@@ -32,41 +40,39 @@ export function fetchJson({
     return existingRequest;
   }
 
-  const requestPromise = Result.gen(function* () {
-    try {
-      const response = yield* Result.try(
-        () => fetch(url, { headers, method: "GET" }),
-        (error) =>
-          new TypedError.Fetch(`Failed to fetch from ${url}`, {
-            cause: error,
-          }),
-      );
+  const requestPromise = Result.fromAsync(
+    Result.fromAsyncCatching(
+      async () => {
+        const response = await fetch(url, { headers, method: "GET" });
 
-      if (!response.ok) {
-        return Result.error(
-          new TypedError.Fetch(
+        if (!response.ok) {
+          throw new TypedError.Fetch(
             `Failed to fetch from ${url}: ${response.status} ${response.statusText}`,
-          ),
-        );
+          );
+        }
+
+        return (await response.json()) as object;
+      },
+      (error) =>
+        new TypedError.Fetch(`Failed to fetch from ${url}`, { cause: error }),
+    ).then((result) => {
+      if (result.ok) {
+        if (cache) {
+          setCachedResult(cacheKey, { success: result.value });
+        }
+      } else {
+        if (cache) {
+          setCachedResult(
+            cacheKey,
+            { error: result.error },
+            { ttl: ERROR_CACHE_TTL },
+          );
+        }
       }
-
-      const data: unknown = yield* Result.try(
-        () => response.json(),
-        (error) =>
-          new TypedError.Parse(`Failed to parse JSON from ${url}`, {
-            cause: error,
-          }),
-      );
-
-      if (cache) {
-        setCachedResult(cacheKey, data as object);
-      }
-
-      return data;
-    } finally {
       inFlightRequests.delete(cacheKey);
-    }
-  });
+      return result;
+    }),
+  );
 
   inFlightRequests.set(cacheKey, requestPromise);
   return requestPromise;

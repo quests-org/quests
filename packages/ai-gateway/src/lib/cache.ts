@@ -12,6 +12,10 @@ export function getCachedResult<T>(key: string): T | undefined {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
-export function setCachedResult<T extends object>(key: string, value: T): void {
-  globalCache.set(key, value);
+export function setCachedResult<T extends object>(
+  key: string,
+  value: T,
+  { ttl }: { ttl?: number } = {},
+): void {
+  globalCache.set(key, value, { ttl });
 }
