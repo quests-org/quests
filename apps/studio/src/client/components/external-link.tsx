@@ -23,9 +23,23 @@ export function ExternalLink(
 
         try {
           await navigator.clipboard.writeText(variables.url);
-          toast.error(`${errorMessage}. URL copied to clipboard.`);
+          toast.error("Unable to open link in your browser", {
+            description: (
+              <div className="w-full space-y-1">
+                <div className="text-sm">Link copied to clipboard.</div>
+                <code className="block w-full overflow-x-auto rounded-sm bg-muted px-1 py-0.5 text-xs">
+                  {variables.url}
+                </code>
+                <div className="text-xs text-muted-foreground">
+                  Error: {errorMessage}
+                </div>
+              </div>
+            ),
+          });
         } catch {
-          toast.error(errorMessage);
+          toast.error("Unable to open link in your browser", {
+            description: errorMessage,
+          });
         }
       },
     }),
