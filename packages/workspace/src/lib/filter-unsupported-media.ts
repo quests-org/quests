@@ -67,13 +67,23 @@ export function filterUnsupportedMedia({
           Array.isArray(part.output.value)
         ) {
           part.output.value = part.output.value.map((valuePart) => {
+            // Workaround for the entire valuePart.type being marked as deprecated
+            // due to the deprecation of type === "media"
+            const narrowedPart = valuePart as Exclude<
+              typeof valuePart,
+              { type: "media" }
+            >;
+
             if (
-              valuePart.type === "media" &&
-              "mediaType" in valuePart &&
-              typeof valuePart.mediaType === "string"
+              typeof narrowedPart === "object" &&
+              "type" in narrowedPart &&
+              (narrowedPart.type === "image-data" ||
+                narrowedPart.type === "file-data") &&
+              "mediaType" in narrowedPart &&
+              typeof narrowedPart.mediaType === "string"
             ) {
               const replacementText = maybeCreateReplacementText(
-                valuePart.mediaType,
+                narrowedPart.mediaType,
                 model,
               );
               if (replacementText) {
