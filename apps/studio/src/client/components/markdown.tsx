@@ -110,7 +110,7 @@ export const Markdown = memo(({ allowRawHtml, markdown }: MarkdownProps) => {
   return (
     <ReactMarkdown
       components={{
-        a: ({ children, className, href, ...props }) => {
+        a: ({ children, className, href, node: _node, ...props }) => {
           if (href?.startsWith("#")) {
             return (
               // eslint-disable-next-line no-restricted-syntax
