@@ -6,7 +6,9 @@ import {
 } from "@quests/ai-gateway";
 import { type WorkspaceServerURL } from "@quests/shared";
 import { generateImage, generateText } from "ai";
-import { err, ok } from "neverthrow";
+import { err, ResultAsync } from "neverthrow";
+
+import { TypedError } from "./errors";
 
 function supportsImageGeneration(type: AIGatewayProviderConfig.Type["type"]) {
   const metadata = getProviderMetadata(type);
@@ -87,7 +89,11 @@ export async function generateImages({
     });
   }
 
-  return err("No provider with image generation support found");
+  return err(
+    new TypedError.NoImageModel(
+      "No provider with image generation support found",
+    ),
+  );
 }
 
 async function tryGenerateWithConfig({
@@ -108,38 +114,54 @@ async function tryGenerateWithConfig({
     workspaceServerURL,
   });
 
-  const [modelAndType, error] = result.toTuple();
+  const [modelAndType, fetchError] = result.toTuple();
 
-  if (error) {
-    return err(error);
+  if (fetchError) {
+    return err(
+      new TypedError.NoImageModel(
+        `Failed to fetch image model: ${fetchError.message}`,
+        { cause: fetchError },
+      ),
+    );
   }
 
-  if (modelAndType.type === "language") {
-    const textResult = await generateText({
-      abortSignal: signal,
-      model: modelAndType.model,
-      prompt,
-    });
+  const generateResult = await ResultAsync.fromPromise(
+    (async () => {
+      if (modelAndType.type === "language") {
+        const textResult = await generateText({
+          abortSignal: signal,
+          model: modelAndType.model,
+          prompt,
+        });
 
-    return ok({
-      images: textResult.files,
-      modelId: modelAndType.model.modelId,
-      provider: config,
-      usage: textResult.usage,
-    });
-  }
+        return {
+          images: textResult.files,
+          modelId: modelAndType.model.modelId,
+          provider: config,
+          usage: textResult.usage,
+        };
+      }
 
-  const imageResult = await generateImage({
-    abortSignal: signal,
-    model: modelAndType.model,
-    n: count,
-    prompt,
-  });
+      const imageResult = await generateImage({
+        abortSignal: signal,
+        model: modelAndType.model,
+        n: count,
+        prompt,
+      });
 
-  return ok({
-    images: imageResult.images,
-    modelId: modelAndType.model.modelId,
-    provider: config,
-    usage: imageResult.usage,
-  });
+      return {
+        images: imageResult.images,
+        modelId: modelAndType.model.modelId,
+        provider: config,
+        usage: imageResult.usage,
+      };
+    })(),
+    (generationError) =>
+      new TypedError.ImageGeneration(
+        `Failed to generate image: ${generationError instanceof Error ? generationError.message : "Unknown error"}`,
+        { cause: generationError },
+      ),
+  );
+
+  return generateResult;
 }

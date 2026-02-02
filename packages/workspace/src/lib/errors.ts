@@ -7,7 +7,9 @@ export namespace TypedError {
     | DependencyInstall
     | FileSystem
     | Git
+    | ImageGeneration
     | NoChanges
+    | NoImageModel
     | NotFound
     | Parse
     | ShimNotFound
@@ -39,8 +41,16 @@ export namespace TypedError {
     }
   }
 
+  export class ImageGeneration extends Error {
+    readonly type = `${PREFIX}-image-generation-error`;
+  }
+
   export class NoChanges extends Error {
     readonly type = `${PREFIX}-no-changes-error`;
+  }
+
+  export class NoImageModel extends Error {
+    readonly type = `${PREFIX}-no-image-model-error`;
   }
 
   export class NotFound extends Error {

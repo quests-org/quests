@@ -9,6 +9,7 @@ import { z } from "zod";
 
 import { absolutePathJoin } from "../lib/absolute-path-join";
 import { ensureRelativePath } from "../lib/ensure-relative-path";
+import { executeError } from "../lib/execute-error";
 import { generateImages } from "../lib/generate-images";
 import { writeFileWithDir } from "../lib/write-file-with-dir";
 import { getWorkspaceServerURL } from "../logic/server/url";
@@ -58,93 +59,99 @@ export const GenerateImage = createTool({
     );
 
     if (!preferredProviderConfig) {
-      return ok({
-        errorMessage: "No AI provider found for current model.",
-        errorType: "no-provider" as const,
-        state: "failure" as const,
-      });
+      return executeError("No AI provider found for current model.");
     }
 
-    try {
-      const result = await generateImages({
-        configs: providerConfigs,
-        count: 1,
-        preferredProviderConfig,
-        prompt: input.prompt,
-        signal,
-        workspaceServerURL: getWorkspaceServerURL(),
-      });
+    const result = await generateImages({
+      configs: providerConfigs,
+      count: 1,
+      preferredProviderConfig,
+      prompt: input.prompt,
+      signal,
+      workspaceServerURL: getWorkspaceServerURL(),
+    });
 
-      if (result.isErr()) {
-        return ok({
-          errorMessage:
-            "No AI provider with image generation capability is available.",
-          errorType: "no-image-generation-capability" as const,
-          state: "failure" as const,
-        });
+    if (result.isErr()) {
+      const generateError = result.error;
+
+      switch (generateError.type) {
+        case "workspace-image-generation-error": {
+          return executeError(generateError.message);
+        }
+        case "workspace-no-image-model-error": {
+          return ok({
+            errorMessage:
+              "No AI provider with image generation capability is available.",
+            errorType: "no-image-model" as const,
+            state: "failure" as const,
+          });
+        }
+        default: {
+          const _exhaustiveCheck: never = generateError;
+          // eslint-disable-next-line no-console
+          console.error(
+            "Unknown error type:",
+            JSON.stringify(_exhaustiveCheck),
+          );
+          return executeError("An unknown error occurred.");
+        }
       }
-
-      const { images, modelId, provider, usage } = result.value;
-
-      const writtenImages = await Promise.all(
-        images.map(async (image, index) => {
-          const mimeExt = mime.extension(image.mediaType);
-          // Fall back to png because most image models default to it
-          const ext = typeof mimeExt === "string" ? mimeExt : "png";
-
-          // Create unique filename for multiple images
-          const filename =
-            images.length > 1
-              ? `${pathWithoutExt}-${index + 1}.${ext}`
-              : `${pathWithoutExt}.${ext}`;
-
-          const absolutePath = absolutePathJoin(appConfig.appDir, filename);
-          const imageBuffer = Buffer.from(image.base64, "base64");
-
-          await writeFileWithDir(absolutePath, imageBuffer, { signal });
-
-          // Try to get image dimensions, but don't fail if it doesn't work
-          let dimensions: { height?: number; width?: number } = {};
-          try {
-            const size = imageSize(imageBuffer);
-            dimensions = {
-              height: size.height,
-              width: size.width,
-            };
-          } catch {
-            // Gracefully handle if image-size fails
-          }
-
-          return {
-            filePath: RelativePathSchema.parse(filename),
-            ...dimensions,
-            sizeBytes: imageBuffer.length,
-          };
-        }),
-      );
-
-      return ok({
-        images: writtenImages,
-        modelId,
-        provider: {
-          displayName: provider.displayName,
-          id: provider.id,
-          type: provider.type,
-        },
-        state: "success" as const,
-        usage: {
-          inputTokens: usage.inputTokens,
-          outputTokens: usage.outputTokens,
-          totalTokens: usage.totalTokens,
-        },
-      });
-    } catch (error) {
-      return ok({
-        errorMessage: `Failed to generate image: ${error instanceof Error ? error.message : "Unknown error"}`,
-        errorType: "generation-failed" as const,
-        state: "failure" as const,
-      });
     }
+
+    const { images, modelId, provider, usage } = result.value;
+
+    const writtenImages = await Promise.all(
+      images.map(async (image, index) => {
+        const mimeExt = mime.extension(image.mediaType);
+        // Fall back to png because most image models default to it
+        const ext = typeof mimeExt === "string" ? mimeExt : "png";
+
+        // Create unique filename for multiple images
+        const filename =
+          images.length > 1
+            ? `${pathWithoutExt}-${index + 1}.${ext}`
+            : `${pathWithoutExt}.${ext}`;
+
+        const absolutePath = absolutePathJoin(appConfig.appDir, filename);
+        const imageBuffer = Buffer.from(image.base64, "base64");
+
+        await writeFileWithDir(absolutePath, imageBuffer, { signal });
+
+        // Try to get image dimensions, but don't fail if it doesn't work
+        let dimensions: { height?: number; width?: number } = {};
+        try {
+          const size = imageSize(imageBuffer);
+          dimensions = {
+            height: size.height,
+            width: size.width,
+          };
+        } catch {
+          // Ignore failed image size calculation
+        }
+
+        return {
+          filePath: RelativePathSchema.parse(filename),
+          ...dimensions,
+          sizeBytes: imageBuffer.length,
+        };
+      }),
+    );
+
+    return ok({
+      images: writtenImages,
+      modelId,
+      provider: {
+        displayName: provider.displayName,
+        id: provider.id,
+        type: provider.type,
+      },
+      state: "success" as const,
+      usage: {
+        inputTokens: usage.inputTokens,
+        outputTokens: usage.outputTokens,
+        totalTokens: usage.totalTokens,
+      },
+    });
   },
   inputSchema: BaseInputSchema.extend({
     [INPUT_PARAMS.filePath]: z.string().meta({
@@ -183,16 +190,12 @@ export const GenerateImage = createTool({
     }),
     z.object({
       errorMessage: z.string(),
-      errorType: z.enum([
-        "no-provider",
-        "no-image-generation-capability",
-        "generation-failed",
-      ]),
+      errorType: z.enum(["no-image-model"]),
       state: z.literal("failure"),
     }),
   ]),
   readOnly: false,
-  timeoutMs: ms("60 seconds"),
+  timeoutMs: ms("2 minutes"),
   toModelOutput: ({ output }) => {
     if (output.state === "failure") {
       return {

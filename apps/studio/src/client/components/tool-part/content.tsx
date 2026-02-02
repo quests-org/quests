@@ -298,15 +298,21 @@ function GenerateImageFailure({
   onRetry,
   output,
 }: {
-  input: { explanation?: string; filePath: string; prompt: string };
+  input: Extract<
+    SessionMessagePart.ToolPart,
+    { type: "tool-generate_image" }
+  >["input"];
   onRetry?: (message: string) => void;
-  output: { errorMessage: string; errorType: string };
+  output: Extract<
+    Extract<
+      SessionMessagePart.ToolPart,
+      { type: "tool-generate_image" }
+    >["output"],
+    { state: "failure" }
+  >;
 }) {
   const [showProviderGuard, setShowProviderGuard] = useState(false);
   const [providerAdded, setProviderAdded] = useState(false);
-  const needsProvider =
-    output.errorType === "no-provider" ||
-    output.errorType === "no-image-generation-capability";
 
   return (
     <div>
@@ -314,41 +320,39 @@ function GenerateImageFailure({
       <div className="mb-3 text-sm text-muted-foreground">
         {output.errorMessage}
       </div>
-      {needsProvider && (
-        <div className="mt-3 flex gap-2">
-          {providerAdded ? (
-            <Button
-              onClick={() => {
-                onRetry?.(
-                  `I added an image generation provider. Retry generating an image with "${input.prompt}"`,
-                );
-              }}
-              size="sm"
-              variant="default"
-            >
-              Retry image generation
-            </Button>
-          ) : (
-            <Button
-              onClick={() => {
-                setShowProviderGuard(true);
-              }}
-              size="sm"
-              variant="default"
-            >
-              Add an AI Provider
-            </Button>
-          )}
-          <AIProviderGuardDialog
-            description="Sign up for Quests or add an AI provider that supports image generation."
-            onOpenChange={setShowProviderGuard}
-            onSuccess={() => {
-              setProviderAdded(true);
+      <div className="mt-3 flex gap-2">
+        {providerAdded ? (
+          <Button
+            onClick={() => {
+              onRetry?.(
+                `I added an image generation provider. Retry generating an image with "${input?.prompt ?? "the image"}"`,
+              );
             }}
-            open={showProviderGuard}
-          />
-        </div>
-      )}
+            size="sm"
+            variant="default"
+          >
+            Retry image generation
+          </Button>
+        ) : (
+          <Button
+            onClick={() => {
+              setShowProviderGuard(true);
+            }}
+            size="sm"
+            variant="default"
+          >
+            Add an AI Provider
+          </Button>
+        )}
+        <AIProviderGuardDialog
+          description="Sign up for Quests or add an AI provider that supports image generation."
+          onOpenChange={setShowProviderGuard}
+          onSuccess={() => {
+            setProviderAdded(true);
+          }}
+          open={showProviderGuard}
+        />
+      </div>
     </div>
   );
 }

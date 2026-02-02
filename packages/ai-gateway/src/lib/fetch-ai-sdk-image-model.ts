@@ -18,7 +18,7 @@ import { TypedError } from "./errors";
 
 export const TEST_IMAGE_MODEL_OVERRIDE_KEY = "__testImageModelOverride";
 
-type ImageGenerationModel =
+type AISDKModelResult =
   | { model: ImageModelV3; type: "image" }
   | { model: LanguageModelV3; type: "language" };
 
@@ -28,10 +28,10 @@ export async function fetchAISDKImageModel({
 }: {
   config: AIGatewayProviderConfig.Type;
   workspaceServerURL: WorkspaceServerURL;
-}): Promise<Result<ImageGenerationModel, TypedError.Type>> {
+}): Promise<Result<AISDKModelResult, TypedError.Type>> {
   // Test override: check early to avoid fetching models over network
   const testOverride = (
-    config as { [TEST_IMAGE_MODEL_OVERRIDE_KEY]?: ImageGenerationModel }
+    config as { [TEST_IMAGE_MODEL_OVERRIDE_KEY]?: AISDKModelResult }
   )[TEST_IMAGE_MODEL_OVERRIDE_KEY];
   if (testOverride) {
     return Result.ok(testOverride);
