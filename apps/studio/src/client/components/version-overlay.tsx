@@ -53,7 +53,7 @@ export function VersionOverlay({
       <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm">
         <div className="space-y-6 rounded-lg border bg-background/90 px-6 py-8 text-center shadow-lg">
           <div className="flex items-center justify-center">
-            <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            <div className="size-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
           </div>
           <p className="text-sm text-muted-foreground">Loading version...</p>
         </div>

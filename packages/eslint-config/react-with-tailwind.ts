@@ -7,19 +7,14 @@ import reactConfig from "./react";
 const config: ReturnType<typeof tseslint.config> = tseslint.config(
   ...reactConfig,
   {
-    files: ["**/*.{js,jsx,ts,tsx}"],
-    ignores: [".vite", "coverage", "out"],
-    plugins: {
-      "better-tailwindcss": eslintPluginBetterTailwindcss,
-    },
+    extends: [eslintPluginBetterTailwindcss.configs.recommended],
     rules: {
-      // enable all recommended rules to report a warning
-      ...eslintPluginBetterTailwindcss.configs["recommended-warn"]?.rules,
-      // enable all recommended rules to report an error
-      ...eslintPluginBetterTailwindcss.configs["recommended-error"]?.rules,
+      // Too slow to run live and not worth enforcing in CI. Instead, we turn this on manually occasionally and --fix.
+      "better-tailwindcss/enforce-canonical-classes": "off",
       // Causes formatting infinite loop due to Prettier conflicting
+      // Also, bad for LLMs, which will rarely generate accurate wrapping
       "better-tailwindcss/enforce-consistent-line-wrapping": "off",
-      "better-tailwindcss/no-unregistered-classes": [
+      "better-tailwindcss/no-unknown-classes": [
         // Slow rule
         ERROR_IN_CI,
         {

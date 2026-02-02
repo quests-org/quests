@@ -210,7 +210,7 @@ export function AppIFrame({
             <div className="flex flex-col space-y-4 text-center sm:text-left">
               <div className="flex items-center gap-2">
                 <Loader2 className="size-4 animate-spin" />
-                <h3 className="shiny-text text-lg leading-6 font-semibold tracking-tight">
+                <h3 className="shiny-text text-lg/6 font-semibold tracking-tight">
                   Agent is working...
                 </h3>
               </div>

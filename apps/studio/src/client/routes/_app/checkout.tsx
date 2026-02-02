@@ -44,7 +44,7 @@ function CheckoutPage() {
         <Card className="w-full max-w-md text-center">
           <CardHeader>
             <div className="mb-4 flex justify-center">
-              <CheckCircle2 className="h-12 w-12 text-green-500" />
+              <CheckCircle2 className="size-12 text-green-500" />
             </div>
             <CardTitle className="text-2xl">Payment Successful!</CardTitle>
           </CardHeader>
@@ -74,7 +74,7 @@ function CheckoutPage() {
         <Card className="w-full max-w-md text-center">
           <CardHeader>
             <div className="mb-4 flex justify-center">
-              <XCircle className="h-12 w-12 text-red-500" />
+              <XCircle className="size-12 text-red-500" />
             </div>
             <CardTitle className="text-2xl">Payment Canceled</CardTitle>
             <CardDescription>

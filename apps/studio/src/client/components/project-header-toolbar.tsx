@@ -219,7 +219,7 @@ export function ProjectHeaderToolbar({
                                 });
                               }}
                             >
-                              <Icon className="h-4 w-4" />
+                              <Icon className="size-4" />
                               {editor.name}
                             </DropdownMenuItem>
                           );
@@ -243,7 +243,7 @@ export function ProjectHeaderToolbar({
                                 });
                               }}
                             >
-                              <Icon className="h-4 w-4" />
+                              <Icon className="size-4" />
                               {editor.name}
                             </DropdownMenuItem>
                           );
@@ -264,7 +264,7 @@ export function ProjectHeaderToolbar({
                         setExportZipModalOpen(true);
                       }}
                     >
-                      <FileArchive className="h-4 w-4" />
+                      <FileArchive className="size-4" />
                       Export as zip
                     </DropdownMenuItem>
                   </DropdownMenuContent>

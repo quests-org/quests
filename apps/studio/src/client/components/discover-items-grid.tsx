@@ -11,7 +11,7 @@ export function DiscoverItemsGrid({ category, items }: DiscoverItemsGridProps) {
       <div className="py-16 text-center">
         <div className="mx-auto max-w-md">
           <svg
-            className="mx-auto h-16 w-16 text-muted-foreground/50"
+            className="mx-auto size-16 text-muted-foreground/50"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"

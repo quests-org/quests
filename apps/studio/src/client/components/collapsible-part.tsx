@@ -69,7 +69,7 @@ export function ToolCallItem({
 }) {
   if (children) {
     return (
-      <div className="flex w-full min-w-0 items-center gap-2 text-xs leading-tight">
+      <div className="flex w-full min-w-0 items-center gap-2 text-xs/tight">
         {children}
         {isExpanded && (
           <span className="ml-auto shrink-0 text-accent-foreground/60">
@@ -81,7 +81,7 @@ export function ToolCallItem({
   }
 
   return (
-    <div className="flex w-full min-w-0 items-center gap-2 overflow-hidden text-xs leading-tight">
+    <div className="flex w-full min-w-0 items-center gap-2 overflow-hidden text-xs/tight">
       {icon && (
         <span className="shrink-0 text-accent-foreground/80">{icon}</span>
       )}

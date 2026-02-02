@@ -97,7 +97,7 @@ export function TemplateDetail({
 
   return (
     <div className="mx-auto max-w-4xl px-8">
-      <div className="sticky top-0 z-10 mb-4 bg-background/95 pt-8 pb-4 backdrop-blur supports-backdrop-filter:bg-background/60">
+      <div className="sticky top-0 z-10 mb-4 bg-background/95 pt-8 pb-4 backdrop-blur-sm supports-backdrop-filter:bg-background/60">
         <Breadcrumb items={breadcrumbItems} />
       </div>
 
@@ -146,7 +146,7 @@ export function TemplateDetail({
               size="sm"
               variant="secondary"
             >
-              <Eye className="h-4 w-4" />
+              <Eye className="size-4" />
               Preview
             </Button>
           </div>
@@ -195,7 +195,7 @@ export function TemplateDetail({
       >
         <DialogPrimitive.Portal>
           <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/80 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0" />
-          <DialogPrimitive.Content className="fixed top-1/2 left-1/2 z-50 flex h-full max-h-[75vh] w-full max-w-[80vw] -translate-x-1/2 -translate-y-1/2 flex-col p-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0">
+          <DialogPrimitive.Content className="fixed top-1/2 left-1/2 z-50 flex size-full max-h-[75vh] max-w-[80vw] -translate-1/2 flex-col p-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0">
             <DialogPrimitive.Title className="sr-only">
               Preview
             </DialogPrimitive.Title>
@@ -215,7 +215,7 @@ export function TemplateDetail({
             <div className="relative min-h-0 flex-1">
               <AppView
                 app={appDetails.preview}
-                className="flex h-full w-full flex-col overflow-hidden"
+                className="flex size-full flex-col overflow-hidden"
               />
             </div>
           </DialogPrimitive.Content>

@@ -58,7 +58,7 @@ export function VersionCommitMessage({
   );
 
   if (isLoading) {
-    return <div className="h-5 w-48 animate-pulse rounded bg-muted" />;
+    return <div className="h-5 w-48 animate-pulse rounded-sm bg-muted" />;
   }
 
   if (!gitRefInfo?.commitMessage) {
@@ -99,8 +99,8 @@ export function VersionFileChanges({
   if (isLoading) {
     return (
       <div className="flex w-full flex-col gap-1">
-        <div className="h-4 w-full animate-pulse rounded bg-muted" />
-        <div className="h-4 w-3/4 animate-pulse rounded bg-muted" />
+        <div className="h-4 w-full animate-pulse rounded-sm bg-muted" />
+        <div className="h-4 w-3/4 animate-pulse rounded-sm bg-muted" />
       </div>
     );
   }
@@ -211,7 +211,7 @@ export function VersionHeader({
   return (
     <div className="flex items-center gap-1.5">
       <GitCommitVertical
-        className="-ms-1 -me-1 size-4.5 shrink-0"
+        className="-mx-1 size-4.5 shrink-0"
         style={{ color: hashColor }}
       />
 
@@ -257,7 +257,7 @@ export function VersionRef({
           style={{ color: hashColor }}
         />
         <span className="shrink-0 text-xs text-muted-foreground">Version</span>
-        <span className="h-3 w-24 animate-pulse rounded bg-muted" />
+        <span className="h-3 w-24 animate-pulse rounded-sm bg-muted" />
       </span>
     );
   }

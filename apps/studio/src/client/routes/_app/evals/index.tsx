@@ -315,7 +315,7 @@ function RouteComponent() {
   if (modelsIsLoading || evalTemplateGroupsIsLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
+        <Loader2 className="size-8 animate-spin" />
       </div>
     );
   }
@@ -339,7 +339,7 @@ function RouteComponent() {
             <h1 className="text-3xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
               Evals
             </h1>
-            <p className="mx-auto mt-4 max-w-lg text-base leading-7 text-muted-foreground">
+            <p className="mx-auto mt-4 max-w-lg text-base/7 text-muted-foreground">
               Quickly see how models perform by creating apps for the prompts
               and models you select below.
             </p>
@@ -606,7 +606,7 @@ function RouteComponent() {
                               {templateName}
                             </div>
                             <button
-                              className="shrink-0 rounded hover:bg-background"
+                              className="shrink-0 rounded-sm hover:bg-background"
                               onClick={() => {
                                 handleToggleEvalTemplate(templateName);
                               }}
@@ -640,7 +640,7 @@ function RouteComponent() {
                                 {model.name}
                               </span>
                               <button
-                                className="shrink-0 rounded hover:bg-background"
+                                className="shrink-0 rounded-sm hover:bg-background"
                                 onClick={() => {
                                   handleToggleModel(model.uri);
                                 }}

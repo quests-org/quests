@@ -115,7 +115,7 @@ export function Console({
   );
 
   return (
-    <div className="relative flex h-full w-full flex-col overflow-hidden rounded-b-lg bg-background">
+    <div className="relative flex size-full flex-col overflow-hidden rounded-b-lg bg-background">
       <div className="flex h-fit w-full flex-row items-center justify-between border-b border-border bg-background px-2 py-1.5">
         <div className="text-xs">Console</div>
         <div className="flex flex-row items-center gap-1 text-xs">
@@ -127,7 +127,7 @@ export function Console({
                 size="icon"
                 variant="ghost"
               >
-                <Trash className="h-4 w-4" />
+                <Trash className="size-4" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>
@@ -169,11 +169,11 @@ export function Console({
 
       {!isNearBottom && (
         <Button
-          className="absolute bottom-4 left-1/2 h-6 w-6 -translate-x-1/2 border border-border p-0 shadow-lg"
+          className="absolute bottom-4 left-1/2 size-6 -translate-x-1/2 border border-border p-0 shadow-lg"
           onClick={() => scrollToBottom()}
           variant="secondary"
         >
-          <ChevronDown className="h-2 w-2" />
+          <ChevronDown className="size-2" />
         </Button>
       )}
     </div>

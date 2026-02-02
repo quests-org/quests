@@ -151,7 +151,7 @@ export function DiscoverHorizontalSection({
           to={viewAllHref}
         >
           View all
-          <ChevronRight className="h-4 w-4" />
+          <ChevronRight className="size-4" />
         </InternalLink>
       </div>
 
@@ -159,12 +159,12 @@ export function DiscoverHorizontalSection({
         {canScrollLeft && (
           <button
             aria-label="Scroll left"
-            className="absolute top-[36%] left-0 z-10 ml-[-1rem] -translate-y-1/2 rounded-full border border-border bg-background/90 p-2 shadow-lg backdrop-blur-sm transition-all duration-200 hover:bg-background"
+            className="absolute top-[36%] left-0 z-10 -ml-4 -translate-y-1/2 rounded-full border border-border bg-background/90 p-2 shadow-lg backdrop-blur-sm transition-all duration-200 hover:bg-background"
             onClick={() => {
               scroll("left");
             }}
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className="size-4" />
           </button>
         )}
 
@@ -198,12 +198,12 @@ export function DiscoverHorizontalSection({
         {canScrollRight && (
           <button
             aria-label="Scroll right"
-            className="absolute top-[36%] right-0 z-10 mr-[-1rem] -translate-y-1/2 rounded-full border border-border bg-background/90 p-2 shadow-lg backdrop-blur-sm transition-all duration-200 hover:bg-background"
+            className="absolute top-[36%] right-0 z-10 -mr-4 -translate-y-1/2 rounded-full border border-border bg-background/90 p-2 shadow-lg backdrop-blur-sm transition-all duration-200 hover:bg-background"
             onClick={() => {
               scroll("right");
             }}
           >
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className="size-4" />
           </button>
         )}
       </div>

@@ -46,8 +46,8 @@ export default function TabBar() {
           />
         ))}
         <motion.button
-          className="mr-2 ml-2 flex h-6
-            w-6 shrink-0 items-center justify-center rounded-full [-webkit-app-region:no-drag] hover:bg-muted/60"
+          className="mx-2 flex size-6
+             shrink-0 items-center justify-center rounded-full [-webkit-app-region:no-drag] hover:bg-muted/60"
           onClick={() => {
             void addTab({ to: "/new-tab" });
           }}

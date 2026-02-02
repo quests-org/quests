@@ -24,7 +24,7 @@ function RouteComponent() {
   );
 
   return (
-    <div className="h-full w-full overflow-y-auto">
+    <div className="size-full overflow-y-auto">
       <div className="grid w-full grid-cols-1 gap-8 p-8">
         <Card>
           <CardHeader>

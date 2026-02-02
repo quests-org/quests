@@ -58,7 +58,7 @@ function RouteComponent() {
   };
 
   return (
-    <div className="grid h-full w-full grid-cols-[300px_1fr] gap-4 overflow-hidden p-4">
+    <div className="grid size-full grid-cols-[300px_1fr] gap-4 overflow-hidden p-4">
       <Command
         className="max-h-fit self-start rounded-lg border"
         value={selectedSessionId}
@@ -79,7 +79,7 @@ function RouteComponent() {
               >
                 <Check
                   className={cn(
-                    "mr-2 h-4 w-4",
+                    "mr-2 size-4",
                     isSelected ? "opacity-100" : "opacity-0",
                   )}
                 />

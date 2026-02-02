@@ -430,7 +430,7 @@ export const PromptInput = ({
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                className="h-7 w-7 p-0"
+                className="size-7 p-0"
                 disabled={disabled}
                 onClick={() => fileInputRef.current?.click()}
                 size="sm"
@@ -443,7 +443,7 @@ export const PromptInput = ({
           </Tooltip>
 
           <Button
-            className={cn(submitButtonContent ? "h-7 px-3" : "h-7 w-7 p-0")}
+            className={cn(submitButtonContent ? "h-7 px-3" : "size-7 p-0")}
             disabled={isStoppable ? false : !canSubmit}
             onClick={(e) => {
               if (isStoppable) {

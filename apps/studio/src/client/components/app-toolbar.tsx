@@ -148,7 +148,7 @@ export function AppToolbar({
           size="icon"
           variant="ghost"
         >
-          <ChevronLeft className="h-4 w-4" />
+          <ChevronLeft className="size-4" />
         </Button>
         <Button
           className="size-6"
@@ -157,7 +157,7 @@ export function AppToolbar({
           size="icon"
           variant="ghost"
         >
-          <ChevronRight className="h-4 w-4" />
+          <ChevronRight className="size-4" />
         </Button>
 
         <TooltipNearIFrame
@@ -171,7 +171,7 @@ export function AppToolbar({
               size="icon"
               variant="ghost"
             >
-              <RotateCw className="h-4 w-4" />
+              <RotateCw className="size-4" />
             </Button>
           </TooltipTrigger>
           <TooltipContent>

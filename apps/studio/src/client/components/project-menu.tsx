@@ -115,7 +115,7 @@ export function ProjectMenu({
           >
             <AppIcon name={project.iconName} size="sm" />
             <span className="truncate">{project.title}</span>
-            <ChevronDown className="h-3 w-3 shrink-0" />
+            <ChevronDown className="size-3 shrink-0" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" side="bottom">
@@ -128,11 +128,11 @@ export function ProjectMenu({
               });
             }}
           >
-            <Copy className="h-4 w-4" />
+            <Copy className="size-4" />
             <span>Duplicate</span>
           </DropdownMenuItem>
           <DropdownMenuItem onClick={onSettingsClick}>
-            <Pencil className="h-4 w-4" />
+            <Pencil className="size-4" />
             <span>Rename</span>
           </DropdownMenuItem>
 
@@ -144,7 +144,7 @@ export function ProjectMenu({
                 disabled={createEmptySession.isPending}
                 onClick={handleNewChat}
               >
-                <Plus className="h-4 w-4" />
+                <Plus className="size-4" />
                 <span>New chat</span>
               </DropdownMenuItem>
             </TooltipTrigger>
@@ -195,7 +195,7 @@ export function ProjectMenu({
                 disabled={!selectedSessionId}
                 onClick={handleDebugChat}
               >
-                <Bug className="h-4 w-4 text-warning-foreground" />
+                <Bug className="size-4 text-warning-foreground" />
                 Debug chat
               </DropdownMenuItem>
             </>

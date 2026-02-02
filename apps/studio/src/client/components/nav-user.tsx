@@ -69,8 +69,8 @@ export function NavUser() {
             }}
             size="default"
           >
-            <SettingsIcon className="h-5 w-5" />
-            <div className="grid flex-1 text-left text-sm leading-tight">
+            <SettingsIcon className="size-5" />
+            <div className="grid flex-1 text-left text-sm/tight">
               <span className="truncate font-medium">Settings</span>
             </div>
           </SidebarMenuButton>
@@ -97,13 +97,13 @@ export function NavUser() {
               className="px-1 group-hover:bg-black/10 data-[state=open]:bg-black/10 dark:group-hover:bg-white/10 dark:data-[state=open]:bg-white/10"
               size="lg"
             >
-              <Avatar className="h-8 w-8 rounded-lg">
+              <Avatar className="size-8 rounded-lg">
                 <AvatarImage alt={user.name} src={user.image ?? undefined} />
                 <AvatarFallback className="rounded-lg">
                   {getInitials(user.name)}
                 </AvatarFallback>
               </Avatar>
-              <div className="grid flex-1 text-left text-sm leading-tight">
+              <div className="grid flex-1 text-left text-sm/tight">
                 <div className="flex items-center gap-2">
                   <span className="truncate font-medium">{user.name}</span>
                   {subscription && (
@@ -125,13 +125,13 @@ export function NavUser() {
           >
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                <Avatar className="h-8 w-8 rounded-lg">
+                <Avatar className="size-8 rounded-lg">
                   <AvatarImage alt={user.name} src={user.image ?? undefined} />
                   <AvatarFallback className="rounded-lg">
                     {getInitials(user.name)}
                   </AvatarFallback>
                 </Avatar>
-                <div className="grid flex-1 text-left text-sm leading-tight">
+                <div className="grid flex-1 text-left text-sm/tight">
                   <div className="flex items-center gap-2">
                     <span className="truncate font-medium">{user.name}</span>
                     {subscription && (
@@ -166,7 +166,7 @@ export function NavUser() {
                   });
                 }}
               >
-                <SettingsIcon className="h-4 w-4" />
+                <SettingsIcon className="size-4" />
                 <span>Settings</span>
               </DropdownMenuItem>
             </DropdownMenuGroup>
@@ -177,7 +177,7 @@ export function NavUser() {
                 void signOut();
               }}
             >
-              <LogOutIcon className="h-4 w-4" />
+              <LogOutIcon className="size-4" />
               <span>Sign out</span>
             </DropdownMenuItem>
           </DropdownMenuContent>

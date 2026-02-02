@@ -135,7 +135,7 @@ function TextView({
 }
 
 const fileViewerVariants = tv({
-  base: "flex w-full flex-col overflow-hidden rounded border border-border bg-background",
+  base: "flex w-full flex-col overflow-hidden rounded-sm border border-border bg-background",
   defaultVariants: {
     error: false,
     fileType: "default",

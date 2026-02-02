@@ -134,7 +134,7 @@ export function ServerExceptionsAlert() {
                 <div className="flex min-w-0 flex-1 items-center gap-0.5">
                   {exception.count > 1 && (
                     <Badge
-                      className="flex h-3.5 min-w-[14px] shrink-0 items-center justify-center px-0 py-0 text-[9px] tabular-nums"
+                      className="flex h-3.5 min-w-[14px] shrink-0 items-center justify-center p-0 text-[9px] tabular-nums"
                       variant="secondary"
                     >
                       {exception.count}
@@ -148,7 +148,7 @@ export function ServerExceptionsAlert() {
                 </div>
               </AccordionTrigger>
               <AccordionContent className="px-3 pt-0 pb-2">
-                <div className="mb-2 rounded border bg-muted/50 p-1.5 font-mono text-[11px] leading-relaxed wrap-break-word text-foreground/90">
+                <div className="mb-2 rounded-sm border bg-muted/50 p-1.5 font-mono text-[11px] leading-relaxed wrap-break-word text-foreground/90">
                   {exception.rpcPath && (
                     <span className="text-blue-600 dark:text-blue-400">
                       [{exception.rpcPath}]{" "}
@@ -161,7 +161,7 @@ export function ServerExceptionsAlert() {
                   )}
                   <span>{exception.firstLine}</span>
                 </div>
-                <pre className="rounded border bg-muted/50 p-1.5 font-mono text-[10px] leading-snug wrap-break-word whitespace-pre-wrap text-foreground/80">
+                <pre className="rounded-sm border bg-muted/50 p-1.5 font-mono text-[10px] leading-snug wrap-break-word whitespace-pre-wrap text-foreground/80">
                   {exception.content}
                 </pre>
               </AccordionContent>

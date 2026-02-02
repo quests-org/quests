@@ -160,7 +160,7 @@ export function ProjectChat({
     >
       <div
         className={cn(
-          "flex w-full flex-col gap-4 px-4 py-4",
+          "flex w-full flex-col gap-4 p-4",
           isChatOnly && "mx-auto max-w-3xl",
         )}
         ref={contentRef}
@@ -168,7 +168,7 @@ export function ProjectChat({
         {selectedSessionId ? (
           isLoadingMessages ? (
             <div className="flex justify-center py-4">
-              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+              <Loader2 className="size-4 animate-spin text-muted-foreground" />
             </div>
           ) : messageError ? (
             <Alert className="mt-4" variant="warning">
@@ -235,7 +235,7 @@ export function ProjectChat({
               size="icon"
               variant="secondary"
             >
-              <ChevronDown className="h-3 w-3" />
+              <ChevronDown className="size-3" />
             </Button>
           </div>
         )}

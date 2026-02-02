@@ -60,7 +60,7 @@ export function UploadedFilePreview({
     return (
       <div className="group relative h-12 min-w-0">
         <Button
-          className="h-full w-full justify-start gap-x-2"
+          className="size-full justify-start gap-x-2"
           onClick={onClick}
           type="button"
           variant="outline"

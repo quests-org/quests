@@ -45,7 +45,7 @@ function RouteComponent() {
   ];
 
   return (
-    <div className="h-full w-full overflow-y-auto">
+    <div className="size-full overflow-y-auto">
       <div className="w-full p-8">
         <div
           className={`

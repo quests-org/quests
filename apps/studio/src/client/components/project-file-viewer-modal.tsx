@@ -150,7 +150,7 @@ export function ProjectFileViewerModal() {
             File viewer
           </DialogPrimitive.Description>
           <div
-            className="relative flex h-full w-full flex-col"
+            className="relative flex size-full flex-col"
             onClick={(e) => {
               if (e.target === e.currentTarget) {
                 closeViewer();
@@ -217,7 +217,7 @@ export function ProjectFileViewerModal() {
             )}
 
             <div
-              className="relative flex min-h-0 flex-1 items-center justify-center px-16 py-16"
+              className="relative flex min-h-0 flex-1 items-center justify-center p-16"
               onClick={(e) => {
                 if (e.target === e.currentTarget) {
                   closeViewer();
@@ -256,7 +256,7 @@ export function ProjectFileViewerModal() {
                 {isImage ? (
                   <ImageWithFallback
                     alt={currentFile.filename}
-                    className="h-auto max-h-full w-auto max-w-full rounded object-contain select-none"
+                    className="size-auto max-h-full max-w-full rounded-sm object-contain select-none"
                     fallback={
                       <FilePreviewFallback
                         fallbackExtension="jpg"

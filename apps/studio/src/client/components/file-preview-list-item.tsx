@@ -79,7 +79,7 @@ export function FilePreviewListItem({
         filename={filename}
         mimeType={mimeType}
       />
-      <span className="min-w-0 truncate text-left text-xs leading-tight">
+      <span className="min-w-0 truncate text-left text-xs/tight">
         {filename}
       </span>
       <FileVersionBadge

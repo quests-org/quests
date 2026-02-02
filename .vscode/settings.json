@@ -61,6 +61,7 @@
     "**/node_modules": true,
     "**/out": true
   },
+  "tailwindCSS.lint.suggestCanonicalClasses": "ignore", // Handled by better-tailwindcss in ESLint
   "typescript.enablePromptUseWorkspaceTsdk": true,
   "typescript.tsdk": "node_modules/typescript/lib",
   "vitest.rootConfig": "vitest.config.ts",

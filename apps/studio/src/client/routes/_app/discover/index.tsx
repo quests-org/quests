@@ -33,7 +33,7 @@ function RouteComponent() {
             <h1 className="text-3xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
               Discover
             </h1>
-            <p className="mx-auto mt-4 max-w-lg text-base leading-7 text-muted-foreground">
+            <p className="mx-auto mt-4 max-w-lg text-base/7 text-muted-foreground">
               Explore our collection of built-in templates.
               <br />
               Start building in seconds.

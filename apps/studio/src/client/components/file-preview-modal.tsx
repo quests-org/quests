@@ -61,7 +61,7 @@ export function FilePreviewModal() {
             File preview
           </DialogPrimitive.Description>
           <div
-            className="relative flex h-full w-full flex-col"
+            className="relative flex size-full flex-col"
             onClick={(e) => {
               if (e.target === e.currentTarget) {
                 closePreview();
@@ -69,7 +69,7 @@ export function FilePreviewModal() {
             }}
           >
             <div className="absolute top-4 right-4 left-4 z-10 flex items-center justify-center gap-2 text-white">
-              <div className="flex items-center gap-2 rounded bg-black/50 px-3 py-1.5">
+              <div className="flex items-center gap-2 rounded-sm bg-black/50 px-3 py-1.5">
                 <FileIcon
                   className="size-4 shrink-0"
                   filename={file.filename}
@@ -95,7 +95,7 @@ export function FilePreviewModal() {
             </div>
 
             <div
-              className="relative flex min-h-0 flex-1 items-center justify-center px-16 py-16"
+              className="relative flex min-h-0 flex-1 items-center justify-center p-16"
               onClick={(e) => {
                 if (e.target === e.currentTarget) {
                   closePreview();
@@ -113,7 +113,7 @@ export function FilePreviewModal() {
                 {isImage ? (
                   <ImageWithFallback
                     alt={file.filename}
-                    className="h-auto max-h-full w-auto max-w-full rounded object-contain"
+                    className="size-auto max-h-full max-w-full rounded-sm object-contain"
                     fallback={
                       <FilePreviewFallback
                         fallbackExtension="jpg"

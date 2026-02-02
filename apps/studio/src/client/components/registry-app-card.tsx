@@ -41,14 +41,14 @@ export function RegistryAppCard({
                 <>
                   <img
                     alt={`Screenshot of ${title ?? "unknown"} app`}
-                    className="h-full w-full object-cover"
+                    className="size-full object-cover"
                     src={screenshotDataUrl}
                   />
                   <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/20 via-transparent to-transparent" />
                 </>
               ) : (
                 <div className="text-center">
-                  <Package className="mx-auto mb-2 h-8 w-8 text-muted-foreground/50" />
+                  <Package className="mx-auto mb-2 size-8 text-muted-foreground/50" />
                   <p className="text-xs text-muted-foreground/75">No preview</p>
                 </div>
               )}

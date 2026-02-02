@@ -42,9 +42,7 @@ function FeatureCard({
       </div>
       <div className="flex flex-1 flex-col gap-1">
         <h3 className="font-semibold">{title}</h3>
-        <p className="text-sm leading-relaxed text-muted-foreground">
-          {description}
-        </p>
+        <p className="text-sm/relaxed text-muted-foreground">{description}</p>
       </div>
     </div>
   );

@@ -39,7 +39,7 @@ function ResizablePanelGroup({
   return (
     <Group
       className={cn(
-        "flex h-full w-full data-[orientation=vertical]:flex-col",
+        "flex size-full data-[orientation=vertical]:flex-col",
         className,
       )}
       data-slot="resizable-panel-group"

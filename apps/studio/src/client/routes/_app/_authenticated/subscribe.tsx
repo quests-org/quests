@@ -176,7 +176,7 @@ function SubscribePage() {
       <div className="min-h-screen bg-linear-to-br from-background via-background to-accent/20 p-8">
         <div className="mx-auto max-w-7xl">
           <div className="mb-8 text-center">
-            <div className="mt-6 mb-6 flex justify-center">
+            <div className="my-6 flex justify-center">
               <QuestsAnimatedLogo size={64} />
             </div>
             <h1 className="mb-2 bg-linear-to-r from-foreground to-foreground/70 bg-clip-text text-4xl font-bold text-transparent">
@@ -203,7 +203,7 @@ function SubscribePage() {
     <div className="min-h-screen bg-linear-to-br from-background via-background to-accent/20 p-8">
       <div className="mx-auto max-w-7xl">
         <div className="mb-8 text-center">
-          <div className="mt-6 mb-6 flex justify-center">
+          <div className="my-6 flex justify-center">
             <QuestsAnimatedLogo size={64} />
           </div>
           <h1 className="mb-2 bg-linear-to-r from-foreground to-foreground/70 bg-clip-text text-4xl font-bold text-transparent">
@@ -216,7 +216,7 @@ function SubscribePage() {
 
         {(isPlansLoading || isSubscriptionLoading) && (
           <div className="flex justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin" />
+            <Loader2 className="size-8 animate-spin" />
           </div>
         )}
 
@@ -367,7 +367,7 @@ function SubscribePage() {
                         variant={variant}
                       >
                         {showCheckmark && (
-                          <CheckCircle2 className={cn("h-4 w-4")} />
+                          <CheckCircle2 className={cn("size-4")} />
                         )}
                         {buttonText}
                       </Button>

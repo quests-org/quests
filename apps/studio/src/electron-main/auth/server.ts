@@ -183,7 +183,7 @@ const buttonVariants = tv({
   },
   variants: {
     variant: {
-      default: "bg-white text-black shadow hover:bg-white/90",
+      default: "bg-white text-black shadow-sm hover:bg-white/90",
       outline: "border border-stone-700 text-white hover:bg-stone-800",
     },
   },

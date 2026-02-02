@@ -189,7 +189,7 @@ export function MessageError({
               {error.responseBody && (
                 <div>
                   <strong>Response:</strong>
-                  <pre className="mt-1 max-h-32 overflow-y-auto rounded bg-muted p-2 text-xs wrap-break-word whitespace-pre-wrap">
+                  <pre className="mt-1 max-h-32 overflow-y-auto rounded-sm bg-muted p-2 text-xs wrap-break-word whitespace-pre-wrap">
                     {error.responseBody}
                   </pre>
                 </div>
@@ -200,7 +200,7 @@ export function MessageError({
           {error.kind === "invalid-tool-input" && (
             <div>
               <div className="mb-1 font-semibold">Input:</div>
-              <pre className="max-h-32 overflow-y-auto rounded border bg-muted p-2 font-mono text-xs wrap-break-word whitespace-pre-wrap">
+              <pre className="max-h-32 overflow-y-auto rounded-sm border bg-muted p-2 font-mono text-xs wrap-break-word whitespace-pre-wrap">
                 {error.input}
               </pre>
             </div>

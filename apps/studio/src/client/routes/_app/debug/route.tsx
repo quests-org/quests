@@ -23,7 +23,7 @@ export const Route = createFileRoute("/_app/debug")({
 function RouteComponent() {
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col">
-      <header className="sticky top-0 z-10 w-full shrink-0 border-b bg-background/95 p-4 backdrop-blur supports-backdrop-filter:bg-background/60">
+      <header className="sticky top-0 z-10 w-full shrink-0 border-b bg-background/95 p-4 backdrop-blur-sm supports-backdrop-filter:bg-background/60">
         <nav className="flex items-center justify-between">
           <div className="flex gap-6">
             <InternalLink

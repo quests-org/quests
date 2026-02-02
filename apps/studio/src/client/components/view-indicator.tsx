@@ -14,7 +14,7 @@ export function ViewIndicator({ isSelected }: ViewIndicatorProps) {
       ) : (
         <div className="group flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground">
           <span className="font-medium">View</span>
-          <ChevronRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+          <ChevronRight className="size-3 transition-transform group-hover:translate-x-0.5" />
         </div>
       )}
     </div>

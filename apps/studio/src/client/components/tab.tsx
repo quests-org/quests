@@ -19,7 +19,7 @@ const SkeletonIcon = ({ isPinned = false }: { isPinned?: boolean }) => {
 const SkeletonTitle = () => {
   return (
     <div className="min-w-0 flex-1">
-      <div className="h-3 w-16 animate-pulse rounded bg-muted" />
+      <div className="h-3 w-16 animate-pulse rounded-sm bg-muted" />
     </div>
   );
 };
@@ -103,7 +103,7 @@ export const Tab = ({ isSelected, item, onClick, onRemove }: Props) => {
             )}
           </div>
           <button
-            className="hidden rounded opacity-70 ring-offset-background transition-opacity group-hover:block hover:bg-muted hover:opacity-100 focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none"
+            className="hidden rounded-sm opacity-70 ring-offset-background transition-opacity group-hover:block hover:bg-muted hover:opacity-100 focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none"
             onClick={(event) => {
               event.stopPropagation();
               onRemove();

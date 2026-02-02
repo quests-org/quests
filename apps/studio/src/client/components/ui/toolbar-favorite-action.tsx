@@ -56,7 +56,7 @@ export function ToolbarFavoriteAction({
         >
           <Star
             className={cn(
-              "h-4 w-4",
+              "size-4",
               isFavorite && "fill-amber-500 text-amber-500",
             )}
           />

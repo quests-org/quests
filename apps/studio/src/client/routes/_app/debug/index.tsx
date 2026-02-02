@@ -6,7 +6,7 @@ export const Route = createFileRoute("/_app/debug/")({
 
 function RouteComponent() {
   return (
-    <div className="flex h-full w-full items-center justify-center">
+    <div className="flex size-full items-center justify-center">
       <p className="mt-48 text-sm text-muted-foreground">
         Select a debug page above
       </p>

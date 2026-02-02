@@ -38,7 +38,7 @@ export function NavControls() {
         title="Go back"
         variant="ghost"
       >
-        <ChevronLeft className="h-4 w-4" />
+        <ChevronLeft className="size-4" />
       </Button>
       <Button
         className="size-6 text-muted-foreground"
@@ -47,7 +47,7 @@ export function NavControls() {
         title="Go forward"
         variant="ghost"
       >
-        <ChevronRight className="h-4 w-4" />
+        <ChevronRight className="size-4" />
       </Button>
     </div>
   );

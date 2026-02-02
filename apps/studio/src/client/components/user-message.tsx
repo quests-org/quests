@@ -99,7 +99,7 @@ export const UserMessage = memo(function UserMessage({
         <Tooltip>
           <TooltipTrigger asChild>
             <CopyButton
-              className="rounded p-1 transition-colors hover:bg-muted/50 hover:text-foreground disabled:opacity-50"
+              className="rounded-sm p-1 transition-colors hover:bg-muted/50 hover:text-foreground disabled:opacity-50"
               iconSize={12}
               onCopy={handleCopy}
             />

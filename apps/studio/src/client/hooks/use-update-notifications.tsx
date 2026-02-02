@@ -80,7 +80,7 @@ export function useUpdateNotifications() {
             ? "Please allow a few minutes for the update to install. The app will relaunch when complete."
             : "The app will restart to complete the update.",
           duration: Infinity,
-          icon: <Download className="h-5 w-5" />,
+          icon: <Download className="size-5" />,
           id: INSTALL_TOAST_ID,
         });
         break;

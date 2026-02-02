@@ -88,7 +88,7 @@ export const ContextMessages = memo(function ContextMessages({
 
           <div className="flex justify-end pt-2">
             <CopyButton
-              className="rounded p-1 text-muted-foreground opacity-0 transition-colors group-hover:opacity-100 hover:bg-muted/50 hover:text-foreground disabled:opacity-50"
+              className="rounded-sm p-1 text-muted-foreground opacity-0 transition-colors group-hover:opacity-100 hover:bg-muted/50 hover:text-foreground disabled:opacity-50"
               iconSize={12}
               onCopy={handleCopy}
             />

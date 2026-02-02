@@ -20,7 +20,7 @@ export function UserInfoCard() {
     <Card className="bg-accent/30 p-4 shadow-sm">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Avatar className="h-16 w-16">
+          <Avatar className="size-16">
             <AvatarImage alt={user.name} src={user.image || undefined} />
             <AvatarFallback className="text-lg font-medium">
               {getInitials(user.name)}

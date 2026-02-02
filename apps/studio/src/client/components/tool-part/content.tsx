@@ -236,7 +236,7 @@ export function ToolContent({
           {part.output.stderr && (
             <>
               <div className="mb-1 text-red-600 dark:text-red-400">Error</div>
-              <CodeBlock className="max-h-32 overflow-y-auto rounded border bg-red-50 p-2 text-xs whitespace-pre-wrap text-red-600 dark:bg-red-900/20 dark:text-red-400">
+              <CodeBlock className="max-h-32 overflow-y-auto rounded-sm border bg-red-50 p-2 text-xs whitespace-pre-wrap text-red-600 dark:bg-red-900/20 dark:text-red-400">
                 {part.output.stderr}
               </CodeBlock>
             </>

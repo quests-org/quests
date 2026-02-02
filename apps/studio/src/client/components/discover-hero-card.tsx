@@ -57,18 +57,18 @@ function NewTabDiscoverHeroCard({
                 <>
                   <img
                     alt={`Hero image for ${title}`}
-                    className="h-full w-full object-cover"
+                    className="size-full object-cover"
                     src={heroImageDataUrl}
                   />
                   <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/20 via-transparent to-transparent" />
                 </>
               ) : isEvalsCard ? (
-                <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-brand/5 via-brand/8 to-brand/10">
+                <div className="flex size-full items-center justify-center bg-linear-to-br from-brand/5 via-brand/8 to-brand/10">
                   <FlaskConical className="size-12 text-brand" />
                 </div>
               ) : (
                 <div className="text-center">
-                  <div className="mx-auto mb-2 h-8 w-8 text-muted-foreground/50" />
+                  <div className="mx-auto mb-2 size-8 text-muted-foreground/50" />
                   <p className="text-xs text-muted-foreground/75">Loading...</p>
                 </div>
               )}

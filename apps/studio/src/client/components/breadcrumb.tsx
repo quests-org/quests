@@ -16,7 +16,7 @@ export function Breadcrumb({ items }: BreadcrumbProps) {
     <nav className="flex items-center space-x-1 text-sm text-muted-foreground">
       {items.map((item, index) => (
         <div className="flex items-center space-x-1" key={index}>
-          {index > 0 && <ChevronRight className="h-4 w-4" />}
+          {index > 0 && <ChevronRight className="size-4" />}
           {item.to ? (
             <InternalLink
               className="transition-colors hover:text-foreground"

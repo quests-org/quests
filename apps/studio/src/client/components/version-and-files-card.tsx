@@ -96,8 +96,8 @@ export function VersionAndFilesCard({
           className,
         )}
       >
-        <div className="h-4 w-48 animate-pulse rounded bg-muted" />
-        <div className="h-4 w-32 animate-pulse rounded bg-muted" />
+        <div className="h-4 w-48 animate-pulse rounded-sm bg-muted" />
+        <div className="h-4 w-32 animate-pulse rounded-sm bg-muted" />
       </div>
     );
   }

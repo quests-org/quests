@@ -95,7 +95,7 @@ export function FilePreviewCard({
           </div>
         ) : fileType === "html" ? (
           <SandboxedHtmlIframe
-            className="absolute top-0 left-0 h-[300%] w-[300%] origin-top-left border-0"
+            className="absolute top-0 left-0 size-[300%] origin-top-left border-0"
             restrictInteractive
             src={url}
             style={{ transform: "scale(0.333)" }}
@@ -103,7 +103,7 @@ export function FilePreviewCard({
           />
         ) : fileType === "pdf" ? (
           <iframe
-            className="absolute top-0 left-0 h-[300%] w-[300%] origin-top-left border-0"
+            className="absolute top-0 left-0 size-[300%] origin-top-left border-0"
             // cspell:ignore navpanes
             src={`${url}#toolbar=0&navpanes=0&view=Fit`}
             style={{ transform: "scale(0.333)" }}

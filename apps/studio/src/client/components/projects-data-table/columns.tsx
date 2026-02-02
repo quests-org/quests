@@ -86,7 +86,7 @@ export function createColumns({
         return (
           <div className="flex min-w-0 items-center gap-x-2">
             {isFavorite && (
-              <Star className="h-4 w-4 shrink-0 fill-amber-500 text-amber-500" />
+              <Star className="size-4 shrink-0 fill-amber-500 text-amber-500" />
             )}
             <InternalLink
               className="flex min-w-0 flex-1 items-center gap-x-2"
@@ -97,7 +97,7 @@ export function createColumns({
               <AppIcon name={project.iconName} size="sm" />
               <span className="truncate font-medium">{project.title}</span>
               <AppStatusIcon
-                className="ml-auto h-4 w-4 shrink-0"
+                className="ml-auto size-4 shrink-0"
                 subdomain={project.subdomain}
               />
             </InternalLink>
@@ -114,7 +114,7 @@ export function createColumns({
             variant="ghost"
           >
             Project
-            <ArrowUpDown className="ml-2 h-4 w-4" />
+            <ArrowUpDown className="ml-2 size-4" />
           </Button>
         );
       },
@@ -164,7 +164,7 @@ export function createColumns({
             variant="ghost"
           >
             Updated
-            <ArrowUpDown className="ml-2 h-4 w-4" />
+            <ArrowUpDown className="ml-2 size-4" />
           </Button>
         );
       },
@@ -190,7 +190,7 @@ export function createColumns({
             variant="ghost"
           >
             Created
-            <ArrowUpDown className="ml-2 h-4 w-4" />
+            <ArrowUpDown className="ml-2 size-4" />
           </Button>
         );
       },
