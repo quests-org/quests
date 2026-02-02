@@ -1,5 +1,6 @@
 import { createContextMenu } from "@/electron-main/lib/context-menu";
 import { logger } from "@/electron-main/lib/electron-logger";
+import { openExternal } from "@/electron-main/lib/open-external";
 import { getBackgroundColor } from "@/electron-main/lib/theme-utils";
 import { publisher } from "@/electron-main/rpc/publisher";
 import { TOOLBAR_HEIGHT } from "@/shared/constants";
@@ -329,7 +330,8 @@ export class TabsManager {
     // Set initial bounds respecting sidebar width
     newContentView.setBounds(this.computeTabBounds());
 
-    newContentView.webContents.setWindowOpenHandler(() => {
+    newContentView.webContents.setWindowOpenHandler((details) => {
+      void openExternal(details.url);
       return { action: "deny" };
     });
 

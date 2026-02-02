@@ -1,4 +1,5 @@
 import { createContextMenu } from "@/electron-main/lib/context-menu";
+import { openExternal } from "@/electron-main/lib/open-external";
 import { getBackgroundColor } from "@/electron-main/lib/theme-utils";
 import { publisher } from "@/electron-main/rpc/publisher";
 import { type StudioPath } from "@/shared/studio-path";
@@ -55,7 +56,8 @@ export function openSettingsWindow(
 
   settingsWindow.setBackgroundColor(getBackgroundColor());
 
-  settingsWindow.webContents.setWindowOpenHandler(() => {
+  settingsWindow.webContents.setWindowOpenHandler((details) => {
+    void openExternal(details.url);
     return { action: "deny" };
   });
 

@@ -39,8 +39,6 @@ interface EditorConfig {
 
 const execAsync = promisify(exec);
 
-const SAFE_PROTOCOLS = new Set(["http:", "https:", "mailto:", "tel:"]);
-
 const EDITORS_BY_PLATFORM: Record<string, EditorConfig[]> = {
   darwin: [
     { appName: "Cursor", id: "cursor", name: "Cursor" },
@@ -198,19 +196,17 @@ const initializeSupportedEditorsCache = async () => {
 
 const openExternalLink = base
   .errors({
-    INVALID_PROTOCOL: {
-      message: "Invalid protocol",
+    INVALID_URL: {
+      message: "Invalid URL",
     },
   })
   .output(z.undefined())
   .input(z.object({ url: z.url() }))
   .handler(async ({ errors, input }) => {
-    const url = new URL(input.url);
-    if (!SAFE_PROTOCOLS.has(url.protocol)) {
-      throw errors.INVALID_PROTOCOL();
+    const success = await openExternal(input.url);
+    if (!success) {
+      throw errors.INVALID_URL();
     }
-
-    await openExternal(input.url);
   });
 
 const imageDataURI = base

@@ -6,7 +6,31 @@ import { promisify } from "node:util";
 
 const execAsync = promisify(exec);
 
-export async function openExternal(url: string) {
+const SAFE_PROTOCOLS = new Set(["http:", "https:", "mailto:", "tel:"]);
+
+export async function openExternal(url: string): Promise<boolean> {
+  // Only allow safe protocols for external links
+  try {
+    const urlObj = new URL(url);
+    const protocol = urlObj.protocol.toLowerCase();
+
+    if (!SAFE_PROTOCOLS.has(protocol)) {
+      const error = new Error(
+        `Blocked attempt to open URL with unsafe protocol: ${protocol} (url: ${url})`,
+      );
+      captureServerException(error);
+      return false;
+    }
+  } catch (error) {
+    // Invalid URL format
+    captureServerException(
+      new Error(`Invalid URL format in openExternal (url: ${url})`, {
+        cause: error,
+      }),
+    );
+    return false;
+  }
+
   if (os.platform() === "linux") {
     try {
       await execAsync("which xdg-open");
@@ -30,11 +54,12 @@ export async function openExternal(url: string) {
         child.unref();
         resolve(undefined);
       });
-      return;
+      return true;
     } catch {
       // xdg-open not available, fall back to shell.openExternal
     }
   }
 
   await shell.openExternal(url);
+  return true;
 }

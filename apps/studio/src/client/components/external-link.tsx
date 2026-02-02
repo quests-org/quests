@@ -34,9 +34,8 @@ export function ExternalLink(
   const handleClick = useCallback(
     async (event: React.MouseEvent<HTMLAnchorElement>) => {
       event.preventDefault();
-      const url = event.currentTarget.href;
-      if (url) {
-        const finalUrl = addReferral ? addRef(url) : url;
+      if (href) {
+        const finalUrl = addReferral ? addRef(href) : href;
         captureClientEvent("external_link.clicked", {
           external_url: finalUrl,
         });
@@ -44,7 +43,7 @@ export function ExternalLink(
       }
       onClick?.(event);
     },
-    [addReferral, onClick, openExternalLinkMutation],
+    [addReferral, onClick, openExternalLinkMutation, href],
   );
 
   return (

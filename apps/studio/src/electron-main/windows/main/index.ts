@@ -1,5 +1,6 @@
 import { captureServerException } from "@/electron-main/lib/capture-server-exception";
 import { createContextMenu } from "@/electron-main/lib/context-menu";
+import { openExternal } from "@/electron-main/lib/open-external";
 import {
   getMainWindowBackgroundColor,
   getTitleBarOverlay,
@@ -143,7 +144,8 @@ export async function createMainWindow() {
     windowOrWebContentsView: mainWindow,
   });
 
-  mainWindow.webContents.setWindowOpenHandler(() => {
+  mainWindow.webContents.setWindowOpenHandler((details) => {
+    void openExternal(details.url);
     return { action: "deny" };
   });
 
