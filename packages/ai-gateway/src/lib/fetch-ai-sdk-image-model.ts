@@ -7,6 +7,7 @@ import { Result } from "typescript-result";
 
 import { type AIGatewayProviderConfig } from "../schemas/provider-config";
 import {
+  createFireworksSDK,
   createGoogleSDK,
   createOpenAISDK,
   createOpenRouterSDK,
@@ -52,13 +53,14 @@ export async function fetchAISDKImageModel({
 
   // Providers that use generateImage (image models)
   switch (config.type) {
-    // Disabled until fixed
-    // case "fireworks": {
-    //   const sdk = await createFireworksSDK(config, workspaceServerURL);
-    //   // cspell:ignore kontext
-    //   const model = sdk.imageModel("accounts/fireworks/models/flux-kontext-pro");
-    //   return Result.ok({ model, type: "image" });
-    // }
+    case "fireworks": {
+      const sdk = await createFireworksSDK(config, workspaceServerURL);
+      const model = sdk.imageModel(
+        // cspell:ignore schnell
+        "accounts/fireworks/models/flux-1-schnell-fp8",
+      );
+      return Result.ok({ model, type: "image" });
+    }
     case "openai": {
       const sdk = await createOpenAISDK(config, workspaceServerURL);
       const model = sdk.image("gpt-image-1-mini");

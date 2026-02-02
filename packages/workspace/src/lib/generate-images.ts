@@ -1,6 +1,7 @@
 import {
   type AIGatewayProviderConfig,
   fetchAISDKImageModel,
+  getAllProviderMetadata,
   getProviderMetadata,
 } from "@quests/ai-gateway";
 import { type WorkspaceServerURL } from "@quests/shared";
@@ -12,16 +13,22 @@ function supportsImageGeneration(type: AIGatewayProviderConfig.Type["type"]) {
   return metadata.tags.includes("imageGeneration");
 }
 
-// Ordered by quality of image provider as of 2026-01-30
-const ORDERED_PROVIDERS: AIGatewayProviderConfig.Type["type"][] = [
-  "quests",
-  "openrouter",
-  "google",
-  "openai",
-  "x-ai",
-  "vercel",
-  "fireworks",
-];
+const IMAGE_GENERATION_PROVIDERS = getAllProviderMetadata()
+  .filter((metadata) => metadata.tags.includes("imageGeneration"))
+  .map((metadata) => metadata.type)
+  .sort((a, b) => {
+    const order = [
+      // Ordered by quality as of 2026-01-30
+      "quests",
+      "openrouter",
+      "google",
+      "openai",
+      "x-ai",
+      "vercel",
+      "fireworks",
+    ];
+    return order.indexOf(a) - order.indexOf(b);
+  });
 
 export async function generateImages({
   configs,
@@ -60,7 +67,9 @@ export async function generateImages({
 
   const orderedProviderTypes = [
     ...(shouldTryPreferredType ? [preferredProviderConfig.type] : []),
-    ...ORDERED_PROVIDERS.filter((type) => type !== preferredConfig?.type),
+    ...IMAGE_GENERATION_PROVIDERS.filter(
+      (type) => type !== preferredConfig?.type,
+    ),
   ];
 
   for (const providerType of orderedProviderTypes) {

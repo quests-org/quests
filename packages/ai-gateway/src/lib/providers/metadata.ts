@@ -74,8 +74,7 @@ const PROVIDER_METADATA: Record<AIProviderType, ProviderMetadataInput> = {
     description:
       "High-speed multimodal AI inference with advanced FireAttention technology",
     name: "Fireworks AI",
-    // Disabled until fixed
-    // tags: ["imageGeneration"],
+    tags: ["imageGeneration"],
     type: "fireworks",
     url: addRef("https://fireworks.ai"),
   },
