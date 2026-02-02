@@ -18,7 +18,7 @@ import { getProviderMetadata } from "./providers/metadata";
 
 function supportsImageGeneration(type: AIGatewayProviderConfig.Type["type"]) {
   const metadata = getProviderMetadata(type);
-  return metadata.tags?.includes("imageGeneration") ?? false;
+  return metadata.tags.includes("imageGeneration");
 }
 
 // Ordered by quality of image provider as of 2026-01-30

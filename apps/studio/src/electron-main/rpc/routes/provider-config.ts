@@ -120,9 +120,8 @@ const create = base
       }
 
       const providerMetadata = getProviderMetadata(newConfig.type);
-      const requiresAPIKey = providerMetadata.requiresAPIKey ?? true;
 
-      if (!requiresAPIKey) {
+      if (!providerMetadata.requiresAPIKey) {
         const newConfigBaseURL = baseURLWithDefault(newConfig);
         const duplicateProviderByBaseURL = existingConfigs.find((p) => {
           const existingBaseURL = baseURLWithDefault(p);

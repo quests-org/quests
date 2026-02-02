@@ -1,4 +1,5 @@
 import { addRef, type AIProviderType } from "@quests/shared";
+import { objectify } from "radashi";
 
 import {
   type ProviderMetadata,
@@ -302,14 +303,17 @@ const PROVIDER_METADATA: Record<AIProviderType, ProviderMetadataInput> = {
   },
 };
 
-const PARSED_PROVIDER_METADATA = Object.values(PROVIDER_METADATA).map(
-  (metadata) => ProviderMetadataSchema.parse(metadata),
+const PARSED_PROVIDER_METADATA_BY_TYPE = objectify(
+  Object.values(PROVIDER_METADATA).map((metadata) =>
+    ProviderMetadataSchema.parse(metadata),
+  ),
+  (metadata) => metadata.type,
 );
 
 export function getAllProviderMetadata(): ProviderMetadata[] {
-  return PARSED_PROVIDER_METADATA;
+  return Object.values(PARSED_PROVIDER_METADATA_BY_TYPE);
 }
 
 export function getProviderMetadata(providerType: AIProviderType) {
-  return PROVIDER_METADATA[providerType];
+  return PARSED_PROVIDER_METADATA_BY_TYPE[providerType];
 }
