@@ -1,4 +1,4 @@
-import { AIGatewayProviderConfig, generateImages } from "@quests/ai-gateway";
+import { AIGatewayProviderConfig } from "@quests/ai-gateway";
 import { imageSize } from "image-size";
 import mime from "mime-types";
 import ms from "ms";
@@ -9,6 +9,7 @@ import { z } from "zod";
 
 import { absolutePathJoin } from "../lib/absolute-path-join";
 import { ensureRelativePath } from "../lib/ensure-relative-path";
+import { generateImages } from "../lib/generate-images";
 import { writeFileWithDir } from "../lib/write-file-with-dir";
 import { getWorkspaceServerURL } from "../logic/server/url";
 import { RelativePathSchema } from "../schemas/paths";
@@ -74,7 +75,7 @@ export const GenerateImage = createTool({
         workspaceServerURL: getWorkspaceServerURL(),
       });
 
-      if (!result.ok) {
+      if (result.isErr()) {
         return ok({
           errorMessage:
             "No AI provider with image generation capability is available.",

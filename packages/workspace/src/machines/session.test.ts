@@ -1,4 +1,7 @@
-import { type LanguageModelV3StreamPart } from "@ai-sdk/provider";
+import {
+  type ImageModelV3,
+  type LanguageModelV3StreamPart,
+} from "@ai-sdk/provider";
 import { simulateReadableStream } from "ai";
 import { MockLanguageModelV3 } from "ai/test";
 import mockFs from "mock-fs";
@@ -178,6 +181,7 @@ describe("sessionMachine", () => {
     baseLLMRetryDelayMs = 1000,
     chunkDelayInMs = [],
     chunkSets = [],
+    imageModel,
     initialChunkDelaysMs = [],
     llmRequestChunkTimeoutMs = 120_000,
     maxStepCount,
@@ -188,6 +192,7 @@ describe("sessionMachine", () => {
     baseLLMRetryDelayMs?: number;
     chunkDelayInMs?: number[];
     chunkSets?: Part[][];
+    imageModel?: ImageModelV3;
     initialChunkDelaysMs?: number[];
     llmRequestChunkTimeoutMs?: number;
     maxStepCount?: number;
@@ -243,6 +248,7 @@ describe("sessionMachine", () => {
       ProjectSubdomainSchema.parse(projectFolder),
       {
         aiSDKModel: mockLanguageModel,
+        imageModel,
         model,
       },
     );
@@ -480,6 +486,100 @@ describe("sessionMachine", () => {
           <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
             <step-start step="2" />
             <text state="done">I'm done.</text>
+          </assistant>
+          <session-context main realRole="system" />
+          <session-context main realRole="user" />
+        </session>"
+      `);
+    });
+
+    it("should generate an image", async () => {
+      const generateImageChunks = [
+        {
+          id: "test-call-generate-image",
+          toolName: "generate_image",
+          type: "tool-input-start",
+        },
+        {
+          input: JSON.stringify({
+            explanation: "Generate a test image",
+            filePath: "generated-image",
+            prompt: "A beautiful sunset over mountains",
+          }),
+          toolCallId: "test-call-generate-image",
+          toolName: "generate_image",
+          type: "tool-call",
+        },
+      ] as const satisfies LanguageModelV3StreamPart[];
+
+      const mockImageModel: ImageModelV3 = {
+        doGenerate: vi.fn().mockResolvedValue({
+          images: [
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+          ],
+          rawResponse: { headers: {} },
+          usage: {
+            inputTokens: 10,
+            outputTokens: 0,
+            totalTokens: 10,
+          },
+          warnings: [],
+        }),
+        maxImagesPerCall: undefined,
+        modelId: "mock-image-model",
+        provider: "mock-provider",
+        specificationVersion: "v3",
+      };
+
+      const session = await createAndRunTestMachine({
+        chunkSets: [generateImageChunks, finishChunks],
+        imageModel: mockImageModel,
+      });
+
+      expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
+        "<session title="Test session" count="5">
+          <user>
+            <text>Hello, I need help with something.</text>
+          </user>
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
+            <step-start step="1" />
+            <tool tool="generate_image" state="output-available" callId="test-call-generate-image">
+              <input>
+                {
+                  "explanation": "Generate a test image",
+                  "filePath": "generated-image",
+                  "prompt": "A beautiful sunset over mountains"
+                }
+              </input>
+              <output>
+                {
+                  "images": [
+                    {
+                      "filePath": "generated-image.png",
+                      "height": 1,
+                      "width": 1,
+                      "sizeBytes": 70
+                    }
+                  ],
+                  "modelId": "mock-image-model",
+                  "provider": {
+                    "id": "mock-provider-config-id",
+                    "type": "quests"
+                  },
+                  "state": "success",
+                  "usage": {
+                    "inputTokens": 10,
+                    "outputTokens": 0,
+                    "totalTokens": 10
+                  }
+                }
+              </output>
+            </tool>
+          </assistant>
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
+            <step-start step="2" />
+            <text state="done">I'm done.</text>
+            <data-gitCommit ref="rev-parse HEAD executed successfully in /tmp/workspace/projects/pj-test" />
           </assistant>
           <session-context main realRole="system" />
           <session-context main realRole="user" />

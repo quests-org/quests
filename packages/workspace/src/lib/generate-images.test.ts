@@ -1,25 +1,28 @@
+import { type AIGatewayProviderConfig } from "@quests/ai-gateway";
 import {
   type AIProviderConfigId,
   type WorkspaceServerURL,
 } from "@quests/shared";
 import { describe, expect, it, vi } from "vitest";
 
-import { type AIGatewayProviderConfig } from "../schemas/provider-config";
 import { generateImages } from "./generate-images";
-
-vi.mock("./ai-sdk-for-provider-config", () => ({
-  createFireworksSDK: vi.fn(),
-  createGoogleSDK: vi.fn(),
-  createOpenAISDK: vi.fn(),
-  createOpenRouterSDK: vi.fn(),
-  createVercelSDK: vi.fn(),
-  createXAISDK: vi.fn(),
-}));
 
 vi.mock("ai", () => ({
   generateImage: vi.fn(),
   generateText: vi.fn(),
 }));
+
+vi.mock("@quests/ai-gateway", async () => {
+  const actual =
+    // eslint-disable-next-line @typescript-eslint/consistent-type-imports
+    await vi.importActual<typeof import("@quests/ai-gateway")>(
+      "@quests/ai-gateway",
+    );
+  return {
+    ...actual,
+    fetchAISDKImageModel: vi.fn(),
+  };
+});
 
 const createMockConfig = ({
   id,
@@ -120,28 +123,18 @@ describe("generateImages", () => {
       }),
     },
   ])("$description", async ({ configs, expectedConfigId, preferredConfig }) => {
-    const { createGoogleSDK, createOpenAISDK, createOpenRouterSDK } =
-      await import("./ai-sdk-for-provider-config");
+    const { fetchAISDKImageModel } = await import("@quests/ai-gateway");
+    const { generateImage, generateText } = await import("ai");
 
     const mockImageModel = {
-      imageModel: vi.fn().mockReturnValue({
-        modelId: "test-model",
-      }),
+      modelId: "test-model",
     };
 
-    const mockLanguageModel = vi.fn().mockReturnValue({
-      modelId: "test-model",
-    });
-
-    vi.mocked(createGoogleSDK).mockResolvedValue(mockLanguageModel as never);
-    vi.mocked(createOpenAISDK).mockResolvedValue({
-      image: vi.fn().mockReturnValue({
-        modelId: "test-model",
-      }),
+    vi.mocked(fetchAISDKImageModel).mockResolvedValue({
+      ok: true,
+      toTuple: () => [{ model: mockImageModel, type: "image" }, null],
+      value: { model: mockImageModel, type: "image" },
     } as never);
-    vi.mocked(createOpenRouterSDK).mockResolvedValue(mockImageModel as never);
-
-    const { generateImage, generateText } = await import("ai");
 
     vi.mocked(generateText).mockResolvedValue({
       files: [],
@@ -163,8 +156,8 @@ describe("generateImages", () => {
       workspaceServerURL: mockWorkspaceServerURL,
     });
 
-    expect(result.ok).toBe(true);
-    if (result.ok) {
+    expect(result.isOk()).toBe(true);
+    if (result.isOk()) {
       expect(result.value.provider.id).toBe(expectedConfigId);
     }
   });
@@ -182,8 +175,8 @@ describe("generateImages", () => {
       workspaceServerURL: mockWorkspaceServerURL,
     });
 
-    expect(result.ok).toBe(false);
-    if (!result.ok) {
+    expect(result.isErr()).toBe(true);
+    if (result.isErr()) {
       expect(result.error).toBe(
         "No provider with image generation support found",
       );

@@ -1,7 +1,8 @@
-import { type LanguageModelV3 } from "@ai-sdk/provider";
+import { type ImageModelV3, type LanguageModelV3 } from "@ai-sdk/provider";
 import {
   type AIGatewayModel,
   AIGatewayProviderConfig,
+  TEST_IMAGE_MODEL_OVERRIDE_KEY,
   TEST_MODEL_OVERRIDE_KEY,
 } from "@quests/ai-gateway";
 import { AI_GATEWAY_API_KEY_NOT_NEEDED } from "@quests/shared";
@@ -24,6 +25,7 @@ export function createMockAppConfig(
   subdomain: AppSubdomain,
   options: {
     aiSDKModel?: LanguageModelV3;
+    imageModel?: ImageModelV3;
     model?: AIGatewayModel.Type;
   } = {},
 ) {
@@ -40,6 +42,20 @@ export function createMockAppConfig(
     (config as { [TEST_MODEL_OVERRIDE_KEY]?: LanguageModelV3 })[
       TEST_MODEL_OVERRIDE_KEY
     ] = options.aiSDKModel;
+  }
+
+  if (options.imageModel) {
+    (
+      config as {
+        [TEST_IMAGE_MODEL_OVERRIDE_KEY]?: {
+          model: ImageModelV3;
+          type: "image";
+        };
+      }
+    )[TEST_IMAGE_MODEL_OVERRIDE_KEY] = {
+      model: options.imageModel,
+      type: "image",
+    };
   }
 
   return createAppConfig({
