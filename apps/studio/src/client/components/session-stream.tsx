@@ -30,7 +30,7 @@ interface SessionEventListProps {
   messages: SessionMessage.WithParts[];
   onContinue: () => void;
   onModelChange: (modelURI: AIGatewayModelURI.Type) => void;
-  onRetry: (prompt?: string) => void;
+  onRetry: (prompt: string) => void;
   onStartNewChat: () => void;
   project: WorkspaceAppProject;
   selectedVersion?: string;

@@ -31,7 +31,7 @@ interface MessageErrorProps {
   message: SessionMessage.Assistant;
   onContinue: () => void;
   onModelChange: (modelURI: AIGatewayModelURI.Type) => void;
-  onRetry?: () => void;
+  onRetry: (prompt: string) => void;
   onStartNewChat?: () => void;
   showActions?: boolean;
 }
@@ -212,7 +212,7 @@ export function MessageError({
             </div>
           )}
 
-          {showActions && onRetry && onStartNewChat && !questsError && (
+          {showActions && onStartNewChat && !questsError && (
             <div className="mt-4 flex gap-2 border-t pt-4">
               <Tooltip delayDuration={0}>
                 <TooltipTrigger asChild>
@@ -224,7 +224,12 @@ export function MessageError({
                   <p>Starts a fresh chat in this project</p>
                 </TooltipContent>
               </Tooltip>
-              <Button onClick={onRetry} size="sm">
+              <Button
+                onClick={() => {
+                  onRetry("Try that again.");
+                }}
+                size="sm"
+              >
                 Try again
               </Button>
             </div>

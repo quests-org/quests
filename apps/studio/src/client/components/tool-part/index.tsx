@@ -32,7 +32,7 @@ export function ToolPart({
   projectSubdomain,
 }: {
   isLoading: boolean;
-  onRetry?: (message: string) => void;
+  onRetry: (prompt: string) => void;
   part: SessionMessagePart.ToolPart;
   projectSubdomain: ProjectSubdomain;
 }) {

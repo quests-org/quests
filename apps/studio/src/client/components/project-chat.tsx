@@ -103,7 +103,7 @@ export function ProjectChat({
     subdomain: project.subdomain,
   });
 
-  const handleRetry = (prompt?: string) => {
+  const handleRetry = (prompt: string) => {
     if (!selectedSessionId) {
       // No retry UI is shown when no session is selected
       return;
@@ -114,7 +114,7 @@ export function ProjectChat({
     }
     createMessage.mutate({
       modelURI: selectedModelURI,
-      prompt: prompt ?? "Try that again.",
+      prompt,
       sessionId: selectedSessionId,
       subdomain: project.subdomain,
     });

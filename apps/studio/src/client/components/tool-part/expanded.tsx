@@ -7,7 +7,7 @@ export function ToolPartExpanded({
   onRetry,
   part,
 }: {
-  onRetry?: (message: string) => void;
+  onRetry: (prompt: string) => void;
   part: Extract<SessionMessagePart.ToolPart, { state: "output-available" }>;
 }) {
   const explanationObject =
