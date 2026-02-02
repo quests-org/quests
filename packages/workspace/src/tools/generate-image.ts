@@ -68,6 +68,7 @@ export const GenerateImage = createTool({
       preferredProviderConfig,
       prompt: input.prompt,
       signal,
+      workspaceConfig: appConfig.workspaceConfig,
       workspaceServerURL: getWorkspaceServerURL(),
     });
 

@@ -69,6 +69,9 @@ const createMockConfig = ({
 describe("generateImages", () => {
   const mockSignal = new AbortController().signal;
   const mockWorkspaceServerURL = "http://localhost:3000" as WorkspaceServerURL;
+  const mockWorkspaceConfig = {
+    captureException: vi.fn(),
+  } as never;
 
   it.each([
     {
@@ -153,6 +156,7 @@ describe("generateImages", () => {
       preferredProviderConfig: preferredConfig,
       prompt: "test prompt",
       signal: mockSignal,
+      workspaceConfig: mockWorkspaceConfig,
       workspaceServerURL: mockWorkspaceServerURL,
     });
 
@@ -172,14 +176,16 @@ describe("generateImages", () => {
       }),
       prompt: "test prompt",
       signal: mockSignal,
+      workspaceConfig: mockWorkspaceConfig,
       workspaceServerURL: mockWorkspaceServerURL,
     });
 
     expect(result.isErr()).toBe(true);
     if (result.isErr()) {
-      expect(result.error).toBe(
+      expect(result.error.message).toBe(
         "No provider with image generation support found",
       );
+      expect(result.error.type).toBe("workspace-no-image-model-error");
     }
   });
 });

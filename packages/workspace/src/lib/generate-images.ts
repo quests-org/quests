@@ -8,6 +8,7 @@ import { type WorkspaceServerURL } from "@quests/shared";
 import { generateImage, generateText } from "ai";
 import { err, ResultAsync } from "neverthrow";
 
+import { type WorkspaceConfig } from "../types";
 import { TypedError } from "./errors";
 
 function supportsImageGeneration(type: AIGatewayProviderConfig.Type["type"]) {
@@ -38,6 +39,7 @@ export async function generateImages({
   preferredProviderConfig,
   prompt,
   signal,
+  workspaceConfig,
   workspaceServerURL,
 }: {
   configs: AIGatewayProviderConfig.Type[];
@@ -45,50 +47,75 @@ export async function generateImages({
   preferredProviderConfig: AIGatewayProviderConfig.Type;
   prompt: string;
   signal: AbortSignal;
+  workspaceConfig: WorkspaceConfig;
   workspaceServerURL: WorkspaceServerURL;
 }) {
-  // Try exact config by ID first
-  const preferredConfig = configs.find(
-    (c) => c.id === preferredProviderConfig.id,
+  // Build ordered list of up to 2 configs to try
+  const configsToTry: AIGatewayProviderConfig.Type[] = [];
+
+  // 1. Try exact ID match first
+  const exactMatch = configs.find(
+    (c) =>
+      c.id === preferredProviderConfig.id && supportsImageGeneration(c.type),
   );
-  if (preferredConfig && supportsImageGeneration(preferredConfig.type)) {
-    return tryGenerateWithConfig({
-      config: preferredConfig,
-      count,
-      prompt,
-      signal,
-      workspaceServerURL,
-    });
+  if (exactMatch) {
+    configsToTry.push(exactMatch);
   }
 
-  // Fall back to type-based ordering
-  const configsByType = new Map(configs.map((c) => [c.type, c]));
+  // 2. Try type match if no exact match
+  if (!exactMatch) {
+    const configsByType = new Map(configs.map((c) => [c.type, c]));
+    const typeMatch = configsByType.get(preferredProviderConfig.type);
+    if (typeMatch && supportsImageGeneration(typeMatch.type)) {
+      configsToTry.push(typeMatch);
+    }
+  }
 
-  const shouldTryPreferredType =
-    !preferredConfig && supportsImageGeneration(preferredProviderConfig.type);
+  // 3. Add fallback(s) from ordered provider list to reach 2 configs
+  for (const providerType of IMAGE_GENERATION_PROVIDERS) {
+    if (configsToTry.length >= 2) {
+      break;
+    }
 
-  const orderedProviderTypes = [
-    ...(shouldTryPreferredType ? [preferredProviderConfig.type] : []),
-    ...IMAGE_GENERATION_PROVIDERS.filter(
-      (type) => type !== preferredConfig?.type,
-    ),
-  ];
+    const config = configs.find(
+      (c) =>
+        c.type === providerType && !configsToTry.some((c2) => c2.id === c.id),
+    );
+    if (config) {
+      configsToTry.push(config);
+    }
+  }
 
-  for (const providerType of orderedProviderTypes) {
-    const config = configsByType.get(providerType);
+  if (configsToTry.length === 0) {
+    return err(
+      new TypedError.NoImageModel(
+        "No provider with image generation support found",
+      ),
+    );
+  }
+
+  // Try each config in order, return first success or last error
+  for (let i = 0; i < configsToTry.length; i++) {
+    const config = configsToTry[i];
     if (!config) {
       continue;
     }
 
-    return tryGenerateWithConfig({
+    const result = await tryGenerateWithConfig({
       config,
       count,
       prompt,
       signal,
+      workspaceConfig,
       workspaceServerURL,
     });
+
+    if (result.isOk() || i === configsToTry.length - 1) {
+      return result;
+    }
   }
 
+  // This should never be reached due to length check above
   return err(
     new TypedError.NoImageModel(
       "No provider with image generation support found",
@@ -101,12 +128,14 @@ async function tryGenerateWithConfig({
   count,
   prompt,
   signal,
+  workspaceConfig,
   workspaceServerURL,
 }: {
   config: AIGatewayProviderConfig.Type;
   count: number;
   prompt: string;
   signal: AbortSignal;
+  workspaceConfig: WorkspaceConfig;
   workspaceServerURL: WorkspaceServerURL;
 }) {
   const result = await fetchAISDKImageModel({
@@ -156,11 +185,14 @@ async function tryGenerateWithConfig({
         usage: imageResult.usage,
       };
     })(),
-    (generationError) =>
-      new TypedError.ImageGeneration(
+    (generationError) => {
+      const error = new TypedError.ImageGeneration(
         `Failed to generate image: ${generationError instanceof Error ? generationError.message : "Unknown error"}`,
         { cause: generationError },
-      ),
+      );
+      workspaceConfig.captureException(error);
+      return error;
+    },
   );
 
   return generateResult;
