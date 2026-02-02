@@ -251,7 +251,7 @@ const PROVIDER_METADATA: Record<AIProviderType, ProviderMetadataInput> = {
       defaultBaseURL: "https://api.quests.dev/gateway/openrouter",
     },
     canAddManually: false,
-    description: "Quests AI Gateway",
+    description: "AI access for Quests accounts.",
     name: "Quests",
     tags: ["imageGeneration"],
     type: "quests",
