@@ -22,14 +22,13 @@ type AISDKModelResult =
   | { model: ImageModelV3; type: "image" }
   | { model: LanguageModelV3; type: "language" };
 
-export async function fetchAISDKImageModel({
+export async function getAISDKImageModel({
   config,
   workspaceServerURL,
 }: {
   config: AIGatewayProviderConfig.Type;
   workspaceServerURL: WorkspaceServerURL;
 }): Promise<Result<AISDKModelResult, TypedError.Type>> {
-  // Test override: check early to avoid fetching models over network
   const testOverride = (
     config as { [TEST_IMAGE_MODEL_OVERRIDE_KEY]?: AISDKModelResult }
   )[TEST_IMAGE_MODEL_OVERRIDE_KEY];

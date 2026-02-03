@@ -20,7 +20,7 @@ vi.mock("@quests/ai-gateway", async () => {
     );
   return {
     ...actual,
-    fetchAISDKImageModel: vi.fn(),
+    getAISDKImageModel: vi.fn(),
   };
 });
 
@@ -126,14 +126,14 @@ describe("generateImages", () => {
       }),
     },
   ])("$description", async ({ configs, expectedConfigId, preferredConfig }) => {
-    const { fetchAISDKImageModel } = await import("@quests/ai-gateway");
+    const { getAISDKImageModel } = await import("@quests/ai-gateway");
     const { generateImage, generateText } = await import("ai");
 
     const mockImageModel = {
       modelId: "test-model",
     };
 
-    vi.mocked(fetchAISDKImageModel).mockResolvedValue({
+    vi.mocked(getAISDKImageModel).mockResolvedValue({
       ok: true,
       toTuple: () => [{ model: mockImageModel, type: "image" }, null],
       value: { model: mockImageModel, type: "image" },

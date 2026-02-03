@@ -1,6 +1,6 @@
 import {
   type AIGatewayProviderConfig,
-  fetchAISDKImageModel,
+  getAISDKImageModel,
   getAllProviderMetadata,
   getProviderMetadata,
 } from "@quests/ai-gateway";
@@ -138,7 +138,7 @@ async function tryGenerateWithConfig({
   workspaceConfig: WorkspaceConfig;
   workspaceServerURL: WorkspaceServerURL;
 }) {
-  const result = await fetchAISDKImageModel({
+  const result = await getAISDKImageModel({
     config,
     workspaceServerURL,
   });
