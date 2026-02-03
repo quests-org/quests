@@ -7,6 +7,7 @@ import { errorInsufficientCreditsSession } from "./error-insufficient-credits";
 import { errorModelNotAllowedSession } from "./error-model-not-allowed";
 import { errorModelNotFoundSession } from "./error-model-not-found";
 import { errorMultipleSession } from "./error-multiple";
+import { errorNoImageModelSession } from "./error-no-image-model";
 import { errorNoModelRequestedSession } from "./error-no-model-requested";
 import { errorTimeoutSession } from "./error-timeout";
 import { errorUnknownSession } from "./error-unknown";
@@ -64,6 +65,10 @@ const presetSessionsData: {
   {
     messages: errorNoModelRequestedSession,
     name: "Error: No Model Requested",
+  },
+  {
+    messages: errorNoImageModelSession,
+    name: "Error: No Image Model",
   },
   {
     messages: toolsValidSession,
