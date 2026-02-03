@@ -52,6 +52,19 @@ export function getErrorAction(message: SessionMessage.Assistant): ErrorAction {
   }
 
   if (error.kind === "api-call") {
+    // Check for insufficient balance errors, e.g. DeepSeek does this
+    if (error.responseBody) {
+      const result = responseBodySchema.safeParse(error.responseBody);
+      if (
+        result.success &&
+        result.data.error?.message
+          ?.toLowerCase()
+          .includes("insufficient balance")
+      ) {
+        return { type: "stop" };
+      }
+    }
+
     // For Quest provider, check if the response explicitly says not retryable
     if (message.metadata.aiGatewayModel?.params.provider === "quests") {
       if (!error.responseBody) {
