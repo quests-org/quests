@@ -48,7 +48,10 @@ export function ToolPart({
   const isExpandable = isSuccess || isError;
 
   // Use dedicated components for file modification and shell commands
-  if (part.type === "tool-edit_file" || part.type === "tool-write_file") {
+  if (
+    !isError &&
+    (part.type === "tool-edit_file" || part.type === "tool-write_file")
+  ) {
     return <FileModification isLoading={isLoading} part={part} />;
   }
 

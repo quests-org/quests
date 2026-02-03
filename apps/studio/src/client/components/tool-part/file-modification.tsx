@@ -41,7 +41,6 @@ export function FileModification({
   let language: string | undefined;
 
   const hasOutput = part.state === "output-available";
-  const isError = part.state === "output-error";
 
   if (part.input) {
     if (part.type === "tool-edit_file") {
@@ -108,7 +107,7 @@ export function FileModification({
 
   const reasoning = part.input?.explanation;
 
-  if (isError || !hasContent) {
+  if (!hasContent) {
     return (
       <div className="w-full">
         <div className="flex h-6 items-center px-1">
@@ -126,8 +125,8 @@ export function FileModification({
                 : getToolLabel(toolName)
             }
             labelClassName={cn(isLoading && "shiny-text")}
-            reasoning={isLoading && !isError ? reasoning : undefined}
-            value={isError ? `Error: ${part.errorText}` : filename}
+            reasoning={isLoading ? reasoning : undefined}
+            value={filename}
           />
         </div>
       </div>
