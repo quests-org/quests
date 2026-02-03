@@ -7,6 +7,7 @@ import { FileText } from "lucide-react";
 import { guard, sift } from "radashi";
 import { useMemo, useState } from "react";
 
+import { formatNumber } from "../lib/format-number";
 import { formatDuration } from "../lib/format-time";
 import { isValidNumber, safeAdd } from "../lib/usage-utils";
 import { cn } from "../lib/utils";
@@ -356,7 +357,7 @@ const makeStatRow = (label: string, value: false | string | undefined) =>
   value && { label, value };
 
 const formatTokenCount = (count: number) =>
-  guard(() => count > 0 && count.toLocaleString());
+  guard(() => count > 0 && formatNumber(count));
 
 const formatTimeMs = (ms: number | undefined) =>
   guard(() => isValidNumber(ms) && formatDuration(ms));
