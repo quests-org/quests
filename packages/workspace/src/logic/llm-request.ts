@@ -411,15 +411,40 @@ export const llmRequestLogic = fromPromise<
               state: "input-available",
             };
             await scopedStore.savePart(updatedPart);
-          } else {
+          } else if (existingPart) {
+            // Unexpected state, but don't throw - just log
             input.appConfig.workspaceConfig.captureException(
-              new Error(`${existingPart ? "Unexpected" : "Missing"} tool call`),
+              new Error("Unexpected tool call state"),
               {
-                existing_part_state: existingPart?.state,
+                existing_part_state: existingPart.state,
                 scopes: ["workspace", "llm-request"],
                 tool_name: part.toolName,
               },
             );
+          } else {
+            // Part never created - create it now to continue functioning
+            // ai-sdk-ollama@3.3.0 is the only provider that seems to do this
+            const toolNameResult = ToolNameSchema.safeParse(part.toolName);
+            const newPart: SessionMessagePart.ToolPart = {
+              ...(part.providerMetadata !== undefined && {
+                callProviderMetadata: part.providerMetadata,
+              }),
+              input: part.input,
+              metadata: {
+                createdAt: getCurrentDate(),
+                id: StoreId.newPartId(),
+                messageId: assistantMessage.id,
+                sessionId: input.sessionId,
+              },
+              providerExecuted: part.providerExecuted,
+              state: "input-available",
+              toolCallId: StoreId.ToolCallSchema.parse(part.toolCallId),
+              type: toolNameResult.success
+                ? `tool-${toolNameResult.data}`
+                : "tool-unavailable",
+            };
+            toolCalls[part.toolCallId] = newPart;
+            await scopedStore.savePart(newPart);
           }
           captureEvent("llm.tool_called", {
             modelId,
@@ -431,40 +456,52 @@ export const llmRequestLogic = fromPromise<
         case "tool-error": {
           // Still happens even without execute if parameters are invalid
           const toolCall = toolCalls[part.toolCallId];
+          const errorText =
+            typeof part.error === "string"
+              ? part.error
+              : JSON.stringify(part.error);
+          const providerMetadataProps =
+            part.providerMetadata === undefined
+              ? {}
+              : { callProviderMetadata: part.providerMetadata };
+
           if (toolCall) {
-            if (toolCall.state !== "input-streaming") {
-              throw new Error(
-                `Unexpected tool error for tool not in input-streaming state: ${JSON.stringify(part)}`,
+            if (
+              toolCall.state === "input-available" ||
+              toolCall.state === "input-streaming"
+            ) {
+              const updatedPart: SessionMessagePart.ToolPart = {
+                ...toolCall,
+                errorText,
+                input:
+                  toolCall.state === "input-streaming"
+                    ? (undefined as never)
+                    : toolCall.input,
+                metadata: {
+                  ...toolCall.metadata,
+                  endedAt: getCurrentDate(),
+                },
+                ...providerMetadataProps,
+                providerExecuted: part.providerExecuted,
+                rawInput: part.input as never,
+                state: "output-error",
+              };
+              await scopedStore.savePart(updatedPart);
+              continue;
+            } else {
+              // Unexpected state, capture exception
+              input.appConfig.workspaceConfig.captureException(
+                new Error("Unexpected tool error state"),
+                {
+                  scopes: ["workspace", "llm-request"],
+                  tool_name: part.toolName,
+                },
               );
             }
-            const updatedPart: SessionMessagePart.ToolPart = {
-              ...toolCall,
-              errorText:
-                typeof part.error === "string"
-                  ? part.error
-                  : JSON.stringify(part.error),
-              input: undefined as never, // Don't save input because it might be invalid JSON
-              metadata: {
-                ...toolCall.metadata,
-                endedAt: getCurrentDate(),
-              },
-              ...(part.providerMetadata !== undefined && {
-                callProviderMetadata: part.providerMetadata,
-              }),
-              providerExecuted: part.providerExecuted,
-              rawInput: part.input as never,
-              state: "output-error",
-            };
-            await scopedStore.savePart(updatedPart);
           } else {
             await scopedStore.savePart({
-              ...(part.providerMetadata !== undefined && {
-                callProviderMetadata: part.providerMetadata,
-              }),
-              errorText:
-                typeof part.error === "string"
-                  ? part.error
-                  : JSON.stringify(part.error),
+              ...providerMetadataProps,
+              errorText,
               input: part.input as never,
               metadata: {
                 createdAt: getCurrentDate(),
@@ -480,10 +517,7 @@ export const llmRequestLogic = fromPromise<
             });
           }
           captureEvent("llm.error", {
-            error_message:
-              typeof part.error === "string"
-                ? part.error
-                : JSON.stringify(part.error),
+            error_message: errorText,
             error_type: "tool-error",
             modelId,
             providerId,

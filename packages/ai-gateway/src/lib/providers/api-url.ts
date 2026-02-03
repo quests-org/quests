@@ -27,9 +27,6 @@ export function apiURL({
       }
       return `${baseURL}${adjustedPath}`;
     }
-    case "ollama": {
-      return `${baseURL}/api${path}`;
-    }
     case "openai":
     case "openrouter":
     case "quests": {

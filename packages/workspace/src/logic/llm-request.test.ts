@@ -852,12 +852,13 @@ describe("llmRequestLogic", () => {
                 "messageId": "msg_00000000ZE8888888888888888",
                 "sessionId": "ses_00000000018888888888888888",
               },
+              "providerExecuted": undefined,
               "rawInput": {
                 "invalid": "params",
               },
               "state": "output-error",
               "toolCallId": "1",
-              "type": "tool-unavailable",
+              "type": "tool-read_file",
             },
           ],
           "role": "assistant",
@@ -1169,6 +1170,7 @@ describe("llmRequestLogic", () => {
                 "messageId": "msg_00000000ZJ8888888888888888",
                 "sessionId": "ses_00000000018888888888888888",
               },
+              "providerExecuted": undefined,
               "rawInput": {
                 "filePath": "test.txt",
               },
