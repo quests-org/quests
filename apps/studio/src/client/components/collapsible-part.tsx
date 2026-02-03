@@ -98,16 +98,18 @@ export function ToolCallItem({
           {value}
         </span>
       )}
-      {reasoning && (
-        <span className="ml-auto min-w-0 truncate text-muted-foreground/60">
-          {reasoning}
-        </span>
-      )}
-      {isExpanded && (
-        <span className="ml-auto shrink-0 text-accent-foreground/60">
-          <ChevronUp className="size-3" />
-        </span>
-      )}
+      <span className="ml-auto flex min-w-0 items-center gap-2">
+        {reasoning && (
+          <span className="min-w-0 truncate text-muted-foreground/60">
+            {reasoning}
+          </span>
+        )}
+        {isExpanded && (
+          <span className="shrink-0 text-accent-foreground/60">
+            <ChevronUp className="size-3" />
+          </span>
+        )}
+      </span>
     </div>
   );
 }
