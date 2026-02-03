@@ -15,6 +15,7 @@ import { Button } from "./ui/button";
 
 interface FilesGridProps {
   alignEnd?: boolean;
+  compact?: boolean;
   files: ProjectFileViewerFile[];
   initialVisibleCount?: number;
 }
@@ -23,6 +24,7 @@ const DEFAULT_INITIAL_VISIBLE_COUNT = 6;
 
 export function FilesGrid({
   alignEnd = false,
+  compact = false,
   files,
   initialVisibleCount = DEFAULT_INITIAL_VISIBLE_COUNT,
 }: FilesGridProps) {
@@ -45,14 +47,10 @@ export function FilesGrid({
   const hasHiddenFiles = hiddenFiles.length > 0;
   const filesToShow = isExpanded ? sortedFiles : visibleFiles;
 
-  const richPreviewFiles = filesToShow.filter(hasRichPreview).map((file) => {
-    return {
-      ...file,
-      shouldSpanTwo: isReadableText(file),
-    };
-  });
-
+  const richPreviewFiles = filesToShow.filter(hasRichPreview);
   const otherFiles = filesToShow.filter((file) => !hasRichPreview(file));
+
+  const isSingleRichFile = !compact && richPreviewFiles.length === 1;
 
   return (
     <div className="flex flex-col gap-2">
@@ -61,24 +59,32 @@ export function FilesGrid({
           <div
             className={cn("flex flex-wrap gap-2", alignEnd && "justify-end")}
           >
-            {richPreviewFiles.map((file) => (
-              <div
-                className={cn(
-                  "w-full shrink-0 grow-0 @md:w-[calc((100%/2)-(0.5rem/2))]",
-                  file.shouldSpanTwo
-                    ? "@2xl:w-[calc((100%/3*2)-(0.5rem/3))]"
-                    : "@2xl:w-[calc((100%/3)-(0.5rem*2/3))]",
-                )}
-                key={file.filePath}
-              >
-                <FilePreviewCard
-                  file={file}
-                  onClick={() => {
-                    handleFileClick(file);
-                  }}
-                />
-              </div>
-            ))}
+            {richPreviewFiles.map((file) => {
+              const shouldSpanTwoThirds =
+                !compact && (isSingleRichFile || isReadableText(file));
+
+              return (
+                <div
+                  className={cn(
+                    "w-full shrink-0 grow-0",
+                    isSingleRichFile
+                      ? "@md:w-[calc((100%/3*2)-(0.5rem/3))]"
+                      : "@md:w-[calc((100%/2)-(0.5rem/2))]",
+                    shouldSpanTwoThirds
+                      ? "@2xl:w-[calc((100%/3*2)-(0.5rem/3))]"
+                      : "@2xl:w-[calc((100%/3)-(0.5rem*2/3))]",
+                  )}
+                  key={file.filePath}
+                >
+                  <FilePreviewCard
+                    file={file}
+                    onClick={() => {
+                      handleFileClick(file);
+                    }}
+                  />
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
