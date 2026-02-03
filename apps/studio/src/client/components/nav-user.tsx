@@ -56,6 +56,8 @@ export function NavUser() {
     void addTab({ to: "/subscribe" });
   };
 
+  const isOutOfCredits = subscription && !subscription.hasEnoughCredits;
+
   if (!user) {
     return (
       <SidebarMenu>
@@ -104,12 +106,23 @@ export function NavUser() {
                 </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm/tight">
-                <div className="flex items-center gap-2">
+                <div className="flex min-w-0 items-center gap-1.5">
                   <span className="truncate font-medium">{user.name}</span>
                   {subscription && (
-                    <Badge className={badgeClassName} variant={badgeVariant}>
-                      {planName ?? "Free"}
-                    </Badge>
+                    <>
+                      {isOutOfCredits ? (
+                        <Badge className={badgeClassName} variant="warning">
+                          No credits
+                        </Badge>
+                      ) : (
+                        <Badge
+                          className={badgeClassName}
+                          variant={badgeVariant}
+                        >
+                          {planName ?? "Free"}
+                        </Badge>
+                      )}
+                    </>
                   )}
                 </div>
                 <span className="truncate text-xs">{user.email}</span>
@@ -145,18 +158,23 @@ export function NavUser() {
               </div>
             </DropdownMenuLabel>
             {subscription && isLowOnCredits(subscription) && (
-              <div className="px-2 py-1.5">
-                <Button
-                  className="h-7 w-full text-xs font-semibold"
-                  onClick={onUpgrade}
-                  size="sm"
-                  variant="brand"
-                >
-                  Get more credits
-                </Button>
-              </div>
+              <>
+                <div className="px-2 py-1.5">
+                  <Button
+                    className="h-7 w-full text-xs font-semibold"
+                    onClick={onUpgrade}
+                    size="sm"
+                    variant="brand"
+                  >
+                    Get more credits
+                  </Button>
+                </div>
+                <DropdownMenuSeparator />
+              </>
             )}
-            <DropdownMenuSeparator />
+            {subscription && !isLowOnCredits(subscription) && (
+              <DropdownMenuSeparator />
+            )}
 
             <DropdownMenuGroup>
               <DropdownMenuItem

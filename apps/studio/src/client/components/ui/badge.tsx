@@ -22,6 +22,8 @@ const badgeVariants = tv({
         "text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
       secondary:
         "border-transparent bg-secondary text-secondary-foreground [a&]:hover:bg-secondary/90",
+      warning:
+        "border border-warning-foreground text-warning-foreground dark:border-transparent dark:bg-warning [a&]:hover:bg-warning/90",
     },
   },
 });
