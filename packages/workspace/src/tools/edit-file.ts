@@ -5,6 +5,7 @@
 import { createTwoFilesPatch } from "diff";
 import ms from "ms";
 import { err, ok } from "neverthrow";
+import fs from "node:fs/promises";
 import { dedent, sift } from "radashi";
 import { z } from "zod";
 
@@ -689,7 +690,6 @@ export const EditFile = createTool({
     }
 
     // Check file size
-    const fs = await import("node:fs/promises");
     const stats = await fs.stat(absolutePath);
     if (stats.size > MAX_FILE_SIZE) {
       return executeError(
