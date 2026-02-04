@@ -1,4 +1,3 @@
-import cmdShim from "@zkochan/cmd-shim";
 import { app } from "electron";
 import fs from "node:fs/promises";
 import path from "node:path";
@@ -154,6 +153,7 @@ async function linkDirect(
   const isWindows = process.platform === "win32";
 
   if (isWindows) {
+    const { default: cmdShim } = await import("@zkochan/cmd-shim");
     const outputPath = path.join(binDir, name);
     await cmdShim(targetPath, outputPath, {
       createCmdFile: true,
