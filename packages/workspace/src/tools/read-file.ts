@@ -14,6 +14,7 @@ import { ensureRelativePath } from "../lib/ensure-relative-path";
 import { executeError } from "../lib/execute-error";
 import { formatBytes } from "../lib/format-bytes";
 import { getMimeType } from "../lib/get-mime-type";
+import { normalizePath } from "../lib/normalize-path";
 import { pathExists } from "../lib/path-exists";
 import { RelativePathSchema } from "../schemas/paths";
 import { BaseInputSchema } from "./base";
@@ -143,7 +144,9 @@ export const ReadFile = createTool({
               entryWithoutExt.toLowerCase() === baseWithoutExt.toLowerCase()
             );
           })
-          .map((entry) => path.join(path.dirname(fixedPath), entry))
+          .map((entry) =>
+            normalizePath(path.join(path.dirname(fixedPath), entry)),
+          )
           .slice(0, 3);
 
         return ok({

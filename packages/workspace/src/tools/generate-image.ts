@@ -11,6 +11,7 @@ import { absolutePathJoin } from "../lib/absolute-path-join";
 import { ensureRelativePath } from "../lib/ensure-relative-path";
 import { executeError } from "../lib/execute-error";
 import { generateImages } from "../lib/generate-images";
+import { normalizePath } from "../lib/normalize-path";
 import { writeFileWithDir } from "../lib/write-file-with-dir";
 import { getWorkspaceServerURL } from "../logic/server/url";
 import { RelativePathSchema } from "../schemas/paths";
@@ -51,7 +52,9 @@ export const GenerateImage = createTool({
 
     // Strip extension if mistakenly provided
     const parsedPath = path.parse(fixedPath);
-    const pathWithoutExt = path.join(parsedPath.dir, parsedPath.name);
+    const pathWithoutExt = normalizePath(
+      path.join(parsedPath.dir, parsedPath.name),
+    );
 
     const providerConfigs = appConfig.workspaceConfig.getAIProviderConfigs();
     const preferredProviderConfig = providerConfigs.find(

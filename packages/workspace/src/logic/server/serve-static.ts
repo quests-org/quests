@@ -9,6 +9,7 @@ import { Readable } from "node:stream";
 import { getMimeType } from "../../lib/get-mime-type";
 import { git } from "../../lib/git";
 import { GitCommands } from "../../lib/git/commands";
+import { normalizePath } from "../../lib/normalize-path";
 import { type AbsolutePath } from "../../schemas/paths";
 
 interface ServeStaticFileOptions {
@@ -137,9 +138,9 @@ export async function serveStaticFile<E extends Env = Env>(
     if (!fileBuffer) {
       // Try as directory with index file
       const indexFile = options.index ?? "index.html";
-      const indexRelativePath = path
-        .join(relativePath, indexFile)
-        .replaceAll("\\", "/");
+      const indexRelativePath = normalizePath(
+        path.join(relativePath, indexFile),
+      );
       fileBuffer = await getFileBuffer(
         path.join(filePath, indexFile),
         options.gitRef,
@@ -160,7 +161,7 @@ export async function serveStaticFile<E extends Env = Env>(
     if (stats?.isDirectory()) {
       const indexFile = options.index ?? "index.html";
       filePath = path.join(filePath, indexFile);
-      relativePath = path.join(relativePath, indexFile).replaceAll("\\", "/");
+      relativePath = normalizePath(path.join(relativePath, indexFile));
       stats = getStats(filePath);
     }
 
