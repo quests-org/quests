@@ -13,7 +13,11 @@ import { errorTimeoutSession } from "./error-timeout";
 import { errorUnknownSession } from "./error-unknown";
 import { expandableUserMessageSession } from "./expandable-user-message";
 import { multiTurnSession } from "./multi-turn";
+import { toolsInputAvailableSession } from "./tools-input-available";
+import { toolsInputStreamingSession } from "./tools-input-streaming";
 import { toolsInvalidSession } from "./tools-invalid";
+import { toolsMultipleStreamingSession } from "./tools-multiple-streaming";
+import { toolsOutputAvailableSession } from "./tools-output-available";
 import { toolsValidSession } from "./tools-valid";
 
 interface PresetSession {
@@ -85,6 +89,22 @@ const presetSessionsData: {
   {
     messages: expandableUserMessageSession,
     name: "Expandable User Message",
+  },
+  {
+    messages: toolsInputAvailableSession,
+    name: "Tools: Input Available",
+  },
+  {
+    messages: toolsInputStreamingSession,
+    name: "Tools: Input Streaming",
+  },
+  {
+    messages: toolsOutputAvailableSession,
+    name: "Tools: Output Available",
+  },
+  {
+    messages: toolsMultipleStreamingSession,
+    name: "Tools: Multiple Streaming",
   },
 ];
 
