@@ -324,7 +324,9 @@ export function FileViewer({
             src={url}
             title={filename}
           />
-        ) : fileType === "code" || fileType === "text" ? (
+        ) : fileType === "code" ||
+          fileType === "text" ||
+          (fileType === "html" && viewMode === "raw") ? (
           <TextView filename={filename} url={url}>
             {(text) => (
               <pre className="p-4 text-sm text-foreground">{text}</pre>
