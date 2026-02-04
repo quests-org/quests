@@ -9,6 +9,13 @@ import {
   StoreId,
 } from "@quests/workspace/client";
 
+interface PresetSessionData {
+  messages: SessionMessage.WithParts[];
+  name: string;
+}
+
+const registeredSessions: PresetSessionData[] = [];
+
 export class SessionBuilder {
   private baseTime: Date;
   private sessionId: StoreId.Session;
@@ -156,4 +163,12 @@ export function createErrorMessage({
     statusCode,
     url: "https://api.quests.ai/v1/messages",
   };
+}
+
+export function getRegisteredSessions(): PresetSessionData[] {
+  return registeredSessions;
+}
+
+export function registerSession(data: PresetSessionData): void {
+  registeredSessions.push(data);
 }

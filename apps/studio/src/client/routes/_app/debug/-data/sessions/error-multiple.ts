@@ -1,6 +1,6 @@
-import { type SessionMessage, StoreId } from "@quests/workspace/client";
+import { StoreId } from "@quests/workspace/client";
 
-import { SessionBuilder } from "./helpers";
+import { registerSession, SessionBuilder } from "./helpers";
 
 const builder = new SessionBuilder();
 const sessionId = builder.getSessionId();
@@ -12,7 +12,8 @@ const assistantMessage2Id = StoreId.newMessageId();
 const userMessage3Id = StoreId.newMessageId();
 const assistantMessage3Id = StoreId.newMessageId();
 
-export const errorMultipleSession: SessionMessage.WithParts[] = [
+registerSession({
+  messages: [
   {
     id: userMessage1Id,
     metadata: {
@@ -94,4 +95,6 @@ export const errorMultipleSession: SessionMessage.WithParts[] = [
     parts: [builder.textPart("Sure! 2 + 2 equals", assistantMessage3Id)],
     role: "assistant",
   },
-];
+  ],
+  name: "Error: Multiple Errors",
+});

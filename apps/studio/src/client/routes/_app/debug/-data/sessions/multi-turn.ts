@@ -1,9 +1,12 @@
-import { type SessionMessage, StoreId } from "@quests/workspace/client";
+import { StoreId } from "@quests/workspace/client";
+
+import { registerSession } from "./helpers";
 
 const sessionId = StoreId.newSessionId();
 const now = new Date();
 
-export const multiTurnSession: SessionMessage.WithParts[] = [
+registerSession({
+  messages: [
   {
     id: StoreId.newMessageId(),
     metadata: {
@@ -139,4 +142,6 @@ export const multiTurnSession: SessionMessage.WithParts[] = [
     ],
     role: "assistant",
   },
-];
+  ],
+  name: "Multi-turn Conversation",
+});

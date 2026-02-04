@@ -1,6 +1,6 @@
-import { type SessionMessage, StoreId } from "@quests/workspace/client";
+import { StoreId } from "@quests/workspace/client";
 
-import { SessionBuilder } from "./helpers";
+import { registerSession, SessionBuilder } from "./helpers";
 
 const builder = new SessionBuilder();
 const sessionId = builder.getSessionId();
@@ -8,7 +8,8 @@ const sessionId = builder.getSessionId();
 const userMessageId = StoreId.newMessageId();
 const assistantMessageId = StoreId.newMessageId();
 
-export const toolsValidSession: SessionMessage.WithParts[] = [
+registerSession({
+  messages: [
   {
     id: userMessageId,
     metadata: {
@@ -181,4 +182,6 @@ export const toolsValidSession: SessionMessage.WithParts[] = [
     ],
     role: "assistant",
   },
-];
+  ],
+  name: "Tools: Valid",
+});

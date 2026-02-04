@@ -1,6 +1,4 @@
-import { type SessionMessage } from "@quests/workspace/client";
-
-import { SessionBuilder } from "./helpers";
+import { registerSession, SessionBuilder } from "./helpers";
 
 const builder = new SessionBuilder();
 
@@ -28,9 +26,7 @@ const assistantMessage2 = builder.assistantMessage(
   "I'll help you configure all of these build system requirements. Let me start by setting up the TypeScript configuration.",
 );
 
-export const expandableUserMessageSession: SessionMessage.WithParts[] = [
-  userMessage,
-  assistantMessage,
-  userMessage2,
-  assistantMessage2,
-];
+registerSession({
+  messages: [userMessage, assistantMessage, userMessage2, assistantMessage2],
+  name: "Expandable User Message",
+});

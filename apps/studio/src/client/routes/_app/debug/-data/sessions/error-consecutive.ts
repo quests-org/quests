@@ -1,6 +1,6 @@
-import { type SessionMessage, StoreId } from "@quests/workspace/client";
+import { StoreId } from "@quests/workspace/client";
 
-import { SessionBuilder } from "./helpers";
+import { registerSession, SessionBuilder } from "./helpers";
 
 const builder = new SessionBuilder();
 const sessionId = builder.getSessionId();
@@ -10,7 +10,8 @@ const assistantMessage1Id = StoreId.newMessageId();
 const assistantMessage2Id = StoreId.newMessageId();
 const assistantMessage3Id = StoreId.newMessageId();
 
-export const errorConsecutiveSession: SessionMessage.WithParts[] = [
+registerSession({
+  messages: [
   {
     id: userMessageId,
     metadata: {
@@ -78,4 +79,6 @@ export const errorConsecutiveSession: SessionMessage.WithParts[] = [
     parts: [],
     role: "assistant",
   },
-];
+  ],
+  name: "Error: Consecutive Errors",
+});
