@@ -7,6 +7,8 @@ import { TypedError } from "./errors";
 import { fetchModels } from "./models";
 import { getProviderMetadata } from "./providers/metadata";
 
+const capturedErrors = new Set<string>();
+
 export async function fetchModelResultsForProviders(
   configs: AIGatewayProviderConfig.Type[],
   { captureException }: { captureException: CaptureExceptionFunction },
@@ -30,7 +32,11 @@ export function fetchModelsForProvider(
       });
     },
   ).mapError((error) => {
-    captureException(error);
+    const captureKey = getCaptureKey(config, error);
+    if (!capturedErrors.has(captureKey)) {
+      capturedErrors.add(captureKey);
+      captureException(error);
+    }
     const metadata = getProviderMetadata(config.type);
     return {
       config: {
@@ -54,4 +60,8 @@ export async function fetchModelsForProviders(
   );
 
   return modelsByProvider.flatMap((models) => models.getOrDefault([]));
+}
+
+function getCaptureKey(config: AIGatewayProviderConfig.Type, error: Error) {
+  return `${config.type}:${config.id}:${error.message}`;
 }
