@@ -59,7 +59,7 @@ function RouteComponent() {
 
   return (
     <div
-      className="relative flex h-full min-h-dvh flex-col bg-background"
+      className="relative flex h-full min-h-dvh flex-col"
       data-testid="app-page"
     >
       <Outlet />

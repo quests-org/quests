@@ -4,7 +4,8 @@ import { nativeTheme } from "electron";
 import { getPreferencesStore } from "../stores/preferences";
 
 export function getBackgroundColor() {
-  return shouldUseDarkMode() ? "#181818" : "#ffffff";
+  // Must be manually synced with app.css var(--background)
+  return shouldUseDarkMode() ? "#18191b" : "#f9f9fb";
 }
 
 export function getMainWindowBackgroundColor() {
