@@ -12,7 +12,6 @@ import { cn } from "../../lib/utils";
 import {
   CollapsiblePartMainContent,
   CollapsiblePartTrigger,
-  ToolCallItem,
 } from "../collapsible-part";
 import { ReasoningMessage } from "../reasoning-message";
 import { ToolIcon } from "../tool-icon";
@@ -23,6 +22,7 @@ import {
 } from "../ui/collapsible";
 import { ToolPartExpanded } from "./expanded";
 import { FileModification } from "./file-modification";
+import { ToolPartListItemCompact } from "./list-item-compact";
 import { ShellCommandCard } from "./shell-command-card";
 
 export function ToolPart({
@@ -122,7 +122,7 @@ export function ToolPart({
   }
 
   const mainContent = (
-    <ToolCallItem
+    <ToolPartListItemCompact
       icon={
         isLoading ? (
           <Loader2Icon className="size-3 animate-spin" />

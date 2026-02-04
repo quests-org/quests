@@ -5,8 +5,8 @@ import { useState } from "react";
 import {
   CollapsiblePartMainContent,
   CollapsiblePartTrigger,
-  ToolCallItem,
 } from "./collapsible-part";
+import { ToolPartListItemCompact } from "./tool-part/list-item-compact";
 import {
   Collapsible,
   CollapsibleContent,
@@ -21,7 +21,7 @@ export function UnknownPart({ part }: UnknownPartProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const mainContent = (
-    <ToolCallItem
+    <ToolPartListItemCompact
       icon={<HelpCircle className="size-3" />}
       isExpanded={isExpanded}
       label="Unknown part"

@@ -14,8 +14,8 @@ import { rpcClient } from "../rpc/client";
 import {
   CollapsiblePartMainContent,
   CollapsiblePartTrigger,
-  ToolCallItem,
 } from "./collapsible-part";
+import { ToolPartListItemCompact } from "./tool-part/list-item-compact";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { Button } from "./ui/button";
 import {
@@ -140,7 +140,7 @@ export function MessageError({
   };
 
   const mainContent = (
-    <ToolCallItem isExpanded={isExpanded}>
+    <ToolPartListItemCompact isExpanded={isExpanded}>
       <span className="shrink-0 text-warning-foreground/80">
         <AlertTriangle className="size-3" />
       </span>
@@ -151,7 +151,7 @@ export function MessageError({
       <span className="shrink-0 text-warning-foreground/60">
         {getErrorTypeLabel()}
       </span>
-    </ToolCallItem>
+    </ToolPartListItemCompact>
   );
 
   return (

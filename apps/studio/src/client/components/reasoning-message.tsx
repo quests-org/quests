@@ -4,8 +4,9 @@ import { Brain } from "lucide-react";
 import { memo, useEffect, useRef, useState } from "react";
 import { useStickToBottom } from "use-stick-to-bottom";
 
-import { CollapsiblePartTrigger, ToolCallItem } from "./collapsible-part";
+import { CollapsiblePartTrigger } from "./collapsible-part";
 import { SessionMarkdown } from "./session-markdown";
+import { ToolPartListItemCompact } from "./tool-part/list-item-compact";
 import {
   Collapsible,
   CollapsibleContent,
@@ -77,7 +78,7 @@ export const ReasoningMessage = memo(function ReasoningMessage({
   const displayText = text.replaceAll("[REDACTED]", "");
 
   const headerContent = (
-    <ToolCallItem
+    <ToolPartListItemCompact
       icon={hideIcon ? undefined : <Brain className="size-3" />}
       isExpanded={!isLoading && isExpanded}
       label={

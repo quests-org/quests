@@ -12,11 +12,11 @@ import { filenameFromFilePath } from "../../lib/file-utils";
 import { getToolLabel, getToolStreamingLabel } from "../../lib/tool-display";
 import { cn } from "../../lib/utils";
 import { rpcClient } from "../../rpc/client";
-import { ToolCallItem } from "../collapsible-part";
 import { FileIcon } from "../file-icon";
 import { useTheme } from "../theme-provider";
 import { ToolIcon } from "../tool-icon";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import { ToolPartListItemCompact } from "./list-item-compact";
 import { ToolCard, ToolCardHeader } from "./tool-card";
 import { VirtualizedScrollingText } from "./virtualized-scrolling-text";
 
@@ -111,7 +111,7 @@ export function FileModification({
     return (
       <div className="w-full">
         <div className="flex h-6 items-center px-1">
-          <ToolCallItem
+          <ToolPartListItemCompact
             icon={
               isLoading ? (
                 <Loader2Icon className="size-3 animate-spin" />
