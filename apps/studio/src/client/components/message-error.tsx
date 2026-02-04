@@ -27,25 +27,27 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { UpgradeSubscriptionAlert } from "./upgrade-subscription-alert";
 
 interface MessageErrorProps {
-  defaultExpanded?: boolean;
+  isAgentRunning: boolean;
+  isLastMessage: boolean;
   message: SessionMessage.Assistant;
   onContinue: () => void;
   onModelChange: (modelURI: AIGatewayModelURI.Type) => void;
   onRetry: (prompt: string) => void;
   onStartNewChat?: () => void;
-  showActions?: boolean;
 }
 
 export function MessageError({
-  defaultExpanded = false,
+  isAgentRunning,
+  isLastMessage,
   message,
   onContinue,
   onModelChange,
   onRetry,
   onStartNewChat,
-  showActions = false,
 }: MessageErrorProps) {
   const error = message.metadata.error;
+  const showActions = isLastMessage && !isAgentRunning;
+  const defaultExpanded = isLastMessage && !isAgentRunning;
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
   const { data: modelsData } = useQuery(
     rpcClient.gateway.models.live.list.experimental_liveOptions(),
@@ -60,47 +62,51 @@ export function MessageError({
     return null;
   }
 
+  // Aborted errors mostly happen when user stops the agent, so we don't want to show the error
+  if (error.kind === "aborted") {
+    return null;
+  }
+
   const questsError = parseQuestsApiError(message);
 
-  if (showActions && questsError) {
-    if (questsError.code === "insufficient-credits") {
-      return <UpgradeSubscriptionAlert onContinue={onContinue} />;
+  if (questsError && questsError.code === "insufficient-credits") {
+    // Don't show insufficient credits error if it's not the last message (no longer relevant)
+    if (!isLastMessage) {
+      return null;
     }
+    return <UpgradeSubscriptionAlert onContinue={onContinue} />;
+  }
 
-    if (requiresAutoModelRecovery(message)) {
-      const autoModel = models?.find(
-        (m) => m.providerId === QUESTS_AUTO_MODEL_PROVIDER_ID,
-      );
+  if (showActions && questsError && requiresAutoModelRecovery(message)) {
+    const autoModel = models?.find(
+      (m) => m.providerId === QUESTS_AUTO_MODEL_PROVIDER_ID,
+    );
 
-      return (
-        <Alert>
-          <AlertTitle>Model unavailable</AlertTitle>
-          <AlertDescription className="flex flex-col gap-3">
-            <span>{questsError.message || error.message}</span>
-            {autoModel && (
-              <div className="flex">
-                <Button
-                  onClick={() => {
-                    onModelChange(autoModel.uri);
-                    toast.success("Switched to Auto model");
-                  }}
-                  size="sm"
-                >
-                  Switch to Auto Mode
-                </Button>
-              </div>
-            )}
-          </AlertDescription>
-        </Alert>
-      );
-    }
+    return (
+      <Alert>
+        <AlertTitle>Model unavailable</AlertTitle>
+        <AlertDescription className="flex flex-col gap-3">
+          <span>{questsError.message || error.message}</span>
+          {autoModel && (
+            <div className="flex">
+              <Button
+                onClick={() => {
+                  onModelChange(autoModel.uri);
+                  toast.success("Switched to Auto model");
+                }}
+                size="sm"
+              >
+                Switch to Auto Mode
+              </Button>
+            </div>
+          )}
+        </AlertDescription>
+      </Alert>
+    );
   }
 
   const getErrorTitle = () => {
     switch (error.kind) {
-      case "aborted": {
-        return "Aborted";
-      }
       case "api-call":
       case "api-key":
       case "invalid-tool-input":
@@ -115,9 +121,6 @@ export function MessageError({
 
   const getErrorTypeLabel = () => {
     switch (error.kind) {
-      case "aborted": {
-        return "Aborted";
-      }
       case "api-call": {
         return "API Call Error";
       }

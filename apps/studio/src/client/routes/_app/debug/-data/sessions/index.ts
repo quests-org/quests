@@ -3,6 +3,7 @@ import { type SessionMessage } from "@quests/workspace/client";
 import { errorApiSession } from "./error-api";
 import { errorApiKeySession } from "./error-api-key";
 import { errorConsecutiveSession } from "./error-consecutive";
+import { errorHidingBehaviorsSession } from "./error-hiding-behaviors";
 import { errorInsufficientCreditsSession } from "./error-insufficient-credits";
 import { errorModelNotAllowedSession } from "./error-model-not-allowed";
 import { errorModelNotFoundSession } from "./error-model-not-found";
@@ -53,6 +54,10 @@ const presetSessionsData: {
   {
     messages: errorConsecutiveSession,
     name: "Error: Consecutive Errors",
+  },
+  {
+    messages: errorHidingBehaviorsSession,
+    name: "Error: Hiding Behaviors",
   },
   {
     messages: errorInsufficientCreditsSession,
