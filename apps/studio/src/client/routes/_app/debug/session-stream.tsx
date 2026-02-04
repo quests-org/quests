@@ -20,7 +20,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
-import { presetSessions } from "./-data/sessions";
+import { presetSessions } from "./-sessions";
 
 const searchSchema = z.object({
   session: z.string().optional(),

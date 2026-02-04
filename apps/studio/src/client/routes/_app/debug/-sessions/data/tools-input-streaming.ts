@@ -1,6 +1,6 @@
 import { StoreId } from "@quests/workspace/client";
 
-import { registerSession, SessionBuilder } from "./helpers";
+import { registerSession, SessionBuilder } from "../helpers";
 
 const builder = new SessionBuilder();
 const sessionId = builder.getSessionId();
@@ -19,21 +19,17 @@ registerSession({
         sessionId,
       },
       parts: [
-        builder.textPart("I'll create that file now.", assistantMessageId),
-        builder.toolPart(assistantMessageId, "output-available", {
+        builder.toolPart(assistantMessageId, "input-streaming", {
           input: {
-            content: "export const config = { api: 'https://example.com' };",
-            explanation: "Create configuration file",
-            filePath: "./src/config.ts",
+            explanation: "Generate a sunset image",
+            filePath: "./images/sunset.png",
+            prompt: "A beautiful sunset over mountains",
           },
-          output: {
-            filePath: "./src/config.ts",
-          },
-          type: "tool-write_file",
+          type: "tool-generate_image",
         }),
       ],
       role: "assistant",
     },
   ],
-  name: "Tools: Output Available",
+  name: "Tools: Input Streaming",
 });

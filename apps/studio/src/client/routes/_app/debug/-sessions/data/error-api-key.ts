@@ -1,6 +1,6 @@
 import { StoreId } from "@quests/workspace/client";
 
-import { registerSession, SessionBuilder } from "./helpers";
+import { registerSession, SessionBuilder } from "../helpers";
 
 const builder = new SessionBuilder();
 const sessionId = builder.getSessionId();
@@ -17,7 +17,7 @@ registerSession({
         sessionId,
       },
       parts: [
-        builder.textPart("What's the weather like today?", userMessageId),
+        builder.textPart("Generate a random number for me", userMessageId),
       ],
       role: "user",
     },
@@ -26,20 +26,18 @@ registerSession({
       metadata: {
         createdAt: builder.nextTime(),
         error: {
-          kind: "unknown",
+          kind: "api-key",
           message:
-            "An unexpected error occurred while processing your request. This might be a temporary issue.",
+            "Invalid API key provided. Please check your API key configuration.",
         },
         finishReason: "error",
         modelId: "claude-sonnet-4.5",
         providerId: "anthropic",
         sessionId,
       },
-      parts: [
-        builder.textPart("Let me check the weather for", assistantMessageId),
-      ],
+      parts: [],
       role: "assistant",
     },
   ],
-  name: "Error: Unknown",
+  name: "Error: API Key",
 });

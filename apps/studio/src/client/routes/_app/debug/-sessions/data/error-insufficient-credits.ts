@@ -1,6 +1,11 @@
 import { StoreId } from "@quests/workspace/client";
 
-import { registerSession, SessionBuilder } from "./helpers";
+import {
+  createDefaultAIGatewayModel,
+  createErrorMessage,
+  registerSession,
+  SessionBuilder,
+} from "../helpers";
 
 const builder = new SessionBuilder();
 const sessionId = builder.getSessionId();
@@ -16,28 +21,29 @@ registerSession({
         createdAt: builder.nextTime(),
         sessionId,
       },
-      parts: [
-        builder.textPart("Generate a random number for me", userMessageId),
-      ],
+      parts: [builder.textPart("Can you help me with this?", userMessageId)],
       role: "user",
     },
     {
       id: assistantMessageId,
       metadata: {
+        aiGatewayModel: createDefaultAIGatewayModel(),
         createdAt: builder.nextTime(),
-        error: {
-          kind: "api-key",
+        error: createErrorMessage({
+          code: "insufficient-credits",
           message:
-            "Invalid API key provided. Please check your API key configuration.",
-        },
+            "Your account has insufficient credits to complete this request",
+          name: "InsufficientCreditsError",
+          statusCode: 402,
+        }),
         finishReason: "error",
-        modelId: "claude-sonnet-4.5",
-        providerId: "anthropic",
+        modelId: "claude-3-5-sonnet-4.5",
+        providerId: "quests",
         sessionId,
       },
       parts: [],
       role: "assistant",
     },
   ],
-  name: "Error: API Key",
+  name: "Error: Insufficient Credits",
 });

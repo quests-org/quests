@@ -1,4 +1,4 @@
-import { registerSession, SessionBuilder } from "./helpers";
+import { registerSession, SessionBuilder } from "../helpers";
 
 const builder = new SessionBuilder();
 

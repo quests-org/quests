@@ -5,7 +5,7 @@ import {
   createErrorMessage,
   registerSession,
   SessionBuilder,
-} from "./helpers";
+} from "../helpers";
 
 const builder = new SessionBuilder();
 const sessionId = builder.getSessionId();

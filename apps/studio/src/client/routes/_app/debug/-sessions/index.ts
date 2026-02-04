@@ -2,7 +2,7 @@ import { type SessionMessage } from "@quests/workspace/client";
 
 import { getRegisteredSessions } from "./helpers";
 
-import.meta.glob(["./*.ts", "!./index.ts", "!./helpers.ts"], { eager: true });
+import.meta.glob("./data/*.ts", { eager: true });
 
 interface PresetSession {
   id: string;

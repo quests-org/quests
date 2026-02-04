@@ -5,7 +5,7 @@ import {
   createErrorMessage,
   registerSession,
   SessionBuilder,
-} from "./helpers";
+} from "../helpers";
 
 const builder = new SessionBuilder();
 const sessionId = builder.getSessionId();
@@ -30,10 +30,10 @@ registerSession({
         aiGatewayModel: createDefaultAIGatewayModel(),
         createdAt: builder.nextTime(),
         error: createErrorMessage({
-          code: "model-not-allowed",
-          message: "The requested model is not allowed for your account",
-          name: "ModelNotAllowedError",
-          statusCode: 403,
+          code: "no-model-requested",
+          message: "No model was specified in the request",
+          name: "NoModelRequestedError",
+          statusCode: 400,
         }),
         finishReason: "error",
         modelId: "claude-3-5-sonnet-4.5",
@@ -44,5 +44,5 @@ registerSession({
       role: "assistant",
     },
   ],
-  name: "Error: Model Not Allowed",
+  name: "Error: No Model Requested",
 });

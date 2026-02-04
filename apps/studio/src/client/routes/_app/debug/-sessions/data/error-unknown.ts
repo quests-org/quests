@@ -1,11 +1,6 @@
 import { StoreId } from "@quests/workspace/client";
 
-import {
-  createDefaultAIGatewayModel,
-  createErrorMessage,
-  registerSession,
-  SessionBuilder,
-} from "./helpers";
+import { registerSession, SessionBuilder } from "../helpers";
 
 const builder = new SessionBuilder();
 const sessionId = builder.getSessionId();
@@ -21,29 +16,30 @@ registerSession({
         createdAt: builder.nextTime(),
         sessionId,
       },
-      parts: [builder.textPart("Can you help me with this?", userMessageId)],
+      parts: [
+        builder.textPart("What's the weather like today?", userMessageId),
+      ],
       role: "user",
     },
     {
       id: assistantMessageId,
       metadata: {
-        aiGatewayModel: createDefaultAIGatewayModel(),
         createdAt: builder.nextTime(),
-        error: createErrorMessage({
-          code: "insufficient-credits",
+        error: {
+          kind: "unknown",
           message:
-            "Your account has insufficient credits to complete this request",
-          name: "InsufficientCreditsError",
-          statusCode: 402,
-        }),
+            "An unexpected error occurred while processing your request. This might be a temporary issue.",
+        },
         finishReason: "error",
-        modelId: "claude-3-5-sonnet-4.5",
-        providerId: "quests",
+        modelId: "claude-sonnet-4.5",
+        providerId: "anthropic",
         sessionId,
       },
-      parts: [],
+      parts: [
+        builder.textPart("Let me check the weather for", assistantMessageId),
+      ],
       role: "assistant",
     },
   ],
-  name: "Error: Insufficient Credits",
+  name: "Error: Unknown",
 });

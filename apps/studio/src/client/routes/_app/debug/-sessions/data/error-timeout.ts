@@ -1,6 +1,6 @@
 import { StoreId } from "@quests/workspace/client";
 
-import { registerSession, SessionBuilder } from "./helpers";
+import { registerSession, SessionBuilder } from "../helpers";
 
 const builder = new SessionBuilder();
 const sessionId = builder.getSessionId();
@@ -16,7 +16,12 @@ registerSession({
         createdAt: builder.nextTime(),
         sessionId,
       },
-      parts: [builder.textPart("Can you analyze this data?", userMessageId)],
+      parts: [
+        builder.textPart(
+          "Can you help me debug this complex issue?",
+          userMessageId,
+        ),
+      ],
       role: "user",
     },
     {
@@ -25,9 +30,9 @@ registerSession({
         createdAt: builder.nextTime(),
         error: {
           kind: "api-call",
-          message: "Rate limit exceeded. Please try again later.",
-          name: "RateLimitError",
-          statusCode: 429,
+          message: "Request timeout - the server took too long to respond",
+          name: "TimeoutError",
+          statusCode: 504,
           url: "https://api.anthropic.com/v1/messages",
         },
         finishReason: "error",
@@ -37,12 +42,12 @@ registerSession({
       },
       parts: [
         builder.textPart(
-          "I'll help you analyze the data. Let me start by",
+          "I'll help you debug this. Let me analyze the",
           assistantMessageId,
         ),
       ],
       role: "assistant",
     },
   ],
-  name: "Error: API Call",
+  name: "Error: Timeout",
 });
