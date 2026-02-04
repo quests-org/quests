@@ -78,18 +78,6 @@ export function SessionStream({
     return lastMessage?.id;
   }, [regularMessages]);
 
-  const lastPartId = useMemo((): StoreId.Part | undefined => {
-    if (regularMessages.length === 0) {
-      return;
-    }
-    const lastMessage = regularMessages.at(-1);
-    if (!lastMessage) {
-      return;
-    }
-    const lastPart = lastMessage.parts.at(-1);
-    return lastPart?.metadata.id;
-  }, [regularMessages]);
-
   const renderChatPart = useCallback(
     (
       part: SessionMessagePart.Type,
@@ -169,7 +157,7 @@ export function SessionStream({
           <ToolPart
             isLoading={
               isAgentRunning &&
-              lastPartId === part.metadata.id &&
+              lastMessageId === message.id &&
               (part.state === "input-streaming" ||
                 part.state === "input-available")
             }
@@ -188,7 +176,7 @@ export function SessionStream({
             endedAt={part.metadata.endedAt}
             isLoading={
               isAgentRunning &&
-              lastPartId === part.metadata.id &&
+              lastMessageId === message.id &&
               part.state === "streaming"
             }
             key={part.metadata.id}
@@ -223,9 +211,9 @@ export function SessionStream({
       gitCommitParts,
       selectedVersion,
       isAgentRunning,
-      lastPartId,
       navigate,
       onRetry,
+      lastMessageId,
     ],
   );
 
