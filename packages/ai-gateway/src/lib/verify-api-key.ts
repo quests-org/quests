@@ -2,10 +2,10 @@ import { type AsyncResult, Result } from "typescript-result";
 
 import { type AIGatewayProviderConfig } from "../schemas/provider-config";
 import { TypedError } from "./errors";
-import { fetchAnthropicModels } from "./models/anthropic";
-import { fetchGoogleModels } from "./models/google";
-import { fetchOpenAIModels } from "./models/openai";
-import { fetchOpenAICompatibleModels } from "./models/openai-compatible";
+import { fetchAnthropicModels } from "./fetch-models/anthropic";
+import { fetchGoogleModels } from "./fetch-models/google";
+import { fetchOpenAIModels } from "./fetch-models/openai";
+import { fetchOpenAICompatibleModels } from "./fetch-models/openai-compatible";
 import { baseURLWithDefault } from "./providers/base-url-with-default";
 import { fetchCredits } from "./providers/fetch-credits";
 import { getProviderMetadata } from "./providers/metadata";

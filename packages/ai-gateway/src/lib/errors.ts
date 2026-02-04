@@ -1,6 +1,6 @@
 export namespace TypedError {
   const PREFIX = "gateway";
-  export type Type = Fetch | NotFound | Parse | VerificationFailed;
+  export type Type = Fetch | NotFound | Parse | Unknown | VerificationFailed;
 
   export class Fetch extends Error {
     readonly type = `${PREFIX}-fetch-error`;

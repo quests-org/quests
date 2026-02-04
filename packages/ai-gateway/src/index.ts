@@ -8,7 +8,7 @@ export {
 export type { TypedError as AIGatewayTypedError } from "./lib/errors";
 export * from "./lib/fetch-ai-sdk-model";
 export * from "./lib/fetch-model";
-export * from "./lib/fetch-models";
+export * from "./lib/fetch-model-results";
 export * from "./lib/get-ai-sdk-image-model";
 export * from "./lib/get-provider-details";
 export * from "./lib/migrate-model-uri";

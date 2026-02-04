@@ -1,24 +1,29 @@
 import { type LanguageModelV3 } from "@ai-sdk/provider";
-import { type WorkspaceServerURL } from "@quests/shared";
+import {
+  type CaptureExceptionFunction,
+  type WorkspaceServerURL,
+} from "@quests/shared";
 import { Result } from "typescript-result";
 
 import { AIGatewayModelURI } from "../schemas/model-uri";
 import { type AIGatewayProviderConfig } from "../schemas/provider-config";
 import { aiSDKForProviderConfig } from "./ai-sdk-for-provider-config";
 import { TypedError } from "./errors";
-import { fetchModelByURI } from "./fetch-model";
+import { fetchModel } from "./fetch-model";
 
 export const TEST_MODEL_OVERRIDE_KEY = "__testModelOverride";
 
 export async function fetchAISDKModel({
+  captureException,
   configs,
   modelURI,
   workspaceServerURL,
 }: {
+  captureException: CaptureExceptionFunction;
   configs: AIGatewayProviderConfig.Type[];
   modelURI: AIGatewayModelURI.Type;
   workspaceServerURL: WorkspaceServerURL;
-}): Promise<Result<LanguageModelV3, TypedError.Type>> {
+}) {
   return Result.gen(async function* () {
     // Test override: check early to avoid fetching models over network
     const modelURIDetails = AIGatewayModelURI.parse(modelURI).getOrThrow();
@@ -35,7 +40,11 @@ export async function fetchAISDKModel({
       }
     }
 
-    const model = yield* await fetchModelByURI(modelURI, configs);
+    const model = yield* await fetchModel({
+      captureException,
+      configs,
+      modelURI,
+    });
 
     if (!config) {
       return Result.error(

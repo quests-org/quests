@@ -158,6 +158,7 @@ export const llmRequestLogic = fromPromise<
   try {
     // Fetch AI SDK model at the last moment before making the LLM request
     const aiSDKModelResult = await fetchAISDKModel({
+      captureException: input.appConfig.workspaceConfig.captureException,
       configs: input.appConfig.workspaceConfig.getAIProviderConfigs(),
       modelURI: input.model.uri,
       workspaceServerURL: getWorkspaceServerURL(),

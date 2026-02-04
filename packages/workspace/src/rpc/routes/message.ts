@@ -1,5 +1,5 @@
 import { call, eventIterator } from "@orpc/server";
-import { AIGatewayModelURI, fetchModelByURI } from "@quests/ai-gateway";
+import { AIGatewayModelURI, fetchModel } from "@quests/ai-gateway";
 import { mergeGenerators } from "@quests/shared/merge-generators";
 import { z } from "zod";
 
@@ -63,10 +63,11 @@ const create = base
         workspaceConfig: context.workspaceConfig,
       });
 
-      const modelResult = await fetchModelByURI(
+      const modelResult = await fetchModel({
+        captureException: context.workspaceConfig.captureException,
+        configs: context.workspaceConfig.getAIProviderConfigs(),
         modelURI,
-        context.workspaceConfig.getAIProviderConfigs(),
-      );
+      });
 
       if (!modelResult.ok) {
         const error = modelResult.error;

@@ -30,6 +30,7 @@ export function generateProjectTitle({
       }
 
       const aiSDKModelResult = await fetchAISDKModel({
+        captureException: workspaceConfig.captureException,
         configs: workspaceConfig.getAIProviderConfigs(),
         modelURI: model.uri,
         workspaceServerURL: getWorkspaceServerURL(),
