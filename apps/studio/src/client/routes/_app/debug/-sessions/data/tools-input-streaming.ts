@@ -27,6 +27,24 @@ registerSession({
           },
           type: "tool-generate_image",
         }),
+        builder.toolPart(assistantMessageId, "input-streaming", {
+          input: {
+            content:
+              "export function hello() {\n  console.log('Hello, world!');\n}",
+            explanation: "Create a hello function",
+            filePath: "./src/hello.ts",
+          },
+          type: "tool-write_file",
+        }),
+        builder.toolPart(assistantMessageId, "input-streaming", {
+          input: {
+            explanation: "Update greeting message",
+            filePath: "./src/hello.ts",
+            newString: "  console.log('Hello, developer!');",
+            oldString: "  console.log('Hello, world!');",
+          },
+          type: "tool-edit_file",
+        }),
       ],
       role: "assistant",
     },
