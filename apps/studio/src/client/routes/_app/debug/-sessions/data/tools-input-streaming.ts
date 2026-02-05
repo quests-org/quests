@@ -5,12 +5,16 @@ import { registerSession, SessionBuilder } from "../helpers";
 const builder = new SessionBuilder();
 const sessionId = builder.getSessionId();
 
-const assistantMessageId = StoreId.newMessageId();
+const firstAssistantMessageId = StoreId.newMessageId();
+const secondAssistantMessageId = StoreId.newMessageId();
 
 registerSession({
   messages: [
+    builder.userMessage(
+      "Can you create a hello.ts file with a greeting function and also generate a sunset image?",
+    ),
     {
-      id: assistantMessageId,
+      id: firstAssistantMessageId,
       metadata: {
         createdAt: builder.nextTime(),
         finishReason: "tool-calls",
@@ -19,15 +23,7 @@ registerSession({
         sessionId,
       },
       parts: [
-        builder.toolPart(assistantMessageId, "input-streaming", {
-          input: {
-            explanation: "Generate a sunset image",
-            filePath: "./images/sunset.png",
-            prompt: "A beautiful sunset over mountains",
-          },
-          type: "tool-generate_image",
-        }),
-        builder.toolPart(assistantMessageId, "input-streaming", {
+        builder.toolPart(firstAssistantMessageId, "input-streaming", {
           input: {
             content:
               "export function hello() {\n  console.log('Hello, world!');\n}",
@@ -36,7 +32,40 @@ registerSession({
           },
           type: "tool-write_file",
         }),
-        builder.toolPart(assistantMessageId, "input-streaming", {
+      ],
+      role: "assistant",
+    },
+    builder.userMessage(
+      "Great, now also generate the sunset image and update the greeting message.",
+    ),
+    {
+      id: secondAssistantMessageId,
+      metadata: {
+        createdAt: builder.nextTime(),
+        finishReason: "tool-calls",
+        modelId: "claude-sonnet-4.5",
+        providerId: "anthropic",
+        sessionId,
+      },
+      parts: [
+        builder.toolPart(secondAssistantMessageId, "input-streaming", {
+          input: {
+            explanation: "Generate a sunset image",
+            filePath: "./images/sunset.png",
+            prompt: "A beautiful sunset over mountains",
+          },
+          type: "tool-generate_image",
+        }),
+        builder.toolPart(secondAssistantMessageId, "input-streaming", {
+          input: {
+            content:
+              "export function hello() {\n  console.log('Hello, world!');\n}",
+            explanation: "Create a hello function",
+            filePath: "./src/hello.ts",
+          },
+          type: "tool-write_file",
+        }),
+        builder.toolPart(secondAssistantMessageId, "input-streaming", {
           input: {
             explanation: "Update greeting message",
             filePath: "./src/hello.ts",

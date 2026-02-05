@@ -20,17 +20,20 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "../ui/collapsible";
+import { DeveloperModeBadge } from "./developer-mode-badge";
 import { ToolPartExpanded } from "./expanded";
 import { FileModification } from "./file-modification";
 import { ToolPartListItemCompact } from "./list-item-compact";
 import { ShellCommandCard } from "./shell-command-card";
 
 export function ToolPart({
+  isDeveloperMode,
   isLoading,
   onRetry,
   part,
   projectSubdomain,
 }: {
+  isDeveloperMode: boolean;
   isLoading: boolean;
   onRetry: (prompt: string) => void;
   part: SessionMessagePart.ToolPart;
@@ -46,6 +49,46 @@ export function ToolPart({
   const isError = part.state === "output-error" || isFileNotFound;
   const isSuccess = part.state === "output-available" && !isFileNotFound;
   const isExpandable = isSuccess || isError;
+
+  // Hide tool parts that haven't reached a terminal state and aren't loading,
+  // unless developer mode is enabled.
+  const hasTerminalState = isError || isSuccess;
+  if (!hasTerminalState && !isLoading && !isDeveloperMode) {
+    return null;
+  }
+
+  // In developer mode, show a collapsible indicator for dead tool calls
+  // (not loading, no terminal state).
+  if (!hasTerminalState && !isLoading && isDeveloperMode) {
+    return (
+      <Collapsible className="w-full">
+        <CollapsibleTrigger asChild>
+          <CollapsiblePartTrigger>
+            <ToolPartListItemCompact
+              icon={
+                <span className="flex items-center gap-1">
+                  <DeveloperModeBadge />
+                  <ToolIcon className="size-3" toolName={toolName} />
+                </span>
+              }
+              label={`${getToolStreamingLabel(toolName)} stopped while`}
+              value={<span>{part.state}</span>}
+            />
+          </CollapsiblePartTrigger>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <CollapsiblePartMainContent>
+            <div className="mb-1 font-semibold">
+              State: <span className="font-mono">{part.state}</span>
+            </div>
+            <pre className="font-mono text-xs wrap-break-word whitespace-pre-wrap">
+              {JSON.stringify(part.input, null, 2)}
+            </pre>
+          </CollapsiblePartMainContent>
+        </CollapsibleContent>
+      </Collapsible>
+    );
+  }
 
   // Use dedicated components for file modification and shell commands
   if (

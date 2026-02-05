@@ -14,7 +14,6 @@ import { cn } from "../../lib/utils";
 import { rpcClient } from "../../rpc/client";
 import { FileIcon } from "../file-icon";
 import { useTheme } from "../theme-provider";
-import { ToolIcon } from "../tool-icon";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { ToolPartListItemCompact } from "./list-item-compact";
 import { ToolCard, ToolCardHeader } from "./tool-card";
@@ -40,11 +39,11 @@ export function FileModification({
   const filePath = part.input?.filePath;
   let language: string | undefined;
 
-  const hasOutput = part.state === "output-available";
+  const isDone = part.state === "output-available";
 
   if (part.input) {
     if (part.type === "tool-edit_file") {
-      if (hasOutput && part.output.diff) {
+      if (isDone && part.output.diff) {
         // Trim first 5 lines, which are filename, ===, ---, and +++, And @@
         content = part.output.diff.split("\n").slice(5).join("\n");
         language = "diff";
@@ -57,7 +56,6 @@ export function FileModification({
   }
 
   const filename = filePath ? filenameFromFilePath(filePath) : undefined;
-  const hasContent = !!content;
 
   const detectedLanguage =
     language || (filePath ? getLanguageFromFilePath(filePath) : undefined);
@@ -107,10 +105,7 @@ export function FileModification({
 
   const reasoning = part.input?.explanation;
 
-  if (!hasContent) {
-    if (!isLoading) {
-      return null;
-    }
+  if (!isDone) {
     return (
       <div className="w-full">
         <div className="flex h-6 items-center px-1">
@@ -130,7 +125,6 @@ export function FileModification({
   let deletions = 0;
   if (
     part.type === "tool-edit_file" &&
-    hasOutput &&
     "diff" in part.output &&
     part.output.diff
   ) {

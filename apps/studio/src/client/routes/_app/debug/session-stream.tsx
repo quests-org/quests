@@ -132,6 +132,7 @@ function RouteComponent() {
             {selectedSession ? (
               <SessionStream
                 isAgentRunning={isAgentRunning}
+                isDeveloperMode={isDeveloperMode}
                 messages={selectedSession.messages}
                 onContinue={createEventHandler("Continue")}
                 onModelChange={createEventHandler("Model Change")}

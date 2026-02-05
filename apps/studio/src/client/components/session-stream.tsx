@@ -27,6 +27,7 @@ import { VersionAndFilesCard } from "./version-and-files-card";
 
 interface SessionEventListProps {
   isAgentRunning: boolean;
+  isDeveloperMode: boolean;
   messages: SessionMessage.WithParts[];
   onContinue: () => void;
   onModelChange: (modelURI: AIGatewayModelURI.Type) => void;
@@ -38,6 +39,7 @@ interface SessionEventListProps {
 
 export function SessionStream({
   isAgentRunning,
+  isDeveloperMode,
   messages,
   onContinue,
   onModelChange,
@@ -155,6 +157,7 @@ export function SessionStream({
       if (isToolPart(part)) {
         return (
           <ToolPart
+            isDeveloperMode={isDeveloperMode}
             isLoading={
               isAgentRunning &&
               lastMessageId === message.id &&
@@ -211,6 +214,7 @@ export function SessionStream({
       gitCommitParts,
       selectedVersion,
       isAgentRunning,
+      isDeveloperMode,
       navigate,
       onRetry,
       lastMessageId,
@@ -287,6 +291,7 @@ export function SessionStream({
         messageElements.push(
           <MessageError
             isAgentRunning={isAgentRunning}
+            isDeveloperMode={isDeveloperMode}
             isLastMessage={isLastMessage}
             key={`error-${message.id}`}
             message={message}
@@ -336,6 +341,7 @@ export function SessionStream({
     regularMessages,
     renderChatPart,
     isAgentRunning,
+    isDeveloperMode,
     onContinue,
     onModelChange,
     onRetry,

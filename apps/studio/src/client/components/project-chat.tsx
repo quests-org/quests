@@ -207,6 +207,7 @@ export function ProjectChat({
           ) : (
             <SessionStream
               isAgentRunning={isAgentRunning}
+              isDeveloperMode={isDeveloperMode ?? false}
               messages={messages}
               onContinue={handleContinue}
               onModelChange={setSelectedModelURI}

@@ -15,6 +15,7 @@ import {
   CollapsiblePartMainContent,
   CollapsiblePartTrigger,
 } from "./collapsible-part";
+import { DeveloperModeBadge } from "./tool-part/developer-mode-badge";
 import { ToolPartListItemCompact } from "./tool-part/list-item-compact";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { Button } from "./ui/button";
@@ -28,6 +29,7 @@ import { UpgradeSubscriptionAlert } from "./upgrade-subscription-alert";
 
 interface MessageErrorProps {
   isAgentRunning: boolean;
+  isDeveloperMode: boolean;
   isLastMessage: boolean;
   message: SessionMessage.Assistant;
   onContinue: () => void;
@@ -38,6 +40,7 @@ interface MessageErrorProps {
 
 export function MessageError({
   isAgentRunning,
+  isDeveloperMode,
   isLastMessage,
   message,
   onContinue,
@@ -62,19 +65,24 @@ export function MessageError({
     return null;
   }
 
-  // Aborted errors mostly happen when user stops the agent, so we don't want to show the error
-  if (error.kind === "aborted") {
-    return null;
-  }
-
+  const isAborted = error.kind === "aborted";
   const questsError = parseQuestsApiError(message);
+  const isStaleInsufficientCredits =
+    questsError?.code === "insufficient-credits" && !isLastMessage;
 
-  if (questsError && questsError.code === "insufficient-credits") {
-    // Don't show insufficient credits error if it's not the last message (no longer relevant)
-    if (!isLastMessage) {
+  // Normally hidden errors are still shown in developer mode via the generic renderer
+  const isDevOnlyVisible =
+    isDeveloperMode && (isAborted || isStaleInsufficientCredits);
+
+  if (!isDevOnlyVisible) {
+    // Hide old or useless errors for non-developer mode
+    if (isAborted || isStaleInsufficientCredits) {
       return null;
     }
-    return <UpgradeSubscriptionAlert onContinue={onContinue} />;
+
+    if (questsError?.code === "insufficient-credits") {
+      return <UpgradeSubscriptionAlert onContinue={onContinue} />;
+    }
   }
 
   if (showActions && questsError && requiresAutoModelRecovery(message)) {
@@ -144,6 +152,7 @@ export function MessageError({
 
   const mainContent = (
     <ToolPartListItemCompact isExpanded={isExpanded}>
+      {isDevOnlyVisible && <DeveloperModeBadge />}
       <span className="shrink-0 text-warning-foreground/80">
         <AlertTriangle className="size-3" />
       </span>
@@ -158,87 +167,93 @@ export function MessageError({
   );
 
   return (
-    <Collapsible
-      className="w-full"
-      onOpenChange={setIsExpanded}
-      open={isExpanded}
-    >
-      <CollapsibleTrigger asChild>
-        <CollapsiblePartTrigger>{mainContent}</CollapsiblePartTrigger>
-      </CollapsibleTrigger>
+    <div className="w-full">
+      <Collapsible
+        className="w-full"
+        onOpenChange={setIsExpanded}
+        open={isExpanded}
+      >
+        <CollapsibleTrigger asChild>
+          <CollapsiblePartTrigger>{mainContent}</CollapsiblePartTrigger>
+        </CollapsibleTrigger>
 
-      <CollapsibleContent>
-        <CollapsiblePartMainContent>
-          <div className="mb-2">
-            <div className="mb-1 font-semibold">Error:</div>
-            <pre className="font-mono text-xs wrap-break-word whitespace-pre-wrap">
-              {error.message}
-            </pre>
-          </div>
-
-          {error.kind === "api-call" && (
-            <div className="space-y-1">
-              <div>
-                <strong>API:</strong> {error.name}
-              </div>
-              <div className="break-all">
-                <strong>URL:</strong> {error.url}
-              </div>
-              {error.statusCode && (
-                <div>
-                  <strong>Status:</strong> {error.statusCode}
-                </div>
-              )}
-              {error.responseBody && (
-                <div>
-                  <strong>Response:</strong>
-                  <pre className="mt-1 max-h-32 overflow-y-auto rounded-sm bg-muted p-2 text-xs wrap-break-word whitespace-pre-wrap">
-                    {error.responseBody}
-                  </pre>
-                </div>
-              )}
-            </div>
-          )}
-
-          {error.kind === "invalid-tool-input" && (
-            <div>
-              <div className="mb-1 font-semibold">Input:</div>
-              <pre className="max-h-32 overflow-y-auto rounded-sm border bg-muted p-2 font-mono text-xs wrap-break-word whitespace-pre-wrap">
-                {error.input}
+        <CollapsibleContent>
+          <CollapsiblePartMainContent>
+            <div className="mb-2">
+              <div className="mb-1 font-semibold">Error:</div>
+              <pre className="font-mono text-xs wrap-break-word whitespace-pre-wrap">
+                {error.message}
               </pre>
             </div>
-          )}
 
-          {error.kind === "no-such-tool" && (
-            <div>
-              <strong>Tool:</strong> {error.toolName}
-            </div>
-          )}
+            {error.kind === "api-call" && (
+              <div className="space-y-1">
+                <div>
+                  <strong>API:</strong> {error.name}
+                </div>
+                <div className="break-all">
+                  <strong>URL:</strong> {error.url}
+                </div>
+                {error.statusCode && (
+                  <div>
+                    <strong>Status:</strong> {error.statusCode}
+                  </div>
+                )}
+                {error.responseBody && (
+                  <div>
+                    <strong>Response:</strong>
+                    <pre className="mt-1 max-h-32 overflow-y-auto rounded-sm bg-muted p-2 text-xs wrap-break-word whitespace-pre-wrap">
+                      {error.responseBody}
+                    </pre>
+                  </div>
+                )}
+              </div>
+            )}
 
-          {showActions && onStartNewChat && !questsError && (
-            <div className="mt-4 flex gap-2 border-t pt-4">
-              <Tooltip delayDuration={0}>
-                <TooltipTrigger asChild>
-                  <Button onClick={onStartNewChat} size="sm" variant="outline">
-                    Start new chat
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Starts a fresh chat in this project</p>
-                </TooltipContent>
-              </Tooltip>
-              <Button
-                onClick={() => {
-                  onRetry("Try that again.");
-                }}
-                size="sm"
-              >
-                Try again
-              </Button>
-            </div>
-          )}
-        </CollapsiblePartMainContent>
-      </CollapsibleContent>
-    </Collapsible>
+            {error.kind === "invalid-tool-input" && (
+              <div>
+                <div className="mb-1 font-semibold">Input:</div>
+                <pre className="max-h-32 overflow-y-auto rounded-sm border bg-muted p-2 font-mono text-xs wrap-break-word whitespace-pre-wrap">
+                  {error.input}
+                </pre>
+              </div>
+            )}
+
+            {error.kind === "no-such-tool" && (
+              <div>
+                <strong>Tool:</strong> {error.toolName}
+              </div>
+            )}
+
+            {showActions && onStartNewChat && !questsError && (
+              <div className="mt-4 flex gap-2 border-t pt-4">
+                <Tooltip delayDuration={0}>
+                  <TooltipTrigger asChild>
+                    <Button
+                      onClick={onStartNewChat}
+                      size="sm"
+                      variant="outline"
+                    >
+                      Start new chat
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Starts a fresh chat in this project</p>
+                  </TooltipContent>
+                </Tooltip>
+                <Button
+                  onClick={() => {
+                    onRetry("Try that again.");
+                  }}
+                  size="sm"
+                >
+                  Try again
+                </Button>
+              </div>
+            )}
+          </CollapsiblePartMainContent>
+        </CollapsibleContent>
+      </Collapsible>
+    </div>
   );
 }
