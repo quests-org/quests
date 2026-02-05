@@ -76,6 +76,7 @@ describe("addHeuristicTags", () => {
     { expected: ["coding", "legacy"], modelId: "claude-opus-4" },
     { expected: ["coding", "legacy"], modelId: "claude-opus-4.3" },
     { expected: ["coding", "recommended"], modelId: "claude-opus-4.5" },
+    { expected: ["coding", "recommended"], modelId: "claude-opus-4.6" },
     { expected: ["coding", "recommended"], modelId: "claude-opus-5" },
     { expected: ["coding", "recommended"], modelId: "claude-opus-5.5" },
     { expected: [], modelId: "gemini-2-pro" },

@@ -133,12 +133,19 @@ function getDynamicTags(
 
 function isLegacy(canonicalId: AIGatewayModel.CanonicalId): boolean {
   if (
-    (canonicalId.startsWith("claude-sonnet-4") ||
-      canonicalId.startsWith("claude-haiku-4") ||
-      canonicalId.startsWith("claude-opus-4")) &&
-    !canonicalId.endsWith(".5")
+    canonicalId.startsWith("claude-sonnet-4") ||
+    canonicalId.startsWith("claude-haiku-4") ||
+    canonicalId.startsWith("claude-opus-4")
   ) {
-    return true;
+    const versionMatch = /^claude-(?:sonnet|haiku|opus)-(\d+(?:\.\d+)?)/.exec(
+      canonicalId,
+    );
+    if (versionMatch?.[1]) {
+      const version = Number.parseFloat(versionMatch[1]);
+      if (version < 4.5) {
+        return true;
+      }
+    }
   }
 
   if (canonicalId.startsWith("claude-3")) {
