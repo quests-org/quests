@@ -45,6 +45,11 @@ export default [
             "Raw anchor tags <a> are not allowed the Electron app. Use ExternalLink component instead.",
           selector: "JSXOpeningElement[name.name='a']",
         },
+        {
+          message:
+            "TooltipProvider should only be declared once at the app root. Do not use it in other components.",
+          selector: "JSXOpeningElement[name.name='TooltipProvider']",
+        },
       ],
     },
   },

@@ -47,6 +47,8 @@ function PendingComponent() {
 function Root({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <ThemeProvider>
+      {/* This is the one spot where we use TooltipProvider */}
+      {/* eslint-disable-next-line no-restricted-syntax */}
       <TooltipProvider>{children}</TooltipProvider>
     </ThemeProvider>
   );
