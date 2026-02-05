@@ -108,24 +108,17 @@ export function FileModification({
   const reasoning = part.input?.explanation;
 
   if (!hasContent) {
+    if (!isLoading) {
+      return null;
+    }
     return (
       <div className="w-full">
         <div className="flex h-6 items-center px-1">
           <ToolPartListItemCompact
-            icon={
-              isLoading ? (
-                <Loader2Icon className="size-3 animate-spin" />
-              ) : (
-                <ToolIcon className="size-3" toolName={toolName} />
-              )
-            }
-            label={
-              isLoading
-                ? getToolStreamingLabel(toolName, !!filename)
-                : getToolLabel(toolName)
-            }
-            labelClassName={cn(isLoading && "shiny-text")}
-            reasoning={isLoading ? reasoning : undefined}
+            icon={<Loader2Icon className="size-3 animate-spin" />}
+            label={getToolStreamingLabel(toolName, !!filename)}
+            labelClassName="shiny-text"
+            reasoning={reasoning}
             value={filename}
           />
         </div>
