@@ -3,6 +3,8 @@ import { useState } from "react";
 
 import { AIProviderGuardDialog } from "../ai-provider-guard-dialog";
 import { AIProviderIcon } from "../ai-provider-icon";
+import { ExternalLink } from "../external-link";
+import { SessionMarkdown } from "../session-markdown";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { CodeBlock } from "./code-block";
@@ -259,6 +261,62 @@ export function ToolContent({
         </div>
       );
     }
+    case "tool-web_search": {
+      if (part.output.state === "failure") {
+        return (
+          <div>
+            <SectionHeader>Web search failed</SectionHeader>
+            <div className="text-sm text-muted-foreground">
+              {part.output.errorMessage}
+            </div>
+          </div>
+        );
+      }
+      return (
+        <div>
+          <div className="mb-3 flex items-center gap-1.5">
+            <span className="text-xs text-muted-foreground">Model:</span>
+            <AIProviderIcon
+              className="size-3.5"
+              displayName={part.output.provider.displayName}
+              showTooltip
+              type={part.output.provider.type}
+            />
+            <MonoText className="text-xs">{part.output.modelId}</MonoText>
+          </div>
+          <SectionHeader>
+            Query: <MonoText className="inline">{part.input.query}</MonoText>
+          </SectionHeader>
+          <SectionHeader>Result</SectionHeader>
+          <SessionMarkdown className="w-full" markdown={part.output.text} />
+          {part.output.sources.length > 0 && (
+            <div className="mt-3">
+              <SectionHeader>
+                {part.output.sources.length} source
+                {part.output.sources.length === 1 ? "" : "s"}
+              </SectionHeader>
+              <div className="mt-1 space-y-2">
+                {part.output.sources.map((source, index) => (
+                  <div className="flex items-center gap-2 text-sm" key={index}>
+                    <img
+                      alt=""
+                      className="size-4 shrink-0 rounded-full bg-background"
+                      src={getFaviconUrl(source.url)}
+                    />
+                    <ExternalLink
+                      className="text-muted-foreground transition-colors hover:text-foreground"
+                      href={source.url}
+                    >
+                      {source.title || source.url}
+                    </ExternalLink>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
     case "tool-write_file": {
       return (
         <div>
@@ -355,4 +413,13 @@ function GenerateImageFailure({
       </div>
     </div>
   );
+}
+
+function getFaviconUrl(url: string): string {
+  try {
+    const urlObj = new URL(url);
+    return `https://www.google.com/s2/favicons?domain=${urlObj.hostname}&sz=32`;
+  } catch {
+    return `https://www.google.com/s2/favicons?domain=${url}&sz=32`;
+  }
 }

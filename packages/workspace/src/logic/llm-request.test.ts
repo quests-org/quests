@@ -998,7 +998,7 @@ describe("llmRequestLogic", () => {
               "type": "step-start",
             },
             {
-              "errorText": "Model tried to call unavailable tool 'non_existent_tool'. Available tools: choose, edit_file, generate_image, glob, grep, read_file, run_diagnostics, run_shell_command, think, unavailable, write_file.",
+              "errorText": "Model tried to call unavailable tool 'non_existent_tool'. Available tools: choose, edit_file, generate_image, glob, grep, read_file, run_diagnostics, run_shell_command, think, unavailable, web_search, write_file.",
               "input": undefined,
               "metadata": {
                 "createdAt": 2013-08-31T12:00:04.000Z,
@@ -1081,7 +1081,7 @@ describe("llmRequestLogic", () => {
               "type": "step-start",
             },
             {
-              "errorText": "Model tried to call unavailable tool 'non_existent_tool'. Available tools: choose, edit_file, generate_image, glob, grep, read_file, run_diagnostics, run_shell_command, think, unavailable, write_file.",
+              "errorText": "Model tried to call unavailable tool 'non_existent_tool'. Available tools: choose, edit_file, generate_image, glob, grep, read_file, run_diagnostics, run_shell_command, think, unavailable, web_search, write_file.",
               "input": undefined,
               "metadata": {
                 "createdAt": 2013-08-31T12:00:04.000Z,
@@ -1159,7 +1159,7 @@ describe("llmRequestLogic", () => {
               "type": "step-start",
             },
             {
-              "errorText": "Model tried to call unavailable tool 'non_existent_tool'. Available tools: choose, edit_file, generate_image, glob, grep, read_file, run_diagnostics, run_shell_command, think, unavailable, write_file.",
+              "errorText": "Model tried to call unavailable tool 'non_existent_tool'. Available tools: choose, edit_file, generate_image, glob, grep, read_file, run_diagnostics, run_shell_command, think, unavailable, web_search, write_file.",
               "input": {
                 "filePath": "test.txt",
               },

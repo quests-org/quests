@@ -8,9 +8,9 @@ export namespace TypedError {
     | FileSystem
     | Git
     | ImageGeneration
-    | NoChanges
     | NoImageModel
     | NotFound
+    | NoWebSearchModel
     | Parse
     | ShimNotFound
     | Storage
@@ -55,6 +55,10 @@ export namespace TypedError {
 
   export class NotFound extends Error {
     readonly type = `${PREFIX}-not-found-error`;
+  }
+
+  export class NoWebSearchModel extends Error {
+    readonly type = `${PREFIX}-no-web-search-model-error`;
   }
 
   export class Parse extends Error {

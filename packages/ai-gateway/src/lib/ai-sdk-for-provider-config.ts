@@ -22,8 +22,7 @@ export async function aiSDKForProviderConfig(
 
   switch (packageName) {
     case "@ai-sdk/anthropic": {
-      const { createAnthropic } = await import("@ai-sdk/anthropic");
-      return createAnthropic({ apiKey, baseURL });
+      return createAnthropicSDK(config, workspaceServerURL);
     }
     case "@ai-sdk/cerebras": {
       const { createCerebras } = await import("@ai-sdk/cerebras");
@@ -89,6 +88,16 @@ export async function aiSDKForProviderConfig(
       });
     }
   }
+}
+
+export async function createAnthropicSDK(
+  config: AIGatewayProviderConfig.Type,
+  workspaceServerURL: WorkspaceServerURL,
+) {
+  const baseURL = internalURL({ config, workspaceServerURL });
+  const apiKey = internalAPIKey();
+  const { createAnthropic } = await import("@ai-sdk/anthropic");
+  return createAnthropic({ apiKey, baseURL });
 }
 
 export async function createFireworksSDK(

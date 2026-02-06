@@ -3,6 +3,7 @@ import {
   Brain,
   Eye,
   FilePlus,
+  Globe,
   HelpCircle,
   Image,
   List,
@@ -26,6 +27,7 @@ const TOOL_DISPLAY_NAMES: Record<ToolName, string | undefined> = {
   run_shell_command: "Ran command",
   think: "Thought",
   unavailable: "Unknown tool",
+  web_search: "Searched the web",
   write_file: "Created",
 };
 
@@ -40,6 +42,7 @@ const TOOL_STREAMING_DISPLAY_NAMES: Record<ToolName, string | undefined> = {
   run_shell_command: "Running command",
   think: "Thinking",
   unavailable: "Unknown tool",
+  web_search: "Searching the web",
   write_file: "Creating a file",
 };
 
@@ -57,6 +60,7 @@ const TOOL_STREAMING_DISPLAY_NAMES_WITH_VALUE: Record<
   run_shell_command: TOOL_STREAMING_DISPLAY_NAMES.run_shell_command,
   think: TOOL_STREAMING_DISPLAY_NAMES.think,
   unavailable: TOOL_STREAMING_DISPLAY_NAMES.unavailable,
+  web_search: "Searching for",
   write_file: "Creating",
 };
 
@@ -71,6 +75,7 @@ export const TOOL_ICONS: Record<ToolName, LucideIcon | undefined> = {
   run_shell_command: Terminal,
   think: Brain,
   unavailable: TriangleAlert,
+  web_search: Globe,
   write_file: FilePlus,
 };
 

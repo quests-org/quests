@@ -289,6 +289,9 @@ function getToolInputValue(
     case "tool-unavailable": {
       return undefined;
     }
+    case "tool-web_search": {
+      return part.input.query;
+    }
     case "tool-write_file": {
       return part.input.filePath
         ? filenameFromFilePath(part.input.filePath)
@@ -358,6 +361,15 @@ function getToolOutputDescription(
     }
     case "tool-unavailable": {
       return "";
+    }
+    case "tool-web_search": {
+      if (part.output.state === "failure") {
+        return part.output.errorMessage;
+      }
+      const sourceCount = part.output.sources.length;
+      return sourceCount > 0
+        ? `${sourceCount} source${sourceCount === 1 ? "" : "s"} found`
+        : "searched the web";
     }
     case "tool-write_file": {
       return filenameFromFilePath(part.output.filePath) || "file written";

@@ -705,7 +705,7 @@ describe("sessionMachine", () => {
                   "filePath": "test.txt"
                 }
               </input>
-              <error>Model tried to call unavailable tool 'invalid_tool_name'. Available tools: edit_file, generate_image, glob, grep, read_file, run_diagnostics, run_shell_command, write_file.</error>
+              <error>Model tried to call unavailable tool 'invalid_tool_name'. Available tools: edit_file, generate_image, glob, grep, read_file, run_diagnostics, run_shell_command, web_search, write_file.</error>
             </tool>
           </assistant>
           <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">

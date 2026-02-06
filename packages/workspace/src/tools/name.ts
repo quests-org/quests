@@ -10,6 +10,7 @@ export const ToolNameSchema = z.enum([
   "run_diagnostics",
   "run_shell_command",
   "think",
-  "write_file",
   "unavailable",
+  "web_search",
+  "write_file",
 ]);

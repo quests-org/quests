@@ -13,6 +13,7 @@ import { RunDiagnostics } from "./run-diagnostics";
 import { RunShellCommand } from "./run-shell-command";
 import { Think } from "./think";
 import { Unavailable } from "./unavailable";
+import { WebSearch } from "./web-search";
 import { WriteFile } from "./write-file";
 
 export const TOOLS = {
@@ -26,6 +27,7 @@ export const TOOLS = {
   RunShellCommand,
   Think,
   Unavailable,
+  WebSearch,
   WriteFile,
 };
 
@@ -42,6 +44,7 @@ export const TOOLS_BY_NAME = {
   [TOOLS.RunShellCommand.name]: TOOLS.RunShellCommand,
   [TOOLS.Think.name]: TOOLS.Think,
   [TOOLS.Unavailable.name]: TOOLS.Unavailable,
+  [TOOLS.WebSearch.name]: TOOLS.WebSearch,
   [TOOLS.WriteFile.name]: TOOLS.WriteFile,
   // `satisfies` ensures all tool names are present
 } as const satisfies Record<ToolName, AnyAgentTool>;

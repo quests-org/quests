@@ -10,6 +10,7 @@ export * from "./lib/fetch-ai-sdk-model";
 export * from "./lib/fetch-model";
 export * from "./lib/fetch-model-results";
 export * from "./lib/get-ai-sdk-image-model";
+export * from "./lib/get-ai-sdk-web-search-model";
 export * from "./lib/get-provider-details";
 export * from "./lib/migrate-model-uri";
 export { baseURLWithDefault } from "./lib/providers/base-url-with-default";

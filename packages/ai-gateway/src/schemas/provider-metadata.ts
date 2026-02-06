@@ -1,7 +1,11 @@
 import { AIProviderTypeSchema } from "@quests/shared";
 import { z } from "zod";
 
-const ProviderTagsSchema = z.enum(["imageGeneration", "recommended"]);
+const ProviderTagsSchema = z.enum([
+  "imageGeneration",
+  "recommended",
+  "webSearch",
+]);
 
 export const ProviderMetadataSchema = z.object({
   api: z.object({
