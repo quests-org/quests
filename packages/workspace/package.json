@@ -45,7 +45,7 @@
     "diff": "^8.0.3",
     "dugite": "3.0.0-rc11",
     "execa": "^9.6.0",
-    "glob": "^11.0.1",
+    "glob": "^13.0.0",
     "hono": "catalog:",
     "ignore": "^7.0.3",
     "image-size": "^2.0.2",
