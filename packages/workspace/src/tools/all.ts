@@ -13,6 +13,7 @@ import { RunDiagnostics } from "./run-diagnostics";
 import { RunShellCommand } from "./run-shell-command";
 import { Think } from "./think";
 import { Unavailable } from "./unavailable";
+import { WebFetch } from "./web-fetch";
 import { WebSearch } from "./web-search";
 import { WriteFile } from "./write-file";
 
@@ -27,6 +28,7 @@ export const TOOLS = {
   RunShellCommand,
   Think,
   Unavailable,
+  WebFetch,
   WebSearch,
   WriteFile,
 };
@@ -44,6 +46,7 @@ export const TOOLS_BY_NAME = {
   [TOOLS.RunShellCommand.name]: TOOLS.RunShellCommand,
   [TOOLS.Think.name]: TOOLS.Think,
   [TOOLS.Unavailable.name]: TOOLS.Unavailable,
+  [TOOLS.WebFetch.name]: TOOLS.WebFetch,
   [TOOLS.WebSearch.name]: TOOLS.WebSearch,
   [TOOLS.WriteFile.name]: TOOLS.WriteFile,
   // `satisfies` ensures all tool names are present

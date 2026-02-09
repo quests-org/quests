@@ -5,5 +5,13 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src", "*.ts", "*.js", "*.cjs", "scripts", "__mocks__/*.ts"]
+  "include": [
+    "src",
+    "*.ts",
+    "*.js",
+    "*.cjs",
+    "scripts",
+    "__mocks__/*.ts",
+    "../../packages/shared/src/generate-user-agent.ts"
+  ]
 }

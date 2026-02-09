@@ -15,7 +15,8 @@
   "exports": {
     "./client": "./src/client.ts",
     "./electron": "./src/electron.ts",
-    "./for-shim": "./src/for-shim.ts"
+    "./for-shim": "./src/for-shim.ts",
+    "./node": "./src/node.ts"
   },
   "scripts": {
     "check:lint": "eslint . --max-warnings 0 --cache",

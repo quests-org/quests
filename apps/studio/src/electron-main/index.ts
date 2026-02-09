@@ -12,6 +12,7 @@ import {
 import { getMainWindow } from "@/electron-main/windows/main/instance";
 import { is, optimizer } from "@electron-toolkit/utils";
 import { APP_PROTOCOL } from "@quests/shared";
+import { generateUserAgent } from "@quests/shared/generate-user-agent";
 import {
   app,
   BrowserWindow,
@@ -23,7 +24,6 @@ import {
 
 import { createWorkspaceActor } from "./lib/create-workspace-actor";
 import { logger } from "./lib/electron-logger";
-import { generateUserAgent } from "./lib/generate-user-agent";
 import { registerTelemetry } from "./lib/register-telemetry";
 import { runMigrations } from "./lib/run-migrations";
 import { setupBinDirectory } from "./lib/setup-bin-directory";

@@ -264,9 +264,6 @@ importers:
       tailwind-variants:
         specifier: ^3.2.2
         version: 3.2.2(tailwind-merge@3.3.1)(tailwindcss@4.1.18)
-      top-user-agents:
-        specifier: ^2.1.84
-        version: 2.1.84
       ulid:
         specifier: ^3.0.1
         version: 3.0.1
@@ -725,6 +722,12 @@ importers:
       lucide-react:
         specifier: 'catalog:'
         version: 0.525.0(react@19.2.1)
+      radashi:
+        specifier: ^12.6.0
+        version: 12.6.0
+      top-user-agents:
+        specifier: ^2.1.84
+        version: 2.1.84
       zod:
         specifier: 'catalog:'
         version: 4.2.1

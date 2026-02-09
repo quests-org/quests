@@ -27,6 +27,7 @@ const TOOL_DISPLAY_NAMES: Record<ToolName, string | undefined> = {
   run_shell_command: "Ran command",
   think: "Thought",
   unavailable: "Unknown tool",
+  web_fetch: "Fetched URL",
   web_search: "Searched web",
   write_file: "Created",
 };
@@ -42,6 +43,7 @@ const TOOL_STREAMING_DISPLAY_NAMES: Record<ToolName, string | undefined> = {
   run_shell_command: "Running command",
   think: "Thinking",
   unavailable: "Unknown tool",
+  web_fetch: "Fetching URL",
   web_search: "Searching the web",
   write_file: "Creating a file",
 };
@@ -60,6 +62,7 @@ const TOOL_STREAMING_DISPLAY_NAMES_WITH_VALUE: Record<
   run_shell_command: TOOL_STREAMING_DISPLAY_NAMES.run_shell_command,
   think: TOOL_STREAMING_DISPLAY_NAMES.think,
   unavailable: TOOL_STREAMING_DISPLAY_NAMES.unavailable,
+  web_fetch: "Fetching",
   web_search: "Searching for",
   write_file: "Creating",
 };
@@ -75,6 +78,7 @@ const TOOL_FAILED_DISPLAY_NAMES: Record<ToolName, string | undefined> = {
   run_shell_command: "Failed to run command",
   think: "Failed to think",
   unavailable: "Unknown tool",
+  web_fetch: "Failed to fetch URL",
   web_search: "Failed to search the web",
   write_file: "Failed to create file",
 };
@@ -90,6 +94,7 @@ export const TOOL_ICONS: Record<ToolName, LucideIcon | undefined> = {
   run_shell_command: Terminal,
   think: Brain,
   unavailable: TriangleAlert,
+  web_fetch: Globe,
   web_search: Globe,
   write_file: FilePlus,
 };

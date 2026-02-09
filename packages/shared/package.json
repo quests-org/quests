@@ -14,6 +14,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./generate-user-agent": "./src/generate-user-agent.ts",
     "./icons": "./src/icons.ts",
     "./merge-generators": "./src/merge-generators.ts",
     "./shim": "./src/shim.ts"
@@ -25,6 +26,8 @@
   },
   "dependencies": {
     "lucide-react": "catalog:",
+    "radashi": "^12.6.0",
+    "top-user-agents": "^2.1.84",
     "zod": "catalog:"
   },
   "devDependencies": {
