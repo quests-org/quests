@@ -51,8 +51,17 @@ export const WebSearch = createTool({
             state: "failure" as const,
           });
         }
+        case "workspace-api-call-error": {
+          return ok({
+            errorMessage: searchError.message,
+            errorType: "api-call" as const,
+            responseBody: searchError.responseBody,
+            state: "failure" as const,
+          });
+        }
         default: {
-          return executeError(searchError.message);
+          searchError satisfies never;
+          return executeError(JSON.stringify(searchError));
         }
       }
     }
@@ -106,7 +115,8 @@ export const WebSearch = createTool({
     }),
     z.object({
       errorMessage: z.string(),
-      errorType: z.enum(["no-web-search-model"]),
+      errorType: z.enum(["api-call", "no-web-search-model"]),
+      responseBody: z.string().optional(),
       state: z.literal("failure"),
     }),
   ]),

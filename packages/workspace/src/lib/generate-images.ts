@@ -4,7 +4,7 @@ import {
   getImageModel,
 } from "@quests/ai-gateway";
 import { type WorkspaceServerURL } from "@quests/shared";
-import { generateImage, generateText } from "ai";
+import { APICallError, generateImage, generateText } from "ai";
 import { err, ResultAsync } from "neverthrow";
 
 import { type WorkspaceConfig } from "../types";
@@ -73,10 +73,14 @@ export async function generateImages({
       };
     })(),
     (generationError) => {
-      const error = new TypedError.Unknown(
-        `Failed to generate image: ${generationError instanceof Error ? generationError.message : "Unknown error"}`,
-        { cause: generationError },
-      );
+      const message = `Failed to generate image: ${generationError instanceof Error ? generationError.message : "Unknown error"}`;
+      const responseBody = APICallError.isInstance(generationError)
+        ? generationError.responseBody
+        : undefined;
+      const error = new TypedError.APICall(message, {
+        cause: generationError,
+        responseBody,
+      });
       workspaceConfig.captureException(error);
       return error;
     },

@@ -82,8 +82,17 @@ export const GenerateImage = createTool({
             state: "failure" as const,
           });
         }
+        case "workspace-api-call-error": {
+          return ok({
+            errorMessage: generateError.message,
+            errorType: "api-call" as const,
+            responseBody: generateError.responseBody,
+            state: "failure" as const,
+          });
+        }
         default: {
-          return executeError(generateError.message);
+          generateError satisfies never;
+          return executeError(JSON.stringify(generateError));
         }
       }
     }
@@ -169,7 +178,8 @@ export const GenerateImage = createTool({
     }),
     z.object({
       errorMessage: z.string(),
-      errorType: z.enum(["no-image-model"]),
+      errorType: z.enum(["api-call", "no-image-model"]),
+      responseBody: z.string().optional(),
       state: z.literal("failure"),
     }),
   ]),

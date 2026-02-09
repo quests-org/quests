@@ -269,6 +269,11 @@ export function ToolContent({
             <div className="text-sm text-muted-foreground">
               {part.output.errorMessage}
             </div>
+            {part.output.responseBody && (
+              <ScrollableCodeBlock>
+                {part.output.responseBody}
+              </ScrollableCodeBlock>
+            )}
           </div>
         );
       }
@@ -378,6 +383,9 @@ function GenerateImageFailure({
       <div className="mb-3 text-sm text-muted-foreground">
         {output.errorMessage}
       </div>
+      {output.responseBody && (
+        <ScrollableCodeBlock>{output.responseBody}</ScrollableCodeBlock>
+      )}
       <div className="mt-3 flex gap-2">
         {providerAdded ? (
           <Button

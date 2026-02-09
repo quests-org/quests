@@ -4,7 +4,7 @@ import {
   getWebSearchModel,
 } from "@quests/ai-gateway";
 import { type WorkspaceServerURL } from "@quests/shared";
-import { generateText } from "ai";
+import { APICallError, generateText } from "ai";
 import { err, ResultAsync } from "neverthrow";
 
 import { type WorkspaceConfig } from "../types";
@@ -58,10 +58,14 @@ export async function webSearch({
       };
     })(),
     (generationError) => {
-      const error = new TypedError.Unknown(
-        `Failed to perform web search: ${generationError instanceof Error ? generationError.message : "Unknown error"}`,
-        { cause: generationError },
-      );
+      const message = `Failed to perform web search: ${generationError instanceof Error ? generationError.message : "Unknown error"}`;
+      const responseBody = APICallError.isInstance(generationError)
+        ? generationError.responseBody
+        : undefined;
+      const error = new TypedError.APICall(message, {
+        cause: generationError,
+        responseBody,
+      });
       workspaceConfig.captureException(error);
       return error;
     },

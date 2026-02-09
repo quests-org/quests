@@ -3,6 +3,7 @@ import { type GitError } from "dugite";
 export namespace TypedError {
   const PREFIX = "workspace";
   export type Type =
+    | APICall
     | Conflict
     | DependencyInstall
     | FileSystem
@@ -12,6 +13,19 @@ export namespace TypedError {
     | ShimNotFound
     | Storage
     | Unknown;
+
+  export class APICall extends Error {
+    readonly responseBody: string | undefined;
+    readonly type = `${PREFIX}-api-call-error`;
+
+    constructor(
+      message: string,
+      options?: { cause?: unknown; responseBody?: string },
+    ) {
+      super(message, { cause: options?.cause });
+      this.responseBody = options?.responseBody;
+    }
+  }
 
   export class Conflict extends Error {
     readonly type = `${PREFIX}-conflict-error`;
