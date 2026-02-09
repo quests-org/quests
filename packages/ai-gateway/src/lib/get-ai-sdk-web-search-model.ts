@@ -96,7 +96,7 @@ export async function getAISDKWebSearchModel({
         model: sdk(QUESTS_AUTO_MODEL_PROVIDER_ID),
         providerOptions: {
           openrouter: {
-            plugins: [{ engine: "native", id: "web" }],
+            plugins: [{ engine: "auto", id: "web" }],
           },
         },
       };
