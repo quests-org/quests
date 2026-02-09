@@ -47,7 +47,6 @@ export const mainAgent = setupAgent({
     "RunDiagnostics",
     "RunShellCommand",
     "WebSearch",
-    "WebFetch",
     "WriteFile",
     // "Think", // Removed on 2026-01-08, as most models don't use it
   ]),
