@@ -145,7 +145,6 @@ export namespace SessionMessage {
       // AI SDK v6 still returns undefined sometimes, e.g. with the Vercel Gateway provider
       // eslint-disable-next-line unicorn/prefer-top-level-await
       .catch("unknown"),
-    isSummary: z.boolean().optional(),
     modelId: z.custom<(string & {}) | SyntheticModelId>(
       // Custom string type to allow for TypeScript auto-completion
       (v) => typeof v === "string",
