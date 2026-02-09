@@ -25,7 +25,7 @@ import {
   type AIGatewayModelURI,
 } from "@quests/ai-gateway/client";
 import { QuestsLogoSimpleIcon } from "@quests/components/logo-simple";
-import { QUESTS_AUTO_MODEL_PROVIDER_ID } from "@quests/shared";
+import { QUESTS_AUTO_MODEL_ID } from "@quests/shared";
 import { useNavigate } from "@tanstack/react-router";
 import {
   AlertCircle,
@@ -76,14 +76,12 @@ export function ModelPicker({
   const hasPlan = useHasPlan();
 
   const autoModel = useMemo(
-    () => models?.find((m) => m.providerId === QUESTS_AUTO_MODEL_PROVIDER_ID),
+    () => models?.find((m) => m.providerId === QUESTS_AUTO_MODEL_ID),
     [models],
   );
 
   const modelsWithoutAuto = useMemo(
-    () =>
-      models?.filter((m) => m.providerId !== QUESTS_AUTO_MODEL_PROVIDER_ID) ??
-      [],
+    () => models?.filter((m) => m.providerId !== QUESTS_AUTO_MODEL_ID) ?? [],
     [models],
   );
 
@@ -101,8 +99,7 @@ export function ModelPicker({
     [errors],
   );
 
-  const isAutoMode =
-    selectedModel?.providerId === QUESTS_AUTO_MODEL_PROVIDER_ID;
+  const isAutoMode = selectedModel?.providerId === QUESTS_AUTO_MODEL_ID;
 
   const hideModelList = isAutoMode && !searchQuery;
 

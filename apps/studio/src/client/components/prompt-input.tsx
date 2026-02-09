@@ -10,7 +10,7 @@ import { UploadedFilePreview } from "@/client/components/uploaded-file-preview";
 import { useWindowFileDrop } from "@/client/lib/use-window-file-drop";
 import { cn, isMacOS } from "@/client/lib/utils";
 import { type AIGatewayModelURI } from "@quests/ai-gateway/client";
-import { QUESTS_AUTO_MODEL_PROVIDER_ID } from "@quests/shared";
+import { QUESTS_AUTO_MODEL_ID } from "@quests/shared";
 import { type Upload as UploadType } from "@quests/workspace/client";
 import { useQuery } from "@tanstack/react-query";
 import { useAtom, useSetAtom } from "jotai";
@@ -111,14 +111,12 @@ export const PromptInput = ({
   const { errors: modelsErrors, models } = modelsData ?? {};
 
   const selectedModel = models?.find((model) => model.uri === modelURI);
-  const autoModel = models?.find(
-    (m) => m.providerId === QUESTS_AUTO_MODEL_PROVIDER_ID,
-  );
+  const autoModel = models?.find((m) => m.providerId === QUESTS_AUTO_MODEL_ID);
 
   const isInvalidQuestsModel =
     selectedModel &&
     selectedModel.params.provider === "quests" &&
-    selectedModel.providerId !== QUESTS_AUTO_MODEL_PROVIDER_ID;
+    selectedModel.providerId !== QUESTS_AUTO_MODEL_ID;
 
   const resetTextareaHeight = useCallback(() => {
     if (textareaInnerRef.current) {

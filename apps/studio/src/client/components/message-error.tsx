@@ -1,5 +1,5 @@
 import { type AIGatewayModelURI } from "@quests/ai-gateway/client";
-import { QUESTS_AUTO_MODEL_PROVIDER_ID } from "@quests/shared";
+import { QUESTS_AUTO_MODEL_ID } from "@quests/shared";
 import { type SessionMessage } from "@quests/workspace/client";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle } from "lucide-react";
@@ -87,7 +87,7 @@ export function MessageError({
 
   if (showActions && questsError && requiresAutoModelRecovery(message)) {
     const autoModel = models?.find(
-      (m) => m.providerId === QUESTS_AUTO_MODEL_PROVIDER_ID,
+      (m) => m.providerId === QUESTS_AUTO_MODEL_ID,
     );
 
     return (

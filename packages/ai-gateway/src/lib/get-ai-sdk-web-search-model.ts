@@ -2,10 +2,7 @@ import {
   type LanguageModelV3,
   type SharedV3ProviderOptions,
 } from "@ai-sdk/provider";
-import {
-  QUESTS_AUTO_MODEL_PROVIDER_ID,
-  type WorkspaceServerURL,
-} from "@quests/shared";
+import { QUESTS_AUTO_MODEL_ID, type WorkspaceServerURL } from "@quests/shared";
 import { type ToolSet } from "ai";
 import { Result } from "typescript-result";
 
@@ -111,7 +108,7 @@ export async function getAISDKWebSearchModel({
           ? sdk(callingModel.providerId)
           : config.type === "openrouter"
             ? sdk("openrouter/auto")
-            : sdk(QUESTS_AUTO_MODEL_PROVIDER_ID),
+            : sdk(QUESTS_AUTO_MODEL_ID),
         providerOptions: {
           openrouter: {
             // Let OpenRouter decide native vs Exa-powered
