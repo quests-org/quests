@@ -130,17 +130,21 @@ export namespace SessionMessage {
     endedAt: z.date().optional(),
     error: ErrorSchema.optional(),
     finishedAt: z.date().optional(),
-    finishReason: z.enum([
-      "aborted", // request was aborted
-      "stop", // model generated stop sequence
-      "length", // model generated maximum number of tokens
-      "content-filter", // content filter violation stopped the model
-      "tool-calls", // model triggered tool calls
-      "error", // model stopped because of an error
-      "other", // model stopped for other reasons
-      "unknown", // model stopped for other reasons
-      "max-steps", // stopped because of max steps
-    ]),
+    finishReason: z
+      .enum([
+        "aborted", // request was aborted
+        "stop", // model generated stop sequence
+        "length", // model generated maximum number of tokens
+        "content-filter", // content filter violation stopped the model
+        "tool-calls", // model triggered tool calls
+        "error", // model stopped because of an error
+        "other", // model stopped for other reasons
+        "unknown", // model stopped for other reasons
+        "max-steps", // stopped because of max steps
+      ])
+      // AI SDK v6 still returns undefined sometimes, e.g. with the Vercel Gateway provider
+      // eslint-disable-next-line unicorn/prefer-top-level-await
+      .catch("unknown"),
     isSummary: z.boolean().optional(),
     modelId: z.custom<(string & {}) | SyntheticModelId>(
       // Custom string type to allow for TypeScript auto-completion
