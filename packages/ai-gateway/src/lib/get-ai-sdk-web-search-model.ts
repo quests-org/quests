@@ -2,7 +2,10 @@ import {
   type LanguageModelV3,
   type SharedV3ProviderOptions,
 } from "@ai-sdk/provider";
-import { type WorkspaceServerURL } from "@quests/shared";
+import {
+  QUESTS_AUTO_MODEL_PROVIDER_ID,
+  type WorkspaceServerURL,
+} from "@quests/shared";
 import { type ToolSet } from "ai";
 import { Result } from "typescript-result";
 
@@ -60,12 +63,16 @@ export async function getAISDKWebSearchModel({
   }
 
   let result: AISDKWebSearchModelResult | undefined;
+  const isCallingModelSameProvider =
+    callingModel.params.provider === config.type;
 
   switch (config.type) {
     case "anthropic": {
       const sdk = await createAnthropicSDK(config, workspaceServerURL);
       result = {
-        model: sdk("claude-sonnet-4-5-20250929"),
+        model: isCallingModelSameProvider
+          ? sdk(callingModel.providerId)
+          : sdk("claude-sonnet-4-5-20250929"),
         tools: {
           web_search: sdk.tools.webSearch_20250305({ maxUses: 2 }),
         },
@@ -87,7 +94,9 @@ export async function getAISDKWebSearchModel({
     case "openai": {
       const sdk = await createOpenAISDK(config, workspaceServerURL);
       result = {
-        model: sdk("gpt-5-mini"),
+        model: isCallingModelSameProvider
+          ? sdk(callingModel.providerId)
+          : sdk("gpt-5-mini"),
         tools: {
           web_search: sdk.tools.webSearch(),
         },
@@ -98,7 +107,11 @@ export async function getAISDKWebSearchModel({
     case "quests": {
       const sdk = await createOpenRouterSDK(config, workspaceServerURL);
       result = {
-        model: sdk(callingModel.providerId),
+        model: isCallingModelSameProvider
+          ? sdk(callingModel.providerId)
+          : config.type === "openrouter"
+            ? sdk("openrouter/auto")
+            : sdk(QUESTS_AUTO_MODEL_PROVIDER_ID),
         providerOptions: {
           openrouter: {
             // Let OpenRouter decide native vs Exa-powered
@@ -111,7 +124,9 @@ export async function getAISDKWebSearchModel({
     case "x-ai": {
       const sdk = await createXAISDK(config, workspaceServerURL);
       result = {
-        model: sdk.responses("grok-4-1-fast-non-reasoning"),
+        model: isCallingModelSameProvider
+          ? sdk.responses(callingModel.providerId)
+          : sdk.responses("grok-4-1-fast-non-reasoning"),
         tools: {
           web_search: sdk.tools.webSearch(),
         },
