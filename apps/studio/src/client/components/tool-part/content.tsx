@@ -1,12 +1,10 @@
 import { formatBytes, type SessionMessagePart } from "@quests/workspace/client";
-import { useState } from "react";
 
-import { AIProviderGuardDialog } from "../ai-provider-guard-dialog";
 import { AIProviderIcon } from "../ai-provider-icon";
 import { ExternalLink } from "../external-link";
 import { SessionMarkdown } from "../session-markdown";
 import { Badge } from "../ui/badge";
-import { Button } from "../ui/button";
+import { ToolCapabilityFailure } from "./capability-failure";
 import { CodeBlock } from "./code-block";
 import { ToolPartFilePath } from "./file-path";
 import { MonoText } from "./mono-text";
@@ -72,10 +70,13 @@ export function ToolContent({
     case "tool-generate_image": {
       if (part.output.state === "failure") {
         return (
-          <GenerateImageFailure
-            input={part.input}
+          <ToolCapabilityFailure
+            capabilityLabel="image generation"
+            errorMessage={part.output.errorMessage}
             onRetry={onRetry}
-            output={part.output}
+            providerGuardDescription="Sign up for Quests or add an AI provider that supports image generation."
+            responseBody={part.output.responseBody}
+            retryMessage={`I added an image generation provider. Retry generating an image with "${part.input.prompt}"`}
           />
         );
       }
@@ -264,17 +265,14 @@ export function ToolContent({
     case "tool-web_search": {
       if (part.output.state === "failure") {
         return (
-          <div>
-            <SectionHeader>Web search failed</SectionHeader>
-            <div className="text-sm text-muted-foreground">
-              {part.output.errorMessage}
-            </div>
-            {part.output.responseBody && (
-              <ScrollableCodeBlock>
-                {part.output.responseBody}
-              </ScrollableCodeBlock>
-            )}
-          </div>
+          <ToolCapabilityFailure
+            capabilityLabel="web search"
+            errorMessage={part.output.errorMessage}
+            onRetry={onRetry}
+            providerGuardDescription="Sign up for Quests or add an AI provider that supports web search."
+            responseBody={part.output.responseBody}
+            retryMessage={`I added a web search provider. Retry searching for "${part.input.query}"`}
+          />
         );
       }
       return (
@@ -354,73 +352,6 @@ export function ToolContent({
       );
     }
   }
-}
-
-function GenerateImageFailure({
-  input,
-  onRetry,
-  output,
-}: {
-  input: Extract<
-    SessionMessagePart.ToolPart,
-    { type: "tool-generate_image" }
-  >["input"];
-  onRetry?: (message: string) => void;
-  output: Extract<
-    Extract<
-      SessionMessagePart.ToolPart,
-      { type: "tool-generate_image" }
-    >["output"],
-    { state: "failure" }
-  >;
-}) {
-  const [showProviderGuard, setShowProviderGuard] = useState(false);
-  const [providerAdded, setProviderAdded] = useState(false);
-
-  return (
-    <div>
-      <SectionHeader>Image generation failed</SectionHeader>
-      <div className="mb-3 text-sm text-muted-foreground">
-        {output.errorMessage}
-      </div>
-      {output.responseBody && (
-        <ScrollableCodeBlock>{output.responseBody}</ScrollableCodeBlock>
-      )}
-      <div className="mt-3 flex gap-2">
-        {providerAdded ? (
-          <Button
-            onClick={() => {
-              onRetry?.(
-                `I added an image generation provider. Retry generating an image with "${input?.prompt ?? "the image"}"`,
-              );
-            }}
-            size="sm"
-            variant="default"
-          >
-            Retry image generation
-          </Button>
-        ) : (
-          <Button
-            onClick={() => {
-              setShowProviderGuard(true);
-            }}
-            size="sm"
-            variant="default"
-          >
-            Add an AI Provider
-          </Button>
-        )}
-        <AIProviderGuardDialog
-          description="Sign up for Quests or add an AI provider that supports image generation."
-          onOpenChange={setShowProviderGuard}
-          onSuccess={() => {
-            setProviderAdded(true);
-          }}
-          open={showProviderGuard}
-        />
-      </div>
-    </div>
-  );
 }
 
 function getFaviconUrl(url: string): string {
