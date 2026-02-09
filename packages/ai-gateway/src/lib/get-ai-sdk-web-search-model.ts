@@ -2,7 +2,6 @@ import {
   type LanguageModelV3,
   type SharedV3ProviderOptions,
 } from "@ai-sdk/provider";
-import { type XaiProviderOptions } from "@ai-sdk/xai";
 import { type WorkspaceServerURL } from "@quests/shared";
 import { type ToolSet } from "ai";
 import { Result } from "typescript-result";
@@ -112,15 +111,9 @@ export async function getAISDKWebSearchModel({
     case "x-ai": {
       const sdk = await createXAISDK(config, workspaceServerURL);
       result = {
-        model: sdk("grok-4-1-fast-non-reasoning"),
-        providerOptions: {
-          xai: {
-            searchParameters: {
-              maxSearchResults: 10,
-              mode: "on",
-              returnCitations: true,
-            },
-          } satisfies XaiProviderOptions,
+        model: sdk.responses("grok-4-1-fast-non-reasoning"),
+        tools: {
+          web_search: sdk.tools.webSearch(),
         },
       };
       break;
