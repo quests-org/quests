@@ -1,3 +1,4 @@
+import { type LanguageModelV3Source } from "@ai-sdk/provider";
 import {
   type AIGatewayModel,
   type AIGatewayProviderConfig,
@@ -49,11 +50,54 @@ export async function webSearch({
         tools,
       });
 
+      // Edge case: Vercel AI SDK with Perplexity search returns results as
+      // tool call outputs rather than inline text, unlike every other search
+      // grounding provider. When this happens, textResult.text is typically
+      // empty and we need to synthesize text + sources from the tool results.
+      let { sources, text } = textResult;
+      if (
+        textResult.toolResults.some(
+          (result) => result.toolName === "perplexity_search",
+        )
+      ) {
+        const perplexityResults = textResult.toolResults
+          .filter((result) => result.toolName === "perplexity_search")
+          .flatMap((result) => {
+            const output = result.output as
+              | undefined
+              | {
+                  results: {
+                    date?: string;
+                    snippet: string;
+                    title: string;
+                    url: string;
+                  }[];
+                };
+            return output?.results ?? [];
+          });
+
+        text = perplexityResults.map((r) => r.snippet).join("\n\n");
+
+        sources = [
+          ...sources,
+          ...perplexityResults.map(
+            (r, i) =>
+              ({
+                id: `perplexity-${i}`,
+                sourceType: "url",
+                title: r.title,
+                type: "source",
+                url: r.url,
+              }) satisfies LanguageModelV3Source,
+          ),
+        ];
+      }
+
       return {
         modelId: model.modelId,
         provider: config,
-        sources: textResult.sources,
-        text: textResult.text,
+        sources,
+        text,
         usage: textResult.usage,
       };
     })(),

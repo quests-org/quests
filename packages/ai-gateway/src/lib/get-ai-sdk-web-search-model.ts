@@ -13,6 +13,7 @@ import {
   createGoogleSDK,
   createOpenAISDK,
   createOpenRouterSDK,
+  createVercelSDK,
   createXAISDK,
 } from "./ai-sdk-for-provider-config";
 import { TypedError } from "./errors";
@@ -30,6 +31,7 @@ const PROVIDER_TYPE_PRIORITY: WebSearchProviderType[] = [
   "google",
   "anthropic",
   "x-ai",
+  "vercel",
 ];
 
 export const TEST_WEB_SEARCH_MODEL_OVERRIDE_KEY =
@@ -114,6 +116,18 @@ export async function getAISDKWebSearchModel({
             // Let OpenRouter decide native vs Exa-powered
             plugins: [{ id: "web" }],
           },
+        },
+      };
+      break;
+    }
+    case "vercel": {
+      const sdk = createVercelSDK(config, workspaceServerURL);
+      result = {
+        model: isCallingModelSameProvider
+          ? sdk(callingModel.providerId)
+          : sdk("anthropic/claude-sonnet-4.5"),
+        tools: {
+          perplexity_search: sdk.tools.perplexitySearch(),
         },
       };
       break;

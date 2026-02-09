@@ -277,7 +277,7 @@ const PROVIDER_METADATA = {
     },
     description: "Access hundreds of models across many providers",
     name: "Vercel AI Gateway",
-    tags: ["imageGeneration"],
+    tags: ["imageGeneration", "webSearch"],
     type: "vercel",
     url: addRef("https://vercel.com/ai-gateway"),
   },
