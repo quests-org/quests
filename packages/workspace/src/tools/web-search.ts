@@ -4,9 +4,14 @@ import { dedent } from "radashi";
 import { z } from "zod";
 
 import { executeError } from "../lib/execute-error";
-import { webSearch, WebSearchResultSchema } from "../lib/web-search";
+import { webSearch } from "../lib/web-search";
 import { getWorkspaceServerURL } from "../logic/server/url";
-import { BaseInputSchema, TOOL_EXPLANATION_PARAM_NAME } from "./base";
+import {
+  BaseInputSchema,
+  ProviderOutputSchema,
+  TOOL_EXPLANATION_PARAM_NAME,
+  UsageOutputSchema,
+} from "./base";
 import { createTool } from "./create-tool";
 
 const INPUT_PARAMS = {
@@ -96,21 +101,9 @@ export const WebSearch = createTool({
   }),
   name: "web_search",
   outputSchema: z.discriminatedUnion("state", [
-    WebSearchResultSchema.pick({
-      modelId: true,
-      text: true,
-      usage: true,
-    }).extend({
-      provider: WebSearchResultSchema.shape.provider
-        .pick({
-          displayName: true,
-          id: true,
-          type: true,
-        })
-        .meta({
-          description:
-            "A limited set of provider configuration details to display in the UI",
-        }),
+    z.object({
+      modelId: z.string(),
+      provider: ProviderOutputSchema,
       sources: z.array(
         z.object({
           title: z.string().optional(),
@@ -118,6 +111,8 @@ export const WebSearch = createTool({
         }),
       ),
       state: z.literal("success"),
+      text: z.string(),
+      usage: UsageOutputSchema,
     }),
     z.object({
       errorMessage: z.string(),

@@ -1,4 +1,3 @@
-import { AIGatewayProviderConfig } from "@quests/ai-gateway";
 import { imageSize } from "image-size";
 import mime from "mime-types";
 import ms from "ms";
@@ -15,7 +14,12 @@ import { normalizePath } from "../lib/normalize-path";
 import { writeFileWithDir } from "../lib/write-file-with-dir";
 import { getWorkspaceServerURL } from "../logic/server/url";
 import { RelativePathSchema } from "../schemas/paths";
-import { BaseInputSchema, TOOL_EXPLANATION_PARAM_NAME } from "./base";
+import {
+  BaseInputSchema,
+  ProviderOutputSchema,
+  TOOL_EXPLANATION_PARAM_NAME,
+  UsageOutputSchema,
+} from "./base";
 import { createTool } from "./create-tool";
 
 const INPUT_PARAMS = {
@@ -177,20 +181,9 @@ export const GenerateImage = createTool({
         }),
       ),
       modelId: z.string(),
-      provider: AIGatewayProviderConfig.Schema.pick({
-        displayName: true,
-        id: true,
-        type: true,
-      }).meta({
-        description:
-          "A limited set of provider configuration details to display in the UI",
-      }),
+      provider: ProviderOutputSchema,
       state: z.literal("success"),
-      usage: z.object({
-        inputTokens: z.union([z.number(), z.nan()]).optional(),
-        outputTokens: z.union([z.number(), z.nan()]).optional(),
-        totalTokens: z.union([z.number(), z.nan()]).optional(),
-      }),
+      usage: UsageOutputSchema,
     }),
     z.object({
       errorMessage: z.string(),

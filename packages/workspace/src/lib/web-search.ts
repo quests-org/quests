@@ -1,5 +1,5 @@
 import {
-  AIGatewayProviderConfig,
+  type AIGatewayProviderConfig,
   getAISDKWebSearchModel,
   getAllProviderMetadata,
   getProviderMetadata,
@@ -7,7 +7,6 @@ import {
 import { type WorkspaceServerURL } from "@quests/shared";
 import { generateText } from "ai";
 import { err, ResultAsync } from "neverthrow";
-import { z } from "zod";
 
 import { type WorkspaceConfig } from "../types";
 import { TypedError } from "./errors";
@@ -31,38 +30,6 @@ const WEB_SEARCH_PROVIDERS = getAllProviderMetadata()
     ];
     return order.indexOf(a) - order.indexOf(b);
   });
-
-const LanguageModelV3SourceSchema = z.discriminatedUnion("sourceType", [
-  z.object({
-    id: z.string(),
-    providerMetadata: z.record(z.string(), z.unknown()).optional(),
-    sourceType: z.literal("url"),
-    title: z.string().optional(),
-    type: z.literal("source"),
-    url: z.string(),
-  }),
-  z.object({
-    filename: z.string().optional(),
-    id: z.string(),
-    mediaType: z.string(),
-    providerMetadata: z.record(z.string(), z.unknown()).optional(),
-    sourceType: z.literal("document"),
-    title: z.string(),
-    type: z.literal("source"),
-  }),
-]);
-
-export const WebSearchResultSchema = z.object({
-  modelId: z.string(),
-  provider: AIGatewayProviderConfig.Schema,
-  sources: z.array(LanguageModelV3SourceSchema),
-  text: z.string(),
-  usage: z.object({
-    inputTokens: z.number().optional(),
-    outputTokens: z.number().optional(),
-    totalTokens: z.number().optional(),
-  }),
-});
 
 export async function webSearch({
   configs,
@@ -195,7 +162,7 @@ async function tryWebSearchWithConfig({
         sources: textResult.sources,
         text: textResult.text,
         usage: textResult.usage,
-      } satisfies z.output<typeof WebSearchResultSchema>;
+      };
     })(),
     (generationError) => {
       const error = new TypedError.NoWebSearchModel(
