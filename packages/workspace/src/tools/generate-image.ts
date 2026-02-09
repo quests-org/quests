@@ -60,19 +60,10 @@ export const GenerateImage = createTool({
       path.join(parsedPath.dir, parsedPath.name),
     );
 
-    const providerConfigs = appConfig.workspaceConfig.getAIProviderConfigs();
-    const preferredProviderConfig = providerConfigs.find(
-      (c) => c.id === model.params.providerConfigId,
-    );
-
-    if (!preferredProviderConfig) {
-      return executeError("No AI provider found for current model.");
-    }
-
     const result = await generateImages({
-      configs: providerConfigs,
+      callingModel: model,
+      configs: appConfig.workspaceConfig.getAIProviderConfigs(),
       count: 1,
-      preferredProviderConfig,
       prompt: input.prompt,
       signal,
       workspaceConfig: appConfig.workspaceConfig,

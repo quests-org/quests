@@ -30,18 +30,9 @@ export const WebSearch = createTool({
     - Any question where current, accurate information would improve your response
   `,
   execute: async ({ appConfig, input, model, signal }) => {
-    const providerConfigs = appConfig.workspaceConfig.getAIProviderConfigs();
-    const preferredProviderConfig = providerConfigs.find(
-      (c) => c.id === model.params.providerConfigId,
-    );
-
-    if (!preferredProviderConfig) {
-      return executeError("No AI provider found for current model.");
-    }
-
     const result = await webSearch({
-      configs: providerConfigs,
-      preferredProviderConfig,
+      callingModel: model,
+      configs: appConfig.workspaceConfig.getAIProviderConfigs(),
       prompt: input.query,
       signal,
       workspaceConfig: appConfig.workspaceConfig,

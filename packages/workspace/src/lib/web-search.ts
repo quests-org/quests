@@ -1,4 +1,5 @@
 import {
+  type AIGatewayModel,
   type AIGatewayProviderConfig,
   getWebSearchModel,
 } from "@quests/ai-gateway";
@@ -10,23 +11,23 @@ import { type WorkspaceConfig } from "../types";
 import { TypedError } from "./errors";
 
 export async function webSearch({
+  callingModel,
   configs,
-  preferredProviderConfig,
   prompt,
   signal,
   workspaceConfig,
   workspaceServerURL,
 }: {
+  callingModel: AIGatewayModel.Type;
   configs: AIGatewayProviderConfig.Type[];
-  preferredProviderConfig: AIGatewayProviderConfig.Type;
   prompt: string;
   signal: AbortSignal;
   workspaceConfig: WorkspaceConfig;
   workspaceServerURL: WorkspaceServerURL;
 }) {
   const modelResult = await getWebSearchModel({
+    callingModel,
     configs,
-    preferredProviderConfig,
     workspaceServerURL,
   });
 

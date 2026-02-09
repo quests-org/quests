@@ -5,6 +5,7 @@ import {
 } from "@quests/shared";
 import { Result } from "typescript-result";
 
+import { type AIGatewayModel } from "../schemas/model";
 import { type AIGatewayProviderConfig } from "../schemas/provider-config";
 import {
   createFireworksSDK,
@@ -103,14 +104,24 @@ export async function getAISDKImageModel({
 }
 
 export async function getImageModel({
+  callingModel,
   configs,
-  preferredProviderConfig,
   workspaceServerURL,
 }: {
+  callingModel: AIGatewayModel.Type;
   configs: AIGatewayProviderConfig.Type[];
-  preferredProviderConfig: AIGatewayProviderConfig.Type;
   workspaceServerURL: WorkspaceServerURL;
 }) {
+  const preferredProviderConfig = configs.find(
+    (c) => c.id === callingModel.params.providerConfigId,
+  );
+
+  if (!preferredProviderConfig) {
+    return Result.error(
+      new TypedError.NotFound("No AI provider found for current model"),
+    );
+  }
+
   const configsToTry = selectProviderConfigs({
     configs,
     preferredProviderConfig,

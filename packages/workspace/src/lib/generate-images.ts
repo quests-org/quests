@@ -1,4 +1,5 @@
 import {
+  type AIGatewayModel,
   type AIGatewayProviderConfig,
   getImageModel,
 } from "@quests/ai-gateway";
@@ -10,25 +11,25 @@ import { type WorkspaceConfig } from "../types";
 import { TypedError } from "./errors";
 
 export async function generateImages({
+  callingModel,
   configs,
   count,
-  preferredProviderConfig,
   prompt,
   signal,
   workspaceConfig,
   workspaceServerURL,
 }: {
+  callingModel: AIGatewayModel.Type;
   configs: AIGatewayProviderConfig.Type[];
   count: number;
-  preferredProviderConfig: AIGatewayProviderConfig.Type;
   prompt: string;
   signal: AbortSignal;
   workspaceConfig: WorkspaceConfig;
   workspaceServerURL: WorkspaceServerURL;
 }) {
   const modelResult = await getImageModel({
+    callingModel,
     configs,
-    preferredProviderConfig,
     workspaceServerURL,
   });
 

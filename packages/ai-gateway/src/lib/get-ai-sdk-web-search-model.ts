@@ -10,6 +10,7 @@ import {
 import { type ToolSet } from "ai";
 import { Result } from "typescript-result";
 
+import { type AIGatewayModel } from "../schemas/model";
 import { type AIGatewayProviderConfig } from "../schemas/provider-config";
 import {
   createAnthropicSDK,
@@ -132,14 +133,24 @@ export async function getAISDKWebSearchModel({
 }
 
 export async function getWebSearchModel({
+  callingModel,
   configs,
-  preferredProviderConfig,
   workspaceServerURL,
 }: {
+  callingModel: AIGatewayModel.Type;
   configs: AIGatewayProviderConfig.Type[];
-  preferredProviderConfig: AIGatewayProviderConfig.Type;
   workspaceServerURL: WorkspaceServerURL;
 }) {
+  const preferredProviderConfig = configs.find(
+    (c) => c.id === callingModel.params.providerConfigId,
+  );
+
+  if (!preferredProviderConfig) {
+    return Result.error(
+      new TypedError.NotFound("No AI provider found for current model"),
+    );
+  }
+
   const configsToTry = selectProviderConfigs({
     configs,
     preferredProviderConfig,
