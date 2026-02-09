@@ -50,6 +50,14 @@ export function createMainWindowMenu(): MenuItemConstructorOptions[] {
         },
         label: "Close Tab",
       },
+      {
+        accelerator: "CmdOrCtrl+Shift+T",
+        click: () => {
+          const tabsManager = getTabsManager();
+          tabsManager?.reopenClosedTab();
+        },
+        label: "Reopen Closed Tab",
+      },
     ],
   };
 
@@ -145,6 +153,37 @@ export function createMainWindowMenu(): MenuItemConstructorOptions[] {
           getTabsManager()?.zoomOut();
         },
         label: "Zoom Out",
+      },
+      { type: "separator" as const },
+      {
+        accelerator: "Ctrl+Tab",
+        click: () => {
+          getTabsManager()?.selectNextTab();
+        },
+        label: "Show Next Tab",
+      },
+      {
+        accelerator: "Ctrl+Shift+Tab",
+        click: () => {
+          getTabsManager()?.selectPreviousTab();
+        },
+        label: "Show Previous Tab",
+      },
+      {
+        accelerator: "CmdOrCtrl+Shift+]",
+        click: () => {
+          getTabsManager()?.selectNextTab();
+        },
+        label: "Show Next Tab",
+        visible: false,
+      },
+      {
+        accelerator: "CmdOrCtrl+Shift+[",
+        click: () => {
+          getTabsManager()?.selectPreviousTab();
+        },
+        label: "Show Previous Tab",
+        visible: false,
       },
       { type: "separator" as const },
       { role: "minimize" as const },

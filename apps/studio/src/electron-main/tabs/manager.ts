@@ -32,6 +32,7 @@ interface TabWithView extends Tab {
 export class TabsManager {
   private baseWindow: BaseWindow;
   private logger: LogFunctions;
+  private recentlyClosed: Tab[] = [];
   private selectedTabId: null | string = null;
   private sidebarWidth = 0;
   private store: Store<TabStore>;
@@ -128,8 +129,11 @@ export class TabsManager {
       return;
     }
 
+    const { webView: _webView, ...closedTabData } = tab;
+    this.recentlyClosed.push(closedTabData);
+
     this.closeTabView(tab);
-    this.selectNextTab(tab, tabIndex);
+    this.selectNeighborTab(tab, tabIndex);
     this.tabs = this.tabs.filter((t) => t.id !== id);
 
     if (this.tabs.length === 0) {
@@ -219,6 +223,17 @@ export class TabsManager {
     this.emitStateChange(this.getState());
   }
 
+  public reopenClosedTab() {
+    const closedTab = this.recentlyClosed.pop();
+    if (!closedTab) {
+      return;
+    }
+
+    this.addTab({
+      urlPath: closedTab.pathname as StudioPath,
+    });
+  }
+
   public reorderTabs(ids: string[]) {
     // Separate pinned and non-pinned tabs
     const pinnedTabs = this.tabs.filter((tab) => tab.pinned);
@@ -238,6 +253,38 @@ export class TabsManager {
   public resetZoom() {
     const tab = this.getCurrentTab();
     tab?.webView.webContents.setZoomLevel(0);
+  }
+
+  public selectNextTab() {
+    if (this.tabs.length <= 1) {
+      return;
+    }
+    const currentIndex = this.tabs.findIndex(
+      (t) => t.id === this.selectedTabId,
+    );
+    const nextIndex = (currentIndex + 1) % this.tabs.length;
+    const tab = this.tabs[nextIndex];
+    if (tab) {
+      this.updateTabBounds(tab);
+      this.selectTabView(tab);
+      this.afterUpdate();
+    }
+  }
+
+  public selectPreviousTab() {
+    if (this.tabs.length <= 1) {
+      return;
+    }
+    const currentIndex = this.tabs.findIndex(
+      (t) => t.id === this.selectedTabId,
+    );
+    const prevIndex = (currentIndex - 1 + this.tabs.length) % this.tabs.length;
+    const tab = this.tabs[prevIndex];
+    if (tab) {
+      this.updateTabBounds(tab);
+      this.selectTabView(tab);
+      this.afterUpdate();
+    }
   }
 
   public selectTab({ id }: { id: string }) {
@@ -369,7 +416,7 @@ export class TabsManager {
     publisher.publish("tabs.updated", value);
   }
 
-  private selectNextTab(tab: Tab, index: number) {
+  private selectNeighborTab(tab: Tab, index: number) {
     const isSelected = this.selectedTabId === tab.id;
 
     if (isSelected) {
