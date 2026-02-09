@@ -3,10 +3,7 @@ import {
   type SharedV3ProviderOptions,
 } from "@ai-sdk/provider";
 import { type XaiProviderOptions } from "@ai-sdk/xai";
-import {
-  QUESTS_AUTO_MODEL_PROVIDER_ID,
-  type WorkspaceServerURL,
-} from "@quests/shared";
+import { type WorkspaceServerURL } from "@quests/shared";
 import { type ToolSet } from "ai";
 import { Result } from "typescript-result";
 
@@ -14,12 +11,16 @@ import { type AIGatewayModel } from "../schemas/model";
 import { type AIGatewayProviderConfig } from "../schemas/provider-config";
 import {
   createAnthropicSDK,
+  createGoogleSDK,
   createOpenAISDK,
   createOpenRouterSDK,
   createXAISDK,
 } from "./ai-sdk-for-provider-config";
 import { TypedError } from "./errors";
-import { type WebSearchProviderType } from "./providers/metadata";
+import {
+  filterWebSearchConfigs,
+  type WebSearchProviderType,
+} from "./providers/metadata";
 import { selectProviderConfigs } from "./select-provider-configs";
 
 const PROVIDER_TYPE_PRIORITY: WebSearchProviderType[] = [
@@ -27,6 +28,7 @@ const PROVIDER_TYPE_PRIORITY: WebSearchProviderType[] = [
   "quests",
   "openrouter",
   "openai",
+  "google",
   "anthropic",
   "x-ai",
 ];
@@ -41,10 +43,12 @@ export interface AISDKWebSearchModelResult {
 }
 
 export async function getAISDKWebSearchModel({
+  callingModel,
   config,
   workspaceServerURL,
 }: {
-  config: AIGatewayProviderConfig.Type;
+  callingModel: AIGatewayModel.Type;
+  config: AIGatewayProviderConfig.Type & { type: WebSearchProviderType };
   workspaceServerURL: WorkspaceServerURL;
 }) {
   const testOverride = (
@@ -69,6 +73,18 @@ export async function getAISDKWebSearchModel({
       };
       break;
     }
+    case "google": {
+      const sdk = await createGoogleSDK(config, workspaceServerURL);
+      result = {
+        model: sdk("gemini-3-pro-preview"),
+        tools: {
+          web_search: sdk.tools.googleSearch({
+            mode: "MODE_UNSPECIFIED", // Ensures search always runs
+          }),
+        },
+      };
+      break;
+    }
     case "openai": {
       const sdk = await createOpenAISDK(config, workspaceServerURL);
       result = {
@@ -79,25 +95,15 @@ export async function getAISDKWebSearchModel({
       };
       break;
     }
-    case "openrouter": {
-      const sdk = await createOpenRouterSDK(config, workspaceServerURL);
-      result = {
-        model: sdk("google/gemini-2.5-flash"),
-        providerOptions: {
-          openrouter: {
-            plugins: [{ engine: "native", id: "web" }],
-          },
-        },
-      };
-      break;
-    }
+    case "openrouter":
     case "quests": {
       const sdk = await createOpenRouterSDK(config, workspaceServerURL);
       result = {
-        model: sdk(QUESTS_AUTO_MODEL_PROVIDER_ID),
+        model: sdk(callingModel.providerId),
         providerOptions: {
           openrouter: {
-            plugins: [{ engine: "auto", id: "web" }],
+            // Let OpenRouter decide native vs Exa-powered
+            plugins: [{ id: "web" }],
           },
         },
       };
@@ -119,17 +125,17 @@ export async function getAISDKWebSearchModel({
       };
       break;
     }
+    default: {
+      const _exhaustiveCheck: never = config.type;
+      return Result.error(
+        new TypedError.NotFound(
+          `Unhandled provider type: ${JSON.stringify(_exhaustiveCheck)}`,
+        ),
+      );
+    }
   }
 
-  if (result) {
-    return Result.ok({ ...result, config });
-  }
-
-  return Result.error(
-    new TypedError.NotFound(
-      `Provider ${config.type} does not support web search`,
-    ),
-  );
+  return Result.ok({ ...result, config });
 }
 
 export async function getWebSearchModel({
@@ -151,8 +157,10 @@ export async function getWebSearchModel({
     );
   }
 
+  const supportedConfigs = filterWebSearchConfigs(configs);
+
   const configsToTry = selectProviderConfigs({
-    configs,
+    configs: supportedConfigs,
     preferredProviderConfig,
     providerTypePriority: PROVIDER_TYPE_PRIORITY,
   });
@@ -164,7 +172,11 @@ export async function getWebSearchModel({
   }
 
   for (const config of configsToTry) {
-    const result = await getAISDKWebSearchModel({ config, workspaceServerURL });
+    const result = await getAISDKWebSearchModel({
+      callingModel,
+      config,
+      workspaceServerURL,
+    });
     if (result.ok) {
       return Result.ok({ ...result.value, config });
     }

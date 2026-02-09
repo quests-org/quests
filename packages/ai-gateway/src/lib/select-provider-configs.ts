@@ -4,21 +4,23 @@ import { type AIGatewayProviderConfig } from "../schemas/provider-config";
  * Selects an ordered list of up to `maxConfigs` provider configs to try,
  * given a preferred config and a priority-ordered list of supported provider types.
  */
-export function selectProviderConfigs({
+export function selectProviderConfigs<
+  T extends AIGatewayProviderConfig.Type = AIGatewayProviderConfig.Type,
+>({
   configs,
   maxConfigs = 2,
   preferredProviderConfig,
   providerTypePriority,
 }: {
-  configs: AIGatewayProviderConfig.Type[];
+  configs: T[];
   maxConfigs?: number;
   preferredProviderConfig: AIGatewayProviderConfig.Type;
-  providerTypePriority: AIGatewayProviderConfig.Type["type"][];
-}): AIGatewayProviderConfig.Type[] {
+  providerTypePriority: T["type"][];
+}): T[] {
   const supportedTypes = new Set<string>(providerTypePriority);
   const isSupported = (type: string) => supportedTypes.has(type);
 
-  const result: AIGatewayProviderConfig.Type[] = [];
+  const result: T[] = [];
 
   // 1. Try exact ID match first
   const exactMatch = configs.find(

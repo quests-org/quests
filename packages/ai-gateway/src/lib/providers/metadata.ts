@@ -1,6 +1,7 @@
 import { addRef, type AIProviderType } from "@quests/shared";
 import { objectify } from "radashi";
 
+import { type AIGatewayProviderConfig } from "../../schemas/provider-config";
 import {
   type ProviderMetadata,
   type ProviderMetadataInput,
@@ -87,7 +88,7 @@ const PROVIDER_METADATA = {
     },
     description: "Google AI Studio with Gemini and other models",
     name: "Google",
-    tags: ["imageGeneration"],
+    tags: ["imageGeneration", "webSearch"],
     type: "google",
     url: addRef("https://ai.google.dev/gemini-api/docs"),
   },
@@ -322,6 +323,27 @@ export type WebSearchProviderType = {
       : never
     : never;
 }[keyof typeof PROVIDER_METADATA];
+
+export function filterImageGenerationConfigs(
+  configs: AIGatewayProviderConfig.Type[],
+): (AIGatewayProviderConfig.Type & { type: ImageGenerationProviderType })[] {
+  return configs.filter(
+    (
+      c,
+    ): c is AIGatewayProviderConfig.Type & {
+      type: ImageGenerationProviderType;
+    } => getProviderMetadata(c.type).tags.includes("imageGeneration"),
+  );
+}
+
+export function filterWebSearchConfigs(
+  configs: AIGatewayProviderConfig.Type[],
+): (AIGatewayProviderConfig.Type & { type: WebSearchProviderType })[] {
+  return configs.filter(
+    (c): c is AIGatewayProviderConfig.Type & { type: WebSearchProviderType } =>
+      getProviderMetadata(c.type).tags.includes("webSearch"),
+  );
+}
 
 const PARSED_PROVIDER_METADATA_BY_TYPE = objectify(
   Object.values(PROVIDER_METADATA).map((metadata) =>
