@@ -1,5 +1,7 @@
 import { cn } from "@/client/lib/utils";
 
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
+
 export function Favicon({
   className,
   url,
@@ -7,15 +9,22 @@ export function Favicon({
   className?: string;
   url: string;
 }) {
+  const hostname = URL.canParse(url) ? new URL(url).hostname : url;
+
   return (
-    <img
-      alt=""
-      className={cn(
-        "size-4 shrink-0 rounded-full border border-border/50 bg-background",
-        className,
-      )}
-      src={getFaviconUrl(url)}
-    />
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <img
+          alt={`Favicon for ${hostname}`}
+          className={cn(
+            "size-4 shrink-0 rounded-full border border-border/50 bg-background",
+            className,
+          )}
+          src={getFaviconUrl(url)}
+        />
+      </TooltipTrigger>
+      <TooltipContent>{hostname}</TooltipContent>
+    </Tooltip>
   );
 }
 
