@@ -18,7 +18,7 @@ registerSession({
       },
       parts: [
         builder.textPart(
-          "Help me explore and refactor the codebase. I need to find files, read them, search for patterns, run diagnostics, and make some changes.",
+          "Help me explore and refactor the codebase. I need to find files, read them, search for patterns, run diagnostics, make some changes, search the web, and generate an image.",
           userMessageId,
         ),
       ],
@@ -35,7 +35,7 @@ registerSession({
       },
       parts: [
         builder.textPart(
-          "I'll help you explore and refactor the codebase. Let me start by finding relevant files using glob.",
+          "I'll help you with all of that. Let me start by finding relevant files using glob.",
           assistantMessageId,
         ),
         builder.toolPart(assistantMessageId, "output-available", {
@@ -177,7 +177,84 @@ registerSession({
           type: "tool-run_shell_command",
         }),
         builder.textPart(
-          "Perfect! I've successfully demonstrated all the tools:\n1. Found TypeScript files using glob\n2. Searched for formatDate usages with grep\n3. Ran diagnostics to find type errors\n4. Read file contents using read_file\n5. Edited the file using edit_file\n6. Created a new test file using write_file\n7. Ran tests using shell command",
+          "Let me search the web for the latest Vitest configuration best practices.",
+          assistantMessageId,
+        ),
+        builder.toolPart(assistantMessageId, "output-available", {
+          input: {
+            explanation:
+              "Search for the latest Vitest configuration best practices",
+            query: "Vitest configuration best practices 2025",
+          },
+          output: {
+            modelId: "gpt-4o-search-preview",
+            provider: {
+              displayName: "OpenAI",
+              id: "openai-default",
+              type: "openai",
+            },
+            sources: [
+              {
+                title: "Vitest - Getting Started | Guide",
+                url: "https://vitest.dev/guide/",
+              },
+              {
+                title:
+                  "Vitest Configuration Reference | Best Practices for 2025",
+                url: "https://vitest.dev/config/",
+              },
+              {
+                title: "Testing with Vitest - Dev.to",
+                url: "https://dev.to/testing-vitest-best-practices",
+              },
+            ],
+            state: "success",
+            text: "## Vitest Configuration Best Practices\n\nVitest is a blazing-fast unit testing framework powered by Vite. Here are the recommended best practices for configuration:\n\n1. **Use `vitest.config.ts`** - Keep your test config separate from your Vite config for clarity.\n2. **Enable globals** - Set `globals: true` to avoid importing `describe`, `it`, `expect` in every file.\n3. **Configure coverage** - Use `@vitest/coverage-v8` for fast, reliable coverage reports.\n4. **Use workspace mode** - For monorepos, define a `vitest.workspace.ts` to run tests across packages.\n5. **Set `testTimeout`** - Always set a reasonable timeout to catch hanging tests early.",
+            usage: {
+              inputTokens: 150,
+              outputTokens: 420,
+              totalTokens: 570,
+            },
+          },
+          type: "tool-web_search",
+        }),
+        builder.textPart(
+          "Now let me generate an icon for the project.",
+          assistantMessageId,
+        ),
+        builder.toolPart(assistantMessageId, "output-available", {
+          input: {
+            explanation: "Generate a project icon for the helpers library",
+            filePath: "./assets/helpers-icon",
+            prompt:
+              "A minimal flat vector icon representing a code utility library. Features interlocking gear and wrench symbols in a modern blue gradient style on a transparent background.",
+          },
+          output: {
+            images: [
+              {
+                filePath: "./assets/helpers-icon.png",
+                height: 1024,
+                sizeBytes: 245_760,
+                width: 1024,
+              },
+            ],
+            modelId: "gpt-5-image",
+            provider: {
+              displayName: "OpenAI",
+              id: "openai-default",
+              type: "openai",
+            },
+            state: "success",
+            usage: {
+              inputTokens: 0,
+              outputTokens: 0,
+              totalTokens: 0,
+            },
+          },
+          type: "tool-generate_image",
+        }),
+        builder.textPart(
+          "Perfect! I've successfully demonstrated all the tools:\n1. Found TypeScript files using glob\n2. Searched for formatDate usages with grep\n3. Ran diagnostics to find type errors\n4. Read file contents using read_file\n5. Edited the file using edit_file\n6. Created a new test file using write_file\n7. Ran tests using shell command\n8. Searched the web for best practices\n9. Generated a project icon image",
           assistantMessageId,
         ),
       ],

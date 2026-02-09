@@ -7,12 +7,17 @@ import { Loader2Icon } from "lucide-react";
 import { useState } from "react";
 
 import { filenameFromFilePath } from "../../lib/file-utils";
-import { getToolLabel, getToolStreamingLabel } from "../../lib/tool-display";
+import {
+  getToolFailedLabel,
+  getToolLabel,
+  getToolStreamingLabel,
+} from "../../lib/tool-display";
 import { cn } from "../../lib/utils";
 import {
   CollapsiblePartMainContent,
   CollapsiblePartTrigger,
 } from "../collapsible-part";
+import { Favicon } from "../favicon";
 import { ReasoningMessage } from "../reasoning-message";
 import { ToolIcon } from "../tool-icon";
 import {
@@ -110,7 +115,11 @@ export function ToolPart({
 
   let label: string;
   let value: string | undefined;
-  const reasoning = getExplanation(part.input);
+  const isWebSearch = toolName === "web_search";
+  // Omit explanation for web search, since the query is self evident.
+  const reasoning = isWebSearch ? undefined : getExplanation(part.input);
+  const hasCapabilityFailure = hasOutputFailureState(part);
+  const isFailed = isError || hasCapabilityFailure;
 
   switch (part.state) {
     case "input-available": {
@@ -128,19 +137,28 @@ export function ToolPart({
         label = getToolLabel(toolName);
         value = truncateText(part.output.thought, 80);
       } else {
-        label = getToolLabel(toolName);
+        label = hasCapabilityFailure
+          ? getToolFailedLabel(toolName)
+          : getToolLabel(toolName);
         value = getToolOutputDescription(part);
       }
       break;
     }
     case "output-error": {
-      label = getToolLabel(toolName);
+      label = getToolFailedLabel(toolName);
       value = part.errorText;
       break;
     }
     default: {
       label = getToolLabel(toolName);
       value = getToolInputValue(part);
+    }
+  }
+
+  if (isWebSearch && !isFailed) {
+    const query = getWebSearchQuery(part);
+    if (query) {
+      value = `"${query}"`;
     }
   }
 
@@ -164,12 +182,14 @@ export function ToolPart({
     );
   }
 
+  const webSearchSources = getWebSearchSources(part);
+
   const mainContent = (
     <ToolPartListItemCompact
       icon={
         isLoading ? (
           <Loader2Icon className="size-3 animate-spin" />
-        ) : (
+        ) : isFailed ? undefined : (
           <ToolIcon className="size-3" toolName={toolName} />
         )
       }
@@ -177,7 +197,28 @@ export function ToolPart({
       label={label}
       labelClassName={cn(isLoading && "shiny-text")}
       reasoning={reasoning}
-      value={value}
+      value={
+        webSearchSources.length > 0 ? (
+          <span className="flex items-center gap-1.5">
+            <span className="truncate">{value}</span>
+            <span className="flex shrink-0 items-center -space-x-1">
+              {webSearchSources.slice(0, 4).map((source, index) => (
+                <Favicon
+                  className="size-3.5 ring-1 ring-background"
+                  key={`${source.url}-${index}`}
+                  url={source.url}
+                />
+              ))}
+            </span>
+            <span className="shrink-0 text-muted-foreground">
+              {webSearchSources.length} source
+              {webSearchSources.length === 1 ? "" : "s"}
+            </span>
+          </span>
+        ) : (
+          value
+        )
+      }
     />
   );
 
@@ -381,6 +422,38 @@ function getToolOutputDescription(
       return (part as { type: string }).type;
     }
   }
+}
+
+function getWebSearchQuery(
+  part: SessionMessagePart.ToolPart,
+): string | undefined {
+  if (part.type === "tool-web_search" && part.input?.query) {
+    return part.input.query;
+  }
+  return undefined;
+}
+
+function getWebSearchSources(
+  part: SessionMessagePart.ToolPart,
+): { url: string }[] {
+  if (
+    part.type === "tool-web_search" &&
+    part.state === "output-available" &&
+    part.output.state === "success"
+  ) {
+    return part.output.sources;
+  }
+  return [];
+}
+
+function hasOutputFailureState(part: SessionMessagePart.ToolPart): boolean {
+  if (part.state !== "output-available") {
+    return false;
+  }
+  if (part.type === "tool-web_search" || part.type === "tool-generate_image") {
+    return part.output.state === "failure";
+  }
+  return false;
 }
 
 function truncateText(text: string, maxLength = 100) {

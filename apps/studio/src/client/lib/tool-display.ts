@@ -27,7 +27,7 @@ const TOOL_DISPLAY_NAMES: Record<ToolName, string | undefined> = {
   run_shell_command: "Ran command",
   think: "Thought",
   unavailable: "Unknown tool",
-  web_search: "Searched the web",
+  web_search: "Searched web",
   write_file: "Created",
 };
 
@@ -64,6 +64,21 @@ const TOOL_STREAMING_DISPLAY_NAMES_WITH_VALUE: Record<
   write_file: "Creating",
 };
 
+const TOOL_FAILED_DISPLAY_NAMES: Record<ToolName, string | undefined> = {
+  choose: "Failed to answer",
+  edit_file: "Failed to edit file",
+  generate_image: "Failed to generate image",
+  glob: "Failed to search files",
+  grep: "Failed to search text",
+  read_file: "Failed to read file",
+  run_diagnostics: "Failed to run diagnostics",
+  run_shell_command: "Failed to run command",
+  think: "Failed to think",
+  unavailable: "Unknown tool",
+  web_search: "Failed to search the web",
+  write_file: "Failed to create file",
+};
+
 export const TOOL_ICONS: Record<ToolName, LucideIcon | undefined> = {
   choose: HelpCircle,
   edit_file: Pencil,
@@ -78,6 +93,10 @@ export const TOOL_ICONS: Record<ToolName, LucideIcon | undefined> = {
   web_search: Globe,
   write_file: FilePlus,
 };
+
+export function getToolFailedLabel(toolName: ToolName): string {
+  return TOOL_FAILED_DISPLAY_NAMES[toolName] ?? "Tool failed";
+}
 
 export function getToolLabel(toolName: ToolName): string {
   return TOOL_DISPLAY_NAMES[toolName] ?? "Unknown tool";

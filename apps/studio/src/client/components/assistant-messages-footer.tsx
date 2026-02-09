@@ -14,6 +14,7 @@ import { cn } from "../lib/utils";
 import { rpcClient } from "../rpc/client";
 import { CopyButton } from "./copy-button";
 import { ExternalLink } from "./external-link";
+import { Favicon } from "./favicon";
 import { ModelChip } from "./model-chip";
 import { RelativeTime } from "./relative-time";
 import { Button } from "./ui/button";
@@ -214,12 +215,7 @@ export function AssistantMessagesFooter({
                 {uniqueUrls.length > 0 && (
                   <div className="flex shrink-0 items-center gap-1">
                     {uniqueUrls.map((url) => (
-                      <img
-                        alt={`Favicon for ${url}`}
-                        className="size-5 rounded-full bg-background"
-                        key={url}
-                        src={getFaviconUrl(url)}
-                      />
+                      <Favicon className="size-5" key={url} url={url} />
                     ))}
                   </div>
                 )}
@@ -275,17 +271,12 @@ export function AssistantMessagesFooter({
           <div className="mt-2 space-y-2 pl-1">
             {sources.map((source) => {
               if (source.type === "source-url") {
-                const faviconUrl = getFaviconUrl(source.url);
                 return (
                   <div
                     className="flex items-center gap-2 text-sm"
                     key={source.metadata.id}
                   >
-                    <img
-                      alt=""
-                      className="size-4 shrink-0 rounded-full bg-background"
-                      src={faviconUrl}
-                    />
+                    <Favicon url={source.url} />
                     <ExternalLink
                       className="text-muted-foreground transition-colors hover:text-foreground"
                       href={source.url}
@@ -342,15 +333,6 @@ function extractUniqueUrls(
     }
   }
   return [...urls].slice(0, 3);
-}
-
-function getFaviconUrl(url: string): string {
-  try {
-    const urlObj = new URL(url);
-    return `https://www.google.com/s2/favicons?domain=${urlObj.hostname}&sz=32`;
-  } catch {
-    return `https://www.google.com/s2/favicons?domain=${url}&sz=32`;
-  }
 }
 
 const makeStatRow = (label: string, value: false | string | undefined) =>

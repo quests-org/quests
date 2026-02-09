@@ -10,11 +10,12 @@ export function ToolPartExpanded({
   onRetry: (prompt: string) => void;
   part: Extract<SessionMessagePart.ToolPart, { state: "output-available" }>;
 }) {
+  const isWebSearch = part.type === "tool-web_search";
   const explanationObject =
     typeof part.input === "object"
       ? (part.input as { explanation?: string })
       : undefined;
-  const explanation = explanationObject?.explanation;
+  const explanation = isWebSearch ? undefined : explanationObject?.explanation;
 
   return (
     <div>

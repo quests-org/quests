@@ -2,6 +2,7 @@ import { formatBytes, type SessionMessagePart } from "@quests/workspace/client";
 
 import { AIProviderIcon } from "../ai-provider-icon";
 import { ExternalLink } from "../external-link";
+import { Favicon } from "../favicon";
 import { SessionMarkdown } from "../session-markdown";
 import { Badge } from "../ui/badge";
 import { ToolCapabilityFailure } from "./capability-failure";
@@ -301,11 +302,7 @@ export function ToolContent({
               <div className="mt-1 space-y-2">
                 {part.output.sources.map((source, index) => (
                   <div className="flex items-center gap-2 text-sm" key={index}>
-                    <img
-                      alt=""
-                      className="size-4 shrink-0 rounded-full bg-background"
-                      src={getFaviconUrl(source.url)}
-                    />
+                    <Favicon url={source.url} />
                     <ExternalLink
                       className="text-muted-foreground transition-colors hover:text-foreground"
                       href={source.url}
@@ -351,14 +348,5 @@ export function ToolContent({
         </div>
       );
     }
-  }
-}
-
-function getFaviconUrl(url: string): string {
-  try {
-    const urlObj = new URL(url);
-    return `https://www.google.com/s2/favicons?domain=${urlObj.hostname}&sz=32`;
-  } catch {
-    return `https://www.google.com/s2/favicons?domain=${url}&sz=32`;
   }
 }
