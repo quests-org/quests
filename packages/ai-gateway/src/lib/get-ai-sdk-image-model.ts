@@ -15,10 +15,23 @@ import {
   createXAISDK,
 } from "./ai-sdk-for-provider-config";
 import { TypedError } from "./errors";
+import { type ImageGenerationProviderType } from "./providers/metadata";
+import { selectProviderConfigs } from "./select-provider-configs";
+
+const PROVIDER_TYPE_PRIORITY: ImageGenerationProviderType[] = [
+  // Ordered by quality as of 2026-01-30
+  "quests",
+  "openrouter",
+  "google",
+  "openai",
+  "x-ai",
+  "vercel",
+  "fireworks",
+];
 
 export const TEST_IMAGE_MODEL_OVERRIDE_KEY = "__testImageModelOverride";
 
-type AISDKModelResult =
+export type AISDKImageModelResult =
   | { model: ImageModelV3; type: "image" }
   | { model: LanguageModelV3; type: "language" };
 
@@ -28,9 +41,9 @@ export async function getAISDKImageModel({
 }: {
   config: AIGatewayProviderConfig.Type;
   workspaceServerURL: WorkspaceServerURL;
-}): Promise<Result<AISDKModelResult, TypedError.Type>> {
+}) {
   const testOverride = (
-    config as { [TEST_IMAGE_MODEL_OVERRIDE_KEY]?: AISDKModelResult }
+    config as { [TEST_IMAGE_MODEL_OVERRIDE_KEY]?: AISDKImageModelResult }
   )[TEST_IMAGE_MODEL_OVERRIDE_KEY];
   if (testOverride) {
     return Result.ok(testOverride);
@@ -41,12 +54,12 @@ export async function getAISDKImageModel({
     case "google": {
       const sdk = await createGoogleSDK(config, workspaceServerURL);
       const model = sdk("gemini-2.5-flash-image");
-      return Result.ok({ model, type: "language" });
+      return Result.ok({ model, type: "language" as const });
     }
     case "vercel": {
       const sdk = createVercelSDK(config, workspaceServerURL);
       const model = sdk("google/gemini-2.5-flash-image");
-      return Result.ok({ model, type: "language" });
+      return Result.ok({ model, type: "language" as const });
     }
   }
 
@@ -58,27 +71,27 @@ export async function getAISDKImageModel({
         // cspell:ignore schnell
         "accounts/fireworks/models/flux-1-schnell-fp8",
       );
-      return Result.ok({ model, type: "image" });
+      return Result.ok({ model, type: "image" as const });
     }
     case "openai": {
       const sdk = await createOpenAISDK(config, workspaceServerURL);
       const model = sdk.image("gpt-image-1-mini");
-      return Result.ok({ model, type: "image" });
+      return Result.ok({ model, type: "image" as const });
     }
     case "openrouter": {
       const sdk = await createOpenRouterSDK(config, workspaceServerURL);
       const model = sdk.imageModel("google/gemini-2.5-flash-image");
-      return Result.ok({ model, type: "image" });
+      return Result.ok({ model, type: "image" as const });
     }
     case "quests": {
       const sdk = await createOpenRouterSDK(config, workspaceServerURL);
       const model = sdk.imageModel(QUESTS_AUTO_IMAGE_MODEL_ID);
-      return Result.ok({ model, type: "image" });
+      return Result.ok({ model, type: "image" as const });
     }
     case "x-ai": {
       const sdk = await createXAISDK(config, workspaceServerURL);
       const model = sdk.imageModel("grok-imagine-image");
-      return Result.ok({ model, type: "image" });
+      return Result.ok({ model, type: "image" as const });
     }
   }
 
@@ -86,5 +99,40 @@ export async function getAISDKImageModel({
     new TypedError.NotFound(
       `Provider ${config.type} does not support image generation`,
     ),
+  );
+}
+
+export async function getImageModel({
+  configs,
+  preferredProviderConfig,
+  workspaceServerURL,
+}: {
+  configs: AIGatewayProviderConfig.Type[];
+  preferredProviderConfig: AIGatewayProviderConfig.Type;
+  workspaceServerURL: WorkspaceServerURL;
+}) {
+  const configsToTry = selectProviderConfigs({
+    configs,
+    preferredProviderConfig,
+    providerTypePriority: PROVIDER_TYPE_PRIORITY,
+  });
+
+  if (configsToTry.length === 0) {
+    return Result.error(
+      new TypedError.NotFound(
+        "No provider with image generation support found",
+      ),
+    );
+  }
+
+  for (const config of configsToTry) {
+    const result = await getAISDKImageModel({ config, workspaceServerURL });
+    if (result.ok) {
+      return Result.ok({ ...result.value, config });
+    }
+  }
+
+  return Result.error(
+    new TypedError.NotFound("No provider with image generation support found"),
   );
 }

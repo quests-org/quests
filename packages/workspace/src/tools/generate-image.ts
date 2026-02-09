@@ -83,10 +83,7 @@ export const GenerateImage = createTool({
       const generateError = result.error;
 
       switch (generateError.type) {
-        case "workspace-image-generation-error": {
-          return executeError(generateError.message);
-        }
-        case "workspace-no-image-model-error": {
+        case "gateway-not-found-error": {
           return ok({
             errorMessage:
               "No AI provider with image generation capability is available.",
@@ -95,13 +92,7 @@ export const GenerateImage = createTool({
           });
         }
         default: {
-          const _exhaustiveCheck: never = generateError;
-          // eslint-disable-next-line no-console
-          console.error(
-            "Unknown error type:",
-            JSON.stringify(_exhaustiveCheck),
-          );
-          return executeError("An unknown error occurred.");
+          return executeError(generateError.message);
         }
       }
     }

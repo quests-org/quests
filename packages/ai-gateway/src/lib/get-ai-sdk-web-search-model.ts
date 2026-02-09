@@ -18,6 +18,17 @@ import {
   createXAISDK,
 } from "./ai-sdk-for-provider-config";
 import { TypedError } from "./errors";
+import { type WebSearchProviderType } from "./providers/metadata";
+import { selectProviderConfigs } from "./select-provider-configs";
+
+const PROVIDER_TYPE_PRIORITY: WebSearchProviderType[] = [
+  // Ordered by quality/reliability as of 2026-02-06
+  "quests",
+  "openrouter",
+  "openai",
+  "anthropic",
+  "x-ai",
+];
 
 export const TEST_WEB_SEARCH_MODEL_OVERRIDE_KEY =
   "__testWebSearchModelOverride";
@@ -34,7 +45,7 @@ export async function getAISDKWebSearchModel({
 }: {
   config: AIGatewayProviderConfig.Type;
   workspaceServerURL: WorkspaceServerURL;
-}): Promise<Result<AISDKWebSearchModelResult, TypedError.Type>> {
+}) {
   const testOverride = (
     config as {
       [TEST_WEB_SEARCH_MODEL_OVERRIDE_KEY]?: AISDKWebSearchModelResult;
@@ -44,40 +55,56 @@ export async function getAISDKWebSearchModel({
     return Result.ok(testOverride);
   }
 
+  let result: AISDKWebSearchModelResult | undefined;
+
   switch (config.type) {
     case "anthropic": {
       const sdk = await createAnthropicSDK(config, workspaceServerURL);
-      return Result.ok({
+      result = {
         model: sdk("claude-sonnet-4-5-20250929"),
         tools: {
           web_search: sdk.tools.webSearch_20250305({ maxUses: 2 }),
         },
-      });
+      };
+      break;
     }
     case "openai": {
       const sdk = await createOpenAISDK(config, workspaceServerURL);
-      return Result.ok({
+      result = {
         model: sdk("gpt-5-mini"),
         tools: {
           web_search: sdk.tools.webSearch(),
         },
-      });
+      };
+      break;
     }
-    case "openrouter":
+    case "openrouter": {
+      const sdk = await createOpenRouterSDK(config, workspaceServerURL);
+      result = {
+        model: sdk("google/gemini-2.5-flash"),
+        providerOptions: {
+          openrouter: {
+            plugins: [{ engine: "native", id: "web" }],
+          },
+        },
+      };
+      break;
+    }
     case "quests": {
       const sdk = await createOpenRouterSDK(config, workspaceServerURL);
-      return Result.ok({
+      result = {
         model: sdk(QUESTS_AUTO_MODEL_PROVIDER_ID),
         providerOptions: {
           openrouter: {
             plugins: [{ engine: "native", id: "web" }],
           },
         },
-      });
+      };
+      break;
     }
     case "x-ai": {
       const sdk = await createXAISDK(config, workspaceServerURL);
-      return Result.ok({
+      result = {
         model: sdk("grok-4-1-fast-non-reasoning"),
         providerOptions: {
           xai: {
@@ -88,13 +115,51 @@ export async function getAISDKWebSearchModel({
             },
           } satisfies XaiProviderOptions,
         },
-      });
+      };
+      break;
     }
+  }
+
+  if (result) {
+    return Result.ok({ ...result, config });
   }
 
   return Result.error(
     new TypedError.NotFound(
       `Provider ${config.type} does not support web search`,
     ),
+  );
+}
+
+export async function getWebSearchModel({
+  configs,
+  preferredProviderConfig,
+  workspaceServerURL,
+}: {
+  configs: AIGatewayProviderConfig.Type[];
+  preferredProviderConfig: AIGatewayProviderConfig.Type;
+  workspaceServerURL: WorkspaceServerURL;
+}) {
+  const configsToTry = selectProviderConfigs({
+    configs,
+    preferredProviderConfig,
+    providerTypePriority: PROVIDER_TYPE_PRIORITY,
+  });
+
+  if (configsToTry.length === 0) {
+    return Result.error(
+      new TypedError.NotFound("No provider with web search support found"),
+    );
+  }
+
+  for (const config of configsToTry) {
+    const result = await getAISDKWebSearchModel({ config, workspaceServerURL });
+    if (result.ok) {
+      return Result.ok({ ...result.value, config });
+    }
+  }
+
+  return Result.error(
+    new TypedError.NotFound("No provider with web search support found"),
   );
 }

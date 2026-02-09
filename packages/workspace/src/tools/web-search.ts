@@ -52,8 +52,7 @@ export const WebSearch = createTool({
       const searchError = result.error;
 
       switch (searchError.type) {
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        case "workspace-no-web-search-model-error": {
+        case "gateway-not-found-error": {
           return ok({
             errorMessage:
               "No AI provider with web search capability is available.",

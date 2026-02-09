@@ -2,8 +2,11 @@ import { type ImageModelV3, type LanguageModelV3 } from "@ai-sdk/provider";
 import {
   type AIGatewayModel,
   AIGatewayProviderConfig,
+  type AISDKImageModelResult,
+  type AISDKWebSearchModelResult,
   TEST_IMAGE_MODEL_OVERRIDE_KEY,
   TEST_MODEL_OVERRIDE_KEY,
+  TEST_WEB_SEARCH_MODEL_OVERRIDE_KEY,
 } from "@quests/ai-gateway";
 import { AI_GATEWAY_API_KEY_NOT_NEEDED } from "@quests/shared";
 
@@ -27,6 +30,7 @@ export function createMockAppConfig(
     aiSDKModel?: LanguageModelV3;
     imageModel?: ImageModelV3;
     model?: AIGatewayModel.Type;
+    webSearchModel?: AISDKWebSearchModelResult;
   } = {},
 ) {
   const model = options.model ?? createMockAIGatewayModel();
@@ -47,15 +51,20 @@ export function createMockAppConfig(
   if (options.imageModel) {
     (
       config as {
-        [TEST_IMAGE_MODEL_OVERRIDE_KEY]?: {
-          model: ImageModelV3;
-          type: "image";
-        };
+        [TEST_IMAGE_MODEL_OVERRIDE_KEY]?: AISDKImageModelResult;
       }
     )[TEST_IMAGE_MODEL_OVERRIDE_KEY] = {
       model: options.imageModel,
       type: "image",
     };
+  }
+
+  if (options.webSearchModel) {
+    (
+      config as {
+        [TEST_WEB_SEARCH_MODEL_OVERRIDE_KEY]?: AISDKWebSearchModelResult;
+      }
+    )[TEST_WEB_SEARCH_MODEL_OVERRIDE_KEY] = options.webSearchModel;
   }
 
   return createAppConfig({

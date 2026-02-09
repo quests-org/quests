@@ -7,7 +7,7 @@ import {
   ProviderMetadataSchema,
 } from "../../schemas/provider-metadata";
 
-const PROVIDER_METADATA: Record<AIProviderType, ProviderMetadataInput> = {
+const PROVIDER_METADATA = {
   anthropic: {
     api: {
       defaultBaseURL: "https://api.anthropic.com",
@@ -301,7 +301,27 @@ const PROVIDER_METADATA: Record<AIProviderType, ProviderMetadataInput> = {
     type: "z-ai",
     url: addRef("https://z.ai"),
   },
-};
+} as const satisfies Record<AIProviderType, ProviderMetadataInput>;
+
+export type ImageGenerationProviderType = {
+  [K in keyof typeof PROVIDER_METADATA]: (typeof PROVIDER_METADATA)[K] extends {
+    tags: infer Tags extends readonly string[];
+  }
+    ? "imageGeneration" extends Tags[number]
+      ? K
+      : never
+    : never;
+}[keyof typeof PROVIDER_METADATA];
+
+export type WebSearchProviderType = {
+  [K in keyof typeof PROVIDER_METADATA]: (typeof PROVIDER_METADATA)[K] extends {
+    tags: infer Tags extends readonly string[];
+  }
+    ? "webSearch" extends Tags[number]
+      ? K
+      : never
+    : never;
+}[keyof typeof PROVIDER_METADATA];
 
 const PARSED_PROVIDER_METADATA_BY_TYPE = objectify(
   Object.values(PROVIDER_METADATA).map((metadata) =>

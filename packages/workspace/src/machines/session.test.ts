@@ -2,6 +2,7 @@ import {
   type ImageModelV3,
   type LanguageModelV3StreamPart,
 } from "@ai-sdk/provider";
+import { type AISDKWebSearchModelResult } from "@quests/ai-gateway";
 import { simulateReadableStream } from "ai";
 import { MockLanguageModelV3 } from "ai/test";
 import mockFs from "mock-fs";
@@ -187,6 +188,7 @@ describe("sessionMachine", () => {
     maxStepCount,
     queuedMessages = [defaultQueuedMessage],
     sessionId = defaultSessionId,
+    webSearchModel,
   }: {
     agent?: AnyAgent;
     baseLLMRetryDelayMs?: number;
@@ -198,6 +200,7 @@ describe("sessionMachine", () => {
     maxStepCount?: number;
     queuedMessages?: SessionMessage.UserWithParts[];
     sessionId?: StoreId.Session;
+    webSearchModel?: AISDKWebSearchModelResult;
   }) {
     let currentChunkIndex = 0;
     const mockLanguageModel = new MockLanguageModelV3({
@@ -250,6 +253,7 @@ describe("sessionMachine", () => {
         aiSDKModel: mockLanguageModel,
         imageModel,
         model,
+        webSearchModel,
       },
     );
 
@@ -580,6 +584,109 @@ describe("sessionMachine", () => {
             <step-start step="2" />
             <text state="done">I'm done.</text>
             <data-gitCommit ref="rev-parse HEAD executed successfully in /tmp/workspace/projects/pj-test" />
+          </assistant>
+          <session-context main realRole="system" />
+          <session-context main realRole="user" />
+        </session>"
+      `);
+    });
+
+    it("should perform a web search", async () => {
+      const webSearchChunks = [
+        {
+          id: "test-call-web-search",
+          toolName: "web_search",
+          type: "tool-input-start",
+        },
+        {
+          input: JSON.stringify({
+            explanation: "Search for latest news",
+            query: "latest TypeScript features",
+          }),
+          toolCallId: "test-call-web-search",
+          toolName: "web_search",
+          type: "tool-call",
+        },
+      ] as const satisfies LanguageModelV3StreamPart[];
+
+      const mockWebSearchModel = new MockLanguageModelV3({
+        doGenerate: {
+          content: [
+            { text: "TypeScript 5.7 introduces new features.", type: "text" },
+            {
+              id: "source-1",
+              sourceType: "url",
+              title: "TypeScript Blog",
+              type: "source",
+              url: "https://devblogs.microsoft.com/typescript",
+            },
+          ],
+          finishReason: { raw: "stop", unified: "stop" },
+          usage: {
+            inputTokens: {
+              cacheRead: undefined,
+              cacheWrite: undefined,
+              noCache: undefined,
+              total: 5,
+            },
+            outputTokens: {
+              reasoning: undefined,
+              text: undefined,
+              total: 15,
+            },
+          },
+          warnings: [],
+        },
+      });
+
+      const session = await createAndRunTestMachine({
+        chunkSets: [webSearchChunks, finishChunks],
+        webSearchModel: {
+          model: mockWebSearchModel,
+        },
+      });
+
+      expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
+        "<session title="Test session" count="5">
+          <user>
+            <text>Hello, I need help with something.</text>
+          </user>
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
+            <step-start step="1" />
+            <tool tool="web_search" state="output-available" callId="test-call-web-search">
+              <input>
+                {
+                  "explanation": "Search for latest news",
+                  "query": "latest TypeScript features"
+                }
+              </input>
+              <output>
+                {
+                  "modelId": "mock-model-id",
+                  "provider": {
+                    "id": "mock-provider-config-id",
+                    "type": "quests"
+                  },
+                  "sources": [
+                    {
+                      "title": "TypeScript Blog",
+                      "url": "https://devblogs.microsoft.com/typescript"
+                    }
+                  ],
+                  "state": "success",
+                  "text": "TypeScript 5.7 introduces new features.",
+                  "usage": {
+                    "inputTokens": 5,
+                    "outputTokens": 15,
+                    "totalTokens": 20
+                  }
+                }
+              </output>
+            </tool>
+          </assistant>
+          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
+            <step-start step="2" />
+            <text state="done">I'm done.</text>
           </assistant>
           <session-context main realRole="system" />
           <session-context main realRole="user" />
