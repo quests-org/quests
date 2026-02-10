@@ -6,7 +6,7 @@ import {
 import { Loader2Icon } from "lucide-react";
 import { useState } from "react";
 
-import { filenameFromFilePath } from "../../lib/file-utils";
+import { filenameFromFilePath } from "../../lib/path-utils";
 import {
   getToolFailedLabel,
   getToolLabel,

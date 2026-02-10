@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export namespace Upload {
+export namespace FileUpload {
   export const Schema = z.object({
     content: z.string(),
     filename: z.string(),

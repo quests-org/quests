@@ -18,7 +18,7 @@ import {
   REGISTRY_REPO_NAME,
   REGISTRY_REPO_URL,
 } from "@quests/shared";
-import { type Upload } from "@quests/workspace/client";
+import { type FileUpload } from "@quests/workspace/client";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
@@ -59,7 +59,7 @@ export function TemplateDetail({
   const [showAIProviderGuard, setShowAIProviderGuard] = useState(false);
   const [showPreviewDialog, setShowPreviewDialog] = useState(false);
 
-  const handleCreateProject = (prompt: string, files?: Upload.Type[]) => {
+  const handleCreateProject = (prompt: string, files?: FileUpload.Type[]) => {
     if (appDetails && selectedModelURI) {
       saveSelectedModelURI(selectedModelURI);
 

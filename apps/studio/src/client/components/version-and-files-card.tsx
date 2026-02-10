@@ -1,5 +1,5 @@
-import { filenameFromFilePath } from "@/client/lib/file-utils";
 import { getAssetUrl } from "@/client/lib/get-asset-url";
+import { filenameFromFilePath } from "@/client/lib/path-utils";
 import { cn } from "@/client/lib/utils";
 import { PROJECT_MANIFEST_FILE_NAME } from "@quests/shared";
 import { type ProjectSubdomain } from "@quests/workspace/client";

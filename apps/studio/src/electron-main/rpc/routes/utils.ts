@@ -323,6 +323,21 @@ const showProjectFileInFolder = base
     }
   });
 
+const openFolder = base
+  .input(
+    z.object({
+      folderPath: z
+        .string()
+        .refine((val) => path.isAbsolute(val), "Path must be absolute"),
+    }),
+  )
+  .handler(async ({ input }) => {
+    const errorMessage = await shell.openPath(input.folderPath);
+    if (errorMessage) {
+      shell.showItemInFolder(input.folderPath);
+    }
+  });
+
 const exportZip = base
   .input(
     z.object({
@@ -421,6 +436,7 @@ export const utils = {
   live,
   openAppIn,
   openExternalLink,
+  openFolder,
   showFileInFolder,
   showProjectFileInFolder,
 };

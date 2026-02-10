@@ -8,6 +8,7 @@ declare module "*.md" {
 declare global {
   interface Window {
     api: {
+      getFilePath: (file: File) => string;
       onNavigate: (callback: (url: string) => void) => void;
       tabId?: string;
     };

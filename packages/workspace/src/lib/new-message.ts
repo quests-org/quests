@@ -4,24 +4,26 @@ import {
 } from "@quests/ai-gateway";
 import { ok } from "neverthrow";
 
+import { type FileUpload } from "../schemas/file-upload";
 import { type SessionMessage } from "../schemas/session/message";
 import { type SessionMessagePart } from "../schemas/session/message-part";
 import { StoreId } from "../schemas/store-id";
-import { type Upload } from "../schemas/upload";
 import { type AppConfig } from "./app-config/types";
 import { setProjectState } from "./project-state-store";
-import { writeUploadedFiles } from "./write-uploaded-files";
+import { writeUploadedAttachments } from "./write-uploaded-attachments";
 
 export async function newMessage({
   appConfig,
   files,
+  folders,
   model,
   modelURI,
   prompt,
   sessionId,
 }: {
   appConfig: AppConfig;
-  files?: Upload.Type[];
+  files?: FileUpload.Type[];
+  folders?: { path: string }[];
   model: AIGatewayModel.Type;
   modelURI: AIGatewayModelURI.Type;
   prompt: string;
@@ -43,10 +45,11 @@ export async function newMessage({
     });
   }
 
-  if (files && files.length > 0) {
-    const uploadResult = await writeUploadedFiles({
+  if ((files && files.length > 0) || (folders && folders.length > 0)) {
+    const uploadResult = await writeUploadedAttachments({
       appDir: appConfig.appDir,
       files,
+      folders,
       messageId,
       sessionId,
     });

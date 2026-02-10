@@ -1,7 +1,8 @@
 import { electronAPI } from "@electron-toolkit/preload";
-import { contextBridge, ipcRenderer } from "electron";
+import { contextBridge, ipcRenderer, webUtils } from "electron";
 
 const api: Window["api"] = {
+  getFilePath: (file: File) => webUtils.getPathForFile(file),
   onNavigate: (callback: (url: string) => void) =>
     ipcRenderer.on("navigate", (_event, value: string) => {
       callback(value);

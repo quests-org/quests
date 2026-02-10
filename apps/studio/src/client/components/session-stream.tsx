@@ -13,8 +13,8 @@ import { useCallback, useMemo } from "react";
 import { cn } from "../lib/utils";
 import { AssistantMessage } from "./assistant-message";
 import { AssistantMessagesFooter } from "./assistant-messages-footer";
+import { AttachmentsCard } from "./attachments-card";
 import { ContextMessages } from "./context-messages";
-import { FileAttachmentsCard } from "./file-attachments-card";
 import { MessageError } from "./message-error";
 import { ReasoningMessage } from "./reasoning-message";
 import { ContextMessage } from "./session-context-message";
@@ -277,8 +277,10 @@ export function SessionStream({
           const files = fileAttachmentsPart.data.files;
 
           messageElements.unshift(
-            <FileAttachmentsCard
+            <AttachmentsCard
+              assetBaseUrl={project.urls.assetBase}
               files={files}
+              folders={fileAttachmentsPart.data.folders}
               key={`attachments-${message.id}`}
               projectSubdomain={project.subdomain}
             />,
@@ -338,6 +340,8 @@ export function SessionStream({
       chatElements: newChatElements,
     };
   }, [
+    project.urls.assetBase,
+    project.subdomain,
     regularMessages,
     renderChatPart,
     isAgentRunning,
@@ -346,7 +350,6 @@ export function SessionStream({
     onModelChange,
     onRetry,
     onStartNewChat,
-    project.subdomain,
   ]);
 
   const shouldShowContinueButton = useMemo(() => {

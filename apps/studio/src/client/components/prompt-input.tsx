@@ -1,20 +1,39 @@
 import { openFilePreviewAtom } from "@/client/atoms/file-preview";
 import { AIProviderGuardDialog } from "@/client/components/ai-provider-guard-dialog";
+import { AttachedFilePreview } from "@/client/components/attached-file-preview";
+import { AttachedFolderPreview } from "@/client/components/attached-folder-preview";
 import { ModelPicker } from "@/client/components/model-picker";
 import { Button } from "@/client/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/client/components/ui/dropdown-menu";
 import {
   TextareaContainer,
   TextareaInner,
 } from "@/client/components/ui/textarea-container";
-import { UploadedFilePreview } from "@/client/components/uploaded-file-preview";
-import { useWindowFileDrop } from "@/client/lib/use-window-file-drop";
+import { folderNameFromPath } from "@/client/lib/path-utils";
+import {
+  type DroppedFolder,
+  useWindowFileDrop,
+} from "@/client/lib/use-window-file-drop";
 import { cn, isMacOS } from "@/client/lib/utils";
 import { type AIGatewayModelURI } from "@quests/ai-gateway/client";
 import { QUESTS_AUTO_MODEL_ID } from "@quests/shared";
-import { type Upload as UploadType } from "@quests/workspace/client";
+import { type FileUpload } from "@quests/workspace/client";
 import { useQuery } from "@tanstack/react-query";
 import { useAtom, useSetAtom } from "jotai";
-import { ArrowUp, Loader2, Paperclip, Square, Upload } from "lucide-react";
+import {
+  ArrowUp,
+  File,
+  Folder,
+  Loader2,
+  Paperclip,
+  Square,
+  Upload,
+} from "lucide-react";
 import {
   useCallback,
   useEffect,
@@ -29,14 +48,17 @@ import {
   type PromptValueAtomKey,
 } from "../atoms/prompt-value";
 import { rpcClient } from "../rpc/client";
-import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
-interface UploadedFile {
+interface AttachedFile {
   content: string;
   mimeType: string;
   name: string;
   size: number;
   url?: string;
+}
+
+interface AttachedFolder {
+  path: string;
 }
 
 const MAX_PASTE_TEXT_LENGTH = 5000;
@@ -56,7 +78,8 @@ interface PromptInputProps {
   onModelChange: (modelURI: AIGatewayModelURI.Type) => void;
   onStop?: () => void;
   onSubmit: (value: {
-    files?: UploadType.Type[];
+    files?: FileUpload.Type[];
+    folders?: AttachedFolder[];
     modelURI: AIGatewayModelURI.Type;
     openInNewTab?: boolean;
     prompt: string;
@@ -89,11 +112,13 @@ export const PromptInput = ({
   submitButtonContent,
 }: PromptInputProps) => {
   const [showAIProviderGuard, setShowAIProviderGuard] = useState(false);
-  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+  const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([]);
+  const [attachedFolders, setAttachedFolders] = useState<AttachedFolder[]>([]);
   const openFilePreview = useSetAtom(openFilePreviewAtom);
   const textareaRef = useRef<HTMLDivElement>(null);
   const textareaInnerRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const folderInputRef = useRef<HTMLInputElement>(null);
   const [value, setValue] = useAtom(promptValueAtomFamily(atomKey));
 
   useImperativeHandle(ref, () => ({
@@ -155,7 +180,7 @@ export const PromptInput = ({
       reader.addEventListener("load", () => {
         const dataUrl = reader.result as string;
         const base64 = dataUrl.split(",")[1] ?? "";
-        setUploadedFiles((prev) => [
+        setAttachedFiles((prev) => [
           ...prev,
           {
             content: base64,
@@ -172,15 +197,33 @@ export const PromptInput = ({
 
   const { isDragging } = useWindowFileDrop({
     onFilesDropped: processFiles,
-    onFolderDropAttempt: () => {
-      toast.error("Folders aren't supported", {
-        description: "However, you can drop multiple files at once.",
+    onFoldersDropped: (folders: DroppedFolder[]) => {
+      setAttachedFolders((prev) => {
+        const duplicates: string[] = [];
+        const newFolders: AttachedFolder[] = [];
+
+        for (const folder of folders) {
+          if (prev.some((f) => f.path === folder.path)) {
+            duplicates.push(folderNameFromPath(folder.path));
+          } else {
+            newFolders.push({ path: folder.path });
+          }
+        }
+
+        if (duplicates.length > 0) {
+          toast.info(
+            `${duplicates.length === 1 ? "Folder" : "Folders"} already attached`,
+            { description: duplicates.join(", ") },
+          );
+        }
+
+        return newFolders.length > 0 ? [...prev, ...newFolders] : prev;
       });
     },
   });
 
-  const removeUploadedFile = (index: number) => {
-    setUploadedFiles((prev) => prev.filter((_, i) => i !== index));
+  const removeAttachedFile = (index: number) => {
+    setAttachedFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -196,10 +239,38 @@ export const PromptInput = ({
     }
   };
 
+  const handleFolderSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) {
+      return;
+    }
+
+    const firstFile = files[0];
+    if (firstFile) {
+      const path = window.api.getFilePath(firstFile);
+      if (path) {
+        const folderPath = path.slice(0, path.lastIndexOf("/"));
+        setAttachedFolders((prev) => {
+          if (prev.some((f) => f.path === folderPath)) {
+            toast.info("Folder already attached", {
+              description: folderNameFromPath(folderPath),
+            });
+            return prev;
+          }
+          return [...prev, { path: folderPath }];
+        });
+      }
+    }
+
+    if (folderInputRef.current) {
+      folderInputRef.current.value = "";
+    }
+  };
+
   const canSubmit =
     !disabled &&
     !isLoading &&
-    (value.trim() || uploadedFiles.length > 0) &&
+    (value.trim() || attachedFiles.length > 0 || attachedFolders.length > 0) &&
     modelURI &&
     selectedModel;
 
@@ -239,26 +310,30 @@ export const PromptInput = ({
     }
 
     const trimmedPrompt = value.trim();
+    const hasAttachments =
+      attachedFiles.length > 0 || attachedFolders.length > 0;
     const prompt =
-      !trimmedPrompt && uploadedFiles.length > 0
-        ? `Review the ${uploadedFiles.length} added file${uploadedFiles.length === 1 ? "" : "s"} to help with this request.`
+      !trimmedPrompt && hasAttachments
+        ? `Review the ${attachedFiles.length > 0 ? `${attachedFiles.length} added file${attachedFiles.length === 1 ? "" : "s"}` : ""}${attachedFiles.length > 0 && attachedFolders.length > 0 ? " and " : ""}${attachedFolders.length > 0 ? `${attachedFolders.length} attached folder${attachedFolders.length === 1 ? "" : "s"}` : ""} to help with this request.`
         : trimmedPrompt;
 
     onSubmit({
       files:
-        uploadedFiles.length > 0
-          ? uploadedFiles.map((f) => ({
+        attachedFiles.length > 0
+          ? attachedFiles.map((f) => ({
               content: f.content,
               filename: f.name,
             }))
           : undefined,
+      folders: attachedFolders.length > 0 ? attachedFolders : undefined,
       modelURI,
       openInNewTab,
       prompt,
     });
     if (!(allowOpenInNewTab && openInNewTab)) {
       setValue("");
-      setUploadedFiles([]);
+      setAttachedFiles([]);
+      setAttachedFolders([]);
       resetTextareaHeight();
     }
   };
@@ -315,7 +390,7 @@ export const PromptInput = ({
       reader.addEventListener("load", () => {
         const dataUrl = reader.result as string;
         const base64 = dataUrl.split(",")[1] ?? "";
-        setUploadedFiles((prev) => [
+        setAttachedFiles((prev) => [
           ...prev,
           {
             content: base64,
@@ -349,17 +424,28 @@ export const PromptInput = ({
           <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed border-primary bg-primary/5 backdrop-blur-sm">
             <Upload className="size-8 text-primary" />
             <span className="text-sm font-medium text-primary">
-              Drop files to add them to the project
+              Drop files or folders to add them
             </span>
           </div>
         )}
 
-        {uploadedFiles.length > 0 && (
+        {(attachedFolders.length > 0 || attachedFiles.length > 0) && (
           <div className="-m-2 mb-2 flex max-h-32 flex-wrap items-start gap-2 overflow-y-auto p-2">
-            {uploadedFiles.map((file, index) => (
-              <UploadedFilePreview
+            {attachedFolders.map((folder, index) => (
+              <AttachedFolderPreview
+                folderPath={folder.path}
+                key={`folder-${folder.path}-${index}`}
+                onRemove={() => {
+                  setAttachedFolders((prev) =>
+                    prev.filter((_, i) => i !== index),
+                  );
+                }}
+              />
+            ))}
+            {attachedFiles.map((file, index) => (
+              <AttachedFilePreview
                 filename={file.name}
-                key={`${file.name}-${index}`}
+                key={`file-${file.name}-${index}`}
                 mimeType={file.mimeType}
                 onClick={() => {
                   if (file.url) {
@@ -372,7 +458,7 @@ export const PromptInput = ({
                   }
                 }}
                 onRemove={() => {
-                  removeUploadedFile(index);
+                  removeAttachedFile(index);
                 }}
                 size={file.size}
                 url={file.url}
@@ -400,6 +486,14 @@ export const PromptInput = ({
           ref={fileInputRef}
           type="file"
         />
+        <input
+          className="hidden"
+          onChange={handleFolderSelect}
+          ref={folderInputRef}
+          type="file"
+          // @ts-expect-error - webkitdirectory is not in the JSX types
+          webkitdirectory=""
+        />
 
         <div className="flex items-center justify-end gap-2 pt-2">
           <div className="flex min-w-0 flex-1 items-center gap-2">
@@ -425,20 +519,28 @@ export const PromptInput = ({
             </div>
           </div>
 
-          <Tooltip>
-            <TooltipTrigger asChild>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
               <Button
                 className="size-7 p-0"
                 disabled={disabled}
-                onClick={() => fileInputRef.current?.click()}
                 size="sm"
                 variant="ghost"
               >
                 <Paperclip className="size-4" />
               </Button>
-            </TooltipTrigger>
-            <TooltipContent>Add files</TooltipContent>
-          </Tooltip>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => fileInputRef.current?.click()}>
+                <File />
+                Add files
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => folderInputRef.current?.click()}>
+                <Folder />
+                Add folder
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <Button
             className={cn(submitButtonContent ? "h-7 px-3" : "size-7 p-0")}

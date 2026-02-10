@@ -110,11 +110,17 @@ function RouteComponent() {
               isLoading={createProjectMutation.isPending}
               modelURI={selectedModelURI}
               onModelChange={setSelectedModelURI}
-              onSubmit={({ files, modelURI, openInNewTab, prompt }) => {
+              onSubmit={({
+                files,
+                folders,
+                modelURI,
+                openInNewTab,
+                prompt,
+              }) => {
                 saveSelectedModelURI(modelURI);
 
                 createProjectMutation.mutate(
-                  { files, modelURI, prompt },
+                  { files, folders, modelURI, prompt },
                   {
                     onError: (error) => {
                       toast.error(

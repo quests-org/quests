@@ -4,6 +4,7 @@ import {
 } from "@/client/atoms/project-file-viewer";
 import { getFileType, isReadableText } from "@/client/lib/get-file-type";
 import { cn } from "@/client/lib/utils";
+import { type SessionMessageDataPart } from "@quests/workspace/client";
 import { useSetAtom } from "jotai";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { fork } from "radashi";
@@ -11,12 +12,14 @@ import { useState } from "react";
 
 import { FilePreviewCard } from "./file-preview-card";
 import { FilePreviewListItem } from "./file-preview-list-item";
+import { FolderPreviewListItem } from "./folder-preview-list-item";
 import { Button } from "./ui/button";
 
 interface FilesGridProps {
   alignEnd?: boolean;
   compact?: boolean;
   files: ProjectFileViewerFile[];
+  folders?: SessionMessageDataPart.FolderAttachmentDataPart[];
   initialVisibleCount?: number;
 }
 
@@ -26,6 +29,7 @@ export function FilesGrid({
   alignEnd = false,
   compact = false,
   files,
+  folders = [],
   initialVisibleCount = DEFAULT_INITIAL_VISIBLE_COUNT,
 }: FilesGridProps) {
   const openFileViewer = useSetAtom(openProjectFileViewerAtom);
@@ -89,13 +93,18 @@ export function FilesGrid({
         </div>
       )}
 
-      {otherFiles.length > 0 && (
+      {(otherFiles.length > 0 || folders.length > 0) && (
         <div
           className={cn(
             "flex flex-wrap items-start gap-2",
             alignEnd && "justify-end",
           )}
         >
+          {folders.map((folder) => (
+            <div className="h-12 min-w-0" key={folder.id}>
+              <FolderPreviewListItem folder={folder} />
+            </div>
+          ))}
           {otherFiles.map((file) => (
             <div className="h-12 min-w-0" key={file.filePath}>
               <FilePreviewListItem

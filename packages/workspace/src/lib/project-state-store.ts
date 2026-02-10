@@ -6,6 +6,7 @@ import {
 import fs from "node:fs/promises";
 import { z } from "zod";
 
+import { FolderAttachment } from "../schemas/folder-attachment";
 import { type AbsolutePath, type AppDir } from "../schemas/paths";
 import { absolutePathJoin } from "./absolute-path-join";
 import { getAppPrivateDir } from "./app-dir-utils";
@@ -15,12 +16,14 @@ const PROJECT_STATE_FILE_NAME = "project-state.json";
 const StoredProjectStateSchema = z
   // Relaxed schema for backwards compatibility
   .object({
+    attachedFolders: z.record(z.string(), FolderAttachment.Schema).optional(),
     promptDraft: z.string().optional(),
     selectedModelURI: z.string().optional(),
   })
   .default(() => ({}));
 
 export const ProjectStateSchema = z.object({
+  attachedFolders: z.record(z.string(), FolderAttachment.Schema).optional(),
   promptDraft: z.string().optional(),
   selectedModelURI: AIGatewayModelURI.Schema.optional(),
 });

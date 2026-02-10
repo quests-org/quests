@@ -5,6 +5,7 @@ import { cn } from "@/client/lib/utils";
 import { FileIcon } from "./file-icon";
 import { FileVersionBadge } from "./file-version-badge";
 import { ImageWithFallback } from "./image-with-fallback";
+import { PreviewListItem } from "./preview-list-item";
 import { Button } from "./ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
@@ -64,30 +65,26 @@ export function FilePreviewListItem({
   }
 
   return (
-    <Button
-      className={cn(
-        "h-12 w-full justify-start gap-x-2 overflow-hidden",
-        isSelected &&
-          "ring-2 ring-primary ring-offset-2 ring-offset-background",
-      )}
+    <PreviewListItem
+      icon={
+        <FileIcon
+          className="size-5 shrink-0 text-muted-foreground"
+          filename={filename}
+          mimeType={mimeType}
+        />
+      }
+      isSelected={isSelected}
+      label={filename}
       onClick={onClick}
-      type="button"
-      variant="outline-muted"
-    >
-      <FileIcon
-        className="size-5 shrink-0 text-muted-foreground"
-        filename={filename}
-        mimeType={mimeType}
-      />
-      <span className="min-w-0 truncate text-left text-xs/tight">
-        {filename}
-      </span>
-      <FileVersionBadge
-        className="ml-auto shrink-0 text-[10px]"
-        filePath={filePath}
-        projectSubdomain={projectSubdomain}
-        versionRef={versionRef}
-      />
-    </Button>
+      rightElement={
+        <FileVersionBadge
+          className="text-[10px]"
+          filePath={filePath}
+          projectSubdomain={projectSubdomain}
+          versionRef={versionRef}
+        />
+      }
+      tooltipContent={filePath}
+    />
   );
 }

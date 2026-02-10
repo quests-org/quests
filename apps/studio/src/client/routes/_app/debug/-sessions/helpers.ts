@@ -105,15 +105,35 @@ export class SessionBuilder {
     } as TPart;
   }
 
-  userMessage(text: string): SessionMessage.UserWithParts {
+  userMessage(
+    text: string,
+    options?: {
+      parts?: Omit<SessionMessagePart.DataPart, "metadata">[];
+    },
+  ): SessionMessage.UserWithParts {
     const messageId = StoreId.newMessageId();
+    const parts: SessionMessage.UserWithParts["parts"] = [];
+
+    if (text) {
+      parts.push(this.textPart(text, messageId));
+    }
+
+    if (options?.parts) {
+      for (const part of options.parts) {
+        parts.push({
+          ...(part as SessionMessagePart.DataPart),
+          metadata: this.partMetadata(messageId),
+        });
+      }
+    }
+
     return {
       id: messageId,
       metadata: {
         createdAt: this.nextTime(),
         sessionId: this.sessionId,
       },
-      parts: [this.textPart(text, messageId)],
+      parts,
       role: "user",
     };
   }

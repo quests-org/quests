@@ -22,12 +22,12 @@ import {
 } from "../../../lib/project-manifest";
 import { trashProject } from "../../../lib/trash-project";
 import { WorkspaceAppProjectSchema } from "../../../schemas/app";
+import { FileUpload } from "../../../schemas/file-upload";
 import { AbsolutePathSchema } from "../../../schemas/paths";
 import { ProjectManifestUpdateSchema } from "../../../schemas/project-manifest";
 import { StoreId } from "../../../schemas/store-id";
 import { SubdomainPartSchema } from "../../../schemas/subdomain-part";
 import { ProjectSubdomainSchema } from "../../../schemas/subdomains";
-import { Upload } from "../../../schemas/upload";
 import { base, toORPCError } from "../../base";
 import { publisher } from "../../publisher";
 import { projectGit } from "./git";
@@ -114,7 +114,8 @@ const list = base
 const create = base
   .input(
     z.object({
-      files: z.array(Upload.Schema).optional(),
+      files: z.array(FileUpload.Schema).optional(),
+      folders: z.array(z.object({ path: z.string() })).optional(),
       iconName: z.literal("flask-conical").optional(),
       modelURI: AIGatewayModelURI.Schema,
       name: z.string().trim().min(1).optional(),
@@ -135,6 +136,7 @@ const create = base
       errors,
       input: {
         files,
+        folders,
         iconName,
         modelURI,
         name,
@@ -190,6 +192,7 @@ const create = base
       const messageResult = await newMessage({
         appConfig: projectConfig,
         files,
+        folders,
         model,
         modelURI,
         prompt,

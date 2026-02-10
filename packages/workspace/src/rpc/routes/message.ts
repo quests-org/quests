@@ -7,10 +7,10 @@ import { createAppConfig } from "../../lib/app-config/create";
 import { createSession } from "../../lib/create-session";
 import { newMessage } from "../../lib/new-message";
 import { Store } from "../../lib/store";
+import { FileUpload } from "../../schemas/file-upload";
 import { SessionMessage } from "../../schemas/session/message";
 import { StoreId } from "../../schemas/store-id";
 import { AppSubdomainSchema } from "../../schemas/subdomains";
-import { Upload } from "../../schemas/upload";
 import { base, toORPCError } from "../base";
 import { publisher } from "../publisher";
 
@@ -44,7 +44,7 @@ const listWithParts = base
 const create = base
   .input(
     z.object({
-      files: z.array(Upload.Schema).optional(),
+      files: z.array(FileUpload.Schema).optional(),
       modelURI: AIGatewayModelURI.Schema,
       prompt: z.string(),
       sessionId: StoreId.SessionSchema.optional(),

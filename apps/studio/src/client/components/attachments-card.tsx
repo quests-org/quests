@@ -3,30 +3,22 @@ import {
   type ProjectSubdomain,
   type SessionMessageDataPart,
 } from "@quests/workspace/client";
-import { useQuery } from "@tanstack/react-query";
 
-import { rpcClient } from "../rpc/client";
 import { FilesGrid } from "./files-grid";
 
 interface FileAttachmentsCardProps {
+  assetBaseUrl: string;
   files: SessionMessageDataPart.FileAttachmentDataPart[];
+  folders?: SessionMessageDataPart.FolderAttachmentDataPart[];
   projectSubdomain: ProjectSubdomain;
 }
 
-export function FileAttachmentsCard({
+export function AttachmentsCard({
+  assetBaseUrl,
   files,
+  folders,
   projectSubdomain,
 }: FileAttachmentsCardProps) {
-  const { data: app } = useQuery(
-    rpcClient.workspace.project.bySubdomain.queryOptions({
-      input: { subdomain: projectSubdomain },
-    }),
-  );
-
-  if (!app) {
-    return null;
-  }
-
   const fileItems = files.map((file) => ({
     filename: file.filename,
     filePath: file.filePath,
@@ -34,12 +26,12 @@ export function FileAttachmentsCard({
     projectSubdomain,
     size: file.size,
     url: getAssetUrl({
-      assetBase: app.urls.assetBase,
+      assetBase: assetBaseUrl,
       filePath: file.filePath,
       versionRef: file.gitRef,
     }),
     versionRef: file.gitRef,
   }));
 
-  return <FilesGrid alignEnd compact files={fileItems} />;
+  return <FilesGrid alignEnd compact files={fileItems} folders={folders} />;
 }

@@ -11,6 +11,7 @@ export type {
   WorkspaceAppSandbox,
 } from "./schemas/app";
 export type { SessionTag } from "./schemas/app-state";
+export { FileUpload } from "./schemas/file-upload";
 export { type SessionMessage } from "./schemas/session/message";
 export { type SessionMessageDataPart } from "./schemas/session/message-data-part";
 export { type SessionMessagePart } from "./schemas/session/message-part";
@@ -25,5 +26,4 @@ export {
   type VersionSubdomain,
   VersionSubdomainSchema,
 } from "./schemas/subdomains";
-export { type Upload } from "./schemas/upload";
 export type { ToolName } from "./tools/types";

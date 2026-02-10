@@ -1,13 +1,18 @@
 import { useEffect, useRef, useState } from "react";
 
+export interface DroppedFolder {
+  path: string;
+  type: "folder";
+}
+
 interface UseWindowFileDropOptions {
   onFilesDropped: (files: FileList) => void;
-  onFolderDropAttempt?: () => void;
+  onFoldersDropped?: (folders: DroppedFolder[]) => void;
 }
 
 export const useWindowFileDrop = ({
   onFilesDropped,
-  onFolderDropAttempt,
+  onFoldersDropped,
 }: UseWindowFileDropOptions) => {
   const [isDragging, setIsDragging] = useState(false);
   const dragCounterRef = useRef(0);
@@ -49,20 +54,40 @@ export const useWindowFileDrop = ({
       const items = [...e.dataTransfer.items];
       const files = e.dataTransfer.files;
 
-      let hasFolders = false;
-      for (const item of items) {
-        if (item.webkitGetAsEntry()?.isDirectory) {
-          hasFolders = true;
-          break;
+      const folderItems = items.filter(
+        (item) => item.webkitGetAsEntry()?.isDirectory,
+      );
+
+      const fileItems = items.filter(
+        (item) => !item.webkitGetAsEntry()?.isDirectory,
+      );
+
+      if (folderItems.length > 0) {
+        const folders: DroppedFolder[] = [];
+
+        for (const folderItem of folderItems) {
+          if (folderItem.kind === "file") {
+            const file = folderItem.getAsFile();
+            if (file) {
+              const path = window.api.getFilePath(file);
+              if (path) {
+                folders.push({ path, type: "folder" });
+              }
+            }
+          }
+        }
+
+        if (folders.length > 0) {
+          onFoldersDropped?.(folders);
+        } else {
+          // eslint-disable-next-line no-console
+          console.error("Could not get folder paths from dropped items");
         }
       }
 
-      if (hasFolders) {
-        onFolderDropAttempt?.();
-        return;
+      if (fileItems.length > 0 && files.length > 0) {
+        onFilesDropped(files);
       }
-
-      onFilesDropped(files);
     };
 
     window.addEventListener("dragenter", handleDragEnter);
@@ -76,7 +101,7 @@ export const useWindowFileDrop = ({
       window.removeEventListener("dragover", handleDragOver);
       window.removeEventListener("drop", handleDrop);
     };
-  }, [onFilesDropped, onFolderDropAttempt]);
+  }, [onFilesDropped, onFoldersDropped]);
 
   return { isDragging };
 };

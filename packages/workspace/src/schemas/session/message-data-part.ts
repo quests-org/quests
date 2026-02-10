@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { FolderAttachment } from "../folder-attachment";
 import { RelativePathSchema } from "../paths";
 
 export namespace SessionMessageDataPart {
@@ -14,7 +15,7 @@ export namespace SessionMessageDataPart {
 
   export type GitCommitDataPart = z.output<typeof GitCommitDataPartSchema>;
 
-  export const FileAttachmentDataPartSchema = z.object({
+  const FileAttachmentDataPartSchema = z.object({
     filename: z.string(),
     filePath: RelativePathSchema,
     gitRef: z.string(),
@@ -26,8 +27,11 @@ export namespace SessionMessageDataPart {
     typeof FileAttachmentDataPartSchema
   >;
 
+  export type FolderAttachmentDataPart = FolderAttachment.Type;
+
   export const FileAttachmentsDataPartSchema = z.object({
     files: z.array(FileAttachmentDataPartSchema),
+    folders: z.array(FolderAttachment.Schema).optional(),
   });
 
   export type FileAttachmentsDataPart = z.output<
