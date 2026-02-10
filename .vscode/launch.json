@@ -96,7 +96,6 @@
       "name": "Dev Shim Client",
       "request": "launch",
       "runtimeArgs": [
-        "vite",
         "--configLoader",
         "runner",
         "--port",
@@ -104,9 +103,12 @@
         "--clearScreen",
         "false"
       ],
-      "runtimeExecutable": "pnpx",
+      "runtimeExecutable": "${workspaceRoot}/packages/shim-client/node_modules/.bin/vite",
       "skipFiles": ["<node_internals>/**", "${workspaceRoot}/node_modules/**"],
-      "type": "node"
+      "type": "node",
+      "windows": {
+        "runtimeExecutable": "${workspaceRoot}/packages/shim-client/node_modules/.bin/vite.cmd"
+      }
     },
     {
       "console": "integratedTerminal",
