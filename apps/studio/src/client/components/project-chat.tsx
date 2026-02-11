@@ -254,10 +254,11 @@ export function ProjectChat({
             onStop={() => {
               stopSessions.mutate({ subdomain: project.subdomain });
             }}
-            onSubmit={({ files, modelURI, prompt }) => {
+            onSubmit={({ files, folders, modelURI, prompt }) => {
               createMessage.mutate(
                 {
                   files,
+                  folders,
                   modelURI,
                   prompt,
                   sessionId: selectedSessionId,

@@ -59,35 +59,6 @@ export function TemplateDetail({
   const [showAIProviderGuard, setShowAIProviderGuard] = useState(false);
   const [showPreviewDialog, setShowPreviewDialog] = useState(false);
 
-  const handleCreateProject = (prompt: string, files?: FileUpload.Type[]) => {
-    if (appDetails && selectedModelURI) {
-      saveSelectedModelURI(selectedModelURI);
-
-      createProjectMutation.mutate(
-        {
-          files,
-          modelURI: selectedModelURI,
-          prompt,
-          templateName: folderName,
-        },
-        {
-          onError: (error) => {
-            toast.error(
-              `There was an error starting your project: ${error.message}`,
-            );
-          },
-          onSuccess: ({ sessionId, subdomain }) => {
-            void navigate({
-              params: { subdomain },
-              search: { selectedSessionId: sessionId },
-              to: "/projects/$subdomain",
-            });
-          },
-        },
-      );
-    }
-  };
-
   if (!appDetails) {
     return <NotFoundComponent message="The app could not be found." />;
   }
@@ -118,8 +89,34 @@ export function TemplateDetail({
           isSubmittable={!createProjectMutation.isPending}
           modelURI={selectedModelURI}
           onModelChange={setSelectedModelURI}
-          onSubmit={({ files, prompt }) => {
-            handleCreateProject(prompt.trim(), files);
+          onSubmit={({ files, folders, prompt }) => {
+            if (selectedModelURI) {
+              saveSelectedModelURI(selectedModelURI);
+
+              createProjectMutation.mutate(
+                {
+                  files,
+                  folders,
+                  modelURI: selectedModelURI,
+                  prompt: prompt.trim(),
+                  templateName: folderName,
+                },
+                {
+                  onError: (error) => {
+                    toast.error(
+                      `There was an error starting your project: ${error.message}`,
+                    );
+                  },
+                  onSuccess: ({ sessionId, subdomain }) => {
+                    void navigate({
+                      params: { subdomain },
+                      search: { selectedSessionId: sessionId },
+                      to: "/projects/$subdomain",
+                    });
+                  },
+                },
+              );
+            }
           }}
           placeholder={`Describe what you want to build with ${title}…`}
           submitButtonContent={
