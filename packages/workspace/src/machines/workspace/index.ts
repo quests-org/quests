@@ -63,6 +63,7 @@ export type WorkspaceEvent =
   | {
       type: "addMessage";
       value: {
+        agentName: AgentName;
         message: SessionMessage.UserWithParts;
         model: AIGatewayModel.Type;
         sessionId: StoreId.Session;
@@ -72,6 +73,7 @@ export type WorkspaceEvent =
   | {
       type: "createSession";
       value: {
+        agentName: AgentName;
         message: SessionMessage.UserWithParts;
         model: AIGatewayModel.Type;
         sessionId: StoreId.Session;
@@ -326,7 +328,7 @@ export const workspaceMachine = setup({
           return {
             type: "internal.spawnSession",
             value: {
-              agentName: "main",
+              agentName: event.value.agentName,
               appConfig,
               message: event.value.message,
               model: event.value.model,
@@ -363,7 +365,7 @@ export const workspaceMachine = setup({
         return {
           type: "internal.spawnSession",
           value: {
-            agentName: "main",
+            agentName: event.value.agentName,
             appConfig,
             message: event.value.message,
             model: event.value.model,

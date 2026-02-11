@@ -107,6 +107,7 @@ const create = base
       context.workspaceRef.send({
         type: "addMessage",
         value: {
+          agentName: "main",
           message,
           model,
           sessionId: message.metadata.sessionId,

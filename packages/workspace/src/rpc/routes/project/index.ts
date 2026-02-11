@@ -248,6 +248,7 @@ const create = base
       context.workspaceRef.send({
         type: "createSession",
         value: {
+          agentName: "main",
           message,
           model,
           sessionId: message.metadata.sessionId,
