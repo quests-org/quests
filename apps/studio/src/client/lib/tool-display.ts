@@ -200,7 +200,7 @@ function getTaskToolLabel(
     return state === "completed"
       ? "Assisted"
       : state === "streaming"
-        ? "Assisting"
+        ? "Planning…"
         : "Failed to assist";
   }
 
