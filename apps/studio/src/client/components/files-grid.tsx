@@ -4,6 +4,7 @@ import {
 } from "@/client/atoms/project-file-viewer";
 import { getFileType, isReadableText } from "@/client/lib/get-file-type";
 import { cn } from "@/client/lib/utils";
+import { APP_FOLDER_NAMES } from "@quests/workspace/client";
 import { type SessionMessageDataPart } from "@quests/workspace/client";
 import { useSetAtom } from "jotai";
 import { ChevronDown, ChevronUp } from "lucide-react";
@@ -36,7 +37,12 @@ export function FilesGrid({
   const [isExpanded, setIsExpanded] = useState(false);
 
   const [richFiles, nonRichFiles] = fork(files, hasRichPreview);
-  const sortedFiles = [...richFiles, ...nonRichFiles];
+
+  // Prioritize output folder files within rich files
+  const [outputRichFiles, otherRichFiles] = fork(richFiles, isOutputFile);
+  const sortedRichFiles = [...outputRichFiles, ...otherRichFiles];
+
+  const sortedFiles = [...sortedRichFiles, ...nonRichFiles];
 
   const handleFileClick = (file: ProjectFileViewerFile) => {
     const currentIndex = sortedFiles.findIndex((f) => f.url === file.url);
@@ -153,4 +159,8 @@ function hasRichPreview(file: ProjectFileViewerFile) {
     fileType === "markdown" ||
     fileType === "text"
   );
+}
+
+function isOutputFile(file: ProjectFileViewerFile) {
+  return file.filePath.startsWith(`${APP_FOLDER_NAMES.output}/`);
 }
