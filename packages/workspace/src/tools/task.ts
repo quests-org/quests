@@ -112,7 +112,8 @@ export const Task = createTool({
       .string()
       .meta({ description: "The task for the agent to perform" }),
     [INPUT_PARAMS.subagent_type]: z.string().meta({
-      description: "The type of specialized agent to use for this task",
+      description:
+        "The type of specialized agent to use for this task. Generate this first.",
     }),
   }),
   name: "task",
