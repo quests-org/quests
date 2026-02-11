@@ -1,17 +1,13 @@
 import {
   getToolNameByType,
-  type ProjectSubdomain,
   type SessionMessagePart,
+  type WorkspaceAppProject,
 } from "@quests/workspace/client";
 import { Loader2Icon } from "lucide-react";
 import { useState } from "react";
 
 import { filenameFromFilePath } from "../../lib/path-utils";
-import {
-  getToolFailedLabel,
-  getToolLabel,
-  getToolStreamingLabel,
-} from "../../lib/tool-display";
+import { getToolLabelForPart } from "../../lib/tool-display";
 import { cn } from "../../lib/utils";
 import {
   CollapsiblePartMainContent,
@@ -36,13 +32,13 @@ export function ToolPart({
   isLoading,
   onRetry,
   part,
-  projectSubdomain,
+  project,
 }: {
   isDeveloperMode: boolean;
   isLoading: boolean;
   onRetry: (prompt: string) => void;
   part: SessionMessagePart.ToolPart;
-  projectSubdomain: ProjectSubdomain;
+  project: WorkspaceAppProject;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const toolName = getToolNameByType(part.type);
@@ -76,7 +72,7 @@ export function ToolPart({
                   <ToolIcon className="size-3" toolName={toolName} />
                 </span>
               }
-              label={`${getToolStreamingLabel(toolName)} stopped while`}
+              label={`${getToolLabelForPart({ part, state: "streaming", toolName })} stopped while`}
               value={<span>{part.state}</span>}
             />
           </CollapsiblePartTrigger>
@@ -108,7 +104,7 @@ export function ToolPart({
       <ShellCommandCard
         isLoading={isLoading}
         part={part}
-        projectSubdomain={projectSubdomain}
+        projectSubdomain={project.subdomain}
       />
     );
   }
@@ -124,33 +120,46 @@ export function ToolPart({
   switch (part.state) {
     case "input-available": {
       value = getToolInputValue(part) || "";
-      label = getToolStreamingLabel(toolName, !!value);
+      label = getToolLabelForPart({
+        hasValue: !!value,
+        part,
+        state: "streaming",
+        toolName,
+      });
       break;
     }
     case "input-streaming": {
       value = getToolInputValue(part) || "";
-      label = getToolStreamingLabel(toolName, !!value);
+      label = getToolLabelForPart({
+        hasValue: !!value,
+        part,
+        state: "streaming",
+        toolName,
+      });
       break;
     }
     case "output-available": {
       if (part.type === "tool-think") {
-        label = getToolLabel(toolName);
+        label = getToolLabelForPart({ part, state: "completed", toolName });
         value = truncateText(part.output.thought, 80);
       } else {
-        label = hasCapabilityFailure
-          ? getToolFailedLabel(toolName)
-          : getToolLabel(toolName);
+        label = getToolLabelForPart({
+          hasCapabilityFailure,
+          part,
+          state: "completed",
+          toolName,
+        });
         value = getToolOutputDescription(part);
       }
       break;
     }
     case "output-error": {
-      label = getToolFailedLabel(toolName);
+      label = getToolLabelForPart({ part, state: "failed", toolName });
       value = part.errorText;
       break;
     }
     default: {
-      label = getToolLabel(toolName);
+      label = getToolLabelForPart({ part, state: "completed", toolName });
       value = getToolInputValue(part);
     }
   }
@@ -243,7 +252,7 @@ export function ToolPart({
       <CollapsibleContent>
         {isSuccess && (
           <CollapsiblePartMainContent>
-            <ToolPartExpanded onRetry={onRetry} part={part} />
+            <ToolPartExpanded onRetry={onRetry} part={part} project={project} />
           </CollapsiblePartMainContent>
         )}
 
@@ -324,6 +333,9 @@ function getToolInputValue(
     case "tool-run_shell_command": {
       return part.input.command;
     }
+    case "tool-task": {
+      return "";
+    }
     case "tool-think": {
       return part.input.thought;
     }
@@ -339,9 +351,9 @@ function getToolInputValue(
         : undefined;
     }
     default: {
-      const _exhaustiveCheck: never = part;
+      part satisfies never;
       // eslint-disable-next-line no-console
-      console.warn("Unknown tool", _exhaustiveCheck);
+      console.warn("Unknown tool", part);
       return undefined;
     }
   }
@@ -399,6 +411,9 @@ function getToolOutputDescription(
     }
     case "tool-run_shell_command": {
       return part.output.command || "command executed";
+    }
+    case "tool-task": {
+      return "";
     }
     case "tool-unavailable": {
       return "";

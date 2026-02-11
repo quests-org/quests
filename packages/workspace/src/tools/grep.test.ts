@@ -1,5 +1,5 @@
 import path from "node:path";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { AppDirSchema } from "../schemas/paths";
 import { ProjectSubdomainSchema } from "../schemas/subdomains";
@@ -175,6 +175,7 @@ describe("Grep", () => {
   describe("execute", () => {
     it("should find matches for a specific pattern in fixtures", async () => {
       const result = await TOOLS.Grep.execute({
+        agentName: "main",
         appConfig: createFixturesAppConfig(),
         input: {
           explanation: "Looking for async functions",
@@ -182,6 +183,7 @@ describe("Grep", () => {
         },
         model,
         signal: AbortSignal.timeout(10_000),
+        spawnAgent: vi.fn(),
       });
 
       expect(result.isOk()).toBe(true);
@@ -220,6 +222,7 @@ describe("Grep", () => {
 
     it("should return no matches when pattern is not found", async () => {
       const result = await TOOLS.Grep.execute({
+        agentName: "main",
         appConfig: createFixturesAppConfig(),
         input: {
           explanation: "Looking for non-existent pattern",
@@ -227,6 +230,7 @@ describe("Grep", () => {
         },
         model,
         signal: AbortSignal.timeout(10_000),
+        spawnAgent: vi.fn(),
       });
 
       expect(result.isOk()).toBe(true);
@@ -239,12 +243,14 @@ describe("Grep", () => {
 
     it("should use smart case to match case insensitively for lowercase patterns", async () => {
       const result = await TOOLS.Grep.execute({
+        agentName: "main",
         appConfig: createFixturesAppConfig(),
         input: {
           pattern: "handles",
         },
         model,
         signal: AbortSignal.timeout(10_000),
+        spawnAgent: vi.fn(),
       });
 
       expect(result.isOk()).toBe(true);
@@ -288,12 +294,14 @@ describe("Grep", () => {
 
     it("should use smart case to match case sensitively for uppercase patterns", async () => {
       const result = await TOOLS.Grep.execute({
+        agentName: "main",
         appConfig: createFixturesAppConfig(),
         input: {
           pattern: "Handles",
         },
         model,
         signal: AbortSignal.timeout(10_000),
+        spawnAgent: vi.fn(),
       });
 
       expect(result.isOk()).toBe(true);
@@ -322,12 +330,14 @@ describe("Grep", () => {
 
     it("should match all text after the first colon", async () => {
       const result = await TOOLS.Grep.execute({
+        agentName: "main",
         appConfig: createFixturesAppConfig(),
         input: {
           pattern: "zzz",
         },
         model,
         signal: AbortSignal.timeout(10_000),
+        spawnAgent: vi.fn(),
       });
 
       expect(result.isOk()).toBe(true);
@@ -351,12 +361,14 @@ describe("Grep", () => {
 
     it("should handle nested folders with vertical bars", async () => {
       const result = await TOOLS.Grep.execute({
+        agentName: "main",
         appConfig: createFixturesAppConfig(),
         input: {
           pattern: "vertical\\|bar",
         },
         model,
         signal: AbortSignal.timeout(10_000),
+        spawnAgent: vi.fn(),
       });
 
       expect(result.isOk()).toBe(true);

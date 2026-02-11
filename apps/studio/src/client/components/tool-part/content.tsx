@@ -1,4 +1,8 @@
-import { formatBytes, type SessionMessagePart } from "@quests/workspace/client";
+import {
+  formatBytes,
+  type SessionMessagePart,
+  type WorkspaceAppProject,
+} from "@quests/workspace/client";
 
 import { AIProviderIcon } from "../ai-provider-icon";
 import { ExternalLink } from "../external-link";
@@ -12,13 +16,16 @@ import { MonoText } from "./mono-text";
 import { ToolPartReadFile } from "./read-file";
 import { ScrollableCodeBlock } from "./scrollable-code-block";
 import { SectionHeader } from "./section-header";
+import { ToolPartTask } from "./task";
 
 export function ToolContent({
   onRetry,
   part,
+  project,
 }: {
   onRetry?: (message: string) => void;
   part: Extract<SessionMessagePart.ToolPart, { state: "output-available" }>;
+  project: WorkspaceAppProject;
 }) {
   switch (part.type) {
     case "tool-choose": {
@@ -248,6 +255,11 @@ export function ToolContent({
         </div>
       );
     }
+    case "tool-task": {
+      return (
+        <ToolPartTask project={project} sessionId={part.output.sessionId} />
+      );
+    }
     case "tool-think": {
       return (
         <div>
@@ -340,11 +352,11 @@ export function ToolContent({
       );
     }
     default: {
-      const _exhaustiveCheck: never = part;
+      part satisfies never;
       return (
         <div>
           <SectionHeader>Tool completed</SectionHeader>
-          <CodeBlock>{JSON.stringify(_exhaustiveCheck, null, 2)}</CodeBlock>
+          <CodeBlock>{JSON.stringify(part, null, 2)}</CodeBlock>
         </div>
       );
     }

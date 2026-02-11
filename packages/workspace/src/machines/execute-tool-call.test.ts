@@ -111,9 +111,11 @@ describe("executeToolCallMachine", () => {
   }) {
     const actor = createActor(executeToolCallMachine, {
       input: {
+        agentName: "main",
         appConfig: projectAppConfig,
         model,
         part,
+        spawnAgent: vi.fn(),
       },
     });
 

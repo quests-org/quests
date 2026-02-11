@@ -1,5 +1,5 @@
 import path from "node:path";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { AppDirSchema } from "../schemas/paths";
 import { ProjectSubdomainSchema } from "../schemas/subdomains";
@@ -27,6 +27,7 @@ describe("EditFile", () => {
   describe("execute - not found cases", () => {
     it("should return error when file does not exist", async () => {
       const result = await TOOLS.EditFile.execute({
+        agentName: "main",
         appConfig: createFixturesAppConfig(),
         input: {
           filePath: "./non-existent-file.txt",
@@ -35,6 +36,7 @@ describe("EditFile", () => {
         },
         model,
         signal: AbortSignal.timeout(10_000),
+        spawnAgent: vi.fn(),
       });
 
       expect(result.isErr()).toBe(true);
@@ -50,6 +52,7 @@ describe("EditFile", () => {
 
     it("should return error when path is a directory", async () => {
       const result = await TOOLS.EditFile.execute({
+        agentName: "main",
         appConfig: createFixturesAppConfig(),
         input: {
           filePath: "./",
@@ -58,6 +61,7 @@ describe("EditFile", () => {
         },
         model,
         signal: AbortSignal.timeout(10_000),
+        spawnAgent: vi.fn(),
       });
 
       expect(result.isErr()).toBe(true);
@@ -73,6 +77,7 @@ describe("EditFile", () => {
 
     it("should return error when oldString is not found in file content", async () => {
       const result = await TOOLS.EditFile.execute({
+        agentName: "main",
         appConfig: createFixturesAppConfig(),
         input: {
           filePath: "./grep-test.txt",
@@ -81,6 +86,7 @@ describe("EditFile", () => {
         },
         model,
         signal: AbortSignal.timeout(10_000),
+        spawnAgent: vi.fn(),
       });
 
       expect(result.isErr()).toBe(true);
@@ -96,6 +102,7 @@ describe("EditFile", () => {
 
     it("should return error when oldString has multiple matches and needs more context", async () => {
       const result = await TOOLS.EditFile.execute({
+        agentName: "main",
         appConfig: createFixturesAppConfig(),
         input: {
           filePath: "./grep-test.txt",
@@ -104,6 +111,7 @@ describe("EditFile", () => {
         },
         model,
         signal: AbortSignal.timeout(10_000),
+        spawnAgent: vi.fn(),
       });
 
       expect(result.isErr()).toBe(true);

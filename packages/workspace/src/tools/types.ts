@@ -7,8 +7,10 @@ import { type z } from "zod";
 
 import type { ToolNameSchema } from "./name";
 
+import { type AgentName } from "../agents/types";
 import { type AppConfig } from "../lib/app-config/types";
 import { type ExecuteError } from "../lib/execute-error";
+import { type SpawnAgentFunction } from "../lib/spawn-agent";
 
 export interface AgentTool<
   TName extends ToolName,
@@ -18,10 +20,12 @@ export interface AgentTool<
   aiSDKTool: () => Tool<z.output<TInputSchema>, z.output<TOutputSchema>>;
   description: string;
   execute: (options: {
+    agentName: AgentName;
     appConfig: AppConfig;
     input: z.output<TInputSchema>;
     model: AIGatewayModel.Type;
     signal: AbortSignal;
+    spawnAgent: SpawnAgentFunction;
   }) => Promise<ExecuteResult<z.output<TOutputSchema>>>;
   inputSchema: TInputSchema;
   name: TName;

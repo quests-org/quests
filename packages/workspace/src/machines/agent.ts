@@ -19,6 +19,7 @@ import { getErrorAction } from "../lib/get-error-action";
 import { isInteractiveTool } from "../lib/is-interactive-tool";
 import { isToolPart } from "../lib/is-tool-part";
 import { logUnhandledEvent } from "../lib/log-unhandled-event";
+import { type SpawnAgentFunction } from "../lib/spawn-agent";
 import { Store } from "../lib/store";
 import { llmRequestLogic } from "../logic/llm-request";
 import { type SessionMessagePart } from "../schemas/session/message-part";
@@ -210,6 +211,7 @@ export const agentMachine = setup({
       pendingToolCalls: SessionMessagePart.ToolPartInputAvailable[];
       retryCount: number;
       sessionId: StoreId.Session;
+      spawnAgent: SpawnAgentFunction;
       stepCount: number;
       toolCallExecuteRef: ExecuteToolCallActorRef | null;
       toolCallQueue: SessionMessagePart.ToolPartInputAvailable[];
@@ -226,6 +228,7 @@ export const agentMachine = setup({
       parentMessageId: StoreId.Message;
       parentRef: ParentActorRef;
       sessionId: StoreId.Session;
+      spawnAgent: SpawnAgentFunction;
       toolChoice?: "auto" | "none" | "required";
     },
     output: {} as AgentResult,
@@ -244,6 +247,7 @@ export const agentMachine = setup({
     pendingToolCalls: [],
     retryCount: 0,
     sessionId: input.sessionId,
+    spawnAgent: input.spawnAgent,
     stepCount: 0,
     toolCallExecuteRef: null,
     toolCallQueue: [],
@@ -336,9 +340,11 @@ export const agentMachine = setup({
             value: tool,
           });
           return {
+            agentName: context.agent.name,
             appConfig: context.appConfig,
             model: context.model,
             part: nextToolCall,
+            spawnAgent: context.spawnAgent,
           };
         },
         onDone: {

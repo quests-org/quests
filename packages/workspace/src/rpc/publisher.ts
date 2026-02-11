@@ -13,7 +13,7 @@ export const publisher = new EventPublisher<{
     sessionId: StoreId.Session;
     subdomain: AppSubdomain;
   };
-  "appState.session.removed": {
+  "appState.session.done": {
     sessionId: StoreId.Session;
     subdomain: AppSubdomain;
   };

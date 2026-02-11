@@ -9,6 +9,7 @@ export const ToolNameSchema = z.enum([
   "read_file",
   "run_diagnostics",
   "run_shell_command",
+  "task",
   "think",
   "unavailable",
   "web_search",

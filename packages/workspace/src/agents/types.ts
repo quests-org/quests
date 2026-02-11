@@ -9,13 +9,17 @@ import { type StoreId } from "../schemas/store-id";
 
 export interface Agent<T extends AgentTools> {
   agentTools: T;
+  availableSubagents?: AgentName[];
+  description?: string;
   getMessages: ({
     appConfig,
     sessionId,
   }: {
     appConfig: AppConfig;
     sessionId: StoreId.Session;
-  }) => Promise<SessionMessage.ContextWithParts[]>;
+  }) =>
+    | Promise<SessionMessage.ContextWithParts[]>
+    | SessionMessage.ContextWithParts[];
   getTools: () => Promise<AnyAgentTool[]>;
   name: AgentName;
   onFinish: (options: {
@@ -35,7 +39,7 @@ export interface Agent<T extends AgentTools> {
   }) => Promise<boolean>;
 }
 
-export type AgentName = "main";
+export type AgentName = "explorer" | "main";
 
 export type AgentTools = Partial<Record<InternalToolName, AnyAgentTool>>;
 

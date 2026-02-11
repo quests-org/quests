@@ -56,6 +56,7 @@ describe("Glob", () => {
     "should find files matching a glob pattern $name",
     async ({ expectedFiles, pattern }) => {
       const result = await TOOLS.Glob.execute({
+        agentName: "main",
         appConfig: projectAppConfig,
         input: {
           explanation: "I want to find all test files",
@@ -63,6 +64,7 @@ describe("Glob", () => {
         },
         model,
         signal: AbortSignal.timeout(10_000),
+        spawnAgent: vi.fn(),
       });
 
       expect(result._unsafeUnwrap().files).toEqual(expectedFiles);

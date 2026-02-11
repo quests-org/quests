@@ -10,9 +10,7 @@ import {
   detectStaticFileServing,
 } from "../lib/detect-static-file-serving";
 import { TypedError } from "../lib/errors";
-import { fileTree } from "../lib/file-tree";
 import { getCurrentDate } from "../lib/get-current-date";
-import { getSystemInfo } from "../lib/get-system-info";
 import { git } from "../lib/git";
 import { GitCommands } from "../lib/git/commands";
 import { ensureGitRepo } from "../lib/git/ensure-git-repo";
@@ -22,12 +20,17 @@ import { readFileWithAnyCase } from "../lib/read-file-with-any-case";
 import { PNPM_COMMAND, TS_COMMAND } from "../lib/shell-commands";
 import { Store } from "../lib/store";
 import { textForMessage } from "../lib/text-for-message";
-import { type SessionMessage } from "../schemas/session/message";
-import { type SessionMessageDataPart } from "../schemas/session/message-data-part";
 import { StoreId } from "../schemas/store-id";
 import { getToolByType, TOOLS } from "../tools/all";
 import { TOOL_EXPLANATION_PARAM_NAME } from "../tools/base";
 import { setupAgent } from "./create-agent";
+import {
+  createContextMessage,
+  createSystemInfoMessage,
+  getProjectLayoutContext,
+  getSystemInfoText,
+  shouldContinueWithToolCalls,
+} from "./shared";
 
 function formatCommitMessage(text: string): string {
   if (!text.trim()) {
@@ -46,12 +49,14 @@ export const mainAgent = setupAgent({
     "ReadFile",
     "RunDiagnostics",
     "RunShellCommand",
+    "Task",
     "WebSearch",
     "WriteFile",
     // "Think", // Removed on 2026-01-08, as most models don't use it
   ]),
   name: "main",
 }).create(({ agentTools, name }) => ({
+  availableSubagents: ["explorer"],
   getMessages: async ({ appConfig, sessionId }) => {
     const now = getCurrentDate();
 
@@ -62,8 +67,6 @@ export const mainAgent = setupAgent({
     const aiProviderInstructions = await buildAIProviderInstructions({
       appConfig,
     });
-
-    const systemMessageId = StoreId.newMessageId();
 
     let text = dedent`
     You are a general-purpose AI assistant that helps users accomplish any task that can be done with conversation, code, files, and internet access. 
@@ -200,32 +203,14 @@ export const mainAgent = setupAgent({
       text = text + "\n\n" + aiProviderInstructions;
     }
 
-    const systemMessage: SessionMessage.ContextWithParts = {
-      id: systemMessageId,
-      metadata: {
-        agentName: name,
-        createdAt: now,
-        realRole: "system",
-        sessionId,
-      },
-      parts: [
-        {
-          metadata: {
-            createdAt: now,
-            endedAt: now,
-            id: StoreId.newPartId(),
-            messageId: systemMessageId,
-            sessionId,
-          },
-          state: "done",
-          text,
-          type: "text",
-        },
-      ],
-      role: "session-context",
-    };
+    const systemMessage = createSystemInfoMessage({
+      agentName: name,
+      now,
+      sessionId,
+      text,
+    });
 
-    const fileTreeResult = await fileTree(appConfig.appDir);
+    const projectLayout = await getProjectLayoutContext(appConfig.appDir);
 
     const packageJsonContent = await readFileWithAnyCase(
       appConfig.appDir,
@@ -236,71 +221,30 @@ export const mainAgent = setupAgent({
       absolutePathJoin(appConfig.appDir, "node_modules"),
     );
 
-    const userMessageId = StoreId.newMessageId();
-    const userMessage: SessionMessage.ContextWithParts = {
-      id: userMessageId,
-      metadata: {
-        agentName: name,
-        createdAt: now,
-        realRole: "user",
-        sessionId,
-      },
-      parts: [
-        {
-          metadata: {
-            createdAt: now,
-            endedAt: now,
-            id: StoreId.newPartId(),
-            messageId: userMessageId,
-            sessionId,
-          },
-          state: "done",
-          text: dedent`
-            <system_info>
-            Operating system: ${getSystemInfo()}
-            Current date: ${now.toLocaleDateString("en-US", { day: "numeric", month: "long", weekday: "long", year: "numeric" })}
-            </system_info>
-
-            ${
-              nodeModulesStatus
-                ? ""
-                : dedent`
-              <dependencies>
-              Dependencies have not yet been installed for this project. If you need to run scripts that require dependencies, you can install them by running \`${PNPM_COMMAND.name} install\` using the \`${agentTools.RunShellCommand.name}\` tool.
-              </dependencies>
-            `
-            }
-
-            ${fileTreeResult.match(
-              (tree) => dedent`
-                <project_layout>
-                This is the current project directory structure. All files and folders shown below exist right now. This structure will not update during the conversation, but should be considered accurate at the start.
-                \`\`\`plaintext
-                ${tree}
-                \`\`\`
-                </project_layout>
-              `,
-              () => "",
-            )}
-
-            ${
-              packageJsonContent
-                ? dedent`
-              <package_json>
-              This is the package.json file from the project root as of the start of the conversation.
-              \`\`\`json
-              ${packageJsonContent}
-              \`\`\`
-              </package_json>
-            `
-                : ""
-            }
-          `.trim(),
-          type: "text",
-        },
+    const userMessage = createContextMessage({
+      agentName: name,
+      now,
+      sessionId,
+      textParts: [
+        getSystemInfoText(),
+        !nodeModulesStatus &&
+          dedent`
+            <dependencies>
+            Dependencies have not yet been installed for this project. If you need to run scripts that require dependencies, you can install them by running \`${PNPM_COMMAND.name} install\` using the \`${agentTools.RunShellCommand.name}\` tool.
+            </dependencies>
+          `,
+        projectLayout,
+        packageJsonContent &&
+          dedent`
+            <package_json>
+            This is the package.json file from the project root as of the start of the conversation.
+            \`\`\`json
+            ${packageJsonContent}
+            \`\`\`
+            </package_json>
+          `,
       ],
-      role: "session-context",
-    };
+    });
 
     return [systemMessage, userMessage];
   },
@@ -351,7 +295,6 @@ export const mainAgent = setupAgent({
         return err(new TypedError.NotFound("No assistant message found"));
       }
 
-      // Find the last user message
       const lastUserMessage = [...messages]
         .reverse()
         .find((message) => message.role === "user");
@@ -360,7 +303,6 @@ export const mainAgent = setupAgent({
         ? textForMessage(lastUserMessage)
         : "";
 
-      // Stage all changes first
       yield* git(GitCommands.addAll(), appConfig.appDir, { signal });
 
       const commitMessage = formatCommitMessage(userMessageText);
@@ -378,10 +320,9 @@ export const mainAgent = setupAgent({
 
       yield* Store.savePart(
         {
-          // Make this more safe when we have more data parts
           data: {
             ref: commitRef.stdout.toString().trim(),
-          } satisfies SessionMessageDataPart.GitCommitDataPart,
+          },
           metadata: {
             createdAt: new Date(),
             id: StoreId.newPartId(),
@@ -402,19 +343,5 @@ export const mainAgent = setupAgent({
   onStart: async () => {
     // no-op for now. may be used for snapshotting the app state
   },
-  shouldContinue: ({ messages }) => {
-    const lastAssistantMessage = [...messages]
-      .reverse()
-      .find((message) => message.role === "assistant");
-
-    // Continue if no assistant message was found
-    if (!lastAssistantMessage) {
-      return Promise.resolve(true);
-    }
-
-    // Continue if last assistant message has tool calls
-    return Promise.resolve(
-      lastAssistantMessage.parts.some((part) => isToolPart(part)),
-    );
-  },
+  shouldContinue: shouldContinueWithToolCalls,
 }));

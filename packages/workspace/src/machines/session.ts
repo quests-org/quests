@@ -11,16 +11,18 @@ import {
   setup,
 } from "xstate";
 
-import { type AnyAgent } from "../agents/types";
+import { type AgentName, type AnyAgent } from "../agents/types";
 import { type AppConfig } from "../lib/app-config/types";
 import { createAssignEventError } from "../lib/assign-event-error";
 import { createSession } from "../lib/create-session";
+import { getCurrentDate } from "../lib/get-current-date";
 import { logUnhandledEvent } from "../lib/log-unhandled-event";
+import { type SpawnAgentFunction } from "../lib/spawn-agent";
 import { Store } from "../lib/store";
 import { publisher } from "../rpc/publisher";
 import { type SessionTag } from "../schemas/app-state";
 import { type SessionMessage } from "../schemas/session/message";
-import { type StoreId } from "../schemas/store-id";
+import { StoreId } from "../schemas/store-id";
 import {
   agentMachine,
   type AgentMachineActorRef,
@@ -28,15 +30,27 @@ import {
   type ToolCallUpdate,
 } from "./agent";
 
-export interface SessionMachineParentEvent {
-  type: "session.done";
-  value: {
-    actorId: string;
-    appConfig: AppConfig;
-    error?: unknown;
-    usedNonReadOnlyTools: boolean;
-  };
-}
+export type SessionMachineParentEvent =
+  | {
+      type: "session.done";
+      value: {
+        actorId: string;
+        appConfig: AppConfig;
+        error?: unknown;
+        usedNonReadOnlyTools: boolean;
+      };
+    }
+  | {
+      type: "session.spawnSubAgent";
+      value: {
+        agentName: AgentName;
+        appConfig: AppConfig;
+        message: SessionMessage.UserWithParts;
+        model: AIGatewayModel.Type;
+        parentSessionId: StoreId.Session;
+        sessionId: StoreId.Session;
+      };
+    };
 
 type ParentActorRef = ActorRef<AnyMachineSnapshot, SessionMachineParentEvent>;
 
@@ -101,9 +115,10 @@ export const sessionMachine = setup({
       void,
       {
         appConfig: AppConfig;
+        parentSessionId?: StoreId.Session;
         sessionId: StoreId.Session;
       }
-    >(async ({ input: { appConfig, sessionId }, signal }) => {
+    >(async ({ input: { appConfig, parentSessionId, sessionId }, signal }) => {
       const existingSession = await Store.getSession(sessionId, appConfig, {
         signal,
       });
@@ -111,7 +126,7 @@ export const sessionMachine = setup({
         if (existingSession.error.type === "workspace-not-found-error") {
           const result = await createSession({
             appConfig,
-            sessionId,
+            parentSessionId,
             signal,
           });
           if (result.isErr()) {
@@ -155,8 +170,10 @@ export const sessionMachine = setup({
       maxStepCount: number;
       model: AIGatewayModel.Type;
       parentRef: ParentActorRef;
+      parentSessionId?: StoreId.Session;
       queuedMessages: SessionMessage.UserWithParts[];
       sessionId: StoreId.Session;
+      spawnAgent: SpawnAgentFunction;
       subscription?: { unsubscribe: () => void };
       usedNonReadOnlyTools: boolean;
     },
@@ -169,6 +186,7 @@ export const sessionMachine = setup({
       maxStepCount?: number;
       model: AIGatewayModel.Type;
       parentRef: ParentActorRef;
+      parentSessionId?: StoreId.Session;
       queuedMessages: SessionMessage.UserWithParts[];
       sessionId: StoreId.Session;
     },
@@ -195,6 +213,65 @@ export const sessionMachine = setup({
       subdomain: input.appConfig.subdomain,
     });
 
+    const spawnAgent: SpawnAgentFunction = async ({
+      agentName,
+      prompt,
+      signal,
+    }) => {
+      const newSessionId = StoreId.newSessionId();
+      const createdAt = getCurrentDate();
+      const messageId = StoreId.newMessageId();
+
+      input.parentRef.send({
+        type: "session.spawnSubAgent",
+        value: {
+          agentName,
+          appConfig: input.appConfig,
+          message: {
+            id: messageId,
+            metadata: { createdAt, sessionId: newSessionId },
+            parts: [
+              {
+                metadata: {
+                  createdAt,
+                  id: StoreId.newPartId(),
+                  messageId,
+                  sessionId: newSessionId,
+                },
+                text: prompt,
+                type: "text",
+              },
+            ],
+            role: "user",
+          },
+          model: input.model,
+          parentSessionId: input.sessionId,
+          sessionId: newSessionId,
+        },
+      });
+
+      return new Promise((resolve) => {
+        void (async () => {
+          for await (const payload of publisher.subscribe(
+            "appState.session.done",
+            { signal },
+          )) {
+            if (payload.sessionId === newSessionId) {
+              const messagesResult = await Store.getMessagesWithParts(
+                {
+                  appConfig: input.appConfig,
+                  sessionId: newSessionId,
+                },
+                { signal },
+              );
+              resolve({ messagesResult, sessionId: newSessionId });
+              return;
+            }
+          }
+        })();
+      });
+    };
+
     return {
       agent: input.agent,
       appConfig: input.appConfig,
@@ -203,8 +280,10 @@ export const sessionMachine = setup({
       maxStepCount: input.maxStepCount ?? 50,
       model: input.model,
       parentRef: input.parentRef,
+      parentSessionId: input.parentSessionId,
       queuedMessages: input.queuedMessages,
       sessionId: input.sessionId,
+      spawnAgent,
       subscription,
       usedNonReadOnlyTools: false,
     };
@@ -359,7 +438,7 @@ export const sessionMachine = setup({
           context.subscription.unsubscribe();
         }
 
-        publisher.publish("appState.session.removed", {
+        publisher.publish("appState.session.done", {
           sessionId: context.sessionId,
           subdomain: context.appConfig.subdomain,
         });
@@ -418,6 +497,7 @@ export const sessionMachine = setup({
                     parentMessageId: event.output.id,
                     parentRef: self,
                     sessionId: context.sessionId,
+                    spawnAgent: context.spawnAgent,
                   },
                 }),
               queuedMessages: ({ context }) => {
@@ -441,6 +521,7 @@ export const sessionMachine = setup({
       invoke: {
         input: ({ context }) => ({
           appConfig: context.appConfig,
+          parentSessionId: context.parentSessionId,
           sessionId: context.sessionId,
         }),
         onDone: {

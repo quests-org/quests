@@ -167,7 +167,7 @@ export function SessionStream({
             key={part.metadata.id}
             onRetry={onRetry}
             part={part}
-            projectSubdomain={project.subdomain}
+            project={project}
           />
         );
       }
@@ -209,8 +209,7 @@ export function SessionStream({
       return <UnknownPart key={partIndex} part={_exhaustiveCheck} />;
     },
     [
-      project.urls.assetBase,
-      project.subdomain,
+      project,
       gitCommitParts,
       selectedVersion,
       isAgentRunning,

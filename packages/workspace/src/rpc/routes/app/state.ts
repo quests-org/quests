@@ -33,7 +33,7 @@ const bySubdomain = base
 
     const relevantEvents = [
       "appState.session.added",
-      "appState.session.removed",
+      "appState.session.done",
       "appState.session.tagsChanged",
     ] as const;
 

@@ -19,7 +19,8 @@ import {
   type SnapshotFrom,
 } from "xstate";
 
-import { mainAgent } from "../../agents/main";
+import { AGENTS } from "../../agents/all";
+import { type AgentName } from "../../agents/types";
 import { absolutePathJoin } from "../../lib/absolute-path-join";
 import { createAppConfig } from "../../lib/app-config/create";
 import { type AppConfig } from "../../lib/app-config/types";
@@ -47,7 +48,11 @@ import { type AppSubdomain } from "../../schemas/subdomains";
 import { type WorkspaceConfig } from "../../types";
 import { type ToolCallUpdate } from "../agent";
 import { runtimeMachine } from "../runtime";
-import { sessionMachine, type SessionMachineParentEvent } from "../session";
+import {
+  type SessionActorRef,
+  sessionMachine,
+  type SessionMachineParentEvent,
+} from "../session";
 import { type WorkspaceContext } from "./types";
 
 export type WorkspaceEvent =
@@ -84,9 +89,11 @@ export type WorkspaceEvent =
   | {
       type: "internal.spawnSession";
       value: {
+        agentName: AgentName;
         appConfig: AppConfig;
         message: SessionMessage.UserWithParts;
         model: AIGatewayModel.Type;
+        parentSessionId?: StoreId.Session;
         sessionId: StoreId.Session;
       };
     }
@@ -134,7 +141,7 @@ export const workspaceMachine = setup({
       ({ context }, { subdomain }: { subdomain: AppSubdomain }) => {
         const newsessionRefsBySubdomain = new Map<
           AppSubdomain,
-          ActorRefFrom<typeof sessionMachine>[]
+          SessionActorRef[]
         >();
 
         for (const [
@@ -168,6 +175,38 @@ export const workspaceMachine = setup({
           enqueue.stopChild(runtimeRef);
           enqueue.assign({ runtimeRefs: remainingRefs });
         }
+      },
+    ),
+
+    trackSessionRef: assign(
+      (
+        { context },
+        {
+          sessionRef,
+          subdomain,
+        }: {
+          sessionRef: SessionActorRef;
+          subdomain: AppSubdomain;
+        },
+      ) => {
+        const existingSessionActorRefs =
+          context.sessionRefsBySubdomain.get(subdomain) ?? [];
+
+        const activeSessionActorRefs = existingSessionActorRefs.filter(
+          (ref) => ref.getSnapshot().status !== "done",
+        );
+
+        const newSessionRefsBySubdomain = new Map(
+          context.sessionRefsBySubdomain,
+        );
+        newSessionRefsBySubdomain.set(subdomain, [
+          ...activeSessionActorRefs,
+          sessionRef,
+        ]);
+
+        return {
+          sessionRefsBySubdomain: newSessionRefsBySubdomain,
+        };
       },
     ),
   },
@@ -287,6 +326,7 @@ export const workspaceMachine = setup({
           return {
             type: "internal.spawnSession",
             value: {
+              agentName: "main",
               appConfig,
               message: event.value.message,
               model: event.value.model,
@@ -323,6 +363,7 @@ export const workspaceMachine = setup({
         return {
           type: "internal.spawnSession",
           value: {
+            agentName: "main",
             appConfig,
             message: event.value.message,
             model: event.value.model,
@@ -418,41 +459,41 @@ export const workspaceMachine = setup({
       },
     ],
     "internal.spawnSession": {
-      actions: enqueueActions(({ enqueue, event }) => {
-        enqueue.assign(({ context, self, spawn }) => {
-          const { appConfig, message, model, sessionId } = event.value;
+      actions: enqueueActions(({ enqueue, event, self }) => {
+        enqueue.assign(({ spawn }) => {
+          const {
+            agentName,
+            appConfig,
+            message,
+            model,
+            parentSessionId,
+            sessionId,
+          } = event.value;
+
           const sessionMachineRef = spawn("sessionMachine", {
             input: {
-              agent: mainAgent,
+              agent: AGENTS[agentName],
               appConfig,
               baseLLMRetryDelayMs: ms("1 second"),
               llmRequestChunkTimeoutMs: ms("5 minutes"),
               model,
               parentRef: self,
+              parentSessionId,
               queuedMessages: [message],
               sessionId,
             },
           });
 
-          const existingSessionActorRefs =
-            context.sessionRefsBySubdomain.get(appConfig.subdomain) ?? [];
+          // Track the session ref
+          enqueue({
+            params: {
+              sessionRef: sessionMachineRef,
+              subdomain: appConfig.subdomain,
+            },
+            type: "trackSessionRef",
+          });
 
-          // Garbage collect done sessions
-          const activeSessionActorRefs = existingSessionActorRefs.filter(
-            (ref) => ref.getSnapshot().status !== "done",
-          );
-
-          const newsessionRefsBySubdomain = new Map(
-            context.sessionRefsBySubdomain,
-          );
-          newsessionRefsBySubdomain.set(appConfig.subdomain, [
-            ...activeSessionActorRefs,
-            sessionMachineRef,
-          ]);
-
-          return {
-            sessionRefsBySubdomain: newsessionRefsBySubdomain,
-          };
+          return {};
         });
       }),
       guard: ({ context, event }) => {
@@ -578,6 +619,13 @@ export const workspaceMachine = setup({
       //   };
       // }),
     ],
+
+    "session.spawnSubAgent": {
+      actions: raise(({ event }) => ({
+        type: "internal.spawnSession",
+        value: event.value,
+      })),
+    },
 
     spawnRuntime: {
       actions: assign(({ context, event, spawn }) => {
