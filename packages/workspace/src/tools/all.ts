@@ -56,7 +56,10 @@ export const TOOLS_BY_NAME = {
 } as const satisfies Record<ToolName, AnyAgentTool>;
 
 export const ALL_AI_SDK_TOOLS = Object.fromEntries(
-  Object.values(TOOLS_BY_NAME).map((tool) => [tool.name, tool.aiSDKTool("main")]),
+  Object.values(TOOLS_BY_NAME).map((tool) => [
+    tool.name,
+    tool.aiSDKTool("main"),
+  ]),
 );
 
 export type AISDKTools = InferUITools<{

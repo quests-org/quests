@@ -18,7 +18,9 @@ export interface AgentTool<
   TInputSchema extends z.ZodType = z.ZodType,
   TOutputSchema extends z.ZodType = z.ZodType,
 > {
-  aiSDKTool: (agentName: AgentName) => Tool<z.output<TInputSchema>, z.output<TOutputSchema>>;
+  aiSDKTool: (
+    agentName: AgentName,
+  ) => Tool<z.output<TInputSchema>, z.output<TOutputSchema>>;
   description: ((agentName: AgentName) => string) | string;
   execute: (options: {
     agentName: AgentName;
