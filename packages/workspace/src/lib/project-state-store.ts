@@ -28,7 +28,7 @@ export const ProjectStateSchema = z.object({
   selectedModelURI: AIGatewayModelURI.Schema.optional(),
 });
 
-type ProjectState = z.output<typeof StoredProjectStateSchema>;
+export type ProjectState = z.output<typeof StoredProjectStateSchema>;
 
 export async function getMigratedProjectState({
   appDir,

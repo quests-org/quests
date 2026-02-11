@@ -303,6 +303,11 @@ function getToolInputValue(
     case "tool-choose": {
       return part.input.question;
     }
+    case "tool-copy_to_project": {
+      return part.input.sourcePath
+        ? filenameFromFilePath(part.input.sourcePath)
+        : undefined;
+    }
     case "tool-edit_file": {
       return part.input.filePath
         ? filenameFromFilePath(part.input.filePath)
@@ -367,6 +372,9 @@ function getToolOutputDescription(
   switch (part.type) {
     case "tool-choose": {
       return part.output.selectedChoice || "answered";
+    }
+    case "tool-copy_to_project": {
+      return filenameFromFilePath(part.output.destinationPath) || "file copied";
     }
     case "tool-edit_file": {
       return filenameFromFilePath(part.output.filePath) || "file edited";

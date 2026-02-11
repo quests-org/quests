@@ -39,7 +39,7 @@ export interface Agent<T extends AgentTools> {
   }) => Promise<boolean>;
 }
 
-export type AgentName = "explorer" | "main";
+export type AgentName = "explorer" | "main" | "retrieval";
 
 export type AgentTools = Partial<Record<InternalToolName, AnyAgentTool>>;
 

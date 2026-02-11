@@ -4,6 +4,7 @@ import { type z } from "zod";
 import type { AnyAgentTool, ToolName } from "./types";
 
 import { Choose } from "./choose";
+import { CopyToProject } from "./copy-to-project";
 import { EditFile } from "./edit-file";
 import { GenerateImage } from "./generate-image";
 import { Glob } from "./glob";
@@ -19,6 +20,7 @@ import { WriteFile } from "./write-file";
 
 export const TOOLS = {
   Choose,
+  CopyToProject,
   EditFile,
   GenerateImage,
   Glob,
@@ -37,6 +39,7 @@ export type InternalToolName = keyof typeof TOOLS;
 
 export const TOOLS_BY_NAME = {
   [TOOLS.Choose.name]: TOOLS.Choose,
+  [TOOLS.CopyToProject.name]: TOOLS.CopyToProject,
   [TOOLS.EditFile.name]: TOOLS.EditFile,
   [TOOLS.GenerateImage.name]: TOOLS.GenerateImage,
   [TOOLS.Glob.name]: TOOLS.Glob,
@@ -53,7 +56,7 @@ export const TOOLS_BY_NAME = {
 } as const satisfies Record<ToolName, AnyAgentTool>;
 
 export const ALL_AI_SDK_TOOLS = Object.fromEntries(
-  Object.values(TOOLS_BY_NAME).map((tool) => [tool.name, tool.aiSDKTool()]),
+  Object.values(TOOLS_BY_NAME).map((tool) => [tool.name, tool.aiSDKTool("main")]),
 );
 
 export type AISDKTools = InferUITools<{

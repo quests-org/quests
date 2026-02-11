@@ -272,6 +272,27 @@ export namespace SessionMessage {
           `;
 
           parts.push({ text: attachmentText, type: "text" });
+
+          // Alert about newly attached folders
+          if (
+            fileAttachmentsPart.data.folders &&
+            fileAttachmentsPart.data.folders.length > 0
+          ) {
+            const folderDescriptions = fileAttachmentsPart.data.folders
+              .map((folder) => `- ${folder.name}: ${folder.path}`)
+              .join("\n");
+
+            const folderAttachmentText = dedent`
+              <attached_folders>
+              The user has attached the following folders as context for their request:
+              ${folderDescriptions}
+              
+              These folders are directly relevant to the user's message above. You can explore them and copy files from them using the retrieval agent via the Task tool with subagent_type="retrieval".
+              </attached_folders>
+            `;
+
+            parts.push({ text: folderAttachmentText, type: "text" });
+          }
         }
       }
 

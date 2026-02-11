@@ -35,6 +35,7 @@ describe("EditFile", () => {
           oldString: "old text",
         },
         model,
+        projectState: {},
         signal: AbortSignal.timeout(10_000),
         spawnAgent: vi.fn(),
       });
@@ -60,6 +61,7 @@ describe("EditFile", () => {
           oldString: "old text",
         },
         model,
+        projectState: {},
         signal: AbortSignal.timeout(10_000),
         spawnAgent: vi.fn(),
       });
@@ -85,6 +87,7 @@ describe("EditFile", () => {
           oldString: "this text does not exist in the file",
         },
         model,
+        projectState: {},
         signal: AbortSignal.timeout(10_000),
         spawnAgent: vi.fn(),
       });
@@ -110,6 +113,7 @@ describe("EditFile", () => {
           oldString: "grep",
         },
         model,
+        projectState: {},
         signal: AbortSignal.timeout(10_000),
         spawnAgent: vi.fn(),
       });

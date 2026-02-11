@@ -6,6 +6,7 @@ import { assign, fromPromise, log, setup } from "xstate";
 import { type AgentName } from "../agents/types";
 import { type AppConfig } from "../lib/app-config/types";
 import { getCurrentDate } from "../lib/get-current-date";
+import { getProjectState } from "../lib/project-state-store";
 import { type SpawnAgentFunction } from "../lib/spawn-agent";
 import { Store } from "../lib/store";
 import { type SessionMessagePart } from "../schemas/session/message-part";
@@ -28,11 +29,14 @@ const executeToolLogic = fromPromise<
   }) => {
     const tool = getToolByType(part.type);
     try {
+      const projectState = await getProjectState(appConfig.appDir);
+
       const output = await tool.execute({
         agentName,
         appConfig,
         input: part.input as never,
         model,
+        projectState,
         signal,
         spawnAgent,
       });

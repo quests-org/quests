@@ -57,7 +57,13 @@ describe("all", () => {
     it.each(
       Object.entries(TOOLS).filter(([_, tool]) => tool.name !== "unavailable"),
     )("should have descriptions for all types in %s", (toolName, tool) => {
-      const result = hasDescription(tool.inputSchema);
+      // Handle dynamic input schemas that are functions
+      const schema =
+        typeof tool.inputSchema === "function"
+          ? tool.inputSchema("main")
+          : tool.inputSchema;
+
+      const result = hasDescription(schema);
       expect(
         result.isOk(),
         // eslint-disable-next-line vitest/valid-expect

@@ -17,12 +17,14 @@ const INPUT_PARAMS = {
 } as const;
 
 // Hard-coded list of available subagents from main agent
-const AVAILABLE_SUBAGENTS: AgentName[] = ["explorer"];
+const AVAILABLE_SUBAGENTS: AgentName[] = ["explorer", "retrieval"];
 
 // Map agent names to their descriptions
 const AGENT_DESCRIPTIONS: Record<AgentName, string> = {
   explorer: "File exploration agent",
   main: "General-purpose assistant agent",
+  retrieval:
+    "Specialized agent for accessing files from user-attached folders. Use this when the user has attached folders to their message and you need to read, search, or copy files from those folders.",
 };
 
 // Build description with available agents
@@ -42,6 +44,7 @@ ${agentList}
 When to use the Task tool:
 - When you need to delegate a specific subtask to a specialized agent
 - When you want to explore files or analyze code in parallel
+- When the user attaches folders to their message and you need to access files from those folders (use subagent_type="retrieval")
 
 When NOT to use the Task tool:
 - For simple file reads - use the ${ReadFile.name} tool directly instead

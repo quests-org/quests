@@ -45,6 +45,7 @@ const create = base
   .input(
     z.object({
       files: z.array(FileUpload.Schema).optional(),
+      folders: z.array(z.object({ path: z.string() })).optional(),
       modelURI: AIGatewayModelURI.Schema,
       prompt: z.string(),
       sessionId: StoreId.SessionSchema.optional(),
@@ -56,7 +57,7 @@ const create = base
     async ({
       context,
       errors,
-      input: { files, modelURI, prompt, sessionId, subdomain },
+      input: { files, folders, modelURI, prompt, sessionId, subdomain },
     }) => {
       const appConfig = createAppConfig({
         subdomain,
@@ -92,6 +93,7 @@ const create = base
       const messageResult = await newMessage({
         appConfig,
         files,
+        folders,
         model,
         modelURI,
         prompt,

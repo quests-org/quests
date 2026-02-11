@@ -48,6 +48,21 @@ export function ToolContent({
         </div>
       );
     }
+    case "tool-copy_to_project": {
+      return (
+        <div>
+          <SectionHeader>Source</SectionHeader>
+          <MonoText className="mb-2 text-xs">{part.output.sourcePath}</MonoText>
+          <ToolPartFilePath
+            filePath={part.output.destinationPath}
+            label="Copied to"
+          />
+          <div className="mt-1 text-xs text-muted-foreground">
+            Size: {formatBytes(part.output.size)}
+          </div>
+        </div>
+      );
+    }
     case "tool-edit_file": {
       return (
         <div>

@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const ToolNameSchema = z.enum([
   "choose",
+  "copy_to_project",
   "edit_file",
   "generate_image",
   "glob",

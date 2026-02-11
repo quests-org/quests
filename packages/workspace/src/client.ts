@@ -1,4 +1,8 @@
-export { GIT_AUTHOR, MAX_PROMPT_STORAGE_LENGTH } from "./constants";
+export {
+  APP_FOLDER_NAMES,
+  GIT_AUTHOR,
+  MAX_PROMPT_STORAGE_LENGTH,
+} from "./constants";
 export { formatBytes } from "./lib/format-bytes";
 export { getToolNameByType } from "./lib/get-tool-name-by-type";
 export * from "./lib/is-app";

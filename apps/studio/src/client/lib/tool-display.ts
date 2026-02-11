@@ -6,6 +6,7 @@ import {
   Brain,
   Eye,
   FilePlus,
+  FolderInput,
   Globe,
   HelpCircle,
   Image,
@@ -18,27 +19,31 @@ import {
   TriangleAlert,
 } from "lucide-react";
 
-type AgentName = "explorer" | "main";
+type AgentName = "explorer" | "main" | "retrieval";
 
 // Agent-specific display names for the task tool
 const TASK_DISPLAY_NAMES: Record<AgentName, string> = {
   explorer: "Explored",
   main: "Assisted",
+  retrieval: "Retrieved",
 };
 
 const TASK_STREAMING_DISPLAY_NAMES: Record<AgentName, string> = {
   explorer: "Exploring",
   main: "Assisting",
+  retrieval: "Retrieving",
 };
 
 const TASK_FAILED_DISPLAY_NAMES: Record<AgentName, string> = {
   explorer: "Failed to explore",
   main: "Failed to assist",
+  retrieval: "Failed to retrieve",
 };
 
 // | undefined ensures runtime type safety
 const TOOL_DISPLAY_NAMES: Record<ToolName, string | undefined> = {
   choose: "Waiting for answer",
+  copy_to_project: "Copied to project",
   edit_file: "Edited",
   generate_image: "Generated image",
   glob: "Searched files",
@@ -55,6 +60,7 @@ const TOOL_DISPLAY_NAMES: Record<ToolName, string | undefined> = {
 
 const TOOL_STREAMING_DISPLAY_NAMES: Record<ToolName, string | undefined> = {
   choose: "Thinking about answer",
+  copy_to_project: "Copying to project",
   edit_file: "Editing a file",
   generate_image: "Generating an image",
   glob: "Searching files",
@@ -74,6 +80,7 @@ const TOOL_STREAMING_DISPLAY_NAMES_WITH_VALUE: Record<
   string | undefined
 > = {
   choose: TOOL_STREAMING_DISPLAY_NAMES.choose,
+  copy_to_project: "Copying",
   edit_file: "Editing",
   generate_image: "Generating",
   glob: "Searching for",
@@ -90,6 +97,7 @@ const TOOL_STREAMING_DISPLAY_NAMES_WITH_VALUE: Record<
 
 const TOOL_FAILED_DISPLAY_NAMES: Record<ToolName, string | undefined> = {
   choose: "Failed to answer",
+  copy_to_project: "Failed to copy to project",
   edit_file: "Failed to edit file",
   generate_image: "Failed to generate image",
   glob: "Failed to search files",
@@ -106,6 +114,7 @@ const TOOL_FAILED_DISPLAY_NAMES: Record<ToolName, string | undefined> = {
 
 export const TOOL_ICONS: Record<ToolName, LucideIcon | undefined> = {
   choose: HelpCircle,
+  copy_to_project: FolderInput,
   edit_file: Pencil,
   generate_image: Image,
   glob: List,
@@ -181,7 +190,8 @@ function getTaskToolLabel(
   if (
     agentName !== undefined &&
     agentName !== "explorer" &&
-    agentName !== "main"
+    agentName !== "main" &&
+    agentName !== "retrieval"
   ) {
     return "Unknown agent";
   }

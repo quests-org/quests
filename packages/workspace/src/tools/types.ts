@@ -10,6 +10,7 @@ import type { ToolNameSchema } from "./name";
 import { type AgentName } from "../agents/types";
 import { type AppConfig } from "../lib/app-config/types";
 import { type ExecuteError } from "../lib/execute-error";
+import { type ProjectState } from "../lib/project-state-store";
 import { type SpawnAgentFunction } from "../lib/spawn-agent";
 
 export interface AgentTool<
@@ -17,17 +18,18 @@ export interface AgentTool<
   TInputSchema extends z.ZodType = z.ZodType,
   TOutputSchema extends z.ZodType = z.ZodType,
 > {
-  aiSDKTool: () => Tool<z.output<TInputSchema>, z.output<TOutputSchema>>;
-  description: string;
+  aiSDKTool: (agentName: AgentName) => Tool<z.output<TInputSchema>, z.output<TOutputSchema>>;
+  description: ((agentName: AgentName) => string) | string;
   execute: (options: {
     agentName: AgentName;
     appConfig: AppConfig;
     input: z.output<TInputSchema>;
     model: AIGatewayModel.Type;
+    projectState: ProjectState;
     signal: AbortSignal;
     spawnAgent: SpawnAgentFunction;
   }) => Promise<ExecuteResult<z.output<TOutputSchema>>>;
-  inputSchema: TInputSchema;
+  inputSchema: ((agentName: AgentName) => TInputSchema) | TInputSchema;
   name: TName;
   outputSchema: TOutputSchema;
   readOnly: boolean;

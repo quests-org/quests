@@ -16,7 +16,8 @@ import { formatBytes } from "../lib/format-bytes";
 import { getMimeType } from "../lib/get-mime-type";
 import { normalizePath } from "../lib/normalize-path";
 import { pathExists } from "../lib/path-exists";
-import { RelativePathSchema } from "../schemas/paths";
+import { validateAttachedFolderPath } from "../lib/validate-attached-folder-path";
+import { type AbsolutePath } from "../schemas/paths";
 import { BaseInputSchema } from "./base";
 import { createTool } from "./create-tool";
 import { RunShellCommand } from "./run-shell-command";
@@ -63,7 +64,7 @@ async function handleMediaFile({
   state,
 }: {
   absolutePath: string;
-  fixedPath: z.output<typeof RelativePathSchema>;
+  fixedPath: string;
   mimeType: string;
   signal: AbortSignal;
   state: MediaFileState;
@@ -101,30 +102,79 @@ async function handleMediaFile({
   });
 }
 
+// Must define input schema at the top to allow for inference of functions below
+/* eslint-disable perfectionist/sort-objects */
 export const ReadFile = createTool({
-  description: dedent`
-    Reads a file from the app directory. You can access any file directly by using this tool.
+  inputSchema: (agentName) => {
+    const pathDescription =
+      agentName === "retrieval"
+        ? "Absolute path to the file to read (must be within an attached folder)"
+        : "Relative path to the file to read";
 
-    Usage:
-    - The ${INPUT_PARAMS.filePath} parameter must be a relative path to a file. E.g. ./src/client/app.tsx
-    - This tool does NOT support reading directories. To list directory contents, use the ${RunShellCommand.name} tool with the 'ls' command instead.
-    - By default, it reads up to ${DEFAULT_READ_LIMIT} lines starting from the beginning of the file.
-    - You can optionally specify a line ${INPUT_PARAMS.offset} and ${INPUT_PARAMS.limit} (especially handy for long files), but it's recommended to read the whole file by not providing these parameters.
-    - When using ${INPUT_PARAMS.limit}, avoid using too small of a limit (< 100), which can lead to tons of tokens being used.
-    - Any lines longer than ${MAX_LINE_LENGTH} characters will be truncated.
-    - Results are returned using cat -n format, with line numbers starting at the ${INPUT_PARAMS.offset} or 1.
-    - You have the capability to call multiple tools in a single response. It is always better to speculatively read multiple files as a batch that are potentially useful. 
-    - If you read a file that exists but has empty contents you will receive a system reminder warning in place of file contents.
-    - You can read images, PDFs, audio files, and video files by using this tool.
-  `,
-  execute: async ({ appConfig, input, signal }) => {
-    const fixedPathResult = ensureRelativePath(input.filePath);
-    if (fixedPathResult.isErr()) {
-      return err(fixedPathResult.error);
+    return BaseInputSchema.extend({
+      [INPUT_PARAMS.filePath]: z
+        .string()
+        .meta({ description: pathDescription }),
+      [INPUT_PARAMS.limit]: z
+        .number()
+        .optional()
+        .meta({
+          description: `The number of lines to read (defaults to ${DEFAULT_READ_LIMIT})`,
+        }),
+      [INPUT_PARAMS.offset]: z.number().optional().meta({
+        description: "The line number to start reading from (0-based)",
+      }),
+    });
+  },
+
+  description: (agentName) => {
+    const pathExample =
+      agentName === "retrieval"
+        ? "/Users/john/Documents/research/paper.pdf"
+        : "./src/client/app.tsx";
+
+    return dedent`
+      Reads a file from the ${agentName === "retrieval" ? "attached folders" : "app directory"}. You can access any file directly by using this tool.
+
+      Usage:
+      - The ${INPUT_PARAMS.filePath} parameter must be ${agentName === "retrieval" ? "an absolute path to a file within one of the attached folders" : "a relative path to a file"}. E.g. ${pathExample}
+      - This tool does NOT support reading directories. To list directory contents, use the ${RunShellCommand.name} tool with the 'ls' command instead.
+      - By default, it reads up to ${DEFAULT_READ_LIMIT} lines starting from the beginning of the file.
+      - You can optionally specify a line ${INPUT_PARAMS.offset} and ${INPUT_PARAMS.limit} (especially handy for long files), but it's recommended to read the whole file by not providing these parameters.
+      - When using ${INPUT_PARAMS.limit}, avoid using too small of a limit (< 100), which can lead to tons of tokens being used.
+      - Any lines longer than ${MAX_LINE_LENGTH} characters will be truncated.
+      - Results are returned using cat -n format, with line numbers starting at the ${INPUT_PARAMS.offset} or 1.
+      - You have the capability to call multiple tools in a single response. It is always better to speculatively read multiple files as a batch that are potentially useful. 
+      - If you read a file that exists but has empty contents you will receive a system reminder warning in place of file contents.
+      - You can read images, PDFs, audio files, and video files by using this tool.
+    `;
+  },
+  execute: async ({ agentName, appConfig, input, projectState, signal }) => {
+    let absolutePath: AbsolutePath;
+    let displayPath: string;
+
+    if (agentName === "retrieval" && projectState.attachedFolders) {
+      // Retrieval agent: validate absolute path is within attached folders
+      const pathResult = validateAttachedFolderPath(
+        input.filePath,
+        projectState.attachedFolders,
+      );
+      if (pathResult.isErr()) {
+        return err(pathResult.error);
+      }
+      absolutePath = pathResult.value;
+      displayPath = input.filePath;
+    } else {
+      // Normal agent: use relative path resolution
+      const fixedPathResult = ensureRelativePath(input.filePath);
+      if (fixedPathResult.isErr()) {
+        return err(fixedPathResult.error);
+      }
+      const fixedPath = fixedPathResult.value;
+      absolutePath = absolutePathJoin(appConfig.appDir, fixedPath);
+      displayPath = fixedPath;
     }
-    const fixedPath = fixedPathResult.value;
 
-    const absolutePath = absolutePathJoin(appConfig.appDir, fixedPath);
     const exists = await pathExists(absolutePath);
 
     if (!exists) {
@@ -144,20 +194,25 @@ export const ReadFile = createTool({
               entryWithoutExt.toLowerCase() === baseWithoutExt.toLowerCase()
             );
           })
-          .map((entry) =>
-            normalizePath(path.join(path.dirname(fixedPath), entry)),
-          )
+          .map((entry) => {
+            if (agentName === "retrieval") {
+              // For retrieval agent, return absolute paths
+              return path.join(dir, entry);
+            }
+            // For normal agent, return relative paths
+            return normalizePath(path.join(path.dirname(displayPath), entry));
+          })
           .slice(0, 3);
 
         return ok({
-          filePath: fixedPath,
+          filePath: displayPath,
           state: "does-not-exist" as const,
           suggestions,
         });
       } catch {
         // If we can't read the directory, just return basic error
         return ok({
-          filePath: fixedPath,
+          filePath: displayPath,
           state: "does-not-exist" as const,
           suggestions: [],
         });
@@ -200,7 +255,7 @@ export const ReadFile = createTool({
       return ok({
         content: rawContent,
         displayedLines: selectedLines.length,
-        filePath: fixedPath,
+        filePath: displayPath,
         hasMoreLines,
         offset,
         state: "exists" as const,
@@ -213,7 +268,7 @@ export const ReadFile = createTool({
     if (mimeType.startsWith("image/")) {
       return handleMediaFile({
         absolutePath,
-        fixedPath,
+        fixedPath: displayPath,
         mimeType,
         signal,
         state: "image",
@@ -223,7 +278,7 @@ export const ReadFile = createTool({
     if (mimeType === "application/pdf") {
       return handleMediaFile({
         absolutePath,
-        fixedPath,
+        fixedPath: displayPath,
         mimeType,
         signal,
         state: "pdf",
@@ -233,7 +288,7 @@ export const ReadFile = createTool({
     if (mimeType.startsWith("audio/")) {
       return handleMediaFile({
         absolutePath,
-        fixedPath,
+        fixedPath: displayPath,
         mimeType,
         signal,
         state: "audio",
@@ -243,7 +298,7 @@ export const ReadFile = createTool({
     if (mimeType.startsWith("video/")) {
       return handleMediaFile({
         absolutePath,
-        fixedPath,
+        fixedPath: displayPath,
         mimeType,
         signal,
         state: "video",
@@ -251,33 +306,18 @@ export const ReadFile = createTool({
     }
 
     return ok({
-      filePath: fixedPath,
+      filePath: displayPath,
       mimeType,
       reason: "binary-file" as const,
       state: "unsupported-format" as const,
     });
   },
-  inputSchema: BaseInputSchema.extend({
-    [INPUT_PARAMS.filePath]: z
-      .string()
-      .meta({ description: "Path to the file to read" }),
-    [INPUT_PARAMS.limit]: z
-      .number()
-      .optional()
-      .meta({
-        description: `The number of lines to read (defaults to ${DEFAULT_READ_LIMIT})`,
-      }),
-    [INPUT_PARAMS.offset]: z
-      .number()
-      .optional()
-      .meta({ description: "The line number to start reading from (0-based)" }),
-  }),
   name: "read_file",
   outputSchema: z.discriminatedUnion("state", [
     z.object({
       content: z.string(),
       displayedLines: z.number(),
-      filePath: RelativePathSchema,
+      filePath: z.string(),
       hasMoreLines: z.boolean(),
       offset: z.number(),
       state: z.literal("exists"),
@@ -285,35 +325,35 @@ export const ReadFile = createTool({
     }),
     z.object({
       base64Data: z.string(),
-      filePath: RelativePathSchema,
+      filePath: z.string(),
       mimeType: z.string(),
       state: z.literal("image"),
     }),
     z.object({
       base64Data: z.string(),
-      filePath: RelativePathSchema,
+      filePath: z.string(),
       mimeType: z.string(),
       state: z.literal("pdf"),
     }),
     z.object({
       base64Data: z.string(),
-      filePath: RelativePathSchema,
+      filePath: z.string(),
       mimeType: z.string(),
       state: z.literal("audio"),
     }),
     z.object({
       base64Data: z.string(),
-      filePath: RelativePathSchema,
+      filePath: z.string(),
       mimeType: z.string(),
       state: z.literal("video"),
     }),
     z.object({
-      filePath: RelativePathSchema,
+      filePath: z.string(),
       state: z.literal("does-not-exist"),
       suggestions: z.array(z.string()),
     }),
     z.object({
-      filePath: RelativePathSchema,
+      filePath: z.string(),
       mimeType: z.string().optional(),
       reason: z.enum(["binary-file", "unsupported-image-format"]),
       state: z.literal("unsupported-format"),
@@ -414,3 +454,5 @@ export const ReadFile = createTool({
     };
   },
 });
+
+/* eslint-enable perfectionist/sort-objects */

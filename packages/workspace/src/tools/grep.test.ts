@@ -182,6 +182,7 @@ describe("Grep", () => {
           pattern: "async function",
         },
         model,
+        projectState: {},
         signal: AbortSignal.timeout(10_000),
         spawnAgent: vi.fn(),
       });
@@ -229,6 +230,7 @@ describe("Grep", () => {
           pattern: "nonexistent-pattern-xyz123",
         },
         model,
+        projectState: {},
         signal: AbortSignal.timeout(10_000),
         spawnAgent: vi.fn(),
       });
@@ -249,6 +251,7 @@ describe("Grep", () => {
           pattern: "handles",
         },
         model,
+        projectState: {},
         signal: AbortSignal.timeout(10_000),
         spawnAgent: vi.fn(),
       });
@@ -300,6 +303,7 @@ describe("Grep", () => {
           pattern: "Handles",
         },
         model,
+        projectState: {},
         signal: AbortSignal.timeout(10_000),
         spawnAgent: vi.fn(),
       });
@@ -336,6 +340,7 @@ describe("Grep", () => {
           pattern: "zzz",
         },
         model,
+        projectState: {},
         signal: AbortSignal.timeout(10_000),
         spawnAgent: vi.fn(),
       });
@@ -367,6 +372,7 @@ describe("Grep", () => {
           pattern: "vertical\\|bar",
         },
         model,
+        projectState: {},
         signal: AbortSignal.timeout(10_000),
         spawnAgent: vi.fn(),
       });

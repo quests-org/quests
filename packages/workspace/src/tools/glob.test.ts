@@ -63,6 +63,7 @@ describe("Glob", () => {
           pattern,
         },
         model,
+        projectState: {},
         signal: AbortSignal.timeout(10_000),
         spawnAgent: vi.fn(),
       });
