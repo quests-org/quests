@@ -30,6 +30,7 @@ import { mainAgent } from "../agents/main";
 import { type AnyAgent } from "../agents/types";
 import { type AppConfig } from "../lib/app-config/types";
 import { Store } from "../lib/store";
+import { publisher } from "../rpc/publisher";
 import { type RelativePath } from "../schemas/paths";
 import { type SessionMessage } from "../schemas/session/message";
 import { StoreId } from "../schemas/store-id";
@@ -41,7 +42,7 @@ import {
 } from "../test/helpers/mock-app-config";
 import { sessionToShorthand } from "../test/helpers/session-to-shorthand";
 import { TOOLS } from "../tools/all";
-import { sessionMachine } from "./session";
+import { sessionMachine, type SessionMachineParentEvent } from "./session";
 
 vi.mock(import("ulid"));
 vi.mock(import("../lib/session-store-storage"));
@@ -277,14 +278,61 @@ describe("sessionMachine", () => {
         parentRef: {
           send: vi
             .fn()
-            .mockImplementation(
-              (event: { type: string; value: { error?: unknown } }) => {
-                if (event.value.error) {
-                  // eslint-disable-next-line no-console
-                  console.error("session.done error", event.value.error);
-                }
-              },
-            ),
+            .mockImplementation((event: SessionMachineParentEvent) => {
+              if (event.type === "session.spawnSubAgent") {
+                // Create a session for the spawned agent and immediately complete it
+                void (async () => {
+                  await Store.saveSession(
+                    {
+                      createdAt: mockDate,
+                      id: event.value.sessionId,
+                      title: "Spawned session",
+                    },
+                    testAppConfig,
+                  );
+                  await Store.saveMessageWithParts(
+                    event.value.message,
+                    testAppConfig,
+                  );
+                  // Create a simple assistant response
+                  const assistantMessageId = StoreId.newMessageId();
+                  const responseMessage: SessionMessage.AssistantWithParts = {
+                    id: assistantMessageId,
+                    metadata: {
+                      createdAt: mockDate,
+                      finishReason: "stop",
+                      modelId: model.canonicalId,
+                      providerId: model.providerId,
+                      sessionId: event.value.sessionId,
+                    },
+                    parts: [
+                      {
+                        metadata: {
+                          createdAt: mockDate,
+                          id: StoreId.newPartId(),
+                          messageId: assistantMessageId,
+                          sessionId: event.value.sessionId,
+                        },
+                        text: "Task completed",
+                        type: "text",
+                      },
+                    ],
+                    role: "assistant",
+                  };
+                  await Store.saveMessageWithParts(
+                    responseMessage,
+                    testAppConfig,
+                  );
+                  publisher.publish("appState.session.done", {
+                    sessionId: event.value.sessionId,
+                    subdomain: testAppConfig.subdomain,
+                  });
+                })();
+              } else if (event.value.error) {
+                // eslint-disable-next-line no-console
+                console.error("session.done error", event.value.error);
+              }
+            }),
         } as unknown as AnyActorRef,
         queuedMessages,
         sessionId,
@@ -356,37 +404,36 @@ describe("sessionMachine", () => {
     return runTestMachine(result);
   }
 
-  describe("with non empty repo", () => {
-    beforeEach(() => {
-      mockFs({
-        [MOCK_WORKSPACE_DIRS.previews]: {},
-        [MOCK_WORKSPACE_DIRS.projects]: {
-          [projectFolder]: {
-            "image.png": mockFs.load(
-              path.resolve(
-                import.meta.dirname,
-                "../../fixtures/assets/image.png",
-              ),
+  beforeEach(() => {
+    mockFs({
+      [MOCK_WORKSPACE_DIRS.previews]: {},
+      [MOCK_WORKSPACE_DIRS.projects]: {
+        [projectFolder]: {
+          "image.png": mockFs.load(
+            path.resolve(
+              import.meta.dirname,
+              "../../fixtures/assets/image.png",
             ),
-            "package.json": "{}",
-            "test.txt": "Hello, world!",
-          },
+          ),
+          "package.json": "{}",
+          "test.txt": "Hello, world!",
         },
-        [MOCK_WORKSPACE_DIRS.templates]: {
-          basic: {
-            "file-from-basic.txt": "from basic",
-            "package.json": "{}",
-          },
+      },
+      [MOCK_WORKSPACE_DIRS.templates]: {
+        basic: {
+          "file-from-basic.txt": "from basic",
+          "package.json": "{}",
         },
-      });
+      },
     });
+  });
 
-    it("should read and write a file", async () => {
-      const session = await createAndRunTestMachine({
-        chunkSets: [readFileChunks, writeFileChunks, finishChunks],
-      });
-      expect(sessionToShorthand(session)).toMatchInlineSnapshot(
-        `
+  it("should read and write a file", async () => {
+    const session = await createAndRunTestMachine({
+      chunkSets: [readFileChunks, writeFileChunks, finishChunks],
+    });
+    expect(sessionToShorthand(session)).toMatchInlineSnapshot(
+      `
         "<session title="Test session" count="6">
           <user>
             <text>Hello, I need help with something.</text>
@@ -439,32 +486,32 @@ describe("sessionMachine", () => {
           <session-context main realRole="user" />
         </session>"
       `,
-      );
+    );
+  });
+
+  it("should read an image file", async () => {
+    const session = await createAndRunTestMachine({
+      chunkSets: [
+        [
+          {
+            id: "test-call-image",
+            toolName: "read_file",
+            type: "tool-input-start",
+          },
+          {
+            input: JSON.stringify({
+              filePath: "image.png",
+            }),
+            toolCallId: "test-call-image",
+            toolName: "read_file",
+            type: "tool-call",
+          },
+        ],
+        finishChunks,
+      ],
     });
 
-    it("should read an image file", async () => {
-      const session = await createAndRunTestMachine({
-        chunkSets: [
-          [
-            {
-              id: "test-call-image",
-              toolName: "read_file",
-              type: "tool-input-start",
-            },
-            {
-              input: JSON.stringify({
-                filePath: "image.png",
-              }),
-              toolCallId: "test-call-image",
-              toolName: "read_file",
-              type: "tool-call",
-            },
-          ],
-          finishChunks,
-        ],
-      });
-
-      expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
+    expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
         "<session title="Test session" count="5">
           <user>
             <text>Hello, I need help with something.</text>
@@ -495,52 +542,52 @@ describe("sessionMachine", () => {
           <session-context main realRole="user" />
         </session>"
       `);
+  });
+
+  it("should generate an image", async () => {
+    const generateImageChunks = [
+      {
+        id: "test-call-generate-image",
+        toolName: "generate_image",
+        type: "tool-input-start",
+      },
+      {
+        input: JSON.stringify({
+          explanation: "Generate a test image",
+          filePath: "generated-image",
+          prompt: "A beautiful sunset over mountains",
+        }),
+        toolCallId: "test-call-generate-image",
+        toolName: "generate_image",
+        type: "tool-call",
+      },
+    ] as const satisfies LanguageModelV3StreamPart[];
+
+    const mockImageModel: ImageModelV3 = {
+      doGenerate: vi.fn().mockResolvedValue({
+        images: [
+          "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+        ],
+        rawResponse: { headers: {} },
+        usage: {
+          inputTokens: 10,
+          outputTokens: 0,
+          totalTokens: 10,
+        },
+        warnings: [],
+      }),
+      maxImagesPerCall: undefined,
+      modelId: "mock-image-model",
+      provider: "mock-provider",
+      specificationVersion: "v3",
+    };
+
+    const session = await createAndRunTestMachine({
+      chunkSets: [generateImageChunks, finishChunks],
+      imageModel: mockImageModel,
     });
 
-    it("should generate an image", async () => {
-      const generateImageChunks = [
-        {
-          id: "test-call-generate-image",
-          toolName: "generate_image",
-          type: "tool-input-start",
-        },
-        {
-          input: JSON.stringify({
-            explanation: "Generate a test image",
-            filePath: "generated-image",
-            prompt: "A beautiful sunset over mountains",
-          }),
-          toolCallId: "test-call-generate-image",
-          toolName: "generate_image",
-          type: "tool-call",
-        },
-      ] as const satisfies LanguageModelV3StreamPart[];
-
-      const mockImageModel: ImageModelV3 = {
-        doGenerate: vi.fn().mockResolvedValue({
-          images: [
-            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
-          ],
-          rawResponse: { headers: {} },
-          usage: {
-            inputTokens: 10,
-            outputTokens: 0,
-            totalTokens: 10,
-          },
-          warnings: [],
-        }),
-        maxImagesPerCall: undefined,
-        modelId: "mock-image-model",
-        provider: "mock-provider",
-        specificationVersion: "v3",
-      };
-
-      const session = await createAndRunTestMachine({
-        chunkSets: [generateImageChunks, finishChunks],
-        imageModel: mockImageModel,
-      });
-
-      expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
+    expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
         "<session title="Test session" count="5">
           <user>
             <text>Hello, I need help with something.</text>
@@ -589,64 +636,64 @@ describe("sessionMachine", () => {
           <session-context main realRole="user" />
         </session>"
       `);
+  });
+
+  it("should perform a web search", async () => {
+    const webSearchChunks = [
+      {
+        id: "test-call-web-search",
+        toolName: "web_search",
+        type: "tool-input-start",
+      },
+      {
+        input: JSON.stringify({
+          explanation: "Search for latest news",
+          query: "latest TypeScript features",
+        }),
+        toolCallId: "test-call-web-search",
+        toolName: "web_search",
+        type: "tool-call",
+      },
+    ] as const satisfies LanguageModelV3StreamPart[];
+
+    const mockWebSearchModel = new MockLanguageModelV3({
+      doGenerate: {
+        content: [
+          { text: "TypeScript 5.7 introduces new features.", type: "text" },
+          {
+            id: "source-1",
+            sourceType: "url",
+            title: "TypeScript Blog",
+            type: "source",
+            url: "https://devblogs.microsoft.com/typescript",
+          },
+        ],
+        finishReason: { raw: "stop", unified: "stop" },
+        usage: {
+          inputTokens: {
+            cacheRead: undefined,
+            cacheWrite: undefined,
+            noCache: undefined,
+            total: 5,
+          },
+          outputTokens: {
+            reasoning: undefined,
+            text: undefined,
+            total: 15,
+          },
+        },
+        warnings: [],
+      },
     });
 
-    it("should perform a web search", async () => {
-      const webSearchChunks = [
-        {
-          id: "test-call-web-search",
-          toolName: "web_search",
-          type: "tool-input-start",
-        },
-        {
-          input: JSON.stringify({
-            explanation: "Search for latest news",
-            query: "latest TypeScript features",
-          }),
-          toolCallId: "test-call-web-search",
-          toolName: "web_search",
-          type: "tool-call",
-        },
-      ] as const satisfies LanguageModelV3StreamPart[];
+    const session = await createAndRunTestMachine({
+      chunkSets: [webSearchChunks, finishChunks],
+      webSearchModel: {
+        model: mockWebSearchModel,
+      },
+    });
 
-      const mockWebSearchModel = new MockLanguageModelV3({
-        doGenerate: {
-          content: [
-            { text: "TypeScript 5.7 introduces new features.", type: "text" },
-            {
-              id: "source-1",
-              sourceType: "url",
-              title: "TypeScript Blog",
-              type: "source",
-              url: "https://devblogs.microsoft.com/typescript",
-            },
-          ],
-          finishReason: { raw: "stop", unified: "stop" },
-          usage: {
-            inputTokens: {
-              cacheRead: undefined,
-              cacheWrite: undefined,
-              noCache: undefined,
-              total: 5,
-            },
-            outputTokens: {
-              reasoning: undefined,
-              text: undefined,
-              total: 15,
-            },
-          },
-          warnings: [],
-        },
-      });
-
-      const session = await createAndRunTestMachine({
-        chunkSets: [webSearchChunks, finishChunks],
-        webSearchModel: {
-          model: mockWebSearchModel,
-        },
-      });
-
-      expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
+    expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
         "<session title="Test session" count="5">
           <user>
             <text>Hello, I need help with something.</text>
@@ -692,68 +739,124 @@ describe("sessionMachine", () => {
           <session-context main realRole="user" />
         </session>"
       `);
-    });
+  });
 
-    it("should handle multiple actors running in parallel", async () => {
-      const result1 = await createActorAndApp({
-        chunkSets: [
-          [
-            { id: "1", type: "text-start" },
-            { delta: "First session", id: "1", type: "text-delta" },
-            { id: "1", type: "text-end" },
-            {
-              finishReason: { raw: "stop", unified: "stop" },
-              type: "finish",
-              usage: mockUsage,
-            },
-          ],
-        ],
-        sessionId: defaultSessionId,
-      });
-
-      const secondSessionId = StoreId.newSessionId();
-      const secondMessageId = StoreId.newMessageId();
-      const result2 = await createActorAndApp({
-        chunkSets: [
-          [
-            { id: "1", type: "text-start" },
-            { delta: "Second assistant message", id: "1", type: "text-delta" },
-            { id: "1", type: "text-end" },
-            {
-              finishReason: { raw: "stop", unified: "stop" },
-              type: "finish",
-              usage: mockUsage,
-            },
-          ],
-        ],
-        queuedMessages: [
+  it("should handle task tool calls", async () => {
+    const session = await createAndRunTestMachine({
+      chunkSets: [
+        [
           {
-            id: secondMessageId,
-            metadata: {
-              createdAt: mockDate,
-              sessionId: secondSessionId,
-            },
-            parts: [
-              {
-                metadata: {
-                  createdAt: mockDate,
-                  id: StoreId.newPartId(),
-                  messageId: secondMessageId,
-                  sessionId: secondSessionId,
-                },
-                text: "Second user message",
-                type: "text",
-              },
-            ],
-            role: "user",
+            id: "test-call-task",
+            toolName: "task",
+            type: "tool-input-start",
+          },
+          {
+            input: JSON.stringify({
+              prompt: "Write a test file",
+              subagent_type: "explorer",
+            }),
+            toolCallId: "test-call-task",
+            toolName: "task",
+            type: "tool-call",
           },
         ],
-        sessionId: secondSessionId,
-      });
+        finishChunks,
+      ],
+    });
 
-      const sessionResult1 = await runTestMachine(result1);
-      const sessionResult2 = await runTestMachine(result2);
-      expect(sessionToShorthand(sessionResult1)).toMatchInlineSnapshot(`
+    expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
+      "<session title="Test session" count="5">
+        <user>
+          <text>Hello, I need help with something.</text>
+        </user>
+        <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
+          <step-start step="1" />
+          <tool tool="task" state="output-available" callId="test-call-task">
+            <input>
+              {
+                "prompt": "Write a test file",
+                "subagent_type": "explorer"
+              }
+            </input>
+            <output>
+              {
+                "result": "Task completed",
+                "sessionId": "ses_00000000ZC888888888888888F"
+              }
+            </output>
+          </tool>
+        </assistant>
+        <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
+          <step-start step="2" />
+          <text state="done">I'm done.</text>
+          <data-gitCommit ref="rev-parse HEAD executed successfully in /tmp/workspace/projects/pj-test" />
+        </assistant>
+        <session-context main realRole="system" />
+        <session-context main realRole="user" />
+      </session>"
+    `);
+  });
+
+  it("should handle multiple actors running in parallel", async () => {
+    const result1 = await createActorAndApp({
+      chunkSets: [
+        [
+          { id: "1", type: "text-start" },
+          { delta: "First session", id: "1", type: "text-delta" },
+          { id: "1", type: "text-end" },
+          {
+            finishReason: { raw: "stop", unified: "stop" },
+            type: "finish",
+            usage: mockUsage,
+          },
+        ],
+      ],
+      sessionId: defaultSessionId,
+    });
+
+    const secondSessionId = StoreId.newSessionId();
+    const secondMessageId = StoreId.newMessageId();
+    const result2 = await createActorAndApp({
+      chunkSets: [
+        [
+          { id: "1", type: "text-start" },
+          { delta: "Second assistant message", id: "1", type: "text-delta" },
+          { id: "1", type: "text-end" },
+          {
+            finishReason: { raw: "stop", unified: "stop" },
+            type: "finish",
+            usage: mockUsage,
+          },
+        ],
+      ],
+      queuedMessages: [
+        {
+          id: secondMessageId,
+          metadata: {
+            createdAt: mockDate,
+            sessionId: secondSessionId,
+          },
+          parts: [
+            {
+              metadata: {
+                createdAt: mockDate,
+                id: StoreId.newPartId(),
+                messageId: secondMessageId,
+                sessionId: secondSessionId,
+              },
+              text: "Second user message",
+              type: "text",
+            },
+          ],
+          role: "user",
+        },
+      ],
+      sessionId: secondSessionId,
+    });
+
+    const sessionResult1 = await runTestMachine(result1);
+    const sessionResult2 = await runTestMachine(result2);
+    expect(sessionToShorthand(sessionResult1)).toMatchInlineSnapshot(`
         "<session title="Test session" count="4">
           <user>
             <text>Hello, I need help with something.</text>
@@ -767,8 +870,8 @@ describe("sessionMachine", () => {
         </session>"
       `);
 
-      expect(sessionToShorthand(sessionResult2)).toMatchInlineSnapshot(
-        `
+    expect(sessionToShorthand(sessionResult2)).toMatchInlineSnapshot(
+      `
         "<session title="Test session" count="4">
           <user>
             <text>Second user message</text>
@@ -781,25 +884,25 @@ describe("sessionMachine", () => {
           <session-context main realRole="user" />
         </session>"
       `,
-      );
+    );
+  });
+
+  it("retry with invalid tool name", async () => {
+    const session = await createAndRunTestMachine({
+      chunkSets: [
+        [
+          readFileChunks[0],
+          {
+            ...readFileChunks[1],
+            toolName: "invalid_tool_name",
+          },
+        ],
+        readFileChunks,
+        finishChunks,
+      ],
     });
 
-    it("retry with invalid tool name", async () => {
-      const session = await createAndRunTestMachine({
-        chunkSets: [
-          [
-            readFileChunks[0],
-            {
-              ...readFileChunks[1],
-              toolName: "invalid_tool_name",
-            },
-          ],
-          readFileChunks,
-          finishChunks,
-        ],
-      });
-
-      expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
+    expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
         "<session title="Test session" count="6">
           <user>
             <text>Hello, I need help with something.</text>
@@ -844,27 +947,27 @@ describe("sessionMachine", () => {
           <session-context main realRole="user" />
         </session>"
       `);
+  });
+
+  it("retry with invalid tool params", async () => {
+    const session = await createAndRunTestMachine({
+      chunkSets: [
+        [
+          readFileChunks[0],
+          {
+            ...readFileChunks[1],
+            input: JSON.stringify({
+              filePath: "invalid/path/structure",
+            }),
+            toolCallId: "test-call-1",
+          },
+        ],
+        readFileChunks,
+        finishChunks,
+      ],
     });
 
-    it("retry with invalid tool params", async () => {
-      const session = await createAndRunTestMachine({
-        chunkSets: [
-          [
-            readFileChunks[0],
-            {
-              ...readFileChunks[1],
-              input: JSON.stringify({
-                filePath: "invalid/path/structure",
-              }),
-              toolCallId: "test-call-1",
-            },
-          ],
-          readFileChunks,
-          finishChunks,
-        ],
-      });
-
-      expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
+    expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
         "<session title="Test session" count="6">
           <user>
             <text>Hello, I need help with something.</text>
@@ -915,30 +1018,30 @@ describe("sessionMachine", () => {
           <session-context main realRole="user" />
         </session>"
       `);
+  });
+
+  it("should stop after two steps with file read success", async () => {
+    const neverMessage = "NEVER";
+    const session = await createAndRunTestMachine({
+      chunkSets: [
+        readFileChunks,
+        readFileChunks,
+        finishChunks,
+        [
+          { id: "1", type: "text-start" },
+          { delta: neverMessage, id: "1", type: "text-delta" },
+          { id: "1", type: "text-end" },
+          {
+            finishReason: { raw: "stop", unified: "stop" },
+            type: "finish",
+            usage: mockUsage,
+          },
+        ],
+      ],
     });
 
-    it("should stop after two steps with file read success", async () => {
-      const neverMessage = "NEVER";
-      const session = await createAndRunTestMachine({
-        chunkSets: [
-          readFileChunks,
-          readFileChunks,
-          finishChunks,
-          [
-            { id: "1", type: "text-start" },
-            { delta: neverMessage, id: "1", type: "text-delta" },
-            { id: "1", type: "text-end" },
-            {
-              finishReason: { raw: "stop", unified: "stop" },
-              type: "finish",
-              usage: mockUsage,
-            },
-          ],
-        ],
-      });
-
-      expect(sessionToShorthand(session)).not.toContain(neverMessage);
-      expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
+    expect(sessionToShorthand(session)).not.toContain(neverMessage);
+    expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
         "<session title="Test session" count="6">
           <user>
             <text>Hello, I need help with something.</text>
@@ -993,14 +1096,14 @@ describe("sessionMachine", () => {
           <session-context main realRole="user" />
         </session>"
       `);
+  });
+
+  it("should immediately exit when no tools are called", async () => {
+    const session = await createAndRunTestMachine({
+      chunkSets: [finishChunks],
     });
 
-    it("should immediately exit when no tools are called", async () => {
-      const session = await createAndRunTestMachine({
-        chunkSets: [finishChunks],
-      });
-
-      expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
+    expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
         "<session title="Test session" count="4">
           <user>
             <text>Hello, I need help with something.</text>
@@ -1013,68 +1116,68 @@ describe("sessionMachine", () => {
           <session-context main realRole="user" />
         </session>"
       `);
+  });
+
+  it("should stop agents during llm request", async () => {
+    const result = await createActorAndApp({
+      chunkSets: [finishChunks],
     });
+    result.actor.start();
+    await waitFor(result.actor, (state) =>
+      state.matches({ Agent: "UsingReadOnlyTools" }),
+    );
+    result.actor.send({ type: "stop" });
+    await waitFor(result.actor, (state) => state.status === "done");
 
-    it("should stop agents during llm request", async () => {
-      const result = await createActorAndApp({
-        chunkSets: [finishChunks],
-      });
-      result.actor.start();
-      await waitFor(result.actor, (state) =>
-        state.matches({ Agent: "UsingReadOnlyTools" }),
-      );
-      result.actor.send({ type: "stop" });
-      await waitFor(result.actor, (state) => state.status === "done");
-
-      const session = await runTestMachine(result);
-      expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
+    const session = await runTestMachine(result);
+    expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
         "<session title="Test session" count="1">
           <user>
             <text>Hello, I need help with something.</text>
           </user>
         </session>"
       `);
+  });
+
+  it("should handle interactive tool calls with choose tool", async () => {
+    const result = await createActorAndApp({
+      agent: setupAgent({
+        agentTools: pick(TOOLS, ["Choose"]),
+        name: "main",
+      }).create(() => ({
+        getMessages: mainAgent.getMessages,
+        onFinish: mainAgent.onFinish,
+        onStart: mainAgent.onStart,
+        shouldContinue: mainAgent.shouldContinue,
+      })),
+      chunkSets: [chooseChunks, finishChunks],
     });
 
-    it("should handle interactive tool calls with choose tool", async () => {
-      const result = await createActorAndApp({
-        agent: setupAgent({
-          agentTools: pick(TOOLS, ["Choose"]),
-          name: "main",
-        }).create(() => ({
-          getMessages: mainAgent.getMessages,
-          onFinish: mainAgent.onFinish,
-          onStart: mainAgent.onStart,
-          shouldContinue: mainAgent.shouldContinue,
-        })),
-        chunkSets: [chooseChunks, finishChunks],
-      });
+    result.actor.start();
 
-      result.actor.start();
+    // Wait for the agent to reach the WaitingForPendingToolCalls state
+    await waitFor(result.actor, (state) =>
+      state.matches({ Agent: { UsingReadOnlyTools: "Paused" } }),
+    );
 
-      // Wait for the agent to reach the WaitingForPendingToolCalls state
-      await waitFor(result.actor, (state) =>
-        state.matches({ Agent: { UsingReadOnlyTools: "Paused" } }),
-      );
-
-      // Send the tool call update to simulate user selection
-      result.actor.send({
-        type: "updateInteractiveToolCall",
+    // Send the tool call update to simulate user selection
+    result.actor.send({
+      type: "updateInteractiveToolCall",
+      value: {
+        toolCallId: chooseToolCallId,
+        type: "success",
         value: {
-          toolCallId: chooseToolCallId,
-          type: "success",
-          value: {
-            output: { selectedChoice: "Continue" },
-            toolName: "choose",
-          },
+          output: { selectedChoice: "Continue" },
+          toolName: "choose",
         },
-      });
+      },
+    });
 
-      // Wait for the actor to complete
-      await waitFor(result.actor, (state) => state.status === "done");
+    // Wait for the actor to complete
+    await waitFor(result.actor, (state) => state.status === "done");
 
-      const session = await runTestMachine(result);
-      expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
+    const session = await runTestMachine(result);
+    expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
         "<session title="Test session" count="5">
           <user>
             <text>Hello, I need help with something.</text>
@@ -1107,22 +1210,17 @@ describe("sessionMachine", () => {
           <session-context main realRole="user" />
         </session>"
       `);
+  });
+
+  it("should retry and fail on timeout", async () => {
+    const session = await createAndRunTestMachine({
+      baseLLMRetryDelayMs: 0,
+      chunkSets: [readFileChunks, readFileChunks, readFileChunks, finishChunks],
+      initialChunkDelaysMs: [200, 200, 1, 1],
+      llmRequestChunkTimeoutMs: 100,
     });
 
-    it("should retry and fail on timeout", async () => {
-      const session = await createAndRunTestMachine({
-        baseLLMRetryDelayMs: 0,
-        chunkSets: [
-          readFileChunks,
-          readFileChunks,
-          readFileChunks,
-          finishChunks,
-        ],
-        initialChunkDelaysMs: [200, 200, 1, 1],
-        llmRequestChunkTimeoutMs: 100,
-      });
-
-      expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
+    expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
         "<session title="Test session" count="7">
           <user>
             <text>Hello, I need help with something.</text>
@@ -1162,23 +1260,23 @@ describe("sessionMachine", () => {
           <session-context main realRole="user" />
         </session>"
       `);
+  });
+
+  it("should extend timeout when chunks are received", async () => {
+    const chunkTimeoutMs = 100;
+
+    const session = await createAndRunTestMachine({
+      baseLLMRetryDelayMs: 0,
+      chunkDelayInMs: [
+        chunkTimeoutMs * 2, // First attempt: should timeout (200ms > 100ms)
+        chunkTimeoutMs * 0.1, // Second attempt: should succeed (10ms < 100ms)
+        chunkTimeoutMs * 0.1, // Third attempt: should succeed (10ms < 100ms)
+      ],
+      chunkSets: [readFileChunks, readFileChunks, finishChunks],
+      llmRequestChunkTimeoutMs: chunkTimeoutMs,
     });
 
-    it("should extend timeout when chunks are received", async () => {
-      const chunkTimeoutMs = 100;
-
-      const session = await createAndRunTestMachine({
-        baseLLMRetryDelayMs: 0,
-        chunkDelayInMs: [
-          chunkTimeoutMs * 2, // First attempt: should timeout (200ms > 100ms)
-          chunkTimeoutMs * 0.1, // Second attempt: should succeed (10ms < 100ms)
-          chunkTimeoutMs * 0.1, // Third attempt: should succeed (10ms < 100ms)
-        ],
-        chunkSets: [readFileChunks, readFileChunks, finishChunks],
-        llmRequestChunkTimeoutMs: chunkTimeoutMs,
-      });
-
-      expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
+    expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
         "<session title="Test session" count="6">
           <user>
             <text>Hello, I need help with something.</text>
@@ -1216,51 +1314,49 @@ describe("sessionMachine", () => {
           <session-context main realRole="user" />
         </session>"
       `);
+  });
+
+  describe("with write file delay", () => {
+    beforeEach(() => {
+      vi.spyOn(TOOLS.WriteFile, "execute").mockImplementation(async () => {
+        // Forces the function to be async which will hit WaitingForToolCallExecutions
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        return ok({
+          content: "console.log('Hello, world!');",
+          filePath: "test.js" as RelativePath,
+          isNewFile: false,
+        });
+      });
     });
 
-    describe("with write file delay", () => {
-      beforeEach(() => {
-        vi.spyOn(TOOLS.WriteFile, "execute").mockImplementation(async () => {
-          // Forces the function to be async which will hit WaitingForToolCallExecutions
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-          return ok({
-            content: "console.log('Hello, world!');",
-            filePath: "test.js" as RelativePath,
-            isNewFile: false,
-          });
-        });
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it("should stop agents during execution", async () => {
+      const result = await createActorAndApp({
+        chunkSets: [readFileChunks, writeFileChunks, finishChunks],
+      });
+      result.actor.start();
+
+      await waitFor(
+        result.actor,
+        (state) =>
+          state.matches({ Agent: "UsingReadOnlyTools" }) &&
+          state.context.agentRef?.getSnapshot().context.agent.name === "main",
+      ).then(async () => {
+        const agentRef = result.actor.getSnapshot().context.agentRef;
+        if (!agentRef) {
+          return;
+        }
+        await waitFor(agentRef, (state) => state.matches("ExecutingToolCall"));
       });
 
-      afterEach(() => {
-        vi.restoreAllMocks();
-      });
+      result.actor.send({ type: "stop" });
+      await waitFor(result.actor, (state) => state.status === "done");
 
-      it("should stop agents during execution", async () => {
-        const result = await createActorAndApp({
-          chunkSets: [readFileChunks, writeFileChunks, finishChunks],
-        });
-        result.actor.start();
-
-        await waitFor(
-          result.actor,
-          (state) =>
-            state.matches({ Agent: "UsingReadOnlyTools" }) &&
-            state.context.agentRef?.getSnapshot().context.agent.name === "main",
-        ).then(async () => {
-          const agentRef = result.actor.getSnapshot().context.agentRef;
-          if (!agentRef) {
-            return;
-          }
-          await waitFor(agentRef, (state) =>
-            state.matches("ExecutingToolCall"),
-          );
-        });
-
-        result.actor.send({ type: "stop" });
-        await waitFor(result.actor, (state) => state.status === "done");
-
-        const session = await runTestMachine(result);
-        expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
+      const session = await runTestMachine(result);
+      expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
           "<session title="Test session" count="4">
             <user>
               <text>Hello, I need help with something.</text>
@@ -1279,74 +1375,68 @@ describe("sessionMachine", () => {
             <session-context main realRole="user" />
           </session>"
         `);
-      });
+    });
+  });
+
+  it("should enforce max step count when set to 2", async () => {
+    const session = await createAndRunTestMachine({
+      chunkSets: [readFileChunks, readFileChunks, readFileChunks, finishChunks],
+      maxStepCount: 2,
     });
 
-    it("should enforce max step count when set to 2", async () => {
-      const session = await createAndRunTestMachine({
-        chunkSets: [
-          readFileChunks,
-          readFileChunks,
-          readFileChunks,
-          finishChunks,
-        ],
-        maxStepCount: 2,
-      });
-
-      expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
-        "<session title="Test session" count="6">
-          <user>
-            <text>Hello, I need help with something.</text>
-          </user>
-          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
-            <step-start step="1" />
-            <tool tool="read_file" state="output-available" callId="test-call-1">
-              <input>
-                {
-                  "filePath": "test.txt"
-                }
-              </input>
-              <output>
-                {
-                  "content": "Hello, world!",
-                  "displayedLines": 1,
-                  "filePath": "./test.txt",
-                  "hasMoreLines": false,
-                  "offset": 0,
-                  "state": "exists",
-                  "totalLines": 1
-                }
-              </output>
-            </tool>
-          </assistant>
-          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
-            <step-start step="2" />
-            <tool tool="read_file" state="output-available" callId="test-call-1">
-              <input>
-                {
-                  "filePath": "test.txt"
-                }
-              </input>
-              <output>
-                {
-                  "content": "Hello, world!",
-                  "displayedLines": 1,
-                  "filePath": "./test.txt",
-                  "hasMoreLines": false,
-                  "offset": 0,
-                  "state": "exists",
-                  "totalLines": 1
-                }
-              </output>
-            </tool>
-          </assistant>
-          <session-context main realRole="system" />
-          <session-context main realRole="user" />
-          <assistant finishReason="max-steps" model="quests-synthetic" provider="system">
-            <text>Agent stopped due to maximum steps (2).</text>
-          </assistant>
-        </session>"
-      `);
-    });
+    expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
+      "<session title="Test session" count="6">
+        <user>
+          <text>Hello, I need help with something.</text>
+        </user>
+        <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
+          <step-start step="1" />
+          <tool tool="read_file" state="output-available" callId="test-call-1">
+            <input>
+              {
+                "filePath": "test.txt"
+              }
+            </input>
+            <output>
+              {
+                "content": "Hello, world!",
+                "displayedLines": 1,
+                "filePath": "./test.txt",
+                "hasMoreLines": false,
+                "offset": 0,
+                "state": "exists",
+                "totalLines": 1
+              }
+            </output>
+          </tool>
+        </assistant>
+        <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
+          <step-start step="2" />
+          <tool tool="read_file" state="output-available" callId="test-call-1">
+            <input>
+              {
+                "filePath": "test.txt"
+              }
+            </input>
+            <output>
+              {
+                "content": "Hello, world!",
+                "displayedLines": 1,
+                "filePath": "./test.txt",
+                "hasMoreLines": false,
+                "offset": 0,
+                "state": "exists",
+                "totalLines": 1
+              }
+            </output>
+          </tool>
+        </assistant>
+        <session-context main realRole="system" />
+        <session-context main realRole="user" />
+        <assistant finishReason="max-steps" model="quests-synthetic" provider="system">
+          <text>Agent stopped due to maximum steps (2).</text>
+        </assistant>
+      </session>"
+    `);
   });
 });
