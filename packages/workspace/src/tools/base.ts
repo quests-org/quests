@@ -10,7 +10,7 @@ export const BaseInputSchema = z.object({
     .optional() // Some LLMs leave it out on accident
     .meta({
       description:
-        "One short sentence about why you are using this tool. Generate this first.",
+        "One short sentence describing what this tool is doing, using present continuous tense (e.g., 'Reading the file', 'Exploring the folder'). Generate this first.",
     }),
 });
 
