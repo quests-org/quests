@@ -4,6 +4,8 @@ import { ok } from "neverthrow";
 import { alphabetical } from "radashi";
 import { z } from "zod";
 
+import { absolutePathJoin } from "../lib/absolute-path-join";
+import { ensureRelativePath } from "../lib/ensure-relative-path";
 import { getIgnore } from "../lib/get-ignore";
 import { validateAttachedFolderPath } from "../lib/validate-attached-folder-path";
 import { type AbsolutePath } from "../schemas/paths";
@@ -18,38 +20,38 @@ export const Glob = createTool({
       pattern: z
         .string()
         .meta({ description: "Glob pattern to match files against" }),
-      ...(agentName === "retrieval"
-        ? {
-            rootPath: z.string().meta({
-              description:
-                "Absolute path to an attached folder to search within",
-            }),
-          }
-        : {}),
+      path: z
+        .string()
+        .optional()
+        .meta({
+          description:
+            agentName === "retrieval"
+              ? "Absolute path to an attached folder to search within."
+              : "Relative or absolute path to a folder to search within. Defaults to the current folder if not specified.",
+        }),
     }),
   description: (agentName) => {
     if (agentName === "retrieval") {
-      return "Find files matching a glob pattern within attached folders. You must specify a rootPath parameter with the absolute path to an attached folder to search within.";
+      return "Find files matching a glob pattern within attached folders. You must specify an absolute path to an attached folder to search within.";
     }
-    return "Find files matching a glob pattern in the codebase";
+    return "Find files matching a glob pattern in the codebase. Specify a path to search within a specific folder, or omit to search the current folder.";
   },
   execute: async ({ agentName, appConfig, input, projectState }) => {
     let searchRoot: AbsolutePath;
 
     if (agentName === "retrieval" && projectState.attachedFolders) {
-      // Retrieval agent requires explicit root path
-      if (!input.rootPath) {
+      if (!input.path) {
         const folderList = Object.values(projectState.attachedFolders)
           .map((f) => `  - ${f.name}: ${f.path}`)
           .join("\n");
         return ok({
-          error: `Retrieval agent must specify a rootPath parameter. Available folders:\n${folderList}`,
+          error: `Retrieval agent must specify a path parameter. Available folders:\n${folderList}`,
           files: [],
         });
       }
 
       const pathResult = validateAttachedFolderPath(
-        input.rootPath,
+        input.path,
         projectState.attachedFolders,
       );
       if (pathResult.isErr()) {
@@ -59,7 +61,18 @@ export const Glob = createTool({
         });
       }
       searchRoot = pathResult.value;
+    } else if (input.path) {
+      // For non-retrieval agents, fix the relative path
+      const fixedPathResult = ensureRelativePath(input.path);
+      if (fixedPathResult.isErr()) {
+        return ok({
+          error: fixedPathResult.error.message,
+          files: [],
+        });
+      }
+      searchRoot = absolutePathJoin(appConfig.appDir, fixedPathResult.value);
     } else {
+      // Default to appDir if no path specified (non-retrieval only)
       searchRoot = appConfig.appDir;
     }
 
