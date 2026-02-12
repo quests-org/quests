@@ -46,7 +46,7 @@ export async function writeUploadedAttachments({
     const folderAttachments: FolderAttachment.Type[] = [];
 
     if (files && files.length > 0) {
-      const inputDir = absolutePathJoin(appDir, APP_FOLDER_NAMES.input);
+      const inputDir = absolutePathJoin(appDir, APP_FOLDER_NAMES.userProvided);
       yield* ResultAsync.fromPromise(
         fs.mkdir(inputDir, { recursive: true }),
         (error) =>
@@ -67,7 +67,7 @@ export async function writeUploadedAttachments({
             ),
         );
 
-        const relativePath = `./${APP_FOLDER_NAMES.input}/${uniqueFilename}`;
+        const relativePath = `./${APP_FOLDER_NAMES.userProvided}/${uniqueFilename}`;
         const filePath = absolutePathJoin(appDir, relativePath);
         const buffer = Buffer.from(file.content, "base64");
         yield* ResultAsync.fromPromise(

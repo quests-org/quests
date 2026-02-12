@@ -20,8 +20,9 @@ describe("detect-static-file-serving", () => {
 
       const result = await detectStaticFileServing(basicTemplateDir);
 
-      expect(result).toHaveLength(2);
-      expect(result).toContain("input");
+      expect(result).toHaveLength(1);
+      // TODO: Will remove when static file serving is moved to app itself
+      // expect(result).toContain("input");
       expect(result).toContain("output");
     });
 
@@ -52,27 +53,27 @@ describe("detect-static-file-serving", () => {
   describe("buildStaticFileServingInstructions", () => {
     it("should build instructions for both folders", () => {
       const instructions = buildStaticFileServingInstructions([
-        APP_FOLDER_NAMES.input,
+        APP_FOLDER_NAMES.userProvided,
         APP_FOLDER_NAMES.output,
       ]);
 
       expect(instructions).toMatchInlineSnapshot(`
         "# Static File Serving
         The server serves static files from specific directories, making them accessible to code running in the \`src/\` directory:
-        - Files in \`./input/\` are served at \`/input/*\` (e.g., \`/input/image.png\`)
+        - Files in \`./user-provided/\` are served at \`/user-provided/*\` (e.g., \`/user-provided/image.png\`)
         - Files in \`./output/\` are served at \`/output/*\` (e.g., \`/output/image.png\`)"
       `);
     });
 
     it("should build instructions for single folder", () => {
       const instructions = buildStaticFileServingInstructions([
-        APP_FOLDER_NAMES.input,
+        APP_FOLDER_NAMES.userProvided,
       ]);
 
       expect(instructions).toMatchInlineSnapshot(`
         "# Static File Serving
         The server serves static files from specific directories, making them accessible to code running in the \`src/\` directory:
-        - Files in \`./input/\` are served at \`/input/*\` (e.g., \`/input/image.png\`)"
+        - Files in \`./user-provided/\` are served at \`/user-provided/*\` (e.g., \`/user-provided/image.png\`)"
       `);
     });
 

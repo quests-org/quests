@@ -1,9 +1,10 @@
 export const APP_FOLDER_NAMES = {
-  input: "input",
+  agentRetrieved: "agent-retrieved",
   output: "output",
   private: ".quests",
   scripts: "scripts",
   src: "src",
+  userProvided: "user-provided",
 } as const;
 export const SESSIONS_DB_FILE_NAME = "sessions.db";
 // TODO: Remove chat- after 2026-03-01

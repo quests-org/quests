@@ -8,7 +8,7 @@ import { pathExists } from "./path-exists";
 const SERVER_INDEX_PATH = "src/server/index.ts";
 
 const POSSIBLE_SERVED_FOLDERS = [
-  APP_FOLDER_NAMES.input,
+  APP_FOLDER_NAMES.userProvided,
   APP_FOLDER_NAMES.output,
 ] as const;
 

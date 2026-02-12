@@ -63,7 +63,7 @@ export const CopyToProject = createTool({
     } else {
       // Default to input folder with original filename
       const filename = path.basename(sourcePath);
-      destinationRelative = `./${APP_FOLDER_NAMES.input}/${filename}`;
+      destinationRelative = `./${APP_FOLDER_NAMES.agentRetrieved}/${filename}`;
     }
 
     const destinationAbsolute = absolutePathJoin(
@@ -97,7 +97,7 @@ export const CopyToProject = createTool({
       .string()
       .optional()
       .meta({
-        description: `Optional relative path within the project for the copied file. Defaults to ./${APP_FOLDER_NAMES.input}/ with original filename.`,
+        description: `Optional relative path within the project for the copied file. Defaults to ./${APP_FOLDER_NAMES.agentRetrieved}/ with original filename.`,
       }),
     [INPUT_PARAMS.sourcePath]: z.string().meta({
       description: "Absolute path to the source file within an attached folder",

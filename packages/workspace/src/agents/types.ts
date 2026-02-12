@@ -38,8 +38,9 @@ export interface Agent<T extends AgentTools> {
   }) => Promise<boolean>;
 }
 
+export const RETRIEVAL_AGENT_NAME = "retrieval";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const AGENT_NAMES = ["main", "retrieval"] as const;
+const AGENT_NAMES = ["main", RETRIEVAL_AGENT_NAME] as const;
 
 export type AgentName = (typeof AGENT_NAMES)[number];
 export type AgentTools = Partial<Record<InternalToolName, AnyAgentTool>>;

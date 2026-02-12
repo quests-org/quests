@@ -71,11 +71,7 @@ export async function initializeProject(
 
     // Create standard directories so they appear in the file tree. Avoids agent
     // spending a tool call to create them.
-    const standardDirs = [
-      APP_FOLDER_NAMES.input,
-      APP_FOLDER_NAMES.output,
-      APP_FOLDER_NAMES.scripts,
-    ];
+    const standardDirs = [APP_FOLDER_NAMES.output, APP_FOLDER_NAMES.scripts];
     for (const dirName of standardDirs) {
       yield* ResultAsync.fromPromise(
         fs.mkdir(absolutePathJoin(projectConfig.appDir, dirName), {
