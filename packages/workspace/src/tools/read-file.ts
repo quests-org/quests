@@ -130,7 +130,7 @@ export const ReadFile = createTool({
   description: (agentName) => {
     const pathExample =
       agentName === "retrieval"
-        ? "/Users/john/Documents/research/paper.pdf"
+        ? "/path/to/some/file.pdf"
         : "./src/client/app.tsx";
 
     return dedent`
@@ -154,7 +154,6 @@ export const ReadFile = createTool({
     let displayPath: string;
 
     if (agentName === "retrieval" && projectState.attachedFolders) {
-      // Retrieval agent: validate absolute path is within attached folders
       const pathResult = validateAttachedFolderPath(
         input.filePath,
         projectState.attachedFolders,

@@ -9,16 +9,12 @@ export function validateAttachedFolderPath(
   inputPath: string,
   attachedFolders: Record<string, FolderAttachment.Type>,
 ) {
-  // Check if path is absolute
   if (!path.isAbsolute(inputPath)) {
-    return executeError(
-      `Path must be absolute for retrieval agent: ${inputPath}`,
-    );
+    return executeError(`Path must be absolute: ${inputPath}`);
   }
 
   const absolutePath = AbsolutePathSchema.parse(inputPath);
 
-  // Check if path is within any attached folder
   const allowedFolders = Object.values(attachedFolders);
   const matchingFolder = allowedFolders.find((folder) =>
     inputPath.startsWith(folder.path),

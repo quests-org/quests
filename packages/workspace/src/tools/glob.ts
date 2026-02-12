@@ -45,7 +45,7 @@ export const Glob = createTool({
           .map((f) => `  - ${f.name}: ${f.path}`)
           .join("\n");
         return ok({
-          error: `Retrieval agent must specify a path parameter. Available folders:\n${folderList}`,
+          error: `Must specify a path parameter. Available folders:\n${folderList}`,
           files: [],
         });
       }
