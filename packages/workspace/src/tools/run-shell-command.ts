@@ -180,7 +180,7 @@ export const RunShellCommand = createTool({
   },
   inputSchema: BaseInputSchema.extend({
     command: z.string().meta({ description: "The shell command to run" }),
-    timeoutMs: z.number().optional().default(ms("15 seconds")).meta({
+    timeoutMs: z.number().optional().default(ms("30 seconds")).meta({
       description: "The timeout in milliseconds for the shell command",
     }),
   }),

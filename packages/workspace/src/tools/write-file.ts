@@ -88,7 +88,7 @@ export const WriteFile = createTool({
     isNewFile: z.boolean(),
   }),
   readOnly: false,
-  timeoutMs: ms("15 seconds"),
+  timeoutMs: ms("30 seconds"),
   toModelOutput: ({ output }) => {
     const baseContent = output.isNewFile
       ? "Successfully wrote new file"

@@ -759,7 +759,7 @@ export const EditFile = createTool({
     filePath: RelativePathSchema,
   }),
   readOnly: false,
-  timeoutMs: ms("15 seconds"),
+  timeoutMs: ms("30 seconds"),
   toModelOutput: ({ output: result }) => {
     return {
       type: "text",

@@ -110,7 +110,7 @@ export const CopyToProject = createTool({
     sourcePath: z.string(),
   }),
   readOnly: false,
-  timeoutMs: ms("30 seconds"),
+  timeoutMs: ms("1 minute"),
   toModelOutput: ({ output }) => {
     const sizeKB = (output.size / 1024).toFixed(2);
     return {

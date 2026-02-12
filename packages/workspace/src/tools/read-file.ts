@@ -318,7 +318,7 @@ export const ReadFile = createTool({
     }),
   ]),
   readOnly: true,
-  timeoutMs: ms("5 seconds"),
+  timeoutMs: ms("15 seconds"),
   toModelOutput: ({ output }) => {
     if (output.state === "does-not-exist") {
       const suggestionText =

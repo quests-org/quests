@@ -77,7 +77,7 @@ export const Glob = createTool({
     files: z.array(z.string()),
   }),
   readOnly: true,
-  timeoutMs: ms("5 seconds"),
+  timeoutMs: ms("15 seconds"),
   toModelOutput: ({ output }) => {
     if (output.error) {
       return {

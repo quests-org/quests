@@ -34,7 +34,7 @@ export const RunDiagnostics = createTool({
     errors: z.array(z.string()),
   }),
   readOnly: true,
-  timeoutMs: ms("30 seconds"), // Diagnostics can be slow
+  timeoutMs: ms("2 minutes"), // Diagnostics can be slow on large projects
   toModelOutput: ({ output }) => {
     return {
       type: "text",
