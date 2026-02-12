@@ -4,20 +4,18 @@ import { isBinaryFile } from "isbinaryfile";
 import ms from "ms";
 import { err, ok } from "neverthrow";
 import fs from "node:fs/promises";
-import path from "node:path";
 import { dedent } from "radashi";
 import { z } from "zod";
 
-import { absolutePathJoin } from "../lib/absolute-path-join";
 import { addLineNumbers } from "../lib/add-line-numbers";
-import { ensureRelativePath } from "../lib/ensure-relative-path";
 import { executeError } from "../lib/execute-error";
 import { formatBytes } from "../lib/format-bytes";
 import { getMimeType } from "../lib/get-mime-type";
-import { normalizePath } from "../lib/normalize-path";
 import { pathExists } from "../lib/path-exists";
-import { validateAttachedFolderPath } from "../lib/validate-attached-folder-path";
-import { type AbsolutePath } from "../schemas/paths";
+import {
+  getSimilarPathSuggestions,
+  resolveAgentPath,
+} from "../lib/resolve-agent-path";
 import { BaseInputSchema } from "./base";
 import { createTool } from "./create-tool";
 import { RunShellCommand } from "./run-shell-command";
@@ -150,72 +148,33 @@ export const ReadFile = createTool({
     `;
   },
   execute: async ({ agentName, appConfig, input, projectState, signal }) => {
-    let absolutePath: AbsolutePath;
-    let displayPath: string;
+    const pathResult = resolveAgentPath({
+      agentName,
+      appDir: appConfig.appDir,
+      attachedFolders: projectState.attachedFolders,
+      inputPath: input.filePath,
+      isRequired: true,
+    });
 
-    if (agentName === "retrieval" && projectState.attachedFolders) {
-      const pathResult = validateAttachedFolderPath(
-        input.filePath,
-        projectState.attachedFolders,
-      );
-      if (pathResult.isErr()) {
-        return err(pathResult.error);
-      }
-      absolutePath = pathResult.value;
-      displayPath = input.filePath;
-    } else {
-      // Normal agent: use relative path resolution
-      const fixedPathResult = ensureRelativePath(input.filePath);
-      if (fixedPathResult.isErr()) {
-        return err(fixedPathResult.error);
-      }
-      const fixedPath = fixedPathResult.value;
-      absolutePath = absolutePathJoin(appConfig.appDir, fixedPath);
-      displayPath = fixedPath;
+    if (pathResult.isErr()) {
+      return err(pathResult.error);
     }
 
+    const { absolutePath, displayPath } = pathResult.value;
     const exists = await pathExists(absolutePath);
 
     if (!exists) {
-      // Try to provide helpful suggestions
-      try {
-        const dir = path.dirname(absolutePath);
-        const base = path.basename(absolutePath);
-        const baseWithoutExt = path.parse(base).name;
-        const dirEntries = await fs.readdir(dir);
+      const suggestions = await getSimilarPathSuggestions({
+        absolutePath,
+        agentName,
+        displayPath,
+      });
 
-        const suggestions = dirEntries
-          .filter((entry) => {
-            const entryWithoutExt = path.parse(entry).name;
-            return (
-              entry.toLowerCase().includes(base.toLowerCase()) ||
-              base.toLowerCase().includes(entry.toLowerCase()) ||
-              entryWithoutExt.toLowerCase() === baseWithoutExt.toLowerCase()
-            );
-          })
-          .map((entry) => {
-            if (agentName === "retrieval") {
-              // For retrieval agent, return absolute paths
-              return path.join(dir, entry);
-            }
-            // For normal agent, return relative paths
-            return normalizePath(path.join(path.dirname(displayPath), entry));
-          })
-          .slice(0, 3);
-
-        return ok({
-          filePath: displayPath,
-          state: "does-not-exist" as const,
-          suggestions,
-        });
-      } catch {
-        // If we can't read the directory, just return basic error
-        return ok({
-          filePath: displayPath,
-          state: "does-not-exist" as const,
-          suggestions: [],
-        });
-      }
+      return ok({
+        filePath: displayPath,
+        state: "does-not-exist" as const,
+        suggestions,
+      });
     }
 
     const isBinary = await isBinaryFile(absolutePath);

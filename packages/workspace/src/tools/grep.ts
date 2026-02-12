@@ -3,11 +3,8 @@ import { err, ok } from "neverthrow";
 import { dedent } from "radashi";
 import { z } from "zod";
 
-import { ensureRelativePath } from "../lib/ensure-relative-path";
-import { executeError } from "../lib/execute-error";
 import { grep } from "../lib/grep";
-import { validateAttachedFolderPath } from "../lib/validate-attached-folder-path";
-import { type AbsolutePath } from "../schemas/paths";
+import { resolveAgentPath } from "../lib/resolve-agent-path";
 import { BaseInputSchema } from "./base";
 import { createTool } from "./create-tool";
 
@@ -41,7 +38,7 @@ export const Grep = createTool({
   },
   description: (agentName) => {
     const pathExample =
-      agentName === "retrieval" ? "/Users/john/Documents/research" : "./src";
+      agentName === "retrieval" ? "/path/to/attached/folder" : "./src";
 
     return dedent`
       - Fast content search tool that uses ripgrep (rg) that works with any codebase size.
@@ -56,43 +53,20 @@ export const Grep = createTool({
     `;
   },
   execute: async ({ agentName, appConfig, input, projectState, signal }) => {
-    let searchPath: string;
-    let searchRoot: AbsolutePath;
+    const pathResult = resolveAgentPath({
+      agentName,
+      appDir: appConfig.appDir,
+      attachedFolders: projectState.attachedFolders,
+      inputPath: input.path,
+      isRequired: agentName === "retrieval",
+    });
 
-    if (agentName === "retrieval" && projectState.attachedFolders) {
-      // Retrieval agent: validate absolute path is within attached folders
-      if (input.path) {
-        const pathResult = validateAttachedFolderPath(
-          input.path,
-          projectState.attachedFolders,
-        );
-        if (pathResult.isErr()) {
-          return err(pathResult.error);
-        }
-        searchRoot = pathResult.value;
-        searchPath = "./";
-      } else {
-        // No path specified - search needs a root, return error
-        const folderList = Object.values(projectState.attachedFolders)
-          .map((f) => `  - ${f.name}: ${f.path}`)
-          .join("\n");
-        return executeError(
-          `Retrieval agent must specify a ${INPUT_PARAMS.path} parameter to search within an attached folder:\n${folderList}`,
-        );
-      }
-    } else {
-      // Normal agent: use relative path resolution
-      searchRoot = appConfig.appDir;
-      searchPath = "./";
-
-      if (input.path) {
-        const fixedPathResult = ensureRelativePath(input.path);
-        if (fixedPathResult.isErr()) {
-          return err(fixedPathResult.error);
-        }
-        searchPath = fixedPathResult.value;
-      }
+    if (pathResult.isErr()) {
+      return err(pathResult.error);
     }
+
+    const { absolutePath: searchRoot, displayPath } = pathResult.value;
+    const searchPath = input.path ? displayPath : "./";
 
     const result = await grep(searchRoot, input.pattern, {
       include: input.include,
