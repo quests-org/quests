@@ -1,6 +1,7 @@
 import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
 
+import { FolderAttachment } from "../schemas/folder-attachment";
 import { AppDirSchema } from "../schemas/paths";
 import { ProjectSubdomainSchema } from "../schemas/subdomains";
 import { createMockAIGatewayModel } from "../test/helpers/mock-ai-gateway-model";
@@ -43,7 +44,7 @@ function sortMatchesForTesting(
 }
 
 describe("Grep", () => {
-  describe("resultToPrompt", () => {
+  describe("toModelOutput", () => {
     it("should return 'No matches found' when there are no matches", () => {
       const result = Grep.toModelOutput({
         input: {
@@ -399,6 +400,215 @@ describe("Grep", () => {
           },
         ]
       `);
+    });
+
+    it("should search within a specific subdirectory when path is provided", async () => {
+      const result = await TOOLS.Grep.execute({
+        agentName: "main",
+        appConfig: createFixturesAppConfig(),
+        input: {
+          path: "./nested",
+          pattern: "vertical\\|bar",
+        },
+        model,
+        projectState: {},
+        signal: AbortSignal.timeout(10_000),
+        spawnAgent: vi.fn(),
+      });
+
+      expect(result.isOk()).toBe(true);
+      expect(
+        sortMatchesForTesting(
+          result
+            ._unsafeUnwrap()
+            // Omit modifiedAt as it's not deterministic
+            .matches.map(({ modifiedAt: _modifiedAt, ...rest }) => rest),
+        ),
+      ).toMatchInlineSnapshot(`
+        [
+          {
+            "lineNum": 4,
+            "lineText": "- vertical|bars|everywhere",
+            "path": "./nested/another/file.txt",
+          },
+          {
+            "lineNum": 6,
+            "lineText": "- vertical|bar|separator",
+            "path": "./nested/level1/test-deep.txt",
+          },
+        ]
+      `);
+    });
+  });
+
+  describe("retrieval agent", () => {
+    const fixturesPath = path.join(
+      import.meta.dirname,
+      "../../fixtures/file-system",
+    );
+    const attachedFolders: Record<string, FolderAttachment.Type> = {
+      "test-folder": {
+        createdAt: Date.now(),
+        id: FolderAttachment.IdSchema.parse("test-folder-id"),
+        name: "Test Folder",
+        path: AppDirSchema.parse(fixturesPath),
+      },
+    };
+
+    it("should require a path parameter", async () => {
+      const result = await TOOLS.Grep.execute({
+        agentName: "retrieval",
+        appConfig: createFixturesAppConfig(),
+        input: {
+          pattern: "async function",
+        },
+        model,
+        projectState: { attachedFolders },
+        signal: AbortSignal.timeout(10_000),
+        spawnAgent: vi.fn(),
+      });
+
+      expect(result.isErr()).toBe(true);
+      if (result.isErr()) {
+        expect(result.error.message).toContain("Must specify a path parameter");
+        expect(result.error.message).toContain("Test Folder");
+      }
+    });
+
+    it("should reject relative paths", async () => {
+      const result = await TOOLS.Grep.execute({
+        agentName: "retrieval",
+        appConfig: createFixturesAppConfig(),
+        input: {
+          path: "./nested",
+          pattern: "async function",
+        },
+        model,
+        projectState: { attachedFolders },
+        signal: AbortSignal.timeout(10_000),
+        spawnAgent: vi.fn(),
+      });
+
+      expect(result.isErr()).toBe(true);
+      if (result.isErr()) {
+        expect(result.error.message).toContain("Path must be absolute");
+      }
+    });
+
+    it("should reject paths outside attached folders", async () => {
+      const result = await TOOLS.Grep.execute({
+        agentName: "retrieval",
+        appConfig: createFixturesAppConfig(),
+        input: {
+          path: "/some/random/path",
+          pattern: "async function",
+        },
+        model,
+        projectState: { attachedFolders },
+        signal: AbortSignal.timeout(10_000),
+        spawnAgent: vi.fn(),
+      });
+
+      expect(result.isErr()).toBe(true);
+      if (result.isErr()) {
+        expect(result.error.message).toContain(
+          "Path is not within any attached folder",
+        );
+        expect(result.error.message).toContain("Test Folder");
+      }
+    });
+
+    it("should find matches within attached folder", async () => {
+      const result = await TOOLS.Grep.execute({
+        agentName: "retrieval",
+        appConfig: createFixturesAppConfig(),
+        input: {
+          path: fixturesPath,
+          pattern: "async function",
+        },
+        model,
+        projectState: { attachedFolders },
+        signal: AbortSignal.timeout(10_000),
+        spawnAgent: vi.fn(),
+      });
+
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        const normalizedMatches = sortMatchesForTesting(
+          result.value.matches.map(
+            ({ modifiedAt: _modifiedAt, path: p, ...rest }) => ({
+              ...rest,
+              path: p.replace(fixturesPath, "<FIXTURES>"),
+            }),
+          ),
+        );
+        expect(normalizedMatches).toMatchInlineSnapshot(`
+          [
+            {
+              "lineNum": 4,
+              "lineText": "- async functions",
+              "path": "<FIXTURES>/grep-test-2.txt",
+            },
+            {
+              "lineNum": 21,
+              "lineText": "async function testGrep() {",
+              "path": "<FIXTURES>/grep-test-2.txt",
+            },
+            {
+              "lineNum": 4,
+              "lineText": "- async functions",
+              "path": "<FIXTURES>/grep-test.txt",
+            },
+            {
+              "lineNum": 21,
+              "lineText": "async function testGrep() {",
+              "path": "<FIXTURES>/grep-test.txt",
+            },
+          ]
+        `);
+      }
+    });
+
+    it("should find matches in nested subdirectory of attached folder", async () => {
+      const nestedPath = path.join(fixturesPath, "nested");
+      const result = await TOOLS.Grep.execute({
+        agentName: "retrieval",
+        appConfig: createFixturesAppConfig(),
+        input: {
+          path: nestedPath,
+          pattern: "vertical\\|bar",
+        },
+        model,
+        projectState: { attachedFolders },
+        signal: AbortSignal.timeout(10_000),
+        spawnAgent: vi.fn(),
+      });
+
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        const normalizedMatches = sortMatchesForTesting(
+          result.value.matches.map(
+            ({ modifiedAt: _modifiedAt, path: p, ...rest }) => ({
+              ...rest,
+              path: p.replace(nestedPath, "<NESTED>"),
+            }),
+          ),
+        );
+        expect(normalizedMatches).toMatchInlineSnapshot(`
+          [
+            {
+              "lineNum": 4,
+              "lineText": "- vertical|bars|everywhere",
+              "path": "<NESTED>/another/file.txt",
+            },
+            {
+              "lineNum": 6,
+              "lineText": "- vertical|bar|separator",
+              "path": "<NESTED>/level1/test-deep.txt",
+            },
+          ]
+        `);
+      }
     });
   });
 });

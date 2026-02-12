@@ -3,6 +3,7 @@ import { err, ok } from "neverthrow";
 import { dedent } from "radashi";
 import { z } from "zod";
 
+import { ensureRelativePath } from "../lib/ensure-relative-path";
 import { grep } from "../lib/grep";
 import { resolveAgentPath } from "../lib/resolve-agent-path";
 import { BaseInputSchema } from "./base";
@@ -53,24 +54,61 @@ export const Grep = createTool({
     `;
   },
   execute: async ({ agentName, appConfig, input, projectState, signal }) => {
-    const pathResult = resolveAgentPath({
-      agentName,
-      appDir: appConfig.appDir,
-      attachedFolders: projectState.attachedFolders,
-      inputPath: input.path,
-      isRequired: agentName === "retrieval",
-    });
+    // For retrieval agents: validate absolute path and search from that path
+    // For non-retrieval agents: resolve path and maintain relative paths in results
+    if (agentName === "retrieval") {
+      const pathResult = resolveAgentPath({
+        agentName,
+        appDir: appConfig.appDir,
+        attachedFolders: projectState.attachedFolders,
+        inputPath: input.path,
+        isRequired: true,
+      });
 
-    if (pathResult.isErr()) {
-      return err(pathResult.error);
+      if (pathResult.isErr()) {
+        return err(pathResult.error);
+      }
+
+      const { absolutePath: searchPath } = pathResult.value;
+
+      // Use appDir as cwd, pass absolute path as searchPath
+      // This makes ripgrep return absolute paths in results
+      const result = await grep({
+        cwd: appConfig.appDir,
+        include: input.include,
+        pattern: input.pattern,
+        searchPath,
+        signal,
+      });
+
+      return ok(result);
     }
 
-    const { absolutePath: searchRoot, displayPath } = pathResult.value;
-    const searchPath = input.path ? displayPath : "./";
+    // Non-retrieval agent: search from appDir with optional relative searchPath
+    if (input.path) {
+      const pathResult = ensureRelativePath(input.path);
+      if (pathResult.isErr()) {
+        return err(pathResult.error);
+      }
+      const searchPath = pathResult.value;
 
-    const result = await grep(searchRoot, input.pattern, {
+      const result = await grep({
+        cwd: appConfig.appDir,
+        include: input.include,
+        pattern: input.pattern,
+        searchPath,
+        signal,
+      });
+
+      return ok(result);
+    }
+
+    // No path specified, search from root
+    const result = await grep({
+      cwd: appConfig.appDir,
       include: input.include,
-      searchPath,
+      pattern: input.pattern,
+      searchPath: "./",
       signal,
     });
 
@@ -90,7 +128,7 @@ export const Grep = createTool({
     truncated: z.boolean(),
   }),
   readOnly: true,
-  timeoutMs: ms("5 seconds"),
+  timeoutMs: ms("30 seconds"),
   toModelOutput: ({ output }) => {
     if (output.matches.length === 0) {
       return {

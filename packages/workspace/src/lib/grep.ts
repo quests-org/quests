@@ -13,6 +13,7 @@ const RG_DISK_PATH = rgPath.replace(
   /[\\/]app.asar[\\/]/,
   `${path.sep}app.asar.unpacked${path.sep}`,
 );
+const LIMIT = 100;
 
 interface GrepMatch {
   lineNum: number;
@@ -27,18 +28,16 @@ interface GrepResult {
   truncated: boolean;
 }
 
-export async function grep(
-  rootDir: AbsolutePath,
-  pattern: string,
-  options: {
-    include?: string;
-    limit?: number;
-    searchPath?: string;
-    signal?: AbortSignal;
-    sort?: "none" | "path";
-  } = {},
-): Promise<GrepResult> {
-  const exists = await pathExists(rootDir);
+export async function grep(options: {
+  cwd: AbsolutePath;
+  include?: string;
+  pattern: string;
+  searchPath: string;
+  signal: AbortSignal;
+}): Promise<GrepResult> {
+  const { cwd, include, pattern, searchPath, signal } = options;
+
+  const exists = await pathExists(cwd);
   if (!exists) {
     return {
       matches: [],
@@ -46,8 +45,6 @@ export async function grep(
       truncated: false,
     };
   }
-
-  const limit = options.limit ?? 100;
 
   return new Promise<GrepResult>((resolve, reject) => {
     const args = [
@@ -62,15 +59,15 @@ export async function grep(
     // We'll sort manually after getting results
 
     // Add include pattern (glob)
-    if (options.include) {
-      args.push("--glob", options.include);
+    if (include) {
+      args.push("--glob", include);
     }
 
-    args.push("--regexp", pattern, "--", options.searchPath || "./");
+    args.push("--regexp", pattern, "--", searchPath);
 
     const ripgrep = spawn(RG_DISK_PATH, args, {
-      cwd: rootDir,
-      signal: options.signal,
+      cwd,
+      signal,
     });
 
     let stdout = "";
@@ -126,7 +123,10 @@ export async function grep(
         }
 
         const lineText = lineTextParts.join("|");
-        const absolutePath = absolutePathJoin(rootDir, filePath);
+        // If filePath is already absolute, use it directly; otherwise join with cwd
+        const absolutePath = path.isAbsolute(filePath)
+          ? filePath
+          : absolutePathJoin(cwd, filePath);
         try {
           const stats = await fs.stat(absolutePath);
           matches.push({
@@ -141,8 +141,8 @@ export async function grep(
         }
       }
 
-      const truncated = matches.length > limit;
-      const finalMatches = truncated ? matches.slice(0, limit) : matches;
+      const truncated = matches.length > LIMIT;
+      const finalMatches = truncated ? matches.slice(0, LIMIT) : matches;
 
       resolve({
         matches: finalMatches,
