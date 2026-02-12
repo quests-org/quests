@@ -15,7 +15,6 @@ export const retrievalAgent = setupAgent({
   agentTools: pick(TOOLS, ["CopyToProject", "Glob", "Grep", "ReadFile"]),
   name: "retrieval",
 }).create(({ name }) => ({
-  availableSubagents: [],
   description:
     "Specialized agent for retrieving files from attached folders. Can read, search, and copy files from user-attached directories.",
   getMessages: async ({ appConfig, sessionId }) => {

@@ -1,77 +1,62 @@
 import ms from "ms";
 import { ok } from "neverthrow";
+import { dedent } from "radashi";
 import { z } from "zod";
 
-import { type AgentName } from "../agents/types";
+import { TASK_AGENT_NAMES, type TaskAgentName } from "../agents/types";
 import { executeError } from "../lib/execute-error";
 import { StoreId } from "../schemas/store-id";
 import { BaseInputSchema } from "./base";
 import { createTool } from "./create-tool";
-import { Glob } from "./glob";
-import { Grep } from "./grep";
-import { ReadFile } from "./read-file";
 
+const TOOL_NAME = "task";
 const INPUT_PARAMS = {
   prompt: "prompt",
   subagent_type: "subagent_type",
 } as const;
 
-// Hard-coded list of available subagents from main agent
-const AVAILABLE_SUBAGENTS: AgentName[] = ["explorer", "retrieval"];
-
-// Map agent names to their descriptions
-const AGENT_DESCRIPTIONS: Record<AgentName, string> = {
-  explorer: "File exploration agent",
-  main: "General-purpose assistant agent",
+const TASK_AGENT_DESCRIPTIONS: Record<TaskAgentName, string> = {
   retrieval:
-    "Specialized agent for accessing files from user-attached folders. Use this when the user has attached folders to their message and you need to read, search, or copy files from those folders.",
+    "Specialized agent for accessing files from user-attached folders. Use this when the user has attached folders to their message and you need to read, search, or copy files to this project from those folders.",
 };
 
-// Build description with available agents
-const agentList: string = AVAILABLE_SUBAGENTS.map(
-  (name) => `- ${name}: ${AGENT_DESCRIPTIONS[name]}`,
-).join("\n");
-
-const DESCRIPTION = `Launch a new agent to handle complex, multi-step tasks autonomously.
-
-The Task tool launches specialized subagents that autonomously handle complex tasks. Each subagent has specific capabilities and tools available to it.
-
-When using the Task tool, you must specify a ${INPUT_PARAMS.subagent_type} parameter to select which agent type to use.
-
-Available agent types:
-${agentList}
-
-When to use the Task tool:
-- When you need to delegate a specific subtask to a specialized agent
-- When you want to explore files or analyze code in parallel
-- When the user attaches folders to their message and you need to access files from those folders (use subagent_type="retrieval")
-
-When NOT to use the Task tool:
-- For simple file reads - use the ${ReadFile.name} tool directly instead
-- For simple searches - use the ${Grep.name} or ${Glob.name} tools directly instead
-- For tasks that don't match the available agent descriptions
-
-Usage notes:
-- The ${INPUT_PARAMS.prompt} should contain detailed instructions for the agent
-- The agent will return its result in a single message
-- Launch multiple agents concurrently whenever possible by calling this tool multiple times in a single response`;
-
 export const Task = createTool({
-  description: DESCRIPTION,
+  description: (agentName) => {
+    if (agentName === "main") {
+      const TASK_AGENT_LIST = TASK_AGENT_NAMES.map(
+        (name) => `- ${name}: ${TASK_AGENT_DESCRIPTIONS[name]}`,
+      ).join("\n");
+
+      return dedent`
+        Launch a new agent to handle complex, multi-step tasks autonomously.
+
+        The ${TOOL_NAME} tool launches specialized agents that autonomously handle complex tasks. Each agent has specific capabilities and tools available to it.
+
+        Available agent types:
+        ${TASK_AGENT_LIST}
+
+        Usage notes:
+        - The ${INPUT_PARAMS.prompt} should contain detailed instructions for the agent
+        - The agent will return its result in a single message
+      `.trim();
+    }
+
+    return "Only the main agent can spawn agents";
+  },
   execute: async ({ agentName, input, signal, spawnAgent }) => {
     if (agentName !== "main") {
       return executeError("Only the main agent can spawn subagents");
     }
 
-    const requestedAgent = input.subagent_type as AgentName;
-    if (!AVAILABLE_SUBAGENTS.includes(requestedAgent)) {
+    const requestedAgentName = input.subagent_type as TaskAgentName;
+    if (!TASK_AGENT_NAMES.includes(requestedAgentName)) {
       return executeError(
-        `Unknown agent type: ${requestedAgent}. Available types: ${AVAILABLE_SUBAGENTS.join(", ")}`,
+        `Unknown agent type: ${requestedAgentName}. Available types: ${TASK_AGENT_NAMES.join(", ")}`,
       );
     }
 
     const { messagesResult, sessionId } = await spawnAgent({
-      agentName: requestedAgent,
+      agentName: requestedAgentName,
       prompt: input.prompt,
       signal,
     });
@@ -116,7 +101,7 @@ export const Task = createTool({
         "The type of specialized agent to use for this task. Generate this first.",
     }),
   }),
-  name: "task",
+  name: TOOL_NAME,
   outputSchema: z.object({
     result: z.string(),
     sessionId: StoreId.SessionSchema,

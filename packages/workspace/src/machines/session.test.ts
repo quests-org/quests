@@ -753,7 +753,7 @@ describe("sessionMachine", () => {
           {
             input: JSON.stringify({
               prompt: "Write a test file",
-              subagent_type: "explorer",
+              subagent_type: "retrieval",
             }),
             toolCallId: "test-call-task",
             toolName: "task",
@@ -775,7 +775,7 @@ describe("sessionMachine", () => {
             <input>
               {
                 "prompt": "Write a test file",
-                "subagent_type": "explorer"
+                "subagent_type": "retrieval"
               }
             </input>
             <output>

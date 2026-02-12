@@ -1,5 +1,7 @@
 import {
+  isTaskAgentName,
   type SessionMessagePart,
+  type TaskAgentName,
   type ToolName,
 } from "@quests/workspace/client";
 import {
@@ -19,24 +21,15 @@ import {
   TriangleAlert,
 } from "lucide-react";
 
-type AgentName = "explorer" | "main" | "retrieval";
-
-// Agent-specific display names for the task tool
-const TASK_DISPLAY_NAMES: Record<AgentName, string> = {
-  explorer: "Explored",
-  main: "Assisted",
+const TASK_DISPLAY_NAMES: Record<TaskAgentName, string> = {
   retrieval: "Retrieved",
 };
 
-const TASK_STREAMING_DISPLAY_NAMES: Record<AgentName, string> = {
-  explorer: "Exploring",
-  main: "Assisting",
+const TASK_STREAMING_DISPLAY_NAMES: Record<TaskAgentName, string> = {
   retrieval: "Retrieving",
 };
 
-const TASK_FAILED_DISPLAY_NAMES: Record<AgentName, string> = {
-  explorer: "Failed to explore",
-  main: "Failed to assist",
+const TASK_FAILED_DISPLAY_NAMES: Record<TaskAgentName, string> = {
   retrieval: "Failed to retrieve",
 };
 
@@ -187,21 +180,8 @@ function getTaskToolLabel(
   agentName: string | undefined,
   state: "completed" | "failed" | "streaming",
 ): string {
-  if (
-    agentName !== undefined &&
-    agentName !== "explorer" &&
-    agentName !== "main" &&
-    agentName !== "retrieval"
-  ) {
+  if (typeof agentName !== "string" || !isTaskAgentName(agentName)) {
     return "Unknown agent";
-  }
-
-  if (!agentName) {
-    return state === "completed"
-      ? "Assisted"
-      : state === "streaming"
-        ? "Planning…"
-        : "Failed to assist";
   }
 
   switch (state) {

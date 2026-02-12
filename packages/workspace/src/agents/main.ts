@@ -56,7 +56,6 @@ export const mainAgent = setupAgent({
   ]),
   name: "main",
 }).create(({ agentTools, name }) => ({
-  availableSubagents: ["explorer"],
   getMessages: async ({ appConfig, sessionId }) => {
     const now = getCurrentDate();
 

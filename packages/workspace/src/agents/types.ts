@@ -9,7 +9,6 @@ import { type StoreId } from "../schemas/store-id";
 
 export interface Agent<T extends AgentTools> {
   agentTools: T;
-  availableSubagents?: AgentName[];
   description?: string;
   getMessages: ({
     appConfig,
@@ -39,8 +38,13 @@ export interface Agent<T extends AgentTools> {
   }) => Promise<boolean>;
 }
 
-export type AgentName = "explorer" | "main" | "retrieval";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const AGENT_NAMES = ["main", "retrieval"] as const;
 
+export type AgentName = (typeof AGENT_NAMES)[number];
 export type AgentTools = Partial<Record<InternalToolName, AnyAgentTool>>;
 
 export type AnyAgent = Agent<AgentTools>;
+
+export const TASK_AGENT_NAMES = ["retrieval"] as const satisfies AgentName[];
+export type TaskAgentName = (typeof TASK_AGENT_NAMES)[number];
