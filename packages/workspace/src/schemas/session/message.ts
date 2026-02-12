@@ -9,7 +9,7 @@ import {
 import { dedent } from "radashi";
 import { z } from "zod";
 
-import { type AgentName } from "../../agents/types";
+import { type AgentName, RETRIEVAL_AGENT_NAME } from "../../agents/types";
 import { formatBytes } from "../../lib/format-bytes";
 import { isToolPart } from "../../lib/is-tool-part";
 import { StoreId } from "../store-id";
@@ -267,27 +267,27 @@ export namespace SessionMessage {
 
           const attachmentText = dedent`
             <uploaded_files>
+            The user attached these files to this message. Assume they are directly relevant to the user's request.
             ${attachmentDescriptions}
             </uploaded_files>
           `;
 
           parts.push({ text: attachmentText, type: "text" });
 
-          // Alert about newly attached folders
           if (
             fileAttachmentsPart.data.folders &&
             fileAttachmentsPart.data.folders.length > 0
           ) {
             const folderDescriptions = fileAttachmentsPart.data.folders
-              .map((folder) => `- ${folder.name}: ${folder.path}`)
+              .map((folder) => `- ${folder.name}`)
               .join("\n");
 
             const folderAttachmentText = dedent`
               <attached_folders>
-              The user has attached the following folders as context for their request:
+              The user attached these folders to this message. Assume they are directly relevant to the user's request.
               ${folderDescriptions}
               
-              These folders are directly relevant to the user's message above. You can explore them and copy files from them using the retrieval agent via the Task tool with subagent_type="retrieval".
+              These folders are outside the current project. The ${RETRIEVAL_AGENT_NAME} agent will receive their absolute paths and can search, read, and copy files from them into the project for you access or modify.
               </attached_folders>
             `;
 

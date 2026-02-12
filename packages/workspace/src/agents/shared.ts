@@ -54,7 +54,7 @@ export function createContextMessage({
   };
 }
 
-export function createSystemInfoMessage({
+export function createSystemMessage({
   agentName,
   now,
   sessionId,

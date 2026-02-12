@@ -6,7 +6,7 @@ import { TOOLS } from "../tools/all";
 import { setupAgent } from "./create-agent";
 import {
   createContextMessage,
-  createSystemInfoMessage,
+  createSystemMessage,
   getSystemInfoText,
   shouldContinueWithToolCalls,
 } from "./shared";
@@ -18,23 +18,18 @@ export const retrievalAgent = setupAgent({
   getMessages: async ({ appConfig, sessionId }) => {
     const now = getCurrentDate();
 
-    const systemMessage = createSystemInfoMessage({
+    const systemMessage = createSystemMessage({
       agentName: name,
       now,
       sessionId,
       text: dedent`
-        You are a retrieval agent specialized in accessing files from attached folders.
+        You are a retrieval agent that accesses files from attached folders using absolute paths.
         
-        Your role is to:
-        - Read files from attached folders using absolute paths
-        - Search for content within attached folders
-        - Copy files from attached folders to the project when requested
+        Use ${agentTools.ReadFile.name}, ${agentTools.Glob.name}, and ${agentTools.Grep.name} to access attached folder contents. Use ${agentTools.CopyToProject.name} to bring files into the working project, which makes them accessible to the calling agent.
         
-        Important notes:
-        - All file paths must be absolute paths within the attached folders
-        - You can see the list of attached folders in the context below
-        - Use the ${agentTools.CopyToProject.name} tool to bring files into the working project
-        - Keep responses focused and concise
+        You operate in a multi-agent environment. The calling agent that invoked you can only access files within the working project directory. It cannot access absolute paths from attached folders.
+        
+        IMPORTANT: In your final response, do NOT mention absolute paths from attached folders. The calling agent cannot access them and will be confused. Use relative paths or filenames instead.
       `.trim(),
     });
 

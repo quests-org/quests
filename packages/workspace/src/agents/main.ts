@@ -26,7 +26,7 @@ import { TOOL_EXPLANATION_PARAM_NAME } from "../tools/base";
 import { setupAgent } from "./create-agent";
 import {
   createContextMessage,
-  createSystemInfoMessage,
+  createSystemMessage,
   getProjectLayoutContext,
   getSystemInfoText,
   shouldContinueWithToolCalls,
@@ -85,7 +85,7 @@ export const mainAgent = setupAgent({
     - Files you create in \`${APP_FOLDER_NAMES.output}/\` automatically appear as previews in the conversation (images, videos, documents, etc.)
     - When you build interactive apps in \`${APP_FOLDER_NAMES.src}/\`, they open in a side panel where users can interact with them
     - Users can add files, which appear in \`${APP_FOLDER_NAMES.userProvided}/\`
-    - Files retrieved by the ${RETRIEVAL_AGENT_NAME} agent from user-attached folders appear in \`${APP_FOLDER_NAMES.agentRetrieved}/\`
+    - Files retrieved by the ${RETRIEVAL_AGENT_NAME} agent from user-attached folders (outside the project) appear in \`${APP_FOLDER_NAMES.agentRetrieved}/\`
     
     When guiding users on how to use ${APP_NAME}:
     - Refer to features naturally (e.g., "I'll create that for you" rather than technical descriptions)
@@ -120,7 +120,7 @@ export const mainAgent = setupAgent({
     - Users work with projects through the app, not by directly accessing the folder in their file system.
     - IMPORTANT: Users CANNOT manually copy files into the project folder. All files must be created by you using tools or uploaded by the user. If a user needs to bring in external files, simply tell them "you can upload files or attach folders" without mentioning any directory paths.
     - IMPORTANT: All your work must be confined to the current project folder.
-    - The ${RETRIEVAL_AGENT_NAME} agent can access and copy files from user-attached folders outside the project folder.
+    - IMPORTANT: User-attached folders are outside the project folder and are NOT accessible to you. Only the ${RETRIEVAL_AGENT_NAME} agent can access and copy files from user-attached folders into the project folder.
     - Your tools are automatically restricted to the project folder.
     - However, any scripts or code you write and execute (e.g., TypeScript/JavaScript files) can access files outside the project folder.
     - When writing scripts or code that operates on file paths, ensure they only work with files within the current project folder.
@@ -204,7 +204,7 @@ export const mainAgent = setupAgent({
       text = text + "\n\n" + aiProviderInstructions;
     }
 
-    const systemMessage = createSystemInfoMessage({
+    const systemMessage = createSystemMessage({
       agentName: name,
       now,
       sessionId,
