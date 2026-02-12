@@ -14,9 +14,7 @@ import {
 export const retrievalAgent = setupAgent({
   agentTools: pick(TOOLS, ["CopyToProject", "Glob", "Grep", "ReadFile"]),
   name: "retrieval",
-}).create(({ name }) => ({
-  description:
-    "Specialized agent for retrieving files from attached folders. Can read, search, and copy files from user-attached directories.",
+}).create(({ agentTools, name }) => ({
   getMessages: async ({ appConfig, sessionId }) => {
     const now = getCurrentDate();
 
@@ -35,7 +33,7 @@ export const retrievalAgent = setupAgent({
         Important notes:
         - All file paths must be absolute paths within the attached folders
         - You can see the list of attached folders in the context below
-        - Use the CopyToProject tool to bring files into the working project
+        - Use the ${agentTools.CopyToProject.name} tool to bring files into the working project
         - Keep responses focused and concise
       `.trim(),
     });

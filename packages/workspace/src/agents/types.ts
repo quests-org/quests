@@ -9,7 +9,6 @@ import { type StoreId } from "../schemas/store-id";
 
 export interface Agent<T extends AgentTools> {
   agentTools: T;
-  description?: string;
   getMessages: ({
     appConfig,
     sessionId,

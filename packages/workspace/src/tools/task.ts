@@ -16,8 +16,11 @@ const INPUT_PARAMS = {
 } as const;
 
 const TASK_AGENT_DESCRIPTIONS: Record<TaskAgentName, string> = {
-  retrieval:
-    "Specialized agent for accessing files from user-attached folders. Use this when the user has attached folders to their message and you need to read, search, or copy files to this project from those folders.",
+  retrieval: dedent`
+    Specialized agent for accessing files from user-attached folders. Use this when the user has attached folders to their message and you need to read, search, or copy files to this project from those folders.
+    
+    IMPORTANT: This agent cannot directly access files inside the current project - it can only access and copy files from attached folders outside the project.
+  `.trim(),
 };
 
 export const Task = createTool({
