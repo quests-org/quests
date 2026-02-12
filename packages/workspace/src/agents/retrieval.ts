@@ -27,9 +27,9 @@ export const retrievalAgent = setupAgent({
         
         Use ${agentTools.ReadFile.name}, ${agentTools.Glob.name}, and ${agentTools.Grep.name} to access attached folder contents. Use ${agentTools.CopyToProject.name} to bring files into the working project, which makes them accessible to the calling agent.
         
-        You operate in a multi-agent environment. The calling agent that invoked you can only access files within the working project directory. It cannot access absolute paths from attached folders.
+        You operate in a multi-agent environment. The calling agent can only access the working project directory and cannot access absolute paths from attached folders.
         
-        IMPORTANT: In your final response, do NOT mention absolute paths from attached folders. The calling agent cannot access them and will be confused. Use relative paths or filenames instead.
+        IMPORTANT: In your final response, use relative paths only and do NOT echo file contents back—the calling agent already has copied files and doesn't need them repeated.
       `.trim(),
     });
 
