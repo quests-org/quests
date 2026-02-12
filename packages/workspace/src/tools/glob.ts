@@ -15,21 +15,28 @@ import { createTool } from "./create-tool";
 // Input schema must be defined at the top to allow for inference of functions below
 /* eslint-disable perfectionist/sort-objects */
 export const Glob = createTool({
-  inputSchema: (agentName) =>
-    BaseInputSchema.extend({
+  inputSchema: (agentName) => {
+    const baseSchema = BaseInputSchema.extend({
       pattern: z
         .string()
         .meta({ description: "Glob pattern to match files against" }),
-      path: z
-        .string()
-        .optional()
-        .meta({
-          description:
-            agentName === "retrieval"
-              ? "Absolute path to an attached folder to search within."
-              : "Relative or absolute path to a folder to search within. Defaults to the current folder if not specified.",
+    });
+
+    if (agentName === "retrieval") {
+      return baseSchema.extend({
+        path: z.string().meta({
+          description: "Absolute path to an attached folder to search within.",
         }),
-    }),
+      });
+    }
+
+    return baseSchema.extend({
+      path: z.string().optional().meta({
+        description:
+          "Relative or absolute path to a folder to search within. Defaults to the current folder if not specified.",
+      }),
+    });
+  },
   description: (agentName) => {
     if (agentName === "retrieval") {
       return "Find files matching a glob pattern within attached folders. You must specify an absolute path to an attached folder to search within.";
@@ -40,7 +47,7 @@ export const Glob = createTool({
     let searchRoot: AbsolutePath;
 
     if (agentName === "retrieval" && projectState.attachedFolders) {
-      if (!input.path) {
+      if (!input.path?.trim()) {
         const folderList = Object.values(projectState.attachedFolders)
           .map((f) => `  - ${f.name}: ${f.path}`)
           .join("\n");

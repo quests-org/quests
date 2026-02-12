@@ -146,6 +146,11 @@ export function ToolContent({
             Pattern:{" "}
             <MonoText className="inline">{part.input.pattern}</MonoText>
           </SectionHeader>
+          {part.input.path && (
+            <SectionHeader>
+              Path: <MonoText className="inline">{part.input.path}</MonoText>
+            </SectionHeader>
+          )}
           <SectionHeader>Found {files.length} files</SectionHeader>
           {files.length > 0 ? (
             <div className="space-y-1">
