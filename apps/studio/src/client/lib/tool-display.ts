@@ -181,7 +181,7 @@ function getTaskToolLabel(
   state: "completed" | "failed" | "streaming",
 ): string {
   if (typeof agentName !== "string" || !isTaskAgentName(agentName)) {
-    return "Unknown agent";
+    return "Planning…";
   }
 
   switch (state) {
