@@ -236,7 +236,12 @@ export function FileViewer({
         filePath={filePath}
         key="actions"
         onCopy={
-          fileType === "code" || fileType === "text" ? handleCopy : undefined
+          fileType === "code" ||
+          fileType === "text" ||
+          fileType === "markdown" ||
+          fileType === "html"
+            ? handleCopy
+            : undefined
         }
         projectSubdomain={projectSubdomain}
         versionRef={versionRef}
@@ -326,7 +331,8 @@ export function FileViewer({
           />
         ) : fileType === "code" ||
           fileType === "text" ||
-          (fileType === "html" && viewMode === "raw") ? (
+          (fileType === "html" && viewMode === "raw") ||
+          (fileType === "markdown" && viewMode === "raw") ? (
           <TextView filename={filename} url={url}>
             {(text) => (
               <pre className="p-4 text-sm text-foreground">{text}</pre>
