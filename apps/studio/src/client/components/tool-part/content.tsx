@@ -52,6 +52,21 @@ export function ToolContent({
       return (
         <div>
           <SectionHeader>Pattern: {part.input.pattern}</SectionHeader>
+          {(part.input.maxFileSizeBytes !== undefined ||
+            part.input.maxTotalSizeBytes !== undefined) && (
+            <div className="mb-2 flex flex-wrap gap-1.5">
+              {part.input.maxFileSizeBytes !== undefined && (
+                <Badge variant="outline">
+                  File limit: {formatBytes(part.input.maxFileSizeBytes)}
+                </Badge>
+              )}
+              {part.input.maxTotalSizeBytes !== undefined && (
+                <Badge variant="outline">
+                  Batch limit: {formatBytes(part.input.maxTotalSizeBytes)}
+                </Badge>
+              )}
+            </div>
+          )}
           {part.output.files.length > 0 && (
             <div className="space-y-0.5">
               {part.output.files.map((file, index) => (
@@ -59,6 +74,13 @@ export function ToolContent({
                   {file.destinationPath} ({formatBytes(file.size)})
                 </MonoText>
               ))}
+            </div>
+          )}
+          {part.output.truncated && (
+            <div className="mt-2 text-xs text-muted-foreground">
+              {part.output.truncatedCount} file
+              {part.output.truncatedCount === 1 ? "" : "s"} not copied. Batch
+              limit reached.
             </div>
           )}
           {part.output.errors.length > 0 && (
@@ -164,6 +186,8 @@ export function ToolContent({
     }
     case "tool-glob": {
       const files = part.output.files;
+      const totalFiles = part.output.totalFiles ?? files.length;
+      const truncated = part.output.truncated ?? false;
       return (
         <div>
           <SectionHeader>
@@ -175,7 +199,11 @@ export function ToolContent({
               Path: <MonoText className="inline">{part.input.path}</MonoText>
             </SectionHeader>
           )}
-          <SectionHeader>Found {files.length} files</SectionHeader>
+          <SectionHeader>
+            {truncated
+              ? `Showing ${files.length} of ${totalFiles} files`
+              : `Found ${totalFiles} files`}
+          </SectionHeader>
           {files.length > 0 ? (
             <div className="space-y-1">
               {files.map((file, index) => (
@@ -183,6 +211,11 @@ export function ToolContent({
                   {file}
                 </MonoText>
               ))}
+              {truncated && (
+                <div className="pt-1 text-xs text-muted-foreground">
+                  Results truncated. Use a more specific path or pattern.
+                </div>
+              )}
             </div>
           ) : (
             <div className="text-muted-foreground">No files found</div>
