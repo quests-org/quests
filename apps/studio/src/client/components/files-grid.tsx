@@ -35,42 +35,47 @@ export function FilesGrid({
 }: FilesGridProps) {
   const openFileViewer = useSetAtom(openProjectFileViewerAtom);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isScriptsExpanded, setIsScriptsExpanded] = useState(false);
+  const [isInputsExpanded, setIsInputsExpanded] = useState(false);
 
-  const [richFiles, nonRichFiles] = fork(files, hasRichPreview);
+  const [outputFiles, nonOutputFiles] = fork(files, isOutputFile);
+  const [scriptFiles, nonScriptFiles] = fork(nonOutputFiles, isScriptFile);
+  const [inputFiles, regularFiles] = fork(nonScriptFiles, isInputFile);
 
-  // Prioritize output folder files within rich files
-  const [outputRichFiles, otherRichFiles] = fork(richFiles, isOutputFile);
-  const sortedRichFiles = [...outputRichFiles, ...otherRichFiles];
+  const sortedOutputFiles = sortByRichPreview(outputFiles);
+  const sortedRegularFiles = sortByRichPreview(regularFiles);
 
-  const sortedFiles = [...sortedRichFiles, ...nonRichFiles];
-
-  // Separate files that should always be in collapsible region
-  const [alwaysCollapsedFiles, priorityFiles] = fork(
-    sortedFiles,
-    shouldAlwaysCollapse,
-  );
-
-  const handleFileClick = (file: ProjectFileViewerFile) => {
-    const allFiles = [...priorityFiles, ...alwaysCollapsedFiles];
-    const currentIndex = allFiles.findIndex((f) => f.url === file.url);
+  const handleFileClick = (
+    file: ProjectFileViewerFile,
+    galleryFiles: ProjectFileViewerFile[],
+  ) => {
+    const currentIndex = galleryFiles.findIndex((f) => f.url === file.url);
     openFileViewer({
       currentIndex: currentIndex === -1 ? 0 : currentIndex,
-      files: allFiles,
+      files: galleryFiles,
     });
   };
 
-  const visibleFiles = priorityFiles.slice(0, initialVisibleCount);
-  const hiddenFiles = [
-    ...priorityFiles.slice(initialVisibleCount),
-    ...alwaysCollapsedFiles,
-  ];
-  const hasHiddenFiles = hiddenFiles.length > 0;
-  const filesToShow = isExpanded
-    ? [...priorityFiles, ...alwaysCollapsedFiles]
-    : visibleFiles;
+  const mainGalleryFiles = [...sortedOutputFiles, ...sortedRegularFiles];
 
-  const richPreviewFiles = filesToShow.filter(hasRichPreview);
-  const otherFiles = filesToShow.filter((file) => !hasRichPreview(file));
+  const visibleOutputFiles = sortedOutputFiles.slice(0, initialVisibleCount);
+  const hasMoreFiles =
+    sortedOutputFiles.length > initialVisibleCount ||
+    sortedRegularFiles.length > 0 ||
+    scriptFiles.length > 0 ||
+    inputFiles.length > 0;
+
+  const expandedFiles = [
+    ...sortedOutputFiles.slice(initialVisibleCount),
+    ...sortedRegularFiles,
+  ];
+
+  const mainFilesToShow = isExpanded
+    ? [...sortedOutputFiles, ...sortedRegularFiles]
+    : visibleOutputFiles;
+
+  const richPreviewFiles = mainFilesToShow.filter(hasRichPreview);
+  const otherFiles = mainFilesToShow.filter((file) => !hasRichPreview(file));
 
   const isSingleRichFile = !compact && richPreviewFiles.length === 1;
 
@@ -101,7 +106,7 @@ export function FilesGrid({
                   <FilePreviewCard
                     file={file}
                     onClick={() => {
-                      handleFileClick(file);
+                      handleFileClick(file, mainGalleryFiles);
                     }}
                   />
                 </div>
@@ -128,7 +133,7 @@ export function FilesGrid({
               <FilePreviewListItem
                 file={file}
                 onClick={() => {
-                  handleFileClick(file);
+                  handleFileClick(file, mainGalleryFiles);
                 }}
               />
             </div>
@@ -136,25 +141,124 @@ export function FilesGrid({
         </div>
       )}
 
-      {hasHiddenFiles && (
+      {!isExpanded && hasMoreFiles && (
         <div className={cn("flex", alignEnd ? "justify-end" : "justify-start")}>
           <Button
             onClick={() => {
-              setIsExpanded(!isExpanded);
+              setIsExpanded(true);
             }}
             size="sm"
             type="button"
             variant="outline-muted"
           >
             <span className="text-xs">
-              {isExpanded ? "Show less" : `+${hiddenFiles.length} more`}
+              +{expandedFiles.length + scriptFiles.length + inputFiles.length}{" "}
+              more
             </span>
-            {isExpanded ? (
-              <ChevronUp className="size-3.5 text-muted-foreground" />
-            ) : (
-              <ChevronDown className="size-3.5 text-muted-foreground" />
-            )}
+            <ChevronDown className="size-3.5 text-muted-foreground" />
           </Button>
+        </div>
+      )}
+
+      {isExpanded && scriptFiles.length > 0 && (
+        <CategorizedFileSection
+          alignEnd={alignEnd}
+          files={scriptFiles}
+          isExpanded={isScriptsExpanded}
+          onFileClick={handleFileClick}
+          onToggle={() => {
+            setIsScriptsExpanded(!isScriptsExpanded);
+          }}
+          title="Scripts"
+        />
+      )}
+
+      {isExpanded && inputFiles.length > 0 && (
+        <CategorizedFileSection
+          alignEnd={alignEnd}
+          files={inputFiles}
+          isExpanded={isInputsExpanded}
+          onFileClick={handleFileClick}
+          onToggle={() => {
+            setIsInputsExpanded(!isInputsExpanded);
+          }}
+          title="Input Files"
+        />
+      )}
+
+      {isExpanded && (
+        <div className={cn("flex", alignEnd ? "justify-end" : "justify-start")}>
+          <Button
+            onClick={() => {
+              setIsExpanded(false);
+              setIsScriptsExpanded(false);
+              setIsInputsExpanded(false);
+            }}
+            size="sm"
+            type="button"
+            variant="outline-muted"
+          >
+            <span className="text-xs">Show less</span>
+            <ChevronUp className="size-3.5 text-muted-foreground" />
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CategorizedFileSection({
+  alignEnd,
+  files,
+  isExpanded,
+  onFileClick,
+  onToggle,
+  title,
+}: {
+  alignEnd: boolean;
+  files: ProjectFileViewerFile[];
+  isExpanded: boolean;
+  onFileClick: (
+    file: ProjectFileViewerFile,
+    galleryFiles: ProjectFileViewerFile[],
+  ) => void;
+  onToggle: () => void;
+  title: string;
+}) {
+  return (
+    <div className="flex flex-col gap-2 rounded-md border border-border/50 bg-muted/30 p-2">
+      <button
+        className="flex w-full items-center gap-1.5 text-left text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+        onClick={onToggle}
+        type="button"
+      >
+        {isExpanded ? (
+          <ChevronUp className="size-3" />
+        ) : (
+          <ChevronDown className="size-3" />
+        )}
+        <span>
+          {title} ({files.length})
+        </span>
+      </button>
+
+      {isExpanded && (
+        <div
+          className={cn(
+            "flex flex-wrap items-start gap-2",
+            alignEnd && "justify-end",
+          )}
+        >
+          {files.map((file) => (
+            <div className="h-12 min-w-0" key={file.filePath}>
+              <FilePreviewListItem
+                file={file}
+                onClick={() => {
+                  onFileClick(file, files);
+                }}
+              />
+            </div>
+          ))}
         </div>
       )}
     </div>
@@ -173,13 +277,22 @@ function hasRichPreview(file: ProjectFileViewerFile) {
   );
 }
 
+function isInputFile(file: ProjectFileViewerFile) {
+  return (
+    file.filePath.startsWith(`${APP_FOLDER_NAMES.agentRetrieved}/`) ||
+    file.filePath.startsWith(`${APP_FOLDER_NAMES.userProvided}/`)
+  );
+}
+
 function isOutputFile(file: ProjectFileViewerFile) {
   return file.filePath.startsWith(`${APP_FOLDER_NAMES.output}/`);
 }
 
-function shouldAlwaysCollapse(file: ProjectFileViewerFile) {
-  return (
-    file.filePath.startsWith(`${APP_FOLDER_NAMES.scripts}/`) ||
-    file.filePath.startsWith(`${APP_FOLDER_NAMES.agentRetrieved}/`)
-  );
+function isScriptFile(file: ProjectFileViewerFile) {
+  return file.filePath.startsWith(`${APP_FOLDER_NAMES.scripts}/`);
+}
+
+function sortByRichPreview(files: ProjectFileViewerFile[]) {
+  const [rich, nonRich] = fork(files, hasRichPreview);
+  return [...rich, ...nonRich];
 }
