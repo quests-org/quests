@@ -51,15 +51,39 @@ export function ToolContent({
     case "tool-copy_to_project": {
       return (
         <div>
-          <SectionHeader>Source</SectionHeader>
-          <MonoText className="mb-2 text-xs">{part.input.sourcePath}</MonoText>
-          <ToolPartFilePath
-            filePath={part.output.destinationPath}
-            label="Copied to"
-          />
-          <div className="mt-1 text-xs text-muted-foreground">
-            Size: {formatBytes(part.output.size)}
-          </div>
+          <SectionHeader>Pattern: {part.input.pattern}</SectionHeader>
+          {part.output.files.length > 0 && (
+            <div className="space-y-0.5">
+              {part.output.files.map((file, index) => (
+                <MonoText className="text-xs" key={index}>
+                  {file.destinationPath} ({formatBytes(file.size)})
+                </MonoText>
+              ))}
+            </div>
+          )}
+          {part.output.errors.length > 0 && (
+            <div className="mt-2">
+              <SectionHeader>
+                {part.output.errors.length} error
+                {part.output.errors.length === 1 ? "" : "s"}
+              </SectionHeader>
+              <div className="space-y-1">
+                {part.output.errors.map((error, index) => (
+                  <div
+                    className="border-l-2 border-red-300 pl-2 font-mono text-xs dark:border-red-600"
+                    key={index}
+                  >
+                    <div className="text-muted-foreground">
+                      {error.sourcePath}
+                    </div>
+                    <div className="text-red-600 dark:text-red-400">
+                      {error.message}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       );
     }

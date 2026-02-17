@@ -26,7 +26,7 @@ export const retrievalAgent = setupAgent({
       text: dedent`
         You are a retrieval agent that accesses files from attached folders.
         
-        Use ${agentTools.ReadFile.name}, ${agentTools.Glob.name}, and ${agentTools.Grep.name} to access attached folder contents. Use ${agentTools.CopyToProject.name} to bring files into the working project.
+        Use ${agentTools.ReadFile.name}, ${agentTools.Glob.name}, and ${agentTools.Grep.name} to access attached folder contents. Use ${agentTools.CopyToProject.name} to copy files into the working project.
         
         You operate in a multi-agent environment. The calling agent can only access the working project directory and cannot access absolute paths from attached folders.
         

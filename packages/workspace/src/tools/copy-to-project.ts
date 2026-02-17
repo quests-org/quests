@@ -1,23 +1,30 @@
+import { glob } from "glob";
 import ms from "ms";
-import { err, ok } from "neverthrow";
+import { ok } from "neverthrow";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { dedent } from "radashi";
+import { alphabetical, dedent } from "radashi";
 import { z } from "zod";
 
 import { APP_FOLDER_NAMES } from "../constants";
 import { absolutePathJoin } from "../lib/absolute-path-join";
 import { executeError } from "../lib/execute-error";
+import { getIgnore } from "../lib/get-ignore";
 import { pathExists } from "../lib/path-exists";
-import { validateAttachedFolderPath } from "../lib/validate-attached-folder-path";
-import { type AbsolutePath, RelativePathSchema } from "../schemas/paths";
+import { resolveAgentPath } from "../lib/resolve-agent-path";
+import {
+  type AbsolutePath,
+  type RelativePath,
+  RelativePathSchema,
+} from "../schemas/paths";
 import { BaseInputSchema } from "./base";
 import { createTool } from "./create-tool";
 
 const MAX_FILE_SIZE_BYTES = 1024 * 1024 * 1024; // 1GB
 
 const INPUT_PARAMS = {
-  sourcePath: "sourcePath",
+  path: "path",
+  pattern: "pattern",
 } as const;
 
 async function getUniqueFilename(
@@ -43,9 +50,10 @@ async function getUniqueFilename(
 
 export const CopyToProject = createTool({
   description: dedent`
-    Copy a file from an attached folder into the project folder.
+    Copy files matching a glob pattern from an attached folder into the project folder.
+    You can use glob patterns to copy multiple files at once (e.g., "*.ts", "src/**/*.tsx") or specify a direct file path to copy a single file.
     Files are automatically renamed if a conflict exists.
-    The parent agent can then access the copied file.
+    The parent agent can then access the copied files.
   `,
   execute: async ({ agentName, appConfig, input, projectState }) => {
     if (agentName !== "retrieval") {
@@ -56,76 +64,193 @@ export const CopyToProject = createTool({
       return executeError("No attached folders available");
     }
 
-    const sourcePathResult = validateAttachedFolderPath(
-      input.sourcePath,
-      projectState.attachedFolders,
-    );
-    if (sourcePathResult.isErr()) {
-      return err(sourcePathResult.error);
-    }
-    const sourcePath: AbsolutePath = sourcePathResult.value;
+    const pathResult = resolveAgentPath({
+      agentName,
+      appDir: appConfig.appDir,
+      attachedFolders: projectState.attachedFolders,
+      inputPath: input.path,
+      isRequired: true,
+    });
 
-    const sourceExists = await pathExists(sourcePath);
-    if (!sourceExists) {
-      return executeError(`Source file does not exist: ${sourcePath}`);
+    if (pathResult.isErr()) {
+      return executeError(pathResult.error.message);
     }
 
-    const sourceStats = await fs.stat(sourcePath);
-    if (sourceStats.size > MAX_FILE_SIZE_BYTES) {
-      const sizeMB = (sourceStats.size / 1024 / 1024).toFixed(2);
-      const maxSizeMB = (MAX_FILE_SIZE_BYTES / 1024 / 1024).toFixed(0);
+    const { absolutePath: searchRoot } = pathResult.value;
+    const ignore = await getIgnore(searchRoot);
+
+    const matchedFiles = await glob(input.pattern, {
+      absolute: true,
+      cwd: searchRoot,
+      ignore: {
+        ignored: (p) => {
+          return ignore.ignores(p.name);
+        },
+      },
+      // cspell:ignore nodir
+      nodir: true, // Only match files, not directories
+      posix: true,
+    });
+
+    if (matchedFiles.length === 0) {
       return executeError(
-        `File is too large to copy (${sizeMB} MB). Maximum size is ${maxSizeMB} MB. The user must upload this file manually if needed.`,
+        `No files found matching pattern "${input.pattern}" in ${searchRoot}`,
       );
     }
 
-    // Automatically place in agent-retrieved folder with deduplication
     const retrievedDir = absolutePathJoin(
       appConfig.appDir,
       APP_FOLDER_NAMES.agentRetrieved,
     );
     await fs.mkdir(retrievedDir, { recursive: true });
 
-    const originalFilename = path.basename(sourcePath);
-    const uniqueFilename = await getUniqueFilename(
-      retrievedDir,
-      originalFilename,
-    );
+    const copiedFiles: {
+      destinationPath: RelativePath;
+      size: number;
+      sourcePath: string;
+    }[] = [];
 
-    const destinationRelative = `./${APP_FOLDER_NAMES.agentRetrieved}/${uniqueFilename}`;
-    const destinationAbsolute = absolutePathJoin(
-      appConfig.appDir,
-      destinationRelative,
-    );
+    const errors: {
+      message: string;
+      sourcePath: string;
+    }[] = [];
 
-    await fs.copyFile(sourcePath, destinationAbsolute);
+    for (const sourceAbsolutePath of matchedFiles) {
+      const sourceExists = await pathExists(sourceAbsolutePath as AbsolutePath);
+      if (!sourceExists) {
+        errors.push({
+          message: "File not found",
+          sourcePath: sourceAbsolutePath,
+        });
+        continue;
+      }
 
-    const stats = await fs.stat(destinationAbsolute);
+      const sourceStats = await fs.stat(sourceAbsolutePath);
+      if (sourceStats.size > MAX_FILE_SIZE_BYTES) {
+        const sizeMB = (sourceStats.size / 1024 / 1024).toFixed(2);
+        const maxSizeMB = (MAX_FILE_SIZE_BYTES / 1024 / 1024).toFixed(0);
+        errors.push({
+          message: `File too large (${sizeMB} MB, max ${maxSizeMB} MB). User must upload manually.`,
+          sourcePath: sourceAbsolutePath,
+        });
+        continue;
+      }
+
+      const originalFilename = path.basename(sourceAbsolutePath);
+      const uniqueFilename = await getUniqueFilename(
+        retrievedDir,
+        originalFilename,
+      );
+
+      const destinationRelative = `./${APP_FOLDER_NAMES.agentRetrieved}/${uniqueFilename}`;
+      const destinationAbsolute = absolutePathJoin(
+        appConfig.appDir,
+        destinationRelative,
+      );
+
+      await fs.copyFile(sourceAbsolutePath, destinationAbsolute);
+
+      const stats = await fs.stat(destinationAbsolute);
+
+      copiedFiles.push({
+        destinationPath: RelativePathSchema.parse(destinationRelative),
+        size: stats.size,
+        sourcePath: sourceAbsolutePath,
+      });
+    }
 
     return ok({
-      destinationPath: RelativePathSchema.parse(destinationRelative),
-      size: stats.size,
+      errors,
+      files: alphabetical(copiedFiles, (f) => f.destinationPath),
     });
   },
   inputSchema: BaseInputSchema.extend({
-    [INPUT_PARAMS.sourcePath]: z.string().meta({
-      description: "Absolute path to the source file within an attached folder",
+    [INPUT_PARAMS.path]: z.string().meta({
+      description: "Absolute path to an attached folder to search within",
     }),
+    [INPUT_PARAMS.pattern]: z
+      .string()
+      .meta({ description: "Glob pattern or direct file path to copy" }),
   }),
   name: "copy_to_project",
   outputSchema: z.object({
-    destinationPath: RelativePathSchema,
-    size: z.number(),
+    errors: z.array(
+      z.object({
+        message: z.string(),
+        sourcePath: z.string(),
+      }),
+    ),
+    files: z.array(
+      z.object({
+        destinationPath: RelativePathSchema,
+        size: z.number(),
+        sourcePath: z.string(),
+      }),
+    ),
   }),
   readOnly: false,
   timeoutMs: ms("1 minute"),
   toModelOutput: ({ output }) => {
-    const sizeKB = (output.size / 1024).toFixed(2);
+    if (output.files.length === 0 && output.errors.length === 0) {
+      return {
+        type: "error-text",
+        value: "No files were copied",
+      };
+    }
+
+    if (output.files.length === 0 && output.errors.length > 0) {
+      const errorList = output.errors
+        .map((e) => `  - ${e.sourcePath}: ${e.message}`)
+        .join("\n");
+      return {
+        type: "error-text",
+        value: dedent`
+          Failed to copy any files:
+          ${errorList}
+        `,
+      };
+    }
+
+    const [firstFile] = output.files;
+
+    if (output.files.length === 1 && firstFile && output.errors.length === 0) {
+      const sizeKB = (firstFile.size / 1024).toFixed(2);
+      return {
+        type: "text",
+        value: dedent`
+          Copied to ${firstFile.destinationPath} (${sizeKB} KB). Parent agent can now access this file.
+        `,
+      };
+    }
+
+    const totalSize = output.files.reduce((sum, f) => sum + f.size, 0);
+    const totalSizeKB = (totalSize / 1024).toFixed(2);
+    const fileList = output.files
+      .map((f) => {
+        const sizeKB = (f.size / 1024).toFixed(2);
+        return `  - ${f.destinationPath} (${sizeKB} KB)`;
+      })
+      .join("\n");
+
+    let message = dedent`
+      Copied ${output.files.length} files (${totalSizeKB} KB total). Parent agent can now access these files:
+      ${fileList}
+    `;
+
+    if (output.errors.length > 0) {
+      const errorList = output.errors
+        .map((e) => `  - ${e.sourcePath}: ${e.message}`)
+        .join("\n");
+      message += dedent`
+
+        Failed to copy ${output.errors.length} files:
+        ${errorList}
+      `;
+    }
+
     return {
       type: "text",
-      value: dedent`
-        Copied to ${output.destinationPath} (${sizeKB} KB). Parent agent can now access this file.
-      `,
+      value: message,
     };
   },
 });

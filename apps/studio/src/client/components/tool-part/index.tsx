@@ -304,9 +304,7 @@ function getToolInputValue(
       return part.input.question;
     }
     case "tool-copy_to_project": {
-      return part.input.sourcePath
-        ? filenameFromFilePath(part.input.sourcePath)
-        : undefined;
+      return part.input.pattern;
     }
     case "tool-edit_file": {
       return part.input.filePath
@@ -374,7 +372,27 @@ function getToolOutputDescription(
       return part.output.selectedChoice || "answered";
     }
     case "tool-copy_to_project": {
-      return filenameFromFilePath(part.output.destinationPath) || "file copied";
+      const fileCount = part.output.files.length;
+      const errorCount = part.output.errors.length;
+
+      if (fileCount === 0 && errorCount === 0) {
+        return "no files copied";
+      }
+
+      if (fileCount === 0 && errorCount > 0) {
+        return `failed to copy ${errorCount} file${errorCount === 1 ? "" : "s"}`;
+      }
+
+      if (fileCount === 1 && errorCount === 0) {
+        const [firstFile] = part.output.files;
+        return firstFile
+          ? filenameFromFilePath(firstFile.destinationPath)
+          : "file copied";
+      }
+
+      const filesPart = `${fileCount} file${fileCount === 1 ? "" : "s"} copied`;
+      const errorsPart = errorCount > 0 ? `, ${errorCount} failed` : "";
+      return filesPart + errorsPart;
     }
     case "tool-edit_file": {
       return filenameFromFilePath(part.output.filePath) || "file edited";
