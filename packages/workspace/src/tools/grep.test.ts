@@ -236,12 +236,10 @@ describe("Grep", () => {
         spawnAgent: vi.fn(),
       });
 
-      expect(result.isOk()).toBe(true);
-      if (result.isOk()) {
-        expect(result.value.matches).toEqual([]);
-        expect(result.value.totalMatches).toBe(0);
-        expect(result.value.truncated).toBe(false);
-      }
+      const value = result._unsafeUnwrap();
+      expect(value.matches).toEqual([]);
+      expect(value.totalMatches).toBe(0);
+      expect(value.truncated).toBe(false);
     });
 
     it("should use smart case to match case insensitively for lowercase patterns", async () => {
@@ -468,11 +466,9 @@ describe("Grep", () => {
         spawnAgent: vi.fn(),
       });
 
-      expect(result.isErr()).toBe(true);
-      if (result.isErr()) {
-        expect(result.error.message).toContain("Must specify a path parameter");
-        expect(result.error.message).toContain("Test Folder");
-      }
+      const error = result._unsafeUnwrapErr();
+      expect(error.message).toContain("Must specify a path parameter");
+      expect(error.message).toContain("Test Folder");
     });
 
     it("should reject relative paths", async () => {
@@ -489,10 +485,9 @@ describe("Grep", () => {
         spawnAgent: vi.fn(),
       });
 
-      expect(result.isErr()).toBe(true);
-      if (result.isErr()) {
-        expect(result.error.message).toContain("Path must be absolute");
-      }
+      expect(result._unsafeUnwrapErr().message).toContain(
+        "Path must be absolute",
+      );
     });
 
     it("should reject paths outside attached folders", async () => {
@@ -509,13 +504,9 @@ describe("Grep", () => {
         spawnAgent: vi.fn(),
       });
 
-      expect(result.isErr()).toBe(true);
-      if (result.isErr()) {
-        expect(result.error.message).toContain(
-          "Path is not within any attached folder",
-        );
-        expect(result.error.message).toContain("Test Folder");
-      }
+      const error = result._unsafeUnwrapErr();
+      expect(error.message).toContain("Path is not within any attached folder");
+      expect(error.message).toContain("Test Folder");
     });
 
     it("should find matches within attached folder", async () => {
@@ -532,41 +523,38 @@ describe("Grep", () => {
         spawnAgent: vi.fn(),
       });
 
-      expect(result.isOk()).toBe(true);
-      if (result.isOk()) {
-        const normalizedMatches = sortMatchesForTesting(
-          result.value.matches.map(
-            ({ modifiedAt: _modifiedAt, path: p, ...rest }) => ({
-              ...rest,
-              path: p.replace(fixturesPath, "<FIXTURES>"),
-            }),
-          ),
-        );
-        expect(normalizedMatches).toMatchInlineSnapshot(`
-          [
-            {
-              "lineNum": 4,
-              "lineText": "- async functions",
-              "path": "<FIXTURES>/grep-test-2.txt",
-            },
-            {
-              "lineNum": 21,
-              "lineText": "async function testGrep() {",
-              "path": "<FIXTURES>/grep-test-2.txt",
-            },
-            {
-              "lineNum": 4,
-              "lineText": "- async functions",
-              "path": "<FIXTURES>/grep-test.txt",
-            },
-            {
-              "lineNum": 21,
-              "lineText": "async function testGrep() {",
-              "path": "<FIXTURES>/grep-test.txt",
-            },
-          ]
-        `);
-      }
+      const normalizedMatches = sortMatchesForTesting(
+        result
+          ._unsafeUnwrap()
+          .matches.map(({ modifiedAt: _modifiedAt, path: p, ...rest }) => ({
+            ...rest,
+            path: p.replace(fixturesPath, "<FIXTURES>"),
+          })),
+      );
+      expect(normalizedMatches).toMatchInlineSnapshot(`
+        [
+          {
+            "lineNum": 4,
+            "lineText": "- async functions",
+            "path": "<FIXTURES>/grep-test-2.txt",
+          },
+          {
+            "lineNum": 21,
+            "lineText": "async function testGrep() {",
+            "path": "<FIXTURES>/grep-test-2.txt",
+          },
+          {
+            "lineNum": 4,
+            "lineText": "- async functions",
+            "path": "<FIXTURES>/grep-test.txt",
+          },
+          {
+            "lineNum": 21,
+            "lineText": "async function testGrep() {",
+            "path": "<FIXTURES>/grep-test.txt",
+          },
+        ]
+      `);
     });
 
     it("should find matches in nested subdirectory of attached folder", async () => {
@@ -584,31 +572,28 @@ describe("Grep", () => {
         spawnAgent: vi.fn(),
       });
 
-      expect(result.isOk()).toBe(true);
-      if (result.isOk()) {
-        const normalizedMatches = sortMatchesForTesting(
-          result.value.matches.map(
-            ({ modifiedAt: _modifiedAt, path: p, ...rest }) => ({
-              ...rest,
-              path: p.replace(nestedPath, "<NESTED>"),
-            }),
-          ),
-        );
-        expect(normalizedMatches).toMatchInlineSnapshot(`
-          [
-            {
-              "lineNum": 4,
-              "lineText": "- vertical|bars|everywhere",
-              "path": "<NESTED>/another/file.txt",
-            },
-            {
-              "lineNum": 6,
-              "lineText": "- vertical|bar|separator",
-              "path": "<NESTED>/level1/test-deep.txt",
-            },
-          ]
-        `);
-      }
+      const normalizedMatches = sortMatchesForTesting(
+        result
+          ._unsafeUnwrap()
+          .matches.map(({ modifiedAt: _modifiedAt, path: p, ...rest }) => ({
+            ...rest,
+            path: p.replace(nestedPath, "<NESTED>"),
+          })),
+      );
+      expect(normalizedMatches).toMatchInlineSnapshot(`
+        [
+          {
+            "lineNum": 4,
+            "lineText": "- vertical|bars|everywhere",
+            "path": "<NESTED>/another/file.txt",
+          },
+          {
+            "lineNum": 6,
+            "lineText": "- vertical|bar|separator",
+            "path": "<NESTED>/level1/test-deep.txt",
+          },
+        ]
+      `);
     });
   });
 });
