@@ -90,6 +90,23 @@ describe("ReadFile", () => {
         expect(value.content).toContain("async functions");
       }
     });
+
+    it("should return a specialized error when an absolute path matches an attached folder", async () => {
+      const error = (
+        await TOOLS.ReadFile.execute({
+          ...baseInput,
+          input: {
+            explanation: "read",
+            filePath: path.join(fixturesPath, "grep-test.txt"),
+          },
+          projectState: { attachedFolders },
+        })
+      )._unsafeUnwrapErr();
+
+      expect(error.message).toContain("retrieval");
+      expect(error.message).toContain("task");
+      expect(error.message).toContain("Test Folder");
+    });
   });
 
   describe("retrieval agent", () => {

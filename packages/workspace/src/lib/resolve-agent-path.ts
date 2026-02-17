@@ -2,9 +2,10 @@ import { ok } from "neverthrow";
 import fs from "node:fs/promises";
 import path from "node:path";
 
-import { type AgentName } from "../agents/types";
+import { type AgentName, RETRIEVAL_AGENT_NAME } from "../agents/types";
 import { type FolderAttachment } from "../schemas/folder-attachment";
 import { type AbsolutePath, AbsolutePathSchema } from "../schemas/paths";
+import { Task } from "../tools/task";
 import { absolutePathJoin } from "./absolute-path-join";
 import { ensureRelativePath } from "./ensure-relative-path";
 import { executeError } from "./execute-error";
@@ -114,6 +115,19 @@ export function resolveAgentPath(options: {
   }
 
   const trimmedPath = inputPath.trim();
+
+  if (path.isAbsolute(trimmedPath) && attachedFolders) {
+    const matchingFolder = Object.values(attachedFolders).find((folder) =>
+      trimmedPath.startsWith(folder.path),
+    );
+    if (matchingFolder) {
+      return executeError(
+        `The path "${trimmedPath}" is within the attached folder "${matchingFolder.name}". ` +
+          `Use the ${Task.name} tool with subagent_type "${RETRIEVAL_AGENT_NAME}" to access files from attached folders.`,
+      );
+    }
+  }
+
   const fixedPathResult = ensureRelativePath(trimmedPath);
   if (fixedPathResult.isErr()) {
     return fixedPathResult;
