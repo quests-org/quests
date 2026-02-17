@@ -36,11 +36,20 @@ export function FilesGrid({
   const openFileViewer = useSetAtom(openProjectFileViewerAtom);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isScriptsExpanded, setIsScriptsExpanded] = useState(false);
-  const [isInputsExpanded, setIsInputsExpanded] = useState(false);
+  const [isUserProvidedExpanded, setIsUserProvidedExpanded] = useState(false);
+  const [isAgentRetrievedExpanded, setIsAgentRetrievedExpanded] =
+    useState(false);
 
   const [outputFiles, nonOutputFiles] = fork(files, isOutputFile);
   const [scriptFiles, nonScriptFiles] = fork(nonOutputFiles, isScriptFile);
-  const [inputFiles, regularFiles] = fork(nonScriptFiles, isInputFile);
+  const [userProvidedFiles, nonUserProvidedFiles] = fork(
+    nonScriptFiles,
+    isUserProvidedFile,
+  );
+  const [agentRetrievedFiles, regularFiles] = fork(
+    nonUserProvidedFiles,
+    isAgentRetrievedFile,
+  );
 
   const sortedOutputFiles = sortByRichPreview(outputFiles);
   const sortedRegularFiles = sortByRichPreview(regularFiles);
@@ -63,7 +72,8 @@ export function FilesGrid({
     sortedOutputFiles.length > initialVisibleCount ||
     sortedRegularFiles.length > 0 ||
     scriptFiles.length > 0 ||
-    inputFiles.length > 0;
+    userProvidedFiles.length > 0 ||
+    agentRetrievedFiles.length > 0;
 
   const expandedFiles = [
     ...sortedOutputFiles.slice(initialVisibleCount),
@@ -152,7 +162,11 @@ export function FilesGrid({
             variant="outline-muted"
           >
             <span className="text-xs">
-              +{expandedFiles.length + scriptFiles.length + inputFiles.length}{" "}
+              +
+              {expandedFiles.length +
+                scriptFiles.length +
+                userProvidedFiles.length +
+                agentRetrievedFiles.length}{" "}
               more
             </span>
             <ChevronDown className="size-3.5 text-muted-foreground" />
@@ -173,16 +187,29 @@ export function FilesGrid({
         />
       )}
 
-      {isExpanded && inputFiles.length > 0 && (
+      {isExpanded && userProvidedFiles.length > 0 && (
         <CategorizedFileSection
           alignEnd={alignEnd}
-          files={inputFiles}
-          isExpanded={isInputsExpanded}
+          files={userProvidedFiles}
+          isExpanded={isUserProvidedExpanded}
           onFileClick={handleFileClick}
           onToggle={() => {
-            setIsInputsExpanded(!isInputsExpanded);
+            setIsUserProvidedExpanded(!isUserProvidedExpanded);
           }}
-          title="Input Files"
+          title="Uploaded"
+        />
+      )}
+
+      {isExpanded && agentRetrievedFiles.length > 0 && (
+        <CategorizedFileSection
+          alignEnd={alignEnd}
+          files={agentRetrievedFiles}
+          isExpanded={isAgentRetrievedExpanded}
+          onFileClick={handleFileClick}
+          onToggle={() => {
+            setIsAgentRetrievedExpanded(!isAgentRetrievedExpanded);
+          }}
+          title="Agent Retrieved"
         />
       )}
 
@@ -192,7 +219,8 @@ export function FilesGrid({
             onClick={() => {
               setIsExpanded(false);
               setIsScriptsExpanded(false);
-              setIsInputsExpanded(false);
+              setIsUserProvidedExpanded(false);
+              setIsAgentRetrievedExpanded(false);
             }}
             size="sm"
             type="button"
@@ -277,11 +305,8 @@ function hasRichPreview(file: ProjectFileViewerFile) {
   );
 }
 
-function isInputFile(file: ProjectFileViewerFile) {
-  return (
-    file.filePath.startsWith(`${APP_FOLDER_NAMES.agentRetrieved}/`) ||
-    file.filePath.startsWith(`${APP_FOLDER_NAMES.userProvided}/`)
-  );
+function isAgentRetrievedFile(file: ProjectFileViewerFile) {
+  return file.filePath.startsWith(`${APP_FOLDER_NAMES.agentRetrieved}/`);
 }
 
 function isOutputFile(file: ProjectFileViewerFile) {
@@ -290,6 +315,10 @@ function isOutputFile(file: ProjectFileViewerFile) {
 
 function isScriptFile(file: ProjectFileViewerFile) {
   return file.filePath.startsWith(`${APP_FOLDER_NAMES.scripts}/`);
+}
+
+function isUserProvidedFile(file: ProjectFileViewerFile) {
+  return file.filePath.startsWith(`${APP_FOLDER_NAMES.userProvided}/`);
 }
 
 function sortByRichPreview(files: ProjectFileViewerFile[]) {
