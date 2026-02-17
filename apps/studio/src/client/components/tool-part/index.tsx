@@ -337,7 +337,7 @@ function getToolInputValue(
       return part.input.command;
     }
     case "tool-task": {
-      return "";
+      return ""; // Empty because the explanation is in the summary
     }
     case "tool-think": {
       return part.input.thought;
@@ -439,7 +439,7 @@ function getToolOutputDescription(
       return part.output.command || "command executed";
     }
     case "tool-task": {
-      return "";
+      return part.output.summary;
     }
     case "tool-unavailable": {
       return "";

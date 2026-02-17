@@ -93,9 +93,56 @@ export const Task = createTool({
       })
       .join("\n");
 
+    const toolCounts: Partial<
+      Record<(typeof messages)[number]["parts"][number]["type"], number>
+    > = {};
+    let totalFilesCopied = 0;
+
+    for (const message of messages) {
+      if (message.role === "assistant") {
+        for (const part of message.parts) {
+          if (part.type !== "text" && part.type !== "data-fileAttachments") {
+            toolCounts[part.type] = (toolCounts[part.type] ?? 0) + 1;
+
+            if (
+              part.type === "tool-copy_to_project" &&
+              part.state === "output-available"
+            ) {
+              totalFilesCopied += part.output.files.length;
+            }
+          }
+        }
+      }
+    }
+
+    const summaryParts: string[] = [];
+
+    const readCount =
+      (toolCounts["tool-read_file"] ?? 0) + (toolCounts["tool-glob"] ?? 0);
+    if (readCount > 0) {
+      summaryParts.push(`read ${readCount} file${readCount === 1 ? "" : "s"}`);
+    }
+
+    if (totalFilesCopied > 0) {
+      summaryParts.push(
+        `copied ${totalFilesCopied} file${totalFilesCopied === 1 ? "" : "s"}`,
+      );
+    }
+
+    const searchCount = toolCounts["tool-grep"] ?? 0;
+    if (searchCount > 0) {
+      summaryParts.push(
+        `ran ${searchCount} search${searchCount === 1 ? "" : "es"}`,
+      );
+    }
+
+    const summary =
+      summaryParts.length > 0 ? summaryParts.join(", ") : "nothing";
+
     return ok({
       result: resultText,
       sessionId,
+      summary,
     });
   },
   inputSchema: BaseInputSchema.extend({
@@ -111,6 +158,7 @@ export const Task = createTool({
   outputSchema: z.object({
     result: z.string(),
     sessionId: StoreId.SessionSchema,
+    summary: z.string(),
   }),
   readOnly: false,
   timeoutMs: ms("10 minutes"),
