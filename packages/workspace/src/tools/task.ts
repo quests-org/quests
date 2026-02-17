@@ -21,8 +21,9 @@ const TASK_AGENT_DESCRIPTIONS: Record<TaskAgentName, string> = {
   retrieval: dedent`
     Specialized agent for accessing files from user-attached folders. Use this when the user has attached folders to their message and you need to read, search, or copy files to this project from those folders.
     
-    Files copied by this agent are placed in the ${APP_FOLDER_NAMES.agentRetrieved} folder in the project.
+    Files copied by this agent are ALWAYS placed in the ${APP_FOLDER_NAMES.agentRetrieved} folder in the project. The destination cannot be changed.
     
+    IMPORTANT: When writing the prompt for this agent, NEVER instruct it to copy files to a specific destination path. Simply describe what files to retrieve and the agent will automatically place them in ${APP_FOLDER_NAMES.agentRetrieved}/.
     IMPORTANT: This agent cannot directly access files inside the current project - it can only access and copy files from attached folders outside the project.
   `.trim(),
 };
