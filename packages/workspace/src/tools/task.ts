@@ -96,7 +96,10 @@ export const Task = createTool({
     const toolCounts: Partial<
       Record<(typeof messages)[number]["parts"][number]["type"], number>
     > = {};
-    let totalFilesCopied = 0;
+    const copiedFiles: {
+      destinationPath: string;
+      size: number;
+    }[] = [];
 
     for (const message of messages) {
       if (message.role === "assistant") {
@@ -108,11 +111,23 @@ export const Task = createTool({
               part.type === "tool-copy_to_project" &&
               part.state === "output-available"
             ) {
-              totalFilesCopied += part.output.files.length;
+              copiedFiles.push(...part.output.files);
             }
           }
         }
       }
+    }
+
+    let resultWithFileList = resultText;
+    if (copiedFiles.length > 0) {
+      const fileListText = copiedFiles
+        .map((file) => {
+          const sizeKB = (file.size / 1024).toFixed(2);
+          return `  - ${file.destinationPath} (${sizeKB} KB)`;
+        })
+        .join("\n");
+
+      resultWithFileList += `\n\nCopied files:\n${fileListText}`;
     }
 
     const summaryParts: string[] = [];
@@ -123,9 +138,9 @@ export const Task = createTool({
       summaryParts.push(`read ${readCount} file${readCount === 1 ? "" : "s"}`);
     }
 
-    if (totalFilesCopied > 0) {
+    if (copiedFiles.length > 0) {
       summaryParts.push(
-        `copied ${totalFilesCopied} file${totalFilesCopied === 1 ? "" : "s"}`,
+        `copied ${copiedFiles.length} file${copiedFiles.length === 1 ? "" : "s"}`,
       );
     }
 
@@ -140,7 +155,7 @@ export const Task = createTool({
       summaryParts.length > 0 ? summaryParts.join(", ") : "nothing";
 
     return ok({
-      result: resultText,
+      result: resultWithFileList,
       sessionId,
       summary,
     });
