@@ -110,6 +110,8 @@ export const Task = setupTool({
       })
       .join("\n");
 
+    const assistantError = lastAssistantMessage.metadata.error;
+
     const toolCounts: Partial<
       Record<(typeof messages)[number]["parts"][number]["type"], number>
     > = {};
@@ -135,7 +137,39 @@ export const Task = setupTool({
       }
     }
 
+    const extraSections: string[] = [];
+
+    if (resultText === "") {
+      const toolSummaryParts: string[] = [];
+      for (const [type, count] of Object.entries(toolCounts)) {
+        if (count && count > 0) {
+          const toolName = type.replace(/^tool-/, "").replaceAll("_", " ");
+          toolSummaryParts.push(
+            `  - ${toolName}: ${count} call${count === 1 ? "" : "s"}`,
+          );
+        }
+      }
+      const toolSummaryText =
+        toolSummaryParts.length > 0
+          ? toolSummaryParts.join("\n")
+          : "  (no tool calls)";
+      extraSections.push(
+        `Note: The subagent did not return any text. Auto-generated activity summary:\n${toolSummaryText}`,
+      );
+    }
+
+    if (assistantError) {
+      extraSections.push(
+        `The subagent ended with an error [${assistantError.kind}]: ${assistantError.message}`,
+      );
+    }
+
     let resultWithFileList = resultText;
+    if (extraSections.length > 0) {
+      resultWithFileList +=
+        (resultWithFileList ? "\n\n" : "") + extraSections.join("\n\n");
+    }
+
     if (copiedFiles.length > 0) {
       const fileListText = copiedFiles
         .map((file) => `  - ${file.destinationPath} ${formatBytes(file.size)}`)
@@ -146,8 +180,7 @@ export const Task = setupTool({
 
     const summaryParts: string[] = [];
 
-    const readCount =
-      (toolCounts["tool-read_file"] ?? 0) + (toolCounts["tool-glob"] ?? 0);
+    const readCount = toolCounts["tool-read_file"] ?? 0;
     if (readCount > 0) {
       summaryParts.push(`read ${readCount} file${readCount === 1 ? "" : "s"}`);
     }
@@ -158,7 +191,8 @@ export const Task = setupTool({
       );
     }
 
-    const searchCount = toolCounts["tool-grep"] ?? 0;
+    const searchCount =
+      (toolCounts["tool-grep"] ?? 0) + (toolCounts["tool-glob"] ?? 0);
     if (searchCount > 0) {
       summaryParts.push(
         `ran ${searchCount} search${searchCount === 1 ? "" : "es"}`,
