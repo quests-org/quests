@@ -1,10 +1,11 @@
 import {
   getToolNameByType,
+  type SessionMessage,
   type SessionMessagePart,
   type WorkspaceAppProject,
 } from "@quests/workspace/client";
 import { Loader2Icon } from "lucide-react";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 
 import { filenameFromFilePath } from "../../lib/path-utils";
 import { getToolLabelForPart } from "../../lib/tool-display";
@@ -33,12 +34,14 @@ export function ToolPart({
   onRetry,
   part,
   project,
+  renderStream,
 }: {
   isDeveloperMode: boolean;
   isLoading: boolean;
   onRetry: (prompt: string) => void;
   part: SessionMessagePart.ToolPart;
   project: WorkspaceAppProject;
+  renderStream: (messages: SessionMessage.WithParts[]) => ReactNode;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const toolName = getToolNameByType(part.type);
@@ -252,7 +255,12 @@ export function ToolPart({
       <CollapsibleContent>
         {isSuccess && (
           <CollapsiblePartMainContent>
-            <ToolPartExpanded onRetry={onRetry} part={part} project={project} />
+            <ToolPartExpanded
+              onRetry={onRetry}
+              part={part}
+              project={project}
+              renderStream={renderStream}
+            />
           </CollapsiblePartMainContent>
         )}
 

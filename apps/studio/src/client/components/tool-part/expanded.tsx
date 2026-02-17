@@ -1,7 +1,9 @@
 import {
+  type SessionMessage,
   type SessionMessagePart,
   type WorkspaceAppProject,
 } from "@quests/workspace/client";
+import { type ReactNode } from "react";
 
 import { ToolContent } from "./content";
 import { SectionHeader } from "./section-header";
@@ -10,10 +12,12 @@ export function ToolPartExpanded({
   onRetry,
   part,
   project,
+  renderStream,
 }: {
   onRetry: (prompt: string) => void;
   part: Extract<SessionMessagePart.ToolPart, { state: "output-available" }>;
   project: WorkspaceAppProject;
+  renderStream: (messages: SessionMessage.WithParts[]) => ReactNode;
 }) {
   const isWebSearch = part.type === "tool-web_search";
   const explanationObject =
@@ -32,7 +36,12 @@ export function ToolPartExpanded({
           </div>
         </div>
       )}
-      <ToolContent onRetry={onRetry} part={part} project={project} />
+      <ToolContent
+        onRetry={onRetry}
+        part={part}
+        project={project}
+        renderStream={renderStream}
+      />
     </div>
   );
 }

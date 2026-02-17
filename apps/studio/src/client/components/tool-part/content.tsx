@@ -1,8 +1,10 @@
 import {
   formatBytes,
+  type SessionMessage,
   type SessionMessagePart,
   type WorkspaceAppProject,
 } from "@quests/workspace/client";
+import { type ReactNode } from "react";
 
 import { AIProviderIcon } from "../ai-provider-icon";
 import { ExternalLink } from "../external-link";
@@ -22,10 +24,12 @@ export function ToolContent({
   onRetry,
   part,
   project,
+  renderStream,
 }: {
   onRetry?: (message: string) => void;
   part: Extract<SessionMessagePart.ToolPart, { state: "output-available" }>;
   project: WorkspaceAppProject;
+  renderStream: (messages: SessionMessage.WithParts[]) => ReactNode;
 }) {
   switch (part.type) {
     case "tool-choose": {
@@ -334,7 +338,11 @@ export function ToolContent({
     }
     case "tool-task": {
       return (
-        <ToolPartTask project={project} sessionId={part.output.sessionId} />
+        <ToolPartTask
+          project={project}
+          renderStream={renderStream}
+          sessionId={part.output.sessionId}
+        />
       );
     }
     case "tool-think": {

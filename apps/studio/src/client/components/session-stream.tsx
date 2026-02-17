@@ -168,6 +168,18 @@ export function SessionStream({
             onRetry={onRetry}
             part={part}
             project={project}
+            renderStream={(nestedMessages) => (
+              <SessionStream
+                isAgentRunning={isAgentRunning}
+                isDeveloperMode={isDeveloperMode}
+                messages={nestedMessages}
+                onContinue={onContinue}
+                onModelChange={onModelChange}
+                onRetry={onRetry}
+                onStartNewChat={onStartNewChat}
+                project={project}
+              />
+            )}
           />
         );
       }
@@ -209,14 +221,17 @@ export function SessionStream({
       return <UnknownPart key={partIndex} part={_exhaustiveCheck} />;
     },
     [
-      project,
       gitCommitParts,
       selectedVersion,
-      isAgentRunning,
-      isDeveloperMode,
+      project,
       navigate,
-      onRetry,
+      isDeveloperMode,
+      isAgentRunning,
       lastMessageId,
+      onRetry,
+      onContinue,
+      onModelChange,
+      onStartNewChat,
     ],
   );
 

@@ -1,19 +1,21 @@
 import {
+  type SessionMessage,
   type StoreId,
   type WorkspaceAppProject,
 } from "@quests/workspace/client";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { type ReactNode } from "react";
 
 import { rpcClient } from "../../rpc/client";
-import { SessionStream } from "../session-stream";
 
 export function ToolPartTask({
   project,
+  renderStream,
   sessionId,
 }: {
   project: WorkspaceAppProject;
+  renderStream: (messages: SessionMessage.WithParts[]) => ReactNode;
   sessionId: StoreId.Session;
 }) {
   const {
@@ -47,24 +49,7 @@ export function ToolPartTask({
 
   return (
     <div className="border-l-2 border-accent/30 pl-3">
-      <SessionStream
-        isAgentRunning={false}
-        isDeveloperMode={false}
-        messages={messages ?? []}
-        onContinue={() => {
-          toast.info("Continue not available for nested sessions");
-        }}
-        onModelChange={() => {
-          toast.info("Model change not available for nested sessions");
-        }}
-        onRetry={() => {
-          toast.info("Retry not available for nested sessions");
-        }}
-        onStartNewChat={() => {
-          toast.info("New chat not available for nested sessions");
-        }}
-        project={project}
-      />
+      {renderStream(messages ?? [])}
     </div>
   );
 }
