@@ -1,12 +1,17 @@
 export function formatBytes(bytes: number): string {
   if (bytes === 0) {
-    return "0 B";
+    return "0B";
   }
 
   const k = 1024;
-  const sizes = ["B", "KB", "MB", "GB", "TB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  const unit = sizes[i] ?? sizes.at(-1) ?? "B";
+  if (bytes < k) {
+    return `${bytes}B`;
+  }
 
-  return `${Number.parseFloat((bytes / k ** i).toFixed(1))} ${unit}`;
+  const sizes = ["KB", "MB", "GB", "TB"];
+  const i = Math.floor(Math.log(bytes / k) / Math.log(k));
+  const unit = sizes[i] ?? sizes.at(-1) ?? "TB";
+  const value = Math.round(bytes / k ** (i + 1));
+
+  return `${value}${unit}`;
 }

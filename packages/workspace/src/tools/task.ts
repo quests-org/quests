@@ -6,6 +6,7 @@ import { z } from "zod";
 import { TASK_AGENT_NAMES, type TaskAgentName } from "../agents/types";
 import { APP_FOLDER_NAMES } from "../constants";
 import { executeError } from "../lib/execute-error";
+import { formatBytes } from "../lib/format-bytes";
 import { StoreId } from "../schemas/store-id";
 import { BaseInputSchema } from "./base";
 import { createTool } from "./create-tool";
@@ -121,10 +122,7 @@ export const Task = createTool({
     let resultWithFileList = resultText;
     if (copiedFiles.length > 0) {
       const fileListText = copiedFiles
-        .map((file) => {
-          const sizeKB = (file.size / 1024).toFixed(2);
-          return `  - ${file.destinationPath} (${sizeKB} KB)`;
-        })
+        .map((file) => `  - ${file.destinationPath} ${formatBytes(file.size)}`)
         .join("\n");
 
       resultWithFileList += `\n\nCopied files:\n${fileListText}`;

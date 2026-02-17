@@ -9,6 +9,7 @@ import { z } from "zod";
 import { APP_FOLDER_NAMES } from "../constants";
 import { absolutePathJoin } from "../lib/absolute-path-join";
 import { executeError } from "../lib/execute-error";
+import { formatBytes } from "../lib/format-bytes";
 import { getIgnore } from "../lib/get-ignore";
 import { pathExists } from "../lib/path-exists";
 import { resolveAgentPath } from "../lib/resolve-agent-path";
@@ -127,10 +128,8 @@ export const CopyToProject = createTool({
 
       const sourceStats = await fs.stat(sourceAbsolutePath);
       if (sourceStats.size > MAX_FILE_SIZE_BYTES) {
-        const sizeMB = (sourceStats.size / 1024 / 1024).toFixed(2);
-        const maxSizeMB = (MAX_FILE_SIZE_BYTES / 1024 / 1024).toFixed(0);
         errors.push({
-          message: `File too large (${sizeMB} MB, max ${maxSizeMB} MB). User must upload manually.`,
+          message: `File too large ${formatBytes(sourceStats.size)}, max ${formatBytes(MAX_FILE_SIZE_BYTES)}. User must upload manually.`,
           sourcePath: sourceAbsolutePath,
         });
         continue;
@@ -214,26 +213,21 @@ export const CopyToProject = createTool({
     const [firstFile] = output.files;
 
     if (output.files.length === 1 && firstFile && output.errors.length === 0) {
-      const sizeKB = (firstFile.size / 1024).toFixed(2);
       return {
         type: "text",
         value: dedent`
-          Copied to ${firstFile.destinationPath} (${sizeKB} KB). Parent agent can now access this file.
+          Copied to ${firstFile.destinationPath} ${formatBytes(firstFile.size)}. Parent agent can now access this file.
         `,
       };
     }
 
     const totalSize = output.files.reduce((sum, f) => sum + f.size, 0);
-    const totalSizeKB = (totalSize / 1024).toFixed(2);
     const fileList = output.files
-      .map((f) => {
-        const sizeKB = (f.size / 1024).toFixed(2);
-        return `  - ${f.destinationPath} (${sizeKB} KB)`;
-      })
+      .map((f) => `  - ${f.destinationPath} ${formatBytes(f.size)}`)
       .join("\n");
 
     let message = dedent`
-      Copied ${output.files.length} files (${totalSizeKB} KB total). Parent agent can now access these files:
+      Copied ${output.files.length} files ${formatBytes(totalSize)} total. Parent agent can now access these files:
       ${fileList}
     `;
 

@@ -9,6 +9,7 @@ import { z } from "zod";
 import { absolutePathJoin } from "../lib/absolute-path-join";
 import { ensureRelativePath } from "../lib/ensure-relative-path";
 import { executeError } from "../lib/execute-error";
+import { formatBytes } from "../lib/format-bytes";
 import { generateImages } from "../lib/generate-images";
 import { normalizePath } from "../lib/normalize-path";
 import { writeFileWithDir } from "../lib/write-file-with-dir";
@@ -204,10 +205,10 @@ export const GenerateImage = createTool({
 
     const imageList = output.images
       .map((image) => {
-        const size = `${Math.round(image.sizeBytes / 1024)}KB`;
+        const size = formatBytes(image.sizeBytes);
         const dimensions =
-          image.width && image.height ? `, ${image.width}x${image.height}` : "";
-        return `${image.filePath} (${size}${dimensions})`;
+          image.width && image.height ? ` ${image.width}x${image.height}` : "";
+        return `${image.filePath} ${size}${dimensions}`;
       })
       .join("\n");
 
