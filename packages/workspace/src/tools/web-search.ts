@@ -12,13 +12,41 @@ import {
   TOOL_EXPLANATION_PARAM_NAME,
   UsageOutputSchema,
 } from "./base";
-import { createTool } from "./create-tool";
+import { setupTool } from "./create-tool";
 
 const INPUT_PARAMS = {
   query: "query",
 } as const;
 
-export const WebSearch = createTool({
+export const WebSearch = setupTool({
+  inputSchema: BaseInputSchema.extend({
+    [INPUT_PARAMS.query]: z.string().meta({
+      description: `The search query describing what information to find. Generate this after ${TOOL_EXPLANATION_PARAM_NAME}.`,
+    }),
+  }),
+  name: "web_search",
+  outputSchema: z.discriminatedUnion("state", [
+    z.object({
+      modelId: z.string(),
+      provider: ProviderOutputSchema,
+      sources: z.array(
+        z.object({
+          title: z.string().optional(),
+          url: z.string(),
+        }),
+      ),
+      state: z.literal("success"),
+      text: z.string(),
+      usage: UsageOutputSchema,
+    }),
+    z.object({
+      errorMessage: z.string(),
+      errorType: z.enum(["api-call", "no-web-search-model"]),
+      responseBody: z.string().optional(),
+      state: z.literal("failure"),
+    }),
+  ]),
+}).create({
   description: dedent`
     Search the web for real-time information. Returns relevant snippets and source URLs.
 
@@ -91,33 +119,6 @@ export const WebSearch = createTool({
       },
     });
   },
-  inputSchema: BaseInputSchema.extend({
-    [INPUT_PARAMS.query]: z.string().meta({
-      description: `The search query describing what information to find. Generate this after ${TOOL_EXPLANATION_PARAM_NAME}.`,
-    }),
-  }),
-  name: "web_search",
-  outputSchema: z.discriminatedUnion("state", [
-    z.object({
-      modelId: z.string(),
-      provider: ProviderOutputSchema,
-      sources: z.array(
-        z.object({
-          title: z.string().optional(),
-          url: z.string(),
-        }),
-      ),
-      state: z.literal("success"),
-      text: z.string(),
-      usage: UsageOutputSchema,
-    }),
-    z.object({
-      errorMessage: z.string(),
-      errorType: z.enum(["api-call", "no-web-search-model"]),
-      responseBody: z.string().optional(),
-      state: z.literal("failure"),
-    }),
-  ]),
   readOnly: true,
   timeoutMs: ms("2 minutes"),
   toModelOutput: ({ output }) => {

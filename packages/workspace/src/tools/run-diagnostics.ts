@@ -5,9 +5,16 @@ import { z } from "zod";
 
 import { runDiagnostics } from "../lib/run-diagnostics";
 import { BaseInputSchema } from "./base";
-import { createTool } from "./create-tool";
+import { setupTool } from "./create-tool";
 
-export const RunDiagnostics = createTool({
+export const RunDiagnostics = setupTool({
+  inputSchema: BaseInputSchema,
+  name: "run_diagnostics",
+  outputSchema: z.object({
+    diagnostics: z.string(),
+    errors: z.array(z.string()),
+  }),
+}).create({
   description: dedent`
     Run diagnostics and display linter/compiler errors from the current workspace.
 
@@ -27,12 +34,6 @@ export const RunDiagnostics = createTool({
       errors,
     });
   },
-  inputSchema: BaseInputSchema,
-  name: "run_diagnostics",
-  outputSchema: z.object({
-    diagnostics: z.string(),
-    errors: z.array(z.string()),
-  }),
   readOnly: true,
   timeoutMs: ms("2 minutes"), // Diagnostics can be slow on large projects
   toModelOutput: ({ output }) => {

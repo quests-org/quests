@@ -21,14 +21,46 @@ import {
   TOOL_EXPLANATION_PARAM_NAME,
   UsageOutputSchema,
 } from "./base";
-import { createTool } from "./create-tool";
+import { setupTool } from "./create-tool";
 
 const INPUT_PARAMS = {
   filePath: "filePath",
   prompt: "prompt",
 } as const;
 
-export const GenerateImage = createTool({
+export const GenerateImage = setupTool({
+  inputSchema: BaseInputSchema.extend({
+    [INPUT_PARAMS.filePath]: z.string().meta({
+      description: `Relative path including filename WITHOUT extension where the image(s) should be saved (e.g., ./output/image-name-here). Extension will be added automatically. Generate this after ${TOOL_EXPLANATION_PARAM_NAME}.`,
+    }),
+    [INPUT_PARAMS.prompt]: z.string().meta({
+      description: "Detailed description of the image to generate",
+    }),
+  }),
+  name: "generate_image",
+  outputSchema: z.discriminatedUnion("state", [
+    z.object({
+      images: z.array(
+        z.object({
+          filePath: RelativePathSchema,
+          height: z.number().optional(),
+          sizeBytes: z.number(),
+          width: z.number().optional(),
+        }),
+      ),
+      modelId: z.string(),
+      provider: ProviderOutputSchema,
+      state: z.literal("success"),
+      usage: UsageOutputSchema,
+    }),
+    z.object({
+      errorMessage: z.string(),
+      errorType: z.enum(["api-call", "no-image-model"]),
+      responseBody: z.string().optional(),
+      state: z.literal("failure"),
+    }),
+  ]),
+}).create({
   description: dedent`
     Generate an image using AI from a text description.
 
@@ -153,37 +185,6 @@ export const GenerateImage = createTool({
       },
     });
   },
-  inputSchema: BaseInputSchema.extend({
-    [INPUT_PARAMS.filePath]: z.string().meta({
-      description: `Relative path including filename WITHOUT extension where the image(s) should be saved (e.g., ./output/image-name-here). Extension will be added automatically. Generate this after ${TOOL_EXPLANATION_PARAM_NAME}.`,
-    }),
-    [INPUT_PARAMS.prompt]: z.string().meta({
-      description: "Detailed description of the image to generate",
-    }),
-  }),
-  name: "generate_image",
-  outputSchema: z.discriminatedUnion("state", [
-    z.object({
-      images: z.array(
-        z.object({
-          filePath: RelativePathSchema,
-          height: z.number().optional(),
-          sizeBytes: z.number(),
-          width: z.number().optional(),
-        }),
-      ),
-      modelId: z.string(),
-      provider: ProviderOutputSchema,
-      state: z.literal("success"),
-      usage: UsageOutputSchema,
-    }),
-    z.object({
-      errorMessage: z.string(),
-      errorType: z.enum(["api-call", "no-image-model"]),
-      responseBody: z.string().optional(),
-      state: z.literal("failure"),
-    }),
-  ]),
   readOnly: false,
   timeoutMs: ms("2 minutes"),
   toModelOutput: ({ output }) => {

@@ -25,7 +25,7 @@ import {
   tsCommand,
 } from "../lib/shell-commands";
 import { BaseInputSchema } from "./base";
-import { createTool } from "./create-tool";
+import { setupTool } from "./create-tool";
 import { translateShellCommand } from "./translate-shell-command";
 
 const FileOperationSchema = z.enum([
@@ -120,7 +120,22 @@ async function handleFileOperation(
   }
 }
 
-export const RunShellCommand = createTool({
+export const RunShellCommand = setupTool({
+  inputSchema: BaseInputSchema.extend({
+    command: z.string().meta({ description: "The shell command to run" }),
+    timeoutMs: z.number().optional().default(ms("30 seconds")).meta({
+      description: "The timeout in milliseconds for the shell command",
+    }),
+  }),
+  name: "run_shell_command",
+  outputSchema: z.object({
+    combined: z.string().optional(), // Optional for backward compatibility
+    command: z.string(),
+    exitCode: z.number(),
+    stderr: z.string().optional(), // Backward compatibility with old output format
+    stdout: z.string().optional(), // Backward compatibility with old output format
+  }),
+}).create({
   description: dedent`
     Execute whitelisted commands. Only these commands: ${VISIBLE_COMMANDS.map(([command]) => command).join(", ")}
     
@@ -178,20 +193,6 @@ export const RunShellCommand = createTool({
       }
     }
   },
-  inputSchema: BaseInputSchema.extend({
-    command: z.string().meta({ description: "The shell command to run" }),
-    timeoutMs: z.number().optional().default(ms("30 seconds")).meta({
-      description: "The timeout in milliseconds for the shell command",
-    }),
-  }),
-  name: "run_shell_command",
-  outputSchema: z.object({
-    combined: z.string().optional(), // Optional for backward compatibility
-    command: z.string(),
-    exitCode: z.number(),
-    stderr: z.string().optional(), // Backward compatibility with old output format
-    stdout: z.string().optional(), // Backward compatibility with old output format
-  }),
   readOnly: false,
   timeoutMs: ({ input }) => {
     let timeoutMs = input.timeoutMs;

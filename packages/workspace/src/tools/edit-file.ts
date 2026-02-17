@@ -17,7 +17,7 @@ import { pathExists } from "../lib/path-exists";
 import { writeFileWithDir } from "../lib/write-file-with-dir";
 import { RelativePathSchema } from "../schemas/paths";
 import { BaseInputSchema, TOOL_EXPLANATION_PARAM_NAME } from "./base";
-import { createTool } from "./create-tool";
+import { setupTool } from "./create-tool";
 import { ReadFile } from "./read-file";
 
 const MAX_FILE_SIZE = 250 * 1024; // 250KB
@@ -656,7 +656,28 @@ function replace(
   );
 }
 
-export const EditFile = createTool({
+export const EditFile = setupTool({
+  inputSchema: BaseInputSchema.extend({
+    [INPUT_PARAMS.filePath]: z.string().meta({
+      description: `Relative path to the file to modify. Generate this after ${TOOL_EXPLANATION_PARAM_NAME}.`,
+    }),
+    [INPUT_PARAMS.newString]: z.string().meta({
+      description:
+        "The text to replace it with (must be different from oldString)",
+    }),
+    [INPUT_PARAMS.oldString]: z
+      .string()
+      .meta({ description: "The text to find and replace" }),
+    [INPUT_PARAMS.replaceAll]: z.boolean().optional().meta({
+      description: "Replace all occurrences of oldString (default false)",
+    }),
+  }),
+  name: "edit_file",
+  outputSchema: z.object({
+    diff: z.string().optional(),
+    filePath: RelativePathSchema,
+  }),
+}).create({
   description: dedent`
     Performs exact string replacements in files. 
 
@@ -738,26 +759,6 @@ export const EditFile = createTool({
       );
     }
   },
-  inputSchema: BaseInputSchema.extend({
-    [INPUT_PARAMS.filePath]: z.string().meta({
-      description: `Relative path to the file to modify. Generate this after ${TOOL_EXPLANATION_PARAM_NAME}.`,
-    }),
-    [INPUT_PARAMS.newString]: z.string().meta({
-      description:
-        "The text to replace it with (must be different from oldString)",
-    }),
-    [INPUT_PARAMS.oldString]: z
-      .string()
-      .meta({ description: "The text to find and replace" }),
-    [INPUT_PARAMS.replaceAll]: z.boolean().optional().meta({
-      description: "Replace all occurrences of oldString (default false)",
-    }),
-  }),
-  name: "edit_file",
-  outputSchema: z.object({
-    diff: z.string().optional(),
-    filePath: RelativePathSchema,
-  }),
   readOnly: false,
   timeoutMs: ms("30 seconds"),
   toModelOutput: ({ output: result }) => {

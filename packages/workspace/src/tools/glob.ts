@@ -7,11 +7,9 @@ import { z } from "zod";
 import { getIgnore } from "../lib/get-ignore";
 import { resolveAgentPath } from "../lib/resolve-agent-path";
 import { BaseInputSchema } from "./base";
-import { createTool } from "./create-tool";
+import { setupTool } from "./create-tool";
 
-// Input schema must be defined at the top to allow for inference of functions below
-/* eslint-disable perfectionist/sort-objects */
-export const Glob = createTool({
+export const Glob = setupTool({
   inputSchema: (agentName) => {
     const baseSchema = BaseInputSchema.extend({
       pattern: z
@@ -34,6 +32,12 @@ export const Glob = createTool({
       }),
     });
   },
+  name: "glob",
+  outputSchema: z.object({
+    error: z.string().optional(),
+    files: z.array(z.string()),
+  }),
+}).create({
   description: (agentName) => {
     if (agentName === "retrieval") {
       return "Find files matching a glob pattern within attached folders. You must specify an absolute path to an attached folder to search within.";
@@ -71,11 +75,6 @@ export const Glob = createTool({
 
     return ok({ files: alphabetical(files, (f) => f) });
   },
-  name: "glob",
-  outputSchema: z.object({
-    error: z.string().optional(),
-    files: z.array(z.string()),
-  }),
   readOnly: true,
   timeoutMs: ms("15 seconds"),
   toModelOutput: ({ output }) => {
@@ -97,5 +96,3 @@ export const Glob = createTool({
     };
   },
 });
-
-/* eslint-enable perfectionist/sort-objects */

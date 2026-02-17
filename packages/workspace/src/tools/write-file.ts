@@ -15,7 +15,7 @@ import { PNPM_COMMAND } from "../lib/shell-commands/pnpm";
 import { writeFileWithDir } from "../lib/write-file-with-dir";
 import { RelativePathSchema } from "../schemas/paths";
 import { BaseInputSchema, TOOL_EXPLANATION_PARAM_NAME } from "./base";
-import { createTool } from "./create-tool";
+import { setupTool } from "./create-tool";
 import { ReadFile } from "./read-file";
 import { RunShellCommand } from "./run-shell-command";
 
@@ -34,7 +34,25 @@ function scriptsDirectoryReminder(filePath: string): string | undefined {
   return undefined;
 }
 
-export const WriteFile = createTool({
+export const WriteFile = setupTool({
+  inputSchema: BaseInputSchema.extend({
+    /* eslint-disable perfectionist/sort-objects */
+    // Sorting the file path first to attempt to get model to generate it first
+    [INPUT_PARAMS.filePath]: z.string().meta({
+      description: `The path of the file to write. Generate this after ${TOOL_EXPLANATION_PARAM_NAME}.`,
+    }),
+    [INPUT_PARAMS.content]: z
+      .string()
+      .meta({ description: "The content to write to the file" }),
+    /* eslint-enable perfectionist/sort-objects */
+  }),
+  name: "write_file",
+  outputSchema: z.object({
+    content: z.string(),
+    filePath: RelativePathSchema,
+    isNewFile: z.boolean(),
+  }),
+}).create({
   description: dedent`
     Writes a file to the local filesystem.
 
@@ -70,23 +88,6 @@ export const WriteFile = createTool({
       );
     }
   },
-  inputSchema: BaseInputSchema.extend({
-    /* eslint-disable perfectionist/sort-objects */
-    // Sorting the file path first to attempt to get model to generate it first
-    [INPUT_PARAMS.filePath]: z.string().meta({
-      description: `The path of the file to write. Generate this after ${TOOL_EXPLANATION_PARAM_NAME}.`,
-    }),
-    [INPUT_PARAMS.content]: z
-      .string()
-      .meta({ description: "The content to write to the file" }),
-    /* eslint-enable perfectionist/sort-objects */
-  }),
-  name: "write_file",
-  outputSchema: z.object({
-    content: z.string(),
-    filePath: RelativePathSchema,
-    isNewFile: z.boolean(),
-  }),
   readOnly: false,
   timeoutMs: ms("30 seconds"),
   toModelOutput: ({ output }) => {

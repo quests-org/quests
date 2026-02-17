@@ -17,7 +17,7 @@ import {
   resolveAgentPath,
 } from "../lib/resolve-agent-path";
 import { BaseInputSchema } from "./base";
-import { createTool } from "./create-tool";
+import { setupTool } from "./create-tool";
 import { RunShellCommand } from "./run-shell-command";
 
 const DEFAULT_READ_LIMIT = 2000;
@@ -100,9 +100,7 @@ async function handleMediaFile({
   });
 }
 
-// Must define input schema at the top to allow for inference of functions below
-/* eslint-disable perfectionist/sort-objects */
-export const ReadFile = createTool({
+export const ReadFile = setupTool({
   inputSchema: (agentName) => {
     const pathDescription =
       agentName === "retrieval"
@@ -124,7 +122,54 @@ export const ReadFile = createTool({
       }),
     });
   },
-
+  name: "read_file",
+  outputSchema: z.discriminatedUnion("state", [
+    z.object({
+      content: z.string(),
+      displayedLines: z.number(),
+      filePath: z.string(),
+      hasMoreLines: z.boolean(),
+      offset: z.number(),
+      state: z.literal("exists"),
+      totalLines: z.number(),
+    }),
+    z.object({
+      base64Data: z.string(),
+      filePath: z.string(),
+      mimeType: z.string(),
+      state: z.literal("image"),
+    }),
+    z.object({
+      base64Data: z.string(),
+      filePath: z.string(),
+      mimeType: z.string(),
+      state: z.literal("pdf"),
+    }),
+    z.object({
+      base64Data: z.string(),
+      filePath: z.string(),
+      mimeType: z.string(),
+      state: z.literal("audio"),
+    }),
+    z.object({
+      base64Data: z.string(),
+      filePath: z.string(),
+      mimeType: z.string(),
+      state: z.literal("video"),
+    }),
+    z.object({
+      filePath: z.string(),
+      state: z.literal("does-not-exist"),
+      suggestions: z.array(z.string()),
+    }),
+    z.object({
+      filePath: z.string(),
+      mimeType: z.string().optional(),
+      reason: z.enum(["binary-file", "unsupported-image-format"]),
+      state: z.literal("unsupported-format"),
+    }),
+  ]),
+}).create({
   description: (agentName) => {
     const pathExample =
       agentName === "retrieval"
@@ -270,53 +315,6 @@ export const ReadFile = createTool({
       state: "unsupported-format" as const,
     });
   },
-  name: "read_file",
-  outputSchema: z.discriminatedUnion("state", [
-    z.object({
-      content: z.string(),
-      displayedLines: z.number(),
-      filePath: z.string(),
-      hasMoreLines: z.boolean(),
-      offset: z.number(),
-      state: z.literal("exists"),
-      totalLines: z.number(),
-    }),
-    z.object({
-      base64Data: z.string(),
-      filePath: z.string(),
-      mimeType: z.string(),
-      state: z.literal("image"),
-    }),
-    z.object({
-      base64Data: z.string(),
-      filePath: z.string(),
-      mimeType: z.string(),
-      state: z.literal("pdf"),
-    }),
-    z.object({
-      base64Data: z.string(),
-      filePath: z.string(),
-      mimeType: z.string(),
-      state: z.literal("audio"),
-    }),
-    z.object({
-      base64Data: z.string(),
-      filePath: z.string(),
-      mimeType: z.string(),
-      state: z.literal("video"),
-    }),
-    z.object({
-      filePath: z.string(),
-      state: z.literal("does-not-exist"),
-      suggestions: z.array(z.string()),
-    }),
-    z.object({
-      filePath: z.string(),
-      mimeType: z.string().optional(),
-      reason: z.enum(["binary-file", "unsupported-image-format"]),
-      state: z.literal("unsupported-format"),
-    }),
-  ]),
   readOnly: true,
   timeoutMs: ms("15 seconds"),
   toModelOutput: ({ output }) => {
@@ -412,5 +410,3 @@ export const ReadFile = createTool({
     };
   },
 });
-
-/* eslint-enable perfectionist/sort-objects */

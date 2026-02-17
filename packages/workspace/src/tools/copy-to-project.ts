@@ -19,7 +19,7 @@ import {
   RelativePathSchema,
 } from "../schemas/paths";
 import { BaseInputSchema } from "./base";
-import { createTool } from "./create-tool";
+import { setupTool } from "./create-tool";
 
 const MAX_FILE_SIZE_BYTES = 1024 * 1024 * 1024; // 1GB
 
@@ -49,7 +49,32 @@ async function getUniqueFilename(
   }
 }
 
-export const CopyToProject = createTool({
+export const CopyToProject = setupTool({
+  inputSchema: BaseInputSchema.extend({
+    [INPUT_PARAMS.path]: z.string().meta({
+      description: "Absolute path to an attached folder to search within",
+    }),
+    [INPUT_PARAMS.pattern]: z
+      .string()
+      .meta({ description: "Glob pattern or direct file path to copy" }),
+  }),
+  name: "copy_to_project",
+  outputSchema: z.object({
+    errors: z.array(
+      z.object({
+        message: z.string(),
+        sourcePath: z.string(),
+      }),
+    ),
+    files: z.array(
+      z.object({
+        destinationPath: RelativePathSchema,
+        size: z.number(),
+        sourcePath: z.string(),
+      }),
+    ),
+  }),
+}).create({
   description: dedent`
     Copy files matching a glob pattern from an attached folder into the project folder.
     You can use glob patterns to copy multiple files at once (e.g., "*.ts", "src/**/*.tsx") or specify a direct file path to copy a single file.
@@ -163,30 +188,6 @@ export const CopyToProject = createTool({
       files: alphabetical(copiedFiles, (f) => f.destinationPath),
     });
   },
-  inputSchema: BaseInputSchema.extend({
-    [INPUT_PARAMS.path]: z.string().meta({
-      description: "Absolute path to an attached folder to search within",
-    }),
-    [INPUT_PARAMS.pattern]: z
-      .string()
-      .meta({ description: "Glob pattern or direct file path to copy" }),
-  }),
-  name: "copy_to_project",
-  outputSchema: z.object({
-    errors: z.array(
-      z.object({
-        message: z.string(),
-        sourcePath: z.string(),
-      }),
-    ),
-    files: z.array(
-      z.object({
-        destinationPath: RelativePathSchema,
-        size: z.number(),
-        sourcePath: z.string(),
-      }),
-    ),
-  }),
   readOnly: false,
   timeoutMs: ms("1 minute"),
   toModelOutput: ({ output }) => {

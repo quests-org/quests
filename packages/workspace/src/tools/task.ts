@@ -9,7 +9,7 @@ import { executeError } from "../lib/execute-error";
 import { formatBytes } from "../lib/format-bytes";
 import { StoreId } from "../schemas/store-id";
 import { BaseInputSchema } from "./base";
-import { createTool } from "./create-tool";
+import { setupTool } from "./create-tool";
 
 const TOOL_NAME = "task";
 const INPUT_PARAMS = {
@@ -27,7 +27,23 @@ const TASK_AGENT_DESCRIPTIONS: Record<TaskAgentName, string> = {
   `.trim(),
 };
 
-export const Task = createTool({
+export const Task = setupTool({
+  inputSchema: BaseInputSchema.extend({
+    [INPUT_PARAMS.prompt]: z
+      .string()
+      .meta({ description: "The task for the agent to perform" }),
+    [INPUT_PARAMS.subagent_type]: z.string().meta({
+      description:
+        "The type of specialized agent to use for this task. Generate this first.",
+    }),
+  }),
+  name: TOOL_NAME,
+  outputSchema: z.object({
+    result: z.string(),
+    sessionId: StoreId.SessionSchema,
+    summary: z.string(),
+  }),
+}).create({
   description: (agentName) => {
     if (agentName === "main") {
       const TASK_AGENT_LIST = TASK_AGENT_NAMES.map(
@@ -158,21 +174,6 @@ export const Task = createTool({
       summary,
     });
   },
-  inputSchema: BaseInputSchema.extend({
-    [INPUT_PARAMS.prompt]: z
-      .string()
-      .meta({ description: "The task for the agent to perform" }),
-    [INPUT_PARAMS.subagent_type]: z.string().meta({
-      description:
-        "The type of specialized agent to use for this task. Generate this first.",
-    }),
-  }),
-  name: TOOL_NAME,
-  outputSchema: z.object({
-    result: z.string(),
-    sessionId: StoreId.SessionSchema,
-    summary: z.string(),
-  }),
   readOnly: false,
   timeoutMs: ms("10 minutes"),
   toModelOutput: ({ output }) => {

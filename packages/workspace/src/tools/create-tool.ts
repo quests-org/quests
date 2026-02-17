@@ -5,16 +5,48 @@ import { tool } from "ai";
 import type { AgentName } from "../agents/types";
 import type { AgentTool, ToolName } from "./types";
 
-export function createTool<
+type CreateOptions<
+  TName extends ToolName,
+  TInputSchema extends z.ZodType,
+  TOutputSchema extends z.ZodType,
+> = Omit<
+  AgentTool<TName, TInputSchema, TOutputSchema>,
+  "aiSDKTool" | "inputSchema" | "name" | "outputSchema"
+>;
+
+interface SetupOptions<
+  TName extends ToolName,
+  TInputSchema extends z.ZodType,
+  TOutputSchema extends z.ZodType,
+> {
+  inputSchema: ((agentName: AgentName) => TInputSchema) | TInputSchema;
+  name: TName;
+  outputSchema: TOutputSchema;
+}
+
+export function setupTool<
+  TName extends ToolName,
+  TInputSchema extends z.ZodType,
+  TOutputSchema extends z.ZodType,
+>(setup: SetupOptions<TName, TInputSchema, TOutputSchema>) {
+  return {
+    create: (
+      options: CreateOptions<TName, TInputSchema, TOutputSchema>,
+    ): AgentTool<TName, TInputSchema, TOutputSchema> =>
+      buildTool(setup, options),
+  };
+}
+
+function buildTool<
   TName extends ToolName,
   TInputSchema extends z.ZodType,
   TOutputSchema extends z.ZodType,
 >(
-  options: Omit<AgentTool<TName, TInputSchema, TOutputSchema>, "aiSDKTool"> & {
-    name: TName;
-  },
+  setup: SetupOptions<TName, TInputSchema, TOutputSchema>,
+  options: CreateOptions<TName, TInputSchema, TOutputSchema>,
 ): AgentTool<TName, TInputSchema, TOutputSchema> {
   return {
+    ...setup,
     ...options,
     aiSDKTool: (agentName: AgentName) => {
       const description =
@@ -23,9 +55,9 @@ export function createTool<
           : options.description;
 
       const inputSchema =
-        typeof options.inputSchema === "function"
-          ? options.inputSchema(agentName)
-          : options.inputSchema;
+        typeof setup.inputSchema === "function"
+          ? setup.inputSchema(agentName)
+          : setup.inputSchema;
 
       return (
         // Ideally we wouldn't cast, but this isn't needed because the generic
@@ -34,7 +66,7 @@ export function createTool<
         tool<any, any>({
           description,
           inputSchema,
-          outputSchema: options.outputSchema,
+          outputSchema: setup.outputSchema,
           toModelOutput: ({ input, output, toolCallId }) =>
             options.toModelOutput({
               input: input as z.output<TInputSchema>,

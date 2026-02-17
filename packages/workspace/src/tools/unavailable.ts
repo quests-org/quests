@@ -3,9 +3,13 @@ import { dedent } from "radashi";
 import { z } from "zod";
 
 import { executeError } from "../lib/execute-error";
-import { createTool } from "./create-tool";
+import { setupTool } from "./create-tool";
 
-export const Unavailable = createTool({
+export const Unavailable = setupTool({
+  inputSchema: z.any(),
+  name: "unavailable",
+  outputSchema: z.any(),
+}).create({
   description: dedent`
     A placeholder tool for unknown or unavailable tools.
 
@@ -16,9 +20,6 @@ export const Unavailable = createTool({
     Promise.resolve(
       executeError("This tool is not available or not implemented."),
     ),
-  inputSchema: z.any(),
-  name: "unavailable",
-  outputSchema: z.any(),
   readOnly: true,
   timeoutMs: ms("1 second"),
   toModelOutput: () => {

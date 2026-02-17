@@ -7,7 +7,7 @@ import { ensureRelativePath } from "../lib/ensure-relative-path";
 import { grep } from "../lib/grep";
 import { resolveAgentPath } from "../lib/resolve-agent-path";
 import { BaseInputSchema } from "./base";
-import { createTool } from "./create-tool";
+import { setupTool } from "./create-tool";
 
 const INPUT_PARAMS = {
   include: "include",
@@ -15,9 +15,7 @@ const INPUT_PARAMS = {
   pattern: "pattern",
 } as const;
 
-// Input schema must be defined at the top to allow for inference of functions below
-/* eslint-disable perfectionist/sort-objects */
-export const Grep = createTool({
+export const Grep = setupTool({
   inputSchema: (agentName) => {
     const pathDescription =
       agentName === "retrieval"
@@ -37,6 +35,20 @@ export const Grep = createTool({
         .meta({ description: "Valid ripgrep pattern to search for" }),
     });
   },
+  name: "grep",
+  outputSchema: z.object({
+    matches: z.array(
+      z.object({
+        lineNum: z.number(),
+        lineText: z.string(),
+        modifiedAt: z.number(),
+        path: z.string(),
+      }),
+    ),
+    totalMatches: z.number(),
+    truncated: z.boolean(),
+  }),
+}).create({
   description: (agentName) => {
     const pathExample =
       agentName === "retrieval" ? "/path/to/attached/folder" : "./src";
@@ -114,19 +126,6 @@ export const Grep = createTool({
 
     return ok(result);
   },
-  name: "grep",
-  outputSchema: z.object({
-    matches: z.array(
-      z.object({
-        lineNum: z.number(),
-        lineText: z.string(),
-        modifiedAt: z.number(),
-        path: z.string(),
-      }),
-    ),
-    totalMatches: z.number(),
-    truncated: z.boolean(),
-  }),
   readOnly: true,
   timeoutMs: ms("30 seconds"),
   toModelOutput: ({ output }) => {
@@ -169,4 +168,3 @@ export const Grep = createTool({
     };
   },
 });
-/* eslint-enable perfectionist/sort-objects */

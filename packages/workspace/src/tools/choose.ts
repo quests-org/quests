@@ -3,14 +3,9 @@ import { z } from "zod";
 
 import { executeError } from "../lib/execute-error";
 import { BaseInputSchema } from "./base";
-import { createTool } from "./create-tool";
+import { setupTool } from "./create-tool";
 
-export const Choose = createTool({
-  description:
-    "Present a question with multiple choice options to the user and get their selection",
-  execute: () => {
-    return Promise.resolve(executeError("Not implemented"));
-  },
+export const Choose = setupTool({
   inputSchema: BaseInputSchema.extend({
     choices: z.array(z.string()).min(2).meta({
       description: "Array of choice options for the user to select from",
@@ -23,6 +18,12 @@ export const Choose = createTool({
   outputSchema: z.object({
     selectedChoice: z.string(),
   }),
+}).create({
+  description:
+    "Present a question with multiple choice options to the user and get their selection",
+  execute: () => {
+    return Promise.resolve(executeError("Not implemented"));
+  },
   readOnly: true,
   timeoutMs: ms("1 second"),
   toModelOutput: ({ output: result }) => {
