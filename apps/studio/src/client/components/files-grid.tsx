@@ -44,18 +44,30 @@ export function FilesGrid({
 
   const sortedFiles = [...sortedRichFiles, ...nonRichFiles];
 
+  // Separate files that should always be in collapsible region
+  const [alwaysCollapsedFiles, priorityFiles] = fork(
+    sortedFiles,
+    shouldAlwaysCollapse,
+  );
+
   const handleFileClick = (file: ProjectFileViewerFile) => {
-    const currentIndex = sortedFiles.findIndex((f) => f.url === file.url);
+    const allFiles = [...priorityFiles, ...alwaysCollapsedFiles];
+    const currentIndex = allFiles.findIndex((f) => f.url === file.url);
     openFileViewer({
       currentIndex: currentIndex === -1 ? 0 : currentIndex,
-      files: sortedFiles,
+      files: allFiles,
     });
   };
 
-  const visibleFiles = sortedFiles.slice(0, initialVisibleCount);
-  const hiddenFiles = sortedFiles.slice(initialVisibleCount);
+  const visibleFiles = priorityFiles.slice(0, initialVisibleCount);
+  const hiddenFiles = [
+    ...priorityFiles.slice(initialVisibleCount),
+    ...alwaysCollapsedFiles,
+  ];
   const hasHiddenFiles = hiddenFiles.length > 0;
-  const filesToShow = isExpanded ? sortedFiles : visibleFiles;
+  const filesToShow = isExpanded
+    ? [...priorityFiles, ...alwaysCollapsedFiles]
+    : visibleFiles;
 
   const richPreviewFiles = filesToShow.filter(hasRichPreview);
   const otherFiles = filesToShow.filter((file) => !hasRichPreview(file));
@@ -163,4 +175,11 @@ function hasRichPreview(file: ProjectFileViewerFile) {
 
 function isOutputFile(file: ProjectFileViewerFile) {
   return file.filePath.startsWith(`${APP_FOLDER_NAMES.output}/`);
+}
+
+function shouldAlwaysCollapse(file: ProjectFileViewerFile) {
+  return (
+    file.filePath.startsWith(`${APP_FOLDER_NAMES.scripts}/`) ||
+    file.filePath.startsWith(`${APP_FOLDER_NAMES.agentRetrieved}/`)
+  );
 }
