@@ -170,7 +170,7 @@ describe("CopyToProject", () => {
           "value": "Copied 1 files (1KB total). Parent agent can now access these files:
           - ./agent-retrieved/file1.txt 1KB
 
-        Batch size limit reached (1GB): 3 file(s) were not copied. Call this tool again with a more specific pattern to copy the remaining files, or ask the user to upload them directly.",
+        Batch size limit reached: 3 file(s) were not copied. Call this tool again with a more specific pattern to copy the remaining files, or ask the user to upload them directly.",
         }
       `);
     });
@@ -322,6 +322,68 @@ describe("CopyToProject", () => {
         second.files[0]?.destinationPath,
       );
       expect(second.files[0]?.destinationPath).toContain("file-a-1.txt");
+    });
+
+    it("should reject maxFileSizeBytes above the 1GB hard cap", async () => {
+      const result = await TOOLS.CopyToProject.execute({
+        ...baseExecuteArgs,
+        input: {
+          maxFileSizeBytes: 1024 * 1024 * 1024 + 1,
+          path: attachedFolderPath,
+          pattern: "*.txt",
+        },
+      });
+
+      expect(result._unsafeUnwrapErr().message).toContain(
+        "exceeds the hard cap of 1GB per file",
+      );
+    });
+
+    it("should reject maxTotalSizeBytes above the 10GB hard cap", async () => {
+      const result = await TOOLS.CopyToProject.execute({
+        ...baseExecuteArgs,
+        input: {
+          maxTotalSizeBytes: 1024 * 1024 * 1024 * 10 + 1,
+          path: attachedFolderPath,
+          pattern: "*.txt",
+        },
+      });
+
+      expect(result._unsafeUnwrapErr().message).toContain(
+        "exceeds the hard cap of 10GB per call",
+      );
+    });
+
+    it("should skip a file that exceeds a custom maxFileSizeBytes override", async () => {
+      const result = await TOOLS.CopyToProject.execute({
+        ...baseExecuteArgs,
+        input: {
+          maxFileSizeBytes: 1, // 1 byte — everything will be too large
+          path: attachedFolderPath,
+          pattern: "file-a.txt",
+        },
+      });
+      const output = result._unsafeUnwrap();
+
+      expect(output.files).toHaveLength(0);
+      expect(output.errors).toHaveLength(1);
+      expect(output.errors[0]?.message).toContain("File too large");
+      expect(output.errors[0]?.message).toContain("max per-file size is 1B");
+    });
+
+    it("should truncate when files exceed a custom maxTotalSizeBytes override", async () => {
+      const result = await TOOLS.CopyToProject.execute({
+        ...baseExecuteArgs,
+        input: {
+          maxTotalSizeBytes: 1, // 1 byte — only first file will be within budget
+          path: attachedFolderPath,
+          pattern: "*.txt",
+        },
+      });
+      const output = result._unsafeUnwrap();
+
+      expect(output.truncated).toBe(true);
+      expect(output.truncatedCount).toBeGreaterThan(0);
     });
 
     it("should copy files from a nested subdirectory of the attached folder", async () => {

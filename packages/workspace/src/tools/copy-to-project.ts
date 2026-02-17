@@ -20,10 +20,19 @@ import {
 import { BaseInputSchema } from "./base";
 import { setupTool } from "./create-tool";
 
-const MAX_FILE_SIZE_BYTES = 1024 * 1024 * 50; // 50MB per file
-const MAX_TOTAL_SIZE_BYTES = 1024 * 1024 * 1024; // 1GB per call
+const FILE_SIZE_LIMITS = {
+  default: 1024 * 1024 * 50, // 50MB per file
+  max: 1024 * 1024 * 1024, // 1GB hard cap per file
+} as const;
+
+const TOTAL_SIZE_LIMITS = {
+  default: 1024 * 1024 * 1024, // 1GB per call
+  max: 1024 * 1024 * 1024 * 10, // 10GB hard cap per call
+} as const;
 
 const INPUT_PARAMS = {
+  maxFileSizeBytes: "maxFileSizeBytes",
+  maxTotalSizeBytes: "maxTotalSizeBytes",
   path: "path",
   pattern: "pattern",
 } as const;
@@ -51,6 +60,18 @@ async function getUniqueFilename(
 
 export const CopyToProject = setupTool({
   inputSchema: BaseInputSchema.extend({
+    [INPUT_PARAMS.maxFileSizeBytes]: z
+      .number()
+      .optional()
+      .meta({
+        description: `Maximum size in bytes for a single file. Defaults to ${FILE_SIZE_LIMITS.default} (50MB). Hard cap is ${FILE_SIZE_LIMITS.max} (1GB) — values above this will be rejected.`,
+      }),
+    [INPUT_PARAMS.maxTotalSizeBytes]: z
+      .number()
+      .optional()
+      .meta({
+        description: `Maximum total size in bytes for all files copied in this call. Defaults to ${TOTAL_SIZE_LIMITS.default} (1GB). Hard cap is ${TOTAL_SIZE_LIMITS.max} (10GB) — values above this will be rejected.`,
+      }),
     [INPUT_PARAMS.path]: z.string().meta({
       description: "Absolute path to an attached folder to search within",
     }),
@@ -90,6 +111,22 @@ export const CopyToProject = setupTool({
 
     if (!projectState.attachedFolders) {
       return executeError("No attached folders available");
+    }
+
+    const maxFileSizeBytes = input.maxFileSizeBytes ?? FILE_SIZE_LIMITS.default;
+    const maxTotalSizeBytes =
+      input.maxTotalSizeBytes ?? TOTAL_SIZE_LIMITS.default;
+
+    if (maxFileSizeBytes > FILE_SIZE_LIMITS.max) {
+      return executeError(
+        `maxFileSizeBytes (${formatBytes(maxFileSizeBytes)}) exceeds the hard cap of ${formatBytes(FILE_SIZE_LIMITS.max)} per file.`,
+      );
+    }
+
+    if (maxTotalSizeBytes > TOTAL_SIZE_LIMITS.max) {
+      return executeError(
+        `maxTotalSizeBytes (${formatBytes(maxTotalSizeBytes)}) exceeds the hard cap of ${formatBytes(TOTAL_SIZE_LIMITS.max)} per call.`,
+      );
     }
 
     const pathResult = resolveAgentPath({
@@ -152,15 +189,15 @@ export const CopyToProject = setupTool({
       }
 
       const sourceStats = await fs.stat(sourceAbsolutePath);
-      if (sourceStats.size > MAX_FILE_SIZE_BYTES) {
+      if (sourceStats.size > maxFileSizeBytes) {
         errors.push({
-          message: `File too large (${formatBytes(sourceStats.size)}), max per-file size is ${formatBytes(MAX_FILE_SIZE_BYTES)}. User must upload manually.`,
+          message: `File too large (${formatBytes(sourceStats.size)}), max per-file size is ${formatBytes(maxFileSizeBytes)}. User must upload manually.`,
           sourcePath: sourceAbsolutePath,
         });
         continue;
       }
 
-      if (totalBytesCopied + sourceStats.size > MAX_TOTAL_SIZE_BYTES) {
+      if (totalBytesCopied + sourceStats.size > maxTotalSizeBytes) {
         truncated = true;
         truncatedCount++;
         continue;
@@ -247,7 +284,7 @@ export const CopyToProject = setupTool({
     `;
 
     if (output.truncated) {
-      message += `\n\nBatch size limit reached (${formatBytes(MAX_TOTAL_SIZE_BYTES)}): ${output.truncatedCount} file(s) were not copied. Call this tool again with a more specific pattern to copy the remaining files, or ask the user to upload them directly.`;
+      message += `\n\nBatch size limit reached: ${output.truncatedCount} file(s) were not copied. Call this tool again with a more specific pattern to copy the remaining files, or ask the user to upload them directly.`;
     }
 
     if (output.errors.length > 0) {
