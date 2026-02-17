@@ -65,7 +65,7 @@ function messagePartToShorthand(part: SessionMessagePart.Type): string {
   }
 
   switch (part.type) {
-    case "data-fileAttachments": {
+    case "data-attachments": {
       const filesList = part.data.files
         .map((file) => {
           const filename = ` filename="${file.filename}"`;
@@ -74,7 +74,7 @@ function messagePartToShorthand(part: SessionMessagePart.Type): string {
           return `<file${filename}${mimeType}${size} />`;
         })
         .join("\n");
-      return `<data-fileAttachments>\n${indent(filesList)}\n</data-fileAttachments>`;
+      return `<data-attachments>\n${indent(filesList)}\n</data-attachments>`;
     }
     case "data-gitCommit": {
       const ref = ` ref="${part.data.ref}"`;

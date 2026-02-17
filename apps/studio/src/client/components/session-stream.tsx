@@ -150,7 +150,7 @@ export function SessionStream({
         );
       }
 
-      if (part.type === "data-fileAttachments") {
+      if (part.type === "data-attachments") {
         return null;
       }
 
@@ -248,7 +248,7 @@ export function SessionStream({
           continue;
         }
 
-        if (message.role === "user" && part.type === "data-fileAttachments") {
+        if (message.role === "user" && part.type === "data-attachments") {
           fileAttachments.push(part);
           continue;
         }
@@ -269,7 +269,7 @@ export function SessionStream({
 
       if (message.role === "user" && fileAttachments.length > 0) {
         const fileAttachmentsPart = fileAttachments.find(
-          (part) => part.type === "data-fileAttachments",
+          (part) => part.type === "data-attachments",
         );
 
         if (fileAttachmentsPart) {

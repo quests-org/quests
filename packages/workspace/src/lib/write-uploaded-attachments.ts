@@ -166,7 +166,7 @@ export async function writeUploadedAttachments({
         messageId,
         sessionId,
       },
-      type: "data-fileAttachments",
+      type: "data-attachments",
     };
 
     return ok({ part });

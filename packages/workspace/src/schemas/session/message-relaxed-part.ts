@@ -68,12 +68,20 @@ export namespace SessionMessageRelaxedPart {
     type: z.literal("step-start"),
   });
 
-  const DataPartSchema = z.object({
-    data: z.unknown(),
-    id: z.string().optional(),
-    metadata: MetadataSchema,
-    type: z.string().startsWith("data-"),
-  });
+  const DataPartSchema = z
+    .object({
+      data: z.unknown(),
+      id: z.string().optional(),
+      metadata: MetadataSchema,
+      type: z.string().startsWith("data-"),
+    })
+    .transform((part) => ({
+      ...part,
+      // Migrate legacy "data-fileAttachments" type to "data-attachments"
+      // Remove after 2026-03-17
+      type:
+        part.type === "data-fileAttachments" ? "data-attachments" : part.type,
+    }));
 
   export type DataPart = z.output<typeof DataPartSchema>;
 

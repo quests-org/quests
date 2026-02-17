@@ -24,7 +24,7 @@ export function textForMessage(
   }
 
   const fileAttachmentsPart = message.parts.find(
-    (part) => part.type === "data-fileAttachments",
+    (part) => part.type === "data-attachments",
   );
 
   if (!fileAttachmentsPart) {

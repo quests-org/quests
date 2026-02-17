@@ -254,7 +254,7 @@ export namespace SessionMessage {
 
       if (message.role === "user") {
         const fileAttachmentsPart = message.parts.find(
-          (part) => part.type === "data-fileAttachments",
+          (part) => part.type === "data-attachments",
         );
 
         if (fileAttachmentsPart) {
