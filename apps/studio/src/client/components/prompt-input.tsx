@@ -49,17 +49,19 @@ import {
 } from "../atoms/prompt-value";
 import { rpcClient } from "../rpc/client";
 
-interface AttachedFile {
-  content: string;
-  mimeType: string;
-  name: string;
-  size: number;
-  url?: string;
-}
-
-interface AttachedFolder {
-  path: string;
-}
+type AttachedItem =
+  | {
+      content: string;
+      mimeType: string;
+      name: string;
+      size: number;
+      type: "file";
+      url?: string;
+    }
+  | {
+      path: string;
+      type: "folder";
+    };
 
 const MAX_PASTE_TEXT_LENGTH = 5000;
 const MAX_FILE_PREVIEW_SIZE = 10 * 1024 * 1024;
@@ -79,7 +81,7 @@ interface PromptInputProps {
   onStop?: () => void;
   onSubmit: (value: {
     files?: FileUpload.Type[];
-    folders?: AttachedFolder[];
+    folders?: { path: string }[];
     modelURI: AIGatewayModelURI.Type;
     openInNewTab?: boolean;
     prompt: string;
@@ -112,8 +114,7 @@ export const PromptInput = ({
   submitButtonContent,
 }: PromptInputProps) => {
   const [showAIProviderGuard, setShowAIProviderGuard] = useState(false);
-  const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([]);
-  const [attachedFolders, setAttachedFolders] = useState<AttachedFolder[]>([]);
+  const [attachedItems, setAttachedItems] = useState<AttachedItem[]>([]);
   const openFilePreview = useSetAtom(openFilePreviewAtom);
   const textareaRef = useRef<HTMLDivElement>(null);
   const textareaInnerRef = useRef<HTMLTextAreaElement>(null);
@@ -180,13 +181,14 @@ export const PromptInput = ({
       reader.addEventListener("load", () => {
         const dataUrl = reader.result as string;
         const base64 = dataUrl.split(",")[1] ?? "";
-        setAttachedFiles((prev) => [
+        setAttachedItems((prev) => [
           ...prev,
           {
             content: base64,
             mimeType: file.type,
             name: file.name,
             size: file.size,
+            type: "file" as const,
             url: shouldCreatePreview ? dataUrl : undefined,
           },
         ]);
@@ -198,15 +200,18 @@ export const PromptInput = ({
   const { isDragging } = useWindowFileDrop({
     onFilesDropped: processFiles,
     onFoldersDropped: (folders: DroppedFolder[]) => {
-      setAttachedFolders((prev) => {
+      setAttachedItems((prev) => {
+        const existingPaths = new Set(
+          prev.filter((i) => i.type === "folder").map((i) => i.path),
+        );
         const duplicates: string[] = [];
-        const newFolders: AttachedFolder[] = [];
+        const newFolders: AttachedItem[] = [];
 
         for (const folder of folders) {
-          if (prev.some((f) => f.path === folder.path)) {
+          if (existingPaths.has(folder.path)) {
             duplicates.push(folderNameFromPath(folder.path));
           } else {
-            newFolders.push({ path: folder.path });
+            newFolders.push({ path: folder.path, type: "folder" });
           }
         }
 
@@ -222,8 +227,8 @@ export const PromptInput = ({
     },
   });
 
-  const removeAttachedFile = (index: number) => {
-    setAttachedFiles((prev) => prev.filter((_, i) => i !== index));
+  const removeAttachedItem = (index: number) => {
+    setAttachedItems((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -250,14 +255,14 @@ export const PromptInput = ({
       const path = window.api.getFilePath(firstFile);
       if (path) {
         const folderPath = path.slice(0, path.lastIndexOf("/"));
-        setAttachedFolders((prev) => {
-          if (prev.some((f) => f.path === folderPath)) {
+        setAttachedItems((prev) => {
+          if (prev.some((i) => i.type === "folder" && i.path === folderPath)) {
             toast.info("Folder already attached", {
               description: folderNameFromPath(folderPath),
             });
             return prev;
           }
-          return [...prev, { path: folderPath }];
+          return [...prev, { path: folderPath, type: "folder" }];
         });
       }
     }
@@ -267,10 +272,13 @@ export const PromptInput = ({
     }
   };
 
+  const attachedFiles = attachedItems.filter((i) => i.type === "file");
+  const attachedFolders = attachedItems.filter((i) => i.type === "folder");
+
   const canSubmit =
     !disabled &&
     !isLoading &&
-    (value.trim() || attachedFiles.length > 0 || attachedFolders.length > 0) &&
+    (value.trim() || attachedItems.length > 0) &&
     modelURI &&
     selectedModel;
 
@@ -332,8 +340,7 @@ export const PromptInput = ({
     });
     if (!(allowOpenInNewTab && openInNewTab)) {
       setValue("");
-      setAttachedFiles([]);
-      setAttachedFolders([]);
+      setAttachedItems([]);
       resetTextareaHeight();
     }
   };
@@ -390,13 +397,14 @@ export const PromptInput = ({
       reader.addEventListener("load", () => {
         const dataUrl = reader.result as string;
         const base64 = dataUrl.split(",")[1] ?? "";
-        setAttachedFiles((prev) => [
+        setAttachedItems((prev) => [
           ...prev,
           {
             content: base64,
             mimeType: "text/plain",
             name: filename,
             size: blob.size,
+            type: "file" as const,
           },
         ]);
       });
@@ -429,41 +437,40 @@ export const PromptInput = ({
           </div>
         )}
 
-        {(attachedFolders.length > 0 || attachedFiles.length > 0) && (
+        {attachedItems.length > 0 && (
           <div className="-m-2 mb-2 flex max-h-32 flex-wrap items-start gap-2 overflow-y-auto p-2">
-            {attachedFolders.map((folder, index) => (
-              <AttachedFolderPreview
-                folderPath={folder.path}
-                key={`folder-${folder.path}-${index}`}
-                onRemove={() => {
-                  setAttachedFolders((prev) =>
-                    prev.filter((_, i) => i !== index),
-                  );
-                }}
-              />
-            ))}
-            {attachedFiles.map((file, index) => (
-              <AttachedFilePreview
-                filename={file.name}
-                key={`file-${file.name}-${index}`}
-                mimeType={file.mimeType}
-                onClick={() => {
-                  if (file.url) {
-                    openFilePreview({
-                      filename: file.name,
-                      mimeType: file.mimeType,
-                      size: file.size,
-                      url: file.url,
-                    });
-                  }
-                }}
-                onRemove={() => {
-                  removeAttachedFile(index);
-                }}
-                size={file.size}
-                url={file.url}
-              />
-            ))}
+            {attachedItems.map((item, index) =>
+              item.type === "folder" ? (
+                <AttachedFolderPreview
+                  folderPath={item.path}
+                  key={`folder-${item.path}-${index}`}
+                  onRemove={() => {
+                    removeAttachedItem(index);
+                  }}
+                />
+              ) : (
+                <AttachedFilePreview
+                  filename={item.name}
+                  key={`file-${item.name}-${index}`}
+                  mimeType={item.mimeType}
+                  onClick={() => {
+                    if (item.url) {
+                      openFilePreview({
+                        filename: item.name,
+                        mimeType: item.mimeType,
+                        size: item.size,
+                        url: item.url,
+                      });
+                    }
+                  }}
+                  onRemove={() => {
+                    removeAttachedItem(index);
+                  }}
+                  size={item.size}
+                  url={item.url}
+                />
+              ),
+            )}
           </div>
         )}
 
