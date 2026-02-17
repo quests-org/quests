@@ -63,16 +63,23 @@ const byIdWithMessagesAndParts = base
   });
 
 const list = base
-  .input(z.object({ subdomain: AppSubdomainSchema }))
+  .input(
+    z.object({
+      includeChildSessions: z.boolean().default(false),
+      subdomain: AppSubdomainSchema,
+    }),
+  )
   .output(z.array(Session.Schema))
   .handler(async ({ context, errors, input }) => {
-    const { subdomain } = input;
+    const { includeChildSessions, subdomain } = input;
     const { workspaceConfig } = context;
     const appConfig = createAppConfig({
       subdomain,
       workspaceConfig,
     });
-    const sessions = await Store.getSessions(appConfig);
+    const sessions = await Store.getSessions(appConfig, {
+      includeChildSessions,
+    });
     if (sessions.isErr()) {
       throw toORPCError(sessions.error, errors);
     }
@@ -139,7 +146,12 @@ const stop = base
 
 const live = {
   list: base
-    .input(z.object({ subdomain: AppSubdomainSchema }))
+    .input(
+      z.object({
+        includeChildSessions: z.boolean().default(false),
+        subdomain: AppSubdomainSchema,
+      }),
+    )
     .handler(async function* ({ context, input, signal }) {
       yield call(list, input, { context, signal });
 

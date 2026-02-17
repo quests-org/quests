@@ -204,7 +204,10 @@ export namespace Store {
 
   export function getSessions(
     appConfig: AppConfig,
-    { signal }: { signal?: AbortSignal } = {},
+    {
+      includeChildSessions = false,
+      signal,
+    }: { includeChildSessions?: boolean; signal?: AbortSignal } = {},
   ) {
     return safeTry(async function* () {
       const sessionIds = yield* getStoreId(appConfig, { signal });
@@ -217,7 +220,13 @@ export namespace Store {
         },
       );
 
-      return Result.combine(sessionResults);
+      const sessions = yield* Result.combine(sessionResults);
+
+      if (includeChildSessions) {
+        return ok(sessions);
+      }
+
+      return ok(sessions.filter((session) => !session.parentId));
     });
   }
 
@@ -300,7 +309,10 @@ export namespace Store {
     { signal }: { signal?: AbortSignal } = {},
   ) {
     return safeTry(async function* () {
-      const allSessions = yield* getSessions(appConfig, { signal });
+      const allSessions = yield* getSessions(appConfig, {
+        includeChildSessions: true,
+        signal,
+      });
       const childSessions = allSessions.filter(
         (session) => session.parentId === sessionId,
       );

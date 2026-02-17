@@ -11,7 +11,10 @@ export async function generateSessionTitle(
   const baseTitle = `${currentDate} ${TITLE_PREFIX}`;
 
   // Get all existing sessions to check for conflicts
-  const sessionsResult = await Store.getSessions(appConfig, { signal });
+  const sessionsResult = await Store.getSessions(appConfig, {
+    includeChildSessions: true,
+    signal,
+  });
 
   if (sessionsResult.isErr()) {
     // If we can't get existing sessions, just return the base title
