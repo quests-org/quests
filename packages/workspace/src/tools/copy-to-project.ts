@@ -14,6 +14,8 @@ import { type AbsolutePath, RelativePathSchema } from "../schemas/paths";
 import { BaseInputSchema } from "./base";
 import { createTool } from "./create-tool";
 
+const MAX_FILE_SIZE_BYTES = 1024 * 1024 * 1024; // 1GB
+
 const INPUT_PARAMS = {
   destinationPath: "destinationPath",
   sourcePath: "sourcePath",
@@ -36,7 +38,6 @@ export const CopyToProject = createTool({
       return executeError("No attached folders available");
     }
 
-    // Validate source path is within attached folders
     const sourcePathResult = validateAttachedFolderPath(
       input.sourcePath,
       projectState.attachedFolders,
@@ -49,6 +50,15 @@ export const CopyToProject = createTool({
     const sourceExists = await pathExists(sourcePath);
     if (!sourceExists) {
       return executeError(`Source file does not exist: ${sourcePath}`);
+    }
+
+    const sourceStats = await fs.stat(sourcePath);
+    if (sourceStats.size > MAX_FILE_SIZE_BYTES) {
+      const sizeMB = (sourceStats.size / 1024 / 1024).toFixed(2);
+      const maxSizeMB = (MAX_FILE_SIZE_BYTES / 1024 / 1024).toFixed(0);
+      return executeError(
+        `File is too large to copy (${sizeMB} MB). Maximum size is ${maxSizeMB} MB. The user must upload this file manually if needed.`,
+      );
     }
 
     let destinationRelative: string;
