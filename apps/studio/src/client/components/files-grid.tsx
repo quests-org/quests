@@ -80,6 +80,12 @@ export function FilesGrid({
     ...sortedRegularFiles,
   ];
 
+  const hiddenFileCount =
+    expandedFiles.length +
+    scriptFiles.length +
+    userProvidedFiles.length +
+    agentRetrievedFiles.length;
+
   const mainFilesToShow = isExpanded
     ? [...sortedOutputFiles, ...sortedRegularFiles]
     : visibleOutputFiles;
@@ -161,14 +167,14 @@ export function FilesGrid({
             type="button"
             variant="outline-muted"
           >
-            <span className="text-xs">
-              +
-              {expandedFiles.length +
-                scriptFiles.length +
-                userProvidedFiles.length +
-                agentRetrievedFiles.length}{" "}
-              more
-            </span>
+            {expandedFiles.length > 0 ? (
+              <span className="text-xs">+{hiddenFileCount} more</span>
+            ) : (
+              <span className="text-xs">
+                Show {hiddenFileCount} supporting file
+                {hiddenFileCount === 1 ? "" : "s"}
+              </span>
+            )}
             <ChevronDown className="size-3.5 text-muted-foreground" />
           </Button>
         </div>
