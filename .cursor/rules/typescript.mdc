@@ -3,11 +3,11 @@ globs: *.ts,*.tsx
 alwaysApply: true
 ---
 
+- NEVER use non-null assertions (`!`). This is forbidden. Always use proper type guards or optional chaining instead.
 - Avoid casting types unless necessary. If you do cast, you must add a comment explaining why.
 - Avoid `any` and NEVER use `as any`.
 - Avoid redefining types and interfaces in every file, if possible, use an existing type or interface.
 - Avoid making component props and object properties optional unless necessary.
-- NEVER use non-null assertions (`!`).
 - We use kebab case for filenames.
 - We use non-default exports whenever possible.
 - NEVER add comments for sections of JSX like `{/* Header */}<Header />`
