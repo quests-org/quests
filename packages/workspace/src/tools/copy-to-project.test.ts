@@ -51,7 +51,7 @@ describe("CopyToProject", () => {
     it("should return error when no files were copied and no errors", () => {
       const result = CopyToProject.toModelOutput({
         input: { path: attachedFolderPath, pattern: "*.ts" },
-        output: { errors: [], files: [] },
+        output: { errors: [], files: [], truncated: false, truncatedCount: 0 },
         toolCallId: "123",
       });
       expect(result).toMatchInlineSnapshot(`
@@ -68,6 +68,8 @@ describe("CopyToProject", () => {
         output: {
           errors: [{ message: "File not found", sourcePath: "/some/file.ts" }],
           files: [],
+          truncated: false,
+          truncatedCount: 0,
         },
         toolCallId: "123",
       });
@@ -94,6 +96,8 @@ describe("CopyToProject", () => {
               sourcePath: "/source/file.txt",
             },
           ],
+          truncated: false,
+          truncatedCount: 0,
         },
         toolCallId: "123",
       });
@@ -126,15 +130,47 @@ describe("CopyToProject", () => {
               sourcePath: "/source/file2.txt",
             },
           ],
+          truncated: false,
+          truncatedCount: 0,
         },
         toolCallId: "123",
       });
       expect(result).toMatchInlineSnapshot(`
         {
           "type": "text",
-          "value": "Copied 2 files 3KB total. Parent agent can now access these files:
+          "value": "Copied 2 files (3KB total). Parent agent can now access these files:
           - ./agent-retrieved/file1.txt 1KB
           - ./agent-retrieved/file2.txt 2KB",
+        }
+      `);
+    });
+
+    it("should report truncation when batch size limit was hit", () => {
+      const result = CopyToProject.toModelOutput({
+        input: { path: attachedFolderPath, pattern: "**/*" },
+        output: {
+          errors: [],
+          files: [
+            {
+              destinationPath: RelativePathSchema.parse(
+                "./agent-retrieved/file1.txt",
+              ),
+              size: 1024,
+              sourcePath: "/source/file1.txt",
+            },
+          ],
+          truncated: true,
+          truncatedCount: 3,
+        },
+        toolCallId: "123",
+      });
+      expect(result).toMatchInlineSnapshot(`
+        {
+          "type": "text",
+          "value": "Copied 1 files (1KB total). Parent agent can now access these files:
+          - ./agent-retrieved/file1.txt 1KB
+
+        Batch size limit reached (1GB): 3 file(s) were not copied. Call this tool again with a more specific pattern to copy the remaining files, or ask the user to upload them directly.",
         }
       `);
     });
@@ -155,13 +191,15 @@ describe("CopyToProject", () => {
               sourcePath: "/source/small.txt",
             },
           ],
+          truncated: false,
+          truncatedCount: 0,
         },
         toolCallId: "123",
       });
       expect(result).toMatchInlineSnapshot(`
         {
           "type": "text",
-          "value": "Copied 1 files 512B total. Parent agent can now access these files:
+          "value": "Copied 1 files (512B total). Parent agent can now access these files:
           - ./agent-retrieved/small.txt 512B
         Failed to copy 1 files:
           - /source/big.txt: File too large",

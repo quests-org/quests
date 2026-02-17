@@ -20,8 +20,8 @@ import {
 import { BaseInputSchema } from "./base";
 import { setupTool } from "./create-tool";
 
-const MAX_FILE_SIZE_BYTES = 1024 * 1024 * 1024; // 1GB
-const COPY_OUTPUT_LIMIT = 50;
+const MAX_FILE_SIZE_BYTES = 1024 * 1024 * 50; // 50MB per file
+const MAX_TOTAL_SIZE_BYTES = 1024 * 1024 * 1024; // 1GB per call
 
 const INPUT_PARAMS = {
   path: "path",
@@ -73,6 +73,8 @@ export const CopyToProject = setupTool({
         sourcePath: z.string(),
       }),
     ),
+    truncated: z.boolean(),
+    truncatedCount: z.number(),
   }),
 }).create({
   description: dedent`
@@ -135,6 +137,10 @@ export const CopyToProject = setupTool({
       sourcePath: string;
     }[] = [];
 
+    let totalBytesCopied = 0;
+    let truncated = false;
+    let truncatedCount = 0;
+
     for (const sourceAbsolutePath of matchedFiles) {
       const sourceExists = await pathExists(sourceAbsolutePath as AbsolutePath);
       if (!sourceExists) {
@@ -148,9 +154,15 @@ export const CopyToProject = setupTool({
       const sourceStats = await fs.stat(sourceAbsolutePath);
       if (sourceStats.size > MAX_FILE_SIZE_BYTES) {
         errors.push({
-          message: `File too large ${formatBytes(sourceStats.size)}, max ${formatBytes(MAX_FILE_SIZE_BYTES)}. User must upload manually.`,
+          message: `File too large (${formatBytes(sourceStats.size)}), max per-file size is ${formatBytes(MAX_FILE_SIZE_BYTES)}. User must upload manually.`,
           sourcePath: sourceAbsolutePath,
         });
+        continue;
+      }
+
+      if (totalBytesCopied + sourceStats.size > MAX_TOTAL_SIZE_BYTES) {
+        truncated = true;
+        truncatedCount++;
         continue;
       }
 
@@ -169,6 +181,7 @@ export const CopyToProject = setupTool({
       await fs.copyFile(sourceAbsolutePath, destinationAbsolute);
 
       const stats = await fs.stat(destinationAbsolute);
+      totalBytesCopied += stats.size;
 
       copiedFiles.push({
         destinationPath: RelativePathSchema.parse(destinationRelative),
@@ -180,6 +193,8 @@ export const CopyToProject = setupTool({
     return ok({
       errors,
       files: alphabetical(copiedFiles, (f) => f.destinationPath),
+      truncated,
+      truncatedCount,
     });
   },
   readOnly: false,
@@ -193,26 +208,26 @@ export const CopyToProject = setupTool({
     }
 
     if (output.files.length === 0 && output.errors.length > 0) {
-      const truncatedErrors = output.errors.slice(0, COPY_OUTPUT_LIMIT);
-      const errorListTruncated = output.errors.length > COPY_OUTPUT_LIMIT;
-      const errorList = truncatedErrors
+      const errorList = output.errors
         .map((e) => `  - ${e.sourcePath}: ${e.message}`)
         .join("\n");
-      const truncationNote = errorListTruncated
-        ? `\n  (${output.errors.length - COPY_OUTPUT_LIMIT} more errors not shown)`
-        : "";
       return {
         type: "error-text",
         value: dedent`
           Failed to copy any files:
-          ${errorList}${truncationNote}
+          ${errorList}
         `,
       };
     }
 
     const [firstFile] = output.files;
 
-    if (output.files.length === 1 && firstFile && output.errors.length === 0) {
+    if (
+      output.files.length === 1 &&
+      firstFile &&
+      output.errors.length === 0 &&
+      !output.truncated
+    ) {
       return {
         type: "text",
         value: dedent`
@@ -222,33 +237,27 @@ export const CopyToProject = setupTool({
     }
 
     const totalSize = output.files.reduce((sum, f) => sum + f.size, 0);
-    const truncatedFiles = output.files.slice(0, COPY_OUTPUT_LIMIT);
-    const fileListTruncated = output.files.length > COPY_OUTPUT_LIMIT;
-    const fileList = truncatedFiles
+    const fileList = output.files
       .map((f) => `  - ${f.destinationPath} ${formatBytes(f.size)}`)
       .join("\n");
-    const truncationNote = fileListTruncated
-      ? `\n  (${output.files.length - COPY_OUTPUT_LIMIT} more files not shown)`
-      : "";
 
     let message = dedent`
-      Copied ${output.files.length} files ${formatBytes(totalSize)} total. Parent agent can now access these files:
-      ${fileList}${truncationNote}
+      Copied ${output.files.length} files (${formatBytes(totalSize)} total). Parent agent can now access these files:
+      ${fileList}
     `;
 
+    if (output.truncated) {
+      message += `\n\nBatch size limit reached (${formatBytes(MAX_TOTAL_SIZE_BYTES)}): ${output.truncatedCount} file(s) were not copied. Call this tool again with a more specific pattern to copy the remaining files, or ask the user to upload them directly.`;
+    }
+
     if (output.errors.length > 0) {
-      const truncatedErrors = output.errors.slice(0, COPY_OUTPUT_LIMIT);
-      const errorListTruncated = output.errors.length > COPY_OUTPUT_LIMIT;
-      const errorList = truncatedErrors
+      const errorList = output.errors
         .map((e) => `  - ${e.sourcePath}: ${e.message}`)
         .join("\n");
-      const errorTruncationNote = errorListTruncated
-        ? `\n  (${output.errors.length - COPY_OUTPUT_LIMIT} more errors not shown)`
-        : "";
       message += dedent`
 
         Failed to copy ${output.errors.length} files:
-        ${errorList}${errorTruncationNote}
+        ${errorList}
       `;
     }
 
