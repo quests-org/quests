@@ -15,6 +15,8 @@ const INPUT_PARAMS = {
   pattern: "pattern",
 } as const;
 
+const GREP_LIMIT = 100;
+
 export const Grep = setupTool({
   inputSchema: (agentName) => {
     const pathDescription =
@@ -88,6 +90,7 @@ export const Grep = setupTool({
       const result = await grep({
         cwd: appConfig.appDir,
         include: input.include,
+        limit: GREP_LIMIT,
         pattern: input.pattern,
         searchPath,
         signal,
@@ -107,6 +110,7 @@ export const Grep = setupTool({
       const result = await grep({
         cwd: appConfig.appDir,
         include: input.include,
+        limit: GREP_LIMIT,
         pattern: input.pattern,
         searchPath,
         signal,
@@ -119,6 +123,7 @@ export const Grep = setupTool({
     const result = await grep({
       cwd: appConfig.appDir,
       include: input.include,
+      limit: GREP_LIMIT,
       pattern: input.pattern,
       searchPath: "./",
       signal,

@@ -13,8 +13,6 @@ const RG_DISK_PATH = rgPath.replace(
   /[\\/]app.asar[\\/]/,
   `${path.sep}app.asar.unpacked${path.sep}`,
 );
-const LIMIT = 100;
-
 interface GrepMatch {
   lineNum: number;
   lineText: string;
@@ -31,11 +29,12 @@ interface GrepResult {
 export async function grep(options: {
   cwd: AbsolutePath;
   include?: string;
+  limit: number;
   pattern: string;
   searchPath: string;
   signal: AbortSignal;
 }): Promise<GrepResult> {
-  const { cwd, include, pattern, searchPath, signal } = options;
+  const { cwd, include, limit, pattern, searchPath, signal } = options;
 
   const exists = await pathExists(cwd);
   if (!exists) {
@@ -106,6 +105,7 @@ export async function grep(options: {
 
       const lines = stdout.trim().split(/\r?\n/).filter(Boolean);
       const matches: GrepMatch[] = [];
+      let totalMatches = 0;
 
       for (const line of lines) {
         if (!line) {
@@ -119,6 +119,12 @@ export async function grep(options: {
 
         const lineNum = Number.parseInt(lineNumStr, 10);
         if (Number.isNaN(lineNum)) {
+          continue;
+        }
+
+        totalMatches++;
+
+        if (matches.length >= limit) {
           continue;
         }
 
@@ -141,13 +147,10 @@ export async function grep(options: {
         }
       }
 
-      const truncated = matches.length > LIMIT;
-      const finalMatches = truncated ? matches.slice(0, LIMIT) : matches;
-
       resolve({
-        matches: finalMatches,
-        totalMatches: matches.length,
-        truncated,
+        matches,
+        totalMatches,
+        truncated: totalMatches > limit,
       });
     });
   });

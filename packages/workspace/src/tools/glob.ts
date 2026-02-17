@@ -1,4 +1,4 @@
-import { glob } from "glob";
+import { glob, type GlobOptions } from "glob";
 import ms from "ms";
 import { ok } from "neverthrow";
 import { alphabetical } from "radashi";
@@ -8,6 +8,8 @@ import { getIgnore } from "../lib/get-ignore";
 import { resolveAgentPath } from "../lib/resolve-agent-path";
 import { BaseInputSchema } from "./base";
 import { setupTool } from "./create-tool";
+
+const GLOB_LIMIT = 500;
 
 export const Glob = setupTool({
   inputSchema: (agentName) => {
@@ -36,6 +38,9 @@ export const Glob = setupTool({
   outputSchema: z.object({
     error: z.string().optional(),
     files: z.array(z.string()),
+    // TODO: Remove `.optional()` after 2026-03-17 (backward compat)
+    totalFiles: z.number().optional(),
+    truncated: z.boolean().optional(),
   }),
 }).create({
   description: (agentName) => {
@@ -57,23 +62,33 @@ export const Glob = setupTool({
       return ok({
         error: pathResult.error.message,
         files: [],
+        totalFiles: 0,
+        truncated: false,
       });
     }
 
     const { absolutePath: searchRoot } = pathResult.value;
-    const ignore = await getIgnore(searchRoot);
-    const files = await glob(input.pattern, {
+    const globOptions: GlobOptions = {
       absolute: agentName === "retrieval",
       cwd: searchRoot,
-      ignore: {
-        ignored: (p) => {
-          return ignore.ignores(p.name);
-        },
-      },
       posix: true, // Use / path separators on Windows for consistency
-    });
+    };
 
-    return ok({ files: alphabetical(files, (f) => f) });
+    if (agentName !== "retrieval") {
+      const ignore = await getIgnore(searchRoot);
+      globOptions.ignore = {
+        ignored: (p) => ignore.ignores(p.name),
+      };
+    }
+
+    const rawFiles = await glob(input.pattern, globOptions);
+    const allFiles = rawFiles.map(String);
+
+    const sorted = alphabetical(allFiles, (f) => f);
+    const truncated = sorted.length > GLOB_LIMIT;
+    const files = truncated ? sorted.slice(0, GLOB_LIMIT) : sorted;
+
+    return ok({ files, totalFiles: sorted.length, truncated });
   },
   readOnly: true,
   timeoutMs: ms("15 seconds"),
@@ -90,9 +105,22 @@ export const Glob = setupTool({
         value: "No files found matching the pattern",
       };
     }
+
+    const lines = [
+      `Found ${output.totalFiles ?? output.files.length} files`,
+      ...output.files,
+    ];
+
+    if (output.truncated) {
+      lines.push(
+        "",
+        "(Results are truncated. Consider using a more specific path or pattern.)",
+      );
+    }
+
     return {
       type: "text",
-      value: output.files.join("\n"),
+      value: lines.join("\n"),
     };
   },
 });

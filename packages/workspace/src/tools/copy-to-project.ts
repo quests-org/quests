@@ -10,7 +10,6 @@ import { APP_FOLDER_NAMES } from "../constants";
 import { absolutePathJoin } from "../lib/absolute-path-join";
 import { executeError } from "../lib/execute-error";
 import { formatBytes } from "../lib/format-bytes";
-import { getIgnore } from "../lib/get-ignore";
 import { pathExists } from "../lib/path-exists";
 import { resolveAgentPath } from "../lib/resolve-agent-path";
 import {
@@ -22,6 +21,7 @@ import { BaseInputSchema } from "./base";
 import { setupTool } from "./create-tool";
 
 const MAX_FILE_SIZE_BYTES = 1024 * 1024 * 1024; // 1GB
+const COPY_OUTPUT_LIMIT = 50;
 
 const INPUT_PARAMS = {
   path: "path",
@@ -103,16 +103,10 @@ export const CopyToProject = setupTool({
     }
 
     const { absolutePath: searchRoot } = pathResult.value;
-    const ignore = await getIgnore(searchRoot);
 
     const matchedFiles = await glob(input.pattern, {
       absolute: true,
       cwd: searchRoot,
-      ignore: {
-        ignored: (p) => {
-          return ignore.ignores(p.name);
-        },
-      },
       // cspell:ignore nodir
       nodir: true, // Only match files, not directories
       posix: true,
@@ -199,14 +193,19 @@ export const CopyToProject = setupTool({
     }
 
     if (output.files.length === 0 && output.errors.length > 0) {
-      const errorList = output.errors
+      const truncatedErrors = output.errors.slice(0, COPY_OUTPUT_LIMIT);
+      const errorListTruncated = output.errors.length > COPY_OUTPUT_LIMIT;
+      const errorList = truncatedErrors
         .map((e) => `  - ${e.sourcePath}: ${e.message}`)
         .join("\n");
+      const truncationNote = errorListTruncated
+        ? `\n  (${output.errors.length - COPY_OUTPUT_LIMIT} more errors not shown)`
+        : "";
       return {
         type: "error-text",
         value: dedent`
           Failed to copy any files:
-          ${errorList}
+          ${errorList}${truncationNote}
         `,
       };
     }
@@ -223,23 +222,33 @@ export const CopyToProject = setupTool({
     }
 
     const totalSize = output.files.reduce((sum, f) => sum + f.size, 0);
-    const fileList = output.files
+    const truncatedFiles = output.files.slice(0, COPY_OUTPUT_LIMIT);
+    const fileListTruncated = output.files.length > COPY_OUTPUT_LIMIT;
+    const fileList = truncatedFiles
       .map((f) => `  - ${f.destinationPath} ${formatBytes(f.size)}`)
       .join("\n");
+    const truncationNote = fileListTruncated
+      ? `\n  (${output.files.length - COPY_OUTPUT_LIMIT} more files not shown)`
+      : "";
 
     let message = dedent`
       Copied ${output.files.length} files ${formatBytes(totalSize)} total. Parent agent can now access these files:
-      ${fileList}
+      ${fileList}${truncationNote}
     `;
 
     if (output.errors.length > 0) {
-      const errorList = output.errors
+      const truncatedErrors = output.errors.slice(0, COPY_OUTPUT_LIMIT);
+      const errorListTruncated = output.errors.length > COPY_OUTPUT_LIMIT;
+      const errorList = truncatedErrors
         .map((e) => `  - ${e.sourcePath}: ${e.message}`)
         .join("\n");
+      const errorTruncationNote = errorListTruncated
+        ? `\n  (${output.errors.length - COPY_OUTPUT_LIMIT} more errors not shown)`
+        : "";
       message += dedent`
 
         Failed to copy ${output.errors.length} files:
-        ${errorList}
+        ${errorList}${errorTruncationNote}
       `;
     }
 

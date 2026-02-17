@@ -413,10 +413,8 @@ function getToolOutputDescription(
       return `${part.output.images.length} images generated`;
     }
     case "tool-glob": {
-      const files = part.output.files;
-      return files.length === 0
-        ? "No files found"
-        : `${files.length} files found`;
+      const count = part.output.totalFiles ?? part.output.files.length;
+      return count === 0 ? "No files found" : `${count} files found`;
     }
     case "tool-grep": {
       const matches = part.output.matches;
