@@ -300,32 +300,16 @@ export namespace Store {
     { signal }: { signal?: AbortSignal } = {},
   ) {
     return safeTry(async function* () {
-      const storage = yield* getSessionsStoreStorage(appConfig);
+      const allSessions = yield* getSessions(appConfig, { signal });
+      const childSessions = allSessions.filter(
+        (session) => session.parentId === sessionId,
+      );
 
-      yield* storage.removeItem(StorageKey.session(sessionId), { signal });
-
-      const messageIds = yield* getMessageIds(sessionId, appConfig, {
-        signal,
-      });
-      for (const messageId of messageIds) {
-        const partIds = yield* getPartIds(sessionId, messageId, appConfig, {
-          signal,
-        });
-        for (const partId of partIds) {
-          yield* storage.removeItem(
-            StorageKey.part(sessionId, messageId, partId),
-            { signal },
-          );
-        }
-        yield* storage.removeItem(StorageKey.message(sessionId, messageId), {
-          signal,
-        });
+      for (const childSession of childSessions) {
+        yield* removeSessionAndMessages(childSession.id, appConfig, { signal });
       }
 
-      publisher.publish("session.removed", {
-        sessionId,
-        subdomain: appConfig.subdomain,
-      });
+      yield* removeSessionAndMessages(sessionId, appConfig, { signal });
 
       return ok(undefined);
     });
@@ -533,6 +517,43 @@ export namespace Store {
       });
 
       return ok(savedSession);
+    });
+  }
+
+  function removeSessionAndMessages(
+    sessionId: StoreId.Session,
+    appConfig: AppConfig,
+    { signal }: { signal?: AbortSignal } = {},
+  ) {
+    return safeTry(async function* () {
+      const storage = yield* getSessionsStoreStorage(appConfig);
+
+      yield* storage.removeItem(StorageKey.session(sessionId), { signal });
+
+      const messageIds = yield* getMessageIds(sessionId, appConfig, {
+        signal,
+      });
+      for (const messageId of messageIds) {
+        const partIds = yield* getPartIds(sessionId, messageId, appConfig, {
+          signal,
+        });
+        for (const partId of partIds) {
+          yield* storage.removeItem(
+            StorageKey.part(sessionId, messageId, partId),
+            { signal },
+          );
+        }
+        yield* storage.removeItem(StorageKey.message(sessionId, messageId), {
+          signal,
+        });
+      }
+
+      publisher.publish("session.removed", {
+        sessionId,
+        subdomain: appConfig.subdomain,
+      });
+
+      return ok(undefined);
     });
   }
 }
