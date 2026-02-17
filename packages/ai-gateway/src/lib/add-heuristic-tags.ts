@@ -128,6 +128,11 @@ function getDynamicTags(
     return ["coding", "recommended"];
   }
 
+  // Minimax models
+  if (matchesVersionFloor(canonicalId, "minimax-m", 2.5)) {
+    return ["coding", "recommended"];
+  }
+
   return [];
 }
 

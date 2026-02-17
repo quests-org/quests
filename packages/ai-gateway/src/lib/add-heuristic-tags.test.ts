@@ -112,6 +112,9 @@ describe("addHeuristicTags", () => {
     { expected: ["coding", "recommended"], modelId: "kimi-k2.5" },
     { expected: ["coding", "recommended"], modelId: "kimi-k2-0905" },
     { expected: ["coding", "recommended"], modelId: "kimi-k3" },
+    { expected: [], modelId: "minimax-m2" },
+    { expected: ["coding", "recommended"], modelId: "minimax-m2.5" },
+    { expected: ["coding", "recommended"], modelId: "minimax-m3" },
   ].map(({ expected, modelId }) => ({
     expected: expected.map((tag) => AIGatewayModel.ModelTagSchema.parse(tag)),
     modelId,
