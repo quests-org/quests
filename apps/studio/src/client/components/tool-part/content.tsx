@@ -52,7 +52,7 @@ export function ToolContent({
       return (
         <div>
           <SectionHeader>Source</SectionHeader>
-          <MonoText className="mb-2 text-xs">{part.output.sourcePath}</MonoText>
+          <MonoText className="mb-2 text-xs">{part.input.sourcePath}</MonoText>
           <ToolPartFilePath
             filePath={part.output.destinationPath}
             label="Copied to"
