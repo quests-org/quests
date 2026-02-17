@@ -4,5 +4,5 @@ alwaysApply: true
 ---
 
 - I am often dictating my prompts, so assume soundalike spellings and grammar.
-- Only add comments for very complex code or if asked by the user.
+- Only add comments if asked by the user.
 - Do NOT remove comments that are already present.
