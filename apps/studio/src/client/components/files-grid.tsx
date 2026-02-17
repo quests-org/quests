@@ -162,6 +162,11 @@ export function FilesGrid({
           <Button
             onClick={() => {
               setIsExpanded(true);
+              if (outputFiles.length === 0) {
+                setIsScriptsExpanded(true);
+                setIsUserProvidedExpanded(true);
+                setIsAgentRetrievedExpanded(true);
+              }
             }}
             size="sm"
             type="button"
