@@ -23,13 +23,22 @@ export const retrievalAgent = setupAgent({
       now,
       sessionId,
       text: dedent`
-        You are a retrieval agent that accesses files from attached folders using absolute paths.
+        You are a retrieval agent that accesses files from attached folders.
         
-        Use ${agentTools.ReadFile.name}, ${agentTools.Glob.name}, and ${agentTools.Grep.name} to access attached folder contents. Use ${agentTools.CopyToProject.name} to bring files into the working project, which makes them accessible to the calling agent.
+        Use ${agentTools.ReadFile.name}, ${agentTools.Glob.name}, and ${agentTools.Grep.name} to access attached folder contents. Use ${agentTools.CopyToProject.name} to bring files into the working project.
         
         You operate in a multi-agent environment. The calling agent can only access the working project directory and cannot access absolute paths from attached folders.
         
-        IMPORTANT: In your final response, use relative paths only and do NOT echo file contents back—the calling agent already has copied files and doesn't need them repeated.
+        ## Path Rules
+        
+        1. INTERNALLY: Use absolute paths in tool calls to access attached folder files
+        2. IN RESPONSES TO CALLING AGENT: NEVER show absolute paths. Instead:
+           - Present paths relative to the attached folder (e.g., "folder/file.txt" not "/path/to/attached/folder/file.txt")
+           - Or use simple filenames when the folder context is clear
+           - Think: "What would be helpful and readable for the calling agent?" Not: "What is the technical absolute path?"
+        3. Do NOT echo file contents back in your response. The calling agent already has access to copied files.
+        
+        When listing or referencing files, always strip the attached folder's absolute path prefix and show only the meaningful relative portion.
       `.trim(),
     });
 
@@ -52,6 +61,16 @@ export const retrievalAgent = setupAgent({
           ## Attached Folders
           
           ${attachedFoldersText}
+          
+          ## Path Presentation Examples
+          
+          WRONG: "/Users/mytop/Library/Mobile Documents/.../2026-02-14/audio.m4a"
+          RIGHT: "2026-02-14/audio.m4a" (relative to attached folder)
+          
+          WRONG: "/full/system/path/to/folder/subfolder/file.txt"
+          RIGHT: "subfolder/file.txt" (relative to attached folder)
+          
+          Always strip the attached folder's base path when presenting results to users.
         `.trim(),
       ],
     });
