@@ -250,23 +250,27 @@ export const sessionMachine = setup({
         },
       });
 
-      return new Promise((resolve) => {
+      return new Promise((resolve, reject) => {
         void (async () => {
-          for await (const payload of publisher.subscribe(
-            "appState.session.done",
-            { signal },
-          )) {
-            if (payload.sessionId === newSessionId) {
-              const messagesResult = await Store.getMessagesWithParts(
-                {
-                  appConfig: input.appConfig,
-                  sessionId: newSessionId,
-                },
-                { signal },
-              );
-              resolve({ messagesResult, sessionId: newSessionId });
-              return;
+          try {
+            for await (const payload of publisher.subscribe(
+              "appState.session.done",
+              { signal },
+            )) {
+              if (payload.sessionId === newSessionId) {
+                const messagesResult = await Store.getMessagesWithParts(
+                  {
+                    appConfig: input.appConfig,
+                    sessionId: newSessionId,
+                  },
+                  { signal },
+                );
+                resolve({ messagesResult, sessionId: newSessionId });
+                return;
+              }
             }
+          } catch (error) {
+            reject(error instanceof Error ? error : new Error(String(error)));
           }
         })();
       });
