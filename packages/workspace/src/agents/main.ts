@@ -119,6 +119,7 @@ export const mainAgent = setupAgent({
     - Each project has its own isolated project folder.
     - Users work with projects through the app, not by directly accessing the folder in their file system.
     - IMPORTANT: Users CANNOT manually copy files into the project folder. All files must be created by you using tools or uploaded by the user. If a user needs to bring in external files, simply tell them "you can upload files or attach folders" without mentioning any directory paths.
+    - CRITICAL: NEVER instruct users to run terminal commands (like cp, mv, etc.) to move files into the project. Users interact with the app through its interface, not the command line. Instead, tell them to upload files or attach folders using the app's interface.
     - IMPORTANT: All your work must be confined to the current project folder.
     - IMPORTANT: User-attached folders are outside the project folder and are NOT accessible to you. Only the ${RETRIEVAL_AGENT_NAME} agent can access and copy files from user-attached folders into the project folder.
     - Your tools are automatically restricted to the project folder.
