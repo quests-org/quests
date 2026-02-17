@@ -23,7 +23,7 @@ import {
   startOfDay,
   subDays,
 } from "date-fns";
-import { Copy, LayoutGrid, Pencil, Plus, TrashIcon } from "lucide-react";
+import { Copy, LayoutGrid, Pencil, Plus, Star, TrashIcon } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 
 export function StudioCommandMenu() {
@@ -52,6 +52,19 @@ export function StudioCommandMenu() {
   );
 
   const projects = projectsData?.projects ?? [];
+
+  const { data: favoriteProjects } = useQuery(
+    rpcClient.favorites.live.listProjects.experimental_liveOptions({
+      enabled: open,
+    }),
+  );
+
+  const favoriteProjectSubdomains = useMemo(() => {
+    if (!favoriteProjects) {
+      return new Set<ProjectSubdomain>();
+    }
+    return new Set(favoriteProjects.map((p) => p.subdomain));
+  }, [favoriteProjects]);
 
   const currentProjectSubdomain = projectRouteMatch?.params.subdomain;
 
@@ -216,24 +229,37 @@ export function StudioCommandMenu() {
 
                 return (
                   <CommandGroup heading={groupName} key={groupName}>
-                    {groupProjects.map((project) => (
-                      <CommandItem
-                        key={project.subdomain}
-                        keywords={[project.title]}
-                        onSelect={() => {
-                          handleSelectProject(project.subdomain);
-                        }}
-                        value={project.subdomain}
-                      >
-                        <AppIcon name={project.iconName} size="sm" />
-                        <span className="flex-1 truncate">{project.title}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {groupName === "Older"
-                            ? format(new Date(project.updatedAt), "MMM d, yyyy")
-                            : getRelativeTime(new Date(project.updatedAt))}
-                        </span>
-                      </CommandItem>
-                    ))}
+                    {groupProjects.map((project) => {
+                      const isFavorite = favoriteProjectSubdomains.has(
+                        project.subdomain,
+                      );
+                      return (
+                        <CommandItem
+                          key={project.subdomain}
+                          keywords={[project.title]}
+                          onSelect={() => {
+                            handleSelectProject(project.subdomain);
+                          }}
+                          value={project.subdomain}
+                        >
+                          {isFavorite && (
+                            <Star className="size-4 shrink-0 fill-amber-500 text-amber-500" />
+                          )}
+                          <AppIcon name={project.iconName} size="sm" />
+                          <span className="flex-1 truncate">
+                            {project.title}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {groupName === "Older"
+                              ? format(
+                                  new Date(project.updatedAt),
+                                  "MMM d, yyyy",
+                                )
+                              : getRelativeTime(new Date(project.updatedAt))}
+                          </span>
+                        </CommandItem>
+                      );
+                    })}
                   </CommandGroup>
                 );
               },
