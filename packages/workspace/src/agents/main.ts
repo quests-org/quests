@@ -16,6 +16,7 @@ import { GitCommands } from "../lib/git/commands";
 import { ensureGitRepo } from "../lib/git/ensure-git-repo";
 import { isToolPart } from "../lib/is-tool-part";
 import { pathExists } from "../lib/path-exists";
+import { getProjectState } from "../lib/project-state-store";
 import { readFileWithAnyCase } from "../lib/read-file-with-any-case";
 import { PNPM_COMMAND, TS_COMMAND } from "../lib/shell-commands";
 import { Store } from "../lib/store";
@@ -237,6 +238,35 @@ export const mainAgent = setupAgent({
             Dependencies have not yet been installed for this project. If you need to run scripts that require dependencies, you can install them by running \`${PNPM_COMMAND.name} install\` using the \`${agentTools.RunShellCommand.name}\` tool.
             </dependencies>
           `,
+        await (async () => {
+          const projectState = await getProjectState(appConfig.appDir);
+          if (
+            !projectState.attachedFolders ||
+            Object.keys(projectState.attachedFolders).length === 0
+          ) {
+            return null;
+          }
+
+          const folderDescriptions = await Promise.all(
+            Object.values(projectState.attachedFolders).map(async (folder) => {
+              const exists = await pathExists(folder.path);
+              return exists
+                ? `- ${folder.name}`
+                : `- ${folder.name} (no longer exists)`;
+            }),
+          );
+
+          const attachedFoldersText = folderDescriptions.join("\n");
+
+          return dedent`
+            <attached_folders>
+            The user has attached these folders to this project.
+            ${attachedFoldersText}
+            
+            These folders are outside the current project. The ${RETRIEVAL_AGENT_NAME} agent can access and copy files from them into the project for you.
+            </attached_folders>
+          `;
+        })(),
         projectLayout,
         packageJsonContent &&
           dedent`

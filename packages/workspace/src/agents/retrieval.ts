@@ -1,6 +1,7 @@
 import { dedent, pick } from "radashi";
 
 import { getCurrentDate } from "../lib/get-current-date";
+import { pathExists } from "../lib/path-exists";
 import { getProjectState } from "../lib/project-state-store";
 import { TOOLS } from "../tools/all";
 import { setupAgent } from "./create-agent";
@@ -42,13 +43,17 @@ export const retrievalAgent = setupAgent({
       `.trim(),
     });
 
-    // Load project state to get attached folders
     const projectState = await getProjectState(appConfig.appDir);
 
     const attachedFoldersText = projectState.attachedFolders
-      ? Object.values(projectState.attachedFolders)
-          .map((folder) => `- ${folder.name}: ${folder.path}`)
-          .join("\n")
+      ? await Promise.all(
+          Object.values(projectState.attachedFolders).map(async (folder) => {
+            const exists = await pathExists(folder.path);
+            return exists
+              ? `- ${folder.name}: ${folder.path}`
+              : `- ${folder.name}: ${folder.path} (no longer exists)`;
+          }),
+        ).then((descriptions) => descriptions.join("\n"))
       : "No attached folders";
 
     const contextMessage = createContextMessage({
@@ -58,19 +63,10 @@ export const retrievalAgent = setupAgent({
       textParts: [
         getSystemInfoText(),
         dedent`
-          ## Attached Folders
-          
+          <attached_folders>
+          The user attached these folders to this project.
           ${attachedFoldersText}
-          
-          ## Path Presentation Examples
-          
-          WRONG: "/Users/mytop/Library/Mobile Documents/.../2026-02-14/audio.m4a"
-          RIGHT: "2026-02-14/audio.m4a" (relative to attached folder)
-          
-          WRONG: "/full/system/path/to/folder/subfolder/file.txt"
-          RIGHT: "subfolder/file.txt" (relative to attached folder)
-          
-          Always strip the attached folder's base path when presenting results to users.
+          </attached_folders>
         `.trim(),
       ],
     });
