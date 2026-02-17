@@ -4,6 +4,7 @@ import { dedent } from "radashi";
 import { z } from "zod";
 
 import { TASK_AGENT_NAMES, type TaskAgentName } from "../agents/types";
+import { APP_FOLDER_NAMES } from "../constants";
 import { executeError } from "../lib/execute-error";
 import { StoreId } from "../schemas/store-id";
 import { BaseInputSchema } from "./base";
@@ -18,6 +19,8 @@ const INPUT_PARAMS = {
 const TASK_AGENT_DESCRIPTIONS: Record<TaskAgentName, string> = {
   retrieval: dedent`
     Specialized agent for accessing files from user-attached folders. Use this when the user has attached folders to their message and you need to read, search, or copy files to this project from those folders.
+    
+    Files copied by this agent are placed in the ${APP_FOLDER_NAMES.agentRetrieved} folder in the project.
     
     IMPORTANT: This agent cannot directly access files inside the current project - it can only access and copy files from attached folders outside the project.
   `.trim(),
