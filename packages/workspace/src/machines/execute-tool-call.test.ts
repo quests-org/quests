@@ -227,7 +227,7 @@ describe("executeToolCallMachine", () => {
 
       expect(updatedPart).toMatchInlineSnapshot(`
         {
-          "errorText": "Tool call execution failed for 'tool-run_shell_command': Shell command failed",
+          "errorText": "Something went wrong while running 'tool-run_shell_command': Shell command failed",
           "input": {
             "command": "pnpm throw-error",
             "explanation": "Installing packages",
@@ -272,7 +272,7 @@ describe("executeToolCallMachine", () => {
 
       expect(updatedPart).toMatchInlineSnapshot(`
         {
-          "errorText": "Tool call execution was cancelled: timeout",
+          "errorText": "This action was stopped because it took too long.",
           "input": {
             "command": "pnpm hang-command",
             "explanation": "Installing packages",

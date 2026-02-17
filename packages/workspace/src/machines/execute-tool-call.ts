@@ -12,6 +12,8 @@ import { Store } from "../lib/store";
 import { type SessionMessagePart } from "../schemas/session/message-part";
 import { getToolByType } from "../tools/all";
 
+type CancellationReason = "manual" | "timeout" | "unknown";
+
 const executeToolLogic = fromPromise<
   // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
   void,
@@ -80,7 +82,7 @@ const executeToolLogic = fromPromise<
       await Store.savePart(
         {
           ...part,
-          errorText: `Tool call execution failed for '${part.type}': ${error instanceof Error ? error.message : "Unknown error"}`,
+          errorText: `Something went wrong while running '${part.type}': ${error instanceof Error ? error.message : "An unexpected error occurred"}`,
           metadata: {
             ...part.metadata,
             endedAt: getCurrentDate(),
@@ -102,13 +104,13 @@ export const executeToolCallMachine = setup({
       {
         appConfig: AppConfig;
         part: SessionMessagePart.ToolPartInputAvailable;
-        reason: string;
+        reason: CancellationReason;
       }
     >(async ({ input, signal }) => {
       await Store.savePart(
         {
           ...input.part,
-          errorText: `Tool call execution was cancelled: ${input.reason}`,
+          errorText: `This action was stopped${input.reason === "timeout" ? " because it took too long" : input.reason === "manual" ? " by you" : ""}.`,
           metadata: {
             ...input.part.metadata,
             endedAt: getCurrentDate(),
@@ -138,7 +140,7 @@ export const executeToolCallMachine = setup({
     context: {} as {
       agentName: AgentName;
       appConfig: AppConfig;
-      cancellationReason: string;
+      cancellationReason: CancellationReason;
       model: AIGatewayModel.Type;
       part: SessionMessagePart.ToolPartInputAvailable;
       spawnAgent: SpawnAgentFunction;
