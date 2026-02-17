@@ -35,9 +35,21 @@ export function textForMessage(
     .map((file) => file.filePath)
     .join(", ");
 
-  if (!fileNames) {
+  const folderNames = (fileAttachmentsPart.data.folders ?? [])
+    .map((folder) => folder.name)
+    .join(", ");
+
+  if (!fileNames && !folderNames) {
     return textParts;
   }
 
-  return `${textParts}\n\nFiles attached by user: ${fileNames}`;
+  const parts = [textParts];
+  if (fileNames) {
+    parts.push(`Files attached by user: ${fileNames}`);
+  }
+  if (folderNames) {
+    parts.push(`Folders attached by user: ${folderNames}`);
+  }
+
+  return parts.join("\n\n");
 }
