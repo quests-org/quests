@@ -80,11 +80,13 @@ export function ToolContent({
               ))}
             </div>
           )}
-          {part.output.truncated && (
+          {part.output.truncationReason !== null && (
             <div className="mt-2 text-xs text-muted-foreground">
               {part.output.truncatedCount} file
-              {part.output.truncatedCount === 1 ? "" : "s"} not copied. Batch
-              limit reached.
+              {part.output.truncatedCount === 1 ? "" : "s"} not copied.{" "}
+              {part.output.truncationReason === "file_count_limit"
+                ? "File count limit reached."
+                : "Total size limit reached."}
             </div>
           )}
           {part.output.errors.length > 0 && (

@@ -51,7 +51,12 @@ describe("CopyToProject", () => {
     it("should return error when no files were copied and no errors", () => {
       const result = CopyToProject.toModelOutput({
         input: { path: attachedFolderPath, pattern: "*.ts" },
-        output: { errors: [], files: [], truncated: false, truncatedCount: 0 },
+        output: {
+          errors: [],
+          files: [],
+          truncatedCount: 0,
+          truncationReason: null,
+        },
         toolCallId: "123",
       });
       expect(result).toMatchInlineSnapshot(`
@@ -68,8 +73,8 @@ describe("CopyToProject", () => {
         output: {
           errors: [{ message: "File not found", sourcePath: "/some/file.ts" }],
           files: [],
-          truncated: false,
           truncatedCount: 0,
+          truncationReason: null,
         },
         toolCallId: "123",
       });
@@ -96,8 +101,8 @@ describe("CopyToProject", () => {
               sourcePath: "/source/file.txt",
             },
           ],
-          truncated: false,
           truncatedCount: 0,
+          truncationReason: null,
         },
         toolCallId: "123",
       });
@@ -130,8 +135,8 @@ describe("CopyToProject", () => {
               sourcePath: "/source/file2.txt",
             },
           ],
-          truncated: false,
           truncatedCount: 0,
+          truncationReason: null,
         },
         toolCallId: "123",
       });
@@ -145,7 +150,7 @@ describe("CopyToProject", () => {
       `);
     });
 
-    it("should report truncation when batch size limit was hit", () => {
+    it("should report truncation when file count limit was hit", () => {
       const result = CopyToProject.toModelOutput({
         input: { path: attachedFolderPath, pattern: "**/*" },
         output: {
@@ -159,8 +164,8 @@ describe("CopyToProject", () => {
               sourcePath: "/source/file1.txt",
             },
           ],
-          truncated: true,
           truncatedCount: 3,
+          truncationReason: "file_count_limit",
         },
         toolCallId: "123",
       });
@@ -170,7 +175,37 @@ describe("CopyToProject", () => {
           "value": "Copied 1 files (1KB total). Parent agent can now access these files:
           - ./agent-retrieved/file1.txt 1KB
 
-        Batch size limit reached: 3 file(s) were not copied. Call this tool again with a more specific pattern to copy the remaining files, or ask the user to upload them directly.",
+        Truncated file count limit reached (maxFiles): 3 file(s) not copied. Use a more specific pattern or increase the limit to copy the remaining files.",
+        }
+      `);
+    });
+
+    it("should report truncation when total size limit was hit", () => {
+      const result = CopyToProject.toModelOutput({
+        input: { path: attachedFolderPath, pattern: "**/*" },
+        output: {
+          errors: [],
+          files: [
+            {
+              destinationPath: RelativePathSchema.parse(
+                "./agent-retrieved/file1.txt",
+              ),
+              size: 1024,
+              sourcePath: "/source/file1.txt",
+            },
+          ],
+          truncatedCount: 3,
+          truncationReason: "total_size_limit",
+        },
+        toolCallId: "123",
+      });
+      expect(result).toMatchInlineSnapshot(`
+        {
+          "type": "text",
+          "value": "Copied 1 files (1KB total). Parent agent can now access these files:
+          - ./agent-retrieved/file1.txt 1KB
+
+        Truncated total size limit reached (maxTotalSizeBytes): 3 file(s) not copied. Use a more specific pattern or increase the limit to copy the remaining files.",
         }
       `);
     });
@@ -191,8 +226,8 @@ describe("CopyToProject", () => {
               sourcePath: "/source/small.txt",
             },
           ],
-          truncated: false,
           truncatedCount: 0,
+          truncationReason: null,
         },
         toolCallId: "123",
       });
@@ -382,7 +417,7 @@ describe("CopyToProject", () => {
       });
       const output = result._unsafeUnwrap();
 
-      expect(output.truncated).toBe(true);
+      expect(output.truncationReason).toBe("total_size_limit");
       expect(output.truncatedCount).toBeGreaterThan(0);
     });
 

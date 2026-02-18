@@ -21,21 +21,29 @@ import { BaseInputSchema } from "./base";
 import { setupTool } from "./create-tool";
 
 const FILE_SIZE_LIMITS = {
-  default: 1024 * 1024 * 50, // 50MB per file
-  max: 1024 * 1024 * 1024, // 1GB hard cap per file
+  default: 1024 * 1024 * 50, // 50MB
+  max: 1024 * 1024 * 1024, // 1GB
 } as const;
 
 const TOTAL_SIZE_LIMITS = {
-  default: 1024 * 1024 * 1024, // 1GB per call
-  max: 1024 * 1024 * 1024 * 10, // 10GB hard cap per call
+  default: 1024 * 1024 * 1024, // 1GB
+  max: 1024 * 1024 * 1024 * 10, // 10GB
+} as const;
+
+const FILE_COUNT_LIMITS = {
+  default: 100,
+  max: 1000,
 } as const;
 
 const INPUT_PARAMS = {
+  maxFiles: "maxFiles",
   maxFileSizeBytes: "maxFileSizeBytes",
   maxTotalSizeBytes: "maxTotalSizeBytes",
   path: "path",
   pattern: "pattern",
 } as const;
+
+const TruncationReasonSchema = z.enum(["file_count_limit", "total_size_limit"]);
 
 async function getUniqueFilename(
   retrievedDir: AbsolutePath,
@@ -60,17 +68,23 @@ async function getUniqueFilename(
 
 export const CopyToProject = setupTool({
   inputSchema: BaseInputSchema.extend({
+    [INPUT_PARAMS.maxFiles]: z
+      .number()
+      .optional()
+      .meta({
+        description: `Max files per call. Default: ${FILE_COUNT_LIMITS.default}, hard cap: ${FILE_COUNT_LIMITS.max}.`,
+      }),
     [INPUT_PARAMS.maxFileSizeBytes]: z
       .number()
       .optional()
       .meta({
-        description: `Maximum size in bytes for a single file. Defaults to ${FILE_SIZE_LIMITS.default} (50MB). Hard cap is ${FILE_SIZE_LIMITS.max} (1GB) — values above this will be rejected.`,
+        description: `Max bytes per file. Default: ${formatBytes(FILE_SIZE_LIMITS.default)}, hard cap: ${formatBytes(FILE_SIZE_LIMITS.max)}.`,
       }),
     [INPUT_PARAMS.maxTotalSizeBytes]: z
       .number()
       .optional()
       .meta({
-        description: `Maximum total size in bytes for all files copied in this call. Defaults to ${TOTAL_SIZE_LIMITS.default} (1GB). Hard cap is ${TOTAL_SIZE_LIMITS.max} (10GB) — values above this will be rejected.`,
+        description: `Max total bytes per call. Default: ${formatBytes(TOTAL_SIZE_LIMITS.default)}, hard cap: ${formatBytes(TOTAL_SIZE_LIMITS.max)}.`,
       }),
     [INPUT_PARAMS.path]: z.string().meta({
       description: "Absolute path to an attached folder to search within",
@@ -94,8 +108,8 @@ export const CopyToProject = setupTool({
         sourcePath: z.string(),
       }),
     ),
-    truncated: z.boolean(),
     truncatedCount: z.number(),
+    truncationReason: TruncationReasonSchema.nullable(),
   }),
 }).create({
   description: dedent`
@@ -113,9 +127,16 @@ export const CopyToProject = setupTool({
       return executeError("No attached folders available");
     }
 
+    const maxFiles = input.maxFiles ?? FILE_COUNT_LIMITS.default;
     const maxFileSizeBytes = input.maxFileSizeBytes ?? FILE_SIZE_LIMITS.default;
     const maxTotalSizeBytes =
       input.maxTotalSizeBytes ?? TOTAL_SIZE_LIMITS.default;
+
+    if (maxFiles > FILE_COUNT_LIMITS.max) {
+      return executeError(
+        `maxFiles (${maxFiles}) exceeds the hard cap of ${FILE_COUNT_LIMITS.max} files per call.`,
+      );
+    }
 
     if (maxFileSizeBytes > FILE_SIZE_LIMITS.max) {
       return executeError(
@@ -175,8 +196,8 @@ export const CopyToProject = setupTool({
     }[] = [];
 
     let totalBytesCopied = 0;
-    let truncated = false;
     let truncatedCount = 0;
+    let truncationReason: null | z.output<typeof TruncationReasonSchema> = null;
 
     for (const sourceAbsolutePath of matchedFiles) {
       const sourceExists = await pathExists(sourceAbsolutePath as AbsolutePath);
@@ -197,8 +218,14 @@ export const CopyToProject = setupTool({
         continue;
       }
 
+      if (copiedFiles.length >= maxFiles) {
+        truncationReason = "file_count_limit";
+        truncatedCount++;
+        continue;
+      }
+
       if (totalBytesCopied + sourceStats.size > maxTotalSizeBytes) {
-        truncated = true;
+        truncationReason = "total_size_limit";
         truncatedCount++;
         continue;
       }
@@ -230,8 +257,8 @@ export const CopyToProject = setupTool({
     return ok({
       errors,
       files: alphabetical(copiedFiles, (f) => f.destinationPath),
-      truncated,
       truncatedCount,
+      truncationReason,
     });
   },
   readOnly: false,
@@ -263,7 +290,7 @@ export const CopyToProject = setupTool({
       output.files.length === 1 &&
       firstFile &&
       output.errors.length === 0 &&
-      !output.truncated
+      output.truncationReason === null
     ) {
       return {
         type: "text",
@@ -283,8 +310,12 @@ export const CopyToProject = setupTool({
       ${fileList}
     `;
 
-    if (output.truncated) {
-      message += `\n\nBatch size limit reached: ${output.truncatedCount} file(s) were not copied. Call this tool again with a more specific pattern to copy the remaining files, or ask the user to upload them directly.`;
+    if (output.truncationReason !== null) {
+      const reasonMessage =
+        output.truncationReason === "file_count_limit"
+          ? `file count limit reached (${INPUT_PARAMS.maxFiles})`
+          : `total size limit reached (${INPUT_PARAMS.maxTotalSizeBytes})`;
+      message += `\n\nTruncated ${reasonMessage}: ${output.truncatedCount} file(s) not copied. Use a more specific pattern or increase the limit to copy the remaining files.`;
     }
 
     if (output.errors.length > 0) {
