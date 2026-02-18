@@ -31,6 +31,7 @@ import { toast } from "sonner";
 import { projectSidebarCollapsedAtomFamily } from "../atoms/project-sidebar";
 import { ExportZipModal } from "./export-zip-modal";
 import { ProjectMenu } from "./project-menu";
+import { ProjectUsageSummary } from "./project-usage-summary";
 import { RestoreVersionModal } from "./restore-version-modal";
 import { CMD, Cursor, ITerm, MacOSTerminal, VSCode } from "./service-icons";
 import {
@@ -77,6 +78,11 @@ export function ProjectHeaderToolbar({
   const { data: supportedEditors = [] } = useQuery<SupportedEditor[]>(
     rpcClient.utils.getSupportedEditors.queryOptions(),
   );
+
+  const { data: preferences } = useQuery(
+    rpcClient.preferences.live.get.experimental_liveOptions(),
+  );
+  const isDeveloperMode = preferences?.developerMode;
 
   const openAppInMutation = useMutation(
     rpcClient.utils.openAppIn.mutationOptions({
@@ -151,7 +157,8 @@ export function ProjectHeaderToolbar({
             )}
           </div>
 
-          <div className="flex items-center">
+          <div className="flex items-center gap-3">
+            {isDeveloperMode && <ProjectUsageSummary project={project} />}
             {selectedVersion ? (
               <div className="flex items-center gap-2">
                 <Button

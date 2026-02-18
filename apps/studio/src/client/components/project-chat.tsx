@@ -20,7 +20,6 @@ import { SessionStream } from "./session-stream";
 import { Alert, AlertDescription } from "./ui/alert";
 import { Button } from "./ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
-import { UsageSummary } from "./usage-summary";
 
 export function ProjectChat({
   isChatOnly = false,
@@ -288,9 +287,6 @@ export function ProjectChat({
             }}
             placeholder="Type, paste, or drop some files here…"
           />
-          {messages.length > 0 && isDeveloperMode && (
-            <UsageSummary className="mt-2" messages={messages} />
-          )}
         </div>
       </div>
     </div>

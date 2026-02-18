@@ -20,8 +20,10 @@ export const ProviderOutputSchema = AIGatewayProviderConfig.Schema.pick({
   type: true,
 });
 
+const OptionalNumberOrNaN = z.union([z.number(), z.nan()]).optional();
+
 export const UsageOutputSchema = z.object({
-  inputTokens: z.union([z.number(), z.nan()]).optional(),
-  outputTokens: z.union([z.number(), z.nan()]).optional(),
-  totalTokens: z.union([z.number(), z.nan()]).optional(),
+  inputTokens: OptionalNumberOrNaN,
+  outputTokens: OptionalNumberOrNaN,
+  totalTokens: OptionalNumberOrNaN,
 });

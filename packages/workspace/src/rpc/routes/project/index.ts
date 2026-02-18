@@ -11,6 +11,10 @@ import { duplicateProject } from "../../../lib/duplicate-project";
 import { exportProjectZip } from "../../../lib/export-project-zip";
 import { generateProjectTitle } from "../../../lib/generate-project-title";
 import { getApp, getProjects } from "../../../lib/get-apps";
+import {
+  getProjectUsageSummary,
+  ProjectUsageSummarySchema,
+} from "../../../lib/get-project-usage-summary";
 import { getWorkspaceAppForSubdomain } from "../../../lib/get-workspace-app-for-subdomain";
 import { importProject as importProjectLib } from "../../../lib/import-project";
 import { initializeProject } from "../../../lib/initialize-project";
@@ -520,6 +524,48 @@ const live = {
     }),
 };
 
+const usageSummary = base
+  .input(z.object({ subdomain: ProjectSubdomainSchema }))
+  .output(ProjectUsageSummarySchema)
+  .handler(async ({ context, input, signal }) => {
+    const { subdomain } = input;
+    const { workspaceConfig } = context;
+    const appConfig = createAppConfig({ subdomain, workspaceConfig });
+    return getProjectUsageSummary(appConfig, { signal });
+  });
+
+const liveUsageSummary = base
+  .input(z.object({ subdomain: ProjectSubdomainSchema }))
+  .output(eventIterator(ProjectUsageSummarySchema))
+  .handler(async function* ({ context, input, signal }) {
+    yield call(usageSummary, input, { context, signal });
+
+    const messageUpdates = publisher.subscribe("message.updated", { signal });
+    const messageRemoved = publisher.subscribe("message.removed", { signal });
+    const partUpdates = publisher.subscribe("part.updated", { signal });
+
+    async function* filterBySubdomain(
+      generator:
+        | typeof messageRemoved
+        | typeof messageUpdates
+        | typeof partUpdates,
+    ) {
+      for await (const payload of generator) {
+        if (payload.subdomain === input.subdomain) {
+          yield null;
+        }
+      }
+    }
+
+    for await (const _ of mergeGenerators([
+      filterBySubdomain(messageUpdates),
+      filterBySubdomain(messageRemoved),
+      filterBySubdomain(partUpdates),
+    ])) {
+      yield call(usageSummary, input, { context, signal });
+    }
+  });
+
 export const project = {
   bySubdomain,
   bySubdomains,
@@ -529,9 +575,13 @@ export const project = {
   git: projectGit,
   import: importProject,
   list,
-  live,
+  live: {
+    ...live,
+    usageSummary: liveUsageSummary,
+  },
   state: projectState,
   trash,
   update,
+  usageSummary,
   version: projectVersion,
 };
