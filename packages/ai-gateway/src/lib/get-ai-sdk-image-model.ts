@@ -8,10 +8,12 @@ import { Result } from "typescript-result";
 import { type AIGatewayModel } from "../schemas/model";
 import { type AIGatewayProviderConfig } from "../schemas/provider-config";
 import {
+  createDeepInfraSDK,
   createFireworksSDK,
   createGoogleSDK,
   createOpenAISDK,
   createOpenRouterSDK,
+  createTogetherAISDK,
   createVercelSDK,
   createXAISDK,
 } from "./ai-sdk-for-provider-config";
@@ -31,6 +33,8 @@ const PROVIDER_TYPE_PRIORITY: ImageGenerationProviderType[] = [
   "x-ai",
   "vercel",
   "fireworks",
+  "together",
+  "deepinfra",
 ];
 
 export const TEST_IMAGE_MODEL_OVERRIDE_KEY = "__testImageModelOverride";
@@ -101,6 +105,11 @@ async function getAISDKImageModel({
   }
 
   switch (config.type) {
+    case "deepinfra": {
+      const sdk = await createDeepInfraSDK(config, workspaceServerURL);
+      const model = sdk.image("black-forest-labs/FLUX-1-schnell");
+      return Result.ok({ model, type: "image" as const });
+    }
     // Providers that use generateImage (image models)
     case "fireworks": {
       const sdk = await createFireworksSDK(config, workspaceServerURL);
@@ -129,6 +138,11 @@ async function getAISDKImageModel({
     case "quests": {
       const sdk = await createOpenRouterSDK(config, workspaceServerURL);
       const model = sdk.imageModel(QUESTS_AUTO_IMAGE_MODEL_ID);
+      return Result.ok({ model, type: "image" as const });
+    }
+    case "together": {
+      const sdk = await createTogetherAISDK(config, workspaceServerURL);
+      const model = sdk.image("black-forest-labs/FLUX.1-schnell");
       return Result.ok({ model, type: "image" as const });
     }
     case "vercel": {

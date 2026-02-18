@@ -100,6 +100,16 @@ export async function createAnthropicSDK(
   return createAnthropic({ apiKey, baseURL });
 }
 
+export async function createDeepInfraSDK(
+  config: AIGatewayProviderConfig.Type,
+  workspaceServerURL: WorkspaceServerURL,
+) {
+  const baseURL = internalURL({ config, workspaceServerURL });
+  const apiKey = internalAPIKey();
+  const { createDeepInfra } = await import("@ai-sdk/deepinfra");
+  return createDeepInfra({ apiKey, baseURL });
+}
+
 export async function createFireworksSDK(
   config: AIGatewayProviderConfig.Type,
   workspaceServerURL: WorkspaceServerURL,
@@ -150,6 +160,16 @@ export async function createOpenRouterSDK(
       "X-Title": ATTRIBUTION_NAME,
     },
   });
+}
+
+export async function createTogetherAISDK(
+  config: AIGatewayProviderConfig.Type,
+  workspaceServerURL: WorkspaceServerURL,
+) {
+  const baseURL = internalURL({ config, workspaceServerURL });
+  const apiKey = internalAPIKey();
+  const { createTogetherAI } = await import("@ai-sdk/togetherai");
+  return createTogetherAI({ apiKey, baseURL });
 }
 
 export function createVercelSDK(
