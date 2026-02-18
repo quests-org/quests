@@ -170,7 +170,9 @@ export function SessionStream({
             project={project}
             renderStream={(nestedMessages) => (
               <SessionStream
-                isAgentRunning={isAgentRunning}
+                // For now, the child session streams are only shown when they
+                // are done. So avoid showing the loading state.
+                isAgentRunning={false}
                 isDeveloperMode={isDeveloperMode}
                 messages={nestedMessages}
                 onContinue={onContinue}
