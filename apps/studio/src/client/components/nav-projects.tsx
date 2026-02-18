@@ -27,12 +27,14 @@ export function NavProjects({
   isFavorites,
   matches,
   projects,
+  sortFavoritesBy = "activity",
   title,
 }: {
   favoriteSubdomains: Set<string>;
   isFavorites: boolean;
   matches: MakeRouteMatchUnion[];
   projects: WorkspaceAppProject[];
+  sortFavoritesBy?: "activity" | "added";
   title: string;
 }) {
   const { addTab } = useTabActions();
@@ -65,7 +67,9 @@ export function NavProjects({
     : false;
 
   const visibleFavorites = isFavorites
-    ? projects.slice(-FAVORITES_LIMIT)
+    ? sortFavoritesBy === "activity"
+      ? projects.slice(0, FAVORITES_LIMIT)
+      : projects.slice(-FAVORITES_LIMIT)
     : projects;
 
   const hasMoreFavorites = isFavorites && projects.length > FAVORITES_LIMIT;

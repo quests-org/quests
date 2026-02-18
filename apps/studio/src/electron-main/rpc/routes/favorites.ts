@@ -65,7 +65,9 @@ const live = {
         );
       }
 
-      return favoriteProjectsThatExist;
+      return favoriteProjectsThatExist.toSorted(
+        (a, b) => b.updatedAt.getTime() - a.updatedAt.getTime(),
+      );
     };
 
     const favorites = favoritesStore.get("favorites");
