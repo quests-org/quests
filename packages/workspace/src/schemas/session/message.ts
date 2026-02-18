@@ -9,7 +9,8 @@ import {
 import { dedent } from "radashi";
 import { z } from "zod";
 
-import { type AgentName, RETRIEVAL_AGENT_NAME } from "../../agents/types";
+import { type AgentName } from "../../agents/types";
+import { buildAttachedFoldersText } from "../../lib/build-attached-folders-text";
 import { formatBytes } from "../../lib/format-bytes";
 import { isToolPart } from "../../lib/is-tool-part";
 import { StoreId } from "../store-id";
@@ -278,18 +279,13 @@ export namespace SessionMessage {
             fileAttachmentsPart.data.folders &&
             fileAttachmentsPart.data.folders.length > 0
           ) {
-            const folderDescriptions = fileAttachmentsPart.data.folders
-              .map((folder) => `- ${folder.name}`)
-              .join("\n");
-
-            const folderAttachmentText = dedent`
-              <attached_folders>
-              The user attached these folders to this message. Assume they are directly relevant to the user's request.
-              ${folderDescriptions}
-              
-              These folders are outside the current project. The ${RETRIEVAL_AGENT_NAME} agent will receive their absolute paths and can search, read, and copy files from them into the project for you access or modify.
-              </attached_folders>
-            `;
+            const folderAttachmentText = buildAttachedFoldersText({
+              folderNames: fileAttachmentsPart.data.folders.map(
+                (folder) => folder.name,
+              ),
+              intro:
+                "The user attached these folders to this message. Assume they are directly relevant to the user's request.",
+            });
 
             parts.push({ text: folderAttachmentText, type: "text" });
           }
