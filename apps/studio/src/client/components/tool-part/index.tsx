@@ -321,7 +321,11 @@ function getGenerateImageSourceImages(
     part.input?.sourceImages &&
     part.input.sourceImages.length > 0
   ) {
-    return sift(part.input.sourceImages);
+    // Skip paths without a 3+ character extension -- they may still be streaming
+    // and would produce broken image requests on every character.
+    return sift(part.input.sourceImages).filter((filePath) =>
+      /\.[a-z]{3,}$/i.test(filePath),
+    );
   }
   return [];
 }
