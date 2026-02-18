@@ -45,12 +45,10 @@ export function ProjectActionsCell({
     actor.tags.includes("agent.alive"),
   );
 
-  const { data: favoriteProjects } = useQuery(
-    rpcClient.favorites.live.listProjects.experimental_liveOptions(),
+  const { data: favoriteSubdomains } = useQuery(
+    rpcClient.favorites.live.listSubdomains.experimental_liveOptions(),
   );
-  const isFavorite = favoriteProjects?.some(
-    (favorite) => favorite.subdomain === subdomain,
-  );
+  const isFavorite = favoriteSubdomains?.includes(subdomain);
 
   const { mutateAsync: removeFavorite } = useMutation(
     rpcClient.favorites.remove.mutationOptions(),

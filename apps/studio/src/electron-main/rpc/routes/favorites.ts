@@ -1,7 +1,7 @@
 import { base } from "@/electron-main/rpc/base";
 import { publisher } from "@/electron-main/rpc/publisher";
 import { getFavoritesStore } from "@/electron-main/stores/favorites";
-import { call } from "@orpc/server";
+import { call, eventIterator } from "@orpc/server";
 import { mergeGenerators } from "@quests/shared/merge-generators";
 import { ProjectSubdomainSchema } from "@quests/workspace/electron";
 import {
@@ -92,6 +92,27 @@ const live = {
       yield await fetchAndCleanFavorites(favoritesNext);
     }
   }),
+  listSubdomains: base
+    .output(eventIterator(ProjectSubdomainSchema.array()))
+    .handler(async function* ({ signal }) {
+      const favoritesStore = getFavoritesStore();
+
+      yield favoritesStore.get("favorites");
+
+      const favoritesUpdated = publisher.subscribe("favorites.updated", {
+        signal,
+      });
+      const projectRemoved = workspacePublisher.subscribe("project.removed", {
+        signal,
+      });
+
+      for await (const _payload of mergeGenerators([
+        favoritesUpdated,
+        projectRemoved,
+      ])) {
+        yield favoritesStore.get("favorites");
+      }
+    }),
 };
 
 export const favorites = {

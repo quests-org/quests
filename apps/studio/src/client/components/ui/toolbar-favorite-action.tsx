@@ -19,13 +19,10 @@ export function ToolbarFavoriteAction({
   compact = false,
   project,
 }: ToolbarFavoriteActionProps) {
-  const { data: favoriteProjects, isLoading } = useQuery(
-    rpcClient.favorites.live.listProjects.experimental_liveOptions(),
+  const { data: favoriteSubdomains, isLoading } = useQuery(
+    rpcClient.favorites.live.listSubdomains.experimental_liveOptions(),
   );
-  const isFavorite =
-    favoriteProjects?.some(
-      (favorite) => favorite.subdomain === project.subdomain,
-    ) ?? false;
+  const isFavorite = favoriteSubdomains?.includes(project.subdomain) ?? false;
 
   const { mutateAsync: removeFavorite } = useMutation(
     rpcClient.favorites.remove.mutationOptions(),

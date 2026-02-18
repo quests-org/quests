@@ -101,16 +101,14 @@ function RouteComponent() {
     }),
   });
 
-  const { data: favoriteProjects } = useQuery(
-    rpcClient.favorites.live.listProjects.experimental_liveOptions(),
+  const { data: favoriteSubdomains } = useQuery(
+    rpcClient.favorites.live.listSubdomains.experimental_liveOptions(),
   );
 
-  const favoriteProjectSubdomains = useMemo(() => {
-    if (!favoriteProjects) {
-      return new Set<ProjectSubdomain>();
-    }
-    return new Set(favoriteProjects.map((p) => p.subdomain));
-  }, [favoriteProjects]);
+  const favoriteProjectSubdomains = useMemo(
+    () => new Set<ProjectSubdomain>(favoriteSubdomains),
+    [favoriteSubdomains],
+  );
 
   const activeProjectSubdomains = useMemo(() => {
     if (!appStates) {
