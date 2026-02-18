@@ -5,6 +5,7 @@ import { dedent, pick } from "radashi";
 import { APP_FOLDER_NAMES } from "../constants";
 import { absolutePathJoin } from "../lib/absolute-path-join";
 import { buildAIProviderInstructions } from "../lib/build-ai-provider-instructions";
+import { buildAttachedFoldersText } from "../lib/build-attached-folders-text";
 import {
   buildStaticFileServingInstructions,
   detectStaticFileServing,
@@ -248,25 +249,17 @@ export const mainAgent = setupAgent({
             return null;
           }
 
-          const folderDescriptions = await Promise.all(
+          const folderNames = await Promise.all(
             Object.values(projectState.attachedFolders).map(async (folder) => {
               const exists = await pathExists(folder.path);
-              return exists
-                ? `- ${folder.name}`
-                : `- ${folder.name} (no longer exists)`;
+              return exists ? folder.name : `${folder.name} (no longer exists)`;
             }),
           );
 
-          const attachedFoldersText = folderDescriptions.join("\n");
-
-          return dedent`
-            <attached_folders>
-            The user has attached these folders to this project.
-            ${attachedFoldersText}
-            
-            These folders are outside the current project. The ${RETRIEVAL_AGENT_NAME} agent can access and copy files from them into the project for you.
-            </attached_folders>
-          `;
+          return buildAttachedFoldersText({
+            folderNames,
+            intro: "The user has attached these folders to this project.",
+          });
         })(),
         projectLayout,
         packageJsonContent &&
