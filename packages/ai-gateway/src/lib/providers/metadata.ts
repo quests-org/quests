@@ -52,6 +52,7 @@ const PROVIDER_METADATA = {
     description:
       "Cloud platform for running large AI models with flexible pricing",
     name: "DeepInfra",
+    tags: ["imageGeneration"],
     type: "deepinfra",
     url: addRef("https://deepinfra.com"),
   },
@@ -266,6 +267,7 @@ const PROVIDER_METADATA = {
     description:
       "Access to 200+ open-source AI models with optimized performance at scale",
     name: "Together AI",
+    tags: ["imageGeneration"],
     type: "together",
     url: addRef("https://www.together.ai"),
   },
