@@ -25,12 +25,13 @@ interface FilesGridProps {
 }
 
 const DEFAULT_INITIAL_VISIBLE_COUNT = 6;
+const EMPTY_FOLDERS: SessionMessageDataPart.FolderAttachmentDataPart[] = [];
 
 export function FilesGrid({
   alignEnd = false,
   compact = false,
   files,
-  folders = [],
+  folders = EMPTY_FOLDERS,
   initialVisibleCount = DEFAULT_INITIAL_VISIBLE_COUNT,
 }: FilesGridProps) {
   const openFileViewer = useSetAtom(openProjectFileViewerAtom);

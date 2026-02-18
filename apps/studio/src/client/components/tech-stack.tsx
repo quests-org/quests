@@ -51,6 +51,8 @@ const TECH_DISPLAY_NAMES: Record<string, string> = {
   vue: "Vue",
 };
 
+const EMPTY_DEPS: Record<string, string> = {};
+
 const KEY_FRAMEWORKS = new Set([
   "@angular/core",
   "@sveltejs/kit",
@@ -67,11 +69,11 @@ const KEY_FRAMEWORKS = new Set([
 ]);
 
 export function TechStack({
-  dependencies = {},
-  devDependencies = {},
+  dependencies = EMPTY_DEPS,
+  devDependencies = EMPTY_DEPS,
 }: {
-  dependencies: Record<string, string>;
-  devDependencies: Record<string, string>;
+  dependencies?: Record<string, string>;
+  devDependencies?: Record<string, string>;
 }) {
   const allDeps = {
     ...dependencies,

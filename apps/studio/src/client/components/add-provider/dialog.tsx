@@ -12,11 +12,13 @@ import { addProviderDialogAtom } from "../../atoms/add-provider";
 import { providerMetadataAtom } from "../../atoms/provider-metadata";
 import { ProviderConfigScreen } from "./provider-config-screen";
 
+const EMPTY_PROVIDERS: ClientAIProviderConfig[] = [];
+
 export function AddProviderDialog({
   onOpenChange,
   onSuccess,
   open,
-  providers = [],
+  providers = EMPTY_PROVIDERS,
 }: {
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
