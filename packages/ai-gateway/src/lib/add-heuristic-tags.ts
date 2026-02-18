@@ -119,7 +119,7 @@ function getDynamicTags(
   }
 
   // GLM-4+ models get coding + recommended
-  if (matchesVersionFloor(canonicalId, "glm-", 4.5)) {
+  if (matchesVersionFloor(canonicalId, "glm-", 4.7)) {
     return ["coding", "recommended"];
   }
 
