@@ -434,58 +434,58 @@ describe("sessionMachine", () => {
     });
     expect(sessionToShorthand(session)).toMatchInlineSnapshot(
       `
-        "<session title="Test session" count="6">
-          <user>
-            <text>Hello, I need help with something.</text>
-          </user>
-          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
-            <step-start step="1" />
-            <tool tool="read_file" state="output-available" callId="test-call-1">
-              <input>
-                {
-                  "filePath": "test.txt"
-                }
-              </input>
-              <output>
-                {
-                  "content": "Hello, world!",
-                  "displayedLines": 1,
-                  "filePath": "./test.txt",
-                  "hasMoreLines": false,
-                  "offset": 0,
-                  "state": "exists",
-                  "totalLines": 1
-                }
-              </output>
-            </tool>
-          </assistant>
-          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
-            <step-start step="2" />
-            <tool tool="write_file" state="output-available" callId="test-call-2">
-              <input>
-                {
-                  "filePath": "test.txt",
-                  "content": "console.log('Hello, world!');"
-                }
-              </input>
-              <output>
-                {
-                  "content": "console.log('Hello, world!');",
-                  "filePath": "./test.txt",
-                  "isNewFile": false
-                }
-              </output>
-            </tool>
-          </assistant>
-          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
-            <step-start step="3" />
-            <text state="done">I'm done.</text>
-            <data-gitCommit ref="rev-parse HEAD executed successfully in /tmp/workspace/projects/pj-test" />
-          </assistant>
-          <session-context main realRole="system" />
-          <session-context main realRole="user" />
-        </session>"
-      `,
+      "<session title="Test session" count="6">
+        <user>
+          <text>Hello, I need help with something.</text>
+        </user>
+        <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
+          <step-start step="1" />
+          <tool tool="read_file" state="output-available" callId="test-call-1">
+            <input>
+              {
+                "filePath": "test.txt"
+              }
+            </input>
+            <output>
+              {
+                "content": "Hello, world!",
+                "displayedLines": 1,
+                "filePath": "./test.txt",
+                "hasMoreLines": false,
+                "offset": 0,
+                "state": "exists",
+                "totalLines": 1
+              }
+            </output>
+          </tool>
+        </assistant>
+        <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
+          <step-start step="2" />
+          <tool tool="write_file" state="output-available" callId="test-call-2">
+            <input>
+              {
+                "filePath": "test.txt",
+                "content": "console.log('Hello, world!');"
+              }
+            </input>
+            <output>
+              {
+                "content": "console.log('Hello, world!');",
+                "filePath": "./test.txt",
+                "isNewFile": false
+              }
+            </output>
+          </tool>
+        </assistant>
+        <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
+          <step-start step="3" />
+          <text state="done">I'm done.</text>
+          <data-gitCommit ref="-c core.quotepath=false rev-parse HEAD executed successfully in /tmp/workspace/projects/pj-test" />
+        </assistant>
+        <session-context main realRole="system" />
+        <session-context main realRole="user" />
+      </session>"
+    `,
     );
   });
 
@@ -588,54 +588,54 @@ describe("sessionMachine", () => {
     });
 
     expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
-        "<session title="Test session" count="5">
-          <user>
-            <text>Hello, I need help with something.</text>
-          </user>
-          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
-            <step-start step="1" />
-            <tool tool="generate_image" state="output-available" callId="test-call-generate-image">
-              <input>
-                {
-                  "explanation": "Generate a test image",
-                  "filePath": "generated-image",
-                  "prompt": "A beautiful sunset over mountains"
-                }
-              </input>
-              <output>
-                {
-                  "images": [
-                    {
-                      "filePath": "generated-image.png",
-                      "height": 1,
-                      "width": 1,
-                      "sizeBytes": 70
-                    }
-                  ],
-                  "modelId": "mock-image-model",
-                  "provider": {
-                    "id": "mock-provider-config-id",
-                    "type": "quests"
-                  },
-                  "state": "success",
-                  "usage": {
-                    "inputTokens": 10,
-                    "outputTokens": 0,
-                    "totalTokens": 10
+      "<session title="Test session" count="5">
+        <user>
+          <text>Hello, I need help with something.</text>
+        </user>
+        <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
+          <step-start step="1" />
+          <tool tool="generate_image" state="output-available" callId="test-call-generate-image">
+            <input>
+              {
+                "explanation": "Generate a test image",
+                "filePath": "generated-image",
+                "prompt": "A beautiful sunset over mountains"
+              }
+            </input>
+            <output>
+              {
+                "images": [
+                  {
+                    "filePath": "generated-image.png",
+                    "height": 1,
+                    "width": 1,
+                    "sizeBytes": 70
                   }
+                ],
+                "modelId": "mock-image-model",
+                "provider": {
+                  "id": "mock-provider-config-id",
+                  "type": "quests"
+                },
+                "state": "success",
+                "usage": {
+                  "inputTokens": 10,
+                  "outputTokens": 0,
+                  "totalTokens": 10
                 }
-              </output>
-            </tool>
-          </assistant>
-          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
-            <step-start step="2" />
-            <text state="done">I'm done.</text>
-            <data-gitCommit ref="rev-parse HEAD executed successfully in /tmp/workspace/projects/pj-test" />
-          </assistant>
-          <session-context main realRole="system" />
-          <session-context main realRole="user" />
-        </session>"
-      `);
+              }
+            </output>
+          </tool>
+        </assistant>
+        <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
+          <step-start step="2" />
+          <text state="done">I'm done.</text>
+          <data-gitCommit ref="-c core.quotepath=false rev-parse HEAD executed successfully in /tmp/workspace/projects/pj-test" />
+        </assistant>
+        <session-context main realRole="system" />
+        <session-context main realRole="user" />
+      </session>"
+    `);
   });
 
   it("should perform a web search", async () => {
@@ -790,7 +790,7 @@ describe("sessionMachine", () => {
         <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
           <step-start step="2" />
           <text state="done">I'm done.</text>
-          <data-gitCommit ref="rev-parse HEAD executed successfully in /tmp/workspace/projects/pj-test" />
+          <data-gitCommit ref="-c core.quotepath=false rev-parse HEAD executed successfully in /tmp/workspace/projects/pj-test" />
         </assistant>
         <session-context main realRole="system" />
         <session-context main realRole="user" />
