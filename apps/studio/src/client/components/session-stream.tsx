@@ -95,7 +95,14 @@ export function SessionStream({
         project={project}
       />
     ),
-    [isDeveloperMode, onContinue, onModelChange, onRetry, onStartNewChat, project],
+    [
+      isDeveloperMode,
+      onContinue,
+      onModelChange,
+      onRetry,
+      onStartNewChat,
+      project,
+    ],
   );
 
   const renderChatPart = useCallback(
