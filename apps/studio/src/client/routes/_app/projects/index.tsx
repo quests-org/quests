@@ -124,12 +124,9 @@ function RouteComponent() {
     );
   }, [appStates]);
 
-  const evalsCount = useMemo(
-    () =>
-      projects.filter((p) => p.subdomain.startsWith(EVAL_SUBDOMAIN_PREFIX))
-        .length,
-    [projects],
-  );
+  const evalsCount = projects.filter((p) =>
+    p.subdomain.startsWith(EVAL_SUBDOMAIN_PREFIX),
+  ).length;
 
   const filteredProjects = useMemo(() => {
     switch (filterTab) {
