@@ -196,7 +196,7 @@ export const Task = setupTool({
       (toolCounts["tool-grep"] ?? 0) + (toolCounts["tool-glob"] ?? 0);
     if (searchCount > 0) {
       summaryParts.push(
-        `ran ${searchCount} search${searchCount === 1 ? "" : "es"}`,
+        `${searchCount} search${searchCount === 1 ? "" : "es"}`,
       );
     }
 
