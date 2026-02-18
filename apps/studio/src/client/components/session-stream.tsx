@@ -80,6 +80,24 @@ export function SessionStream({
     return lastMessage?.id;
   }, [regularMessages]);
 
+  const renderStream = useCallback(
+    (nestedMessages: SessionMessage.WithParts[]) => (
+      <SessionStream
+        // For now, the child session streams are only shown when they
+        // are done. So avoid showing the loading state.
+        isAgentRunning={false}
+        isDeveloperMode={isDeveloperMode}
+        messages={nestedMessages}
+        onContinue={onContinue}
+        onModelChange={onModelChange}
+        onRetry={onRetry}
+        onStartNewChat={onStartNewChat}
+        project={project}
+      />
+    ),
+    [isDeveloperMode, onContinue, onModelChange, onRetry, onStartNewChat, project],
+  );
+
   const renderChatPart = useCallback(
     (
       part: SessionMessagePart.Type,
@@ -168,20 +186,7 @@ export function SessionStream({
             onRetry={onRetry}
             part={part}
             project={project}
-            renderStream={(nestedMessages) => (
-              <SessionStream
-                // For now, the child session streams are only shown when they
-                // are done. So avoid showing the loading state.
-                isAgentRunning={false}
-                isDeveloperMode={isDeveloperMode}
-                messages={nestedMessages}
-                onContinue={onContinue}
-                onModelChange={onModelChange}
-                onRetry={onRetry}
-                onStartNewChat={onStartNewChat}
-                project={project}
-              />
-            )}
+            renderStream={renderStream}
           />
         );
       }
@@ -231,9 +236,7 @@ export function SessionStream({
       isAgentRunning,
       lastMessageId,
       onRetry,
-      onContinue,
-      onModelChange,
-      onStartNewChat,
+      renderStream,
     ],
   );
 
