@@ -33,5 +33,13 @@ export function AttachmentsCard({
     versionRef: file.gitRef,
   }));
 
-  return <FilesGrid alignEnd compact files={fileItems} folders={folders} />;
+  return (
+    <FilesGrid
+      alignEnd
+      compact
+      files={fileItems}
+      folders={folders}
+      prioritizeUserFiles
+    />
+  );
 }

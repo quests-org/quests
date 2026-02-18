@@ -22,6 +22,7 @@ interface FilesGridProps {
   files: ProjectFileViewerFile[];
   folders?: SessionMessageDataPart.FolderAttachmentDataPart[];
   initialVisibleCount?: number;
+  prioritizeUserFiles?: boolean;
 }
 
 const DEFAULT_INITIAL_VISIBLE_COUNT = 6;
@@ -33,6 +34,7 @@ export function FilesGrid({
   files,
   folders = EMPTY_FOLDERS,
   initialVisibleCount = DEFAULT_INITIAL_VISIBLE_COUNT,
+  prioritizeUserFiles = false,
 }: FilesGridProps) {
   const openFileViewer = useSetAtom(openProjectFileViewerAtom);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -54,6 +56,7 @@ export function FilesGrid({
 
   const sortedOutputFiles = sortByRichPreview(outputFiles);
   const sortedRegularFiles = sortByRichPreview(regularFiles);
+  const sortedUserProvidedFiles = sortByRichPreview(userProvidedFiles);
 
   const handleFileClick = (
     file: ProjectFileViewerFile,
@@ -66,30 +69,32 @@ export function FilesGrid({
     });
   };
 
-  const mainGalleryFiles = [...sortedOutputFiles, ...sortedRegularFiles];
+  const mainFiles = prioritizeUserFiles
+    ? [...sortedUserProvidedFiles, ...sortedOutputFiles, ...sortedRegularFiles]
+    : [...sortedOutputFiles, ...sortedRegularFiles];
 
-  const visibleOutputFiles = sortedOutputFiles.slice(0, initialVisibleCount);
+  const mainGalleryFiles = mainFiles;
+
+  const visibleMainFiles = mainFiles.slice(0, initialVisibleCount);
+  const collapsedUserProvidedFiles = prioritizeUserFiles
+    ? []
+    : userProvidedFiles;
+
   const hasMoreFiles =
-    sortedOutputFiles.length > initialVisibleCount ||
-    sortedRegularFiles.length > 0 ||
+    mainFiles.length > initialVisibleCount ||
     scriptFiles.length > 0 ||
-    userProvidedFiles.length > 0 ||
+    collapsedUserProvidedFiles.length > 0 ||
     agentRetrievedFiles.length > 0;
 
-  const expandedFiles = [
-    ...sortedOutputFiles.slice(initialVisibleCount),
-    ...sortedRegularFiles,
-  ];
+  const expandedFiles = mainFiles.slice(initialVisibleCount);
 
   const hiddenFileCount =
     expandedFiles.length +
     scriptFiles.length +
-    userProvidedFiles.length +
+    collapsedUserProvidedFiles.length +
     agentRetrievedFiles.length;
 
-  const mainFilesToShow = isExpanded
-    ? [...sortedOutputFiles, ...sortedRegularFiles]
-    : visibleOutputFiles;
+  const mainFilesToShow = isExpanded ? mainFiles : visibleMainFiles;
 
   const richPreviewFiles = mainFilesToShow.filter(hasRichPreview);
   const otherFiles = mainFilesToShow.filter((file) => !hasRichPreview(file));
@@ -163,7 +168,7 @@ export function FilesGrid({
           <Button
             onClick={() => {
               setIsExpanded(true);
-              if (outputFiles.length === 0) {
+              if (outputFiles.length === 0 && collapsedUserProvidedFiles.length === 0) {
                 setIsScriptsExpanded(true);
                 setIsUserProvidedExpanded(true);
                 setIsAgentRetrievedExpanded(true);
@@ -199,10 +204,10 @@ export function FilesGrid({
         />
       )}
 
-      {isExpanded && userProvidedFiles.length > 0 && (
+      {isExpanded && collapsedUserProvidedFiles.length > 0 && (
         <CategorizedFileSection
           alignEnd={alignEnd}
-          files={userProvidedFiles}
+          files={collapsedUserProvidedFiles}
           isExpanded={isUserProvidedExpanded}
           onFileClick={handleFileClick}
           onToggle={() => {
