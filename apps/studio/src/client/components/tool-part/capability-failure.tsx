@@ -16,7 +16,7 @@ export function ToolCapabilityFailure({
   capabilityLabel: string;
   errorMessage: string;
   onRetry?: (message: string) => void;
-  providerGuardDescription: string;
+  providerGuardDescription?: string;
   responseBody?: string;
   retryMessage: string;
 }) {
@@ -33,37 +33,39 @@ export function ToolCapabilityFailure({
       {responseBody && (
         <ScrollableCodeBlock>{responseBody}</ScrollableCodeBlock>
       )}
-      <div className="mt-3 flex gap-2">
-        {providerAdded ? (
-          <Button
-            onClick={() => {
-              onRetry?.(retryMessage);
+      {providerGuardDescription && (
+        <div className="mt-3 flex gap-2">
+          {providerAdded ? (
+            <Button
+              onClick={() => {
+                onRetry?.(retryMessage);
+              }}
+              size="sm"
+              variant="default"
+            >
+              Retry {capabilityLabel}
+            </Button>
+          ) : (
+            <Button
+              onClick={() => {
+                setShowProviderGuard(true);
+              }}
+              size="sm"
+              variant="default"
+            >
+              Add an AI Provider
+            </Button>
+          )}
+          <AIProviderGuardDialog
+            description={providerGuardDescription}
+            onOpenChange={setShowProviderGuard}
+            onSuccess={() => {
+              setProviderAdded(true);
             }}
-            size="sm"
-            variant="default"
-          >
-            Retry {capabilityLabel}
-          </Button>
-        ) : (
-          <Button
-            onClick={() => {
-              setShowProviderGuard(true);
-            }}
-            size="sm"
-            variant="default"
-          >
-            Add an AI Provider
-          </Button>
-        )}
-        <AIProviderGuardDialog
-          description={providerGuardDescription}
-          onOpenChange={setShowProviderGuard}
-          onSuccess={() => {
-            setProviderAdded(true);
-          }}
-          open={showProviderGuard}
-        />
-      </div>
+            open={showProviderGuard}
+          />
+        </div>
+      )}
     </div>
   );
 }

@@ -145,14 +145,20 @@ export function ToolContent({
     case "tool-generate_image": {
       if (part.output.state === "failure") {
         return (
-          <ToolCapabilityFailure
-            capabilityLabel="image generation"
-            errorMessage={part.output.errorMessage}
-            onRetry={onRetry}
-            providerGuardDescription="Sign up for Quests or add an AI provider that supports image generation."
-            responseBody={part.output.responseBody}
-            retryMessage={`I added an image generation provider. Retry generating an image with "${part.input.prompt}"`}
-          />
+          <div>
+            <ToolCapabilityFailure
+              capabilityLabel="image generation"
+              errorMessage={part.output.errorMessage}
+              onRetry={onRetry}
+              providerGuardDescription={
+                part.output.errorType === "no-image-model"
+                  ? "Sign up for Quests or add an AI provider that supports image generation."
+                  : undefined
+              }
+              responseBody={part.output.responseBody}
+              retryMessage={`I added an image generation provider. Retry generating an image with "${part.input.prompt}"`}
+            />
+          </div>
         );
       }
       const imageCount = part.output.images.length;
@@ -370,7 +376,11 @@ export function ToolContent({
             capabilityLabel="web search"
             errorMessage={part.output.errorMessage}
             onRetry={onRetry}
-            providerGuardDescription="Sign up for Quests or add an AI provider that supports web search."
+            providerGuardDescription={
+              part.output.errorType === "no-web-search-model"
+                ? "Sign up for Quests or add an AI provider that supports web search."
+                : undefined
+            }
             responseBody={part.output.responseBody}
             retryMessage={`I added a web search provider. Retry searching for "${part.input.query}"`}
           />
