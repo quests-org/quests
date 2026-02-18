@@ -23,7 +23,7 @@ import {
   ProjectSubdomainSchema,
   workspaceRouter,
 } from "@quests/workspace/electron";
-import { app, shell } from "electron";
+import { app, dialog, shell } from "electron";
 import { exec } from "node:child_process";
 import fs from "node:fs/promises";
 import os from "node:os";
@@ -428,6 +428,19 @@ const live = {
   }),
 };
 
+const showFolderPicker = base
+  .output(z.object({ path: z.string() }).nullable())
+  .handler(async () => {
+    const result = await dialog.showOpenDialog({
+      properties: ["openDirectory"],
+    });
+    if (result.canceled || result.filePaths.length === 0) {
+      return null;
+    }
+    const selectedPath = result.filePaths[0];
+    return selectedPath ? { path: selectedPath } : null;
+  });
+
 export const utils = {
   clearExceptions,
   exportZip,
@@ -438,5 +451,6 @@ export const utils = {
   openExternalLink,
   openFolder,
   showFileInFolder,
+  showFolderPicker,
   showProjectFileInFolder,
 };

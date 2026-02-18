@@ -20,6 +20,7 @@ import {
   useWindowFileDrop,
 } from "@/client/lib/use-window-file-drop";
 import { cn, isMacOS } from "@/client/lib/utils";
+import { safe } from "@orpc/client";
 import { type AIGatewayModelURI } from "@quests/ai-gateway/client";
 import { QUESTS_AUTO_MODEL_ID } from "@quests/shared";
 import { type FileUpload } from "@quests/workspace/client";
@@ -122,7 +123,6 @@ export const PromptInput = ({
   const textareaRef = useRef<HTMLDivElement>(null);
   const textareaInnerRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const folderInputRef = useRef<HTMLInputElement>(null);
   const [value, setValue] = useAtom(promptValueAtomFamily(atomKey));
 
   useImperativeHandle(ref, () => ({
@@ -256,34 +256,28 @@ export const PromptInput = ({
     }
   };
 
-  const handleFolderSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) {
+  const handleFolderPick = async () => {
+    const [error, result] = await safe(
+      rpcClient.utils.showFolderPicker.call({}),
+    );
+    if (error) {
+      toast.error("Failed to open folder picker");
       return;
     }
-
-    const firstFile = files[0];
-    if (firstFile) {
-      const path = window.api.getFilePath(firstFile);
-      if (path) {
-        const sep = path.includes("\\") ? "\\" : "/";
-        const folderPath = path.slice(0, path.lastIndexOf(sep));
-        setAttachedItems((prev) => {
-          if (prev.some((i) => i.type === "folder" && i.path === folderPath)) {
-            toast.info(`"${folderNameFromPath(folderPath)}" is already added`, {
-              description:
-                "That folder has already been attached. Each folder can only be added once.",
-            });
-            return prev;
-          }
-          return [...prev, { id: ulid(), path: folderPath, type: "folder" }];
+    if (!result) {
+      return;
+    }
+    const folderPath = result.path;
+    setAttachedItems((prev) => {
+      if (prev.some((i) => i.type === "folder" && i.path === folderPath)) {
+        toast.info(`"${folderNameFromPath(folderPath)}" is already added`, {
+          description:
+            "That folder has already been attached. Each folder can only be added once.",
         });
+        return prev;
       }
-    }
-
-    if (folderInputRef.current) {
-      folderInputRef.current.value = "";
-    }
+      return [...prev, { id: ulid(), path: folderPath, type: "folder" }];
+    });
   };
 
   const attachedFiles = attachedItems.filter((i) => i.type === "file");
@@ -508,15 +502,6 @@ export const PromptInput = ({
           ref={fileInputRef}
           type="file"
         />
-        <input
-          className="hidden"
-          onChange={handleFolderSelect}
-          ref={folderInputRef}
-          type="file"
-          // @ts-expect-error - webkitdirectory is not in the JSX types
-          webkitdirectory=""
-        />
-
         <div className="flex items-center justify-end gap-2 pt-2">
           <div className="flex min-w-0 flex-1 items-center gap-2">
             <div className="min-w-0 flex-1">
@@ -557,7 +542,7 @@ export const PromptInput = ({
                 <File />
                 Add files
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => folderInputRef.current?.click()}>
+              <DropdownMenuItem onClick={() => void handleFolderPick()}>
                 <Folder />
                 Add folder
               </DropdownMenuItem>
