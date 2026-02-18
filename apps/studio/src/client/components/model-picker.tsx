@@ -379,11 +379,11 @@ function ErrorsGroup({
         </div>
       }
     >
-      {errors.map((error, index) => (
+      {errors.map((error) => (
         <CommandItem
           className="flex cursor-default items-center py-2 data-disabled:opacity-80!"
           disabled
-          key={index}
+          key={error.config.id}
         >
           <AlertCircle className="mr-2 size-4 shrink-0 text-destructive" />
           <div className="flex min-w-0 flex-1 flex-col gap-1">

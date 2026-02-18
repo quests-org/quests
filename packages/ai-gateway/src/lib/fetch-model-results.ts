@@ -15,6 +15,7 @@ export async function fetchModelResultsForProviders(
       return {
         config: {
           displayName: config.displayName || metadata.name,
+          id: config.id,
           type: config.type,
         },
         message:

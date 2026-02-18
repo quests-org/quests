@@ -15,6 +15,7 @@ const ListSchema = z.object({
     z.object({
       config: AIGatewayProviderConfig.Schema.pick({
         displayName: true,
+        id: true,
         type: true,
       }),
       message: z.string(),

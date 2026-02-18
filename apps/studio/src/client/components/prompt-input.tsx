@@ -42,6 +42,7 @@ import {
   useState,
 } from "react";
 import { toast } from "sonner";
+import { ulid } from "ulid";
 
 import {
   promptValueAtomFamily,
@@ -52,6 +53,7 @@ import { rpcClient } from "../rpc/client";
 type AttachedItem =
   | {
       content: string;
+      id: string;
       mimeType: string;
       name: string;
       size: number;
@@ -59,6 +61,7 @@ type AttachedItem =
       url?: string;
     }
   | {
+      id: string;
       path: string;
       type: "folder";
     };
@@ -185,6 +188,7 @@ export const PromptInput = ({
           ...prev,
           {
             content: base64,
+            id: ulid(),
             mimeType: file.type,
             name: file.name,
             size: file.size,
@@ -211,7 +215,7 @@ export const PromptInput = ({
           if (existingPaths.has(folder.path)) {
             duplicates.push(folderNameFromPath(folder.path));
           } else {
-            newFolders.push({ path: folder.path, type: "folder" });
+            newFolders.push({ id: ulid(), path: folder.path, type: "folder" });
           }
         }
 
@@ -262,7 +266,7 @@ export const PromptInput = ({
             });
             return prev;
           }
-          return [...prev, { path: folderPath, type: "folder" }];
+          return [...prev, { id: ulid(), path: folderPath, type: "folder" }];
         });
       }
     }
@@ -401,6 +405,7 @@ export const PromptInput = ({
           ...prev,
           {
             content: base64,
+            id: ulid(),
             mimeType: "text/plain",
             name: filename,
             size: blob.size,
@@ -443,7 +448,7 @@ export const PromptInput = ({
               item.type === "folder" ? (
                 <AttachedFolderPreview
                   folderPath={item.path}
-                  key={`folder-${item.path}-${index}`}
+                  key={item.id}
                   onRemove={() => {
                     removeAttachedItem(index);
                   }}
@@ -451,7 +456,7 @@ export const PromptInput = ({
               ) : (
                 <AttachedFilePreview
                   filename={item.name}
-                  key={`file-${item.name}-${index}`}
+                  key={item.id}
                   mimeType={item.mimeType}
                   onClick={() => {
                     if (item.url) {
