@@ -220,9 +220,17 @@ export const PromptInput = ({
         }
 
         if (duplicates.length > 0) {
+          const names = duplicates.join(", ");
           toast.info(
-            `${duplicates.length === 1 ? "Folder" : "Folders"} already attached`,
-            { description: duplicates.join(", ") },
+            duplicates.length === 1
+              ? `"${names}" is already added`
+              : `Some folders are already added`,
+            {
+              description:
+                duplicates.length === 1
+                  ? "That folder has already been attached. Each folder can only be added once."
+                  : `${names} have already been attached. Each folder can only be added once.`,
+            },
           );
         }
 
@@ -261,8 +269,9 @@ export const PromptInput = ({
         const folderPath = path.slice(0, path.lastIndexOf("/"));
         setAttachedItems((prev) => {
           if (prev.some((i) => i.type === "folder" && i.path === folderPath)) {
-            toast.info("Folder already attached", {
-              description: folderNameFromPath(folderPath),
+            toast.info(`"${folderNameFromPath(folderPath)}" is already added`, {
+              description:
+                "That folder has already been attached. Each folder can only be added once.",
             });
             return prev;
           }
