@@ -17,7 +17,6 @@ export function git(
   options: Omit<IGitBufferExecutionOptions, "encoding">,
 ): ResultAsync<IGitBufferResult, TypedError.Git> {
   return ResultAsync.fromPromise(
-    // cspell:ignore quotepath
     // core.quotepath=false prevents git from octal-escaping non-ASCII characters
     // in filenames (e.g. the narrow no-break space U+202F in macOS screenshot names)
     exec(["-c", "core.quotepath=false", ...args], path, {
