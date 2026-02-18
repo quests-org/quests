@@ -1,6 +1,7 @@
 import { ok, ResultAsync, safeTry } from "neverthrow";
 import fs from "node:fs/promises";
 import path from "node:path";
+import { ulid } from "ulid";
 
 import { APP_FOLDER_NAMES } from "../constants";
 import { type FileUpload } from "../schemas/file-upload";
@@ -125,7 +126,7 @@ export async function writeUploadedAttachments({
 
         const folderAttachment: FolderAttachment.Type = {
           createdAt: getCurrentDate().getTime(),
-          id: FolderAttachment.IdSchema.parse(uniqueName),
+          id: FolderAttachment.IdSchema.parse(ulid()),
           name: uniqueName,
           path: AbsolutePathSchema.parse(folder.path),
         };
