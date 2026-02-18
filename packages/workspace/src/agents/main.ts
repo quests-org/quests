@@ -131,6 +131,7 @@ export const mainAgent = setupAgent({
     - If you need files from outside the project, the ${RETRIEVAL_AGENT_NAME} agent can copy them into the project folder first (if the user has attached those folders), then work with the relative paths within the project folder.
 
     # Tools Usage Guidance
+    - When a tool fails due to a format or compatibility issue, try alternative approaches (e.g. a different file format or method) before giving up. If you're stuck, ask the user if they can provide the file in a different format rather than directing them to use another app.
     - For better performance, try to batch tool calls together when possible.
     - Use parallel tool calls whenever possible to improve efficiency and reduce costs.
     - Use the \`${TOOL_EXPLANATION_PARAM_NAME}\` parameter for tools instead of replying when possible.
