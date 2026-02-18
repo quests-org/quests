@@ -264,7 +264,8 @@ export function ToolContent({
               ))}
               {matches.length > 10 && (
                 <div className="text-xs text-muted-foreground">
-                  ... and {matches.length - 10} more matches
+                  ... and {matches.length - 10} more{" "}
+                  {matches.length - 10 === 1 ? "match" : "matches"}
                 </div>
               )}
             </div>
