@@ -110,7 +110,6 @@ async function getAISDKImageModel({
       const model = sdk.image("black-forest-labs/FLUX-1-schnell");
       return Result.ok({ model, type: "image" as const });
     }
-    // Providers that use generateImage (image models)
     case "fireworks": {
       const sdk = await createFireworksSDK(config, workspaceServerURL);
       const model = sdk.imageModel(
@@ -119,11 +118,10 @@ async function getAISDKImageModel({
       );
       return Result.ok({ model, type: "image" as const });
     }
-    // Providers that use generateText (language models)
     case "google": {
       const sdk = await createGoogleSDK(config, workspaceServerURL);
-      const model = sdk("gemini-2.5-flash-image");
-      return Result.ok({ model, type: "language" as const });
+      const model = sdk.imageModel("gemini-2.5-flash-image");
+      return Result.ok({ model, type: "image" as const });
     }
     case "openai": {
       const sdk = await createOpenAISDK(config, workspaceServerURL);
