@@ -2,6 +2,7 @@ import {
   type AIGatewayModel,
   type AIGatewayProviderConfig,
   getImageModel,
+  type ImageGenerationProviderType,
 } from "@quests/ai-gateway";
 import { type WorkspaceServerURL } from "@quests/shared";
 import { APICallError, generateImage, generateText } from "ai";
@@ -10,12 +11,20 @@ import { err, ResultAsync } from "neverthrow";
 import { type WorkspaceConfig } from "../types";
 import { TypedError } from "./errors";
 
+const SOURCE_IMAGE_LIMITS: Partial<
+  Record<ImageGenerationProviderType, number>
+> = {
+  fireworks: 1,
+  "x-ai": 1,
+};
+
 export async function generateImages({
   callingModel,
   configs,
   count,
   prompt,
   signal,
+  sourceImages,
   workspaceConfig,
   workspaceServerURL,
 }: {
@@ -24,6 +33,7 @@ export async function generateImages({
   count: number;
   prompt: string;
   signal: AbortSignal;
+  sourceImages?: Buffer[];
   workspaceConfig: WorkspaceConfig;
   workspaceServerURL: WorkspaceServerURL;
 }) {
@@ -41,19 +51,51 @@ export async function generateImages({
 
   const { config, model, type } = resolved;
 
+  if (sourceImages && sourceImages.length > 0) {
+    const maxSourceImages = SOURCE_IMAGE_LIMITS[config.type];
+    if (
+      maxSourceImages !== undefined &&
+      sourceImages.length > maxSourceImages
+    ) {
+      return err(
+        new TypedError.ProviderLimitation(
+          `The ${config.displayName ?? config.type} provider supports at most ${maxSourceImages} source image${maxSourceImages === 1 ? "" : "s"} per request, but ${sourceImages.length} were provided.`,
+        ),
+      );
+    }
+  }
+
   const generateResult = await ResultAsync.fromPromise(
     (async () => {
       if (type === "language") {
-        const textResult = await generateText({
-          abortSignal: signal,
-          model,
-          prompt,
-        });
+        const textResult =
+          sourceImages && sourceImages.length > 0
+            ? await generateText({
+                abortSignal: signal,
+                messages: [
+                  {
+                    content: [
+                      ...sourceImages.map((buf) => ({
+                        image: buf,
+                        type: "image" as const,
+                      })),
+                      { text: prompt, type: "text" as const },
+                    ],
+                    role: "user" as const,
+                  },
+                ],
+                model,
+              })
+            : await generateText({
+                abortSignal: signal,
+                model,
+                prompt,
+              });
 
         return {
+          config,
           images: textResult.files,
           modelId: model.modelId,
-          provider: config,
           usage: textResult.usage,
         };
       }
@@ -62,13 +104,16 @@ export async function generateImages({
         abortSignal: signal,
         model,
         n: count,
-        prompt,
+        prompt:
+          sourceImages && sourceImages.length > 0
+            ? { images: sourceImages, text: prompt }
+            : prompt,
       });
 
       return {
+        config,
         images: imageResult.images,
         modelId: model.modelId,
-        provider: config,
         usage: imageResult.usage,
       };
     })(),

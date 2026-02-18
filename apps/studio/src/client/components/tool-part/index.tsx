@@ -5,6 +5,7 @@ import {
   type WorkspaceAppProject,
 } from "@quests/workspace/client";
 import { Loader2Icon } from "lucide-react";
+import { sift } from "radashi";
 import { type ReactNode, useState } from "react";
 
 import { filenameFromFilePath } from "../../lib/path-utils";
@@ -195,6 +196,7 @@ export function ToolPart({
   }
 
   const webSearchSources = getWebSearchSources(part);
+  const generateImageSourceImages = getGenerateImageSourceImages(part);
 
   const mainContent = (
     <ToolPartListItemCompact
@@ -225,6 +227,20 @@ export function ToolPart({
             <span className="shrink-0 text-muted-foreground">
               {webSearchSources.length} source
               {webSearchSources.length === 1 ? "" : "s"}
+            </span>
+          </span>
+        ) : generateImageSourceImages.length > 0 ? (
+          <span className="flex items-center gap-1.5">
+            <span className="truncate">{value}</span>
+            <span className="flex shrink-0 items-center -space-x-1">
+              {generateImageSourceImages.slice(0, 4).map((filePath, index) => (
+                <img
+                  alt={filenameFromFilePath(filePath)}
+                  className="size-3.5 rounded-sm object-cover ring-1 ring-background"
+                  key={`${filePath}-${index}`}
+                  src={`${project.urls.assetBase}/${filePath.startsWith("./") ? filePath.slice(2) : filePath}`}
+                />
+              ))}
             </span>
           </span>
         ) : (
@@ -295,6 +311,19 @@ function getExplanation(input: unknown): string | undefined {
     return typeof explanation === "string" ? explanation : undefined;
   }
   return undefined;
+}
+
+function getGenerateImageSourceImages(
+  part: SessionMessagePart.ToolPart,
+): string[] {
+  if (
+    part.type === "tool-generate_image" &&
+    part.input?.sourceImages &&
+    part.input.sourceImages.length > 0
+  ) {
+    return sift(part.input.sourceImages);
+  }
+  return [];
 }
 
 function getToolInputValue(

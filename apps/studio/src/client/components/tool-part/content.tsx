@@ -1,3 +1,5 @@
+import { type ProjectFileViewerFile } from "@/client/atoms/project-file-viewer";
+import { getAssetUrl } from "@/client/lib/get-asset-url";
 import {
   formatBytes,
   type SessionMessage,
@@ -6,9 +8,11 @@ import {
 } from "@quests/workspace/client";
 import { type ReactNode } from "react";
 
+import { filenameFromFilePath } from "../../lib/path-utils";
 import { AIProviderIcon } from "../ai-provider-icon";
 import { ExternalLink } from "../external-link";
 import { Favicon } from "../favicon";
+import { FilesGrid } from "../files-grid";
 import { SessionMarkdown } from "../session-markdown";
 import { Badge } from "../ui/badge";
 import { ToolCapabilityFailure } from "./capability-failure";
@@ -143,9 +147,31 @@ export function ToolContent({
       );
     }
     case "tool-generate_image": {
+      const sourceImages = part.input.sourceImages ?? [];
+      const sourceImageFiles: ProjectFileViewerFile[] = sourceImages.map(
+        (filePath) => ({
+          filename: filenameFromFilePath(filePath),
+          filePath,
+          mimeType: "image/*",
+          projectSubdomain: project.subdomain,
+          url: getAssetUrl({ assetBase: project.urls.assetBase, filePath }),
+          versionRef: "",
+        }),
+      );
+      const sourceImageThumbnails = sourceImageFiles.length > 0 && (
+        <div className="mb-3">
+          <SectionHeader>
+            {sourceImageFiles.length === 1 ? "Source image" : "Source images"}
+          </SectionHeader>
+          <div className="mt-1">
+            <FilesGrid compact files={sourceImageFiles} />
+          </div>
+        </div>
+      );
       if (part.output.state === "failure") {
         return (
           <div>
+            {sourceImageThumbnails}
             <ToolCapabilityFailure
               capabilityLabel="image generation"
               errorMessage={part.output.errorMessage}
@@ -174,6 +200,7 @@ export function ToolContent({
             />
             <MonoText className="text-xs">{part.output.modelId}</MonoText>
           </div>
+          {sourceImageThumbnails}
           <SectionHeader>
             {imageCount === 1
               ? "Generated image"
