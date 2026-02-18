@@ -36,7 +36,7 @@ export function DiscoverHorizontalSection({
     checkScroll();
     const container = containerRef.current;
     if (container) {
-      container.addEventListener("scroll", checkScroll);
+      container.addEventListener("scroll", checkScroll, { passive: true });
       return () => {
         container.removeEventListener("scroll", checkScroll);
       };

@@ -63,7 +63,7 @@ export const ReasoningMessage = memo(function ReasoningMessage({
     }
 
     updateScrollState();
-    container.addEventListener("scroll", updateScrollState);
+    container.addEventListener("scroll", updateScrollState, { passive: true });
 
     // Also check on content changes
     const resizeObserver = new ResizeObserver(updateScrollState);
