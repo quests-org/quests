@@ -266,7 +266,8 @@ export const PromptInput = ({
     if (firstFile) {
       const path = window.api.getFilePath(firstFile);
       if (path) {
-        const folderPath = path.slice(0, path.lastIndexOf("/"));
+        const sep = path.includes("\\") ? "\\" : "/";
+        const folderPath = path.slice(0, path.lastIndexOf(sep));
         setAttachedItems((prev) => {
           if (prev.some((i) => i.type === "folder" && i.path === folderPath)) {
             toast.info(`"${folderNameFromPath(folderPath)}" is already added`, {
