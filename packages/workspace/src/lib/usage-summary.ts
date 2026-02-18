@@ -1,11 +1,12 @@
 import { parallel, sum } from "radashi";
 import { z } from "zod";
 
+import { type SessionMessage } from "../schemas/session/message";
 import { type AppConfig } from "./app-config/types";
 import { isToolPart } from "./is-tool-part";
 import { Store } from "./store";
 
-export const ProjectUsageSummarySchema = z.object({
+export const UsageSummarySchema = z.object({
   inputTokenDetails: z.object({
     cacheReadTokens: z.number(),
     cacheWriteTokens: z.number(),
@@ -22,15 +23,34 @@ export const ProjectUsageSummarySchema = z.object({
   totalTokens: z.number(),
 });
 
-type ProjectUsageSummary = z.output<typeof ProjectUsageSummarySchema>;
+type UsageSummary = z.output<typeof UsageSummarySchema>;
+
+export function emptyUsageSummary(): UsageSummary {
+  return {
+    inputTokenDetails: {
+      cacheReadTokens: 0,
+      cacheWriteTokens: 0,
+      noCacheTokens: 0,
+    },
+    inputTokens: 0,
+    messageCount: 0,
+    msToFinish: 0,
+    outputTokenDetails: {
+      reasoningTokens: 0,
+      textTokens: 0,
+    },
+    outputTokens: 0,
+    totalTokens: 0,
+  };
+}
 
 export async function getProjectUsageSummary(
   appConfig: AppConfig,
   { signal }: { signal?: AbortSignal } = {},
-): Promise<ProjectUsageSummary> {
+): Promise<UsageSummary> {
   const sessionIdsResult = await Store.getStoreId(appConfig, { signal });
   if (sessionIdsResult.isErr()) {
-    return empty();
+    return emptyUsageSummary();
   }
 
   const messageGroups = await parallel(
@@ -60,8 +80,12 @@ export async function getProjectUsageSummary(
     },
   );
 
-  const allMessages = messageGroups.flat();
+  return getUsageSummaryFromMessages(messageGroups.flat());
+}
 
+export function getUsageSummaryFromMessages(
+  allMessages: SessionMessage.WithParts[],
+): UsageSummary {
   const assistantMessages = allMessages.filter((m) => m.role === "assistant");
 
   const toolParts = assistantMessages.flatMap((m) =>
@@ -117,25 +141,6 @@ export async function getProjectUsageSummary(
     totalTokens:
       sum(assistantMessages, (m) => finite(m.metadata.usage?.totalTokens)) +
       sum(toolParts, (p) => finite(p.usage.totalTokens)),
-  };
-}
-
-function empty(): ProjectUsageSummary {
-  return {
-    inputTokenDetails: {
-      cacheReadTokens: 0,
-      cacheWriteTokens: 0,
-      noCacheTokens: 0,
-    },
-    inputTokens: 0,
-    messageCount: 0,
-    msToFinish: 0,
-    outputTokenDetails: {
-      reasoningTokens: 0,
-      textTokens: 0,
-    },
-    outputTokens: 0,
-    totalTokens: 0,
   };
 }
 

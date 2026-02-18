@@ -1,12 +1,18 @@
 import { call, eventIterator } from "@orpc/server";
 import { AIGatewayModelURI, fetchModel } from "@quests/ai-gateway";
 import { mergeGenerators } from "@quests/shared/merge-generators";
+import { parallel } from "radashi";
 import { z } from "zod";
 
 import { createAppConfig } from "../../lib/app-config/create";
 import { createSession } from "../../lib/create-session";
 import { newMessage } from "../../lib/new-message";
 import { Store } from "../../lib/store";
+import {
+  emptyUsageSummary,
+  getUsageSummaryFromMessages,
+  UsageSummarySchema,
+} from "../../lib/usage-summary";
 import { FileUpload } from "../../schemas/file-upload";
 import { SessionMessage } from "../../schemas/session/message";
 import { StoreId } from "../../schemas/store-id";
@@ -194,9 +200,48 @@ const live = {
     }),
 };
 
+const MessageRefSchema = z.object({
+  messageId: StoreId.MessageSchema,
+  sessionId: StoreId.SessionSchema,
+});
+
+const usageSummary = base
+  .input(
+    z.object({
+      messages: z.array(MessageRefSchema),
+      subdomain: AppSubdomainSchema,
+    }),
+  )
+  .output(UsageSummarySchema)
+  .handler(async ({ context, input, signal }) => {
+    const { messages, subdomain } = input;
+    const { workspaceConfig } = context;
+    const appConfig = createAppConfig({ subdomain, workspaceConfig });
+
+    const results = await parallel(
+      { limit: 10, signal },
+      messages,
+      async ({ messageId, sessionId }) => {
+        const result = await Store.getMessageWithParts(
+          { appConfig, messageId, sessionId },
+          { signal },
+        );
+        return result.isOk() ? result.value : null;
+      },
+    );
+
+    const loaded = results.filter((m) => m !== null);
+    if (loaded.length === 0) {
+      return emptyUsageSummary();
+    }
+
+    return getUsageSummaryFromMessages(loaded);
+  });
+
 export const message = {
   count,
   create,
   list: listWithParts,
   live,
+  usageSummary,
 };

@@ -11,10 +11,6 @@ import { duplicateProject } from "../../../lib/duplicate-project";
 import { exportProjectZip } from "../../../lib/export-project-zip";
 import { generateProjectTitle } from "../../../lib/generate-project-title";
 import { getApp, getProjects } from "../../../lib/get-apps";
-import {
-  getProjectUsageSummary,
-  ProjectUsageSummarySchema,
-} from "../../../lib/get-project-usage-summary";
 import { getWorkspaceAppForSubdomain } from "../../../lib/get-workspace-app-for-subdomain";
 import { importProject as importProjectLib } from "../../../lib/import-project";
 import { initializeProject } from "../../../lib/initialize-project";
@@ -25,6 +21,10 @@ import {
   updateProjectManifest,
 } from "../../../lib/project-manifest";
 import { trashProject } from "../../../lib/trash-project";
+import {
+  getProjectUsageSummary,
+  UsageSummarySchema,
+} from "../../../lib/usage-summary";
 import { WorkspaceAppProjectSchema } from "../../../schemas/app";
 import { FileUpload } from "../../../schemas/file-upload";
 import { AbsolutePathSchema } from "../../../schemas/paths";
@@ -526,7 +526,7 @@ const live = {
 
 const usageSummary = base
   .input(z.object({ subdomain: ProjectSubdomainSchema }))
-  .output(ProjectUsageSummarySchema)
+  .output(UsageSummarySchema)
   .handler(async ({ context, input, signal }) => {
     const { subdomain } = input;
     const { workspaceConfig } = context;
@@ -536,7 +536,7 @@ const usageSummary = base
 
 const liveUsageSummary = base
   .input(z.object({ subdomain: ProjectSubdomainSchema }))
-  .output(eventIterator(ProjectUsageSummarySchema))
+  .output(eventIterator(UsageSummarySchema))
   .handler(async function* ({ context, input, signal }) {
     yield call(usageSummary, input, { context, signal });
 

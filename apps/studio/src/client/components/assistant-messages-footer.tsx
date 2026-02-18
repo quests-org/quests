@@ -1,15 +1,15 @@
 import {
+  type AppSubdomain,
   type SessionMessage,
   type SessionMessagePart,
 } from "@quests/workspace/client";
 import { useQuery } from "@tanstack/react-query";
 import { FileText } from "lucide-react";
-import { guard, sift } from "radashi";
+import { sift } from "radashi";
 import { useMemo, useState } from "react";
 
 import { formatNumber } from "../lib/format-number";
 import { formatDuration } from "../lib/format-time";
-import { isValidNumber, safeAdd } from "../lib/usage-utils";
 import { cn } from "../lib/utils";
 import { rpcClient } from "../rpc/client";
 import { CopyButton } from "./copy-button";
@@ -24,9 +24,11 @@ import {
   CollapsibleTrigger,
 } from "./ui/collapsible";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
+import { UsageStatsTooltip } from "./usage-stats-tooltip";
 
 interface AssistantMessagesFooterProps {
   messages: SessionMessage.AssistantWithParts[];
+  subdomain: AppSubdomain;
 }
 
 interface ModelUsageData {
@@ -41,12 +43,29 @@ interface ModelUsageData {
 
 export function AssistantMessagesFooter({
   messages,
+  subdomain,
 }: AssistantMessagesFooterProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const { data: preferences } = useQuery(
     rpcClient.preferences.live.get.experimental_liveOptions(),
   );
   const isDeveloperMode = preferences?.developerMode;
+
+  const messageRefs = useMemo(
+    () =>
+      messages.map((m) => ({
+        messageId: m.id,
+        sessionId: m.metadata.sessionId,
+      })),
+    [messages],
+  );
+
+  const { data: usageSummary } = useQuery({
+    ...rpcClient.workspace.message.usageSummary.queryOptions({
+      input: { messages: messageRefs, subdomain },
+    }),
+    enabled: isDeveloperMode,
+  });
 
   const { latestCreatedAt, messageText, modelsUsed, sources, totalDuration } =
     useMemo(() => {
@@ -83,9 +102,7 @@ export function AssistantMessagesFooter({
           const aiGatewayModel = message.metadata.aiGatewayModel;
           const key = aiGatewayModel?.uri ?? modelId;
           const label = aiGatewayModel?.name ?? modelId;
-
           const existing = modelMap.get(key);
-          const usage = message.metadata.usage;
 
           modelMap.set(key, {
             aiGatewayModel,
@@ -93,55 +110,50 @@ export function AssistantMessagesFooter({
             modelId,
             stats: {
               inputTokenDetails: {
-                cacheReadTokens: safeAdd(
-                  existing?.stats.inputTokenDetails.cacheReadTokens,
-                  usage?.inputTokenDetails.cacheReadTokens,
-                ),
-                cacheWriteTokens: safeAdd(
-                  existing?.stats.inputTokenDetails.cacheWriteTokens,
-                  usage?.inputTokenDetails.cacheWriteTokens,
-                ),
-                noCacheTokens: safeAdd(
-                  existing?.stats.inputTokenDetails.noCacheTokens,
-                  usage?.inputTokenDetails.noCacheTokens,
-                ),
+                cacheReadTokens:
+                  (existing?.stats.inputTokenDetails.cacheReadTokens ?? 0) +
+                  (message.metadata.usage?.inputTokenDetails.cacheReadTokens ??
+                    0),
+                cacheWriteTokens:
+                  (existing?.stats.inputTokenDetails.cacheWriteTokens ?? 0) +
+                  (message.metadata.usage?.inputTokenDetails.cacheWriteTokens ??
+                    0),
+                noCacheTokens:
+                  (existing?.stats.inputTokenDetails.noCacheTokens ?? 0) +
+                  (message.metadata.usage?.inputTokenDetails.noCacheTokens ??
+                    0),
               },
-              inputTokens: safeAdd(
-                existing?.stats.inputTokens,
-                usage?.inputTokens,
-              ),
-              msToFinish: safeAdd(
-                existing?.stats.msToFinish,
-                message.metadata.msToFinish,
-              ),
+              inputTokens:
+                (existing?.stats.inputTokens ?? 0) +
+                (message.metadata.usage?.inputTokens ?? 0),
+              msToFinish:
+                (existing?.stats.msToFinish ?? 0) +
+                (message.metadata.msToFinish ?? 0),
               msToFirstChunk:
                 existing?.stats.msToFirstChunk ??
                 message.metadata.msToFirstChunk,
               outputTokenDetails: {
-                reasoningTokens: safeAdd(
-                  existing?.stats.outputTokenDetails.reasoningTokens,
-                  usage?.outputTokenDetails.reasoningTokens,
-                ),
-                textTokens: safeAdd(
-                  existing?.stats.outputTokenDetails.textTokens,
-                  usage?.outputTokenDetails.textTokens,
-                ),
+                reasoningTokens:
+                  (existing?.stats.outputTokenDetails.reasoningTokens ?? 0) +
+                  (message.metadata.usage?.outputTokenDetails.reasoningTokens ??
+                    0),
+                textTokens:
+                  (existing?.stats.outputTokenDetails.textTokens ?? 0) +
+                  (message.metadata.usage?.outputTokenDetails.textTokens ?? 0),
               },
-              outputTokens: safeAdd(
-                existing?.stats.outputTokens,
-                usage?.outputTokens,
-              ),
-              totalTokens: safeAdd(
-                existing?.stats.totalTokens,
-                usage?.totalTokens,
-              ),
+              outputTokens:
+                (existing?.stats.outputTokens ?? 0) +
+                (message.metadata.usage?.outputTokens ?? 0),
+              totalTokens:
+                (existing?.stats.totalTokens ?? 0) +
+                (message.metadata.usage?.totalTokens ?? 0),
             },
           });
         }
       }
 
       const totalMs = [...modelMap.values()].reduce(
-        (sum, model) => sum + model.stats.msToFinish,
+        (acc, model) => acc + model.stats.msToFinish,
         0,
       );
 
@@ -183,29 +195,9 @@ export function AssistantMessagesFooter({
           <TooltipContent>Copy message</TooltipContent>
         </Tooltip>
         {totalDuration > 0 && (
-          <Tooltip disableHoverableContent={!isDeveloperMode}>
-            <TooltipTrigger asChild disabled={!isDeveloperMode}>
-              <span className="cursor-default text-xs text-muted-foreground">
-                {formatDuration(totalDuration)}
-              </span>
-            </TooltipTrigger>
-            {isDeveloperMode && modelsUsed.length > 0 && (
-              <TooltipContent align="start" className="p-3 text-xs" side="top">
-                <div className="space-y-2">
-                  {modelsUsed.map((model, index) => (
-                    <div key={model.aiGatewayModel?.uri ?? model.modelId}>
-                      {index > 0 && (
-                        <div className="my-2 border-t border-muted" />
-                      )}
-                      {getDeveloperModeRows(model).map((row) => (
-                        <TooltipRow key={row.label} {...row} />
-                      ))}
-                    </div>
-                  ))}
-                </div>
-              </TooltipContent>
-            )}
-          </Tooltip>
+          <span className="cursor-default text-xs text-muted-foreground">
+            {formatDuration(totalDuration)}
+          </span>
         )}
         {sources.length > 0 && (
           <CollapsibleTrigger asChild>
@@ -257,6 +249,31 @@ export function AssistantMessagesFooter({
               </div>
             ))}
           </div>
+        )}
+        {isDeveloperMode && usageSummary && (
+          <UsageStatsTooltip
+            stats={{
+              inputTokenDetails: usageSummary.inputTokenDetails,
+              inputTokens: usageSummary.inputTokens,
+              outputTokenDetails: usageSummary.outputTokenDetails,
+              outputTokens: usageSummary.outputTokens,
+              totalDuration: usageSummary.msToFinish,
+              totalTokens: usageSummary.totalTokens,
+            }}
+          >
+            <div className="flex items-center gap-2 text-[10px] text-warning-foreground/60 transition-colors hover:text-warning-foreground">
+              <span className="whitespace-nowrap">
+                {usageSummary.messageCount}{" "}
+                {usageSummary.messageCount === 1 ? "message" : "messages"}
+              </span>
+              {usageSummary.totalTokens > 0 && (
+                <span className="whitespace-nowrap tabular-nums">
+                  {formatNumber(usageSummary.totalTokens)}{" "}
+                  {usageSummary.totalTokens === 1 ? "token" : "tokens"}
+                </span>
+              )}
+            </div>
+          </UsageStatsTooltip>
         )}
         {latestCreatedAt && (
           <RelativeTime
@@ -333,54 +350,6 @@ function extractUniqueUrls(
     }
   }
   return [...urls].slice(0, 3);
-}
-
-const makeStatRow = (label: string, value: false | string | undefined) =>
-  value && { label, value };
-
-const formatTokenCount = (count: number) =>
-  guard(() => count > 0 && formatNumber(count));
-
-const formatTimeMs = (ms: number | undefined) =>
-  guard(() => isValidNumber(ms) && formatDuration(ms));
-
-function getDeveloperModeRows(model: ModelUsageData): {
-  isWarning?: boolean;
-  label: string;
-  tabular?: boolean;
-  value: string;
-}[] {
-  return sift([
-    makeStatRow(
-      "Time to first chunk:",
-      formatTimeMs(model.stats.msToFirstChunk),
-    ),
-    makeStatRow(
-      "Input tokens:",
-      formatTokenCount(model.stats.inputTokens ?? 0),
-    ),
-    makeStatRow(
-      "Output tokens:",
-      formatTokenCount(model.stats.outputTokens ?? 0),
-    ),
-    makeStatRow(
-      "Reasoning tokens:",
-      formatTokenCount(model.stats.outputTokenDetails.reasoningTokens ?? 0),
-    ),
-    makeStatRow(
-      "Cached tokens:",
-      formatTokenCount(model.stats.inputTokenDetails.cacheReadTokens ?? 0),
-    ),
-    makeStatRow(
-      "Total tokens:",
-      formatTokenCount(model.stats.totalTokens ?? 0),
-    ),
-    makeStatRow("Duration:", formatTimeMs(model.stats.msToFinish)),
-  ]).map((stat) => ({
-    ...stat,
-    isWarning: true,
-    tabular: true,
-  }));
 }
 
 function getModelInfoRows(model: ModelUsageData): {

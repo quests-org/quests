@@ -351,6 +351,7 @@ export function SessionStream({
             <AssistantMessagesFooter
               key={`assistant-footer-${message.id}`}
               messages={assistantMessages}
+              subdomain={project.subdomain}
             />,
           );
         }
