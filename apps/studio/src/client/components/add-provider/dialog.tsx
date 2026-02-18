@@ -6,7 +6,6 @@ import { isDefinedError } from "@orpc/client";
 import { AI_GATEWAY_API_KEY_NOT_NEEDED } from "@quests/shared";
 import { useMutation } from "@tanstack/react-query";
 import { useAtom, useAtomValue } from "jotai";
-import { useEffect } from "react";
 
 import { addProviderDialogAtom } from "../../atoms/add-provider";
 import { providerMetadataAtom } from "../../atoms/provider-metadata";
@@ -32,11 +31,12 @@ export function AddProviderDialog({
     rpcClient.providerConfig.create.mutationOptions(),
   );
 
-  useEffect(() => {
-    if (open) {
+  const handleOpenChange = (isOpen: boolean) => {
+    if (isOpen) {
       dispatch({ type: "RESET" });
     }
-  }, [open, dispatch]);
+    onOpenChange(isOpen);
+  };
 
   const handleSave = async (skipValidation = false) => {
     if (!state.selectedProviderType) {
@@ -108,7 +108,7 @@ export function AddProviderDialog({
   };
 
   return (
-    <Dialog onOpenChange={onOpenChange} open={open}>
+    <Dialog onOpenChange={handleOpenChange} open={open}>
       <DialogContent className="transition-none sm:max-w-lg">
         <ProviderConfigScreen
           onSave={handleSave}
