@@ -146,12 +146,12 @@ export function FilesGrid({
           )}
         >
           {folders.map((folder) => (
-            <div className="h-12 min-w-0" key={folder.id}>
+            <div className="h-12 max-w-48 min-w-0" key={folder.id}>
               <FolderPreviewListItem folder={folder} />
             </div>
           ))}
           {otherFiles.map((file) => (
-            <div className="h-12 min-w-0" key={file.filePath}>
+            <div className="h-12 max-w-48 min-w-0" key={file.filePath}>
               <FilePreviewListItem
                 file={file}
                 onClick={() => {
@@ -168,7 +168,10 @@ export function FilesGrid({
           <Button
             onClick={() => {
               setIsExpanded(true);
-              if (outputFiles.length === 0 && collapsedUserProvidedFiles.length === 0) {
+              if (
+                outputFiles.length === 0 &&
+                collapsedUserProvidedFiles.length === 0
+              ) {
                 setIsScriptsExpanded(true);
                 setIsUserProvidedExpanded(true);
                 setIsAgentRetrievedExpanded(true);
@@ -295,7 +298,7 @@ function CategorizedFileSection({
           )}
         >
           {files.map((file) => (
-            <div className="h-12 min-w-0" key={file.filePath}>
+            <div className="h-12 max-w-48 min-w-0" key={file.filePath}>
               <FilePreviewListItem
                 file={file}
                 onClick={() => {

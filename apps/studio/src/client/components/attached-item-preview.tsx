@@ -20,7 +20,7 @@ export function AttachedItemPreview({
 }) {
   const button = (
     <Button
-      className="size-full justify-start gap-x-2"
+      className="size-full min-w-0 justify-start gap-x-2 overflow-hidden"
       onClick={onClick}
       type="button"
       variant="outline"
