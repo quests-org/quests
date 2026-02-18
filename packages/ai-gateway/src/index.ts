@@ -19,6 +19,7 @@ export {
   getAllProviderMetadata,
   getProviderMetadata,
 } from "./lib/providers/metadata";
+export type { ImageGenerationProviderType } from "./lib/providers/metadata";
 export * from "./lib/select-provider-configs";
 export { verifyAPIKey } from "./lib/verify-api-key";
 export * from "./schemas/model";

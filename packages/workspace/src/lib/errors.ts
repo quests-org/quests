@@ -10,6 +10,7 @@ export namespace TypedError {
     | Git
     | NotFound
     | Parse
+    | ProviderLimitation
     | ShimNotFound
     | Storage
     | Unknown;
@@ -62,6 +63,10 @@ export namespace TypedError {
 
   export class Parse extends Error {
     readonly type = `${PREFIX}-parse-error`;
+  }
+
+  export class ProviderLimitation extends Error {
+    readonly type = `${PREFIX}-provider-limitation-error`;
   }
 
   export class ShimNotFound extends Error {
