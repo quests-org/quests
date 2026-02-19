@@ -138,7 +138,7 @@ export function ModelPicker({
           </TooltipTrigger>
           <TooltipContent>
             {isInvalidQuestsModel ? (
-              <p>Invalid Quests model - please use Auto mode</p>
+              <p>Model requires a paid plan.</p>
             ) : (
               <p>{selectedModel.providerName}</p>
             )}
