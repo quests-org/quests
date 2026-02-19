@@ -253,6 +253,8 @@ describe("CopyToProject", () => {
             nested: {
               "deep.txt": "deep content",
             },
+            // cspell:ignore résumé
+            "résumé.pdf": "pdf content",
             "script.ts": "const x = 1;",
           },
           [projectAppConfig.folderName]: {},
@@ -419,6 +421,18 @@ describe("CopyToProject", () => {
 
       expect(output.truncationReason).toBe("total_size_limit");
       expect(output.truncatedCount).toBeGreaterThan(0);
+    });
+
+    it("should sanitize Unicode characters in filenames when copying", async () => {
+      const result = await TOOLS.CopyToProject.execute({
+        ...baseExecuteArgs,
+        input: { path: attachedFolderPath, pattern: "résumé.pdf" },
+      });
+      const output = result._unsafeUnwrap();
+
+      expect(output.files).toHaveLength(1);
+      expect(output.files[0]?.destinationPath).toContain("resume.pdf");
+      expect(output.files[0]?.destinationPath).not.toContain("résumé");
     });
 
     it("should copy files from a nested subdirectory of the attached folder", async () => {

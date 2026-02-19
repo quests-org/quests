@@ -23,6 +23,7 @@ import { git } from "./git";
 import { GitCommands } from "./git/commands";
 import { ensureGitRepo } from "./git/ensure-git-repo";
 import { getProjectState, setProjectState } from "./project-state-store";
+import { sanitizeFilename } from "./sanitize-filename";
 
 type FileAttachmentWithoutRef = Omit<
   SessionMessageDataPart.FileAttachmentDataPart,
@@ -210,20 +211,4 @@ function getUniqueFolderName(
   }
 
   return candidate;
-}
-
-function sanitizeFilename(filename: string): string {
-  const ext = path.extname(filename);
-  const base = path.basename(filename, ext);
-
-  const sanitized = base
-    .normalize("NFKD")
-    .replaceAll(/[\u0300-\u036F]/g, "")
-    .replaceAll(/[\u2000-\u206F\u2E00-\u2E7F\u00A0]/g, "-")
-    .replaceAll(/[^\w.-]/g, "-")
-    .replaceAll(/-+/g, "-")
-    .replaceAll(/^-|-$/g, "")
-    .slice(0, 200);
-
-  return (sanitized || "file") + ext.toLowerCase();
 }

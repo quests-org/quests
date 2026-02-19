@@ -12,6 +12,7 @@ import { executeError } from "../lib/execute-error";
 import { formatBytes } from "../lib/format-bytes";
 import { pathExists } from "../lib/path-exists";
 import { resolveAgentPath } from "../lib/resolve-agent-path";
+import { sanitizeFilename } from "../lib/sanitize-filename";
 import {
   type AbsolutePath,
   type RelativePath,
@@ -231,9 +232,10 @@ export const CopyToProject = setupTool({
       }
 
       const originalFilename = path.basename(sourceAbsolutePath);
+      const sanitizedFilename = sanitizeFilename(originalFilename);
       const uniqueFilename = await getUniqueFilename(
         retrievedDir,
-        originalFilename,
+        sanitizedFilename,
       );
 
       const destinationRelative = `./${APP_FOLDER_NAMES.agentRetrieved}/${uniqueFilename}`;
