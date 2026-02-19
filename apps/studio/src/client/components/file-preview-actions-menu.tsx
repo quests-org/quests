@@ -20,9 +20,8 @@ export function FilePreviewActionsMenu({
 }: {
   file: ProjectFileViewerFile;
 }) {
-  const { mimeType, url } = file;
-  const isDownloadable = isFileDownloadable(url);
-  const isCopyable = isFileCopyable(mimeType, url);
+  const isDownloadable = isFileDownloadable(file.url);
+  const isCopyable = isFileCopyable(file.mimeType, file.url);
 
   if (!isDownloadable) {
     return null;
@@ -33,7 +32,11 @@ export function FilePreviewActionsMenu({
   };
 
   const handleCopy = async () => {
-    await copyFileToClipboard({ url });
+    await copyFileToClipboard({
+      filePath: file.filePath,
+      mimeType: file.mimeType,
+      subdomain: file.projectSubdomain,
+    });
   };
 
   return (

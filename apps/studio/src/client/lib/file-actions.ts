@@ -1,33 +1,24 @@
+import { safe } from "@orpc/client";
 import { type ProjectSubdomain } from "@quests/workspace/client";
 import { toast } from "sonner";
 
+import { rpcClient } from "../rpc/client";
 import { downloadProjectFile } from "./download-project-file";
 import { isTextMimeType } from "./is-text-mime-type";
 
-export async function copyFileToClipboard({ url }: { url: string }) {
-  try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch file: ${response.statusText}`);
-    }
-    const blob = await response.blob();
-
-    if (isTextMimeType(blob.type)) {
-      const text = await blob.text();
-      await navigator.clipboard.writeText(text);
-    } else if (blob.type.startsWith("image/")) {
-      await navigator.clipboard.write([
-        new ClipboardItem({ [blob.type]: blob }),
-      ]);
-    } else {
-      toast.error("Cannot copy this file type", {
-        closeButton: true,
-        description: `File type ${blob.type} is not supported by the clipboard. Try downloading instead.`,
-        duration: 5000,
-      });
-      throw new Error(`Unsupported file type: ${blob.type}`);
-    }
-  } catch (error) {
+export async function copyFileToClipboard({
+  filePath,
+  mimeType,
+  subdomain,
+}: {
+  filePath: string;
+  mimeType: string;
+  subdomain: ProjectSubdomain;
+}) {
+  const [error] = await safe(
+    rpcClient.utils.copyFileToClipboard.call({ filePath, mimeType, subdomain }),
+  );
+  if (error) {
     const errorMessage =
       error instanceof Error
         ? error.message

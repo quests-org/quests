@@ -23,7 +23,7 @@ import {
   ProjectSubdomainSchema,
   workspaceRouter,
 } from "@quests/workspace/electron";
-import { app, dialog, shell } from "electron";
+import { app, clipboard, dialog, nativeImage, shell } from "electron";
 import { exec } from "node:child_process";
 import fs from "node:fs/promises";
 import os from "node:os";
@@ -428,6 +428,43 @@ const live = {
   }),
 };
 
+const copyFileToClipboard = base
+  .errors({
+    FILE_NOT_FOUND: { message: "File not found" },
+    UNSUPPORTED_TYPE: { message: "Unsupported file type" },
+  })
+  .input(
+    z.object({
+      filePath: z.string(),
+      mimeType: z.string(),
+      subdomain: ProjectSubdomainSchema,
+    }),
+  )
+  .handler(async ({ context, errors, input }) => {
+    const snapshot = context.workspaceRef.getSnapshot();
+    const appConfig = createAppConfig({
+      subdomain: input.subdomain,
+      workspaceConfig: snapshot.context.config,
+    });
+
+    const fullPath = path.join(appConfig.appDir, input.filePath);
+
+    let buffer: Buffer;
+    try {
+      buffer = await fs.readFile(fullPath);
+    } catch {
+      throw errors.FILE_NOT_FOUND();
+    }
+
+    if (input.mimeType.startsWith("image/")) {
+      const image = nativeImage.createFromBuffer(buffer);
+      clipboard.writeImage(image);
+    } else {
+      const text = buffer.toString("utf8");
+      clipboard.writeText(text);
+    }
+  });
+
 const showFolderPicker = base
   .output(z.object({ path: z.string() }).nullable())
   .handler(async () => {
@@ -443,6 +480,7 @@ const showFolderPicker = base
 
 export const utils = {
   clearExceptions,
+  copyFileToClipboard,
   exportZip,
   getSupportedEditors,
   imageDataURI,

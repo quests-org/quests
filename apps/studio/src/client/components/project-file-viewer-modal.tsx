@@ -53,7 +53,11 @@ export function ProjectFileViewerModal() {
     if (!currentFile) {
       return;
     }
-    await copyFileToClipboard({ url: currentFile.url });
+    await copyFileToClipboard({
+      filePath: currentFile.filePath,
+      mimeType: currentFile.mimeType,
+      subdomain: currentFile.projectSubdomain,
+    });
   };
 
   const goToPrevious = useCallback(() => {
