@@ -108,16 +108,23 @@ export function ProjectMenu({
   return (
     <>
       <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            className="h-auto max-w-80 min-w-0 justify-start gap-2 py-1 font-semibold text-foreground hover:bg-accent hover:text-accent-foreground has-[>svg]:px-1"
-            variant="ghost"
-          >
-            <AppIcon name={project.iconName} size="sm" />
-            <span className="truncate">{project.title}</span>
-            <ChevronDown className="size-3 shrink-0" />
-          </Button>
-        </DropdownMenuTrigger>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <DropdownMenuTrigger asChild>
+              <Button
+                className="h-auto max-w-80 min-w-0 justify-start gap-2 py-1 font-semibold text-foreground hover:bg-accent hover:text-accent-foreground has-[>svg]:px-1"
+                variant="ghost"
+              >
+                <AppIcon name={project.iconName} size="sm" />
+                <span className="truncate">{project.title}</span>
+                <ChevronDown className="size-3 shrink-0" />
+              </Button>
+            </DropdownMenuTrigger>
+          </TooltipTrigger>
+          <TooltipContent className="max-w-[min(500px,90vw)] break-all">
+            {project.title}
+          </TooltipContent>
+        </Tooltip>
         <DropdownMenuContent align="end" side="bottom">
           <DropdownMenuItem
             onClick={() => {
