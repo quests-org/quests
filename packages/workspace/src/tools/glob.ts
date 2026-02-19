@@ -30,7 +30,7 @@ export const Glob = setupTool({
     return baseSchema.extend({
       path: z.string().optional().meta({
         description:
-          "Relative or absolute path to a folder to search within. Defaults to the current folder if not specified.",
+          "Relative path to a folder to search within. Defaults to the project root if not specified.",
       }),
     });
   },
@@ -47,7 +47,7 @@ export const Glob = setupTool({
     if (agentName === "retrieval") {
       return "Find files matching a glob pattern within attached folders. You must specify an absolute path to an attached folder to search within.";
     }
-    return "Find files matching a glob pattern in the codebase. Specify a path to search within a specific folder, or omit to search the current folder.";
+    return "Find files matching a glob pattern in the codebase. Specify a path to search within a specific folder, or omit to search from the project root.";
   },
   execute: async ({ agentName, appConfig, input, projectState }) => {
     const pathResult = resolveAgentPath({

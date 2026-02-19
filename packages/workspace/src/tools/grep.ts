@@ -22,7 +22,7 @@ export const Grep = setupTool({
     const pathDescription =
       agentName === "retrieval"
         ? "Absolute path to search within (must be within an attached folder)"
-        : "The directory to search in (relative to project root). Defaults to current directory.";
+        : "The directory to search in (relative to project root). Defaults to the project root if not specified.";
 
     return BaseInputSchema.extend({
       [INPUT_PARAMS.include]: z.string().optional().meta({

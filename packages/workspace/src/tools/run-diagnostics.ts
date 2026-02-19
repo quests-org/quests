@@ -16,10 +16,10 @@ export const RunDiagnostics = setupTool({
   }),
 }).create({
   description: dedent`
-    Run diagnostics and display linter/compiler errors from the current workspace.
+    Run diagnostics and display TypeScript compiler errors from the current workspace.
 
-    - This tool runs project-wide diagnostics using TypeScript compiler
-    - It returns all linting and type checking errors across the entire project
+    - This tool runs project-wide diagnostics using the TypeScript compiler (tsc --noEmit)
+    - It returns all type errors across the entire project
   `,
   execute: async ({ appConfig, signal }) => {
     const diagnosticsOutput = await runDiagnostics(appConfig, { signal });
