@@ -41,7 +41,9 @@ export const retrievalAgent = setupAgent({
         
         ## Response Format
         
-        Always return a clear, informative summary of what you found. When you copy files, ${agentTools.CopyToProject.name} automatically sends a manifest to the parent agent - do not repeat file names, sizes, or counts in that case.
+        Always return a clear, informative summary of what you found.
+        
+        When copying files: ${agentTools.CopyToProject.name} returns the actual destination paths used (files may be renamed to avoid conflicts). If referencing copied files, use those paths, not the source filenames.
         
         When reporting without copying, include the relevant findings (counts, names, types, etc.) clearly so the parent agent can answer the user without needing the files.
       `.trim(),
