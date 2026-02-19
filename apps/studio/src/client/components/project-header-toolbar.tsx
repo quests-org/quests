@@ -7,7 +7,12 @@ import { ProjectSettingsDialog } from "@/client/components/project-settings-dial
 import { Button } from "@/client/components/ui/button";
 import { Toggle } from "@/client/components/ui/toggle";
 import { ToolbarFavoriteAction } from "@/client/components/ui/toolbar-favorite-action";
-import { cn, getRevealInFolderLabel, isMacOS } from "@/client/lib/utils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/client/components/ui/tooltip";
+import { getRevealInFolderLabel, isMacOS } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
 import { OpenAppInTypeSchema } from "@/shared/schemas/editors";
 import {
@@ -118,49 +123,55 @@ export function ProjectHeaderToolbar({
   return (
     <>
       <div className="w-full bg-background py-2 pr-2 pl-3">
-        <div className="flex items-center justify-between">
-          <div
-            className={cn(
-              "flex min-w-0 items-center gap-2",
-              !sidebarCollapsed && "w-96 shrink-0 pr-5",
+        <div className="flex items-center gap-2">
+          <ProjectMenu
+            onSettingsClick={() => {
+              setSettingsDialogOpen(true);
+            }}
+            project={project}
+            selectedSessionId={selectedSessionId}
+          />
+
+          {hasAppModifications && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Toggle
+                  aria-label={
+                    sidebarCollapsed ? "Show sidebar" : "Hide sidebar"
+                  }
+                  onPressedChange={() => {
+                    setSidebarCollapsed(!sidebarCollapsed);
+                  }}
+                  pressed={sidebarCollapsed}
+                  size="sm"
+                  variant={sidebarCollapsed ? "outline" : "default"}
+                >
+                  {sidebarCollapsed ? (
+                    <>
+                      <MessageCircle className="size-4" />
+                      <span>Chat</span>
+                    </>
+                  ) : (
+                    <PanelLeftClose className="size-4" />
+                  )}
+                </Toggle>
+              </TooltipTrigger>
+              <TooltipContent>
+                {sidebarCollapsed ? "Show chat" : "Hide chat"}
+              </TooltipContent>
+            </Tooltip>
+          )}
+
+          <div className="flex-1" />
+
+          <div className="flex min-w-0 items-center gap-3">
+            {isDeveloperMode && (
+              <div className="min-w-0 shrink truncate">
+                <ProjectUsageSummary project={project} />
+              </div>
             )}
-          >
-            <ProjectMenu
-              onSettingsClick={() => {
-                setSettingsDialogOpen(true);
-              }}
-              project={project}
-              selectedSessionId={selectedSessionId}
-            />
-
-            {!sidebarCollapsed && <div className="flex-1" />}
-
-            {hasAppModifications && (
-              <Toggle
-                aria-label={sidebarCollapsed ? "Show sidebar" : "Hide sidebar"}
-                onPressedChange={() => {
-                  setSidebarCollapsed(!sidebarCollapsed);
-                }}
-                pressed={sidebarCollapsed}
-                size="sm"
-                variant={sidebarCollapsed ? "outline" : "default"}
-              >
-                {sidebarCollapsed ? (
-                  <>
-                    <MessageCircle className="size-4" />
-                    <span>Chat</span>
-                  </>
-                ) : (
-                  <PanelLeftClose className="size-4" />
-                )}
-              </Toggle>
-            )}
-          </div>
-
-          <div className="flex items-center gap-3">
-            {isDeveloperMode && <ProjectUsageSummary project={project} />}
             {selectedVersion ? (
-              <div className="flex items-center gap-2">
+              <div className="flex shrink-0 items-center gap-2">
                 <Button
                   onClick={handleExitVersion}
                   size="sm"
@@ -173,7 +184,7 @@ export function ProjectHeaderToolbar({
                 </Button>
               </div>
             ) : (
-              <div className="flex items-center gap-2">
+              <div className="flex shrink-0 items-center gap-2">
                 <ToolbarFavoriteAction project={project} />
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>

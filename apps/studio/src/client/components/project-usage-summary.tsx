@@ -22,7 +22,7 @@ export function ProjectUsageSummary({
   }
 
   return (
-    <div className="flex items-center gap-2 text-[10px] text-warning-foreground/60">
+    <div className="flex min-w-0 items-center gap-2 text-[10px] text-warning-foreground/60">
       <DeveloperModeBadge />
       <UsageStatsTooltip
         stats={{
