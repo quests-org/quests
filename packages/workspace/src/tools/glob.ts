@@ -1,15 +1,13 @@
-import { glob, type GlobOptions } from "glob";
 import ms from "ms";
 import { ok } from "neverthrow";
-import { alphabetical } from "radashi";
 import { z } from "zod";
 
-import { getIgnore } from "../lib/get-ignore";
+import { globSortedByMtime } from "../lib/glob";
 import { resolveAgentPath } from "../lib/resolve-agent-path";
 import { BaseInputSchema } from "./base";
 import { setupTool } from "./create-tool";
 
-const GLOB_LIMIT = 500;
+const GLOB_LIMIT = 100;
 
 export const Glob = setupTool({
   inputSchema: (agentName) => {
@@ -49,7 +47,7 @@ export const Glob = setupTool({
     }
     return "Find files matching a glob pattern in the codebase. Specify a path to search within a specific folder, or omit to search from the project root.";
   },
-  execute: async ({ agentName, appConfig, input, projectState }) => {
+  execute: async ({ agentName, appConfig, input, projectState, signal }) => {
     const pathResult = resolveAgentPath({
       agentName,
       appDir: appConfig.appDir,
@@ -68,23 +66,16 @@ export const Glob = setupTool({
     }
 
     const { absolutePath: searchRoot } = pathResult.value;
-    const globOptions: GlobOptions = {
-      absolute: agentName === "retrieval",
+
+    const isRetrieval = agentName === "retrieval";
+
+    const sorted = await globSortedByMtime({
+      absolute: isRetrieval,
       cwd: searchRoot,
-      posix: true, // Use / path separators on Windows for consistency
-    };
+      pattern: input.pattern,
+      signal,
+    });
 
-    if (agentName !== "retrieval") {
-      const ignore = await getIgnore(searchRoot);
-      globOptions.ignore = {
-        ignored: (p) => ignore.ignores(p.name),
-      };
-    }
-
-    const rawFiles = await glob(input.pattern, globOptions);
-    const allFiles = rawFiles.map(String);
-
-    const sorted = alphabetical(allFiles, (f) => f);
     const truncated = sorted.length > GLOB_LIMIT;
     const files = truncated ? sorted.slice(0, GLOB_LIMIT) : sorted;
 
@@ -114,7 +105,7 @@ export const Glob = setupTool({
     if (output.truncated) {
       lines.push(
         "",
-        "(Results are truncated. Consider using a more specific path or pattern.)",
+        `(Results truncated: showing first ${GLOB_LIMIT} of ${output.totalFiles ?? output.files.length} files. Consider using a more specific path or pattern.)`,
       );
     }
 

@@ -1512,9 +1512,10 @@ describe("llmRequestLogic", () => {
         displayedLines: 10,
         filePath: RelativePathSchema.parse("./test-file.txt"),
         hasMoreLines: false,
-        offset: 0,
+        offset: 1,
         state: "exists",
         totalLines: 10,
+        truncatedByBytes: false,
       },
       state: "output-available",
       toolCallId: StoreId.ToolCallSchema.parse("1"),
@@ -1658,8 +1659,10 @@ describe("llmRequestLogic", () => {
                 {
                   "output": {
                     "type": "text",
-                    "value": "Contents of ./test-file.txt (entire file):
-           1→test-file.txt content",
+                    "value": "<path>./test-file.txt</path>
+        <content>
+           1→test-file.txt content
+        </content>",
                   },
                   "providerOptions": undefined,
                   "toolCallId": "1",
@@ -1763,8 +1766,10 @@ describe("llmRequestLogic", () => {
                 {
                   "output": {
                     "type": "text",
-                    "value": "Contents of ./test-file.txt (entire file):
-           1→test-file.txt content",
+                    "value": "<path>./test-file.txt</path>
+        <content>
+           1→test-file.txt content
+        </content>",
                   },
                   "providerOptions": undefined,
                   "toolCallId": "1",

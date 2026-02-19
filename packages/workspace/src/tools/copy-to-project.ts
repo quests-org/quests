@@ -1,4 +1,3 @@
-import { glob } from "glob";
 import ms from "ms";
 import { ok } from "neverthrow";
 import fs from "node:fs/promises";
@@ -10,6 +9,7 @@ import { APP_FOLDER_NAMES } from "../constants";
 import { absolutePathJoin } from "../lib/absolute-path-join";
 import { executeError } from "../lib/execute-error";
 import { formatBytes } from "../lib/format-bytes";
+import { glob } from "../lib/glob";
 import { pathExists } from "../lib/path-exists";
 import { resolveAgentPath } from "../lib/resolve-agent-path";
 import { sanitizeFilename } from "../lib/sanitize-filename";
@@ -120,7 +120,7 @@ export const CopyToProject = setupTool({
     If you must reference copied files when responding to the parent agent, use the destination paths returned by this tool, not the source paths.
     The parent agent can then access the copied files.
   `,
-  execute: async ({ agentName, appConfig, input, projectState }) => {
+  execute: async ({ agentName, appConfig, input, projectState, signal }) => {
     if (agentName !== "retrieval") {
       return executeError("This tool is only available to the retrieval agent");
     }
@@ -166,12 +166,11 @@ export const CopyToProject = setupTool({
 
     const { absolutePath: searchRoot } = pathResult.value;
 
-    const matchedFiles = await glob(input.pattern, {
+    const matchedFiles = await glob({
       absolute: true,
       cwd: searchRoot,
-      // cspell:ignore nodir
-      nodir: true, // Only match files, not directories
-      posix: true,
+      pattern: input.pattern,
+      signal,
     });
 
     if (matchedFiles.length === 0) {
@@ -202,7 +201,8 @@ export const CopyToProject = setupTool({
     let truncationReason: null | z.output<typeof TruncationReasonSchema> = null;
 
     for (const sourceAbsolutePath of matchedFiles) {
-      const sourceExists = await pathExists(sourceAbsolutePath as AbsolutePath);
+      signal.throwIfAborted();
+      const sourceExists = await pathExists(sourceAbsolutePath);
       if (!sourceExists) {
         errors.push({
           message: "File not found",

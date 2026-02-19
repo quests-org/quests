@@ -18,10 +18,10 @@ import {
 } from "../lib/resolve-agent-path";
 import { BaseInputSchema } from "./base";
 import { setupTool } from "./create-tool";
-import { RunShellCommand } from "./run-shell-command";
 
 const DEFAULT_READ_LIMIT = 2000;
 const MAX_LINE_LENGTH = 2000;
+const MAX_BYTES = 50 * 1024;
 
 const INPUT_PARAMS = {
   filePath: "filePath",
@@ -118,7 +118,8 @@ export const ReadFile = setupTool({
           description: `The number of lines to read (defaults to ${DEFAULT_READ_LIMIT})`,
         }),
       [INPUT_PARAMS.offset]: z.number().optional().meta({
-        description: "The line number to start reading from (0-based)",
+        description:
+          "The line number to start reading from (1-based, defaults to 1)",
       }),
     });
   },
@@ -132,6 +133,8 @@ export const ReadFile = setupTool({
       offset: z.number(),
       state: z.literal("exists"),
       totalLines: z.number(),
+      // TODO: Remove `.optional()` after 2026-04-19 (backward compat)
+      truncatedByBytes: z.boolean().optional().default(false),
     }),
     z.object({
       base64Data: z.string(),
@@ -181,7 +184,6 @@ export const ReadFile = setupTool({
 
       Usage:
       - The ${INPUT_PARAMS.filePath} parameter must be ${agentName === "retrieval" ? "an absolute path to a file within one of the attached folders" : "a relative path to a file"}. E.g. ${pathExample}
-      - This tool does NOT support reading directories. To list directory contents, use the ${RunShellCommand.name} tool with the 'ls' command instead.
       - By default, it reads up to ${DEFAULT_READ_LIMIT} lines starting from the beginning of the file.
       - You can optionally specify a line ${INPUT_PARAMS.offset} and ${INPUT_PARAMS.limit} (especially handy for long files), but it's recommended to read the whole file by not providing these parameters.
       - When using ${INPUT_PARAMS.limit}, avoid using too small of a limit (< 100), which can lead to tons of tokens being used.
@@ -222,6 +224,25 @@ export const ReadFile = setupTool({
       });
     }
 
+    const stats = await fs.stat(absolutePath);
+    if (stats.isDirectory()) {
+      const entries = await fs.readdir(absolutePath, { withFileTypes: true });
+      const entryNames = entries
+        .map((e) => e.name + (e.isDirectory() ? "/" : ""))
+        .sort((a, b) => a.localeCompare(b));
+
+      return ok({
+        content: entryNames.join("\n"),
+        displayedLines: entryNames.length,
+        filePath: displayPath,
+        hasMoreLines: false,
+        offset: 0,
+        state: "exists" as const,
+        totalLines: entryNames.length,
+        truncatedByBytes: false,
+      });
+    }
+
     const isBinary = await isBinaryFile(absolutePath);
     if (!isBinary) {
       const content = await fs.readFile(absolutePath, {
@@ -229,22 +250,24 @@ export const ReadFile = setupTool({
         signal,
       });
 
-      const lines = content.split("\n");
+      const normalized = content.replaceAll("\r\n", "\n");
+      const lines = normalized.split("\n");
 
       let limit = input.limit ?? DEFAULT_READ_LIMIT;
       if (limit <= 0) {
         limit = DEFAULT_READ_LIMIT;
       }
 
-      let offset = input.offset ?? 0;
-      if (offset < 0) {
-        offset = 0;
-      }
-      if (offset >= lines.length) {
-        offset = Math.max(0, lines.length - 1);
-      }
+      const offset = Math.max(1, input.offset ?? 1);
+      const clampedOffset = Math.min(offset, Math.max(1, lines.length));
 
-      const selectedLines = lines.slice(offset, offset + limit);
+      let selectedLines = lines.slice(
+        clampedOffset - 1,
+        clampedOffset - 1 + limit,
+      );
+      let hasMoreLines =
+        lines.length > clampedOffset - 1 + selectedLines.length;
+      let truncatedByBytes = false;
 
       const processedLines = selectedLines.map((line) =>
         line.length > MAX_LINE_LENGTH
@@ -252,23 +275,37 @@ export const ReadFile = setupTool({
           : line,
       );
 
-      const rawContent = processedLines.join("\n");
-      const hasMoreLines = lines.length > offset + selectedLines.length;
+      let rawContent = processedLines.join("\n");
+
+      if (Buffer.byteLength(rawContent, "utf8") > MAX_BYTES) {
+        let trimmed = [...processedLines];
+        while (
+          trimmed.length > 0 &&
+          Buffer.byteLength(trimmed.join("\n"), "utf8") > MAX_BYTES
+        ) {
+          trimmed = trimmed.slice(0, -1);
+        }
+        selectedLines = trimmed;
+        rawContent = trimmed.join("\n");
+        hasMoreLines = true;
+        truncatedByBytes = true;
+      }
 
       return ok({
         content: rawContent,
         displayedLines: selectedLines.length,
         filePath: displayPath,
         hasMoreLines,
-        offset,
+        offset: clampedOffset,
         state: "exists" as const,
         totalLines: lines.length,
+        truncatedByBytes,
       });
     }
 
     const mimeType = getMimeType(absolutePath);
 
-    if (mimeType.startsWith("image/")) {
+    if (mimeType.startsWith("image/") && mimeType !== "image/svg+xml") {
       return handleMediaFile({
         absolutePath,
         fixedPath: displayPath,
@@ -382,27 +419,31 @@ export const ReadFile = setupTool({
       }
     }
 
-    const content = addLineNumbers(output.content, output.offset);
-    const endLine = output.offset + output.displayedLines;
+    const offset = output.offset;
+    const endLine = offset + output.displayedLines - 1;
     const remainingLines = output.totalLines - endLine;
 
-    const header = `Contents of ${output.filePath}${
-      output.offset > 0 || output.hasMoreLines
-        ? `, lines ${output.offset + 1}-${endLine} (total ${output.totalLines} lines)`
-        : ` (entire file)`
-    }`;
+    const numberedContent = addLineNumbers(output.content, offset - 1);
 
-    let result = header + ":\n";
+    const isPartial = offset > 1 || output.hasMoreLines;
+    const header = isPartial
+      ? `lines ${offset}-${endLine} (total ${output.totalLines} lines)`
+      : "entire file";
 
-    if (output.offset > 0) {
-      result += `... ${output.offset} lines not shown ...\n`;
+    const hiddenBefore = offset - 1;
+
+    let contentBody = "";
+    if (hiddenBefore > 0) {
+      contentBody += `... ${hiddenBefore} lines not shown ...\n`;
+    }
+    contentBody += numberedContent;
+    if (output.truncatedByBytes && remainingLines > 0) {
+      contentBody += `\n... ${remainingLines} lines not shown (output capped at 50KB) ...\n\n(Use ${INPUT_PARAMS.offset} parameter to read beyond line ${endLine})`;
+    } else if (output.hasMoreLines && remainingLines > 0) {
+      contentBody += `\n... ${remainingLines} lines not shown ...\n\n(Use ${INPUT_PARAMS.offset} parameter to read beyond line ${endLine + 1})`;
     }
 
-    result += content;
-
-    if (output.hasMoreLines && remainingLines > 0) {
-      result += `\n... ${remainingLines} lines not shown ...\n\n(Use ${INPUT_PARAMS.offset} parameter to read beyond line ${endLine})`;
-    }
+    const result = `<path>${output.filePath}</path>\n<content${isPartial ? ` lines="${header}"` : ""}>\n${contentBody}\n</content>`;
 
     return {
       type: "text",

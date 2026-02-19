@@ -51,6 +51,7 @@ describe("Grep", () => {
           pattern: "",
         },
         output: {
+          hasErrors: false,
           matches: [],
           totalMatches: 0,
           truncated: false,
@@ -71,6 +72,7 @@ describe("Grep", () => {
           pattern: "",
         },
         output: {
+          hasErrors: false,
           matches: [
             // Older file first in input (should be moved to end after sorting)
             {
@@ -118,6 +120,7 @@ describe("Grep", () => {
           pattern: "",
         },
         output: {
+          hasErrors: false,
           matches: [
             {
               lineNum: 10,
@@ -138,7 +141,7 @@ describe("Grep", () => {
         src/file1.ts:
           Line 10: const foo = 'bar';
 
-        (Results are truncated. Consider using a more specific path or pattern.)",
+        (Results truncated: showing 100 of 150 matches (50 hidden). Consider using a more specific path or pattern.)",
         }
       `);
     });
@@ -149,6 +152,7 @@ describe("Grep", () => {
           pattern: "",
         },
         output: {
+          hasErrors: false,
           matches: [
             {
               lineNum: 42,

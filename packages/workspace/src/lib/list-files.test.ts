@@ -20,12 +20,16 @@ describe("listFiles", () => {
         "a-folder",
         "dot-files-only",
         "empty-file.txt",
+        "folder",
         "grep-test-2.txt",
         "grep-test.txt",
         "ignored-2.ignored",
         "ignored-folder",
         "json-file.json",
         "nested",
+        "other.txt",
+        "test1.txt",
+        "test2.txt",
       ]
     `);
   });

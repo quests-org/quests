@@ -452,9 +452,10 @@ describe("sessionMachine", () => {
                 "displayedLines": 1,
                 "filePath": "./test.txt",
                 "hasMoreLines": false,
-                "offset": 0,
+                "offset": 1,
                 "state": "exists",
-                "totalLines": 1
+                "totalLines": 1,
+                "truncatedByBytes": false
               }
             </output>
           </tool>
@@ -904,50 +905,51 @@ describe("sessionMachine", () => {
     });
 
     expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
-        "<session title="Test session" count="6">
-          <user>
-            <text>Hello, I need help with something.</text>
-          </user>
-          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
-            <step-start step="1" />
-            <tool tool="read_file" state="output-error" callId="test-call-1">
-              <input>
-                {
-                  "filePath": "test.txt"
-                }
-              </input>
-              <error>Model tried to call unavailable tool 'invalid_tool_name'. Available tools: edit_file, generate_image, glob, grep, read_file, run_diagnostics, run_shell_command, task, web_search, write_file.</error>
-            </tool>
-          </assistant>
-          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
-            <step-start step="2" />
-            <tool tool="read_file" state="output-available" callId="test-call-1">
-              <input>
-                {
-                  "filePath": "test.txt"
-                }
-              </input>
-              <output>
-                {
-                  "content": "Hello, world!",
-                  "displayedLines": 1,
-                  "filePath": "./test.txt",
-                  "hasMoreLines": false,
-                  "offset": 0,
-                  "state": "exists",
-                  "totalLines": 1
-                }
-              </output>
-            </tool>
-          </assistant>
-          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
-            <step-start step="3" />
-            <text state="done">I'm done.</text>
-          </assistant>
-          <session-context main realRole="system" />
-          <session-context main realRole="user" />
-        </session>"
-      `);
+      "<session title="Test session" count="6">
+        <user>
+          <text>Hello, I need help with something.</text>
+        </user>
+        <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
+          <step-start step="1" />
+          <tool tool="read_file" state="output-error" callId="test-call-1">
+            <input>
+              {
+                "filePath": "test.txt"
+              }
+            </input>
+            <error>Model tried to call unavailable tool 'invalid_tool_name'. Available tools: edit_file, generate_image, glob, grep, read_file, run_diagnostics, run_shell_command, task, web_search, write_file.</error>
+          </tool>
+        </assistant>
+        <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
+          <step-start step="2" />
+          <tool tool="read_file" state="output-available" callId="test-call-1">
+            <input>
+              {
+                "filePath": "test.txt"
+              }
+            </input>
+            <output>
+              {
+                "content": "Hello, world!",
+                "displayedLines": 1,
+                "filePath": "./test.txt",
+                "hasMoreLines": false,
+                "offset": 1,
+                "state": "exists",
+                "totalLines": 1,
+                "truncatedByBytes": false
+              }
+            </output>
+          </tool>
+        </assistant>
+        <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
+          <step-start step="3" />
+          <text state="done">I'm done.</text>
+        </assistant>
+        <session-context main realRole="system" />
+        <session-context main realRole="user" />
+      </session>"
+    `);
   });
 
   it("retry with invalid tool params", async () => {
@@ -969,56 +971,57 @@ describe("sessionMachine", () => {
     });
 
     expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
-        "<session title="Test session" count="6">
-          <user>
-            <text>Hello, I need help with something.</text>
-          </user>
-          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
-            <step-start step="1" />
-            <tool tool="read_file" state="output-available" callId="test-call-1">
-              <input>
-                {
-                  "filePath": "invalid/path/structure"
-                }
-              </input>
-              <output>
-                {
-                  "filePath": "./invalid/path/structure",
-                  "state": "does-not-exist",
-                  "suggestions": []
-                }
-              </output>
-            </tool>
-          </assistant>
-          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
-            <step-start step="2" />
-            <tool tool="read_file" state="output-available" callId="test-call-1">
-              <input>
-                {
-                  "filePath": "test.txt"
-                }
-              </input>
-              <output>
-                {
-                  "content": "Hello, world!",
-                  "displayedLines": 1,
-                  "filePath": "./test.txt",
-                  "hasMoreLines": false,
-                  "offset": 0,
-                  "state": "exists",
-                  "totalLines": 1
-                }
-              </output>
-            </tool>
-          </assistant>
-          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
-            <step-start step="3" />
-            <text state="done">I'm done.</text>
-          </assistant>
-          <session-context main realRole="system" />
-          <session-context main realRole="user" />
-        </session>"
-      `);
+      "<session title="Test session" count="6">
+        <user>
+          <text>Hello, I need help with something.</text>
+        </user>
+        <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
+          <step-start step="1" />
+          <tool tool="read_file" state="output-available" callId="test-call-1">
+            <input>
+              {
+                "filePath": "invalid/path/structure"
+              }
+            </input>
+            <output>
+              {
+                "filePath": "./invalid/path/structure",
+                "state": "does-not-exist",
+                "suggestions": []
+              }
+            </output>
+          </tool>
+        </assistant>
+        <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
+          <step-start step="2" />
+          <tool tool="read_file" state="output-available" callId="test-call-1">
+            <input>
+              {
+                "filePath": "test.txt"
+              }
+            </input>
+            <output>
+              {
+                "content": "Hello, world!",
+                "displayedLines": 1,
+                "filePath": "./test.txt",
+                "hasMoreLines": false,
+                "offset": 1,
+                "state": "exists",
+                "totalLines": 1,
+                "truncatedByBytes": false
+              }
+            </output>
+          </tool>
+        </assistant>
+        <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
+          <step-start step="3" />
+          <text state="done">I'm done.</text>
+        </assistant>
+        <session-context main realRole="system" />
+        <session-context main realRole="user" />
+      </session>"
+    `);
   });
 
   it("should stop after two steps with file read success", async () => {
@@ -1043,60 +1046,62 @@ describe("sessionMachine", () => {
 
     expect(sessionToShorthand(session)).not.toContain(neverMessage);
     expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
-        "<session title="Test session" count="6">
-          <user>
-            <text>Hello, I need help with something.</text>
-          </user>
-          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
-            <step-start step="1" />
-            <tool tool="read_file" state="output-available" callId="test-call-1">
-              <input>
-                {
-                  "filePath": "test.txt"
-                }
-              </input>
-              <output>
-                {
-                  "content": "Hello, world!",
-                  "displayedLines": 1,
-                  "filePath": "./test.txt",
-                  "hasMoreLines": false,
-                  "offset": 0,
-                  "state": "exists",
-                  "totalLines": 1
-                }
-              </output>
-            </tool>
-          </assistant>
-          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
-            <step-start step="2" />
-            <tool tool="read_file" state="output-available" callId="test-call-1">
-              <input>
-                {
-                  "filePath": "test.txt"
-                }
-              </input>
-              <output>
-                {
-                  "content": "Hello, world!",
-                  "displayedLines": 1,
-                  "filePath": "./test.txt",
-                  "hasMoreLines": false,
-                  "offset": 0,
-                  "state": "exists",
-                  "totalLines": 1
-                }
-              </output>
-            </tool>
-          </assistant>
-          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
-            <step-start step="3" />
-            <text state="done">I'm done.</text>
-          </assistant>
-          <session-context main realRole="system" />
-          <session-context main realRole="user" />
-        </session>"
-      `);
+      "<session title="Test session" count="6">
+        <user>
+          <text>Hello, I need help with something.</text>
+        </user>
+        <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
+          <step-start step="1" />
+          <tool tool="read_file" state="output-available" callId="test-call-1">
+            <input>
+              {
+                "filePath": "test.txt"
+              }
+            </input>
+            <output>
+              {
+                "content": "Hello, world!",
+                "displayedLines": 1,
+                "filePath": "./test.txt",
+                "hasMoreLines": false,
+                "offset": 1,
+                "state": "exists",
+                "totalLines": 1,
+                "truncatedByBytes": false
+              }
+            </output>
+          </tool>
+        </assistant>
+        <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
+          <step-start step="2" />
+          <tool tool="read_file" state="output-available" callId="test-call-1">
+            <input>
+              {
+                "filePath": "test.txt"
+              }
+            </input>
+            <output>
+              {
+                "content": "Hello, world!",
+                "displayedLines": 1,
+                "filePath": "./test.txt",
+                "hasMoreLines": false,
+                "offset": 1,
+                "state": "exists",
+                "totalLines": 1,
+                "truncatedByBytes": false
+              }
+            </output>
+          </tool>
+        </assistant>
+        <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
+          <step-start step="3" />
+          <text state="done">I'm done.</text>
+        </assistant>
+        <session-context main realRole="system" />
+        <session-context main realRole="user" />
+      </session>"
+    `);
   });
 
   it("should immediately exit when no tools are called", async () => {
@@ -1222,45 +1227,46 @@ describe("sessionMachine", () => {
     });
 
     expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
-        "<session title="Test session" count="7">
-          <user>
-            <text>Hello, I need help with something.</text>
-          </user>
-          <assistant finishReason="aborted" model="mock-model-id" provider="quests" errorKind="aborted" errorMessage="Aborted">
-            <step-start step="1" />
-          </assistant>
-          <assistant finishReason="aborted" model="mock-model-id" provider="quests" errorKind="aborted" errorMessage="Aborted">
-            <step-start step="1" />
-          </assistant>
-          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
-            <step-start step="1" />
-            <tool tool="read_file" state="output-available" callId="test-call-1">
-              <input>
-                {
-                  "filePath": "test.txt"
-                }
-              </input>
-              <output>
-                {
-                  "content": "Hello, world!",
-                  "displayedLines": 1,
-                  "filePath": "./test.txt",
-                  "hasMoreLines": false,
-                  "offset": 0,
-                  "state": "exists",
-                  "totalLines": 1
-                }
-              </output>
-            </tool>
-          </assistant>
-          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
-            <step-start step="2" />
-            <text state="done">I'm done.</text>
-          </assistant>
-          <session-context main realRole="system" />
-          <session-context main realRole="user" />
-        </session>"
-      `);
+      "<session title="Test session" count="7">
+        <user>
+          <text>Hello, I need help with something.</text>
+        </user>
+        <assistant finishReason="aborted" model="mock-model-id" provider="quests" errorKind="aborted" errorMessage="Aborted">
+          <step-start step="1" />
+        </assistant>
+        <assistant finishReason="aborted" model="mock-model-id" provider="quests" errorKind="aborted" errorMessage="Aborted">
+          <step-start step="1" />
+        </assistant>
+        <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
+          <step-start step="1" />
+          <tool tool="read_file" state="output-available" callId="test-call-1">
+            <input>
+              {
+                "filePath": "test.txt"
+              }
+            </input>
+            <output>
+              {
+                "content": "Hello, world!",
+                "displayedLines": 1,
+                "filePath": "./test.txt",
+                "hasMoreLines": false,
+                "offset": 1,
+                "state": "exists",
+                "totalLines": 1,
+                "truncatedByBytes": false
+              }
+            </output>
+          </tool>
+        </assistant>
+        <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
+          <step-start step="2" />
+          <text state="done">I'm done.</text>
+        </assistant>
+        <session-context main realRole="system" />
+        <session-context main realRole="user" />
+      </session>"
+    `);
   });
 
   it("should extend timeout when chunks are received", async () => {
@@ -1278,43 +1284,44 @@ describe("sessionMachine", () => {
     });
 
     expect(sessionToShorthand(session)).toMatchInlineSnapshot(`
-        "<session title="Test session" count="6">
-          <user>
-            <text>Hello, I need help with something.</text>
-          </user>
-          <assistant finishReason="aborted" model="mock-model-id" provider="quests" errorKind="aborted" errorMessage="Aborted">
-            <step-start step="1" />
-            <tool tool="read_file" state="input-streaming" callId="test-call-1"></tool>
-          </assistant>
-          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
-            <step-start step="1" />
-            <tool tool="read_file" state="output-available" callId="test-call-1">
-              <input>
-                {
-                  "filePath": "test.txt"
-                }
-              </input>
-              <output>
-                {
-                  "content": "Hello, world!",
-                  "displayedLines": 1,
-                  "filePath": "./test.txt",
-                  "hasMoreLines": false,
-                  "offset": 0,
-                  "state": "exists",
-                  "totalLines": 1
-                }
-              </output>
-            </tool>
-          </assistant>
-          <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
-            <step-start step="2" />
-            <text state="done">I'm done.</text>
-          </assistant>
-          <session-context main realRole="system" />
-          <session-context main realRole="user" />
-        </session>"
-      `);
+      "<session title="Test session" count="6">
+        <user>
+          <text>Hello, I need help with something.</text>
+        </user>
+        <assistant finishReason="aborted" model="mock-model-id" provider="quests" errorKind="aborted" errorMessage="Aborted">
+          <step-start step="1" />
+          <tool tool="read_file" state="input-streaming" callId="test-call-1"></tool>
+        </assistant>
+        <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
+          <step-start step="1" />
+          <tool tool="read_file" state="output-available" callId="test-call-1">
+            <input>
+              {
+                "filePath": "test.txt"
+              }
+            </input>
+            <output>
+              {
+                "content": "Hello, world!",
+                "displayedLines": 1,
+                "filePath": "./test.txt",
+                "hasMoreLines": false,
+                "offset": 1,
+                "state": "exists",
+                "totalLines": 1,
+                "truncatedByBytes": false
+              }
+            </output>
+          </tool>
+        </assistant>
+        <assistant finishReason="stop" tokens="13" model="mock-model-id" provider="quests">
+          <step-start step="2" />
+          <text state="done">I'm done.</text>
+        </assistant>
+        <session-context main realRole="system" />
+        <session-context main realRole="user" />
+      </session>"
+    `);
   });
 
   describe("with write file delay", () => {
@@ -1404,9 +1411,10 @@ describe("sessionMachine", () => {
                 "displayedLines": 1,
                 "filePath": "./test.txt",
                 "hasMoreLines": false,
-                "offset": 0,
+                "offset": 1,
                 "state": "exists",
-                "totalLines": 1
+                "totalLines": 1,
+                "truncatedByBytes": false
               }
             </output>
           </tool>
@@ -1425,9 +1433,10 @@ describe("sessionMachine", () => {
                 "displayedLines": 1,
                 "filePath": "./test.txt",
                 "hasMoreLines": false,
-                "offset": 0,
+                "offset": 1,
                 "state": "exists",
-                "totalLines": 1
+                "totalLines": 1,
+                "truncatedByBytes": false
               }
             </output>
           </tool>

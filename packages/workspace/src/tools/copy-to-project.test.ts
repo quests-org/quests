@@ -1,4 +1,5 @@
-import mockFs from "mock-fs";
+import fs from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -6,10 +7,7 @@ import { FolderAttachment } from "../schemas/folder-attachment";
 import { AppDirSchema, RelativePathSchema } from "../schemas/paths";
 import { ProjectSubdomainSchema } from "../schemas/subdomains";
 import { createMockAIGatewayModel } from "../test/helpers/mock-ai-gateway-model";
-import {
-  createMockAppConfig,
-  MOCK_WORKSPACE_DIRS,
-} from "../test/helpers/mock-app-config";
+import { createMockAppConfig } from "../test/helpers/mock-app-config";
 import { TOOLS } from "./all";
 import { CopyToProject } from "./copy-to-project";
 
@@ -17,40 +15,58 @@ vi.mock(import("ulid"));
 vi.mock(import("../lib/session-store-storage"));
 vi.mock(import("../lib/get-current-date"));
 
-const model = createMockAIGatewayModel();
-const projectAppConfig = createMockAppConfig(
-  ProjectSubdomainSchema.parse("test"),
-  { model },
+const FIXTURES_PATH = path.join(
+  import.meta.dirname,
+  "../../fixtures/copy-to-project",
 );
 
-const attachedFolderPath = path.join(
-  MOCK_WORKSPACE_DIRS.projects,
-  "attached-test-folder",
-);
+const model = createMockAIGatewayModel();
 
 const attachedFolders: Record<string, FolderAttachment.Type> = {
   "test-folder": {
     createdAt: Date.now(),
     id: FolderAttachment.IdSchema.parse("test-folder-id"),
     name: "Test Folder",
-    path: AppDirSchema.parse(attachedFolderPath),
+    path: AppDirSchema.parse(FIXTURES_PATH),
   },
 };
 
-const baseExecuteArgs = {
-  agentName: "retrieval" as const,
-  appConfig: projectAppConfig,
-  model,
-  projectState: { attachedFolders },
-  signal: AbortSignal.timeout(10_000),
-  spawnAgent: vi.fn(),
-};
+let tmpDir: string;
+
+beforeEach(async () => {
+  tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "copy-to-project-test-"));
+});
+
+afterEach(async () => {
+  await fs.rm(tmpDir, { force: true, recursive: true });
+});
+
+function baseExecuteArgs() {
+  return {
+    agentName: "retrieval" as const,
+    appConfig: createTmpAppConfig(),
+    model,
+    projectState: { attachedFolders },
+    signal: AbortSignal.timeout(10_000),
+    spawnAgent: vi.fn(),
+  };
+}
+
+function createTmpAppConfig() {
+  const mockConfig = createMockAppConfig(ProjectSubdomainSchema.parse("test"), {
+    model,
+  });
+  return {
+    ...mockConfig,
+    appDir: AppDirSchema.parse(tmpDir),
+  };
+}
 
 describe("CopyToProject", () => {
   describe("toModelOutput", () => {
     it("should return error when no files were copied and no errors", () => {
       const result = CopyToProject.toModelOutput({
-        input: { path: attachedFolderPath, pattern: "*.ts" },
+        input: { path: FIXTURES_PATH, pattern: "*.ts" },
         output: {
           errors: [],
           files: [],
@@ -69,7 +85,7 @@ describe("CopyToProject", () => {
 
     it("should return error text when only errors occurred", () => {
       const result = CopyToProject.toModelOutput({
-        input: { path: attachedFolderPath, pattern: "*.ts" },
+        input: { path: FIXTURES_PATH, pattern: "*.ts" },
         output: {
           errors: [{ message: "File not found", sourcePath: "/some/file.ts" }],
           files: [],
@@ -89,7 +105,7 @@ describe("CopyToProject", () => {
 
     it("should format a single copied file", () => {
       const result = CopyToProject.toModelOutput({
-        input: { path: attachedFolderPath, pattern: "*.txt" },
+        input: { path: FIXTURES_PATH, pattern: "*.txt" },
         output: {
           errors: [],
           files: [
@@ -116,7 +132,7 @@ describe("CopyToProject", () => {
 
     it("should format multiple copied files with total size", () => {
       const result = CopyToProject.toModelOutput({
-        input: { path: attachedFolderPath, pattern: "*.txt" },
+        input: { path: FIXTURES_PATH, pattern: "*.txt" },
         output: {
           errors: [],
           files: [
@@ -152,7 +168,7 @@ describe("CopyToProject", () => {
 
     it("should report truncation when file count limit was hit", () => {
       const result = CopyToProject.toModelOutput({
-        input: { path: attachedFolderPath, pattern: "**/*" },
+        input: { path: FIXTURES_PATH, pattern: "**/*" },
         output: {
           errors: [],
           files: [
@@ -182,7 +198,7 @@ describe("CopyToProject", () => {
 
     it("should report truncation when total size limit was hit", () => {
       const result = CopyToProject.toModelOutput({
-        input: { path: attachedFolderPath, pattern: "**/*" },
+        input: { path: FIXTURES_PATH, pattern: "**/*" },
         output: {
           errors: [],
           files: [
@@ -212,7 +228,7 @@ describe("CopyToProject", () => {
 
     it("should include errors in output when some files succeeded and some failed", () => {
       const result = CopyToProject.toModelOutput({
-        input: { path: attachedFolderPath, pattern: "*.txt" },
+        input: { path: FIXTURES_PATH, pattern: "*.txt" },
         output: {
           errors: [
             { message: "File too large", sourcePath: "/source/big.txt" },
@@ -244,33 +260,11 @@ describe("CopyToProject", () => {
   });
 
   describe("execute", () => {
-    beforeEach(() => {
-      mockFs({
-        [MOCK_WORKSPACE_DIRS.projects]: {
-          "attached-test-folder": {
-            "file-a.txt": "content a",
-            "file-b.txt": "content b",
-            nested: {
-              "deep.txt": "deep content",
-            },
-            // cspell:ignore résumé
-            "résumé.pdf": "pdf content",
-            "script.ts": "const x = 1;",
-          },
-          [projectAppConfig.folderName]: {},
-        },
-      });
-    });
-
-    afterEach(() => {
-      mockFs.restore();
-    });
-
     it("should return error when not the retrieval agent", async () => {
       const result = await TOOLS.CopyToProject.execute({
-        ...baseExecuteArgs,
+        ...baseExecuteArgs(),
         agentName: "main",
-        input: { path: attachedFolderPath, pattern: "*.txt" },
+        input: { path: FIXTURES_PATH, pattern: "*.txt" },
       });
 
       expect(result._unsafeUnwrapErr().message).toContain(
@@ -280,8 +274,8 @@ describe("CopyToProject", () => {
 
     it("should return error when no attached folders", async () => {
       const result = await TOOLS.CopyToProject.execute({
-        ...baseExecuteArgs,
-        input: { path: attachedFolderPath, pattern: "*.txt" },
+        ...baseExecuteArgs(),
+        input: { path: FIXTURES_PATH, pattern: "*.txt" },
         projectState: {},
       });
 
@@ -292,7 +286,7 @@ describe("CopyToProject", () => {
 
     it("should return error when path is not within attached folders", async () => {
       const result = await TOOLS.CopyToProject.execute({
-        ...baseExecuteArgs,
+        ...baseExecuteArgs(),
         input: { path: "/some/random/path", pattern: "*.txt" },
       });
 
@@ -303,9 +297,9 @@ describe("CopyToProject", () => {
 
     it("should return error when no files match the pattern", async () => {
       const result = await TOOLS.CopyToProject.execute({
-        ...baseExecuteArgs,
+        ...baseExecuteArgs(),
         input: {
-          path: attachedFolderPath,
+          path: FIXTURES_PATH,
           pattern: "*.nonexistent-extension-xyz",
         },
       });
@@ -315,8 +309,8 @@ describe("CopyToProject", () => {
 
     it("should copy a single matching file to agent-retrieved folder", async () => {
       const result = await TOOLS.CopyToProject.execute({
-        ...baseExecuteArgs,
-        input: { path: attachedFolderPath, pattern: "file-a.txt" },
+        ...baseExecuteArgs(),
+        input: { path: FIXTURES_PATH, pattern: "file-a.txt" },
       });
       const output = result._unsafeUnwrap();
 
@@ -328,8 +322,8 @@ describe("CopyToProject", () => {
 
     it("should copy multiple files matching a glob pattern", async () => {
       const result = await TOOLS.CopyToProject.execute({
-        ...baseExecuteArgs,
-        input: { path: attachedFolderPath, pattern: "*.txt" },
+        ...baseExecuteArgs(),
+        input: { path: FIXTURES_PATH, pattern: "file-*.txt" },
       });
       const output = result._unsafeUnwrap();
 
@@ -343,15 +337,17 @@ describe("CopyToProject", () => {
     });
 
     it("should rename conflicting files with a counter suffix", async () => {
+      const args = baseExecuteArgs();
+
       const firstResult = await TOOLS.CopyToProject.execute({
-        ...baseExecuteArgs,
-        input: { path: attachedFolderPath, pattern: "file-a.txt" },
+        ...args,
+        input: { path: FIXTURES_PATH, pattern: "file-a.txt" },
       });
       const first = firstResult._unsafeUnwrap();
 
       const secondResult = await TOOLS.CopyToProject.execute({
-        ...baseExecuteArgs,
-        input: { path: attachedFolderPath, pattern: "file-a.txt" },
+        ...args,
+        input: { path: FIXTURES_PATH, pattern: "file-a.txt" },
       });
       const second = secondResult._unsafeUnwrap();
 
@@ -363,10 +359,10 @@ describe("CopyToProject", () => {
 
     it("should reject maxFileSizeBytes above the 1GB hard cap", async () => {
       const result = await TOOLS.CopyToProject.execute({
-        ...baseExecuteArgs,
+        ...baseExecuteArgs(),
         input: {
           maxFileSizeBytes: 1024 * 1024 * 1024 + 1,
-          path: attachedFolderPath,
+          path: FIXTURES_PATH,
           pattern: "*.txt",
         },
       });
@@ -378,10 +374,10 @@ describe("CopyToProject", () => {
 
     it("should reject maxTotalSizeBytes above the 10GB hard cap", async () => {
       const result = await TOOLS.CopyToProject.execute({
-        ...baseExecuteArgs,
+        ...baseExecuteArgs(),
         input: {
           maxTotalSizeBytes: 1024 * 1024 * 1024 * 10 + 1,
-          path: attachedFolderPath,
+          path: FIXTURES_PATH,
           pattern: "*.txt",
         },
       });
@@ -393,10 +389,10 @@ describe("CopyToProject", () => {
 
     it("should skip a file that exceeds a custom maxFileSizeBytes override", async () => {
       const result = await TOOLS.CopyToProject.execute({
-        ...baseExecuteArgs,
+        ...baseExecuteArgs(),
         input: {
           maxFileSizeBytes: 1, // 1 byte — everything will be too large
-          path: attachedFolderPath,
+          path: FIXTURES_PATH,
           pattern: "file-a.txt",
         },
       });
@@ -410,10 +406,10 @@ describe("CopyToProject", () => {
 
     it("should truncate when files exceed a custom maxTotalSizeBytes override", async () => {
       const result = await TOOLS.CopyToProject.execute({
-        ...baseExecuteArgs,
+        ...baseExecuteArgs(),
         input: {
           maxTotalSizeBytes: 1, // 1 byte — only first file will be within budget
-          path: attachedFolderPath,
+          path: FIXTURES_PATH,
           pattern: "*.txt",
         },
       });
@@ -425,8 +421,9 @@ describe("CopyToProject", () => {
 
     it("should sanitize Unicode characters in filenames when copying", async () => {
       const result = await TOOLS.CopyToProject.execute({
-        ...baseExecuteArgs,
-        input: { path: attachedFolderPath, pattern: "résumé.pdf" },
+        ...baseExecuteArgs(),
+        // cspell:ignore résumé
+        input: { path: FIXTURES_PATH, pattern: "résumé.pdf" },
       });
       const output = result._unsafeUnwrap();
 
@@ -436,7 +433,7 @@ describe("CopyToProject", () => {
     });
 
     it("should copy files from a nested subdirectory of the attached folder", async () => {
-      const nestedPath = path.join(attachedFolderPath, "nested");
+      const nestedPath = path.join(FIXTURES_PATH, "nested");
       const baseFolder = attachedFolders["test-folder"];
       if (!baseFolder) {
         throw new Error("Missing test-folder fixture");
@@ -449,7 +446,7 @@ describe("CopyToProject", () => {
       };
 
       const result = await TOOLS.CopyToProject.execute({
-        ...baseExecuteArgs,
+        ...baseExecuteArgs(),
         input: { path: nestedPath, pattern: "*.txt" },
         projectState: { attachedFolders: nestedAttachedFolders },
       });

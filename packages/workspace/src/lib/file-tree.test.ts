@@ -21,6 +21,9 @@ describe("file-tree", () => {
           built-in.ts
           external-module.ts
         dot-files-only/ (empty)
+        folder/
+          other2.txt
+          test3.txt
         ignored-folder/
           except-me.txt
         nested/
@@ -32,7 +35,10 @@ describe("file-tree", () => {
         empty-file.txt
         grep-test-2.txt
         grep-test.txt
-        json-file.json"
+        json-file.json
+        other.txt
+        test1.txt
+        test2.txt"
       `);
 
       // The key assertion: dot-files-only directory should be present

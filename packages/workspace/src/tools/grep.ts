@@ -39,6 +39,7 @@ export const Grep = setupTool({
   },
   name: "grep",
   outputSchema: z.object({
+    hasErrors: z.boolean().optional().default(false),
     matches: z.array(
       z.object({
         lineNum: z.number(),
@@ -163,8 +164,12 @@ export const Grep = setupTool({
     if (output.truncated) {
       outputLines.push(
         "",
-        "(Results are truncated. Consider using a more specific path or pattern.)",
+        `(Results truncated: showing ${GREP_LIMIT} of ${output.totalMatches} matches (${output.totalMatches - GREP_LIMIT} hidden). Consider using a more specific path or pattern.)`,
       );
+    }
+
+    if (output.hasErrors) {
+      outputLines.push("", "(Some paths were inaccessible and skipped)");
     }
 
     return {
