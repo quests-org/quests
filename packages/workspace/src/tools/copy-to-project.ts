@@ -117,6 +117,7 @@ export const CopyToProject = setupTool({
     Copy files matching a glob pattern from an attached folder into the project folder.
     You can use glob patterns to copy multiple files at once (e.g., "*.ts", "src/**/*.tsx") or specify a direct file path to copy a single file.
     Files are automatically renamed if a conflict exists.
+    If you must reference copied files when responding to the parent agent, use the destination paths returned by this tool, not the source paths.
     The parent agent can then access the copied files.
   `,
   execute: async ({ agentName, appConfig, input, projectState }) => {
