@@ -7,6 +7,7 @@ import { type TypedError } from "./errors";
 export type SpawnAgentFunction = (params: {
   agentName: AgentName;
   prompt: string;
+  sessionNamePrefix?: string;
   signal: AbortSignal;
 }) => Promise<{
   messagesResult: Result<SessionMessage.WithParts[], TypedError.Type>;

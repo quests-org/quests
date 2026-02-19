@@ -49,6 +49,7 @@ export type SessionMachineParentEvent =
         model: AIGatewayModel.Type;
         parentSessionId: StoreId.Session;
         sessionId: StoreId.Session;
+        sessionNamePrefix?: string;
       };
     };
 
@@ -117,43 +118,52 @@ export const sessionMachine = setup({
         appConfig: AppConfig;
         parentSessionId?: StoreId.Session;
         sessionId: StoreId.Session;
+        sessionNamePrefix?: string;
       }
-    >(async ({ input: { appConfig, parentSessionId, sessionId }, signal }) => {
-      const existingSession = await Store.getSession(sessionId, appConfig, {
+    >(
+      async ({
+        input: { appConfig, parentSessionId, sessionId, sessionNamePrefix },
         signal,
-      });
-      if (existingSession.isErr()) {
-        if (existingSession.error.type === "workspace-not-found-error") {
-          const result = await createSession({
-            appConfig,
-            parentSessionId,
-            signal,
-          });
-          if (result.isErr()) {
+      }) => {
+        const existingSession = await Store.getSession(sessionId, appConfig, {
+          signal,
+        });
+        if (existingSession.isErr()) {
+          if (existingSession.error.type === "workspace-not-found-error") {
+            const result = await createSession({
+              appConfig,
+              parentSessionId,
+              sessionNamePrefix,
+              signal,
+            });
+            if (result.isErr()) {
+              throw new Error(
+                `Failed to create session: ${result.error.message}`,
+              );
+            }
+            return;
+          } else {
             throw new Error(
-              `Failed to create session: ${result.error.message}`,
+              `Failed to get session: ${existingSession.error.message}`,
             );
           }
-          return;
         } else {
-          throw new Error(
-            `Failed to get session: ${existingSession.error.message}`,
+          const result = await Store.saveSession(
+            {
+              ...existingSession.value,
+              updatedAt: new Date(),
+            },
+            appConfig,
+            { signal },
           );
+          if (result.isErr()) {
+            throw new Error(
+              `Failed to update session: ${result.error.message}`,
+            );
+          }
         }
-      } else {
-        const result = await Store.saveSession(
-          {
-            ...existingSession.value,
-            updatedAt: new Date(),
-          },
-          appConfig,
-          { signal },
-        );
-        if (result.isErr()) {
-          throw new Error(`Failed to update session: ${result.error.message}`);
-        }
-      }
-    }),
+      },
+    ),
   },
   guards: {
     isAgentRefActive: ({ context }) =>
@@ -173,6 +183,7 @@ export const sessionMachine = setup({
       parentSessionId?: StoreId.Session;
       queuedMessages: SessionMessage.UserWithParts[];
       sessionId: StoreId.Session;
+      sessionNamePrefix?: string;
       spawnAgent: SpawnAgentFunction;
       subscription?: { unsubscribe: () => void };
       usedNonReadOnlyTools: boolean;
@@ -189,6 +200,7 @@ export const sessionMachine = setup({
       parentSessionId?: StoreId.Session;
       queuedMessages: SessionMessage.UserWithParts[];
       sessionId: StoreId.Session;
+      sessionNamePrefix?: string;
     },
     tags: {} as SessionTag,
   },
@@ -216,6 +228,7 @@ export const sessionMachine = setup({
     const spawnAgent: SpawnAgentFunction = async ({
       agentName,
       prompt,
+      sessionNamePrefix,
       signal,
     }) => {
       const newSessionId = StoreId.newSessionId();
@@ -247,6 +260,7 @@ export const sessionMachine = setup({
           model: input.model,
           parentSessionId: input.sessionId,
           sessionId: newSessionId,
+          sessionNamePrefix,
         },
       });
 
@@ -287,6 +301,7 @@ export const sessionMachine = setup({
       parentSessionId: input.parentSessionId,
       queuedMessages: input.queuedMessages,
       sessionId: input.sessionId,
+      sessionNamePrefix: input.sessionNamePrefix,
       spawnAgent,
       subscription,
       usedNonReadOnlyTools: false,
@@ -527,6 +542,7 @@ export const sessionMachine = setup({
           appConfig: context.appConfig,
           parentSessionId: context.parentSessionId,
           sessionId: context.sessionId,
+          sessionNamePrefix: context.sessionNamePrefix,
         }),
         onDone: {
           target: "ProcessingQueuedMessages",

@@ -6,13 +6,19 @@ import { Store } from "./store";
 export async function createSession({
   appConfig,
   parentSessionId,
+  sessionNamePrefix,
   signal,
 }: {
   appConfig: AppConfig;
   parentSessionId?: StoreId.Session;
+  sessionNamePrefix?: string;
   signal?: AbortSignal;
 }) {
-  const title = await generateSessionTitle(appConfig, { signal });
+  const title = await generateSessionTitle({
+    appConfig,
+    sessionNamePrefix,
+    signal,
+  });
   const sessionId = StoreId.newSessionId();
   const result = await Store.saveSession(
     {

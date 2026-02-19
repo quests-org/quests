@@ -97,6 +97,7 @@ export type WorkspaceEvent =
         model: AIGatewayModel.Type;
         parentSessionId?: StoreId.Session;
         sessionId: StoreId.Session;
+        sessionNamePrefix?: string;
       };
     }
   | {
@@ -470,6 +471,7 @@ export const workspaceMachine = setup({
             model,
             parentSessionId,
             sessionId,
+            sessionNamePrefix,
           } = event.value;
 
           const sessionMachineRef = spawn("sessionMachine", {
@@ -483,10 +485,10 @@ export const workspaceMachine = setup({
               parentSessionId,
               queuedMessages: [message],
               sessionId,
+              sessionNamePrefix,
             },
           });
 
-          // Track the session ref
           enqueue({
             params: {
               sessionRef: sessionMachineRef,
@@ -624,7 +626,7 @@ export const workspaceMachine = setup({
 
     "session.spawnSubAgent": {
       actions: raise(({ event }) => ({
-        type: "internal.spawnSession",
+        type: "internal.spawnSession" as const,
         value: event.value,
       })),
     },

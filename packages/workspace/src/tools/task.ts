@@ -17,6 +17,10 @@ const INPUT_PARAMS = {
   subagent_type: "subagent_type",
 } as const;
 
+const TASK_AGENT_DISPLAY_NAMES: Record<TaskAgentName, string> = {
+  retrieval: "Retrieval Agent",
+};
+
 const TASK_AGENT_DESCRIPTIONS: Record<TaskAgentName, string> = {
   retrieval: dedent`
     Specialized agent for accessing files from user-attached folders. Use this when the user has attached folders to their message and you need to search, inspect, or copy files from those folders.
@@ -81,9 +85,12 @@ export const Task = setupTool({
       );
     }
 
+    const agentDisplayName = TASK_AGENT_DISPLAY_NAMES[requestedAgentName];
+
     const { messagesResult, sessionId } = await spawnAgent({
       agentName: requestedAgentName,
       prompt: input.prompt,
+      sessionNamePrefix: agentDisplayName,
       signal,
     });
 
