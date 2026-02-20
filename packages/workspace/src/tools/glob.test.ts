@@ -77,9 +77,8 @@ describe("Glob", () => {
       spawnAgent: vi.fn(),
     });
 
-    expect(
-      sortFilesForTesting(result._unsafeUnwrap().files),
-    ).toMatchInlineSnapshot(`
+    expect(sortFilesForTesting(result._unsafeUnwrap().files))
+      .toMatchInlineSnapshot(`
       [
         "./other2.txt",
         "./test3.txt",
