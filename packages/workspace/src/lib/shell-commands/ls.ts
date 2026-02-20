@@ -132,13 +132,18 @@ export async function lsCommand(
           searchPath: fixedPathResult.value,
         });
 
+        const listing = result.files.join("\n");
+        const truncationNote = result.truncated
+          ? `\n[output truncated, showing first ${result.files.length} entries]`
+          : "";
+
         if (targetPaths.length > 1) {
           if (index > 0) {
             outputs.push("");
           }
-          outputs.push(`${targetPath}:`, result.files.join("\n"));
+          outputs.push(`${targetPath}:`, listing + truncationNote);
         } else {
-          outputs.push(result.files.join("\n"));
+          outputs.push(listing + truncationNote);
         }
       } else {
         outputs.push(path.basename(absolutePath));

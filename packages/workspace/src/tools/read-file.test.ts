@@ -42,6 +42,23 @@ describe("ReadFile", () => {
       spawnAgent: vi.fn(),
     };
 
+    it("should list files when given a directory path", async () => {
+      const value = (
+        await TOOLS.ReadFile.execute({
+          ...baseInput,
+          input: { explanation: "read", filePath: "./a-folder" },
+        })
+      )._unsafeUnwrap();
+
+      expect(value.state).toBe("exists");
+      if (value.state === "exists") {
+        expect(value.content).toMatchInlineSnapshot(`
+          "built-in.ts
+          external-module.ts"
+        `);
+      }
+    });
+
     it("should read a file by relative path", async () => {
       const value = (
         await TOOLS.ReadFile.execute({

@@ -16,6 +16,7 @@ import {
   getSimilarPathSuggestions,
   resolveAgentPath,
 } from "../lib/resolve-agent-path";
+import { ripgrepFiles } from "../lib/ripgrep";
 import { BaseInputSchema } from "./base";
 import { setupTool } from "./create-tool";
 
@@ -226,19 +227,24 @@ export const ReadFile = setupTool({
 
     const stats = await fs.stat(absolutePath);
     if (stats.isDirectory()) {
-      const entries = await fs.readdir(absolutePath, { withFileTypes: true });
-      const entryNames = entries
-        .map((e) => e.name + (e.isDirectory() ? "/" : ""))
-        .sort((a, b) => a.localeCompare(b));
+      const entries: string[] = [];
+      for await (const file of ripgrepFiles({
+        cwd: absolutePath,
+        maxDepth: 1,
+        signal,
+      })) {
+        entries.push(file);
+      }
+      entries.sort((a, b) => a.localeCompare(b));
 
       return ok({
-        content: entryNames.join("\n"),
-        displayedLines: entryNames.length,
+        content: entries.join("\n"),
+        displayedLines: entries.length,
         filePath: displayPath,
         hasMoreLines: false,
         offset: 0,
         state: "exists" as const,
-        totalLines: entryNames.length,
+        totalLines: entries.length,
         truncatedByBytes: false,
       });
     }

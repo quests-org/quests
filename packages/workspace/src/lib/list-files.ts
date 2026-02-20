@@ -6,6 +6,7 @@ import { pathExists } from "./path-exists";
 
 interface ListFilesResult {
   files: string[];
+  truncated: boolean;
 }
 
 export async function listFiles(
@@ -22,26 +23,15 @@ export async function listFiles(
 
   const exists = await pathExists(targetPath);
   if (!exists) {
-    return {
-      files: [],
-    };
+    return { files: [], truncated: false };
   }
 
   const entries = await fs.readdir(targetPath, { withFileTypes: true });
 
   const files = entries
-    .filter((entry) => {
-      // Filter out hidden files unless explicitly requested
-      if (!options.hidden && entry.name.startsWith(".")) {
-        return false;
-      }
-      return true;
-    })
-    .map((entry) => entry.name);
+    .filter((entry) => options.hidden || !entry.name.startsWith("."))
+    .map((entry) => entry.name)
+    .sort((a, b) => a.localeCompare(b));
 
-  files.sort((a, b) => a.localeCompare(b));
-
-  return {
-    files,
-  };
+  return { files, truncated: false };
 }

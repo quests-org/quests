@@ -19,6 +19,60 @@ export function parseRipgrepLines(stdout: string): string[] {
   return stdout.trim().split(/\r?\n/).filter(Boolean);
 }
 
+export async function* ripgrepFiles(input: {
+  cwd: string;
+  glob?: string[];
+  hidden?: boolean;
+  maxDepth?: number;
+  signal: AbortSignal;
+}) {
+  input.signal.throwIfAborted();
+
+  const args = ["--files", "--path-separator=/"];
+  if (input.hidden !== false) {
+    args.push("--hidden");
+  }
+  if (input.maxDepth !== undefined) {
+    args.push(`--max-depth=${input.maxDepth}`);
+  }
+  for (const g of input.glob ?? []) {
+    args.push(`--glob=${g}`);
+  }
+
+  const proc = spawn(RG_DISK_PATH, args, {
+    cwd: input.cwd,
+    signal: input.signal,
+  });
+
+  let buffer = "";
+  const decoder = new TextDecoder();
+
+  try {
+    for await (const chunk of proc.stdout as AsyncIterable<Buffer>) {
+      input.signal.throwIfAborted();
+      buffer += decoder.decode(chunk, { stream: true });
+      const lines = buffer.split(/\r?\n/);
+      buffer = lines.pop() ?? "";
+      for (const line of lines) {
+        if (line) {
+          yield line;
+        }
+      }
+    }
+    if (buffer) {
+      yield buffer;
+    }
+  } finally {
+    await new Promise<void>((resolve) => {
+      proc.on("close", () => {
+        resolve();
+      });
+    });
+  }
+
+  input.signal.throwIfAborted();
+}
+
 export function spawnRipgrep({
   args,
   cwd,
