@@ -50,7 +50,7 @@ describe("ReadFile", () => {
         })
       )._unsafeUnwrap();
 
-      expect(value.state).toBe("exists");
+      expect(value.state).toBe("is-directory");
       if (value.state === "exists") {
         expect(value.content).toMatchInlineSnapshot(`
           "built-in.ts
