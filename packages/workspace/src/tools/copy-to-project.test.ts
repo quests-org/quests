@@ -432,6 +432,20 @@ describe("CopyToProject", () => {
       expect(output.files[0]?.destinationPath).not.toContain("résumé");
     });
 
+    it("should copy a file when the pattern is the full absolute path to the file", async () => {
+      const absoluteFilePath = path.join(FIXTURES_PATH, "file-a.txt");
+
+      const result = await TOOLS.CopyToProject.execute({
+        ...baseExecuteArgs(),
+        input: { path: FIXTURES_PATH, pattern: absoluteFilePath },
+      });
+      const output = result._unsafeUnwrap();
+
+      expect(output.errors).toEqual([]);
+      expect(output.files).toHaveLength(1);
+      expect(output.files[0]?.destinationPath).toContain("file-a.txt");
+    });
+
     it("should copy files from a nested subdirectory of the attached folder", async () => {
       const nestedPath = path.join(FIXTURES_PATH, "nested");
       const baseFolder = attachedFolders["test-folder"];

@@ -90,3 +90,20 @@ export async function globSortedByMtime({
 
   return withStats.map((s) => s.filePath);
 }
+
+// Agents sometimes pass the full absolute path as the pattern instead of a
+// relative glob. ripgrep's --glob flag treats the pattern as relative to cwd,
+// so an absolute path would never match. Strip the cwd prefix if present.
+export function resolveGlobPattern({
+  cwd,
+  pattern,
+}: {
+  cwd: string;
+  pattern: string;
+}): string {
+  const cwdWithSep = cwd.endsWith(path.sep) ? cwd : cwd + path.sep;
+  if (path.isAbsolute(pattern) && pattern.startsWith(cwdWithSep)) {
+    return pattern.slice(cwdWithSep.length);
+  }
+  return pattern;
+}

@@ -9,7 +9,7 @@ import { APP_FOLDER_NAMES } from "../constants";
 import { absolutePathJoin } from "../lib/absolute-path-join";
 import { executeError } from "../lib/execute-error";
 import { formatBytes } from "../lib/format-bytes";
-import { glob } from "../lib/glob";
+import { glob, resolveGlobPattern } from "../lib/glob";
 import { pathExists } from "../lib/path-exists";
 import { resolveAgentPath } from "../lib/resolve-agent-path";
 import { sanitizeFilename } from "../lib/sanitize-filename";
@@ -169,7 +169,7 @@ export const CopyToProject = setupTool({
     const matchedFiles = await glob({
       absolute: true,
       cwd: searchRoot,
-      pattern: input.pattern,
+      pattern: resolveGlobPattern({ cwd: searchRoot, pattern: input.pattern }),
       signal,
     });
 

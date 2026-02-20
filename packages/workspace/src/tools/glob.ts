@@ -2,7 +2,7 @@ import ms from "ms";
 import { ok } from "neverthrow";
 import { z } from "zod";
 
-import { globSortedByMtime } from "../lib/glob";
+import { globSortedByMtime, resolveGlobPattern } from "../lib/glob";
 import { resolveAgentPath } from "../lib/resolve-agent-path";
 import { BaseInputSchema } from "./base";
 import { setupTool } from "./create-tool";
@@ -72,7 +72,7 @@ export const Glob = setupTool({
     const sorted = await globSortedByMtime({
       absolute: isRetrieval,
       cwd: searchRoot,
-      pattern: input.pattern,
+      pattern: resolveGlobPattern({ cwd: searchRoot, pattern: input.pattern }),
       signal,
     });
 

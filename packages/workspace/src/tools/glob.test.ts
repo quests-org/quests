@@ -233,6 +233,28 @@ describe("Glob", () => {
       ]);
     });
 
+    it("should find a file when the pattern is the full absolute path to the file", async () => {
+      const absoluteFilePath = path.join(FIXTURES_PATH, "test1.txt");
+
+      const result = await TOOLS.Glob.execute({
+        agentName: "retrieval",
+        appConfig: createFixturesAppConfig(),
+        input: {
+          explanation: "Find a specific file",
+          path: FIXTURES_PATH,
+          pattern: absoluteFilePath,
+        },
+        model,
+        projectState: { attachedFolders },
+        signal: AbortSignal.timeout(10_000),
+        spawnAgent: vi.fn(),
+      });
+
+      const files = result._unsafeUnwrap().files;
+      expect(files).toHaveLength(1);
+      expect(files[0]).toContain("test1.txt");
+    });
+
     it("should search within nested subdirectory of attached folder", async () => {
       const nestedPath = path.join(FIXTURES_PATH, "nested");
       const result = await TOOLS.Glob.execute({
