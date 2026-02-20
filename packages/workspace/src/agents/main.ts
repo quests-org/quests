@@ -49,6 +49,7 @@ export const mainAgent = setupAgent({
     "GenerateImage",
     "Glob",
     "Grep",
+    // "LoadSkill", not yet...
     "ReadFile",
     "RunDiagnostics",
     "RunShellCommand",

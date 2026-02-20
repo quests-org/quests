@@ -308,6 +308,14 @@ export function ToolContent({
         </div>
       );
     }
+    case "tool-load_skill": {
+      return (
+        <div>
+          <SectionHeader>Skill learned: {part.output.name}</SectionHeader>
+          <ScrollableCodeBlock>{part.output.content}</ScrollableCodeBlock>
+        </div>
+      );
+    }
     case "tool-read_file": {
       return <ToolPartReadFile input={part.input} output={part.output} />;
     }

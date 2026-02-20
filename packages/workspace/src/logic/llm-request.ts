@@ -111,12 +111,13 @@ export const llmRequestLogic = fromPromise<
 
   const agentTools = await input.agent.getTools();
 
-  const tools: ToolSet = Object.fromEntries(
-    agentTools.map((tool) => [
-      tool.name as string,
-      tool.aiSDKTool(input.agent.name),
-    ]),
-  );
+  const tools: ToolSet = {};
+  for (const tool of agentTools) {
+    tools[tool.name as string] = await tool.aiSDKTool(
+      input.agent.name,
+      input.appConfig,
+    );
+  }
 
   const messagesResult = await prepareModelMessages({
     agent: input.agent,

@@ -9,6 +9,7 @@ import { EditFile } from "./edit-file";
 import { GenerateImage } from "./generate-image";
 import { Glob } from "./glob";
 import { Grep } from "./grep";
+import { LoadSkill } from "./load-skill";
 import { ReadFile } from "./read-file";
 import { RunDiagnostics } from "./run-diagnostics";
 import { RunShellCommand } from "./run-shell-command";
@@ -25,6 +26,7 @@ export const TOOLS = {
   GenerateImage,
   Glob,
   Grep,
+  LoadSkill,
   ReadFile,
   RunDiagnostics,
   RunShellCommand,
@@ -44,6 +46,7 @@ export const TOOLS_BY_NAME = {
   [TOOLS.GenerateImage.name]: TOOLS.GenerateImage,
   [TOOLS.Glob.name]: TOOLS.Glob,
   [TOOLS.Grep.name]: TOOLS.Grep,
+  [TOOLS.LoadSkill.name]: TOOLS.LoadSkill,
   [TOOLS.ReadFile.name]: TOOLS.ReadFile,
   [TOOLS.RunDiagnostics.name]: TOOLS.RunDiagnostics,
   [TOOLS.RunShellCommand.name]: TOOLS.RunShellCommand,
@@ -55,16 +58,16 @@ export const TOOLS_BY_NAME = {
   // `satisfies` ensures all tool names are present
 } as const satisfies Record<ToolName, AnyAgentTool>;
 
-export const ALL_AI_SDK_TOOLS = Object.fromEntries(
+export const TOOLS_FOR_MODEL_OUTPUT = Object.fromEntries(
   Object.values(TOOLS_BY_NAME).map((tool) => [
     tool.name,
-    tool.aiSDKTool("main"),
+    tool.staticAISDKTool(),
   ]),
 );
 
 export type AISDKTools = InferUITools<{
   [K in keyof typeof TOOLS_BY_NAME]: ReturnType<
-    (typeof TOOLS_BY_NAME)[K]["aiSDKTool"]
+    (typeof TOOLS_BY_NAME)[K]["staticAISDKTool"]
   >;
 }>;
 

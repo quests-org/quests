@@ -20,8 +20,14 @@ export interface AgentTool<
 > {
   aiSDKTool: (
     agentName: AgentName,
-  ) => Tool<z.output<TInputSchema>, z.output<TOutputSchema>>;
-  description: ((agentName: AgentName) => string) | string;
+    appConfig?: AppConfig,
+  ) => Promise<Tool<z.output<TInputSchema>, z.output<TOutputSchema>>>;
+  description:
+    | ((
+        agentName: AgentName,
+        appConfig?: AppConfig,
+      ) => Promise<string> | string)
+    | string;
   execute: (options: {
     agentName: AgentName;
     appConfig: AppConfig;
@@ -35,6 +41,9 @@ export interface AgentTool<
   name: TName;
   outputSchema: TOutputSchema;
   readOnly: boolean;
+  // Description-free variant used for static type inference and toModelOutput mapping.
+  // Does not call description(), so it is safe to call synchronously without appConfig.
+  staticAISDKTool: () => Tool<z.output<TInputSchema>, z.output<TOutputSchema>>;
   timeoutMs: ((options: { input: z.output<TInputSchema> }) => number) | number;
   toModelOutput: (options: {
     input: z.output<TInputSchema>;

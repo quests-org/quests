@@ -366,6 +366,9 @@ function getToolInputValue(
     case "tool-grep": {
       return part.input.pattern;
     }
+    case "tool-load_skill": {
+      return part.input.name;
+    }
     case "tool-read_file": {
       return part.input.filePath
         ? filenameFromFilePath(part.input.filePath)
@@ -462,6 +465,9 @@ function getToolOutputDescription(
       return matches.length === 0
         ? "No matches found"
         : `${matches.length} matches found`;
+    }
+    case "tool-load_skill": {
+      return part.output.name;
     }
     case "tool-read_file": {
       return part.output.state === "does-not-exist"

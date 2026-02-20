@@ -3,6 +3,7 @@ import type * as z from "zod";
 import { tool } from "ai";
 
 import type { AgentName } from "../agents/types";
+import type { AppConfig } from "../lib/app-config/types";
 import type { AgentTool, ToolName } from "./types";
 
 type CreateOptions<
@@ -11,7 +12,7 @@ type CreateOptions<
   TOutputSchema extends z.ZodType,
 > = Omit<
   AgentTool<TName, TInputSchema, TOutputSchema>,
-  "aiSDKTool" | "inputSchema" | "name" | "outputSchema"
+  "aiSDKTool" | "inputSchema" | "name" | "outputSchema" | "staticAISDKTool"
 >;
 
 interface SetupOptions<
@@ -48,11 +49,10 @@ function buildTool<
   return {
     ...setup,
     ...options,
-    aiSDKTool: (agentName: AgentName) => {
-      const description =
-        typeof options.description === "function"
-          ? options.description(agentName)
-          : options.description;
+    aiSDKTool: async (agentName: AgentName, appConfig?: AppConfig) => {
+      const description = await (typeof options.description === "function"
+        ? options.description(agentName, appConfig)
+        : options.description);
 
       const inputSchema =
         typeof setup.inputSchema === "function"
@@ -65,6 +65,33 @@ function buildTool<
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         tool<any, any>({
           description,
+          inputSchema,
+          outputSchema: setup.outputSchema,
+          toModelOutput: ({ input, output, toolCallId }) =>
+            options.toModelOutput({
+              input: input as z.output<TInputSchema>,
+              output: output as z.output<TOutputSchema>,
+              toolCallId,
+            }),
+          type: "function",
+        })
+      );
+    },
+    /**
+     * Builds a description-free AI SDK tool shape used exclusively for
+     * `toModelOutput` mapping in `prepareModelMessages`. Do not use this
+     * for constructing tools passed to the LLM -- use `aiSDKTool` instead.
+     */
+    staticAISDKTool: () => {
+      const inputSchema =
+        typeof setup.inputSchema === "function"
+          ? setup.inputSchema("main")
+          : setup.inputSchema;
+
+      return (
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        tool<any, any>({
+          description: "", // None because this is never shown to agent
           inputSchema,
           outputSchema: setup.outputSchema,
           toModelOutput: ({ input, output, toolCallId }) =>

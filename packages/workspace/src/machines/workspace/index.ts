@@ -21,6 +21,7 @@ import {
 
 import { AGENTS } from "../../agents/all";
 import { type AgentName } from "../../agents/types";
+import { REGISTRY_FOLDER_NAMES } from "../../constants";
 import { absolutePathJoin } from "../../lib/absolute-path-join";
 import { createAppConfig } from "../../lib/app-config/create";
 import { type AppConfig } from "../../lib/app-config/types";
@@ -259,7 +260,10 @@ export const workspaceMachine = setup({
       projectsDir: absolutePathJoin(rootDir, "projects"),
       registryDir: AbsolutePathSchema.parse(input.registryDir),
       rootDir,
-      templatesDir: absolutePathJoin(registryDir, "templates"),
+      templatesDir: absolutePathJoin(
+        registryDir,
+        REGISTRY_FOLDER_NAMES.templates,
+      ),
       trashItem: input.trashItem,
     };
     return {

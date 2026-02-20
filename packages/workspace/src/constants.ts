@@ -1,3 +1,8 @@
+export const REGISTRY_FOLDER_NAMES = {
+  skills: "skills",
+  templates: "templates",
+} as const;
+
 export const APP_FOLDER_NAMES = {
   agentRetrieved: "agent-retrieved",
   output: "output",

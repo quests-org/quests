@@ -6,7 +6,7 @@ import { alphabetical } from "radashi";
 import { type AnyAgent } from "../agents/types";
 import { SessionMessage } from "../schemas/session/message";
 import { type StoreId } from "../schemas/store-id";
-import { ALL_AI_SDK_TOOLS } from "../tools/all";
+import { TOOLS_FOR_MODEL_OUTPUT } from "../tools/all";
 import { addCacheControlToMessages } from "./add-cache-control";
 import { type AppConfig } from "./app-config/types";
 import { filterUnsupportedMedia } from "./filter-unsupported-media";
@@ -126,7 +126,7 @@ export async function prepareModelMessages({
   // not used in this session
   const modelMessages = await SessionMessage.toModelMessages(
     orderedMessages,
-    ALL_AI_SDK_TOOLS,
+    TOOLS_FOR_MODEL_OUTPUT,
   );
 
   const nonEmptyModelMessages = modelMessages.filter(

@@ -7,6 +7,7 @@ export const ToolNameSchema = z.enum([
   "generate_image",
   "glob",
   "grep",
+  "load_skill",
   "read_file",
   "run_diagnostics",
   "run_shell_command",
