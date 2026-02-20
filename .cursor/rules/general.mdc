@@ -7,3 +7,4 @@ alwaysApply: true
 - Only add comments if asked by the user.
 - Do NOT remove comments that are already present.
 - NEVER use em dashes in text.
+- For fallible operations: use neverthrow `Result` in workspace; use the `typescript-result` package in ai-gateway. Prefer these over throwing.

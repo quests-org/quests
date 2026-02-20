@@ -6,15 +6,19 @@ alwaysApply: true
 
 ## Project
 
-- The Studio is an Electron app.
-- The client is React 19, so use the newer APIs.
-- Becuase we are trying to behave as a desktop app, we don't use `cursor: pointer` for links.
-- The `src/client` folder contains the TanStack Router app, which is client-only code that only runs in the browser.
-- shadcn components are installed in `@/client/components/ui`.
-- Use shadcn Tailwind colors for styling, e.g. `bg-background` instead of `bg-white`.
-- The app communicates over oRPC to the main process.
-- We have a remote API for accounts that is also exposed via oRPC.
-- `rpcClient` methods can be called directly with `.call()`, but will throw unless wrapped in `import { safe } from "@orpc/client";`
-- Use `.call()` when imperative use outside React is desired.
-- Use `useQuery` and `rpcClient.method.name.here.queryOptions({ input: { ... } })` for queries.
-- External links can be opened with `<ExternalLink href="https://example.com" />` or `rpcClient.utils.openExternalLink`.
+Studio is an Electron app. The renderer is a React 19 app using TanStack Router (file-based routes), shadcn UI components, and oRPC to talk to the main process. The main process also calls a remote API (accounts, plans, Stripe); that is only exposed to the UI via main-process RPC, not by the client calling HTTP directly.
+
+- React 19: use the newer APIs. Because we behave as a desktop app, we don't use `cursor: pointer` for links.
+- Use shadcn Tailwind colors (e.g. `bg-background`), not raw colors like `bg-white`.
+- `rpcClient` methods can be called with `.call()` but will throw unless wrapped in `import { safe } from "@orpc/client";`. Use `.call()` when imperative outside React.
+- Queries: `useQuery` and `rpcClient.method.name.queryOptions({ input: { ... } })`.
+- External links: `<ExternalLink href="..." />` or `rpcClient.utils.openExternalLink`.
+- Use the `cn` helper from `@/client/lib/utils` for conditional or composed Tailwind classes.
+
+## Where things are
+
+- **Client app**: Renderer code under `src/client`. Routes are file-based in `src/client/routes/` (TanStack Router; layout/auth under `_app/`).
+- **UI**: shadcn in `src/client/components/ui`; shared components in `src/client/components/`.
+- **Debug**: Routes under `_app/debug/` and `settings/debug` are for experimentation only; not for end users.
+- **RPC**: Main process handlers in `src/electron-main/rpc/routes/`; workspace at `rpcClient.workspace.*`. Client in `src/client/rpc/client.ts` talks to main over MessageChannel only (no direct remote HTTP).
+- **Remote API**: Main process only, in `src/electron-main/api/`. UI gets that data via main-process RPC (e.g. `user.me`, `plans.get`).
