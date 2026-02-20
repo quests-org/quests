@@ -74,6 +74,22 @@ export function ToolPartReadFile({
         </div>
       );
     }
+    case "is-directory": {
+      return (
+        <div>
+          <ToolPartFilePath filePath={output.filePath} label="Directory" />
+          {output.entries.length > 0 && (
+            <ScrollableCodeBlock>
+              {output.entries.join("\n")}
+            </ScrollableCodeBlock>
+          )}
+          <div className="mt-1 text-xs text-muted-foreground">
+            {output.entries.length}{" "}
+            {output.entries.length === 1 ? "entry" : "entries"}
+          </div>
+        </div>
+      );
+    }
     case "unsupported-format": {
       const message =
         output.reason === "unsupported-image-format"

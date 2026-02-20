@@ -11,12 +11,12 @@ import { addLineNumbers } from "../lib/add-line-numbers";
 import { executeError } from "../lib/execute-error";
 import { formatBytes } from "../lib/format-bytes";
 import { getMimeType } from "../lib/get-mime-type";
+import { listFiles } from "../lib/list-files";
 import { pathExists } from "../lib/path-exists";
 import {
   getSimilarPathSuggestions,
   resolveAgentPath,
 } from "../lib/resolve-agent-path";
-import { ripgrepFiles } from "../lib/ripgrep";
 import { BaseInputSchema } from "./base";
 import { setupTool } from "./create-tool";
 
@@ -172,6 +172,11 @@ export const ReadFile = setupTool({
       reason: z.enum(["binary-file", "unsupported-image-format"]),
       state: z.literal("unsupported-format"),
     }),
+    z.object({
+      entries: z.array(z.string()),
+      filePath: z.string(),
+      state: z.literal("is-directory"),
+    }),
   ]),
 }).create({
   description: (agentName) => {
@@ -227,25 +232,12 @@ export const ReadFile = setupTool({
 
     const stats = await fs.stat(absolutePath);
     if (stats.isDirectory()) {
-      const entries: string[] = [];
-      for await (const file of ripgrepFiles({
-        cwd: absolutePath,
-        maxDepth: 1,
-        signal,
-      })) {
-        entries.push(file);
-      }
-      entries.sort((a, b) => a.localeCompare(b));
+      const { files: entries } = await listFiles(absolutePath);
 
       return ok({
-        content: entries.join("\n"),
-        displayedLines: entries.length,
+        entries,
         filePath: displayPath,
-        hasMoreLines: false,
-        offset: 0,
-        state: "exists" as const,
-        totalLines: entries.length,
-        truncatedByBytes: false,
+        state: "is-directory" as const,
       });
     }
 
@@ -370,6 +362,15 @@ export const ReadFile = setupTool({
       return {
         type: "error-text",
         value: `File ${output.filePath} does not exist${suggestionText}`,
+      };
+    }
+
+    if (output.state === "is-directory") {
+      const listing =
+        output.entries.length > 0 ? output.entries.join("\n") : "(empty)";
+      return {
+        type: "text",
+        value: `${output.filePath} is a directory, not a file. Here are its contents:\n\n${listing}`,
       };
     }
 
