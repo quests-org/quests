@@ -74,7 +74,9 @@ export async function importProject(
             continue;
           }
 
-          const fullPath = absolutePathJoin(projectDir, entry.filename);
+          // Needed for importing a project from Windows on a POSIX machine.
+          const normalizedFilename = entry.filename.replaceAll("\\", "/");
+          const fullPath = absolutePathJoin(projectDir, normalizedFilename);
           const dirPath = path.dirname(fullPath);
           await fs.mkdir(dirPath, { recursive: true });
 
