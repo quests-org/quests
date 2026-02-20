@@ -5,3 +5,5 @@ globs: *.test.*
 
 - Use `it.each` for testing repetitive cases.
 - Generate empty `toMatchInlineSnapshot` and allow the test run to fill it in.
+- Run a specific test file: `cd packages/<name> && pnpm test run <path/to/file.test.ts>`
+- Run all tests in a package: `cd packages/<name> && pnpm test run`
