@@ -118,7 +118,7 @@ export async function writeUploadedAttachments({
       const newFolders: Record<string, FolderAttachment.Type> = {};
 
       for (const folder of folders) {
-        const baseName = path.basename(folder.path) || "folder";
+        const baseName = path.basename(folder.path) || folder.path;
         const uniqueName = getUniqueFolderName(
           baseName,
           existingFolders,
