@@ -29,11 +29,7 @@ export const LoadSkill = setupTool({
     name: z.string(),
   }),
 }).create({
-  description: async (_agentName, appConfig) => {
-    if (!appConfig) {
-      return "Load a specialized skill that provides domain-specific instructions for a specific task.";
-    }
-
+  description: async ({ appConfig }) => {
     const sources = getSkillSources(appConfig.workspaceConfig.registryDir);
     const skills = await findSkills(sources);
 

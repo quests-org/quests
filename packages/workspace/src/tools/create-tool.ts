@@ -3,7 +3,6 @@ import type * as z from "zod";
 import { tool } from "ai";
 
 import type { AgentName } from "../agents/types";
-import type { AppConfig } from "../lib/app-config/types";
 import type { AgentTool, ToolName } from "./types";
 
 type CreateOptions<
@@ -49,9 +48,9 @@ function buildTool<
   return {
     ...setup,
     ...options,
-    aiSDKTool: async (agentName: AgentName, appConfig?: AppConfig) => {
+    aiSDKTool: async ({ agentName, appConfig }) => {
       const description = await (typeof options.description === "function"
-        ? options.description(agentName, appConfig)
+        ? options.description({ agentName, appConfig })
         : options.description);
 
       const inputSchema =

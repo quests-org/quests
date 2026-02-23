@@ -51,7 +51,7 @@ export const Task = setupTool({
     summary: z.string(),
   }),
 }).create({
-  description: (agentName) => {
+  description: ({ agentName }) => {
     if (agentName === "main") {
       const TASK_AGENT_LIST = TASK_AGENT_NAMES.map(
         (name) => `- ${name}: ${TASK_AGENT_DESCRIPTIONS[name]}`,

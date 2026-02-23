@@ -18,15 +18,15 @@ export interface AgentTool<
   TInputSchema extends z.ZodType = z.ZodType,
   TOutputSchema extends z.ZodType = z.ZodType,
 > {
-  aiSDKTool: (
-    agentName: AgentName,
-    appConfig?: AppConfig,
-  ) => Promise<Tool<z.output<TInputSchema>, z.output<TOutputSchema>>>;
+  aiSDKTool: (options: {
+    agentName: AgentName;
+    appConfig: AppConfig;
+  }) => Promise<Tool<z.output<TInputSchema>, z.output<TOutputSchema>>>;
   description:
-    | ((
-        agentName: AgentName,
-        appConfig?: AppConfig,
-      ) => Promise<string> | string)
+    | ((options: {
+        agentName: AgentName;
+        appConfig: AppConfig;
+      }) => Promise<string> | string)
     | string;
   execute: (options: {
     agentName: AgentName;

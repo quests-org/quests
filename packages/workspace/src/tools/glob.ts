@@ -41,7 +41,7 @@ export const Glob = setupTool({
     truncated: z.boolean().optional(),
   }),
 }).create({
-  description: (agentName) => {
+  description: ({ agentName }) => {
     if (agentName === "retrieval") {
       return "Find files matching a glob pattern within attached folders. You must specify an absolute path to an attached folder to search within.";
     }

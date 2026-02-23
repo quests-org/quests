@@ -181,7 +181,7 @@ export const ReadFile = setupTool({
     }),
   ]),
 }).create({
-  description: (agentName) => {
+  description: ({ agentName }) => {
     const pathExample =
       agentName === "retrieval"
         ? "/path/to/some/file.pdf"

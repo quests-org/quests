@@ -52,7 +52,7 @@ export const Grep = setupTool({
     truncated: z.boolean(),
   }),
 }).create({
-  description: (agentName) => {
+  description: ({ agentName }) => {
     const pathExample =
       agentName === "retrieval" ? "/path/to/attached/folder" : "./src";
 
