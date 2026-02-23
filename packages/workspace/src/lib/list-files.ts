@@ -13,6 +13,7 @@ export async function listFiles(
   rootDir: AbsolutePath,
   options: {
     hidden?: boolean;
+    limit?: number;
     searchPath?: string;
     signal?: AbortSignal;
   } = {},
@@ -28,10 +29,15 @@ export async function listFiles(
 
   const entries = await fs.readdir(targetPath, { withFileTypes: true });
 
-  const files = entries
+  const filtered = entries
     .filter((entry) => options.hidden || !entry.name.startsWith("."))
     .map((entry) => entry.name)
     .sort((a, b) => a.localeCompare(b));
 
-  return { files, truncated: false };
+  const limit = options.limit;
+  if (limit !== undefined && filtered.length > limit) {
+    return { files: filtered.slice(0, limit), truncated: true };
+  }
+
+  return { files: filtered, truncated: false };
 }

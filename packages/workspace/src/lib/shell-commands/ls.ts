@@ -14,6 +14,7 @@ import { type FileOperationResult } from "./types";
 import { validateNoGlobs } from "./utils";
 
 const COMMAND_NAME = "ls";
+const LS_LIMIT = 200;
 
 export const LS_COMMAND = {
   description: `usage: ${COMMAND_NAME} [-a] [file ...]`,
@@ -129,6 +130,7 @@ export async function lsCommand(
       if (stats.isDirectory()) {
         const result = await listFiles(appConfig.appDir, {
           hidden: showHidden,
+          limit: LS_LIMIT,
           searchPath: fixedPathResult.value,
         });
 

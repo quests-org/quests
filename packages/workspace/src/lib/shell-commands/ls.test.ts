@@ -194,4 +194,26 @@ describe("lsCommand", () => {
       }
     `);
   });
+
+  it("truncates output and appends note when directory has more entries than LS_LIMIT", async () => {
+    const manyFiles: Record<string, string> = {};
+    for (let i = 0; i < 205; i++) {
+      manyFiles[`file${String(i).padStart(3, "0")}.txt`] = "content";
+    }
+    mockFs.restore();
+    mockFs({
+      [MOCK_WORKSPACE_DIRS.projects]: {
+        [appConfig.folderName]: manyFiles,
+      },
+    });
+
+    const result = await lsCommand([], appConfig);
+    const output = result._unsafeUnwrap();
+
+    expect(output.exitCode).toBe(0);
+    expect(output.combined).toContain(
+      "[output truncated, showing first 200 entries]",
+    );
+    expect(output.combined.split("\n")).toHaveLength(201);
+  });
 });

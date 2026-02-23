@@ -96,4 +96,19 @@ describe("listFiles", () => {
       ]
     `);
   });
+
+  it("truncates results when limit is exceeded", async () => {
+    const fixturesDir = getFixturesDir();
+    const result = await listFiles(fixturesDir, { limit: 3 });
+
+    expect(result.truncated).toBe(true);
+    expect(result.files).toHaveLength(3);
+  });
+
+  it("does not truncate when results are within limit", async () => {
+    const fixturesDir = getFixturesDir();
+    const result = await listFiles(fixturesDir, { limit: 1000 });
+
+    expect(result.truncated).toBe(false);
+  });
 });

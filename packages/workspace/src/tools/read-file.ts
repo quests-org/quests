@@ -21,6 +21,7 @@ import { BaseInputSchema } from "./base";
 import { setupTool } from "./create-tool";
 
 const DEFAULT_READ_LIMIT = 2000;
+const DIRECTORY_LISTING_LIMIT = 200;
 const MAX_LINE_LENGTH = 2000;
 const MAX_BYTES = 50 * 1024;
 
@@ -176,6 +177,7 @@ export const ReadFile = setupTool({
       entries: z.array(z.string()),
       filePath: z.string(),
       state: z.literal("is-directory"),
+      truncated: z.boolean(),
     }),
   ]),
 }).create({
@@ -232,12 +234,16 @@ export const ReadFile = setupTool({
 
     const stats = await fs.stat(absolutePath);
     if (stats.isDirectory()) {
-      const { files: entries } = await listFiles(absolutePath);
+      const { files: entries, truncated: dirTruncated } = await listFiles(
+        absolutePath,
+        { limit: DIRECTORY_LISTING_LIMIT },
+      );
 
       return ok({
         entries,
         filePath: displayPath,
         state: "is-directory" as const,
+        truncated: dirTruncated,
       });
     }
 
@@ -368,9 +374,12 @@ export const ReadFile = setupTool({
     if (output.state === "is-directory") {
       const listing =
         output.entries.length > 0 ? output.entries.join("\n") : "(empty)";
+      const truncationNote = output.truncated
+        ? `\n\n(Results truncated: showing first ${DIRECTORY_LISTING_LIMIT} entries)`
+        : "";
       return {
         type: "text",
-        value: `${output.filePath} is a directory, not a file. Here are its contents:\n\n${listing}`,
+        value: `${output.filePath} is a directory, not a file. Here are its contents:\n\n${listing}${truncationNote}`,
       };
     }
 
