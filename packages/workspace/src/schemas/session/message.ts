@@ -254,33 +254,35 @@ export namespace SessionMessage {
       const parts = [...filteredParts];
 
       if (message.role === "user") {
-        const fileAttachmentsPart = message.parts.find(
+        const attachmentsPart = message.parts.find(
           (part) => part.type === "data-attachments",
         );
 
-        if (fileAttachmentsPart) {
-          const attachmentDescriptions = fileAttachmentsPart.data.files
-            .map((file) => {
-              const formattedSize = formatBytes(file.size);
-              return `- ${file.filePath} (${formattedSize})`;
-            })
-            .join("\n");
+        if (attachmentsPart) {
+          if (attachmentsPart.data.files.length > 0) {
+            const attachmentDescriptions = attachmentsPart.data.files
+              .map((file) => {
+                const formattedSize = formatBytes(file.size);
+                return `- ${file.filePath} (${formattedSize})`;
+              })
+              .join("\n");
 
-          const attachmentText = dedent`
-            <uploaded_files>
-            The user attached these files to this message. Assume they are directly relevant to the user's request.
-            ${attachmentDescriptions}
-            </uploaded_files>
-          `;
+            const attachmentText = dedent`
+              <uploaded_files>
+              The user attached these files to this message. Assume they are directly relevant to the user's request.
+              ${attachmentDescriptions}
+              </uploaded_files>
+            `;
 
-          parts.push({ text: attachmentText, type: "text" });
+            parts.push({ text: attachmentText, type: "text" });
+          }
 
           if (
-            fileAttachmentsPart.data.folders &&
-            fileAttachmentsPart.data.folders.length > 0
+            attachmentsPart.data.folders &&
+            attachmentsPart.data.folders.length > 0
           ) {
             const folderAttachmentText = buildAttachedFoldersText({
-              folderNames: fileAttachmentsPart.data.folders.map(
+              folderNames: attachmentsPart.data.folders.map(
                 (folder) => folder.name,
               ),
               intro:
