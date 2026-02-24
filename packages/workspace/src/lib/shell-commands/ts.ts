@@ -50,16 +50,15 @@ export async function tsCommand(
     );
   }
 
-  if (positionals.length > 1) {
-    return executeError(
-      `${TS_COMMAND.name} only supports executing one file at a time. Found ${positionals.length} files: ${positionals.join(", ")}. Execute them separately or combine into a single script.`,
-    );
-  }
-
   const filePath = positionals[0];
   if (!filePath) {
     return executeError(`${TS_COMMAND.name} requires a file path argument.`);
   }
+
+  // Everything after the file path token in the original args is forwarded to
+  // the script as its own argv (flags like --file, --output, extra positionals).
+  const filePathIndex = args.indexOf(filePath);
+  const scriptArgs = args.slice(filePathIndex + 1);
 
   const providerEnv = envForProviderConfigs({
     configs: appConfig.workspaceConfig.getAIProviderConfigs(),
@@ -68,22 +67,14 @@ export async function tsCommand(
 
   // Use pnpm dlx for faster execution via cached packages and avoid
   // installing all packages eagerly.
-  // Only pass the positional (file path) to avoid jiti misinterpreting arguments
   const execResult = await execaNodeForApp(
     appConfig,
     appConfig.workspaceConfig.pnpmBinPath,
-    ["dlx", "jiti", filePath],
+    ["dlx", "jiti", filePath, ...scriptArgs],
     // Don't reject so we can filter the output
     { all: true, cancelSignal: signal, env: providerEnv, reject: false },
   );
-  let combined = filterShellOutput(execResult.all, appConfig.appDir);
-
-  // Warn about any unsupported flags that were ignored
-  const allFlags = args.filter((arg) => arg.startsWith("-"));
-  if (allFlags.length > 0) {
-    const warningMessage = `Warning: ${TS_COMMAND.name} received unsupported flags that were ignored: ${allFlags.join(", ")}. Only the file path is supported.\n\n`;
-    combined = warningMessage + combined;
-  }
+  const combined = filterShellOutput(execResult.all, appConfig.appDir);
 
   return ok({
     combined,

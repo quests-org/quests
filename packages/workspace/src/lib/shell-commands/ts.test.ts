@@ -1,8 +1,10 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { ProjectSubdomainSchema } from "../../schemas/subdomains";
 import { createMockAppConfig } from "../../test/helpers/mock-app-config";
 import { tsCommand } from "./ts";
+
+vi.mock(import("../execa-node-for-app"));
 
 describe("tsCommand", () => {
   const appConfig = createMockAppConfig(ProjectSubdomainSchema.parse("test"));
@@ -43,17 +45,49 @@ describe("tsCommand", () => {
     `);
   });
 
-  it("errors when multiple files are provided", async () => {
-    const result = await tsCommand(
-      ["script1.ts", "script2.ts", "script3.ts"],
-      appConfig,
-    );
+  it("errors when only flags are provided with no file", async () => {
+    const result = await tsCommand(["--verbose"], appConfig);
 
     expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
       {
-        "message": "ts only supports executing one file at a time. Found 3 files: script1.ts, script2.ts, script3.ts. Execute them separately or combine into a single script.",
+        "message": "ts requires exactly one file path as a positional argument (e.g., ts scripts/setup.ts).",
         "type": "execute-error",
       }
     `);
+  });
+
+  it("passes named flags and their values through to the script", async () => {
+    const { execaNodeForApp } = await import("../execa-node-for-app");
+    vi.mocked(execaNodeForApp).mockResolvedValueOnce({
+      all: "",
+      exitCode: 0,
+    } as never);
+
+    const result = await tsCommand(
+      [
+        "./skills/pdf-to-markdown/scripts/convert.ts",
+        "--file",
+        "./user-provided/test.pdf",
+        "--output",
+        "./output/test.md",
+      ],
+      appConfig,
+    );
+
+    expect(result.isOk()).toBe(true);
+    expect(vi.mocked(execaNodeForApp)).toHaveBeenCalledWith(
+      appConfig,
+      appConfig.workspaceConfig.pnpmBinPath,
+      [
+        "dlx",
+        "jiti",
+        "./skills/pdf-to-markdown/scripts/convert.ts",
+        "--file",
+        "./user-provided/test.pdf",
+        "--output",
+        "./output/test.md",
+      ],
+      expect.any(Object),
+    );
   });
 });
