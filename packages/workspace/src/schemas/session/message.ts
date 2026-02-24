@@ -9,7 +9,7 @@ import {
 import { dedent } from "radashi";
 import { z } from "zod";
 
-import { type AgentName } from "../../agents/types";
+import { type AgentName, RETRIEVAL_AGENT_NAME } from "../../agents/types";
 import { buildAttachedFoldersText } from "../../lib/build-attached-folders-text";
 import { formatBytes } from "../../lib/format-bytes";
 import { isToolPart } from "../../lib/is-tool-part";
@@ -269,7 +269,7 @@ export namespace SessionMessage {
 
             const attachmentText = dedent`
               <uploaded_files>
-              The user attached these files to this message. Assume they are directly relevant to the user's request.
+              The user uploaded these files with this message. They are now available in the project at the paths listed below. Assume they are directly relevant to the user's request.
               ${attachmentDescriptions}
               </uploaded_files>
             `;
@@ -285,8 +285,7 @@ export namespace SessionMessage {
               folderNames: attachmentsPart.data.folders.map(
                 (folder) => folder.name,
               ),
-              intro:
-                "The user attached these folders to this message. Assume they are directly relevant to the user's request.",
+              intro: `The user attached these external folders with this message. They are now available to the project via the ${RETRIEVAL_AGENT_NAME} agent. Assume they are directly relevant to the user's request.`,
             });
 
             parts.push({ text: folderAttachmentText, type: "text" });

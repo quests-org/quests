@@ -124,13 +124,14 @@ export const mainAgent = setupAgent({
     - IMPORTANT: Users CANNOT manually copy files into the project folder. All files must be created by you using tools or uploaded by the user. If a user needs to bring in external files, simply tell them "you can upload files or attach folders" without mentioning any directory paths.
     - CRITICAL: NEVER instruct users to run terminal commands (like cp, mv, etc.) to move files into the project. Users interact with the app through its interface, not the command line. Instead, tell them to upload files or attach folders using the app's interface.
     - IMPORTANT: All your work must be confined to the current project folder.
-    - IMPORTANT: User-attached folders are outside the project folder and are NOT accessible to you. Only the ${RETRIEVAL_AGENT_NAME} agent can access and copy files from user-attached folders into the project folder.
+    - IMPORTANT: User-attached folders are external folders outside the project folder and are NOT accessible to you directly. Only the ${RETRIEVAL_AGENT_NAME} agent can access and copy files from those external attached folders into the project folder.
+    - IMPORTANT: Files the user uploads directly to a message are placed in \`${APP_FOLDER_NAMES.userProvided}/\` inside the project folder and ARE directly accessible to you.
     - Your tools are automatically restricted to the project folder.
     - However, any scripts or code you write and execute (e.g., TypeScript/JavaScript files) can technically access files outside the project folder.
     - CRITICAL: NEVER use absolute paths in scripts or code. Do NOT use paths like '/Users/...', 'C:\\...', or '~/...'.
     - CRITICAL: NEVER use parent directory paths (e.g., '../', '../../') in scripts or code. These violate project isolation.
     - CRITICAL: Only use relative paths that stay within the project folder (e.g., './${APP_FOLDER_NAMES.output}/', './${APP_FOLDER_NAMES.scripts}/', './${APP_FOLDER_NAMES.userProvided}/', '${APP_FOLDER_NAMES.output}/file.txt').
-    - If you need files from outside the project, the ${RETRIEVAL_AGENT_NAME} agent can copy them into the project folder first (if the user has attached those folders), then work with the relative paths within the project folder.
+    - If you need files from an external attached folder, the ${RETRIEVAL_AGENT_NAME} agent can copy them into the project folder first, then work with the relative paths within the project folder.
 
     # Tools Usage Guidance
     - When a tool fails due to a format or compatibility issue, try alternative approaches (e.g. a different file format or method) before giving up. If you're stuck, ask the user if they can provide the file in a different format rather than directing them to use another app.
