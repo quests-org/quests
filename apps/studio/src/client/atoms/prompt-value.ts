@@ -97,7 +97,7 @@ export const appendToPromptAtom = atom(
     const next =
       typeof update === "function"
         ? update(prev)
-        : (prev.trimEnd() ? prev.trimEnd() + " " : "") + update.trim();
+        : (prev.trimEnd() ? prev.trimEnd() + " " : "") + update.trim() + " ";
     set(valueAtom, next);
     get(promptInputRefAtom)?.focus();
   },
