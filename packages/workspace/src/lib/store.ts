@@ -391,7 +391,6 @@ export namespace Store {
     { signal }: { signal?: AbortSignal } = {},
   ) {
     return safeTry(async function* () {
-      // Check that all parts belong to the same session
       const partsWithSessionMismatch = message.parts.filter(
         (part) => part.metadata.sessionId !== message.metadata.sessionId,
       );
@@ -404,7 +403,6 @@ export namespace Store {
         );
       }
 
-      // Check that all parts belong to the same message
       const partsWithMessageMismatch = message.parts.filter(
         (part) => part.metadata.messageId !== message.id,
       );
@@ -476,7 +474,6 @@ export namespace Store {
       signal,
     }: { publish?: boolean; signal?: AbortSignal } = {},
   ) {
-    // Check that all parts belong to the same session
     const [firstPart] = parts;
     if (firstPart) {
       const firstSessionId = firstPart.metadata.sessionId;
@@ -490,7 +487,6 @@ export namespace Store {
         }
       }
 
-      // Check that all parts belong to the same message
       const firstMessageId = firstPart.metadata.messageId;
       for (const part of parts) {
         if (part.metadata.messageId !== firstMessageId) {
