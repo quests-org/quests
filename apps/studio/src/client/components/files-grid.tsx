@@ -106,10 +106,14 @@ export function FilesGrid({
 
   const mainFilesToShow = isExpanded ? mainFiles : visibleMainFiles;
 
-  const richPreviewFiles = mainFilesToShow.filter(hasRichPreview);
-  const otherFiles = mainFilesToShow.filter((file) => !hasRichPreview(file));
+  const richPreviewFiles = compact
+    ? []
+    : mainFilesToShow.filter(hasRichPreview);
+  const otherFiles = compact
+    ? mainFilesToShow
+    : mainFilesToShow.filter((file) => !hasRichPreview(file));
 
-  const isSingleRichFile = !compact && richPreviewFiles.length === 1;
+  const isSingleRichFile = richPreviewFiles.length === 1;
 
   return (
     <div className="flex flex-col gap-2">
@@ -119,8 +123,7 @@ export function FilesGrid({
             className={cn("flex flex-wrap gap-2", alignEnd && "justify-end")}
           >
             {richPreviewFiles.map((file) => {
-              const shouldSpanTwoThirds =
-                !compact && (isSingleRichFile || isReadableText(file));
+              const shouldSpan = isSingleRichFile || isReadableText(file);
 
               return (
                 <div
@@ -129,7 +132,7 @@ export function FilesGrid({
                     isSingleRichFile
                       ? "@md:w-[calc((100%/3*2)-(0.5rem/3))]"
                       : "@md:w-[calc((100%/2)-(0.5rem/2))]",
-                    shouldSpanTwoThirds
+                    shouldSpan
                       ? "@2xl:w-[calc((100%/3*2)-(0.5rem/3))]"
                       : "@2xl:w-[calc((100%/3)-(0.5rem*2/3))]",
                   )}
