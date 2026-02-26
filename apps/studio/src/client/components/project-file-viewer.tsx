@@ -112,7 +112,7 @@ export function ProjectFileViewer({
         {isImage ? (
           <ImageWithFallback
             alt={file.filename}
-            className="size-auto max-h-full max-w-full rounded-sm object-contain select-none"
+            className="size-auto max-h-full max-w-full object-contain select-none"
             fallback={
               <FilePreviewFallback
                 fallbackExtension="jpg"
