@@ -17,6 +17,7 @@ export function AppView({
   centerContent,
   className,
   isVersionsOpen = false,
+  onClose,
   onVersionsToggle,
   rightActions,
   shouldReload = true,
@@ -25,6 +26,7 @@ export function AppView({
   centerContent?: React.ReactNode;
   className?: string;
   isVersionsOpen?: boolean;
+  onClose?: () => void;
   onVersionsToggle?: () => void;
   rightActions?: React.ReactNode;
   shouldReload?: boolean;
@@ -64,6 +66,7 @@ export function AppView({
         iframeRef={iframeRef}
         isConsoleOpen={isConsoleOpen}
         isVersionsOpen={isVersionsOpen}
+        onClose={onClose}
         onConsoleToggle={() => {
           setIsConsoleOpen((prev) => !prev);
         }}

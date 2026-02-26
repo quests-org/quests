@@ -20,6 +20,7 @@ import {
 } from "@quests/workspace/client";
 import { useAtomValue, useSetAtom } from "jotai";
 import {
+  AppWindow,
   ChevronRight,
   Files,
   Folder,
@@ -56,14 +57,22 @@ type FileTreeNode =
   | { children: FileTreeNode[]; kind: "dir"; name: string }
   | { file: ProjectFileViewerFile; kind: "file" };
 
-export function ProjectFileListPanel({
+export function ProjectPanel({
   attachedFolders,
   files,
+  isAppViewOpen,
+  onAppSelect,
+  onFileSelect,
   project,
+  showAppEntry,
 }: {
   attachedFolders: RPCOutput["workspace"]["project"]["state"]["get"]["attachedFolders"];
   files: RPCOutput["workspace"]["project"]["git"]["listFiles"] | undefined;
+  isAppViewOpen: boolean;
+  onAppSelect: () => void;
+  onFileSelect: (file: ProjectFileViewerFile) => void;
   project: WorkspaceAppProject;
+  showAppEntry: boolean;
 }) {
   const openFileViewer = useSetAtom(openProjectFileViewerAtom);
   const fileViewerState = useAtomValue(projectFileViewerAtom);
@@ -127,6 +136,7 @@ export function ProjectFileListPanel({
   }
 
   const handleFileClick = (file: ProjectFileViewerFile) => {
+    onFileSelect(file);
     openFileViewer({
       currentIndex: computed.allFiles.indexOf(file),
       files: computed.allFiles,
@@ -153,6 +163,24 @@ export function ProjectFileListPanel({
       className="min-h-0 flex-col py-1"
       style={{ "--sidebar-width": "100%" } as React.CSSProperties}
     >
+      {showAppEntry && (
+        <SidebarMenu className="px-1">
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              className={cn(
+                "h-7 gap-1.5 rounded-md px-2 text-xs font-medium",
+                isAppViewOpen
+                  ? "bg-sidebar-accent text-foreground"
+                  : "text-muted-foreground",
+              )}
+              onClick={onAppSelect}
+            >
+              <AppWindow className="size-3.5 shrink-0" />
+              <span className="truncate">App</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      )}
       {folderEntries.length > 0 && (
         <SidebarMenu>
           <SidebarMenuItem>

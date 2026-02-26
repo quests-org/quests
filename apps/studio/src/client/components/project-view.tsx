@@ -1,13 +1,17 @@
-import { projectFileViewerAtom } from "@/client/atoms/project-file-viewer";
+import {
+  closeProjectFileViewerAtom,
+  projectFileViewerAtom,
+  type ProjectFileViewerFile,
+} from "@/client/atoms/project-file-viewer";
 import {
   projectFilesPanelCollapsedAtomFamily,
   projectSidebarCollapsedAtomFamily,
 } from "@/client/atoms/project-sidebar";
 import { AppView } from "@/client/components/app-view";
 import { ProjectChat } from "@/client/components/project-chat";
-import { ProjectFileListPanel } from "@/client/components/project-file-list-panel";
 import { ProjectFileViewerPanel } from "@/client/components/project-file-viewer-panel";
 import { ProjectHeaderToolbar } from "@/client/components/project-header-toolbar";
+import { ProjectPanel } from "@/client/components/project-panel";
 import { Button } from "@/client/components/ui/button";
 import {
   ResizableHandle,
@@ -29,7 +33,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useAtomValue, useSetAtom } from "jotai";
 import { X } from "lucide-react";
-import { Activity, useCallback, useEffect, useMemo } from "react";
+import { Activity, useCallback, useEffect, useMemo, useState } from "react";
 import { usePanelRef } from "react-resizable-panels";
 
 const RESIZABLE_HANDLE_CLASS =
@@ -54,10 +58,29 @@ export function ProjectView({
 }) {
   const navigate = useNavigate();
   const fileViewerState = useAtomValue(projectFileViewerAtom);
+  const closeFileViewer = useSetAtom(closeProjectFileViewerAtom);
   const fileViewerOpen = fileViewerState.isOpen;
   const showFileViewerPanel =
     fileViewerState.isOpen && fileViewerState.mode === "panel";
-  const showAppPanel = hasAppModifications || fileViewerOpen;
+
+  const [appViewOpen, setAppViewOpen] = useState(() => hasAppModifications);
+  const showAppPanel = appViewOpen || fileViewerOpen;
+
+  const handleAppSelect = useCallback(() => {
+    if (appViewOpen) {
+      return;
+    }
+    closeFileViewer();
+    setAppViewOpen(true);
+  }, [appViewOpen, closeFileViewer]);
+
+  const handleFileSelect = useCallback((_file: ProjectFileViewerFile) => {
+    setAppViewOpen(false);
+  }, []);
+
+  const handleAppClose = useCallback(() => {
+    setAppViewOpen(false);
+  }, []);
   const sidebarCollapsed = useAtomValue(
     projectSidebarCollapsedAtomFamily(project.subdomain),
   );
@@ -144,7 +167,7 @@ export function ProjectView({
         project={project}
         selectedSessionId={selectedSessionId}
         selectedVersion={selectedVersion}
-        showChatToggle={showAppPanel}
+        showChatToggle={showAppPanel || hasAppModifications}
         showFilesToggle={hasProjectFiles}
       />
 
@@ -219,6 +242,7 @@ export function ProjectView({
                       app={project}
                       className="overflow-hidden rounded-lg"
                       isVersionsOpen={showVersions}
+                      onClose={handleAppClose}
                       onVersionsToggle={handleVersionsToggle}
                       shouldReload={!selectedVersion}
                     />
@@ -269,14 +293,18 @@ export function ProjectView({
               >
                 <div className="shrink-0 border-b px-3 py-2">
                   <h3 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-                    Files
+                    Project
                   </h3>
                 </div>
                 <div className="min-h-0 flex-1 overflow-y-auto">
-                  <ProjectFileListPanel
+                  <ProjectPanel
                     attachedFolders={attachedFolders}
                     files={files}
+                    isAppViewOpen={appViewOpen}
+                    onAppSelect={handleAppSelect}
+                    onFileSelect={handleFileSelect}
                     project={project}
+                    showAppEntry={hasAppModifications}
                   />
                 </div>
               </div>

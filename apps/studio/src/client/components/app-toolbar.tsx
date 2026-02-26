@@ -13,6 +13,7 @@ import {
   History,
   PanelBottom,
   RotateCw,
+  X,
 } from "lucide-react";
 import { type ReactNode, useMemo, useState } from "react";
 
@@ -29,6 +30,7 @@ interface AppToolbarProps {
   iframeRef: React.RefObject<HTMLIFrameElement | null>;
   isConsoleOpen?: boolean;
   isVersionsOpen?: boolean;
+  onClose?: () => void;
   onConsoleToggle: () => void;
   onReload: () => void;
   onVersionsToggle?: () => void;
@@ -48,6 +50,7 @@ export function AppToolbar({
   iframeRef,
   isConsoleOpen = true,
   isVersionsOpen = false,
+  onClose,
   onConsoleToggle,
   onReload,
   onVersionsToggle,
@@ -255,6 +258,24 @@ export function AppToolbar({
 
         {rightActions && (
           <div className="flex items-center gap-1">{rightActions}</div>
+        )}
+
+        {onClose && (
+          <TooltipNearIFrame>
+            <TooltipTrigger asChild>
+              <Button
+                className="size-6"
+                onClick={onClose}
+                size="icon"
+                variant="ghost"
+              >
+                <X className="size-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Close app</p>
+            </TooltipContent>
+          </TooltipNearIFrame>
         )}
       </div>
     </div>
