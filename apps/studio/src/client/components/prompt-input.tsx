@@ -14,6 +14,7 @@ import {
   TextareaContainer,
   TextareaInner,
 } from "@/client/components/ui/textarea-container";
+import { useHasPlan } from "@/client/hooks/use-has-plan";
 import { folderNameFromPath } from "@/client/lib/path-utils";
 import {
   type DroppedFolder,
@@ -141,13 +142,17 @@ export const PromptInput = ({
   } = useQuery(rpcClient.gateway.models.live.list.experimental_liveOptions());
   const { errors: modelsErrors, models } = modelsData ?? {};
 
+  const hasPlan = useHasPlan();
+
   const selectedModel = models?.find((model) => model.uri === modelURI);
   const autoModel = models?.find((m) => m.providerId === QUESTS_AUTO_MODEL_ID);
 
   const isInvalidQuestsModel =
+    !hasPlan &&
     selectedModel &&
     selectedModel.params.provider === "quests" &&
-    selectedModel.providerId !== QUESTS_AUTO_MODEL_ID;
+    selectedModel.providerId !== QUESTS_AUTO_MODEL_ID &&
+    selectedModel.tags.includes("premium");
 
   const resetTextareaHeight = useCallback(() => {
     if (textareaInnerRef.current) {
