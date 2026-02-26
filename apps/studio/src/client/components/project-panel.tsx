@@ -317,14 +317,16 @@ function FileRow({
   return (
     <div
       className={cn(
-        "group flex h-6 w-full items-center transition-colors hover:bg-sidebar-accent",
-        isActive && "bg-sidebar-accent",
+        "group relative flex h-6 w-full items-center transition-colors",
+        isActive
+          ? "text-foreground before:absolute before:inset-y-0 before:right-0 before:-left-[100vw] before:bg-sidebar-accent before:content-['']"
+          : "hover:before:absolute hover:before:inset-y-0 hover:before:right-0 hover:before:-left-[100vw] hover:before:bg-sidebar-accent hover:before:content-['']",
       )}
     >
       <Tooltip delayDuration={400} disableHoverableContent>
         <TooltipTrigger asChild>
           <button
-            className="flex min-w-0 flex-1 items-center gap-1.5 px-2 text-left"
+            className="relative z-10 flex min-w-0 flex-1 items-center gap-1.5 px-2 text-left"
             onClick={onClick}
             type="button"
           >
@@ -338,21 +340,27 @@ function FileRow({
             </span>
           </button>
         </TooltipTrigger>
-        <TooltipContent
-          align="end"
-          arrow={
-            <div className="border-x-[5px] border-t-[5px] border-x-transparent border-t-border" />
-          }
-          arrowPadding={8}
-          className="w-96 overflow-visible rounded-lg bg-transparent p-0 shadow-md"
-          side="left"
-          sideOffset={8}
-        >
-          <FilePreviewCard file={file} hideActionsMenu onClick={onClick} />
-        </TooltipContent>
+        {isActive ? (
+          <TooltipContent side="left" sideOffset={8}>
+            <p className="text-xs break-all">{file.filePath}</p>
+          </TooltipContent>
+        ) : (
+          <TooltipContent
+            align="end"
+            arrow={
+              <div className="border-x-[5px] border-t-[5px] border-x-transparent border-t-border" />
+            }
+            arrowPadding={8}
+            className="w-96 overflow-visible rounded-lg bg-transparent p-0 shadow-md"
+            side="left"
+            sideOffset={8}
+          >
+            <FilePreviewCard file={file} hideActionsMenu onClick={onClick} />
+          </TooltipContent>
+        )}
       </Tooltip>
 
-      <div className="flex shrink-0 items-center pr-1 opacity-0 transition-opacity group-hover:opacity-100">
+      <div className="relative z-10 flex shrink-0 items-center pr-1 opacity-0 transition-opacity group-hover:opacity-100">
         <ConfirmedIconButton
           className="size-5 border border-border/50 bg-background hover:bg-accent! dark:hover:bg-accent!"
           icon={MessageSquare}
