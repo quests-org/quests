@@ -423,6 +423,13 @@ export namespace Store {
       yield* await saveParts(parts, appConfig, { publish: false, signal });
       // Save message - this will publish message.updated after everything is committed
       yield* saveMessage(rest, appConfig, { signal });
+      // Now it's safe to publish part.updated for all parts
+      for (const part of parts) {
+        publisher.publish("part.updated", {
+          part,
+          subdomain: appConfig.subdomain,
+        });
+      }
       return ok(message);
     });
   }

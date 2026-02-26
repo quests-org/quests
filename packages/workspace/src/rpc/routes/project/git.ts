@@ -257,7 +257,8 @@ export const projectGit = {
         for await (const payload of partUpdates) {
           if (
             payload.subdomain === input.projectSubdomain &&
-            payload.part.type === "data-gitCommit"
+            (payload.part.type === "data-gitCommit" ||
+              payload.part.type === "data-attachments")
           ) {
             yield call(listFiles, input, { context, signal });
           }
