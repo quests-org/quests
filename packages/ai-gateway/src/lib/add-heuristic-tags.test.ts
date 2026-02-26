@@ -66,7 +66,7 @@ describe("addHeuristicTags", () => {
     { expected: ["coding", "recommended"], modelId: "claude-sonnet-6" },
     {
       expected: ["coding", "recommended", "default"],
-      modelId: "claude-sonnet-4.5",
+      modelId: "claude-sonnet-4.6",
     },
     { expected: ["coding", "legacy"], modelId: "claude-haiku-4" },
     { expected: ["coding", "legacy"], modelId: "claude-haiku-4.2" },
@@ -75,7 +75,7 @@ describe("addHeuristicTags", () => {
     { expected: ["coding", "recommended"], modelId: "claude-haiku-5.5" },
     { expected: ["coding", "legacy"], modelId: "claude-opus-4" },
     { expected: ["coding", "legacy"], modelId: "claude-opus-4.3" },
-    { expected: ["coding", "recommended"], modelId: "claude-opus-4.5" },
+    { expected: ["coding"], modelId: "claude-opus-4.5" },
     { expected: ["coding", "recommended"], modelId: "claude-opus-4.6" },
     { expected: ["coding", "recommended"], modelId: "claude-opus-5" },
     { expected: ["coding", "recommended"], modelId: "claude-opus-5.5" },

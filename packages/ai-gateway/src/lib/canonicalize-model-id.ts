@@ -1,16 +1,12 @@
 export function canonicalizeAnthropicModelId(modelId: string): string {
-  const match = /^(.+)-(\d{8})$/.exec(modelId);
-  if (!match?.[1] || !match[2]) {
-    return modelId;
+  const dateMatch = /^(.+)-(\d{8})$/.exec(modelId);
+  if (dateMatch?.[1] && dateMatch[2]) {
+    return isValidDate(dateMatch[2])
+      ? convertVersionDashes(dateMatch[1])
+      : modelId;
   }
 
-  const baseName = match[1];
-  const dateString = match[2];
-  if (!isValidDate(dateString)) {
-    return modelId;
-  }
-
-  return convertVersionDashes(baseName);
+  return convertVersionDashes(modelId);
 }
 
 function convertVersionDashes(modelId: string): string {

@@ -6,7 +6,7 @@ import { type AIGatewayProviderConfig } from "../schemas/provider-config";
 
 // cspell:ignore devstral
 const MODEL_TAGS: Record<string, AIGatewayModel.ModelTag[]> = {
-  "claude-sonnet-4.5": ["default"],
+  "claude-sonnet-4.6": ["default"],
   "devstral-medium-2507": ["coding", "recommended"],
   "gemini-2.5-flash": ["recommended"],
   "gemini-2.5-pro": ["coding"],
@@ -93,13 +93,19 @@ function getDynamicTags(
     return ["coding", "recommended"];
   }
 
-  // Claude 4+ models: .5 variants get coding + recommended, others get coding only
   if (
-    matchesVersionFloor(canonicalId, "claude-sonnet-", 4) ||
-    matchesVersionFloor(canonicalId, "claude-haiku-", 4) ||
-    matchesVersionFloor(canonicalId, "claude-opus-", 4)
+    canonicalId.startsWith("claude-sonnet-") ||
+    canonicalId.startsWith("claude-haiku-") ||
+    canonicalId.startsWith("claude-opus-")
   ) {
-    return ["coding", "recommended"];
+    if (
+      matchesVersionFloor(canonicalId, "claude-sonnet-", 4.6) ||
+      matchesVersionFloor(canonicalId, "claude-haiku-", 4.5) ||
+      matchesVersionFloor(canonicalId, "claude-opus-", 4.6)
+    ) {
+      return ["coding", "recommended"];
+    }
+    return ["coding"];
   }
 
   // Gemini 3+ models: pro variants get coding + recommended, others get recommended only
