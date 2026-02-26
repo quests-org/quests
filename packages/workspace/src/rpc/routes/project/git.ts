@@ -5,6 +5,10 @@ import { getFileVersionRefs } from "../../../lib/get-file-version-refs";
 import { getFilesAddedSinceInitial } from "../../../lib/get-files-added-since-initial";
 import { getGitCommits, GitCommitsSchema } from "../../../lib/get-git-commits";
 import { getGitRefInfo, GitRefInfoSchema } from "../../../lib/get-git-ref-info";
+import {
+  getProjectFiles,
+  ProjectFilesSchema,
+} from "../../../lib/get-project-files";
 import { getTrackedFileCount } from "../../../lib/get-tracked-file-count";
 import { hasAppModifications } from "../../../lib/has-app-modifications";
 import { RelativePathSchema } from "../../../schemas/paths";
@@ -181,6 +185,26 @@ const filesAddedSinceInitial = base
     return result.value;
   });
 
+const listFiles = base
+  .input(
+    z.object({
+      projectSubdomain: ProjectSubdomainSchema,
+    }),
+  )
+  .output(ProjectFilesSchema)
+  .handler(async ({ context, errors, input: { projectSubdomain } }) => {
+    const result = await getProjectFiles(
+      projectSubdomain,
+      context.workspaceConfig,
+    );
+
+    if (result.isErr()) {
+      throw toORPCError(result.error, errors);
+    }
+
+    return result.value;
+  });
+
 export const projectGit = {
   commits,
   filesAddedSinceInitial,
@@ -215,6 +239,30 @@ export const projectGit = {
           }
         }),
     },
+  },
+  listFiles,
+  live: {
+    listFiles: base
+      .input(
+        z.object({
+          projectSubdomain: ProjectSubdomainSchema,
+        }),
+      )
+      .output(eventIterator(ProjectFilesSchema))
+      .handler(async function* ({ context, input, signal }) {
+        yield call(listFiles, input, { context, signal });
+
+        const partUpdates = publisher.subscribe("part.updated", { signal });
+
+        for await (const payload of partUpdates) {
+          if (
+            payload.subdomain === input.projectSubdomain &&
+            payload.part.type === "data-gitCommit"
+          ) {
+            yield call(listFiles, input, { context, signal });
+          }
+        }
+      }),
   },
   ref,
   trackedFileCount,

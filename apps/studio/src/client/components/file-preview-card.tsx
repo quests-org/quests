@@ -15,9 +15,11 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 export function FilePreviewCard({
   file,
+  hideActionsMenu,
   onClick,
 }: {
   file: ProjectFileViewerFile;
+  hideActionsMenu?: boolean;
   onClick: () => void;
 }) {
   const { filename, mimeType, url } = file;
@@ -54,7 +56,11 @@ export function FilePreviewCard({
   if (fileType === "markdown" || fileType === "text") {
     return (
       <div className="group relative overflow-hidden rounded-lg border border-border bg-background">
-        <PreviewHeader file={file} onClick={onClick} />
+        <PreviewHeader
+          file={file}
+          hideActionsMenu={hideActionsMenu}
+          onClick={onClick}
+        />
         <div className="relative w-full overflow-hidden">
           <div className="max-h-64 overflow-hidden bg-background">
             {fileType === "markdown" ? (
@@ -63,7 +69,6 @@ export function FilePreviewCard({
               <TextPreview url={url} />
             )}
           </div>
-          <div className="pointer-events-none absolute right-0 bottom-0 left-0 h-16 bg-linear-to-t from-background to-transparent" />
           <button
             className="absolute inset-0 size-full"
             onClick={onClick}
@@ -80,7 +85,11 @@ export function FilePreviewCard({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <PreviewHeader file={file} onClick={onClick} />
+      <PreviewHeader
+        file={file}
+        hideActionsMenu={hideActionsMenu}
+        onClick={onClick}
+      />
       <div className="relative aspect-video w-full overflow-hidden">
         {fileType === "image" ? (
           <div className="flex size-full items-center justify-center">
@@ -217,20 +226,29 @@ function MarkdownPreview({ url }: { url: string }) {
     );
   }
 
-  const truncatedContent = data ? data.split("\n").slice(0, 10).join("\n") : "";
+  const lines = data ? data.split("\n") : [];
+  const isTruncated = lines.length > 10;
+  const truncatedContent = lines.slice(0, 10).join("\n");
 
   return (
-    <div className="prose prose-sm size-full overflow-hidden p-3 text-xs dark:prose-invert prose-headings:text-sm prose-h1:text-base prose-h2:text-sm prose-h3:text-sm">
-      <Markdown markdown={truncatedContent} />
+    <div className="relative">
+      <div className="prose prose-sm size-full overflow-hidden p-3 text-xs dark:prose-invert prose-headings:text-sm prose-h1:text-base prose-h2:text-sm prose-h3:text-sm">
+        <Markdown markdown={truncatedContent} />
+      </div>
+      {isTruncated && (
+        <div className="pointer-events-none absolute right-0 bottom-0 left-0 h-16 bg-linear-to-t from-background to-transparent" />
+      )}
     </div>
   );
 }
 
 function PreviewHeader({
   file,
+  hideActionsMenu,
   onClick,
 }: {
   file: ProjectFileViewerFile;
+  hideActionsMenu?: boolean;
   onClick?: () => void;
 }) {
   const { filename, filePath, projectSubdomain, versionRef } = file;
@@ -263,7 +281,7 @@ function PreviewHeader({
           versionRef={versionRef}
         />
       </button>
-      <FilePreviewActionsMenu file={file} />
+      {!hideActionsMenu && <FilePreviewActionsMenu file={file} />}
     </div>
   );
 }
@@ -297,11 +315,18 @@ function TextPreview({ url }: { url: string }) {
     );
   }
 
-  const truncatedContent = data ? data.split("\n").slice(0, 10).join("\n") : "";
+  const lines = data ? data.split("\n") : [];
+  const isTruncated = lines.length > 10;
+  const truncatedContent = lines.slice(0, 10).join("\n");
 
   return (
-    <pre className="size-full overflow-hidden p-3 font-mono text-xs text-foreground">
-      {truncatedContent}
-    </pre>
+    <div className="relative">
+      <pre className="size-full overflow-hidden p-3 font-mono text-xs text-foreground">
+        {truncatedContent}
+      </pre>
+      {isTruncated && (
+        <div className="pointer-events-none absolute right-0 bottom-0 left-0 h-16 bg-linear-to-t from-background to-transparent" />
+      )}
+    </div>
   );
 }

@@ -3,7 +3,7 @@ import { getLanguageFromFilePath } from "@/client/lib/file-extension-to-language
 import { getFileType } from "@/client/lib/get-file-type";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { Code2, Download, Eye, Loader2, X } from "lucide-react";
+import { Code2, Eye, Loader2, Maximize2, X } from "lucide-react";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { tv } from "tailwind-variants";
@@ -135,10 +135,11 @@ function TextView({
 }
 
 const fileViewerVariants = tv({
-  base: "flex w-full flex-col overflow-hidden rounded-sm border border-border bg-background",
+  base: "flex w-full flex-col overflow-hidden rounded-lg border border-border bg-background",
   defaultVariants: {
     error: false,
     fileType: "default",
+    fullSize: false,
   },
   variants: {
     error: {
@@ -150,17 +151,24 @@ const fileViewerVariants = tv({
       html: "h-[80vh] max-w-6xl",
       text: "h-[70vh] max-w-4xl",
     },
+    fullSize: {
+      true: "h-full max-w-none!",
+    },
   },
 });
 
 export function FileViewer({
   file,
+  fullSize = false,
   onClose,
   onDownload,
+  onExpand,
 }: {
   file: ProjectFileViewerFile;
+  fullSize?: boolean;
   onClose: () => void;
   onDownload?: () => void;
+  onExpand?: () => void;
 }) {
   const { filename, filePath, mimeType, projectSubdomain, url, versionRef } =
     file;
@@ -207,30 +215,7 @@ export function FileViewer({
 
   const toolbarActions: ReactNode[] = [];
 
-  if (onDownload) {
-    const downloadButton = (
-      <Button
-        key="download"
-        onClick={onDownload}
-        size="sm"
-        tabIndex={-1}
-        variant="ghost"
-      >
-        <Download className="size-4" />
-      </Button>
-    );
-
-    toolbarActions.push(
-      <Tooltip key="download">
-        <TooltipTrigger asChild>{downloadButton}</TooltipTrigger>
-        <TooltipContent>
-          <p>Download</p>
-        </TooltipContent>
-      </Tooltip>,
-    );
-  }
-
-  if (filePath && projectSubdomain && versionRef) {
+  if (filePath && projectSubdomain) {
     toolbarActions.push(
       <FileActionsMenu
         filePath={filePath}
@@ -243,9 +228,25 @@ export function FileViewer({
             ? handleCopy
             : undefined
         }
+        onDownload={onDownload}
         projectSubdomain={projectSubdomain}
         versionRef={versionRef}
       />,
+    );
+  }
+
+  if (onExpand) {
+    toolbarActions.push(
+      <Tooltip key="expand">
+        <TooltipTrigger asChild>
+          <Button onClick={onExpand} size="sm" variant="ghost">
+            <Maximize2 className="size-4" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Expand</p>
+        </TooltipContent>
+      </Tooltip>,
     );
   }
 
@@ -260,6 +261,7 @@ export function FileViewer({
       className={fileViewerVariants({
         error: false,
         fileType: getViewerLayoutType(),
+        fullSize,
       })}
     >
       <div className="flex shrink-0 items-center gap-2 border-b border-border bg-muted/30 px-4 py-2">
@@ -325,7 +327,7 @@ export function FileViewer({
           <MarkdownPreview url={url} />
         ) : fileType === "html" && viewMode === "preview" ? (
           <SandboxedHtmlIframe
-            className="absolute inset-0 size-full border-0 bg-background"
+            className="absolute inset-0 size-full border-0"
             src={url}
             title={filename}
           />

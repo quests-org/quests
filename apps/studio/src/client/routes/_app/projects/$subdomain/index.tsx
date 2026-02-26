@@ -218,6 +218,7 @@ function RouteComponent() {
   return (
     <>
       <ProjectView
+        attachedFolders={projectState.attachedFolders}
         hasAppModifications={hasAppModifications}
         project={project}
         selectedModelURI={projectState.selectedModelURI}

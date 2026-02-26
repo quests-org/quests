@@ -1,7 +1,7 @@
 import { rpcClient } from "@/client/rpc/client";
 import { type ProjectSubdomain } from "@quests/workspace/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Check, Copy, FolderOpen, MoreVertical } from "lucide-react";
+import { Check, Copy, Download, FolderOpen, MoreVertical } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -18,12 +18,14 @@ import {
 export function FileActionsMenu({
   filePath,
   onCopy,
+  onDownload,
   projectSubdomain,
   variant = "ghost",
   versionRef,
 }: {
   filePath: string;
   onCopy?: () => Promise<void> | void;
+  onDownload?: () => Promise<void> | void;
   projectSubdomain: ProjectSubdomain;
   variant?: ButtonVariant;
   versionRef: string;
@@ -79,7 +81,7 @@ export function FileActionsMenu({
     });
   };
 
-  if (!onCopy && !isLatestVersion) {
+  if (!onCopy && !onDownload && !isLatestVersion) {
     return null;
   }
 
@@ -103,7 +105,13 @@ export function FileActionsMenu({
             <span>Copy</span>
           </DropdownMenuItem>
         )}
-        {onCopy && hasRevealOption && <DropdownMenuSeparator />}
+        {onDownload && (
+          <DropdownMenuItem onClick={onDownload}>
+            <Download className="size-4" />
+            <span>Download</span>
+          </DropdownMenuItem>
+        )}
+        {(onCopy ?? onDownload) && hasRevealOption && <DropdownMenuSeparator />}
         {hasRevealOption && (
           <DropdownMenuItem onClick={handleRevealInFolder}>
             <FolderOpen className="size-4" />

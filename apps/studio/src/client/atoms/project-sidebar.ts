@@ -5,3 +5,7 @@ import { atomFamily } from "jotai/utils";
 export const projectSidebarCollapsedAtomFamily = atomFamily(
   (_subdomain: ProjectSubdomain) => atom(false),
 );
+
+export const projectFilesPanelCollapsedAtomFamily = atomFamily(
+  (_subdomain: ProjectSubdomain) => atom(false),
+);

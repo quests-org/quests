@@ -25,15 +25,20 @@ import { useAtom } from "jotai";
 import {
   ChevronDown,
   FileArchive,
+  Files,
   FolderOpenIcon,
   MessageCircle,
   PanelLeftClose,
+  PanelRightClose,
   Terminal,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { projectSidebarCollapsedAtomFamily } from "../atoms/project-sidebar";
+import {
+  projectFilesPanelCollapsedAtomFamily,
+  projectSidebarCollapsedAtomFamily,
+} from "../atoms/project-sidebar";
 import { ExportZipModal } from "./export-zip-modal";
 import { ProjectMenu } from "./project-menu";
 import { ProjectUsageSummary } from "./project-usage-summary";
@@ -60,20 +65,25 @@ const EDITOR_ICON_MAP: Record<
 };
 
 interface ProjectHeaderToolbarProps {
-  hasAppModifications: boolean;
   project: WorkspaceAppProject;
   selectedSessionId?: StoreId.Session;
   selectedVersion?: string;
+  showChatToggle: boolean;
+  showFilesToggle: boolean;
 }
 
 export function ProjectHeaderToolbar({
-  hasAppModifications,
   project,
   selectedSessionId,
   selectedVersion,
+  showChatToggle,
+  showFilesToggle,
 }: ProjectHeaderToolbarProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useAtom(
     projectSidebarCollapsedAtomFamily(project.subdomain),
+  );
+  const [filesPanelCollapsed, setFilesPanelCollapsed] = useAtom(
+    projectFilesPanelCollapsedAtomFamily(project.subdomain),
   );
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
   const [restoreModalOpen, setRestoreModalOpen] = useState(false);
@@ -132,7 +142,7 @@ export function ProjectHeaderToolbar({
             selectedSessionId={selectedSessionId}
           />
 
-          {hasAppModifications && (
+          {showChatToggle && (
             <Tooltip>
               <TooltipTrigger asChild>
                 <Toggle
@@ -170,6 +180,36 @@ export function ProjectHeaderToolbar({
                 <ProjectUsageSummary project={project} />
               </div>
             )}
+            {showFilesToggle && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Toggle
+                    aria-label={
+                      filesPanelCollapsed ? "Show files" : "Hide files"
+                    }
+                    onPressedChange={() => {
+                      setFilesPanelCollapsed(!filesPanelCollapsed);
+                    }}
+                    pressed={filesPanelCollapsed}
+                    size="sm"
+                    variant={filesPanelCollapsed ? "outline" : "default"}
+                  >
+                    {filesPanelCollapsed ? (
+                      <>
+                        <Files className="size-4" />
+                        <span>Files</span>
+                      </>
+                    ) : (
+                      <PanelRightClose className="size-4" />
+                    )}
+                  </Toggle>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {filesPanelCollapsed ? "Show files" : "Hide files"}
+                </TooltipContent>
+              </Tooltip>
+            )}
+
             {selectedVersion ? (
               <div className="flex shrink-0 items-center gap-2">
                 <Button

@@ -11,12 +11,14 @@ function Tooltip({
 }
 
 function TooltipContent({
+  arrow,
   arrowClassName,
   children,
   className,
   sideOffset = 0,
   ...props
 }: React.ComponentProps<typeof TooltipPrimitive.Content> & {
+  arrow?: React.ReactNode;
   arrowClassName?: string;
 }) {
   return (
@@ -31,12 +33,16 @@ function TooltipContent({
         {...props}
       >
         {children}
-        <TooltipPrimitive.Arrow
-          className={cn(
-            "z-50 size-2.5 translate-y-[calc(-50%-2px)] rotate-45 rounded-[2px] bg-foreground fill-foreground",
-            arrowClassName,
-          )}
-        />
+        {arrow === undefined ? (
+          <TooltipPrimitive.Arrow
+            className={cn(
+              "z-50 size-2.5 translate-y-[calc(-50%-2px)] rotate-45 rounded-[2px] bg-foreground fill-foreground",
+              arrowClassName,
+            )}
+          />
+        ) : (
+          <TooltipPrimitive.Arrow asChild>{arrow}</TooltipPrimitive.Arrow>
+        )}
       </TooltipPrimitive.Content>
     </TooltipPrimitive.Portal>
   );

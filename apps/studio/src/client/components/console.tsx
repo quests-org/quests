@@ -1,12 +1,12 @@
 import { cn } from "@/client/lib/utils";
 import { type ConsoleLogType } from "@quests/shared/shim";
 import { type WorkspaceApp } from "@quests/workspace/client";
-import { getDefaultStore } from "jotai";
+import { useSetAtom } from "jotai";
 import { ChevronDown, Copy, MessageSquare, Trash, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useStickToBottom } from "use-stick-to-bottom";
 
-import { promptValueAtomFamily } from "../atoms/prompt-value";
+import { appendToPromptAtom } from "../atoms/prompt-value";
 import { type RPCOutput } from "../rpc/client";
 import { ConfirmedIconButton } from "./confirmed-icon-button";
 import { Badge } from "./ui/badge";
@@ -192,26 +192,24 @@ function ConsoleRow({
   line: UnifiedLogLine;
 }) {
   const message = line.message;
+  const appendToPrompt = useSetAtom(appendToPromptAtom);
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(message);
   };
 
-  const handleSendToChat = async () => {
+  const handleSendToChat = () => {
     if (app.type !== "project") {
       return;
     }
     const sourceLabel = line.source === "server" ? "Server" : "Browser";
-    const contextualMessage = `[${sourceLabel}] ${message}`;
-    const defaultStore = getDefaultStore();
-    const atom = promptValueAtomFamily(app.subdomain);
-    const prevPromptValue = await Promise.resolve(defaultStore.get(atom));
-    defaultStore.set(
-      atom,
-      prevPromptValue
-        ? `${prevPromptValue}\n\n${contextualMessage}`
-        : contextualMessage,
-    );
+    appendToPrompt({
+      key: app.subdomain,
+      update: (prev) =>
+        prev
+          ? `${prev}\n\n[${sourceLabel}] ${message}`
+          : `[${sourceLabel}] ${message}`,
+    });
   };
 
   const styles = getLogLineStyles(line);

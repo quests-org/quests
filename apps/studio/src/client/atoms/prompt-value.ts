@@ -2,7 +2,7 @@ import {
   MAX_PROMPT_STORAGE_LENGTH,
   type ProjectSubdomain,
 } from "@quests/workspace/client";
-import { atom } from "jotai";
+import { atom, type SetStateAction } from "jotai";
 import { atomFamily, atomWithStorage } from "jotai/utils";
 import { debounce } from "radashi";
 
@@ -12,6 +12,8 @@ export type PromptValueAtomKey =
   | "$$new-tab$$"
   | "$$template$$"
   | ProjectSubdomain;
+
+export const promptInputRefAtom = atom<HTMLTextAreaElement | null>(null);
 
 const createProjectPromptStorage = (subdomain: ProjectSubdomain) => {
   let lastValue: string | undefined;
@@ -79,3 +81,20 @@ export const promptValueAtomFamily = atomFamily((key: PromptValueAtomKey) => {
     createProjectPromptStorage(key),
   );
 });
+
+export const appendToPromptAtom = atom(
+  null,
+  (
+    get,
+    set,
+    {
+      key,
+      update,
+    }: { key: PromptValueAtomKey; update: SetStateAction<string> },
+  ) => {
+    const valueAtom = promptValueAtomFamily(key);
+    const prev = get(valueAtom);
+    set(valueAtom, typeof update === "function" ? update(prev) : update);
+    get(promptInputRefAtom)?.focus();
+  },
+);

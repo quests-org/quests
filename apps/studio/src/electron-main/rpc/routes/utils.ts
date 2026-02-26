@@ -24,6 +24,7 @@ import {
   workspaceRouter,
 } from "@quests/workspace/electron";
 import { app, clipboard, dialog, nativeImage, shell } from "electron";
+import { isBinaryFile } from "isbinaryfile";
 import { exec } from "node:child_process";
 import fs from "node:fs/promises";
 import os from "node:os";
@@ -456,12 +457,15 @@ const copyFileToClipboard = base
       throw errors.FILE_NOT_FOUND();
     }
 
-    if (input.mimeType.startsWith("image/")) {
+    const isBinary = await isBinaryFile(buffer);
+
+    if (input.mimeType.startsWith("image/") && isBinary) {
       const image = nativeImage.createFromBuffer(buffer);
       clipboard.writeImage(image);
+    } else if (isBinary) {
+      throw errors.UNSUPPORTED_TYPE();
     } else {
-      const text = buffer.toString("utf8");
-      clipboard.writeText(text);
+      clipboard.writeText(buffer.toString("utf8"));
     }
   });
 

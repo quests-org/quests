@@ -3,10 +3,10 @@ import type {
   SessionMessagePart,
 } from "@quests/workspace/client";
 
-import { getDefaultStore } from "jotai";
+import { useSetAtom } from "jotai";
 import { Copy, Loader2Icon, MessageSquare, Terminal } from "lucide-react";
 
-import { promptValueAtomFamily } from "../../atoms/prompt-value";
+import { appendToPromptAtom } from "../../atoms/prompt-value";
 import { ConfirmedIconButton } from "../confirmed-icon-button";
 import { ToolCard, ToolCardHeader } from "./tool-card";
 import { VirtualizedScrollingText } from "./virtualized-scrolling-text";
@@ -25,6 +25,8 @@ export function ShellCommandCard({
   part: ShellCommandPart;
   projectSubdomain: ProjectSubdomain;
 }) {
+  const appendToPrompt = useSetAtom(appendToPromptAtom);
+
   if (!part.input) {
     return null;
   }
@@ -55,14 +57,11 @@ export function ShellCommandCard({
     await navigator.clipboard.writeText(content);
   };
 
-  const handleSendToChat = async () => {
-    const defaultStore = getDefaultStore();
-    const atom = promptValueAtomFamily(projectSubdomain);
-    const prevPromptValue = await Promise.resolve(defaultStore.get(atom));
-    defaultStore.set(
-      atom,
-      prevPromptValue ? `${prevPromptValue}\n\n${content}` : content,
-    );
+  const handleSendToChat = () => {
+    appendToPrompt({
+      key: projectSubdomain,
+      update: (prev) => (prev ? `${prev}\n\n${content}` : content),
+    });
   };
 
   const hasError = isError || (hasOutput && part.output.exitCode !== 0);

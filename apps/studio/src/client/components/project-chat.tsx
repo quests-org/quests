@@ -151,10 +151,7 @@ export function ProjectChat({
 
   return (
     <div
-      className={cn(
-        "relative flex flex-col overflow-y-auto",
-        isChatOnly ? "min-h-0 flex-1" : "h-full",
-      )}
+      className="relative flex h-full flex-col overflow-y-auto"
       ref={scrollRef}
     >
       <div

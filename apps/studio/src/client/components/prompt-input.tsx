@@ -46,6 +46,7 @@ import { toast } from "sonner";
 import { ulid } from "ulid";
 
 import {
+  promptInputRefAtom,
   promptValueAtomFamily,
   type PromptValueAtomKey,
 } from "../atoms/prompt-value";
@@ -124,6 +125,7 @@ export const PromptInput = ({
   const textareaInnerRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [value, setValue] = useAtom(promptValueAtomFamily(atomKey));
+  const setInputRef = useSetAtom(promptInputRefAtom);
 
   useImperativeHandle(ref, () => ({
     focus: () => {
@@ -491,7 +493,10 @@ export const PromptInput = ({
           onKeyDown={handleKeyDown}
           onPaste={handlePaste}
           placeholder={placeholder}
-          ref={textareaInnerRef}
+          ref={(el) => {
+            textareaInnerRef.current = el;
+            setInputRef(el);
+          }}
           value={value}
         />
 

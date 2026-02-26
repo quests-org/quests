@@ -1,7 +1,6 @@
 import { getAssetUrl } from "@/client/lib/get-asset-url";
-import { filenameFromFilePath } from "@/client/lib/path-utils";
+import { shouldFilterProjectFile } from "@/client/lib/project-file-groups";
 import { cn } from "@/client/lib/utils";
-import { PROJECT_MANIFEST_FILE_NAME } from "@quests/shared";
 import { type ProjectSubdomain } from "@quests/workspace/client";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
@@ -56,7 +55,7 @@ export function VersionAndFilesCard({
     const outsideSrc: typeof gitRefInfo.files = [];
 
     for (const file of gitRefInfo.files) {
-      if (file.status === "deleted" || shouldFilterFile(file.filePath)) {
+      if (file.status === "deleted" || shouldFilterProjectFile(file.filePath)) {
         continue;
       }
 
@@ -155,21 +154,4 @@ export function VersionAndFilesCard({
       {hasFilesOutsideSrc && <FilesGrid files={fileItems} />}
     </div>
   );
-}
-
-function shouldFilterFile(filename: string): boolean {
-  const baseName = filenameFromFilePath(filename).toLowerCase();
-
-  const filteredFiles = [
-    PROJECT_MANIFEST_FILE_NAME,
-    "package.json",
-    "pnpm-lock.yaml",
-    "pnpm-workspace.yaml",
-  ];
-
-  if (filteredFiles.some((filtered) => baseName === filtered.toLowerCase())) {
-    return true;
-  }
-
-  return false;
 }
