@@ -12,6 +12,7 @@ import { type RPCOutput } from "@/client/rpc/client";
 import { safe } from "@orpc/client";
 import {
   APP_FOLDER_NAMES,
+  type ProjectSubdomain,
   type WorkspaceAppProject,
 } from "@quests/workspace/client";
 import { useSetAtom } from "jotai";
@@ -72,6 +73,8 @@ export function ProjectExplorer({
   project: WorkspaceAppProject;
   showAppEntry: boolean;
 }) {
+  const appendToPrompt = useSetAtom(appendToPromptAtom);
+
   const computed = useMemo(() => {
     if (!files) {
       return null;
@@ -154,18 +157,35 @@ export function ProjectExplorer({
       {showAppEntry && (
         <SidebarMenu className="px-1">
           <SidebarMenuItem>
-            <SidebarMenuButton
-              className={cn(
-                "h-7 gap-1.5 rounded-md px-2 text-xs font-medium",
-                isAppViewOpen
-                  ? "bg-sidebar-accent text-foreground"
-                  : "text-muted-foreground",
-              )}
-              onClick={onAppSelect}
-            >
-              <AppWindow className="size-3.5 shrink-0" />
-              <span className="truncate">App</span>
-            </SidebarMenuButton>
+            <div className="group relative flex h-7 w-full items-center">
+              <SidebarMenuButton
+                className={cn(
+                  "h-7 min-w-0 flex-1 gap-1.5 rounded-md px-2 text-xs font-medium",
+                  isAppViewOpen
+                    ? "bg-sidebar-accent text-foreground"
+                    : "text-muted-foreground",
+                )}
+                onClick={onAppSelect}
+              >
+                <AppWindow className="size-3.5 shrink-0" />
+                <span className="truncate">App</span>
+              </SidebarMenuButton>
+              <div className="absolute right-1 flex shrink-0 items-center opacity-0 transition-opacity group-hover:opacity-100">
+                <ConfirmedIconButton
+                  className="size-5 border border-border/50 bg-background hover:bg-accent! dark:hover:bg-accent!"
+                  icon={MessageSquare}
+                  onClick={() => {
+                    appendToPrompt({
+                      key: project.subdomain,
+                      update: `the app in ${APP_FOLDER_NAMES.src}/ `,
+                    });
+                  }}
+                  successTooltip="Added to chat!"
+                  tooltip="Add to chat"
+                  variant="ghost"
+                />
+              </div>
+            </div>
           </SidebarMenuItem>
         </SidebarMenu>
       )}
@@ -178,7 +198,11 @@ export function ProjectExplorer({
               label="Attached Folders"
             >
               {folderEntries.map((folder) => (
-                <AttachedFolderRow folder={folder} key={folder.id} />
+                <AttachedFolderRow
+                  folder={folder}
+                  key={folder.id}
+                  projectSubdomain={project.subdomain}
+                />
               ))}
             </CollapsibleTreeSection>
           </SidebarMenuItem>
@@ -221,7 +245,15 @@ export function ProjectExplorer({
   );
 }
 
-function AttachedFolderRow({ folder }: { folder: AttachedFolder }) {
+function AttachedFolderRow({
+  folder,
+  projectSubdomain,
+}: {
+  folder: AttachedFolder;
+  projectSubdomain: ProjectSubdomain;
+}) {
+  const appendToPrompt = useSetAtom(appendToPromptAtom);
+
   const handleClick = async () => {
     const [error] = await safe(
       rpcClient.utils.openFolder.call({ folderPath: folder.path }),
@@ -232,26 +264,47 @@ function AttachedFolderRow({ folder }: { folder: AttachedFolder }) {
     }
   };
 
+  const handleAddToChat = () => {
+    appendToPrompt({
+      key: projectSubdomain,
+      update: `the attached folder "${folder.name}" `,
+    });
+  };
+
   return (
     <SidebarMenuItem>
-      <Tooltip delayDuration={400} disableHoverableContent>
-        <TooltipTrigger asChild>
-          <button
-            className="flex h-6 w-full min-w-0 items-center gap-1.5 px-2 text-left transition-colors hover:bg-sidebar-accent"
-            onClick={() => void handleClick()}
-            type="button"
-          >
-            <FolderClosed className="size-3.5 shrink-0 text-muted-foreground" />
-            <span className="truncate text-xs text-foreground/80">
-              {folder.name}
-            </span>
-          </button>
-        </TooltipTrigger>
-        <TooltipContent className="max-w-64" side="left" sideOffset={8}>
-          <p>{getRevealInFolderLabel()}</p>
-          <p className="text-xs break-all text-background/60">{folder.path}</p>
-        </TooltipContent>
-      </Tooltip>
+      <div className="group relative flex h-6 w-full items-center transition-colors hover:before:absolute hover:before:inset-y-0 hover:before:right-0 hover:before:-left-[100vw] hover:before:bg-sidebar-accent hover:before:content-['']">
+        <Tooltip delayDuration={400} disableHoverableContent>
+          <TooltipTrigger asChild>
+            <button
+              className="relative z-10 flex min-w-0 flex-1 items-center gap-1.5 px-2 text-left"
+              onClick={() => void handleClick()}
+              type="button"
+            >
+              <FolderClosed className="size-3.5 shrink-0 text-muted-foreground" />
+              <span className="truncate text-xs text-foreground/80">
+                {folder.name}
+              </span>
+            </button>
+          </TooltipTrigger>
+          <TooltipContent className="max-w-64" side="left" sideOffset={8}>
+            <p>{getRevealInFolderLabel()}</p>
+            <p className="text-xs break-all text-background/60">
+              {folder.path}
+            </p>
+          </TooltipContent>
+        </Tooltip>
+        <div className="relative z-10 flex shrink-0 items-center pr-1 opacity-0 transition-opacity group-hover:opacity-100">
+          <ConfirmedIconButton
+            className="size-5 border border-border/50 bg-background hover:bg-accent! dark:hover:bg-accent!"
+            icon={MessageSquare}
+            onClick={handleAddToChat}
+            successTooltip="Added to chat!"
+            tooltip="Add to chat"
+            variant="ghost"
+          />
+        </div>
+      </div>
     </SidebarMenuItem>
   );
 }
