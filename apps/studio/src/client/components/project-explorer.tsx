@@ -17,13 +17,13 @@ import {
 } from "@quests/workspace/client";
 import { useSetAtom } from "jotai";
 import {
-  AppWindow,
   ChevronRight,
   Files,
   Folder,
   FolderClosed,
   FolderDot,
   Folders,
+  Globe,
   type LucideIcon,
   MessageSquare,
 } from "lucide-react";
@@ -167,7 +167,7 @@ export function ProjectExplorer({
                 )}
                 onClick={onAppSelect}
               >
-                <AppWindow className="size-3.5 shrink-0" />
+                <Globe className="size-3.5 shrink-0" />
                 <span className="truncate">App</span>
               </SidebarMenuButton>
               <div className="absolute right-1 flex shrink-0 items-center opacity-0 transition-opacity group-hover:opacity-100">
