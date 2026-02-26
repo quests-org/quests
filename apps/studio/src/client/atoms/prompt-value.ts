@@ -94,7 +94,11 @@ export const appendToPromptAtom = atom(
   ) => {
     const valueAtom = promptValueAtomFamily(key);
     const prev = get(valueAtom);
-    set(valueAtom, typeof update === "function" ? update(prev) : update);
+    const next =
+      typeof update === "function"
+        ? update(prev)
+        : (prev.trimEnd() ? prev.trimEnd() + " " : "") + update.trim();
+    set(valueAtom, next);
     get(promptInputRefAtom)?.focus();
   },
 );
