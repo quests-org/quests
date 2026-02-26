@@ -19,9 +19,7 @@ import { useSetAtom } from "jotai";
 import {
   ChevronRight,
   Files,
-  Folder,
   FolderClosed,
-  FolderDot,
   Folders,
   Globe,
   type LucideIcon,
@@ -167,7 +165,7 @@ export function ProjectExplorer({
                 )}
                 onClick={onAppSelect}
               >
-                <Globe className="size-3.5 shrink-0" />
+                <Globe className="size-3.5! shrink-0" />
                 <span className="truncate">App</span>
               </SidebarMenuButton>
               <div className="absolute right-1 flex shrink-0 items-center opacity-0 transition-opacity group-hover:opacity-100">
@@ -225,7 +223,6 @@ export function ProjectExplorer({
         {computed.hiddenTree.length > 0 && (
           <SidebarMenuItem>
             <CollapsibleTreeSection
-              icon={FolderDot}
               label="Other Files"
               labelClassName="text-muted-foreground/60"
             >
@@ -277,7 +274,7 @@ function AttachedFolderRow({
         <Tooltip delayDuration={400} disableHoverableContent>
           <TooltipTrigger asChild>
             <button
-              className="relative z-10 flex min-w-0 flex-1 items-center gap-1.5 px-2 text-left"
+              className="relative z-10 flex h-full min-w-0 flex-1 items-center gap-1.5 px-2 text-left"
               onClick={() => void handleClick()}
               type="button"
             >
@@ -367,7 +364,7 @@ function FileRow({
       <Tooltip delayDuration={400} disableHoverableContent>
         <TooltipTrigger asChild>
           <button
-            className="relative z-10 flex min-w-0 flex-1 items-center gap-1.5 px-2 text-left"
+            className="relative z-10 flex h-full min-w-0 flex-1 items-center gap-1.5 px-2 text-left"
             onClick={onClick}
             type="button"
           >
@@ -429,7 +426,7 @@ function CollapsibleTreeSection({
 }: {
   children: React.ReactNode;
   defaultOpen?: boolean;
-  icon: LucideIcon;
+  icon?: LucideIcon;
   label: string;
   labelClassName?: string;
 }) {
@@ -445,8 +442,8 @@ function CollapsibleTreeSection({
             labelClassName,
           )}
         >
-          <ChevronRight className="size-3 shrink-0 transition-transform" />
-          <Icon className="size-3.5 shrink-0" />
+          <ChevronRight className="size-3! shrink-0 transition-transform" />
+          {Icon && <Icon className="size-3.5! shrink-0" />}
           <span className="truncate">{label}</span>
         </SidebarMenuButton>
       </CollapsibleTrigger>
@@ -490,11 +487,7 @@ function TreeNode({
 
   return (
     <SidebarMenuItem>
-      <CollapsibleTreeSection
-        defaultOpen={defaultOpen}
-        icon={Folder}
-        label={node.name}
-      >
+      <CollapsibleTreeSection defaultOpen={defaultOpen} label={node.name}>
         {node.children.map((child, i) => (
           <TreeNode
             activeFilePath={activeFilePath}
