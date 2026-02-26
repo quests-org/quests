@@ -1,6 +1,5 @@
 import {
-  closeProjectFileViewerAtom,
-  collapseProjectFileViewerAtom,
+  closeFileViewerAtom,
   projectFileViewerAtom,
   setProjectFileViewerIndexAtom,
 } from "@/client/atoms/project-file-viewer";
@@ -16,8 +15,7 @@ import { Button } from "./ui/button";
 
 export function ProjectFileViewerModal() {
   const state = useAtomValue(projectFileViewerAtom);
-  const closeViewer = useSetAtom(closeProjectFileViewerAtom);
-  const collapseViewer = useSetAtom(collapseProjectFileViewerAtom);
+  const collapseViewer = useSetAtom(closeFileViewerAtom);
   const setCurrentIndex = useSetAtom(setProjectFileViewerIndexAtom);
   const router = useRouter();
 
@@ -39,18 +37,18 @@ export function ProjectFileViewerModal() {
 
   useEffect(() => {
     const unsubscribe = router.subscribe("onBeforeLoad", () => {
-      if (state.isOpen) {
-        closeViewer();
+      if (state.isModalOpen) {
+        collapseViewer();
       }
     });
 
     return () => {
       unsubscribe();
     };
-  }, [router, state.isOpen, closeViewer]);
+  }, [router, state.isModalOpen, collapseViewer]);
 
   useEffect(() => {
-    if (!state.isOpen || !hasMultipleFiles) {
+    if (!state.isModalOpen || !hasMultipleFiles) {
       return;
     }
 
@@ -69,7 +67,7 @@ export function ProjectFileViewerModal() {
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [
-    state.isOpen,
+    state.isModalOpen,
     hasMultipleFiles,
     state.files.length,
     state.currentIndex,
@@ -79,7 +77,7 @@ export function ProjectFileViewerModal() {
   ]);
 
   useEffect(() => {
-    if (!state.isOpen || !hasMultipleFiles) {
+    if (!state.isModalOpen || !hasMultipleFiles) {
       return;
     }
 
@@ -93,7 +91,7 @@ export function ProjectFileViewerModal() {
         inline: "center",
       });
     }
-  }, [state.currentIndex, state.isOpen, hasMultipleFiles]);
+  }, [state.currentIndex, state.isModalOpen, hasMultipleFiles]);
 
   if (!currentFile) {
     return null;
@@ -106,7 +104,7 @@ export function ProjectFileViewerModal() {
           collapseViewer();
         }
       }}
-      open={state.isOpen && state.mode === "modal"}
+      open={state.isModalOpen}
     >
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/90 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0" />

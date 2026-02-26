@@ -28,6 +28,7 @@ import { VersionAndFilesCard } from "./version-and-files-card";
 interface SessionEventListProps {
   isAgentRunning: boolean;
   isDeveloperMode: boolean;
+  isViewingApp?: boolean;
   messages: SessionMessage.WithParts[];
   onContinue: () => void;
   onModelChange: (modelURI: AIGatewayModelURI.Type) => void;
@@ -40,6 +41,7 @@ interface SessionEventListProps {
 export function SessionStream({
   isAgentRunning,
   isDeveloperMode,
+  isViewingApp = false,
   messages,
   onContinue,
   onModelChange,
@@ -87,6 +89,7 @@ export function SessionStream({
         // are done. So avoid showing the loading state.
         isAgentRunning={false}
         isDeveloperMode={isDeveloperMode}
+        isViewingApp={isViewingApp}
         messages={nestedMessages}
         onContinue={onContinue}
         onModelChange={onModelChange}
@@ -97,6 +100,7 @@ export function SessionStream({
     ),
     [
       isDeveloperMode,
+      isViewingApp,
       onContinue,
       onModelChange,
       onRetry,
@@ -156,6 +160,7 @@ export function SessionStream({
             className="mt-2"
             isLastGitCommit={isLastVersion}
             isSelected={isSelected}
+            isViewingApp={isViewingApp}
             key={part.metadata.id}
             onVersionClick={() => {
               void navigate({
@@ -165,6 +170,7 @@ export function SessionStream({
                 search: (prev) => ({
                   ...prev,
                   selectedVersion: shouldSetVersion ? part.data.ref : undefined,
+                  view: "app",
                 }),
               });
             }}
@@ -244,6 +250,7 @@ export function SessionStream({
       lastMessageId,
       onRetry,
       renderStream,
+      isViewingApp,
     ],
   );
 

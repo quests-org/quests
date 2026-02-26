@@ -1,33 +1,32 @@
 import {
-  closeProjectFileViewerAtom,
-  expandProjectFileViewerAtom,
-  projectFileViewerAtom,
+  type ProjectFileViewerFile,
+  setFileViewerGalleryAtom,
 } from "@/client/atoms/project-file-viewer";
-import { useAtomValue, useSetAtom } from "jotai";
+import { useSetAtom } from "jotai";
 
 import { ProjectFileViewer } from "./project-file-viewer";
 
-export function ProjectFileViewerPanel() {
-  const state = useAtomValue(projectFileViewerAtom);
-  const closeViewer = useSetAtom(closeProjectFileViewerAtom);
-  const expandViewer = useSetAtom(expandProjectFileViewerAtom);
-
-  const currentFile = state.files[state.currentIndex];
-
-  if (!currentFile) {
-    return null;
-  }
+export function ProjectFileViewerPanel({
+  file,
+  onClose,
+}: {
+  file: ProjectFileViewerFile;
+  onClose: () => void;
+}) {
+  const setGallery = useSetAtom(setFileViewerGalleryAtom);
 
   return (
     <div className="flex h-full w-full flex-col overflow-hidden">
       <div className="flex min-h-0 flex-1 items-center justify-center overflow-hidden">
-        <div className="flex size-full" key={currentFile.url}>
+        <div className="flex size-full" key={file.url}>
           <ProjectFileViewer
-            file={currentFile}
+            file={file}
             fullSize
             isInPanel
-            onClose={closeViewer}
-            onExpand={expandViewer}
+            onClose={onClose}
+            onExpand={() => {
+              setGallery({ files: [file], isOpen: true });
+            }}
           />
         </div>
       </div>

@@ -1,10 +1,11 @@
 import {
-  openProjectFileViewerAtom,
   type ProjectFileViewerFile,
+  setFileViewerGalleryAtom,
 } from "@/client/atoms/project-file-viewer";
 import { getAssetUrl } from "@/client/lib/get-asset-url";
 import { type ProjectSubdomain } from "@quests/workspace/client";
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
 import ColorHash from "color-hash";
 import { useSetAtom } from "jotai";
 import { GitCommitVertical } from "lucide-react";
@@ -85,7 +86,8 @@ export function VersionFileChanges({
   versionRef,
 }: VersionFileChangesProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const openFileViewer = useSetAtom(openProjectFileViewerAtom);
+  const setGallery = useSetAtom(setFileViewerGalleryAtom);
+  const navigate = useNavigate({ from: "/projects/$subdomain" });
 
   const { data: gitRefInfo, isLoading } = useQuery(
     rpcClient.workspace.project.git.ref.queryOptions({
@@ -139,9 +141,17 @@ export function VersionFileChanges({
       versionRef,
     }));
 
-    openFileViewer({
-      currentIndex: clickedFileIndex,
+    setGallery({
+      currentIndex: clickedFileIndex === -1 ? 0 : clickedFileIndex,
       files: projectFiles,
+    });
+    void navigate({
+      search: (prev) => ({
+        ...prev,
+        view: undefined,
+        viewFile: file.filePath,
+        viewFileVersion: versionRef || undefined,
+      }),
     });
   };
 

@@ -15,6 +15,7 @@ interface GitCommitCardProps {
   disableLink?: boolean;
   isLastGitCommit?: boolean;
   isSelected?: boolean;
+  isViewingApp?: boolean;
   projectSubdomain: ProjectSubdomain;
   restoredFromRef?: string;
   showCommitMessage?: boolean;
@@ -27,6 +28,7 @@ export function GitCommitCard({
   disableLink = false,
   isLastGitCommit = false,
   isSelected = false,
+  isViewingApp = false,
   projectSubdomain,
   restoredFromRef,
   showCommitMessage = true,
@@ -58,7 +60,9 @@ export function GitCommitCard({
             versionRef={versionRef}
           />
 
-          {showViewIndicator && <ViewIndicator isSelected={isSelected} />}
+          {showViewIndicator && (
+            <ViewIndicator isViewing={isSelected && isViewingApp} />
+          )}
         </div>
 
         {showCommitMessage && (

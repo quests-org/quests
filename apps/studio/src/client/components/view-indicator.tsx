@@ -1,13 +1,9 @@
 import { ChevronRight } from "lucide-react";
 
-interface ViewIndicatorProps {
-  isSelected: boolean;
-}
-
-export function ViewIndicator({ isSelected }: ViewIndicatorProps) {
+export function ViewIndicator({ isViewing }: { isViewing: boolean }) {
   return (
     <div className="shrink-0">
-      {isSelected ? (
+      {isViewing ? (
         <div className="flex items-center gap-1.5 text-xs font-medium">
           Viewing
         </div>

@@ -1,17 +1,13 @@
-import {
-  closeProjectFileViewerAtom,
-  projectFileViewerAtom,
-  type ProjectFileViewerFile,
-} from "@/client/atoms/project-file-viewer";
+import { type ProjectFileViewerFile } from "@/client/atoms/project-file-viewer";
 import {
   projectFilesPanelCollapsedAtomFamily,
   projectSidebarCollapsedAtomFamily,
 } from "@/client/atoms/project-sidebar";
 import { AppView } from "@/client/components/app-view";
 import { ProjectChat } from "@/client/components/project-chat";
+import { ProjectExplorer } from "@/client/components/project-explorer";
 import { ProjectFileViewerPanel } from "@/client/components/project-file-viewer-panel";
 import { ProjectHeaderToolbar } from "@/client/components/project-header-toolbar";
-import { ProjectPanel } from "@/client/components/project-panel";
 import { Button } from "@/client/components/ui/button";
 import {
   ResizableHandle,
@@ -23,17 +19,16 @@ import { VersionOverlay } from "@/client/components/version-overlay";
 import { useReload } from "@/client/hooks/use-reload";
 import { hasVisibleProjectFiles } from "@/client/lib/project-file-groups";
 import { cn } from "@/client/lib/utils";
-import { rpcClient, type RPCOutput } from "@/client/rpc/client";
+import { type RPCOutput } from "@/client/rpc/client";
 import { type AIGatewayModelURI } from "@quests/ai-gateway/client";
 import {
   type StoreId,
   type WorkspaceAppProject,
 } from "@quests/workspace/client";
-import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useAtomValue, useSetAtom } from "jotai";
 import { X } from "lucide-react";
-import { Activity, useCallback, useEffect, useMemo, useState } from "react";
+import { Activity, useCallback, useEffect, useMemo } from "react";
 import { usePanelRef } from "react-resizable-panels";
 
 const RESIZABLE_HANDLE_CLASS =
@@ -41,46 +36,103 @@ const RESIZABLE_HANDLE_CLASS =
 
 export function ProjectView({
   attachedFolders,
+  files,
   hasAppModifications,
   project,
   selectedModelURI,
   selectedSessionId,
   selectedVersion,
   showVersions,
+  view,
+  viewFile,
+  viewFileInfo,
 }: {
   attachedFolders: RPCOutput["workspace"]["project"]["state"]["get"]["attachedFolders"];
+  files: RPCOutput["workspace"]["project"]["git"]["listFiles"] | undefined;
   hasAppModifications: boolean;
   project: WorkspaceAppProject;
   selectedModelURI: AIGatewayModelURI.Type | undefined;
   selectedSessionId?: StoreId.Session;
   selectedVersion: string | undefined;
   showVersions?: boolean;
+  view: "app" | "file" | "none" | undefined;
+  viewFile: string | undefined;
+  viewFileInfo:
+    | RPCOutput["workspace"]["project"]["git"]["fileInfo"]
+    | undefined;
 }) {
   const navigate = useNavigate();
-  const fileViewerState = useAtomValue(projectFileViewerAtom);
-  const closeFileViewer = useSetAtom(closeProjectFileViewerAtom);
-  const fileViewerOpen = fileViewerState.isOpen;
-  const showFileViewerPanel =
-    fileViewerState.isOpen && fileViewerState.mode === "panel";
 
-  const [appViewOpen, setAppViewOpen] = useState(() => hasAppModifications);
-  const showAppPanel = appViewOpen || fileViewerOpen;
+  const isViewingApp = view === "app";
+  const showAppPanel = isViewingApp || !!viewFile;
+
+  const currentViewFile = useMemo((): null | ProjectFileViewerFile => {
+    if (!viewFileInfo) {
+      return null;
+    }
+    return {
+      ...viewFileInfo,
+      projectSubdomain: project.subdomain,
+    };
+  }, [viewFileInfo, project.subdomain]);
 
   const handleAppSelect = useCallback(() => {
-    if (appViewOpen) {
+    if (isViewingApp) {
       return;
     }
-    closeFileViewer();
-    setAppViewOpen(true);
-  }, [appViewOpen, closeFileViewer]);
-
-  const handleFileSelect = useCallback((_file: ProjectFileViewerFile) => {
-    setAppViewOpen(false);
-  }, []);
+    void navigate({
+      from: "/projects/$subdomain",
+      params: { subdomain: project.subdomain },
+      replace: true,
+      search: (prev) => ({
+        ...prev,
+        view: "app",
+        viewFile: undefined,
+        viewFileVersion: undefined,
+      }),
+    });
+  }, [isViewingApp, navigate, project.subdomain]);
 
   const handleAppClose = useCallback(() => {
-    setAppViewOpen(false);
-  }, []);
+    void navigate({
+      from: "/projects/$subdomain",
+      params: { subdomain: project.subdomain },
+      replace: true,
+      search: (prev) => ({ ...prev, view: "none" }),
+    });
+  }, [navigate, project.subdomain]);
+
+  const handleFileSelect = useCallback(
+    ({ filePath, versionRef }: { filePath: string; versionRef: string }) => {
+      void navigate({
+        from: "/projects/$subdomain",
+        params: { subdomain: project.subdomain },
+        replace: true,
+        search: (prev) => ({
+          ...prev,
+          view: "file",
+          viewFile: filePath,
+          viewFileVersion: versionRef || undefined,
+        }),
+      });
+    },
+    [navigate, project.subdomain],
+  );
+
+  const handleFileViewerClose = useCallback(() => {
+    void navigate({
+      from: "/projects/$subdomain",
+      params: { subdomain: project.subdomain },
+      replace: true,
+      search: (prev) => ({
+        ...prev,
+        view: "none" as const,
+        viewFile: undefined,
+        viewFileVersion: undefined,
+      }),
+    });
+  }, [navigate, project.subdomain]);
+
   const sidebarCollapsed = useAtomValue(
     projectSidebarCollapsedAtomFamily(project.subdomain),
   );
@@ -94,11 +146,6 @@ export function ProjectView({
     projectFilesPanelCollapsedAtomFamily(project.subdomain),
   );
 
-  const { data: files } = useQuery(
-    rpcClient.workspace.project.git.live.listFiles.experimental_liveOptions({
-      input: { projectSubdomain: project.subdomain },
-    }),
-  );
   const hasProjectFiles = useMemo(
     () => (files ? hasVisibleProjectFiles(files) : false),
     [files],
@@ -121,10 +168,10 @@ export function ProjectView({
 
   useReload(
     useCallback(() => {
-      if (!hasAppModifications) {
+      if (!isViewingApp) {
         window.location.reload();
       }
-    }, [hasAppModifications]),
+    }, [isViewingApp]),
   );
 
   useEffect(() => {
@@ -154,6 +201,7 @@ export function ProjectView({
   }, [filesPanelCollapsed, filesPanelRef]);
 
   const sidebarProps = {
+    isViewingApp,
     project,
     selectedModelURI,
     selectedSessionId,
@@ -209,6 +257,7 @@ export function ProjectView({
                     <VersionList
                       // Very basic filtering for now
                       filterByPath="./src"
+                      isViewingApp={isViewingApp}
                       projectSubdomain={project.subdomain}
                       selectedVersion={selectedVersion}
                     />
@@ -232,9 +281,14 @@ export function ProjectView({
                     "rounded-tr-lg border-r",
                 )}
               >
-                {fileViewerOpen ? (
+                {currentViewFile ? (
                   <div className="flex h-full overflow-hidden">
-                    {showFileViewerPanel && <ProjectFileViewerPanel />}
+                    {viewFile && (
+                      <ProjectFileViewerPanel
+                        file={currentViewFile}
+                        onClose={handleFileViewerClose}
+                      />
+                    )}
                   </div>
                 ) : (
                   <div className="relative flex flex-1 flex-col">
@@ -272,7 +326,7 @@ export function ProjectView({
             <ResizablePanel
               collapsedSize="0px"
               collapsible
-              defaultSize="13rem"
+              defaultSize={filesPanelCollapsed ? "0px" : "13rem"}
               maxSize="40%"
               minSize="13rem"
               onResize={() => {
@@ -297,10 +351,11 @@ export function ProjectView({
                   </h3>
                 </div>
                 <div className="min-h-0 flex-1 overflow-y-auto">
-                  <ProjectPanel
+                  <ProjectExplorer
+                    activeFilePath={viewFile ?? null}
                     attachedFolders={attachedFolders}
                     files={files}
-                    isAppViewOpen={appViewOpen}
+                    isAppViewOpen={isViewingApp}
                     onAppSelect={handleAppSelect}
                     onFileSelect={handleFileSelect}
                     project={project}

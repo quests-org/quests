@@ -21,6 +21,7 @@ interface VersionCardProps {
   className?: string;
   isLastGitCommit?: boolean;
   isSelected?: boolean;
+  isViewingApp: boolean;
   onVersionClick?: () => void;
   projectSubdomain: ProjectSubdomain;
   restoredFromRef?: string;
@@ -32,6 +33,7 @@ export function VersionAndFilesCard({
   className,
   isLastGitCommit = false,
   isSelected = false,
+  isViewingApp = false,
   onVersionClick,
   projectSubdomain,
   restoredFromRef,
@@ -108,17 +110,24 @@ export function VersionAndFilesCard({
   return (
     <div className={cn("flex flex-col gap-2", className)}>
       {hasFilesInSrc && (
-        <button
+        <div
           className={cn(
             "flex flex-col gap-6 overflow-hidden rounded-lg border bg-card py-0 text-card-foreground shadow-sm",
             "relative p-3 text-left transition-colors",
-            isSelected
-              ? "border-secondary-foreground hover:bg-muted/30"
-              : "hover:bg-muted/50",
+            onVersionClick
+              ? isSelected
+                ? "cursor-default border-secondary-foreground hover:bg-muted/30"
+                : "cursor-default hover:bg-muted/50"
+              : "cursor-default opacity-50",
           )}
-          disabled={!onVersionClick}
           onClick={onVersionClick}
-          type="button"
+          onKeyDown={(e) => {
+            if ((e.key === "Enter" || e.key === " ") && onVersionClick) {
+              onVersionClick();
+            }
+          }}
+          role={onVersionClick ? "button" : undefined}
+          tabIndex={onVersionClick ? 0 : undefined}
         >
           <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
@@ -126,7 +135,7 @@ export function VersionAndFilesCard({
                 isCurrentVersion={isLastGitCommit}
                 versionRef={versionRef}
               />
-              <ViewIndicator isSelected={isSelected} />
+              <ViewIndicator isViewing={isSelected && isViewingApp} />
             </div>
 
             <VersionCommitMessage
@@ -148,7 +157,7 @@ export function VersionAndFilesCard({
               />
             )}
           </div>
-        </button>
+        </div>
       )}
 
       {hasFilesOutsideSrc && <FilesGrid files={fileItems} />}

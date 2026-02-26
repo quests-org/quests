@@ -15,6 +15,7 @@ import {
 import {
   CancelledError,
   keepPreviousData,
+  skipToken,
   useQuery,
 } from "@tanstack/react-query";
 import {
@@ -23,6 +24,7 @@ import {
   redirect,
   useNavigate,
 } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { z } from "zod";
 
 const projectSearchSchema = z.object({
@@ -32,6 +34,9 @@ const projectSearchSchema = z.object({
   showDuplicate: z.boolean().optional(),
   showSettings: z.boolean().optional(),
   showVersions: z.boolean().optional(),
+  view: z.enum(["app", "file", "none"]).optional(),
+  viewFile: z.string().optional(),
+  viewFileVersion: z.string().optional(),
 });
 
 function title(project?: WorkspaceAppProject) {
@@ -89,6 +94,29 @@ export const Route = createFileRoute("/_app/projects/$subdomain/")({
         });
       }
     }
+
+    // If no view is selected, check if the app has modifications and default to app view
+    if (!search.view && !search.viewFile) {
+      const [, hasModifications] = await safe(
+        rpcClient.workspace.project.git.hasAppModifications.check.call({
+          projectSubdomain: params.subdomain,
+        }),
+      );
+
+      if (hasModifications) {
+        // eslint-disable-next-line @typescript-eslint/only-throw-error
+        throw redirect({
+          params: {
+            subdomain: params.subdomain,
+          },
+          search: (prev) => ({
+            ...prev,
+            view: "app" as const,
+          }),
+          to: "/projects/$subdomain",
+        });
+      }
+    }
   },
   component: RouteComponent,
   head: async ({ params }) => {
@@ -123,6 +151,9 @@ function RouteComponent() {
     showDuplicate,
     showSettings,
     showVersions,
+    view,
+    viewFile,
+    viewFileVersion,
   } = Route.useSearch();
   const navigate = useNavigate();
 
@@ -187,19 +218,64 @@ function RouteComponent() {
     }),
   );
 
-  const {
-    data: hasAppModifications = true,
-    isLoading: isAppModificationsLoading,
-  } = useQuery(
-    rpcClient.workspace.project.git.hasAppModifications.live.check.experimental_liveOptions(
-      {
-        input: { projectSubdomain: subdomain },
-      },
-    ),
+  const { data: hasAppModifications, isLoading: isAppModificationsLoading } =
+    useQuery(
+      rpcClient.workspace.project.git.hasAppModifications.live.check.experimental_liveOptions(
+        {
+          input: { projectSubdomain: subdomain },
+        },
+      ),
+    );
+
+  useEffect(() => {
+    if (
+      !isAppModificationsLoading &&
+      hasAppModifications &&
+      !view &&
+      !viewFile
+    ) {
+      void navigate({
+        from: "/projects/$subdomain",
+        params: { subdomain },
+        replace: true,
+        search: (prev) => ({ ...prev, view: "app" as const }),
+      });
+    }
+  }, [
+    hasAppModifications,
+    isAppModificationsLoading,
+    navigate,
+    subdomain,
+    view,
+    viewFile,
+  ]);
+
+  const { data: files, isLoading: isFilesLoading } = useQuery(
+    rpcClient.workspace.project.git.live.listFiles.experimental_liveOptions({
+      input: { projectSubdomain: subdomain },
+      placeholderData: keepPreviousData,
+    }),
   );
 
+  const { data: viewFileInfo } = useQuery({
+    ...rpcClient.workspace.project.git.fileInfo.queryOptions({
+      input: viewFile
+        ? {
+            filePath: viewFile,
+            projectSubdomain: subdomain,
+            versionRef: viewFileVersion,
+          }
+        : skipToken,
+    }),
+    enabled: !!viewFile,
+  });
+
   const isLoading =
-    isProjectLoading || isProjectStateLoading || isAppModificationsLoading;
+    isProjectLoading ||
+    isProjectStateLoading ||
+    isAppModificationsLoading ||
+    isFilesLoading;
+
   const error = projectError ?? projectStateError;
 
   if (isLoading) {
@@ -219,12 +295,16 @@ function RouteComponent() {
     <>
       <ProjectView
         attachedFolders={projectState.attachedFolders}
-        hasAppModifications={hasAppModifications}
+        files={files}
+        hasAppModifications={hasAppModifications ?? false}
         project={project}
         selectedModelURI={projectState.selectedModelURI}
         selectedSessionId={selectedSessionId}
         selectedVersion={selectedVersion}
         showVersions={showVersions}
+        view={view}
+        viewFile={viewFile}
+        viewFileInfo={viewFileInfo}
       />
 
       <ProjectDeleteDialog

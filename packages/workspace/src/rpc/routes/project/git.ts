@@ -1,6 +1,7 @@
 import { call, eventIterator } from "@orpc/server";
 import { z } from "zod";
 
+import { FileInfoSchema, getFileInfo } from "../../../lib/get-file-info";
 import { getFileVersionRefs } from "../../../lib/get-file-version-refs";
 import { getFilesAddedSinceInitial } from "../../../lib/get-files-added-since-initial";
 import { getGitCommits, GitCommitsSchema } from "../../../lib/get-git-commits";
@@ -205,8 +206,32 @@ const listFiles = base
     return result.value;
   });
 
+const fileInfo = base
+  .input(
+    z.object({
+      filePath: RelativePathSchema,
+      projectSubdomain: ProjectSubdomainSchema,
+      versionRef: z.string().optional(),
+    }),
+  )
+  .output(FileInfoSchema)
+  .handler(({ errors, input: { filePath, projectSubdomain, versionRef } }) => {
+    const result = getFileInfo({
+      filePath,
+      projectSubdomain,
+      versionRef,
+    });
+
+    if (result.isErr()) {
+      throw toORPCError(result.error, errors);
+    }
+
+    return result.value;
+  });
+
 export const projectGit = {
   commits,
+  fileInfo,
   filesAddedSinceInitial,
   fileVersionRefs,
   hasAppModifications: {

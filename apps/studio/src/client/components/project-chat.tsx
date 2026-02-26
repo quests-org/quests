@@ -23,6 +23,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 export function ProjectChat({
   isChatOnly = false,
+  isViewingApp = false,
   project,
   selectedModelURI: initialSelectedModelURI,
   selectedSessionId,
@@ -30,6 +31,7 @@ export function ProjectChat({
   showVersions,
 }: {
   isChatOnly?: boolean;
+  isViewingApp?: boolean;
   project: WorkspaceAppProject;
   selectedModelURI?: AIGatewayModelURI.Type;
   selectedSessionId?: StoreId.Session;
@@ -204,6 +206,7 @@ export function ProjectChat({
             <SessionStream
               isAgentRunning={isAgentRunning}
               isDeveloperMode={isDeveloperMode ?? false}
+              isViewingApp={isViewingApp}
               messages={messages}
               onContinue={handleContinue}
               onModelChange={setSelectedModelURI}

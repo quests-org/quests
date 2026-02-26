@@ -1,8 +1,4 @@
-import {
-  openProjectFileViewerAtom,
-  projectFileViewerAtom,
-  type ProjectFileViewerFile,
-} from "@/client/atoms/project-file-viewer";
+import { type ProjectFileViewerFile } from "@/client/atoms/project-file-viewer";
 import { appendToPromptAtom } from "@/client/atoms/prompt-value";
 import { ConfirmedIconButton } from "@/client/components/confirmed-icon-button";
 import { FileIcon } from "@/client/components/file-icon";
@@ -18,7 +14,7 @@ import {
   APP_FOLDER_NAMES,
   type WorkspaceAppProject,
 } from "@quests/workspace/client";
-import { useAtomValue, useSetAtom } from "jotai";
+import { useSetAtom } from "jotai";
 import {
   AppWindow,
   ChevronRight,
@@ -57,7 +53,8 @@ type FileTreeNode =
   | { children: FileTreeNode[]; kind: "dir"; name: string }
   | { file: ProjectFileViewerFile; kind: "file" };
 
-export function ProjectPanel({
+export function ProjectExplorer({
+  activeFilePath,
   attachedFolders,
   files,
   isAppViewOpen,
@@ -66,20 +63,15 @@ export function ProjectPanel({
   project,
   showAppEntry,
 }: {
+  activeFilePath: null | string;
   attachedFolders: RPCOutput["workspace"]["project"]["state"]["get"]["attachedFolders"];
   files: RPCOutput["workspace"]["project"]["git"]["listFiles"] | undefined;
   isAppViewOpen: boolean;
   onAppSelect: () => void;
-  onFileSelect: (file: ProjectFileViewerFile) => void;
+  onFileSelect: (file: { filePath: string; versionRef: string }) => void;
   project: WorkspaceAppProject;
   showAppEntry: boolean;
 }) {
-  const openFileViewer = useSetAtom(openProjectFileViewerAtom);
-  const fileViewerState = useAtomValue(projectFileViewerAtom);
-  const activeFilePath = fileViewerState.isOpen
-    ? (fileViewerState.files[fileViewerState.currentIndex]?.filePath ?? null)
-    : null;
-
   const computed = useMemo(() => {
     if (!files) {
       return null;
@@ -136,11 +128,7 @@ export function ProjectPanel({
   }
 
   const handleFileClick = (file: ProjectFileViewerFile) => {
-    onFileSelect(file);
-    openFileViewer({
-      currentIndex: computed.allFiles.indexOf(file),
-      files: computed.allFiles,
-    });
+    onFileSelect({ filePath: file.filePath, versionRef: file.versionRef });
   };
 
   const folderEntries = attachedFolders ? Object.values(attachedFolders) : [];

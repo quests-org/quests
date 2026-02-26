@@ -17,10 +17,12 @@ import { ViewIndicator } from "./view-indicator";
 
 export function VersionList({
   filterByPath,
+  isViewingApp = false,
   projectSubdomain,
   selectedVersion,
 }: {
   filterByPath?: string;
+  isViewingApp?: boolean;
   projectSubdomain: ProjectSubdomain;
   selectedVersion?: string;
 }) {
@@ -120,7 +122,7 @@ export function VersionList({
                   {commit.message}
                 </div>
 
-                <ViewIndicator isSelected={isSelected} />
+                <ViewIndicator isViewing={isSelected && isViewingApp} />
               </div>
 
               <div className="flex flex-wrap items-baseline gap-1 text-xs text-muted-foreground">
