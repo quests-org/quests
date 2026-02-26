@@ -59,8 +59,9 @@ export function ProjectFileViewer({
       )}
     >
       {isMediaFile && (
-        <div className="dark absolute top-4 right-4 left-4 z-10 flex items-center justify-center gap-2 text-foreground">
-          <div className="flex items-center gap-2">
+        <div className="dark absolute top-4 right-4 left-4 z-10 grid [grid-template-columns:1fr_auto_1fr] items-center text-foreground">
+          <div />
+          <div className="flex min-w-0 items-center gap-2">
             <FileIcon
               className="size-4 shrink-0"
               filename={file.filename}
@@ -73,7 +74,7 @@ export function ProjectFileViewer({
               versionRef={file.versionRef}
             />
           </div>
-          <div className="absolute right-0 flex items-center gap-1">
+          <div className="flex items-center justify-end gap-1">
             {file.projectSubdomain && file.filePath && (
               <FileActionsMenu
                 filePath={file.filePath}
