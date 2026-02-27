@@ -173,7 +173,7 @@ export function ProjectExplorer({
 
   return (
     <SidebarProvider
-      className="min-h-0 flex-col py-1 pr-1"
+      className="min-h-0 flex-col px-1 py-1"
       style={{ "--sidebar-width": "100%" } as React.CSSProperties}
     >
       {showAppEntry && (
