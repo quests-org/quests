@@ -171,6 +171,8 @@ export function SessionStream({
                   ...prev,
                   selectedVersion: shouldSetVersion ? part.data.ref : undefined,
                   view: "app",
+                  viewFile: undefined,
+                  viewFileVersion: undefined,
                 }),
               });
             }}

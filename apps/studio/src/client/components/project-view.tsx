@@ -64,7 +64,8 @@ export function ProjectView({
   const navigate = useNavigate();
 
   const isViewingApp = view === "app";
-  const showAppPanel = isViewingApp || !!viewFile;
+  const isViewingFile = view === "file";
+  const showAppPanel = isViewingApp || isViewingFile;
 
   const currentViewFile = useMemo((): null | ProjectFileViewerFile => {
     if (!viewFileInfo) {
@@ -264,14 +265,12 @@ export function ProjectView({
                     "rounded-tr-lg border-r",
                 )}
               >
-                {currentViewFile ? (
+                {isViewingFile && currentViewFile ? (
                   <div className="flex h-full overflow-hidden">
-                    {viewFile && (
-                      <ProjectFileViewerPanel
-                        file={currentViewFile}
-                        onClose={handleFileViewerClose}
-                      />
-                    )}
+                    <ProjectFileViewerPanel
+                      file={currentViewFile}
+                      onClose={handleFileViewerClose}
+                    />
                   </div>
                 ) : (
                   <div className="relative flex flex-1 flex-col">
@@ -343,7 +342,7 @@ export function ProjectView({
                 </div>
                 <div className="min-h-0 flex-1 overflow-y-auto">
                   <ProjectExplorer
-                    activeFilePath={viewFile ?? null}
+                    activeFilePath={isViewingFile ? (viewFile ?? null) : null}
                     attachedFolders={attachedFolders}
                     files={files}
                     isAppViewOpen={isViewingApp}
