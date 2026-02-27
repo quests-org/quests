@@ -128,10 +128,10 @@ export function FilesGrid({
               return (
                 <div
                   className={cn(
-                    "w-full shrink-0 grow-0",
+                    "shrink-0 grow-0",
                     isSingleRichFile
-                      ? "@md:w-[calc((100%/3*2)-(0.5rem/3))]"
-                      : "@md:w-[calc((100%/2)-(0.5rem/2))]",
+                      ? "w-full @md:w-[calc((100%/3*2)-(0.5rem/3))]"
+                      : "w-[calc((100%/2)-(0.5rem/2))]",
                     shouldSpan
                       ? "@2xl:w-[calc((100%/3*2)-(0.5rem/3))]"
                       : "@2xl:w-[calc((100%/3)-(0.5rem*2/3))]",
