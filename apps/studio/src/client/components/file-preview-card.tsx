@@ -58,7 +58,7 @@ export function FilePreviewCard({
     }
   };
 
-  if (fileType === "markdown" || fileType === "text") {
+  if (fileType === "markdown" || fileType === "text" || fileType === "code") {
     return (
       <ContextMenu>
         <ContextMenuTrigger asChild>

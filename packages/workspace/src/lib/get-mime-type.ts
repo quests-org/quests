@@ -104,5 +104,15 @@ export function getMimeType(filenameOrFilePath: string) {
 
   const mimeType = mime.lookup(filenameOrFilePath);
 
-  return mimeType || "application/octet-stream";
+  if (!mimeType) {
+    const basename = path.basename(filenameOrFilePath);
+    const isDotfile =
+      basename.startsWith(".") && !basename.slice(1).includes(".");
+    if (!ext || isDotfile) {
+      return "text/plain";
+    }
+    return "application/octet-stream";
+  }
+
+  return mimeType;
 }
