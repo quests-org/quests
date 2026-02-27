@@ -1,8 +1,9 @@
 {
   "tasks": [
     {
+      "command": "pnpm run check-and-test",
       "detail": "Check and test the entire repo",
-      "label": "npm: check-and-test",
+      "label": "pnpm: check-and-test",
       "presentation": {
         "clear": true,
         "echo": true,
@@ -12,8 +13,7 @@
         "showReuseMessage": true
       },
       "problemMatcher": ["$eslint-stylish", "$tsc"],
-      "script": "check-and-test",
-      "type": "npm"
+      "type": "shell"
     }
   ],
   "version": "2.0.0"
