@@ -1,6 +1,21 @@
 {
   "tasks": [
     {
+      "command": "bash scripts/sync.sh",
+      "detail": "Pull latest main, update submodules, and install dependencies",
+      "label": "Sync with main",
+      "presentation": {
+        "clear": true,
+        "echo": true,
+        "focus": true,
+        "panel": "shared",
+        "reveal": "always",
+        "showReuseMessage": false
+      },
+      "problemMatcher": [],
+      "type": "shell"
+    },
+    {
       "command": "pnpm run check-and-test",
       "detail": "Check and test the entire repo",
       "label": "pnpm: check-and-test",
