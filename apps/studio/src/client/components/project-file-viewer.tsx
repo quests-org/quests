@@ -4,13 +4,18 @@ import { getFileType } from "@/client/lib/get-file-type";
 import { cn } from "@/client/lib/utils";
 import { Maximize2, X } from "lucide-react";
 
-import { FileActionsMenu } from "./file-actions-menu";
+import { FileActionsMenu, FileActionsMenuItems } from "./file-actions-menu";
 import { FileIcon } from "./file-icon";
 import { FilePreviewFallback } from "./file-preview-fallback";
 import { FileVersionBadge } from "./file-version-badge";
 import { FileViewer } from "./file-viewer";
 import { ImageWithFallback } from "./image-with-fallback";
 import { Button } from "./ui/button";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuTrigger,
+} from "./ui/context-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 export function ProjectFileViewer({
@@ -85,36 +90,51 @@ export function ProjectFileViewer({
       <div
         className={cn(
           "flex size-full items-center justify-center",
-          isMediaFile && !isInPanel && "pt-10",
+          isMediaFile && !isInPanel && "pt-14",
+          isMediaFile && isInPanel && "pt-8",
         )}
       >
         {isImage ? (
-          <ImageWithFallback
-            alt={file.filename}
-            className="size-auto max-h-full max-w-full object-contain select-none"
-            fallback={
-              <FilePreviewFallback
-                fallbackExtension="jpg"
+          <ContextMenu>
+            <ContextMenuTrigger asChild>
+              <ImageWithFallback
+                alt={file.filename}
+                className="size-auto max-h-full max-w-full object-contain select-none"
+                fallback={
+                  <FilePreviewFallback
+                    fallbackExtension="jpg"
+                    filename={file.filename}
+                    onDownload={isDownloadable ? handleDownload : undefined}
+                  />
+                }
+                fallbackClassName="size-32 rounded-lg"
                 filename={file.filename}
-                onDownload={isDownloadable ? handleDownload : undefined}
+                onClick={onClose}
+                showCheckerboard
+                src={file.url}
               />
-            }
-            fallbackClassName="size-32 rounded-lg"
-            filename={file.filename}
-            onClick={onClose}
-            showCheckerboard
-            src={file.url}
-          />
+            </ContextMenuTrigger>
+            <ContextMenuContent>
+              <FileActionsMenuItems file={file} variant="context" />
+            </ContextMenuContent>
+          </ContextMenu>
         ) : isVideo ? (
-          <video
-            autoPlay
-            className="size-full bg-black/50 object-contain dark:bg-white/10"
-            controls
-            // cspell:ignore nofullscreen
-            controlsList="nofullscreen"
-            key={file.url}
-            src={file.url}
-          />
+          <ContextMenu>
+            <ContextMenuTrigger asChild>
+              <video
+                autoPlay
+                className="size-full bg-black/50 object-contain dark:bg-white/10"
+                controls
+                // cspell:ignore nofullscreen
+                controlsList="nofullscreen"
+                key={file.url}
+                src={file.url}
+              />
+            </ContextMenuTrigger>
+            <ContextMenuContent>
+              <FileActionsMenuItems file={file} variant="context" />
+            </ContextMenuContent>
+          </ContextMenu>
         ) : (
           <FileViewer
             file={file}
