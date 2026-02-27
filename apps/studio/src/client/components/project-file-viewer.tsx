@@ -1,9 +1,5 @@
 import { type ProjectFileViewerFile } from "@/client/atoms/project-file-viewer";
-import {
-  copyFileToClipboard,
-  downloadFile,
-  isFileDownloadable,
-} from "@/client/lib/file-actions";
+import { downloadFile, isFileDownloadable } from "@/client/lib/file-actions";
 import { getFileType } from "@/client/lib/get-file-type";
 import { cn } from "@/client/lib/utils";
 import { Maximize2, X } from "lucide-react";
@@ -37,18 +33,7 @@ export function ProjectFileViewer({
   const isMediaFile = isImage || isVideo;
 
   const handleDownload = async () => {
-    if (!file.projectSubdomain || !file.filePath) {
-      return;
-    }
     await downloadFile(file);
-  };
-
-  const handleCopy = async () => {
-    await copyFileToClipboard({
-      filePath: file.filePath,
-      mimeType: file.mimeType,
-      subdomain: file.projectSubdomain,
-    });
   };
 
   return (
@@ -76,14 +61,7 @@ export function ProjectFileViewer({
           </div>
           <div className="flex items-center justify-end gap-1">
             {file.projectSubdomain && file.filePath && (
-              <FileActionsMenu
-                filePath={file.filePath}
-                onCopy={isImage && isDownloadable ? handleCopy : undefined}
-                onDownload={isDownloadable ? handleDownload : undefined}
-                projectSubdomain={file.projectSubdomain}
-                variant="ghost-overlay"
-                versionRef={file.versionRef}
-              />
+              <FileActionsMenu file={file} variant="ghost-overlay" />
             )}
             {onExpand && (
               <Tooltip>
@@ -142,7 +120,6 @@ export function ProjectFileViewer({
             file={file}
             fullSize={fullSize}
             onClose={onClose}
-            onDownload={isDownloadable ? handleDownload : undefined}
             onExpand={onExpand}
           />
         )}

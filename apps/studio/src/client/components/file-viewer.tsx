@@ -1,11 +1,11 @@
 import { type ProjectFileViewerFile } from "@/client/atoms/project-file-viewer";
+import { downloadFile, isFileDownloadable } from "@/client/lib/file-actions";
 import { getLanguageFromFilePath } from "@/client/lib/file-extension-to-language";
 import { getFileType } from "@/client/lib/get-file-type";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { Code2, Eye, Loader2, Maximize2, X } from "lucide-react";
 import { type ReactNode, useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
 import { tv } from "tailwind-variants";
 
 import { useSyntaxHighlighting } from "../hooks/use-syntax-highlighting";
@@ -161,13 +161,11 @@ export function FileViewer({
   file,
   fullSize = false,
   onClose,
-  onDownload,
   onExpand,
 }: {
   file: ProjectFileViewerFile;
   fullSize?: boolean;
   onClose: () => void;
-  onDownload?: () => void;
   onExpand?: () => void;
 }) {
   const { filename, filePath, mimeType, projectSubdomain, url, versionRef } =
@@ -183,21 +181,10 @@ export function FileViewer({
 
   const fileType = getFileType(file);
   const hasPreview = fileType === "markdown" || fileType === "html";
+  const isDownloadable = isFileDownloadable(file.url);
 
-  const handleCopy = async () => {
-    try {
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch file: ${response.statusText}`);
-      }
-      const text = await response.text();
-      await navigator.clipboard.writeText(text);
-    } catch (error) {
-      toast.error("Failed to copy", {
-        description:
-          error instanceof Error ? error.message : "An unknown error occurred",
-      });
-    }
+  const handleDownload = async () => {
+    await downloadFile(file);
   };
 
   const getViewerLayoutType = () => {
@@ -216,23 +203,7 @@ export function FileViewer({
   const toolbarActions: ReactNode[] = [];
 
   if (filePath && projectSubdomain) {
-    toolbarActions.push(
-      <FileActionsMenu
-        filePath={filePath}
-        key="actions"
-        onCopy={
-          fileType === "code" ||
-          fileType === "text" ||
-          fileType === "markdown" ||
-          fileType === "html"
-            ? handleCopy
-            : undefined
-        }
-        onDownload={onDownload}
-        projectSubdomain={projectSubdomain}
-        versionRef={versionRef}
-      />,
-    );
+    toolbarActions.push(<FileActionsMenu file={file} key="actions" />);
   }
 
   if (onExpand) {
@@ -320,7 +291,7 @@ export function FileViewer({
             <FilePreviewFallback
               fallbackExtension={mediaErrorType}
               filename={filename}
-              onDownload={onDownload}
+              onDownload={isDownloadable ? handleDownload : undefined}
             />
           </div>
         ) : fileType === "markdown" && viewMode === "preview" ? (
@@ -382,7 +353,7 @@ export function FileViewer({
             <FilePreviewFallback
               fallbackExtension="bin"
               filename={filename}
-              onDownload={onDownload}
+              onDownload={isDownloadable ? handleDownload : undefined}
             />
           </div>
         )}

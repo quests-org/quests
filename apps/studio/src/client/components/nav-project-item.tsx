@@ -23,7 +23,7 @@ import {
   ArrowUpRight,
   Copy,
   Edit2,
-  MoreHorizontal,
+  MoreVertical,
   Star,
   StarOff,
   TrashIcon,
@@ -140,40 +140,43 @@ export const NavProjectItem = memo(function NavProjectItem({
           />
         </div>
       ) : (
-        <SidebarMenuButton
-          asChild
-          className="h-9 gap-1 group-hover:bg-black/10 data-[active=true]:bg-black/15 data-[active=true]:font-normal data-[active=true]:text-foreground dark:group-hover:bg-white/10 dark:data-[active=true]:bg-white/15"
-          isActive={isActive}
-        >
-          <InternalLink
-            onDoubleClick={handleStartEdit}
-            openInCurrentTab
-            params={{ subdomain: project.subdomain }}
-            to="/projects/$subdomain"
+        <DropdownMenu onOpenChange={setIsMenuOpen} open={isMenuOpen}>
+          <SidebarMenuButton
+            asChild
+            className="h-9 gap-1 group-hover:bg-black/10 data-[active=true]:bg-black/15 data-[active=true]:font-normal data-[active=true]:text-foreground dark:group-hover:bg-white/10 dark:data-[active=true]:bg-white/15"
+            isActive={isActive}
+            onContextMenu={(e) => {
+              e.preventDefault();
+              setIsMenuOpen(true);
+            }}
           >
-            <AppIcon name={project.iconName} size="xs" />
-            <span>{project.title}</span>
-          </InternalLink>
-        </SidebarMenuButton>
-      )}
+            <InternalLink
+              onDoubleClick={handleStartEdit}
+              openInCurrentTab
+              params={{ subdomain: project.subdomain }}
+              to="/projects/$subdomain"
+            >
+              <AppIcon name={project.iconName} size="xs" />
+              <span>{project.title}</span>
+            </InternalLink>
+          </SidebarMenuButton>
 
-      {!isMenuOpen && !isEditing && (
-        <div className="pointer-events-none absolute top-1.5 right-1 flex aspect-square w-5 items-center justify-center rounded-md group-hover:hidden">
-          <AppStatusIcon
-            className="mt-1 size-4 shrink-0"
-            subdomain={project.subdomain}
-          />
-        </div>
-      )}
+          {!isMenuOpen && (
+            <div className="pointer-events-none absolute top-1.5 right-1 flex aspect-square w-5 items-center justify-center rounded-md group-hover:hidden">
+              <AppStatusIcon
+                className="mt-1 size-4 shrink-0"
+                subdomain={project.subdomain}
+              />
+            </div>
+          )}
 
-      {!isEditing && (
-        <DropdownMenu onOpenChange={setIsMenuOpen}>
           <DropdownMenuTrigger asChild>
             <SidebarMenuAction showOnHover>
-              <MoreHorizontal className="mt-1" />
+              <MoreVertical />
               <span className="sr-only">More</span>
             </SidebarMenuAction>
           </DropdownMenuTrigger>
+
           <DropdownMenuContent
             align="end"
             className="w-56 rounded-lg"

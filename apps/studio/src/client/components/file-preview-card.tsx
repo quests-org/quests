@@ -4,13 +4,18 @@ import { useQuery } from "@tanstack/react-query";
 import { Loader2, Play } from "lucide-react";
 import { useRef, useState } from "react";
 
+import { FileActionsMenu, FileActionsMenuItems } from "./file-actions-menu";
 import { FileIcon } from "./file-icon";
-import { FilePreviewActionsMenu } from "./file-preview-actions-menu";
 import { FileVersionBadge } from "./file-version-badge";
 import { ImageWithFallback } from "./image-with-fallback";
 import { Markdown } from "./markdown";
 import { SandboxedHtmlIframe } from "./sandboxed-html-iframe";
 import { Badge } from "./ui/badge";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuTrigger,
+} from "./ui/context-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 export function FilePreviewCard({
@@ -55,139 +60,153 @@ export function FilePreviewCard({
 
   if (fileType === "markdown" || fileType === "text") {
     return (
-      <div className="group relative overflow-hidden rounded-lg border border-border bg-background">
-        <PreviewHeader
-          file={file}
-          hideActionsMenu={hideActionsMenu}
-          onClick={onClick}
-        />
-        <div className="relative w-full overflow-hidden">
-          <div className="max-h-64 overflow-hidden bg-background">
-            {fileType === "markdown" ? (
-              <MarkdownPreview url={url} />
-            ) : (
-              <TextPreview url={url} />
-            )}
+      <ContextMenu>
+        <ContextMenuTrigger asChild>
+          <div className="group relative overflow-hidden rounded-lg border border-border bg-background">
+            <PreviewHeader
+              file={file}
+              hideActionsMenu={hideActionsMenu}
+              onClick={onClick}
+            />
+            <div className="relative w-full overflow-hidden">
+              <div className="max-h-64 overflow-hidden bg-background">
+                {fileType === "markdown" ? (
+                  <MarkdownPreview url={url} />
+                ) : (
+                  <TextPreview url={url} />
+                )}
+              </div>
+              <button
+                className="absolute inset-0 size-full"
+                onClick={onClick}
+                type="button"
+              />
+            </div>
           </div>
-          <button
-            className="absolute inset-0 size-full"
-            onClick={onClick}
-            type="button"
-          />
-        </div>
-      </div>
+        </ContextMenuTrigger>
+        <ContextMenuContent>
+          <FileActionsMenuItems file={file} variant="context" />
+        </ContextMenuContent>
+      </ContextMenu>
     );
   }
 
   return (
-    <div
-      className="group relative overflow-hidden rounded-lg border border-border bg-background transition-colors hover:bg-muted"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
-      <PreviewHeader
-        file={file}
-        hideActionsMenu={hideActionsMenu}
-        onClick={onClick}
-      />
-      <div className="relative aspect-video w-full overflow-hidden">
-        {fileType === "image" ? (
-          <div className="flex size-full items-center justify-center">
-            <ImageWithFallback
-              alt={filename}
-              className="max-h-full max-w-full object-contain"
-              fallbackClassName="size-full"
-              filename={filename}
-              showCheckerboard
-              src={url}
-            />
-          </div>
-        ) : fileType === "html" ? (
-          <SandboxedHtmlIframe
-            className="absolute top-0 left-0 size-[300%] origin-top-left border-0"
-            restrictInteractive
-            src={url}
-            style={{ transform: "scale(0.333)" }}
-            title={filename}
+    <ContextMenu>
+      <ContextMenuTrigger asChild>
+        <div
+          className="group relative overflow-hidden rounded-lg border border-border bg-background transition-colors hover:bg-muted"
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
+          <PreviewHeader
+            file={file}
+            hideActionsMenu={hideActionsMenu}
+            onClick={onClick}
           />
-        ) : fileType === "pdf" ? (
-          <iframe
-            className="absolute top-0 left-0 size-[300%] origin-top-left border-0"
-            // cspell:ignore navpanes
-            src={`${url}#toolbar=0&navpanes=0&view=Fit`}
-            style={{ transform: "scale(0.333)" }}
-            title={filename}
-          />
-        ) : fileType === "video" ? (
-          <>
-            <video
-              className="size-full bg-black object-contain"
-              loop
-              muted
-              onLoadedMetadata={(e) => {
-                const video = e.currentTarget;
-                setVideoDuration(video.duration);
-              }}
-              onTimeUpdate={(e) => {
-                const video = e.currentTarget;
-                const progress = video.duration
-                  ? (video.currentTime / video.duration) * 100
-                  : 0;
-                setVideoProgress(progress);
-                const remaining = video.duration
-                  ? video.duration - video.currentTime
-                  : null;
-                setTimeRemaining(remaining);
-              }}
-              ref={videoRef}
-              src={url}
-            />
-            <div className="absolute inset-0 flex items-center justify-center bg-black/20 transition-opacity group-hover:opacity-0">
-              <div className="rounded-full bg-white/90 p-2 shadow-lg">
-                <Play className="size-4 fill-black text-black" />
+          <div className="relative aspect-video w-full overflow-hidden">
+            {fileType === "image" ? (
+              <div className="flex size-full items-center justify-center">
+                <ImageWithFallback
+                  alt={filename}
+                  className="max-h-full max-w-full object-contain"
+                  fallbackClassName="size-full"
+                  filename={filename}
+                  showCheckerboard
+                  src={url}
+                />
               </div>
-            </div>
-            {(isPlaying
-              ? timeRemaining !== null && timeRemaining > 0
-              : videoDuration !== null) && (
-              <div className="absolute right-2 bottom-2">
-                <Badge
-                  className="bg-black/70 text-white hover:bg-black/70"
-                  variant="secondary"
-                >
-                  {formatTime(
-                    isPlaying && timeRemaining !== null
-                      ? timeRemaining
-                      : (videoDuration ?? 0),
-                  )}
-                </Badge>
-              </div>
-            )}
-            {isPlaying && (
-              <div className="absolute right-0 bottom-0 left-0 h-1 bg-black/50">
-                <div
-                  className="h-full bg-white transition-all duration-100"
-                  style={{ width: `${videoProgress}%` }}
+            ) : fileType === "html" ? (
+              <SandboxedHtmlIframe
+                className="absolute top-0 left-0 size-[300%] origin-top-left border-0"
+                restrictInteractive
+                src={url}
+                style={{ transform: "scale(0.333)" }}
+                title={filename}
+              />
+            ) : fileType === "pdf" ? (
+              <iframe
+                className="absolute top-0 left-0 size-[300%] origin-top-left border-0"
+                // cspell:ignore navpanes
+                src={`${url}#toolbar=0&navpanes=0&view=Fit`}
+                style={{ transform: "scale(0.333)" }}
+                title={filename}
+              />
+            ) : fileType === "video" ? (
+              <>
+                <video
+                  className="size-full bg-black object-contain"
+                  loop
+                  muted
+                  onLoadedMetadata={(e) => {
+                    const video = e.currentTarget;
+                    setVideoDuration(video.duration);
+                  }}
+                  onTimeUpdate={(e) => {
+                    const video = e.currentTarget;
+                    const progress = video.duration
+                      ? (video.currentTime / video.duration) * 100
+                      : 0;
+                    setVideoProgress(progress);
+                    const remaining = video.duration
+                      ? video.duration - video.currentTime
+                      : null;
+                    setTimeRemaining(remaining);
+                  }}
+                  ref={videoRef}
+                  src={url}
+                />
+                <div className="absolute inset-0 flex items-center justify-center bg-black/20 transition-opacity group-hover:opacity-0">
+                  <div className="rounded-full bg-white/90 p-2 shadow-lg">
+                    <Play className="size-4 fill-black text-black" />
+                  </div>
+                </div>
+                {(isPlaying
+                  ? timeRemaining !== null && timeRemaining > 0
+                  : videoDuration !== null) && (
+                  <div className="absolute right-2 bottom-2">
+                    <Badge
+                      className="bg-black/70 text-white hover:bg-black/70"
+                      variant="secondary"
+                    >
+                      {formatTime(
+                        isPlaying && timeRemaining !== null
+                          ? timeRemaining
+                          : (videoDuration ?? 0),
+                      )}
+                    </Badge>
+                  </div>
+                )}
+                {isPlaying && (
+                  <div className="absolute right-0 bottom-0 left-0 h-1 bg-black/50">
+                    <div
+                      className="h-full bg-white transition-all duration-100"
+                      style={{ width: `${videoProgress}%` }}
+                    />
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="flex size-full items-center justify-center">
+                <FileIcon
+                  className="size-16 text-muted-foreground"
+                  filename={filename}
+                  mimeType={mimeType}
                 />
               </div>
             )}
-          </>
-        ) : (
-          <div className="flex size-full items-center justify-center">
-            <FileIcon
-              className="size-16 text-muted-foreground"
-              filename={filename}
-              mimeType={mimeType}
+            <button
+              className="absolute inset-0 size-full"
+              onClick={onClick}
+              type="button"
             />
           </div>
-        )}
-        <button
-          className="absolute inset-0 size-full"
-          onClick={onClick}
-          type="button"
-        />
-      </div>
-    </div>
+        </div>
+      </ContextMenuTrigger>
+      <ContextMenuContent>
+        <FileActionsMenuItems file={file} variant="context" />
+      </ContextMenuContent>
+    </ContextMenu>
   );
 }
 
@@ -281,7 +300,7 @@ function PreviewHeader({
           versionRef={versionRef}
         />
       </button>
-      {!hideActionsMenu && <FilePreviewActionsMenu file={file} />}
+      {!hideActionsMenu && <FileActionsMenu file={file} />}
     </div>
   );
 }

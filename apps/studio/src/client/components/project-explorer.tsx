@@ -1,6 +1,5 @@
 import { type ProjectFileViewerFile } from "@/client/atoms/project-file-viewer";
 import { appendToPromptAtom } from "@/client/atoms/prompt-value";
-import { ConfirmedIconButton } from "@/client/components/confirmed-icon-button";
 import { FileIcon } from "@/client/components/file-icon";
 import { getAssetUrl } from "@/client/lib/get-asset-url";
 import {
@@ -15,21 +14,25 @@ import {
   type ProjectSubdomain,
   type WorkspaceAppProject,
 } from "@quests/workspace/client";
+import { useMutation } from "@tanstack/react-query";
 import { useSetAtom } from "jotai";
 import {
   ChevronRight,
   Files,
   FolderClosed,
+  FolderOpen,
   Folders,
   Globe,
   type LucideIcon,
   MessageSquare,
+  MoreVertical,
 } from "lucide-react";
 import * as React from "react";
 import { useMemo } from "react";
 import { toast } from "sonner";
 
 import { rpcClient } from "../rpc/client";
+import { FileActionsMenuItems } from "./file-actions-menu";
 import { FilePreviewCard } from "./file-preview-card";
 import {
   Collapsible,
@@ -37,7 +40,22 @@ import {
   CollapsibleTrigger,
 } from "./ui/collapsible";
 import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from "./ui/context-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
+import {
   SidebarMenu,
+  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
@@ -147,43 +165,48 @@ export function ProjectExplorer({
     );
   }
 
+  const appAddToChatLabel = `the app in ${APP_FOLDER_NAMES.src}/`;
+
+  const handleAppAddToChat = () => {
+    appendToPrompt({ key: project.subdomain, update: appAddToChatLabel });
+  };
+
   return (
     <SidebarProvider
-      className="min-h-0 flex-col py-1"
+      className="min-h-0 flex-col py-1 pr-1"
       style={{ "--sidebar-width": "100%" } as React.CSSProperties}
     >
       {showAppEntry && (
-        <SidebarMenu className="px-1">
+        <SidebarMenu>
           <SidebarMenuItem>
-            <div className="group relative flex h-7 w-full items-center">
-              <SidebarMenuButton
-                className={cn(
-                  "h-7 min-w-0 flex-1 gap-1.5 rounded-md px-2 text-xs font-medium",
-                  isAppViewOpen
-                    ? "bg-sidebar-accent text-foreground"
-                    : "text-muted-foreground",
-                )}
-                onClick={onAppSelect}
-              >
-                <Globe className="size-3.5! shrink-0" />
-                <span className="truncate">App</span>
-              </SidebarMenuButton>
-              <div className="absolute right-1 flex shrink-0 items-center opacity-0 transition-opacity group-hover:opacity-100">
-                <ConfirmedIconButton
-                  className="size-5 border border-border/50 bg-background hover:bg-accent! dark:hover:bg-accent!"
-                  icon={MessageSquare}
-                  onClick={() => {
-                    appendToPrompt({
-                      key: project.subdomain,
-                      update: `the app in ${APP_FOLDER_NAMES.src}/ `,
-                    });
-                  }}
-                  successTooltip="Added to chat!"
-                  tooltip="Add to chat"
-                  variant="ghost"
-                />
-              </div>
-            </div>
+            <ContextMenu>
+              <ContextMenuTrigger asChild>
+                <SidebarMenuButton
+                  className={cn(
+                    "h-7 min-w-0 flex-1 gap-1.5 rounded-md px-2 text-xs font-medium",
+                    isAppViewOpen
+                      ? "bg-sidebar-accent text-foreground"
+                      : "text-muted-foreground",
+                  )}
+                  onClick={onAppSelect}
+                >
+                  <Globe className="size-3.5! shrink-0" />
+                  <span className="truncate">App</span>
+                </SidebarMenuButton>
+              </ContextMenuTrigger>
+              <ContextMenuContent>
+                <ContextMenuItem onClick={handleAppAddToChat}>
+                  <MessageSquare className="size-4" />
+                  <span>Add to chat</span>
+                </ContextMenuItem>
+              </ContextMenuContent>
+            </ContextMenu>
+            <ExplorerItemMenu>
+              <DropdownMenuItem onClick={handleAppAddToChat}>
+                <MessageSquare className="size-4" />
+                <span>Add to chat</span>
+              </DropdownMenuItem>
+            </ExplorerItemMenu>
           </SidebarMenuItem>
         </SidebarMenu>
       )}
@@ -242,6 +265,34 @@ export function ProjectExplorer({
   );
 }
 
+function AttachedFolderMenuItems({
+  onAddToChat,
+  onReveal,
+  variant,
+}: {
+  onAddToChat: () => void;
+  onReveal: () => void;
+  variant: "context" | "dropdown";
+}) {
+  const Item = variant === "context" ? ContextMenuItem : DropdownMenuItem;
+  const Separator =
+    variant === "context" ? ContextMenuSeparator : DropdownMenuSeparator;
+
+  return (
+    <>
+      <Item onClick={onAddToChat}>
+        <MessageSquare className="size-4" />
+        <span>Add to chat</span>
+      </Item>
+      <Separator />
+      <Item onClick={onReveal}>
+        <FolderOpen className="size-4" />
+        <span>{getRevealInFolderLabel()}</span>
+      </Item>
+    </>
+  );
+}
+
 function AttachedFolderRow({
   folder,
   projectSubdomain,
@@ -251,11 +302,20 @@ function AttachedFolderRow({
 }) {
   const appendToPrompt = useSetAtom(appendToPromptAtom);
 
+  const revealMutation = useMutation(
+    rpcClient.utils.showFileInFolder.mutationOptions({
+      onError: (error) => {
+        toast.error(`Failed to ${getRevealInFolderLabel().toLowerCase()}`, {
+          description: error.message,
+        });
+      },
+    }),
+  );
+
   const handleClick = async () => {
     const [error] = await safe(
       rpcClient.utils.openFolder.call({ folderPath: folder.path }),
     );
-
     if (error) {
       toast.error("Failed to open folder", { description: error.message });
     }
@@ -264,25 +324,30 @@ function AttachedFolderRow({
   const handleAddToChat = () => {
     appendToPrompt({
       key: projectSubdomain,
-      update: `the attached folder "${folder.name}" `,
+      update: `the attached folder "${folder.name}"`,
     });
+  };
+
+  const handleReveal = () => {
+    revealMutation.mutate({ filepath: folder.path });
   };
 
   return (
     <SidebarMenuItem>
-      <div className="group relative flex h-6 w-full items-center transition-colors hover:before:absolute hover:before:inset-y-0 hover:before:right-0 hover:before:-left-[100vw] hover:before:bg-sidebar-accent hover:before:content-['']">
+      <ContextMenu>
         <Tooltip delayDuration={400} disableHoverableContent>
           <TooltipTrigger asChild>
-            <button
-              className="relative z-10 flex h-full min-w-0 flex-1 items-center gap-1.5 px-2 text-left"
-              onClick={() => void handleClick()}
-              type="button"
-            >
-              <FolderClosed className="size-3.5 shrink-0 text-muted-foreground" />
-              <span className="truncate text-xs text-foreground/80">
-                {folder.name}
-              </span>
-            </button>
+            <ContextMenuTrigger asChild>
+              <SidebarMenuButton
+                className="h-7 gap-1.5 px-2 text-xs"
+                onClick={() => void handleClick()}
+              >
+                <FolderClosed className="size-3.5 shrink-0 text-muted-foreground" />
+                <span className="truncate text-foreground/80">
+                  {folder.name}
+                </span>
+              </SidebarMenuButton>
+            </ContextMenuTrigger>
           </TooltipTrigger>
           <TooltipContent className="max-w-64" side="left" sideOffset={8}>
             <p>{getRevealInFolderLabel()}</p>
@@ -291,17 +356,21 @@ function AttachedFolderRow({
             </p>
           </TooltipContent>
         </Tooltip>
-        <div className="relative z-10 flex shrink-0 items-center pr-1 opacity-0 transition-opacity group-hover:opacity-100">
-          <ConfirmedIconButton
-            className="size-5 border border-border/50 bg-background hover:bg-accent! dark:hover:bg-accent!"
-            icon={MessageSquare}
-            onClick={handleAddToChat}
-            successTooltip="Added to chat!"
-            tooltip="Add to chat"
-            variant="ghost"
+        <ContextMenuContent>
+          <AttachedFolderMenuItems
+            onAddToChat={handleAddToChat}
+            onReveal={handleReveal}
+            variant="context"
           />
-        </div>
-      </div>
+        </ContextMenuContent>
+      </ContextMenu>
+      <ExplorerItemMenu>
+        <AttachedFolderMenuItems
+          onAddToChat={handleAddToChat}
+          onReveal={handleReveal}
+          variant="dropdown"
+        />
+      </ExplorerItemMenu>
     </SidebarMenuItem>
   );
 }
@@ -337,6 +406,22 @@ function buildTree(files: ProjectFileViewerFile[]): FileTreeNode[] {
   return root;
 }
 
+function ExplorerItemMenu({ children }: { children: React.ReactNode }) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <SidebarMenuAction showOnHover>
+          <MoreVertical />
+          <span className="sr-only">More</span>
+        </SidebarMenuAction>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" side="bottom">
+        {children}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 function FileRow({
   file,
   isActive,
@@ -349,66 +434,69 @@ function FileRow({
   const appendToPrompt = useSetAtom(appendToPromptAtom);
 
   const handleAddToChat = () => {
-    appendToPrompt({ key: file.projectSubdomain, update: `${file.filePath} ` });
+    appendToPrompt({
+      key: file.projectSubdomain,
+      update: file.filePath,
+    });
   };
 
   return (
-    <div
-      className={cn(
-        "group relative flex h-6 w-full items-center transition-colors",
-        isActive
-          ? "text-foreground before:absolute before:inset-y-0 before:right-0 before:-left-[100vw] before:bg-sidebar-accent before:content-['']"
-          : "hover:before:absolute hover:before:inset-y-0 hover:before:right-0 hover:before:-left-[100vw] hover:before:bg-sidebar-accent hover:before:content-['']",
-      )}
-    >
-      <Tooltip delayDuration={400} disableHoverableContent>
-        <TooltipTrigger asChild>
-          <button
-            className="relative z-10 flex h-full min-w-0 flex-1 items-center gap-1.5 px-2 text-left"
-            onClick={onClick}
-            type="button"
-          >
-            <FileIcon
-              className="size-3.5 shrink-0 text-muted-foreground"
-              filename={file.filename}
-              mimeType={file.mimeType}
-            />
-            <span className="truncate text-xs text-foreground/80">
-              {file.filename}
-            </span>
-          </button>
-        </TooltipTrigger>
-        {isActive ? (
-          <TooltipContent side="left" sideOffset={8}>
-            <p className="text-xs break-all">{file.filePath}</p>
-          </TooltipContent>
-        ) : (
-          <TooltipContent
-            align="end"
-            arrow={
-              <div className="border-x-[5px] border-t-[5px] border-x-transparent border-t-border" />
-            }
-            arrowPadding={8}
-            className="w-96 overflow-visible rounded-lg bg-transparent p-0 shadow-md"
-            side="left"
-            sideOffset={8}
-          >
-            <FilePreviewCard file={file} hideActionsMenu onClick={onClick} />
-          </TooltipContent>
-        )}
-      </Tooltip>
-
-      <div className="relative z-10 flex shrink-0 items-center pr-1 opacity-0 transition-opacity group-hover:opacity-100">
-        <ConfirmedIconButton
-          className="size-5 border border-border/50 bg-background hover:bg-accent! dark:hover:bg-accent!"
-          icon={MessageSquare}
-          onClick={handleAddToChat}
-          successTooltip="Added to chat!"
-          tooltip="Add to chat"
-          variant="ghost"
+    <SidebarMenuItem>
+      <ContextMenu>
+        <Tooltip delayDuration={400} disableHoverableContent>
+          <TooltipTrigger asChild>
+            <ContextMenuTrigger asChild>
+              <SidebarMenuButton
+                className="h-7 gap-1.5 px-2 text-xs"
+                isActive={isActive}
+                onClick={onClick}
+              >
+                <FileIcon
+                  className="size-3.5 shrink-0 text-muted-foreground"
+                  filename={file.filename}
+                  mimeType={file.mimeType}
+                />
+                <span className="truncate text-foreground/80">
+                  {file.filename}
+                </span>
+              </SidebarMenuButton>
+            </ContextMenuTrigger>
+          </TooltipTrigger>
+          {isActive ? (
+            <TooltipContent side="left" sideOffset={8}>
+              <p className="text-xs break-all">{file.filePath}</p>
+            </TooltipContent>
+          ) : (
+            <TooltipContent
+              align="end"
+              arrow={
+                <div className="border-x-[5px] border-t-[5px] border-x-transparent border-t-border" />
+              }
+              arrowPadding={8}
+              className="w-96 overflow-visible rounded-lg bg-transparent p-0 shadow-md"
+              side="left"
+              sideOffset={8}
+            >
+              <FilePreviewCard file={file} hideActionsMenu onClick={onClick} />
+            </TooltipContent>
+          )}
+        </Tooltip>
+        <ContextMenuContent>
+          <FileActionsMenuItems
+            file={file}
+            onAddToChat={handleAddToChat}
+            variant="context"
+          />
+        </ContextMenuContent>
+      </ContextMenu>
+      <ExplorerItemMenu>
+        <FileActionsMenuItems
+          file={file}
+          onAddToChat={handleAddToChat}
+          variant="dropdown"
         />
-      </div>
-    </div>
+      </ExplorerItemMenu>
+    </SidebarMenuItem>
   );
 }
 
@@ -438,7 +526,7 @@ function CollapsibleTreeSection({
       <CollapsibleTrigger asChild>
         <SidebarMenuButton
           className={cn(
-            "h-6 gap-1 px-2 text-xs text-muted-foreground",
+            "h-7 gap-1 px-2 text-xs text-muted-foreground",
             labelClassName,
           )}
         >
@@ -448,7 +536,7 @@ function CollapsibleTreeSection({
         </SidebarMenuButton>
       </CollapsibleTrigger>
       <CollapsibleContent>
-        <ul className="ml-3 flex min-w-0 flex-col border-l border-border/50">
+        <ul className="ml-3 flex min-w-0 flex-col overflow-hidden border-l border-border/50 pl-1">
           {children}
         </ul>
       </CollapsibleContent>
@@ -473,15 +561,13 @@ function TreeNode({
 }) {
   if (node.kind === "file") {
     return (
-      <SidebarMenuItem>
-        <FileRow
-          file={node.file}
-          isActive={node.file.filePath === activeFilePath}
-          onClick={() => {
-            onFileClick(node.file);
-          }}
-        />
-      </SidebarMenuItem>
+      <FileRow
+        file={node.file}
+        isActive={node.file.filePath === activeFilePath}
+        onClick={() => {
+          onFileClick(node.file);
+        }}
+      />
     );
   }
 
