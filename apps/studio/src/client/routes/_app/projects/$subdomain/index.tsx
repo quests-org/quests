@@ -223,6 +223,7 @@ function RouteComponent() {
       rpcClient.workspace.project.git.hasAppModifications.live.check.experimental_liveOptions(
         {
           input: { projectSubdomain: subdomain },
+          placeholderData: keepPreviousData,
         },
       ),
     );
@@ -250,15 +251,15 @@ function RouteComponent() {
     viewFile,
   ]);
 
-  const { data: files, isLoading: isFilesLoading } = useQuery(
+  const { data: files } = useQuery(
     rpcClient.workspace.project.git.live.listFiles.experimental_liveOptions({
       input: { projectSubdomain: subdomain },
       placeholderData: keepPreviousData,
     }),
   );
 
-  const { data: viewFileInfo } = useQuery({
-    ...rpcClient.workspace.project.git.fileInfo.queryOptions({
+  const { data: viewFileInfo } = useQuery(
+    rpcClient.workspace.project.git.fileInfo.queryOptions({
       input: viewFile
         ? {
             filePath: viewFile,
@@ -267,14 +268,9 @@ function RouteComponent() {
           }
         : skipToken,
     }),
-    enabled: !!viewFile,
-  });
+  );
 
-  const isLoading =
-    isProjectLoading ||
-    isProjectStateLoading ||
-    isAppModificationsLoading ||
-    isFilesLoading;
+  const isLoading = isProjectLoading || isProjectStateLoading;
 
   const error = projectError ?? projectStateError;
 
