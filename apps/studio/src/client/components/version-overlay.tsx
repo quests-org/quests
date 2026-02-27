@@ -38,15 +38,16 @@ export function VersionOverlay({
     }),
   );
 
-  const { data: gitRefInfo } = useQuery({
-    ...rpcClient.workspace.project.git.ref.queryOptions({
-      input: {
-        gitRef: versionRef,
-        projectSubdomain,
-      },
+  const { data: gitRefInfo } = useQuery(
+    rpcClient.workspace.project.git.ref.queryOptions({
+      input: versionRef
+        ? {
+            gitRef: versionRef,
+            projectSubdomain,
+          }
+        : skipToken,
     }),
-    enabled: !!versionRef,
-  });
+  );
 
   if (isLoading) {
     return (

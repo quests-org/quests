@@ -3,7 +3,7 @@ import {
   type StoreId,
   type WorkspaceAppProject,
 } from "@quests/workspace/client";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { skipToken, useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { ChevronDown, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -64,13 +64,12 @@ export function ProjectChat({
 
   const messagesQuery = useQuery(
     rpcClient.workspace.message.live.listWithParts.experimental_liveOptions({
-      enabled: !!selectedSessionId,
       input: selectedSessionId
         ? {
             sessionId: selectedSessionId,
             subdomain: project.subdomain,
           }
-        : (undefined as never),
+        : skipToken,
       retry: 1,
     }),
   );

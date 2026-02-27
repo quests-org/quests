@@ -11,7 +11,7 @@ Studio is an Electron app. The renderer is a React 19 app using TanStack Router 
 - React 19: use the newer APIs. Because we behave as a desktop app, we don't use `cursor: pointer` for links.
 - Use shadcn Tailwind colors (e.g. `bg-background`), not raw colors like `bg-white`.
 - `rpcClient` methods can be called with `.call()` but will throw unless wrapped in `import { safe } from "@orpc/client";`. Use `.call()` when imperative outside React.
-- Queries: `useQuery` and `rpcClient.method.name.queryOptions({ input: { ... } })`.
+- Queries: `useQuery` and `rpcClient.method.name.queryOptions({ input: { ... } })`. To conditionally skip, pass `skipToken` as `input`: `rpcClient.foo.queryOptions({ input: value ?? skipToken })`.
 - External links: `<ExternalLink href="..." />` or `rpcClient.utils.openExternalLink`.
 - Use the `cn` helper from `@/client/lib/utils` for conditional or composed Tailwind classes.
 - For types derived from RPC calls, always use `RPCInput` / `RPCOutput` from `@/client/rpc/client` (e.g. `RPCOutput["workspace"]["project"]["list"]`). Never manually redeclare types that can be inferred this way.
