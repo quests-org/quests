@@ -27,8 +27,7 @@ import {
   MessageSquare,
   MoreVertical,
 } from "lucide-react";
-import * as React from "react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { rpcClient } from "../rpc/client";
@@ -130,6 +129,7 @@ export function ProjectExplorer({
 
     return {
       allFiles,
+      hiddenFiles,
       hiddenTree: buildTree(hiddenFiles),
       tree: buildTree(visibleFiles),
       visibleFiles,
@@ -246,6 +246,9 @@ export function ProjectExplorer({
         {computed.hiddenTree.length > 0 && (
           <SidebarMenuItem>
             <CollapsibleTreeSection
+              forceOpen={computed.hiddenFiles.some(
+                (f) => f.filePath === activeFilePath,
+              )}
               label="Other Files"
               labelClassName="text-muted-foreground/60"
             >
@@ -508,20 +511,31 @@ const DIR_RANK: Record<string, number> = {
 function CollapsibleTreeSection({
   children,
   defaultOpen = false,
+  forceOpen,
   icon: Icon,
   label,
   labelClassName,
 }: {
   children: React.ReactNode;
   defaultOpen?: boolean;
+  forceOpen?: boolean;
   icon?: LucideIcon;
   label: string;
   labelClassName?: string;
 }) {
+  const [open, setOpen] = useState(defaultOpen || (forceOpen ?? false));
+  const [prevForceOpen, setPrevForceOpen] = useState(forceOpen);
+
+  if (forceOpen && forceOpen !== prevForceOpen) {
+    setPrevForceOpen(forceOpen);
+    setOpen(true);
+  }
+
   return (
     <Collapsible
       className="group/collapsible [&[data-state=open]>button>svg:first-child]:rotate-90"
-      defaultOpen={defaultOpen}
+      onOpenChange={setOpen}
+      open={open}
     >
       <CollapsibleTrigger asChild>
         <SidebarMenuButton
@@ -542,6 +556,25 @@ function CollapsibleTreeSection({
       </CollapsibleContent>
     </Collapsible>
   );
+}
+
+function dirContainsActive(
+  node: Extract<FileTreeNode, { kind: "dir" }>,
+  activeFilePath: null | string,
+): boolean {
+  if (!activeFilePath) {
+    return false;
+  }
+  for (const child of node.children) {
+    if (child.kind === "file") {
+      if (child.file.filePath === activeFilePath) {
+        return true;
+      }
+    } else if (dirContainsActive(child, activeFilePath)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 function rankTreeNode(node: FileTreeNode) {
@@ -571,9 +604,15 @@ function TreeNode({
     );
   }
 
+  const containsActive = dirContainsActive(node, activeFilePath);
+
   return (
     <SidebarMenuItem>
-      <CollapsibleTreeSection defaultOpen={defaultOpen} label={node.name}>
+      <CollapsibleTreeSection
+        defaultOpen={defaultOpen}
+        forceOpen={containsActive}
+        label={node.name}
+      >
         {node.children.map((child, i) => (
           <TreeNode
             activeFilePath={activeFilePath}
