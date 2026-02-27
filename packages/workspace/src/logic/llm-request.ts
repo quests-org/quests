@@ -480,7 +480,7 @@ export const llmRequestLogic = fromPromise<
                 errorText,
                 input:
                   toolCall.state === "input-streaming"
-                    ? (undefined as never)
+                    ? undefined
                     : toolCall.input,
                 metadata: {
                   ...toolCall.metadata,
