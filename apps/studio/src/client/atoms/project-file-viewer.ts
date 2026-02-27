@@ -24,7 +24,7 @@ const initialState: ProjectFileViewerState = {
 
 export const projectFileViewerAtom = atom<ProjectFileViewerState>(initialState);
 
-export const setFileViewerGalleryAtom = atom(
+export const openFileViewerAtom = atom(
   null,
   (
     _get,

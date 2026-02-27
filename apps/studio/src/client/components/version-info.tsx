@@ -1,13 +1,7 @@
-import {
-  type ProjectFileViewerFile,
-  setFileViewerGalleryAtom,
-} from "@/client/atoms/project-file-viewer";
-import { getAssetUrl } from "@/client/lib/get-asset-url";
 import { type ProjectSubdomain } from "@quests/workspace/client";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import ColorHash from "color-hash";
-import { useSetAtom } from "jotai";
 import { GitCommitVertical } from "lucide-react";
 import { useMemo, useState } from "react";
 
@@ -86,7 +80,6 @@ export function VersionFileChanges({
   versionRef,
 }: VersionFileChangesProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const setGallery = useSetAtom(setFileViewerGalleryAtom);
   const navigate = useNavigate({ from: "/projects/$subdomain" });
 
   const { data: gitRefInfo, isLoading } = useQuery(
@@ -121,34 +114,10 @@ export function VersionFileChanges({
       return;
     }
 
-    const clickableFiles = gitRefInfo.files.filter(
-      (f) => f.status !== "deleted",
-    );
-    const clickedFileIndex = clickableFiles.findIndex(
-      (f) => f.filePath === file.filePath,
-    );
-
-    const projectFiles: ProjectFileViewerFile[] = clickableFiles.map((f) => ({
-      filename: f.filename,
-      filePath: f.filePath,
-      mimeType: f.mimeType,
-      projectSubdomain,
-      url: getAssetUrl({
-        assetBase: assetBaseUrl,
-        filePath: f.filePath,
-        versionRef,
-      }),
-      versionRef,
-    }));
-
-    setGallery({
-      currentIndex: clickedFileIndex === -1 ? 0 : clickedFileIndex,
-      files: projectFiles,
-    });
     void navigate({
       search: (prev) => ({
         ...prev,
-        view: undefined,
+        view: "file",
         viewFile: file.filePath,
         viewFileVersion: versionRef || undefined,
       }),

@@ -1,13 +1,9 @@
-import {
-  type ProjectFileViewerFile,
-  setFileViewerGalleryAtom,
-} from "@/client/atoms/project-file-viewer";
+import { type ProjectFileViewerFile } from "@/client/atoms/project-file-viewer";
 import { getFileType, isReadableText } from "@/client/lib/get-file-type";
 import { cn } from "@/client/lib/utils";
 import { APP_FOLDER_NAMES } from "@quests/workspace/client";
 import { type SessionMessageDataPart } from "@quests/workspace/client";
 import { useNavigate } from "@tanstack/react-router";
-import { useSetAtom } from "jotai";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { fork } from "radashi";
 import { useState } from "react";
@@ -37,7 +33,6 @@ export function FilesGrid({
   initialVisibleCount = DEFAULT_INITIAL_VISIBLE_COUNT,
   prioritizeUserFiles = false,
 }: FilesGridProps) {
-  const setGallery = useSetAtom(setFileViewerGalleryAtom);
   const navigate = useNavigate({ from: "/projects/$subdomain" });
   const [isExpanded, setIsExpanded] = useState(false);
   const [isScriptsExpanded, setIsScriptsExpanded] = useState(false);
@@ -60,19 +55,11 @@ export function FilesGrid({
   const sortedRegularFiles = sortByRichPreview(regularFiles);
   const sortedUserProvidedFiles = sortByRichPreview(userProvidedFiles);
 
-  const handleFileClick = (
-    file: ProjectFileViewerFile,
-    galleryFiles: ProjectFileViewerFile[],
-  ) => {
-    const currentIndex = galleryFiles.findIndex((f) => f.url === file.url);
-    setGallery({
-      currentIndex: currentIndex === -1 ? 0 : currentIndex,
-      files: galleryFiles,
-    });
+  const handleFileClick = (file: ProjectFileViewerFile) => {
     void navigate({
       search: (prev) => ({
         ...prev,
-        view: undefined,
+        view: "file",
         viewFile: file.filePath,
         viewFileVersion: file.versionRef || undefined,
       }),
@@ -82,8 +69,6 @@ export function FilesGrid({
   const mainFiles = prioritizeUserFiles
     ? [...sortedUserProvidedFiles, ...sortedOutputFiles, ...sortedRegularFiles]
     : [...sortedOutputFiles, ...sortedRegularFiles];
-
-  const mainGalleryFiles = mainFiles;
 
   const visibleMainFiles = mainFiles.slice(0, initialVisibleCount);
   const collapsedUserProvidedFiles = prioritizeUserFiles
@@ -141,7 +126,7 @@ export function FilesGrid({
                   <FilePreviewCard
                     file={file}
                     onClick={() => {
-                      handleFileClick(file, mainGalleryFiles);
+                      handleFileClick(file);
                     }}
                   />
                 </div>
@@ -168,7 +153,7 @@ export function FilesGrid({
               <FilePreviewListItem
                 file={file}
                 onClick={() => {
-                  handleFileClick(file, mainGalleryFiles);
+                  handleFileClick(file);
                 }}
               />
             </div>
