@@ -16,6 +16,7 @@ import {
 } from "@/client/components/ui/resizable";
 import { VersionList } from "@/client/components/version-list";
 import { VersionOverlay } from "@/client/components/version-overlay";
+import { useCollapsiblePanel } from "@/client/hooks/use-collapsible-panel";
 import { useReload } from "@/client/hooks/use-reload";
 import { hasVisibleProjectFiles } from "@/client/lib/project-file-groups";
 import { cn } from "@/client/lib/utils";
@@ -28,8 +29,7 @@ import {
 import { useNavigate } from "@tanstack/react-router";
 import { useAtomValue, useSetAtom } from "jotai";
 import { X } from "lucide-react";
-import { Activity, useCallback, useEffect, useMemo } from "react";
-import { usePanelRef } from "react-resizable-panels";
+import { Activity, useCallback, useMemo } from "react";
 
 const RESIZABLE_HANDLE_CLASS =
   "bg-transparent transition-all duration-200 focus-visible:ring-0 focus-visible:ring-offset-0 data-[separator='active']:bg-primary/50 data-[separator='hover']:scale-x-[3] data-[separator='hover']:bg-muted-foreground";
@@ -151,8 +151,17 @@ export function ProjectView({
     [files],
   );
 
-  const panelRef = usePanelRef();
-  const filesPanelRef = usePanelRef();
+  const panelRef = useCollapsiblePanel({
+    collapsed: sidebarCollapsed,
+    onCollapsedChange: setSidebarCollapsed,
+    toastMessage: "Make the window wider to show the chat panel.",
+  });
+
+  const filesPanelRef = useCollapsiblePanel({
+    collapsed: filesPanelCollapsed,
+    onCollapsedChange: setFilesPanelCollapsed,
+    toastMessage: "Make the window wider to show the files panel.",
+  });
 
   const handleVersionsToggle = useCallback(() => {
     void navigate({
@@ -173,32 +182,6 @@ export function ProjectView({
       }
     }, [isViewingApp]),
   );
-
-  useEffect(() => {
-    const panel = panelRef.current;
-    if (!panel) {
-      return;
-    }
-
-    if (sidebarCollapsed) {
-      panel.collapse();
-    } else {
-      panel.expand();
-    }
-  }, [sidebarCollapsed, panelRef]);
-
-  useEffect(() => {
-    const panel = filesPanelRef.current;
-    if (!panel) {
-      return;
-    }
-
-    if (filesPanelCollapsed) {
-      panel.collapse();
-    } else {
-      panel.expand();
-    }
-  }, [filesPanelCollapsed, filesPanelRef]);
 
   const sidebarProps = {
     isViewingApp,
