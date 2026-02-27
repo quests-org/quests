@@ -1,4 +1,7 @@
 {
+  // PATH is prepended with node_modules/.bin in configs below so that pnpm bin
+  // shims resolve "node" to the version installed by pnpm (via devEngines.runtime)
+  // rather than the system/shell default.
   "compounds": [
     {
       "configurations": ["Debug Studio Main Process", "Dev Shim Client"],
@@ -50,6 +53,7 @@
       "cwd": "${workspaceRoot}/apps/studio",
       "env": {
         "NODE_OPTIONS": "--enable-source-maps",
+        "PATH": "${workspaceRoot}/node_modules/.bin:${env:PATH}",
         "REMOTE_DEBUGGING_PORT": "9160"
       },
       "internalConsoleOptions": "openOnFirstSessionStart",
@@ -67,6 +71,7 @@
       "env": {
         "ELECTRON_USE_NEW_USER_FOLDER": "true",
         "NODE_OPTIONS": "--enable-source-maps",
+        "PATH": "${workspaceRoot}/node_modules/.bin:${env:PATH}",
         "REMOTE_DEBUGGING_PORT": "9160"
       },
       "internalConsoleOptions": "openOnFirstSessionStart",
@@ -92,6 +97,9 @@
     },
     {
       "cwd": "${workspaceRoot}/packages/shim-client",
+      "env": {
+        "PATH": "${workspaceRoot}/node_modules/.bin:${env:PATH}"
+      },
       "internalConsoleOptions": "neverOpen",
       "name": "Dev Shim Client",
       "request": "launch",
@@ -114,7 +122,8 @@
       "console": "integratedTerminal",
       "cwd": "${workspaceFolder}/packages/workspace",
       "env": {
-        "NODE_ENV": "development"
+        "NODE_ENV": "development",
+        "PATH": "${workspaceRoot}/node_modules/.bin:${env:PATH}"
       },
       "name": "Debug Workspace CLI",
       "program": "${workspaceFolder}/packages/workspace/scripts/run-workspace.ts",
@@ -130,7 +139,8 @@
       "console": "integratedTerminal",
       "cwd": "${workspaceFolder}/packages/workspace",
       "env": {
-        "NODE_ENV": "development"
+        "NODE_ENV": "development",
+        "PATH": "${workspaceRoot}/node_modules/.bin:${env:PATH}"
       },
       "name": "Debug Workspace CLI Watch Mode",
       "program": "${workspaceFolder}/packages/workspace/scripts/run-workspace.ts",
@@ -148,6 +158,7 @@
       "name": "Debug Test Current File",
       "program": "${workspaceRoot}/node_modules/vitest/vitest.mjs",
       "request": "launch",
+      "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/node",
       "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
       "smartStep": true,
       "type": "node"

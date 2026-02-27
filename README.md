@@ -63,7 +63,6 @@ Quests is organized as a monorepo with the following structure:
 
 You'll need:
 
-- **[Node.js](https://nodejs.org/)** ≥ 22.16.0
 - **[pnpm](https://pnpm.io/)**
 
 Then:
@@ -73,10 +72,14 @@ Then:
 git clone --recursive https://github.com/quests-org/quests.git
 cd quests
 
-# Install dependencies
+# Install dependencies and Node version used for project
 pnpm install
 
-# Start the studio in development mode
+# Open VSCode/Cursor and use the debugger to start the Studio
+# debug 🐛 Studio
+# View ./.cursor/launch.json for more launch options
+
+# Or, start the studio in the terminal with:
 pnpm dev:studio
 ```
 

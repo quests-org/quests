@@ -126,6 +126,9 @@ importers:
       markdownlint-cli:
         specifier: ^0.45.0
         version: 0.45.0
+      node:
+        specifier: runtime:22.21.1
+        version: runtime:22.21.1
       prettier:
         specifier: ^3.6.2
         version: 3.6.2
@@ -6946,6 +6949,115 @@ packages:
     resolution: {integrity: sha512-cf+iXXJ9Foz4hBIu+eNNeg207ac6XruA9I9DXEs+jCxeS9t/k9T0GZK8NZngPwkv+P26i3zNFj9jxJU2v3pJnw==}
     engines: {node: '>=8'}
 
+  node@runtime:22.21.1:
+    resolution:
+      type: variations
+      variants:
+        - resolution:
+            archive: tarball
+            bin: bin/node
+            integrity: sha256-nk72dIu8Vefev3klKaEIvCY1hZ9M5G0HdWaLJ8xcx1A=
+            type: binary
+            url: https://nodejs.org/download/release/v22.21.1/node-v22.21.1-aix-ppc64.tar.gz
+          targets:
+            - cpu: ppc64
+              os: aix
+        - resolution:
+            archive: tarball
+            bin: bin/node
+            integrity: sha256-wXDWVU+6g9QdJads262FSHwHflH6c1GeQayIWqQp2K8=
+            type: binary
+            url: https://nodejs.org/download/release/v22.21.1/node-v22.21.1-darwin-arm64.tar.gz
+          targets:
+            - cpu: arm64
+              os: darwin
+        - resolution:
+            archive: tarball
+            bin: bin/node
+            integrity: sha256-jj3IlhTevmbCpq0jE6GtsG6zfbbNbEDX3m99mH99Gv0=
+            type: binary
+            url: https://nodejs.org/download/release/v22.21.1/node-v22.21.1-darwin-x64.tar.gz
+          targets:
+            - cpu: x64
+              os: darwin
+        - resolution:
+            archive: tarball
+            bin: bin/node
+            integrity: sha256-yGgw3t93+JQfqmxanIY7390ZJ6M2pGlD3swGo4+Av7I=
+            type: binary
+            url: https://nodejs.org/download/release/v22.21.1/node-v22.21.1-linux-arm64.tar.gz
+          targets:
+            - cpu: arm64
+              os: linux
+        - resolution:
+            archive: tarball
+            bin: bin/node
+            integrity: sha256-QNPQmu5VarwpfdeChk/Ma55grNQ4/wZgup3c1WnACSA=
+            type: binary
+            url: https://nodejs.org/download/release/v22.21.1/node-v22.21.1-linux-armv7l.tar.gz
+          targets:
+            - cpu: armv7l
+              os: linux
+        - resolution:
+            archive: tarball
+            bin: bin/node
+            integrity: sha256-sk9MGdVUbNQYZ06DveVtUKfCtl+ux6ZcNQLyhe6zqnA=
+            type: binary
+            url: https://nodejs.org/download/release/v22.21.1/node-v22.21.1-linux-ppc64le.tar.gz
+          targets:
+            - cpu: ppc64le
+              os: linux
+        - resolution:
+            archive: tarball
+            bin: bin/node
+            integrity: sha256-fEa9SlErNfA6y5crKwT+zC1MR+NQaauajdXNjwCRGVo=
+            type: binary
+            url: https://nodejs.org/download/release/v22.21.1/node-v22.21.1-linux-s390x.tar.gz
+          targets:
+            - cpu: s390x
+              os: linux
+        - resolution:
+            archive: tarball
+            bin: bin/node
+            integrity: sha256-IZoVLqhZhh11repXi97D3OgUOFPBPFGH9AxA53sBQ7I=
+            type: binary
+            url: https://nodejs.org/download/release/v22.21.1/node-v22.21.1-linux-x64.tar.gz
+          targets:
+            - cpu: x64
+              os: linux
+        - resolution:
+            archive: zip
+            bin: node.exe
+            integrity: sha256-udf6rNC1QLi0ZkDbyPVvQgX/Y7ed7HANTwPTZZGwMY8=
+            prefix: node-v22.21.1-win-arm64
+            type: binary
+            url: https://nodejs.org/download/release/v22.21.1/node-v22.21.1-win-arm64.zip
+          targets:
+            - cpu: arm64
+              os: win32
+        - resolution:
+            archive: zip
+            bin: node.exe
+            integrity: sha256-PGJOn74H4yF1UuxSoPhOK9wub/pzSPP9+5+/j0LiP88=
+            prefix: node-v22.21.1-win-x64
+            type: binary
+            url: https://nodejs.org/download/release/v22.21.1/node-v22.21.1-win-x64.zip
+          targets:
+            - cpu: x64
+              os: win32
+        - resolution:
+            archive: zip
+            bin: node.exe
+            integrity: sha256-/K279FdbtlSulN5TKOd+Mj/zzqY2ByXQc7pW4sl1PlI=
+            prefix: node-v22.21.1-win-x86
+            type: binary
+            url: https://nodejs.org/download/release/v22.21.1/node-v22.21.1-win-x86.zip
+          targets:
+            - cpu: x86
+              os: win32
+    version: 22.21.1
+    hasBin: true
+
   nopt@6.0.0:
     resolution: {integrity: sha512-ZwLpbTgdhuZUnZzjd7nb1ZV+4DoiC6/sfiVKok72ym/4Tlf+DFdlHYmT2JPmcNNWV6Pi3SDf1kT+A4r9RTuT9g==}
     engines: {node: ^12.13.0 || ^14.15.0 || >=16.0.0}
@@ -11969,14 +12081,14 @@ snapshots:
       msw: 2.7.5(@types/node@22.19.2)(typescript@5.9.3)
       vite: 7.2.7(@types/node@22.19.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.39.0)(tsx@4.20.3)(yaml@2.8.1)
 
-  '@vitest/mocker@3.2.4(msw@2.7.5(@types/node@25.3.1)(typescript@5.9.2))(vite@7.2.7(@types/node@22.19.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.39.0)(tsx@4.20.3)(yaml@2.8.1))':
+  '@vitest/mocker@3.2.4(msw@2.7.5(@types/node@25.3.1)(typescript@5.9.2))(vite@7.2.7(@types/node@25.3.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.39.0)(tsx@4.20.3)(yaml@2.8.1))':
     dependencies:
       '@vitest/spy': 3.2.4
       estree-walker: 3.0.3
       magic-string: 0.30.21
     optionalDependencies:
       msw: 2.7.5(@types/node@25.3.1)(typescript@5.9.2)
-      vite: 7.2.7(@types/node@22.19.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.39.0)(tsx@4.20.3)(yaml@2.8.1)
+      vite: 7.2.7(@types/node@25.3.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.39.0)(tsx@4.20.3)(yaml@2.8.1)
     optional: true
 
   '@vitest/pretty-format@3.2.4':
@@ -15910,6 +16022,8 @@ snapshots:
       '@types/pegjs': 0.10.6
       big-integer: 1.6.52
 
+  node@runtime:22.21.1: {}
+
   nopt@6.0.0:
     dependencies:
       abbrev: 1.1.1
@@ -17970,7 +18084,7 @@ snapshots:
     dependencies:
       '@types/chai': 5.2.2
       '@vitest/expect': 3.2.4
-      '@vitest/mocker': 3.2.4(msw@2.7.5(@types/node@25.3.1)(typescript@5.9.2))(vite@7.2.7(@types/node@22.19.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.39.0)(tsx@4.20.3)(yaml@2.8.1))
+      '@vitest/mocker': 3.2.4(msw@2.7.5(@types/node@25.3.1)(typescript@5.9.2))(vite@7.2.7(@types/node@25.3.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.39.0)(tsx@4.20.3)(yaml@2.8.1))
       '@vitest/pretty-format': 3.2.4
       '@vitest/runner': 3.2.4
       '@vitest/snapshot': 3.2.4

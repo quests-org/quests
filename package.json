@@ -84,6 +84,13 @@
   "publishConfig": {
     "provenance": true
   },
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "onFail": "download",
+      "version": "22.21.1"
+    }
+  },
   "overrides": {
     "@types/node": "22.19.2"
   }
