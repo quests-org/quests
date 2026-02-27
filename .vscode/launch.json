@@ -86,11 +86,13 @@
     },
     {
       "name": "Debug Studio Renderer Process",
+      "perScriptSourcemaps": "yes", // Needed for TanStack Router
       "port": 9160,
       "presentation": {
         "hidden": true
       },
       "request": "attach",
+      "sourceMaps": true,
       "timeout": 60000,
       "type": "chrome",
       "webRoot": "${workspaceRoot}/apps/studio/src"
