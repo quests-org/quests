@@ -67,17 +67,17 @@ const EDITOR_ICON_MAP: Record<
 interface ProjectHeaderToolbarProps {
   project: WorkspaceAppProject;
   selectedSessionId?: StoreId.Session;
-  selectedVersion?: string;
   showChatToggle: boolean;
   showFilesToggle: boolean;
+  versionRef?: string;
 }
 
 export function ProjectHeaderToolbar({
   project,
   selectedSessionId,
-  selectedVersion,
   showChatToggle,
   showFilesToggle,
+  versionRef,
 }: ProjectHeaderToolbarProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useAtom(
     projectSidebarCollapsedAtomFamily(project.subdomain),
@@ -114,7 +114,7 @@ export function ProjectHeaderToolbar({
       from: "/projects/$subdomain",
       params: { subdomain: project.subdomain },
       replace: true,
-      search: (prev) => ({ ...prev, selectedVersion: undefined }),
+      search: (prev) => ({ ...prev, panel: { type: "app" as const } }),
     });
   };
 
@@ -210,7 +210,7 @@ export function ProjectHeaderToolbar({
               </Tooltip>
             )}
 
-            {selectedVersion ? (
+            {versionRef ? (
               <div className="flex shrink-0 items-center gap-2">
                 <Button
                   onClick={handleExitVersion}
@@ -339,7 +339,7 @@ export function ProjectHeaderToolbar({
         project={project}
       />
 
-      {selectedVersion && (
+      {versionRef && (
         <RestoreVersionModal
           isOpen={restoreModalOpen}
           onClose={() => {
@@ -350,7 +350,7 @@ export function ProjectHeaderToolbar({
             setRestoreModalOpen(false);
           }}
           projectSubdomain={project.subdomain}
-          versionRef={selectedVersion}
+          versionRef={versionRef}
         />
       )}
 

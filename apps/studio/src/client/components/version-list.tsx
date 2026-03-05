@@ -19,12 +19,12 @@ export function VersionList({
   filterByPath,
   isViewingApp = false,
   projectSubdomain,
-  selectedVersion,
+  versionRef,
 }: {
   filterByPath?: string;
   isViewingApp?: boolean;
   projectSubdomain: ProjectSubdomain;
-  selectedVersion?: string;
+  versionRef?: string;
 }) {
   const [, forceUpdate] = useState({});
 
@@ -93,7 +93,7 @@ export function VersionList({
         // Render current working copy if last version instead of ref
         const isLast = index === 0;
         const isSelected =
-          selectedVersion === commit.hash || (isLast && !selectedVersion);
+          versionRef === commit.hash || (isLast && !versionRef);
 
         const colorHash = new ColorHash();
         const hashColor = colorHash.hex(commit.hash);
@@ -106,7 +106,10 @@ export function VersionList({
             params={{ subdomain: projectSubdomain }}
             search={(prev) => ({
               ...prev,
-              selectedVersion: isLast ? undefined : commit.hash,
+              panel: {
+                type: "app" as const,
+                versionRef: isLast ? undefined : commit.hash,
+              },
             })}
           >
             <div

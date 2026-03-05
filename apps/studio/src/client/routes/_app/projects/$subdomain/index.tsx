@@ -8,6 +8,7 @@ import { rpcClient } from "@/client/rpc/client";
 import { createIconMeta, createProjectSubdomainMeta } from "@/shared/tabs";
 import { safe } from "@orpc/client";
 import {
+  type ProjectSubdomain,
   ProjectSubdomainSchema,
   StoreId,
   type WorkspaceAppProject,
@@ -24,20 +25,29 @@ import {
   redirect,
   useNavigate,
 } from "@tanstack/react-router";
-import { useEffect } from "react";
 import { z } from "zod";
 
+const panelSchema = z.discriminatedUnion("type", [
+  z.object({ type: z.literal("app"), versionRef: z.string().optional() }),
+  z.object({
+    filePath: z.string(),
+    fileVersion: z.string().optional(),
+    type: z.literal("file"),
+  }),
+]);
+
 const projectSearchSchema = z.object({
+  panel: panelSchema.optional(),
   selectedSessionId: StoreId.SessionSchema.optional(),
-  selectedVersion: z.string().optional(),
   showDelete: z.boolean().optional(),
   showDuplicate: z.boolean().optional(),
   showSettings: z.boolean().optional(),
   showVersions: z.boolean().optional(),
-  view: z.enum(["app", "file", "none"]).optional(),
-  viewFile: z.string().optional(),
-  viewFileVersion: z.string().optional(),
 });
+
+// No known lifecycle method in TanStack Router to track when the param changes
+// so we do it with a global variable.
+let LAST_SUBDOMAIN: ProjectSubdomain | undefined;
 
 function title(project?: WorkspaceAppProject) {
   return project?.title ?? "Not Found";
@@ -60,15 +70,24 @@ export const Route = createFileRoute("/_app/projects/$subdomain/")({
     // Garbage collect project atoms
     promptValueAtomFamily.remove(params.subdomain);
   },
-  beforeLoad: async ({ params, search }) => {
-    const [error, sessions, isDefined] = await safe(
-      rpcClient.workspace.session.list.call({
-        subdomain: params.subdomain,
-      }),
-    );
+  beforeLoad: async ({ cause, params, search }) => {
+    const isProjectSwitch = params.subdomain !== LAST_SUBDOMAIN;
+    LAST_SUBDOMAIN = params.subdomain;
 
-    if (error) {
-      if (isDefined && error.code === "NOT_FOUND") {
+    const needsSessionDefault = !search.selectedSessionId;
+    const needsPanelDefault =
+      (cause === "enter" || isProjectSwitch) && !search.panel;
+
+    const [sessionError, sessions, isDefined] = needsSessionDefault
+      ? await safe(
+          rpcClient.workspace.session.list.call({
+            subdomain: params.subdomain,
+          }),
+        )
+      : ([null, [], false] as const);
+
+    if (sessionError) {
+      if (isDefined && sessionError.code === "NOT_FOUND") {
         // eslint-disable-next-line @typescript-eslint/only-throw-error
         throw notFound();
       }
@@ -76,46 +95,29 @@ export const Route = createFileRoute("/_app/projects/$subdomain/")({
       return;
     }
 
-    // If no session is selected, get sessions and redirect to the newest one
-    if (!search.selectedSessionId && sessions.length > 0) {
-      const newestSession = sessions.at(-1);
+    const newestSession = sessions.at(-1);
 
-      if (newestSession) {
-        // eslint-disable-next-line @typescript-eslint/only-throw-error
-        throw redirect({
-          params: {
-            subdomain: params.subdomain,
-          },
-          search: (prev) => ({
-            ...prev,
-            selectedSessionId: newestSession.id,
+    const [, hasModifications] = needsPanelDefault
+      ? await safe(
+          rpcClient.workspace.project.git.hasAppModifications.check.call({
+            projectSubdomain: params.subdomain,
           }),
-          to: "/projects/$subdomain",
-        });
-      }
-    }
+        )
+      : ([null, false] as const);
 
-    // If no view is selected, check if the app has modifications and default to app view
-    if (!search.view && !search.viewFile) {
-      const [, hasModifications] = await safe(
-        rpcClient.workspace.project.git.hasAppModifications.check.call({
-          projectSubdomain: params.subdomain,
+    if (newestSession ?? (hasModifications && needsPanelDefault)) {
+      // eslint-disable-next-line @typescript-eslint/only-throw-error
+      throw redirect({
+        params: { subdomain: params.subdomain },
+        search: (prev) => ({
+          ...prev,
+          ...(newestSession ? { selectedSessionId: newestSession.id } : {}),
+          ...(hasModifications && needsPanelDefault
+            ? { panel: { type: "app" as const } }
+            : {}),
         }),
-      );
-
-      if (hasModifications) {
-        // eslint-disable-next-line @typescript-eslint/only-throw-error
-        throw redirect({
-          params: {
-            subdomain: params.subdomain,
-          },
-          search: (prev) => ({
-            ...prev,
-            view: "app" as const,
-          }),
-          to: "/projects/$subdomain",
-        });
-      }
+        to: "/projects/$subdomain",
+      });
     }
   },
   component: RouteComponent,
@@ -145,15 +147,12 @@ export const Route = createFileRoute("/_app/projects/$subdomain/")({
 function RouteComponent() {
   const { subdomain } = Route.useParams();
   const {
+    panel,
     selectedSessionId,
-    selectedVersion,
     showDelete,
     showDuplicate,
     showSettings,
     showVersions,
-    view,
-    viewFile,
-    viewFileVersion,
   } = Route.useSearch();
   const navigate = useNavigate();
 
@@ -218,38 +217,14 @@ function RouteComponent() {
     }),
   );
 
-  const { data: hasAppModifications, isLoading: isAppModificationsLoading } =
-    useQuery(
-      rpcClient.workspace.project.git.hasAppModifications.live.check.experimental_liveOptions(
-        {
-          input: { projectSubdomain: subdomain },
-          placeholderData: keepPreviousData,
-        },
-      ),
-    );
-
-  useEffect(() => {
-    if (
-      !isAppModificationsLoading &&
-      hasAppModifications &&
-      !view &&
-      !viewFile
-    ) {
-      void navigate({
-        from: "/projects/$subdomain",
-        params: { subdomain },
-        replace: true,
-        search: (prev) => ({ ...prev, view: "app" as const }),
-      });
-    }
-  }, [
-    hasAppModifications,
-    isAppModificationsLoading,
-    navigate,
-    subdomain,
-    view,
-    viewFile,
-  ]);
+  const { data: hasAppModifications } = useQuery(
+    rpcClient.workspace.project.git.hasAppModifications.live.check.experimental_liveOptions(
+      {
+        input: { projectSubdomain: subdomain },
+        placeholderData: keepPreviousData,
+      },
+    ),
+  );
 
   const { data: files } = useQuery(
     rpcClient.workspace.project.git.live.listFiles.experimental_liveOptions({
@@ -258,13 +233,15 @@ function RouteComponent() {
     }),
   );
 
+  const filePanel = panel?.type === "file" ? panel : undefined;
+
   const { data: viewFileInfo } = useQuery(
     rpcClient.workspace.project.git.fileInfo.queryOptions({
-      input: viewFile
+      input: filePanel
         ? {
-            filePath: viewFile,
+            filePath: filePanel.filePath,
             projectSubdomain: subdomain,
-            versionRef: viewFileVersion,
+            versionRef: filePanel.fileVersion,
           }
         : skipToken,
     }),
@@ -293,13 +270,11 @@ function RouteComponent() {
         attachedFolders={projectState.attachedFolders}
         files={files}
         hasAppModifications={hasAppModifications ?? false}
+        panel={panel}
         project={project}
         selectedModelURI={projectState.selectedModelURI}
         selectedSessionId={selectedSessionId}
-        selectedVersion={selectedVersion}
         showVersions={showVersions}
-        view={view}
-        viewFile={viewFile}
         viewFileInfo={viewFileInfo}
       />
 

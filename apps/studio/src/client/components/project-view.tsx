@@ -38,33 +38,33 @@ export function ProjectView({
   attachedFolders,
   files,
   hasAppModifications,
+  panel,
   project,
   selectedModelURI,
   selectedSessionId,
-  selectedVersion,
   showVersions,
-  view,
-  viewFile,
   viewFileInfo,
 }: {
   attachedFolders: RPCOutput["workspace"]["project"]["state"]["get"]["attachedFolders"];
   files: RPCOutput["workspace"]["project"]["git"]["listFiles"] | undefined;
   hasAppModifications: boolean;
+  panel:
+    | undefined
+    | { filePath: string; fileVersion?: string; type: "file" }
+    | { type: "app"; versionRef?: string };
   project: WorkspaceAppProject;
   selectedModelURI: AIGatewayModelURI.Type | undefined;
   selectedSessionId?: StoreId.Session;
-  selectedVersion: string | undefined;
   showVersions?: boolean;
-  view: "app" | "file" | "none" | undefined;
-  viewFile: string | undefined;
   viewFileInfo:
     | RPCOutput["workspace"]["project"]["git"]["fileInfo"]
     | undefined;
 }) {
   const navigate = useNavigate();
 
-  const isViewingApp = view === "app";
-  const isViewingFile = view === "file";
+  const isViewingApp = panel?.type === "app";
+  const isViewingFile = panel?.type === "file";
+  const selectedVersion = panel?.type === "app" ? panel.versionRef : undefined;
   const showAppPanel = isViewingApp || isViewingFile;
 
   const currentViewFile = useMemo((): null | ProjectFileViewerFile => {
@@ -85,12 +85,7 @@ export function ProjectView({
       from: "/projects/$subdomain",
       params: { subdomain: project.subdomain },
       replace: true,
-      search: (prev) => ({
-        ...prev,
-        view: "app",
-        viewFile: undefined,
-        viewFileVersion: undefined,
-      }),
+      search: (prev) => ({ ...prev, panel: { type: "app" as const } }),
     });
   }, [isViewingApp, navigate, project.subdomain]);
 
@@ -99,7 +94,7 @@ export function ProjectView({
       from: "/projects/$subdomain",
       params: { subdomain: project.subdomain },
       replace: true,
-      search: (prev) => ({ ...prev, view: "none" }),
+      search: (prev) => ({ ...prev, panel: undefined }),
     });
   }, [navigate, project.subdomain]);
 
@@ -111,9 +106,11 @@ export function ProjectView({
         replace: true,
         search: (prev) => ({
           ...prev,
-          view: "file",
-          viewFile: filePath,
-          viewFileVersion: versionRef || undefined,
+          panel: {
+            filePath,
+            fileVersion: versionRef || undefined,
+            type: "file" as const,
+          },
         }),
       });
     },
@@ -125,12 +122,7 @@ export function ProjectView({
       from: "/projects/$subdomain",
       params: { subdomain: project.subdomain },
       replace: true,
-      search: (prev) => ({
-        ...prev,
-        view: "none" as const,
-        viewFile: undefined,
-        viewFileVersion: undefined,
-      }),
+      search: (prev) => ({ ...prev, panel: undefined }),
     });
   }, [navigate, project.subdomain]);
 
@@ -189,8 +181,8 @@ export function ProjectView({
     project,
     selectedModelURI,
     selectedSessionId,
-    selectedVersion,
     showVersions,
+    versionRef: selectedVersion,
   };
 
   return (
@@ -198,9 +190,9 @@ export function ProjectView({
       <ProjectHeaderToolbar
         project={project}
         selectedSessionId={selectedSessionId}
-        selectedVersion={selectedVersion}
         showChatToggle={showAppPanel || hasAppModifications}
         showFilesToggle={hasProjectFiles}
+        versionRef={selectedVersion}
       />
 
       <ResizablePanelGroup
@@ -216,12 +208,12 @@ export function ProjectView({
               maxSize="50%"
               minSize="24rem"
               onResize={() => {
-                const panel = panelRef.current;
-                if (!panel) {
+                const resizablePanel = panelRef.current;
+                if (!resizablePanel) {
                   return;
                 }
 
-                setSidebarCollapsed(panel.isCollapsed());
+                setSidebarCollapsed(resizablePanel.isCollapsed());
               }}
               panelRef={panelRef}
             >
@@ -243,7 +235,7 @@ export function ProjectView({
                       filterByPath="./src"
                       isViewingApp={isViewingApp}
                       projectSubdomain={project.subdomain}
-                      selectedVersion={selectedVersion}
+                      versionRef={selectedVersion}
                     />
                   </div>
                 </div>
@@ -312,12 +304,12 @@ export function ProjectView({
               maxSize="40%"
               minSize="13rem"
               onResize={() => {
-                const panel = filesPanelRef.current;
-                if (!panel) {
+                const resizablePanel = filesPanelRef.current;
+                if (!resizablePanel) {
                   return;
                 }
 
-                setFilesPanelCollapsed(panel.isCollapsed());
+                setFilesPanelCollapsed(resizablePanel.isCollapsed());
               }}
               panelRef={filesPanelRef}
             >
@@ -342,7 +334,9 @@ export function ProjectView({
                 </div>
                 <div className="min-h-0 flex-1 overflow-y-auto">
                   <ProjectExplorer
-                    activeFilePath={isViewingFile ? (viewFile ?? null) : null}
+                    activeFilePath={
+                      panel?.type === "file" ? panel.filePath : null
+                    }
                     attachedFolders={attachedFolders}
                     files={files}
                     isAppViewOpen={isViewingApp}

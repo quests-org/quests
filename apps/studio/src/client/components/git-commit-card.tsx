@@ -99,7 +99,10 @@ export function GitCommitCard({
       params={{ subdomain: projectSubdomain }}
       search={(prev) => ({
         ...prev,
-        selectedVersion: shouldSetVersion ? versionRef : undefined,
+        panel: {
+          type: "app" as const,
+          versionRef: shouldSetVersion ? versionRef : undefined,
+        },
       })}
     >
       {cardContent}

@@ -35,7 +35,7 @@ interface SessionEventListProps {
   onRetry: (prompt: string) => void;
   onStartNewChat: () => void;
   project: WorkspaceAppProject;
-  selectedVersion?: string;
+  versionRef?: string;
 }
 
 export function SessionStream({
@@ -48,7 +48,7 @@ export function SessionStream({
   onRetry,
   onStartNewChat,
   project,
-  selectedVersion,
+  versionRef,
 }: SessionEventListProps) {
   const navigate = useNavigate();
   const gitCommitParts = useMemo(() => {
@@ -150,8 +150,7 @@ export function SessionStream({
         const lastGitCommitPart = gitCommitParts.at(-1);
         const isLastVersion = lastGitCommitPart?.data.ref === part.data.ref;
         const isSelected =
-          selectedVersion === part.data.ref ||
-          (isLastVersion && !selectedVersion);
+          versionRef === part.data.ref || (isLastVersion && !versionRef);
         const shouldSetVersion = !isSelected && !isLastVersion;
 
         return (
@@ -169,10 +168,10 @@ export function SessionStream({
                 replace: true,
                 search: (prev) => ({
                   ...prev,
-                  selectedVersion: shouldSetVersion ? part.data.ref : undefined,
-                  view: "app",
-                  viewFile: undefined,
-                  viewFileVersion: undefined,
+                  panel: {
+                    type: "app" as const,
+                    versionRef: shouldSetVersion ? part.data.ref : undefined,
+                  },
                 }),
               });
             }}
@@ -244,7 +243,7 @@ export function SessionStream({
     },
     [
       gitCommitParts,
-      selectedVersion,
+      versionRef,
       project,
       navigate,
       isDeveloperMode,

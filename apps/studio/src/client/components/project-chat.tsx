@@ -27,16 +27,16 @@ export function ProjectChat({
   project,
   selectedModelURI: initialSelectedModelURI,
   selectedSessionId,
-  selectedVersion,
   showVersions,
+  versionRef,
 }: {
   isChatOnly?: boolean;
   isViewingApp?: boolean;
   project: WorkspaceAppProject;
   selectedModelURI?: AIGatewayModelURI.Type;
   selectedSessionId?: StoreId.Session;
-  selectedVersion?: string;
   showVersions?: boolean;
+  versionRef?: string;
 }) {
   const navigate = useNavigate();
 
@@ -212,7 +212,7 @@ export function ProjectChat({
               onRetry={handleRetry}
               onStartNewChat={handleNewSession}
               project={project}
-              selectedVersion={selectedVersion}
+              versionRef={versionRef}
             />
           )
         ) : (
@@ -265,7 +265,7 @@ export function ProjectChat({
                 {
                   onSuccess: ({ sessionId }) => {
                     void scrollToBottom();
-                    if (selectedVersion || showVersions) {
+                    if (versionRef || showVersions) {
                       void navigate({
                         params: {
                           subdomain: project.subdomain,
@@ -273,8 +273,8 @@ export function ProjectChat({
                         replace: true,
                         search: (prev) => ({
                           ...prev,
+                          panel: { type: "app" as const },
                           selectedSessionId: sessionId,
-                          selectedVersion: undefined,
                           showVersions: undefined,
                         }),
                         to: "/projects/$subdomain",

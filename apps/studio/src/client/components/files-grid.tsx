@@ -59,9 +59,11 @@ export function FilesGrid({
     void navigate({
       search: (prev) => ({
         ...prev,
-        view: "file",
-        viewFile: file.filePath,
-        viewFileVersion: file.versionRef || undefined,
+        panel: {
+          filePath: file.filePath,
+          fileVersion: file.versionRef || undefined,
+          type: "file",
+        },
       }),
     });
   };

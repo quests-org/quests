@@ -117,9 +117,11 @@ export function VersionFileChanges({
     void navigate({
       search: (prev) => ({
         ...prev,
-        view: "file",
-        viewFile: file.filePath,
-        viewFileVersion: versionRef || undefined,
+        panel: {
+          filePath: file.filePath,
+          fileVersion: versionRef || undefined,
+          type: "file",
+        },
       }),
     });
   };
