@@ -5,6 +5,7 @@ import { ProjectSettingsDialog } from "@/client/components/project-settings-dial
 import { ProjectView } from "@/client/components/project-view";
 import { useProjectRouteSync } from "@/client/hooks/use-project-route-sync";
 import { rpcClient } from "@/client/rpc/client";
+import { artifactPanelSchema } from "@/client/schemas/artifact-panel";
 import { createIconMeta, createProjectSubdomainMeta } from "@/shared/tabs";
 import { safe } from "@orpc/client";
 import {
@@ -27,19 +28,10 @@ import {
 } from "@tanstack/react-router";
 import { z } from "zod";
 
-const panelSchema = z.discriminatedUnion("type", [
-  z.object({ type: z.literal("app"), versionRef: z.string().optional() }),
-  z.object({
-    filePath: z.string(),
-    fileVersion: z.string().optional(),
-    type: z.literal("file"),
-  }),
-]);
-
 const projectSearchSchema = z.object({
+  artifactPanel: artifactPanelSchema.optional(),
   chatOpen: z.boolean().optional(),
   explorerOpen: z.boolean().optional(),
-  panel: panelSchema.optional(),
   selectedSessionId: StoreId.SessionSchema.optional(),
   showDelete: z.boolean().optional(),
   showDuplicate: z.boolean().optional(),
@@ -77,8 +69,8 @@ export const Route = createFileRoute("/_app/projects/$subdomain/")({
     LAST_SUBDOMAIN = params.subdomain;
 
     const needsSessionDefault = !search.selectedSessionId;
-    const needsPanelDefault =
-      (cause === "enter" || isProjectSwitch) && !search.panel;
+    const needsArtifactPanelDefault =
+      (cause === "enter" || isProjectSwitch) && !search.artifactPanel;
 
     const [sessionError, sessions, isDefined] = needsSessionDefault
       ? await safe(
@@ -99,7 +91,7 @@ export const Route = createFileRoute("/_app/projects/$subdomain/")({
 
     const newestSession = sessions.at(-1);
 
-    const [, hasModifications] = needsPanelDefault
+    const [, hasModifications] = needsArtifactPanelDefault
       ? await safe(
           rpcClient.workspace.project.git.hasAppModifications.check.call({
             projectSubdomain: params.subdomain,
@@ -107,15 +99,15 @@ export const Route = createFileRoute("/_app/projects/$subdomain/")({
         )
       : ([null, false] as const);
 
-    if (newestSession ?? (hasModifications && needsPanelDefault)) {
+    if (newestSession ?? (hasModifications && needsArtifactPanelDefault)) {
       // eslint-disable-next-line @typescript-eslint/only-throw-error
       throw redirect({
         params: { subdomain: params.subdomain },
         search: (prev) => ({
           ...prev,
           ...(newestSession ? { selectedSessionId: newestSession.id } : {}),
-          ...(hasModifications && needsPanelDefault
-            ? { panel: { type: "app" as const } }
+          ...(hasModifications && needsArtifactPanelDefault
+            ? { artifactPanel: { type: "app" as const } }
             : {}),
         }),
         to: "/projects/$subdomain",
@@ -149,9 +141,9 @@ export const Route = createFileRoute("/_app/projects/$subdomain/")({
 function RouteComponent() {
   const { subdomain } = Route.useParams();
   const {
+    artifactPanel,
     chatOpen,
     explorerOpen,
-    panel,
     selectedSessionId,
     showDelete,
     showDuplicate,
@@ -231,15 +223,16 @@ function RouteComponent() {
     }),
   );
 
-  const filePanel = panel?.type === "file" ? panel : undefined;
+  const fileArtifactPanel =
+    artifactPanel?.type === "file" ? artifactPanel : undefined;
 
   const { data: viewFileInfo } = useQuery(
     rpcClient.workspace.project.git.fileInfo.queryOptions({
-      input: filePanel
+      input: fileArtifactPanel
         ? {
-            filePath: filePanel.filePath,
+            filePath: fileArtifactPanel.filePath,
             projectSubdomain: subdomain,
-            versionRef: filePanel.fileVersion,
+            versionRef: fileArtifactPanel.fileVersion,
           }
         : skipToken,
     }),
@@ -265,12 +258,12 @@ function RouteComponent() {
   return (
     <>
       <ProjectView
+        artifactPanel={artifactPanel}
         attachedFolders={projectState.attachedFolders}
         chatOpen={chatOpen ?? true}
         explorerOpen={explorerOpen}
         files={files}
         hasAppModifications={hasAppModifications ?? false}
-        panel={panel}
         project={project}
         selectedModelURI={projectState.selectedModelURI}
         selectedSessionId={selectedSessionId}

@@ -11,6 +11,7 @@ import { useReload } from "@/client/hooks/use-reload";
 import { hasVisibleProjectFiles } from "@/client/lib/project-file-groups";
 import { cn } from "@/client/lib/utils";
 import { type RPCOutput } from "@/client/rpc/client";
+import { type ArtifactPanel } from "@/client/schemas/artifact-panel";
 import { type AIGatewayModelURI } from "@quests/ai-gateway/client";
 import {
   type StoreId,
@@ -34,13 +35,13 @@ function SplitDivider({
   return (
     <div
       className={cn(
-        "relative flex shrink-0 items-center justify-center",
+        "relative z-10 flex shrink-0 items-center justify-center",
         "bg-transparent transition-colors duration-200",
         "focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-hidden",
         "after:absolute after:transition-all after:duration-200",
         isHorizontal
-          ? "w-px cursor-col-resize after:inset-y-0 after:left-1/2 after:w-1 after:-translate-x-1/2 hover:after:scale-x-[3] hover:after:bg-muted-foreground"
-          : "h-px cursor-row-resize after:inset-x-0 after:top-1/2 after:h-1 after:-translate-y-1/2 hover:after:scale-y-[3] hover:after:bg-muted-foreground",
+          ? "w-px cursor-col-resize after:inset-y-2 after:left-1/2 after:w-0.5 after:-translate-x-1/2 after:rounded-full after:bg-transparent hover:after:scale-x-[3] hover:after:bg-muted-foreground/50"
+          : "h-px cursor-row-resize after:inset-x-2 after:top-1/2 after:h-0.5 after:-translate-y-1/2 after:rounded-full after:bg-transparent hover:after:scale-y-[3] hover:after:bg-muted-foreground/50",
         disabled && "cursor-not-allowed opacity-50",
         className,
       )}
@@ -65,27 +66,24 @@ const PANEL_SIZES = {
 };
 
 export function ProjectView({
+  artifactPanel,
   attachedFolders,
   chatOpen,
   explorerOpen,
   files,
   hasAppModifications,
-  panel,
   project,
   selectedModelURI,
   selectedSessionId,
   showVersions,
   viewFileInfo,
 }: {
+  artifactPanel: ArtifactPanel | undefined;
   attachedFolders: RPCOutput["workspace"]["project"]["state"]["get"]["attachedFolders"];
   chatOpen: boolean;
   explorerOpen: boolean | undefined;
   files: RPCOutput["workspace"]["project"]["git"]["listFiles"] | undefined;
   hasAppModifications: boolean;
-  panel:
-    | undefined
-    | { filePath: string; fileVersion?: string; type: "file" }
-    | { type: "app"; versionRef?: string };
   project: WorkspaceAppProject;
   selectedModelURI: AIGatewayModelURI.Type | undefined;
   selectedSessionId?: StoreId.Session;
@@ -96,10 +94,11 @@ export function ProjectView({
 }) {
   const navigate = useNavigate();
 
-  const isViewingApp = panel?.type === "app";
-  const isViewingFile = panel?.type === "file";
-  const selectedVersion = panel?.type === "app" ? panel.versionRef : undefined;
-  const showAppPanel = isViewingApp || isViewingFile;
+  const isViewingApp = artifactPanel?.type === "app";
+  const isViewingFile = artifactPanel?.type === "file";
+  const selectedVersion =
+    artifactPanel?.type === "app" ? artifactPanel.versionRef : undefined;
+  const showArtifactPanel = isViewingApp || isViewingFile;
 
   const currentViewFile: null | ProjectFileViewerFile = viewFileInfo
     ? { ...viewFileInfo, projectSubdomain: project.subdomain }
@@ -113,16 +112,19 @@ export function ProjectView({
       from: "/projects/$subdomain",
       params: { subdomain: project.subdomain },
       replace: true,
-      search: (prev) => ({ ...prev, panel: { type: "app" as const } }),
+      search: (prev) => ({
+        ...prev,
+        artifactPanel: { type: "app" as const },
+      }),
     });
   };
 
-  const handlePanelClose = () => {
+  const handleArtifactPanelClose = () => {
     void navigate({
       from: "/projects/$subdomain",
       params: { subdomain: project.subdomain },
       replace: true,
-      search: (prev) => ({ ...prev, panel: undefined }),
+      search: (prev) => ({ ...prev, artifactPanel: undefined }),
     });
   };
 
@@ -139,7 +141,7 @@ export function ProjectView({
       replace: true,
       search: (prev) => ({
         ...prev,
-        panel: {
+        artifactPanel: {
           filePath,
           fileVersion: versionRef || undefined,
           type: "file" as const,
@@ -207,7 +209,7 @@ export function ProjectView({
     <div
       className={cn(
         "flex h-full flex-col overflow-hidden bg-background",
-        !showAppPanel && "border-l",
+        !showArtifactPanel && "border-l",
       )}
     >
       <div className="flex shrink-0 items-center justify-between border-b px-3 py-2">
@@ -223,7 +225,9 @@ export function ProjectView({
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto">
         <ProjectExplorer
-          activeFilePath={panel?.type === "file" ? panel.filePath : null}
+          activeFilePath={
+            artifactPanel?.type === "file" ? artifactPanel.filePath : null
+          }
           attachedFolders={attachedFolders}
           files={files}
           isAppViewOpen={isViewingApp}
@@ -239,19 +243,19 @@ export function ProjectView({
   return (
     <div className="flex h-dvh w-full flex-col overflow-hidden">
       <ProjectHeaderToolbar
-        canCollapseChat={showAppPanel}
+        canCollapseChat={showArtifactPanel}
         chatCollapsed={chatCollapsed}
         explorerCollapsed={explorerCollapsed}
         onToggleChat={handleToggleChat}
         onToggleExplorer={handleToggleExplorer}
         project={project}
         selectedSessionId={selectedSessionId}
-        showChatToggle={showAppPanel || hasAppModifications}
+        showChatToggle={showArtifactPanel || hasAppModifications}
         versionRef={selectedVersion}
       />
 
-      <div className={cn("min-h-0 flex-1", !showAppPanel && "border-t")}>
-        {showAppPanel ? (
+      <div className={cn("min-h-0 flex-1", !showArtifactPanel && "border-t")}>
+        {showArtifactPanel ? (
           <SplitPane
             direction="horizontal"
             divider={SplitDivider}
@@ -265,7 +269,7 @@ export function ProjectView({
                   from: "/projects/$subdomain",
                   params: { subdomain: project.subdomain },
                   replace: true,
-                  search: (prev) => ({ ...prev, panel: undefined }),
+                  search: (prev) => ({ ...prev, artifactPanel: undefined }),
                 });
                 return;
               }
@@ -332,7 +336,7 @@ export function ProjectView({
                   <div className="flex h-full overflow-hidden">
                     <ProjectFileViewerPanel
                       file={currentViewFile}
-                      onClose={handlePanelClose}
+                      onClose={handleArtifactPanelClose}
                     />
                   </div>
                 ) : (
@@ -341,7 +345,7 @@ export function ProjectView({
                       app={project}
                       className="overflow-hidden rounded-lg"
                       isVersionsOpen={showVersions}
-                      onClose={handlePanelClose}
+                      onClose={handleArtifactPanelClose}
                       onVersionsToggle={handleVersionsToggle}
                       shouldReload={!selectedVersion}
                     />

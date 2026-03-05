@@ -109,7 +109,10 @@ export function ProjectHeaderToolbar({
       from: "/projects/$subdomain",
       params: { subdomain: project.subdomain },
       replace: true,
-      search: (prev) => ({ ...prev, panel: { type: "app" as const } }),
+      search: (prev) => ({
+        ...prev,
+        artifactPanel: { type: "app" as const },
+      }),
     });
   };
 
