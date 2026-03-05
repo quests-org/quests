@@ -57,6 +57,7 @@ export function FilesGrid({
 
   const handleFileClick = (file: ProjectFileViewerFile) => {
     void navigate({
+      replace: true,
       search: (prev) => ({
         ...prev,
         panel: {

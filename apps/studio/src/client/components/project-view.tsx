@@ -1,22 +1,12 @@
 import { type ProjectFileViewerFile } from "@/client/atoms/project-file-viewer";
-import {
-  projectFilesPanelCollapsedAtomFamily,
-  projectSidebarCollapsedAtomFamily,
-} from "@/client/atoms/project-sidebar";
 import { AppView } from "@/client/components/app-view";
 import { ProjectChat } from "@/client/components/project-chat";
 import { ProjectExplorer } from "@/client/components/project-explorer";
 import { ProjectFileViewerPanel } from "@/client/components/project-file-viewer-panel";
 import { ProjectHeaderToolbar } from "@/client/components/project-header-toolbar";
 import { Button } from "@/client/components/ui/button";
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from "@/client/components/ui/resizable";
 import { VersionList } from "@/client/components/version-list";
 import { VersionOverlay } from "@/client/components/version-overlay";
-import { useCollapsiblePanel } from "@/client/hooks/use-collapsible-panel";
 import { useReload } from "@/client/hooks/use-reload";
 import { hasVisibleProjectFiles } from "@/client/lib/project-file-groups";
 import { cn } from "@/client/lib/utils";
@@ -27,15 +17,57 @@ import {
   type WorkspaceAppProject,
 } from "@quests/workspace/client";
 import { useNavigate } from "@tanstack/react-router";
-import { useAtomValue, useSetAtom } from "jotai";
 import { X } from "lucide-react";
-import { Activity, useCallback, useMemo } from "react";
+import { Activity, useCallback } from "react";
+import { type DividerProps, Pane, SplitPane } from "react-split-pane";
 
-const RESIZABLE_HANDLE_CLASS =
-  "bg-transparent transition-all duration-200 focus-visible:ring-0 focus-visible:ring-offset-0 data-[separator='active']:bg-primary/50 data-[separator='hover']:scale-x-[3] data-[separator='hover']:bg-muted-foreground";
+function SplitDivider({
+  className,
+  direction,
+  disabled,
+  isDragging,
+  onKeyDown,
+  onPointerDown,
+  style,
+}: DividerProps) {
+  const isHorizontal = direction === "horizontal";
+  return (
+    <div
+      className={cn(
+        "relative flex shrink-0 items-center justify-center",
+        "bg-transparent transition-colors duration-200",
+        "focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-hidden",
+        "after:absolute after:transition-all after:duration-200",
+        isHorizontal
+          ? "w-px cursor-col-resize after:inset-y-0 after:left-1/2 after:w-1 after:-translate-x-1/2 hover:after:scale-x-[3] hover:after:bg-muted-foreground"
+          : "h-px cursor-row-resize after:inset-x-0 after:top-1/2 after:h-1 after:-translate-y-1/2 hover:after:scale-y-[3] hover:after:bg-muted-foreground",
+        disabled && "cursor-not-allowed opacity-50",
+        className,
+      )}
+      data-dragging={isDragging}
+      onKeyDown={disabled ? undefined : onKeyDown}
+      onPointerDown={disabled ? undefined : onPointerDown}
+      role="separator"
+      style={{
+        ...style,
+        ...(isDragging && { backgroundColor: "hsl(var(--primary) / 0.5)" }),
+      }}
+      tabIndex={disabled ? -1 : 0}
+    />
+  );
+}
+
+const PANEL_SIZES = {
+  centerMin: 300,
+  chatDefault: 384,
+  explorerDefault: 208,
+  explorerMax: 308,
+};
 
 export function ProjectView({
   attachedFolders,
+  chatOpen,
+  explorerOpen,
   files,
   hasAppModifications,
   panel,
@@ -46,6 +78,8 @@ export function ProjectView({
   viewFileInfo,
 }: {
   attachedFolders: RPCOutput["workspace"]["project"]["state"]["get"]["attachedFolders"];
+  chatOpen: boolean;
+  explorerOpen: boolean | undefined;
   files: RPCOutput["workspace"]["project"]["git"]["listFiles"] | undefined;
   hasAppModifications: boolean;
   panel:
@@ -67,17 +101,11 @@ export function ProjectView({
   const selectedVersion = panel?.type === "app" ? panel.versionRef : undefined;
   const showAppPanel = isViewingApp || isViewingFile;
 
-  const currentViewFile = useMemo((): null | ProjectFileViewerFile => {
-    if (!viewFileInfo) {
-      return null;
-    }
-    return {
-      ...viewFileInfo,
-      projectSubdomain: project.subdomain,
-    };
-  }, [viewFileInfo, project.subdomain]);
+  const currentViewFile: null | ProjectFileViewerFile = viewFileInfo
+    ? { ...viewFileInfo, projectSubdomain: project.subdomain }
+    : null;
 
-  const handleAppSelect = useCallback(() => {
+  const handleAppSelect = () => {
     if (isViewingApp) {
       return;
     }
@@ -87,76 +115,45 @@ export function ProjectView({
       replace: true,
       search: (prev) => ({ ...prev, panel: { type: "app" as const } }),
     });
-  }, [isViewingApp, navigate, project.subdomain]);
+  };
 
-  const handleAppClose = useCallback(() => {
+  const handlePanelClose = () => {
     void navigate({
       from: "/projects/$subdomain",
       params: { subdomain: project.subdomain },
       replace: true,
       search: (prev) => ({ ...prev, panel: undefined }),
     });
-  }, [navigate, project.subdomain]);
+  };
 
-  const handleFileSelect = useCallback(
-    ({ filePath, versionRef }: { filePath: string; versionRef: string }) => {
-      void navigate({
-        from: "/projects/$subdomain",
-        params: { subdomain: project.subdomain },
-        replace: true,
-        search: (prev) => ({
-          ...prev,
-          panel: {
-            filePath,
-            fileVersion: versionRef || undefined,
-            type: "file" as const,
-          },
-        }),
-      });
-    },
-    [navigate, project.subdomain],
-  );
-
-  const handleFileViewerClose = useCallback(() => {
+  const handleFileSelect = ({
+    filePath,
+    versionRef,
+  }: {
+    filePath: string;
+    versionRef: string;
+  }) => {
     void navigate({
       from: "/projects/$subdomain",
       params: { subdomain: project.subdomain },
       replace: true,
-      search: (prev) => ({ ...prev, panel: undefined }),
+      search: (prev) => ({
+        ...prev,
+        panel: {
+          filePath,
+          fileVersion: versionRef || undefined,
+          type: "file" as const,
+        },
+      }),
     });
-  }, [navigate, project.subdomain]);
+  };
 
-  const sidebarCollapsed = useAtomValue(
-    projectSidebarCollapsedAtomFamily(project.subdomain),
-  );
-  const setSidebarCollapsed = useSetAtom(
-    projectSidebarCollapsedAtomFamily(project.subdomain),
-  );
-  const filesPanelCollapsed = useAtomValue(
-    projectFilesPanelCollapsedAtomFamily(project.subdomain),
-  );
-  const setFilesPanelCollapsed = useSetAtom(
-    projectFilesPanelCollapsedAtomFamily(project.subdomain),
-  );
+  const hasProjectFiles = files ? hasVisibleProjectFiles(files) : false;
+  const chatCollapsed = !chatOpen;
+  const explorerCollapsed =
+    explorerOpen === undefined ? !hasProjectFiles : !explorerOpen;
 
-  const hasProjectFiles = useMemo(
-    () => (files ? hasVisibleProjectFiles(files) : false),
-    [files],
-  );
-
-  const panelRef = useCollapsiblePanel({
-    collapsed: sidebarCollapsed,
-    onCollapsedChange: setSidebarCollapsed,
-    toastMessage: "Make the window wider to show the chat panel.",
-  });
-
-  const filesPanelRef = useCollapsiblePanel({
-    collapsed: filesPanelCollapsed,
-    onCollapsedChange: setFilesPanelCollapsed,
-    toastMessage: "Make the window wider to show the files panel.",
-  });
-
-  const handleVersionsToggle = useCallback(() => {
+  const handleVersionsToggle = () => {
     void navigate({
       from: "/projects/$subdomain",
       params: { subdomain: project.subdomain },
@@ -166,7 +163,7 @@ export function ProjectView({
         showVersions: showVersions ? undefined : true,
       }),
     });
-  }, [navigate, project.subdomain, showVersions]);
+  };
 
   useReload(
     useCallback(() => {
@@ -175,6 +172,27 @@ export function ProjectView({
       }
     }, [isViewingApp]),
   );
+
+  const handleToggleChat = () => {
+    void navigate({
+      from: "/projects/$subdomain",
+      params: { subdomain: project.subdomain },
+      replace: true,
+      search: (prev) => ({ ...prev, chatOpen: chatCollapsed }),
+    });
+  };
+
+  const handleToggleExplorer = () => {
+    void navigate({
+      from: "/projects/$subdomain",
+      params: { subdomain: project.subdomain },
+      replace: true,
+      search: (prev) => ({ ...prev, explorerOpen: explorerCollapsed }),
+    });
+  };
+
+  const chatSize = chatCollapsed ? 0 : PANEL_SIZES.chatDefault;
+  const explorerSize = explorerCollapsed ? 0 : PANEL_SIZES.explorerDefault;
 
   const sidebarProps = {
     isViewingApp,
@@ -185,38 +203,95 @@ export function ProjectView({
     versionRef: selectedVersion,
   };
 
+  const explorerPane = (
+    <div
+      className={cn(
+        "flex h-full flex-col overflow-hidden bg-background",
+        !showAppPanel && "border-l",
+      )}
+    >
+      <div className="flex shrink-0 items-center justify-between border-b px-3 py-2">
+        <h3 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+          Project
+        </h3>
+        <button
+          className="text-muted-foreground hover:text-foreground"
+          onClick={handleToggleExplorer}
+        >
+          <X className="size-3.5" />
+        </button>
+      </div>
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        <ProjectExplorer
+          activeFilePath={panel?.type === "file" ? panel.filePath : null}
+          attachedFolders={attachedFolders}
+          files={files}
+          isAppViewOpen={isViewingApp}
+          onAppSelect={handleAppSelect}
+          onFileSelect={handleFileSelect}
+          project={project}
+          showAppEntry={hasAppModifications}
+        />
+      </div>
+    </div>
+  );
+
   return (
     <div className="flex h-dvh w-full flex-col overflow-hidden">
       <ProjectHeaderToolbar
+        canCollapseChat={showAppPanel}
+        chatCollapsed={chatCollapsed}
+        explorerCollapsed={explorerCollapsed}
+        onToggleChat={handleToggleChat}
+        onToggleExplorer={handleToggleExplorer}
         project={project}
         selectedSessionId={selectedSessionId}
         showChatToggle={showAppPanel || hasAppModifications}
-        showFilesToggle={hasProjectFiles}
         versionRef={selectedVersion}
       />
 
-      <ResizablePanelGroup
-        className={cn("min-h-0 flex-1", showAppPanel ? "min-w-0" : "border-t")}
-        orientation="horizontal"
-      >
-        {showAppPanel && (
-          <>
-            <ResizablePanel
-              collapsedSize="0px"
-              collapsible
-              defaultSize="24rem"
-              maxSize="50%"
-              minSize="24rem"
-              onResize={() => {
-                const resizablePanel = panelRef.current;
-                if (!resizablePanel) {
-                  return;
-                }
-
-                setSidebarCollapsed(resizablePanel.isCollapsed());
-              }}
-              panelRef={panelRef}
-            >
+      <div className={cn("min-h-0 flex-1", !showAppPanel && "border-t")}>
+        {showAppPanel ? (
+          <SplitPane
+            direction="horizontal"
+            divider={SplitDivider}
+            onResizeEnd={(sizes) => {
+              const [newChat, newCenter, newExplorer] = sizes;
+              const chatNowOpen = (newChat ?? 0) > 0;
+              const explorerNowOpen = (newExplorer ?? 0) > 0;
+              const centerTooSmall = (newCenter ?? 0) < PANEL_SIZES.centerMin;
+              if (centerTooSmall) {
+                void navigate({
+                  from: "/projects/$subdomain",
+                  params: { subdomain: project.subdomain },
+                  replace: true,
+                  search: (prev) => ({ ...prev, panel: undefined }),
+                });
+                return;
+              }
+              if (chatNowOpen !== !chatCollapsed) {
+                void navigate({
+                  from: "/projects/$subdomain",
+                  params: { subdomain: project.subdomain },
+                  replace: true,
+                  search: (prev) => ({ ...prev, chatOpen: chatNowOpen }),
+                });
+              }
+              if (explorerNowOpen !== !explorerCollapsed) {
+                void navigate({
+                  from: "/projects/$subdomain",
+                  params: { subdomain: project.subdomain },
+                  replace: true,
+                  search: (prev) => ({
+                    ...prev,
+                    explorerOpen: explorerNowOpen,
+                  }),
+                });
+              }
+            }}
+            style={{ height: "100%" }}
+          >
+            <Pane minSize={PANEL_SIZES.chatDefault} size={chatSize}>
               {showVersions && (
                 <div className="flex h-full flex-col overflow-hidden bg-background">
                   <div className="flex items-center justify-between border-b p-2">
@@ -243,25 +318,21 @@ export function ProjectView({
               <Activity mode={showVersions ? "hidden" : "visible"}>
                 <ProjectChat {...sidebarProps} />
               </Activity>
-            </ResizablePanel>
+            </Pane>
 
-            <ResizableHandle className={RESIZABLE_HANDLE_CLASS} />
-
-            <ResizablePanel minSize="20rem">
+            <Pane minSize={200}>
               <div
                 className={cn(
                   "flex h-full flex-1 flex-col overflow-hidden border-t bg-secondary p-2",
-                  !sidebarCollapsed && "rounded-tl-lg border-l",
-                  hasProjectFiles &&
-                    !filesPanelCollapsed &&
-                    "rounded-tr-lg border-r",
+                  !chatCollapsed && "rounded-tl-lg border-l",
+                  !explorerCollapsed && "rounded-tr-lg border-r",
                 )}
               >
                 {isViewingFile && currentViewFile ? (
                   <div className="flex h-full overflow-hidden">
                     <ProjectFileViewerPanel
                       file={currentViewFile}
-                      onClose={handleFileViewerClose}
+                      onClose={handlePanelClose}
                     />
                   </div>
                 ) : (
@@ -270,7 +341,7 @@ export function ProjectView({
                       app={project}
                       className="overflow-hidden rounded-lg"
                       isVersionsOpen={showVersions}
-                      onClose={handleAppClose}
+                      onClose={handlePanelClose}
                       onVersionsToggle={handleVersionsToggle}
                       shouldReload={!selectedVersion}
                     />
@@ -284,73 +355,50 @@ export function ProjectView({
                   </div>
                 )}
               </div>
-            </ResizablePanel>
-          </>
-        )}
+            </Pane>
 
-        {!showAppPanel && (
-          <ResizablePanel minSize="20rem">
-            <ProjectChat {...sidebarProps} isChatOnly />
-          </ResizablePanel>
-        )}
-
-        {hasProjectFiles && (
-          <>
-            <ResizableHandle className={RESIZABLE_HANDLE_CLASS} />
-            <ResizablePanel
-              collapsedSize="0px"
-              collapsible
-              defaultSize={filesPanelCollapsed ? "0px" : "13rem"}
-              maxSize="40%"
-              minSize="13rem"
-              onResize={() => {
-                const resizablePanel = filesPanelRef.current;
-                if (!resizablePanel) {
-                  return;
-                }
-
-                setFilesPanelCollapsed(resizablePanel.isCollapsed());
-              }}
-              panelRef={filesPanelRef}
+            <Pane
+              maxSize={PANEL_SIZES.explorerMax}
+              minSize={PANEL_SIZES.explorerDefault}
+              size={explorerSize}
             >
-              <div
-                className={cn(
-                  "flex h-full flex-col overflow-hidden bg-background",
-                  !showAppPanel && "border-l",
-                )}
-              >
-                <div className="flex shrink-0 items-center justify-between border-b px-3 py-2">
-                  <h3 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-                    Project
-                  </h3>
-                  <button
-                    className="text-muted-foreground hover:text-foreground"
-                    onClick={() => {
-                      setFilesPanelCollapsed(true);
-                    }}
-                  >
-                    <X className="size-3.5" />
-                  </button>
-                </div>
-                <div className="min-h-0 flex-1 overflow-y-auto">
-                  <ProjectExplorer
-                    activeFilePath={
-                      panel?.type === "file" ? panel.filePath : null
-                    }
-                    attachedFolders={attachedFolders}
-                    files={files}
-                    isAppViewOpen={isViewingApp}
-                    onAppSelect={handleAppSelect}
-                    onFileSelect={handleFileSelect}
-                    project={project}
-                    showAppEntry={hasAppModifications}
-                  />
-                </div>
-              </div>
-            </ResizablePanel>
-          </>
+              {explorerPane}
+            </Pane>
+          </SplitPane>
+        ) : (
+          <SplitPane
+            direction="horizontal"
+            divider={SplitDivider}
+            onResizeEnd={(sizes) => {
+              const explorerNowOpen = (sizes[1] ?? 0) > 0;
+              if (explorerNowOpen !== !explorerCollapsed) {
+                void navigate({
+                  from: "/projects/$subdomain",
+                  params: { subdomain: project.subdomain },
+                  replace: true,
+                  search: (prev) => ({
+                    ...prev,
+                    explorerOpen: explorerNowOpen,
+                  }),
+                });
+              }
+            }}
+            style={{ height: "100%" }}
+          >
+            <Pane>
+              <ProjectChat {...sidebarProps} isChatOnly />
+            </Pane>
+
+            <Pane
+              maxSize={PANEL_SIZES.explorerDefault + 100}
+              minSize={PANEL_SIZES.explorerDefault}
+              size={explorerSize}
+            >
+              {explorerPane}
+            </Pane>
+          </SplitPane>
         )}
-      </ResizablePanelGroup>
+      </div>
     </div>
   );
 }

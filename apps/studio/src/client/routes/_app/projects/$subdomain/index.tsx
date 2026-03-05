@@ -37,6 +37,8 @@ const panelSchema = z.discriminatedUnion("type", [
 ]);
 
 const projectSearchSchema = z.object({
+  chatOpen: z.boolean().optional(),
+  explorerOpen: z.boolean().optional(),
   panel: panelSchema.optional(),
   selectedSessionId: StoreId.SessionSchema.optional(),
   showDelete: z.boolean().optional(),
@@ -147,6 +149,8 @@ export const Route = createFileRoute("/_app/projects/$subdomain/")({
 function RouteComponent() {
   const { subdomain } = Route.useParams();
   const {
+    chatOpen,
+    explorerOpen,
     panel,
     selectedSessionId,
     showDelete,
@@ -163,9 +167,7 @@ function RouteComponent() {
     }
     void navigate({
       from: "/projects/$subdomain",
-      params: {
-        subdomain,
-      },
+      params: { subdomain },
       replace: true,
       search: (prev) => ({ ...prev, showDelete: open || undefined }),
     });
@@ -174,9 +176,7 @@ function RouteComponent() {
   const handleDuplicateDialogChange = (open: boolean) => {
     void navigate({
       from: "/projects/$subdomain",
-      params: {
-        subdomain,
-      },
+      params: { subdomain },
       replace: true,
       search: (prev) => ({ ...prev, showDuplicate: open || undefined }),
     });
@@ -185,9 +185,7 @@ function RouteComponent() {
   const handleSettingsDialogChange = (open: boolean) => {
     void navigate({
       from: "/projects/$subdomain",
-      params: {
-        subdomain,
-      },
+      params: { subdomain },
       replace: true,
       search: (prev) => ({ ...prev, showSettings: open || undefined }),
     });
@@ -268,6 +266,8 @@ function RouteComponent() {
     <>
       <ProjectView
         attachedFolders={projectState.attachedFolders}
+        chatOpen={chatOpen ?? true}
+        explorerOpen={explorerOpen}
         files={files}
         hasAppModifications={hasAppModifications ?? false}
         panel={panel}

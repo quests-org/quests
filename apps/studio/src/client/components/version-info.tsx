@@ -115,6 +115,7 @@ export function VersionFileChanges({
     }
 
     void navigate({
+      replace: true,
       search: (prev) => ({
         ...prev,
         panel: {

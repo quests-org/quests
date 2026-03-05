@@ -103,6 +103,7 @@ export function RestoreVersionModal({
         params: {
           subdomain: projectSubdomain,
         },
+        replace: true,
         search: (prev) => ({ ...prev, panel: { type: "app" as const } }),
       });
 

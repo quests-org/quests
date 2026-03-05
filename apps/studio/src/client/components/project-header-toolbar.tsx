@@ -21,7 +21,6 @@ import {
 } from "@quests/workspace/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { useAtom } from "jotai";
 import {
   ChevronDown,
   FileArchive,
@@ -35,10 +34,6 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 
-import {
-  projectFilesPanelCollapsedAtomFamily,
-  projectSidebarCollapsedAtomFamily,
-} from "../atoms/project-sidebar";
 import { ExportZipModal } from "./export-zip-modal";
 import { ProjectMenu } from "./project-menu";
 import { ProjectUsageSummary } from "./project-usage-summary";
@@ -64,27 +59,27 @@ const EDITOR_ICON_MAP: Record<
   vscode: VSCode,
 };
 
-interface ProjectHeaderToolbarProps {
-  project: WorkspaceAppProject;
-  selectedSessionId?: StoreId.Session;
-  showChatToggle: boolean;
-  showFilesToggle: boolean;
-  versionRef?: string;
-}
-
 export function ProjectHeaderToolbar({
+  canCollapseChat,
+  chatCollapsed,
+  explorerCollapsed,
+  onToggleChat,
+  onToggleExplorer,
   project,
   selectedSessionId,
   showChatToggle,
-  showFilesToggle,
   versionRef,
-}: ProjectHeaderToolbarProps) {
-  const [sidebarCollapsed, setSidebarCollapsed] = useAtom(
-    projectSidebarCollapsedAtomFamily(project.subdomain),
-  );
-  const [filesPanelCollapsed, setFilesPanelCollapsed] = useAtom(
-    projectFilesPanelCollapsedAtomFamily(project.subdomain),
-  );
+}: {
+  canCollapseChat: boolean;
+  chatCollapsed: boolean;
+  explorerCollapsed: boolean;
+  onToggleChat: () => void;
+  onToggleExplorer: () => void;
+  project: WorkspaceAppProject;
+  selectedSessionId?: StoreId.Session;
+  showChatToggle: boolean;
+  versionRef?: string;
+}) {
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
   const [restoreModalOpen, setRestoreModalOpen] = useState(false);
   const [exportZipModalOpen, setExportZipModalOpen] = useState(false);
@@ -142,21 +137,17 @@ export function ProjectHeaderToolbar({
             selectedSessionId={selectedSessionId}
           />
 
-          {showChatToggle && (
+          {showChatToggle && (chatCollapsed || canCollapseChat) && (
             <Tooltip>
               <TooltipTrigger asChild>
                 <Toggle
-                  aria-label={
-                    sidebarCollapsed ? "Show sidebar" : "Hide sidebar"
-                  }
-                  onPressedChange={() => {
-                    setSidebarCollapsed(!sidebarCollapsed);
-                  }}
-                  pressed={sidebarCollapsed}
+                  aria-label={chatCollapsed ? "Show chat" : "Hide chat"}
+                  onPressedChange={onToggleChat}
+                  pressed={chatCollapsed}
                   size="sm"
-                  variant={sidebarCollapsed ? "outline" : "default"}
+                  variant={chatCollapsed ? "outline" : "default"}
                 >
-                  {sidebarCollapsed ? (
+                  {chatCollapsed ? (
                     <>
                       <MessageCircle className="size-4" />
                       <span>Chat</span>
@@ -167,7 +158,7 @@ export function ProjectHeaderToolbar({
                 </Toggle>
               </TooltipTrigger>
               <TooltipContent>
-                {sidebarCollapsed ? "Show chat" : "Hide chat"}
+                {chatCollapsed ? "Show chat" : "Hide chat"}
               </TooltipContent>
             </Tooltip>
           )}
@@ -180,35 +171,29 @@ export function ProjectHeaderToolbar({
                 <ProjectUsageSummary project={project} />
               </div>
             )}
-            {showFilesToggle && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Toggle
-                    aria-label={
-                      filesPanelCollapsed ? "Show files" : "Hide files"
-                    }
-                    onPressedChange={() => {
-                      setFilesPanelCollapsed(!filesPanelCollapsed);
-                    }}
-                    pressed={filesPanelCollapsed}
-                    size="sm"
-                    variant={filesPanelCollapsed ? "outline" : "default"}
-                  >
-                    {filesPanelCollapsed ? (
-                      <>
-                        <Files className="size-4" />
-                        <span>Files</span>
-                      </>
-                    ) : (
-                      <PanelRightClose className="size-4" />
-                    )}
-                  </Toggle>
-                </TooltipTrigger>
-                <TooltipContent>
-                  {filesPanelCollapsed ? "Show files" : "Hide files"}
-                </TooltipContent>
-              </Tooltip>
-            )}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Toggle
+                  aria-label={explorerCollapsed ? "Show files" : "Hide files"}
+                  onPressedChange={onToggleExplorer}
+                  pressed={explorerCollapsed}
+                  size="sm"
+                  variant={explorerCollapsed ? "outline" : "default"}
+                >
+                  {explorerCollapsed ? (
+                    <>
+                      <Files className="size-4" />
+                      <span>Files</span>
+                    </>
+                  ) : (
+                    <PanelRightClose className="size-4" />
+                  )}
+                </Toggle>
+              </TooltipTrigger>
+              <TooltipContent>
+                {explorerCollapsed ? "Show explorer" : "Hide explorer"}
+              </TooltipContent>
+            </Tooltip>
 
             {versionRef ? (
               <div className="flex shrink-0 items-center gap-2">
