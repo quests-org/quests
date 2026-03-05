@@ -28,7 +28,7 @@ export function useCollapsiblePanel({
         if (panel.isCollapsed()) {
           onCollapsedChange(true);
           if (toastMessage) {
-            toast.info(toastMessage);
+            toast.info(toastMessage, { closeButton: true, dismissible: true });
           }
         }
       });
