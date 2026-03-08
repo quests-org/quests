@@ -164,7 +164,7 @@
     "rehype-raw": "^7.0.0",
     "remark-gfm": "^4.0.1",
     "remark-math": "^6.0.0",
-    "remend": "^1.0.2",
+    "remend": "^1.2.2",
     "sharp": "^0.34.3",
     "sonner": "^2.0.7",
     "tailwindcss": "^4.1.18",
