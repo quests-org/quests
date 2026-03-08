@@ -3,7 +3,6 @@ import { publisher } from "@/electron-main/rpc/publisher";
 import { getTabsManager } from "@/electron-main/tabs";
 import { getMainWindow } from "@/electron-main/windows/main/instance";
 import { openSettingsWindow } from "@/electron-main/windows/settings";
-import { getToolbarView } from "@/electron-main/windows/toolbar";
 import { NEW_ISSUE_URL } from "@quests/shared";
 import { app, type MenuItemConstructorOptions } from "electron";
 
@@ -49,10 +48,8 @@ export function createDevToolsMenu(): MenuItemConstructorOptions[] {
           click: () => {
             const mainWindow = getMainWindow();
             const tabsManager = getTabsManager();
-            const toolbarView = getToolbarView();
 
             mainWindow?.webContents.reload();
-            toolbarView?.webContents.reload();
 
             const currentTab = tabsManager?.getCurrentTab();
             currentTab?.webView.webContents.reload();
@@ -71,16 +68,6 @@ export function createDevToolsMenu(): MenuItemConstructorOptions[] {
                 });
               },
               label: "Sidebar",
-            },
-            {
-              click: () => {
-                const toolbarView = getToolbarView();
-                toolbarView?.webContents.openDevTools({
-                  mode: "detach",
-                  title: "DevTools - Toolbar",
-                });
-              },
-              label: "Toolbar",
             },
             {
               click: () => {

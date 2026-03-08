@@ -1,4 +1,5 @@
 import { StudioSidebar } from "@/client/components/studio-sidebar";
+import { StudioToolbar } from "@/client/components/studio-toolbar";
 import { SidebarProvider } from "@/client/components/ui/sidebar";
 import { isMacOS } from "@/client/lib/utils";
 import { SIDEBAR_WIDTH } from "@/shared/constants";
@@ -19,23 +20,26 @@ function SidebarPage() {
   const isOpen = sidebarState?.isOpen ?? true;
 
   return (
-    <Activity mode={isOpen ? "visible" : "hidden"}>
-      <div
-        className="flex h-screen w-full flex-col overflow-hidden overflow-x-hidden border-r border-border select-none"
-        data-testid="sidebar-page"
-        style={
-          {
-            "--sidebar-width": `${SIDEBAR_WIDTH}px`,
-            width: `${SIDEBAR_WIDTH}px`,
-          } as React.CSSProperties
-        }
-      >
-        <SidebarProvider>
-          <div className="min-h-0 flex-1">
-            <StudioSidebar className="h-full" disableBackground={isMacOS()} />
+    <div className="flex h-screen w-full flex-col overflow-hidden select-none">
+      <StudioToolbar />
+      <div className="flex min-h-0 flex-1 overflow-hidden [-webkit-app-region:no-drag]">
+        <Activity mode={isOpen ? "visible" : "hidden"}>
+          <div
+            className="flex h-full flex-col overflow-hidden overflow-x-hidden border-r border-border"
+            data-testid="sidebar-page"
+            style={
+              {
+                "--sidebar-width": `${SIDEBAR_WIDTH}px`,
+                width: `${SIDEBAR_WIDTH}px`,
+              } as React.CSSProperties
+            }
+          >
+            <SidebarProvider className="min-h-0 flex-1">
+              <StudioSidebar className="h-full" disableBackground={isMacOS()} />
+            </SidebarProvider>
           </div>
-        </SidebarProvider>
+        </Activity>
       </div>
-    </Activity>
+    </div>
   );
 }

@@ -13,7 +13,6 @@ import { routeTree } from "./routeTree.gen";
 
 const IGNORED_PATHS = new Set<keyof FileRoutesByPath>([
   "/sidebar", // Always rendered as separate view in Electron app
-  "/toolbar", // Always rendered as separate view in Electron app
 ]);
 
 function createRouter(options?: { history?: RouterHistory }) {

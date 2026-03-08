@@ -10,7 +10,6 @@ import {
 import { useSelectedTab } from "@/client/hooks/use-selected-tab";
 import { useMatchesForPathname } from "@/client/lib/get-route-matches";
 import { rpcClient } from "@/client/rpc/client";
-import { TOOLBAR_HEIGHT } from "@/shared/constants";
 import { useQuery } from "@tanstack/react-query";
 import { Bug, FlaskConical, PlusIcon, Telescope } from "lucide-react";
 import { useMemo } from "react";
@@ -90,8 +89,6 @@ export function StudioSidebar({
 
   return (
     <Sidebar collapsible="none" side="left" {...props}>
-      {/* Space reserved for the transparent toolbar WebContentsView above. */}
-      <div style={{ flexShrink: 0, height: TOOLBAR_HEIGHT }} />
       <ServerExceptionsAlert />
       <NavPrimary items={primaryNavItems} />
       <SidebarContent>

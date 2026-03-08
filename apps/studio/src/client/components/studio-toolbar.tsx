@@ -5,14 +5,9 @@ import { cn, isLinux, isMacOS, isWindows } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
 import { SIDEBAR_WIDTH, TOOLBAR_HEIGHT } from "@/shared/constants";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
 import { SidebarIcon } from "lucide-react";
 
-export const Route = createFileRoute("/toolbar")({
-  component: ToolbarPage,
-});
-
-function ToolbarPage() {
+export function StudioToolbar() {
   const { data: sidebarState } = useQuery(
     rpcClient.sidebar.live.state.experimental_liveOptions({}),
   );
@@ -34,14 +29,13 @@ function ToolbarPage() {
 
   return (
     <div
-      className="flex w-full items-end overflow-hidden [-webkit-app-region:drag]"
-      data-testid="toolbar-page"
+      className="flex w-full items-end overflow-hidden"
       style={{ height: `${TOOLBAR_HEIGHT}px` }}
     >
       {/* Sidebar region: transparent so the sidebar vibrancy/background shows through */}
       <div
         className={cn(
-          "flex h-full shrink-0 items-center [-webkit-app-region:drag]",
+          "flex h-full shrink-0 items-center border-r border-border [-webkit-app-region:drag]",
           !isSidebarOpen && "hidden",
           isMacOS() ? "pl-20" : "pl-4",
         )}
@@ -71,7 +65,7 @@ function ToolbarPage() {
       >
         <div className="flex h-full min-w-0 flex-1 items-center">
           {!isSidebarOpen && (
-            <div className="flex items-center [-webkit-app-region:no-drag]">
+            <div className="flex items-center">
               <div className={cn(isMacOS() ? "ml-20" : "ml-4")} />
               <Button
                 className="relative size-6 shrink-0 pr-1 text-muted-foreground"

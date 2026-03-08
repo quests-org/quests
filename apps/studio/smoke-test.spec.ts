@@ -112,22 +112,18 @@ describe("Studio Smoke Test", () => {
 
     let windows = electronApp.windows();
     const startTime = Date.now();
-    while (windows.length < 3 && Date.now() - startTime < 30_000) {
+    while (windows.length < 2 && Date.now() - startTime < 30_000) {
       await new Promise((resolve) => setTimeout(resolve, 100));
       windows = electronApp.windows();
     }
 
-    expect(windows).toHaveLength(3);
+    expect(windows).toHaveLength(2);
 
     const sidebarWindow = windows.find((w) => w.url().includes("#/sidebar"));
-    const toolbarWindow = windows.find((w) => w.url().includes("#/toolbar"));
-    const mainWindow = windows.find(
-      (w) => !w.url().includes("#/sidebar") && !w.url().includes("#/toolbar"),
-    );
+    const mainWindow = windows.find((w) => !w.url().includes("#/sidebar"));
 
     const windowConfigs = [
       { name: "sidebar", testId: "sidebar-page", window: sidebarWindow },
-      { name: "toolbar", testId: "toolbar-page", window: toolbarWindow },
       { name: "main", testId: "app-page", window: mainWindow },
     ];
 

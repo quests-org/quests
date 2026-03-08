@@ -17,13 +17,11 @@ import {
   getMainWindow,
   setMainWindow,
 } from "@/electron-main/windows/main/instance";
-import { createToolbar, resizeToolbar } from "@/electron-main/windows/toolbar";
 import { is } from "@electron-toolkit/utils";
 import { type BaseWindow, BrowserWindow } from "electron";
 import path from "node:path";
 import { debounce } from "radashi";
 
-let toolbar: Electron.CrossProcessExports.WebContentsView | null = null;
 let wasWindowBlurred = false;
 
 export async function createMainWindow() {
@@ -115,7 +113,6 @@ export async function createMainWindow() {
   });
 
   const initialSidebarWidth = getSidebarWidth();
-  toolbar = createToolbar({ baseWindow: mainWindow });
 
   const tabsManager = createTabsManager({
     baseWindow: mainWindow,
@@ -123,7 +120,6 @@ export async function createMainWindow() {
   });
 
   void mainWindow.loadURL(studioURL("/sidebar"));
-  mainWindow.contentView.addChildView(toolbar);
   await tabsManager.initialize();
   showWindow(mainWindow);
 
@@ -169,7 +165,6 @@ export function updateTitleBarOverlay() {
 function resizeViews() {
   const tabsManager = getTabsManager();
   tabsManager?.updateCurrentTabBounds();
-  resizeToolbar();
 }
 
 function setupWindowEventListeners({

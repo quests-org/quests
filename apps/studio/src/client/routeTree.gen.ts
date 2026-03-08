@@ -9,7 +9,6 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as ToolbarRouteImport } from './routes/toolbar'
 import { Route as SidebarRouteImport } from './routes/sidebar'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as AppRouteRouteImport } from './routes/_app/route'
@@ -41,11 +40,6 @@ import { Route as AppProjectsSubdomainIndexRouteImport } from './routes/_app/pro
 import { Route as AppDiscoverTemplatesIndexRouteImport } from './routes/_app/discover/templates/index'
 import { Route as AppDiscoverTemplatesFolderNameRouteImport } from './routes/_app/discover/templates/$folderName'
 
-const ToolbarRoute = ToolbarRouteImport.update({
-  id: '/toolbar',
-  path: '/toolbar',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const SidebarRoute = SidebarRouteImport.update({
   id: '/sidebar',
   path: '/sidebar',
@@ -205,7 +199,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/settings': typeof SettingsRouteWithChildren
   '/sidebar': typeof SidebarRoute
-  '/toolbar': typeof ToolbarRoute
   '/debug': typeof AppDebugRouteRouteWithChildren
   '/checkout': typeof AppCheckoutRoute
   '/new-tab': typeof AppNewTabRoute
@@ -234,7 +227,6 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/sidebar': typeof SidebarRoute
-  '/toolbar': typeof ToolbarRoute
   '/checkout': typeof AppCheckoutRoute
   '/new-tab': typeof AppNewTabRoute
   '/release-notes': typeof AppReleaseNotesRoute
@@ -265,7 +257,6 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteRouteWithChildren
   '/settings': typeof SettingsRouteWithChildren
   '/sidebar': typeof SidebarRoute
-  '/toolbar': typeof ToolbarRoute
   '/_app/_authenticated': typeof AppAuthenticatedRouteRouteWithChildren
   '/_app/_not_authenticated': typeof AppNot_authenticatedRouteRouteWithChildren
   '/_app/debug': typeof AppDebugRouteRouteWithChildren
@@ -299,7 +290,6 @@ export interface FileRouteTypes {
     | '/'
     | '/settings'
     | '/sidebar'
-    | '/toolbar'
     | '/debug'
     | '/checkout'
     | '/new-tab'
@@ -328,7 +318,6 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/sidebar'
-    | '/toolbar'
     | '/checkout'
     | '/new-tab'
     | '/release-notes'
@@ -358,7 +347,6 @@ export interface FileRouteTypes {
     | '/_app'
     | '/settings'
     | '/sidebar'
-    | '/toolbar'
     | '/_app/_authenticated'
     | '/_app/_not_authenticated'
     | '/_app/debug'
@@ -392,18 +380,10 @@ export interface RootRouteChildren {
   AppRouteRoute: typeof AppRouteRouteWithChildren
   SettingsRoute: typeof SettingsRouteWithChildren
   SidebarRoute: typeof SidebarRoute
-  ToolbarRoute: typeof ToolbarRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/toolbar': {
-      id: '/toolbar'
-      path: '/toolbar'
-      fullPath: '/toolbar'
-      preLoaderRoute: typeof ToolbarRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/sidebar': {
       id: '/sidebar'
       path: '/sidebar'
@@ -727,7 +707,6 @@ const rootRouteChildren: RootRouteChildren = {
   AppRouteRoute: AppRouteRouteWithChildren,
   SettingsRoute: SettingsRouteWithChildren,
   SidebarRoute: SidebarRoute,
-  ToolbarRoute: ToolbarRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
