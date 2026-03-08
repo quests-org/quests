@@ -24,12 +24,12 @@ export function hasVisibleProjectFiles(
       !isProjectFileSrcFile(f.filePath) &&
       !shouldFilterProjectFile(f.filePath) &&
       // TODO(skills): Remove this once skills are no longer in the project folder
-      !f.filePath.startsWith("skills/"),
+      !f.filePath.startsWith("./skills/"),
   );
 }
 
 export function isProjectFileSrcFile(filePath: string): boolean {
-  return filePath.startsWith(`${APP_FOLDER_NAMES.src}/`);
+  return filePath.startsWith(`./${APP_FOLDER_NAMES.src}/`);
 }
 
 export function shouldFilterProjectFile(filePath: string): boolean {

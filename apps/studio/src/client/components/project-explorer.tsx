@@ -117,7 +117,7 @@ export function ProjectExplorer({
         isProjectFileSrcFile(f.filePath) ||
         shouldFilterProjectFile(f.filePath) ||
         // TODO(skills): Remove this once skills are no longer in the project folder
-        f.filePath.startsWith("skills/")
+        f.filePath.startsWith("./skills/")
       ) {
         hiddenFiles.push(toViewerFile(f));
       } else {
@@ -387,7 +387,7 @@ function buildTree(files: ProjectFileViewerFile[]): FileTreeNode[] {
 
     for (let i = 0; i < parts.length - 1; i++) {
       const part = parts[i];
-      if (!part) {
+      if (!part || part === ".") {
         continue;
       }
       let dir = nodes.find(

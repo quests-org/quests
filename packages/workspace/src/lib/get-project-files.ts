@@ -3,6 +3,7 @@ import { err, ok } from "neverthrow";
 import path from "node:path";
 import { z } from "zod";
 
+import { RelativePathSchema } from "../schemas/paths";
 import { type ProjectSubdomain } from "../schemas/subdomains";
 import { type WorkspaceConfig } from "../types";
 import { createAppConfig } from "./app-config/create";
@@ -13,7 +14,7 @@ import { GitCommands } from "./git/commands";
 
 const ProjectFileSchema = z.object({
   filename: z.string(),
-  filePath: z.string(),
+  filePath: RelativePathSchema,
   mimeType: z.string(),
 });
 
@@ -48,11 +49,16 @@ export async function getProjectFiles(
   const files = output
     .split("\n")
     .filter((line) => line.trim().length > 0)
-    .map((filePath) => ({
-      filename: path.basename(filePath),
-      filePath,
-      mimeType: getMimeType(filePath),
-    }));
+    .map((filePath) => {
+      const relativePath = filePath.startsWith("./")
+        ? filePath
+        : `./${filePath}`;
+      return {
+        filename: path.basename(filePath),
+        filePath: relativePath,
+        mimeType: getMimeType(filePath),
+      };
+    });
 
   return ok(files);
 }
