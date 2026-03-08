@@ -50,6 +50,10 @@ describe("generateModelName", () => {
       expected: "Phi 4",
       modelId: "phi-4",
     },
+    {
+      expected: "Grok 4.1 Fast",
+      modelId: "grok-4-1-fast",
+    },
   ])("should convert '$modelId' to '$expected'", ({ expected, modelId }) => {
     const result = generateModelName(modelId as AIGatewayModel.CanonicalId);
     expect(result).toBe(expected);

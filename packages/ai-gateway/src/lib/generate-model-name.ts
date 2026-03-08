@@ -20,9 +20,17 @@ export function generateModelName(modelId: AIGatewayModel.CanonicalId): string {
     // cspell:enable
   };
 
-  const parts = modelId.split(/[-_/:]/);
+  const rawParts: string[] = [];
+  for (const part of modelId.split(/[-_/:]/)) {
+    const prev = rawParts.at(-1);
+    if (prev !== undefined && /^\d+$/.test(prev) && /^\d+$/.test(part)) {
+      rawParts[rawParts.length - 1] = prev + "." + part;
+    } else {
+      rawParts.push(part);
+    }
+  }
 
-  const titleCased = parts.map((part) => {
+  const titleCased = rawParts.map((part) => {
     const lower = part.toLowerCase();
 
     if (replacements[lower]) {
