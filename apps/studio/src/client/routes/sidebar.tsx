@@ -32,11 +32,7 @@ function SidebarPage() {
       >
         <SidebarProvider>
           <div className="min-h-0 flex-1">
-            <StudioSidebar
-              className="h-full"
-              disableBackground={isMacOS()}
-              isOpen={isOpen}
-            />
+            <StudioSidebar className="h-full" disableBackground={isMacOS()} />
           </div>
         </SidebarProvider>
       </div>

@@ -5,13 +5,14 @@ import {
   getSidebarVisible,
   setSidebarVisible,
 } from "@/electron-main/stores/app-state";
+import { z } from "zod";
 
-const close = base.handler(() => {
+const close = base.input(z.void()).handler(() => {
   setSidebarVisible(false);
   captureServerEvent("app.sidebar_closed");
 });
 
-const open = base.handler(() => {
+const open = base.input(z.void()).handler(() => {
   setSidebarVisible(true);
   captureServerEvent("app.sidebar_opened");
 });

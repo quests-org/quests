@@ -115,7 +115,7 @@ export async function createMainWindow() {
   });
 
   const initialSidebarWidth = getSidebarWidth();
-  toolbar = createToolbar({ baseWindow: mainWindow, initialSidebarWidth });
+  toolbar = createToolbar({ baseWindow: mainWindow });
 
   const tabsManager = createTabsManager({
     baseWindow: mainWindow,

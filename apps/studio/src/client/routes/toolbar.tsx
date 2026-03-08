@@ -3,21 +3,13 @@ import TabBar from "@/client/components/tab-bar";
 import { Button } from "@/client/components/ui/button";
 import { cn, isLinux, isMacOS, isWindows } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
-import { TOOLBAR_HEIGHT } from "@/shared/constants";
+import { SIDEBAR_WIDTH, TOOLBAR_HEIGHT } from "@/shared/constants";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { SidebarIcon } from "lucide-react";
 
 export const Route = createFileRoute("/toolbar")({
   component: ToolbarPage,
-  head: () => ({
-    meta: [
-      {
-        content: "",
-        name: "opaque-background",
-      },
-    ],
-  }),
 });
 
 function ToolbarPage() {
@@ -29,6 +21,10 @@ function ToolbarPage() {
     rpcClient.sidebar.open.mutationOptions(),
   );
 
+  const { mutate: closeSidebar } = useMutation(
+    rpcClient.sidebar.close.mutationOptions(),
+  );
+
   const { data: exceptions } = useQuery(
     rpcClient.utils.live.serverExceptions.experimental_liveOptions({}),
   );
@@ -38,19 +34,37 @@ function ToolbarPage() {
 
   return (
     <div
-      className="flex w-full items-end overflow-hidden bg-secondary inset-shadow-toolbar inset-shadow-(color:--border) [-webkit-app-region:drag]"
+      className="flex w-full items-end overflow-hidden [-webkit-app-region:drag]"
       data-testid="toolbar-page"
-      style={{
-        height: `${TOOLBAR_HEIGHT}px`,
-      }}
+      style={{ height: `${TOOLBAR_HEIGHT}px` }}
     >
+      {/* Sidebar region: transparent so the sidebar vibrancy/background shows through */}
+      <div
+        className={cn(
+          "flex h-full shrink-0 items-center [-webkit-app-region:drag]",
+          !isSidebarOpen && "hidden",
+          isMacOS() ? "pl-20" : "pl-4",
+        )}
+        style={{ width: `${SIDEBAR_WIDTH}px` }}
+      >
+        <div className="flex items-center [-webkit-app-region:no-drag]">
+          <Button
+            className="size-6 pr-1 text-muted-foreground"
+            onClick={() => {
+              closeSidebar();
+            }}
+            size="icon"
+            variant="ghost"
+          >
+            <SidebarIcon />
+          </Button>
+          <NavControls />
+        </div>
+      </div>
+      {/* Main toolbar region: opaque background with tab bar */}
       <header
         className={cn(
-          `
-            mr-2 flex
-            h-svh
-            w-full flex-1 items-center
-          `,
+          "flex h-full min-w-0 flex-1 items-center bg-secondary inset-shadow-toolbar inset-shadow-(color:--border)",
           isWindows() && "pr-36",
           isLinux() && "pr-24",
         )}
@@ -62,7 +76,7 @@ function ToolbarPage() {
               <Button
                 className="relative size-6 shrink-0 pr-1 text-muted-foreground"
                 onClick={() => {
-                  openSidebar({});
+                  openSidebar();
                 }}
                 size="icon"
                 title="Show sidebar"

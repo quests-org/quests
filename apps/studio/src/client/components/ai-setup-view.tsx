@@ -44,7 +44,7 @@ export function AISetupView({ mode }: { mode: "setup" | "sign-in" }) {
     await navigate({ replace: true, to: "/new-tab" });
     if (mode === "setup") {
       // Open the sidebar after first-time setup
-      void rpcClient.sidebar.open.call({});
+      void rpcClient.sidebar.open.call();
     }
   };
 

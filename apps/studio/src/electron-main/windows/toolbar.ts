@@ -4,27 +4,17 @@ import { TOOLBAR_HEIGHT } from "@/shared/constants";
 import { type BaseWindow, WebContentsView } from "electron";
 import path from "node:path";
 
-import { getBackgroundColor } from "../lib/theme-utils";
 import { studioURL } from "../lib/urls";
-import { publisher } from "../rpc/publisher";
 
 let toolbarView: null | WebContentsView = null;
 let toolbarBaseWindow: BaseWindow | null = null;
-let toolbarSidebarWidth = 0;
 
-export function createToolbar({
-  baseWindow,
-  initialSidebarWidth,
-}: {
-  baseWindow: BaseWindow;
-  initialSidebarWidth: number;
-}) {
+export function createToolbar({ baseWindow }: { baseWindow: BaseWindow }) {
   if (toolbarView !== null) {
     return toolbarView;
   }
 
   toolbarBaseWindow = baseWindow;
-  toolbarSidebarWidth = initialSidebarWidth;
 
   toolbarView = new WebContentsView({
     webPreferences: {
@@ -33,7 +23,9 @@ export function createToolbar({
     },
   });
 
-  toolbarView.setBackgroundColor(getBackgroundColor());
+  // Transparent so the sidebar's vibrancy/background shows through on macOS
+  // when the toolbar overlaps the sidebar area.
+  toolbarView.setBackgroundColor("#00000000");
 
   toolbarView.webContents.setWindowOpenHandler((details) => {
     void openExternal(details.url);
@@ -45,11 +37,7 @@ export function createToolbar({
     windowOrWebContentsView: toolbarView,
   });
 
-  resizeToolbarInternal();
-  void publisher.subscribe("sidebar.updated", ({ width }) => {
-    toolbarSidebarWidth = width;
-    resizeToolbarInternal();
-  });
+  resizeToolbar();
 
   void toolbarView.webContents.loadURL(studioURL("/toolbar"));
 
@@ -61,10 +49,6 @@ export function getToolbarView() {
 }
 
 export function resizeToolbar() {
-  resizeToolbarInternal();
-}
-
-function resizeToolbarInternal() {
   if (toolbarView === null || toolbarBaseWindow === null) {
     return;
   }
@@ -73,8 +57,8 @@ function resizeToolbarInternal() {
   const newBounds = toolbarBaseWindow.getContentBounds();
   toolbarView.setBounds({
     height: TOOLBAR_HEIGHT,
-    width: newBounds.width - toolbarSidebarWidth,
-    x: toolbarSidebarWidth,
+    width: newBounds.width,
+    x: 0,
     y: 0,
   });
 }

@@ -1,34 +1,23 @@
-import { NavControls } from "@/client/components/nav-controls";
 import { NavPrimary } from "@/client/components/nav-primary";
 import { NavProjects } from "@/client/components/nav-projects";
 import { NavUser } from "@/client/components/nav-user";
 import { ServerExceptionsAlert } from "@/client/components/server-exceptions-alert";
-import { Button } from "@/client/components/ui/button";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
-  SidebarHeader,
 } from "@/client/components/ui/sidebar";
 import { useSelectedTab } from "@/client/hooks/use-selected-tab";
 import { useMatchesForPathname } from "@/client/lib/get-route-matches";
-import { logger } from "@/client/lib/logger";
-import { cn, isMacOS, isWindows } from "@/client/lib/utils";
 import { rpcClient } from "@/client/rpc/client";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import {
-  Bug,
-  FlaskConical,
-  PlusIcon,
-  SidebarIcon,
-  Telescope,
-} from "lucide-react";
+import { TOOLBAR_HEIGHT } from "@/shared/constants";
+import { useQuery } from "@tanstack/react-query";
+import { Bug, FlaskConical, PlusIcon, Telescope } from "lucide-react";
 import { useMemo } from "react";
 
 export function StudioSidebar({
-  isOpen,
   ...props
-}: React.ComponentProps<typeof Sidebar> & { isOpen: boolean }) {
+}: React.ComponentProps<typeof Sidebar>) {
   const { data: preferences } = useQuery(
     rpcClient.preferences.live.get.experimental_liveOptions(),
   );
@@ -84,10 +73,6 @@ export function StudioSidebar({
     rpcClient.workspace.project.live.list.experimental_liveOptions(),
   );
 
-  const { mutateAsync: closeSidebar } = useMutation(
-    rpcClient.sidebar.close.mutationOptions(),
-  );
-
   const favoriteSubdomains = useMemo(
     () => new Set(favorites?.map((r) => r.subdomain) ?? []),
     [favorites],
@@ -105,31 +90,8 @@ export function StudioSidebar({
 
   return (
     <Sidebar collapsible="none" side="left" {...props}>
-      <SidebarHeader>
-        <div
-          className={cn(
-            "flex items-center py-1",
-            !isWindows() && isOpen && "[-webkit-app-region:drag]",
-            isMacOS() ? "pl-20" : "justify-end pl-4",
-          )}
-        >
-          <div className="flex items-center [-webkit-app-region:no-drag]">
-            <Button
-              className="size-6 pr-1 text-muted-foreground"
-              onClick={() => {
-                void closeSidebar({}).catch((error: unknown) => {
-                  logger.error("Error closing sidebar", { error });
-                });
-              }}
-              size="icon"
-              variant="ghost"
-            >
-              <SidebarIcon />
-            </Button>
-            <NavControls />
-          </div>
-        </div>
-      </SidebarHeader>
+      {/* Space reserved for the transparent toolbar WebContentsView above. */}
+      <div style={{ flexShrink: 0, height: TOOLBAR_HEIGHT }} />
       <ServerExceptionsAlert />
       <NavPrimary items={primaryNavItems} />
       <SidebarContent>
