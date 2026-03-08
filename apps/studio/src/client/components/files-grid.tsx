@@ -62,7 +62,7 @@ export function FilesGrid({
         ...prev,
         artifactPanel: {
           filePath: file.filePath,
-          fileVersion: file.versionRef || undefined,
+          fileVersion: file.versionRef,
           type: "file",
         },
       }),

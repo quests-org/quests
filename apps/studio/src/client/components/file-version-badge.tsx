@@ -1,5 +1,5 @@
 import { type ProjectSubdomain } from "@quests/workspace/client";
-import { useQuery } from "@tanstack/react-query";
+import { skipToken, useQuery } from "@tanstack/react-query";
 
 import { rpcClient } from "../rpc/client";
 import { Badge } from "./ui/badge";
@@ -13,18 +13,15 @@ export function FileVersionBadge({
   className?: string;
   filePath: string;
   projectSubdomain: ProjectSubdomain;
-  versionRef: string;
+  versionRef?: string;
 }) {
   const { data: versionRefs } = useQuery(
     rpcClient.workspace.project.git.fileVersionRefs.queryOptions({
-      input: {
-        filePath,
-        projectSubdomain,
-      },
+      input: versionRef ? { filePath, projectSubdomain } : skipToken,
     }),
   );
 
-  if (!versionRefs || versionRefs.length <= 1) {
+  if (!versionRef || !versionRefs || versionRefs.length <= 1) {
     return null;
   }
 

@@ -1,6 +1,6 @@
 import { safe } from "@orpc/client";
-import { type ProjectSubdomain } from "@quests/workspace/client";
 
+import { type ProjectFileViewerFile } from "../atoms/project-file-viewer";
 import { rpcClient } from "../rpc/client";
 
 export async function downloadProjectFile({
@@ -9,12 +9,8 @@ export async function downloadProjectFile({
   filePath,
   projectSubdomain,
   versionRef,
-}: {
+}: ProjectFileViewerFile & {
   blob: Blob;
-  filename: string;
-  filePath: string;
-  projectSubdomain: ProjectSubdomain;
-  versionRef: string;
 }) {
   let downloadFilename = filename;
 

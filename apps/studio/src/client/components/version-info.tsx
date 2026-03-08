@@ -120,7 +120,7 @@ export function VersionFileChanges({
         ...prev,
         artifactPanel: {
           filePath: file.filePath,
-          fileVersion: versionRef || undefined,
+          fileVersion: versionRef,
           type: "file",
         },
       }),

@@ -8,7 +8,7 @@ import {
 import { getFileType } from "@/client/lib/get-file-type";
 import { rpcClient } from "@/client/rpc/client";
 import { type ProjectSubdomain } from "@quests/workspace/client";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { skipToken, useMutation, useQuery } from "@tanstack/react-query";
 import {
   Check,
   Copy,
@@ -196,14 +196,17 @@ function useIsLatestVersion({
 }: {
   filePath: string;
   projectSubdomain: ProjectSubdomain;
-  versionRef: string;
+  versionRef?: string;
 }) {
   const { data: versionRefs } = useQuery(
     rpcClient.workspace.project.git.fileVersionRefs.queryOptions({
-      input: { filePath, projectSubdomain },
+      input: versionRef ? { filePath, projectSubdomain } : skipToken,
     }),
   );
   return (
-    !versionRefs || versionRefs.length === 0 || versionRefs[0] === versionRef
+    !versionRef ||
+    !versionRefs ||
+    versionRefs.length === 0 ||
+    versionRefs.at(-1) === versionRef
   );
 }

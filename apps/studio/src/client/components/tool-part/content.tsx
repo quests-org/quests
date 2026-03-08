@@ -155,7 +155,6 @@ export function ToolContent({
           mimeType: "image/*",
           projectSubdomain: project.subdomain,
           url: getAssetUrl({ assetBase: project.urls.assetBase, filePath }),
-          versionRef: "",
         }),
       );
       const sourceImageThumbnails = sourceImageFiles.length > 0 && (

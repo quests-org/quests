@@ -144,13 +144,7 @@ export function ProjectView({
     });
   };
 
-  const handleFileSelect = ({
-    filePath,
-    versionRef,
-  }: {
-    filePath: string;
-    versionRef: string;
-  }) => {
+  const handleFileSelect = (file: ProjectFileViewerFile) => {
     void navigate({
       from: "/projects/$subdomain",
       params: { subdomain: project.subdomain },
@@ -158,8 +152,8 @@ export function ProjectView({
       search: (prev) => ({
         ...prev,
         artifactPanel: {
-          filePath,
-          fileVersion: versionRef || undefined,
+          filePath: file.filePath,
+          fileVersion: file.versionRef,
           type: "file",
         },
       }),

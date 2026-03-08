@@ -2,6 +2,7 @@ import { safe } from "@orpc/client";
 import { type ProjectSubdomain } from "@quests/workspace/client";
 import { toast } from "sonner";
 
+import { type ProjectFileViewerFile } from "../atoms/project-file-viewer";
 import { rpcClient } from "../rpc/client";
 import { downloadProjectFile } from "./download-project-file";
 import { isTextMimeType } from "./is-text-mime-type";
@@ -32,31 +33,16 @@ export async function copyFileToClipboard({
   }
 }
 
-export async function downloadFile({
-  filename,
-  filePath,
-  projectSubdomain,
-  url,
-  versionRef,
-}: {
-  filename: string;
-  filePath: string;
-  projectSubdomain: ProjectSubdomain;
-  url: string;
-  versionRef: string;
-}) {
+export async function downloadFile(file: ProjectFileViewerFile) {
   try {
-    const response = await fetch(url);
+    const response = await fetch(file.url);
     if (!response.ok) {
       throw new Error(`Failed to fetch file: ${response.statusText}`);
     }
     const blob = await response.blob();
     await downloadProjectFile({
+      ...file,
       blob,
-      filename,
-      filePath,
-      projectSubdomain,
-      versionRef,
     });
   } catch (error) {
     const errorMessage =
@@ -65,7 +51,7 @@ export async function downloadFile({
         : "An unknown error occurred while downloading the file";
     toast.error("Failed to download file", {
       closeButton: true,
-      description: `${errorMessage}\n\nFile: ${filePath}`,
+      description: `${errorMessage}\n\nFile: ${file.filePath}`,
       duration: 10_000,
     });
     throw error;

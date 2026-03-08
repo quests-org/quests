@@ -84,7 +84,7 @@ export function ProjectExplorer({
   files: RPCOutput["workspace"]["project"]["git"]["listFiles"] | undefined;
   isAppViewOpen: boolean;
   onAppSelect: () => void;
-  onFileSelect: (file: { filePath: string; versionRef: string }) => void;
+  onFileSelect: (file: ProjectFileViewerFile) => void;
   project: WorkspaceAppProject;
   showAppEntry: boolean;
 }) {
@@ -98,15 +98,12 @@ export function ProjectExplorer({
     const toViewerFile = (
       f: (typeof files)[number],
     ): ProjectFileViewerFile => ({
-      filename: f.filename,
-      filePath: f.filePath,
-      mimeType: f.mimeType,
+      ...f,
       projectSubdomain: project.subdomain,
       url: getAssetUrl({
         assetBase: project.urls.assetBase,
         filePath: f.filePath,
       }),
-      versionRef: "",
     });
 
     const visibleFiles: ProjectFileViewerFile[] = [];
@@ -145,10 +142,6 @@ export function ProjectExplorer({
       </div>
     );
   }
-
-  const handleFileClick = (file: ProjectFileViewerFile) => {
-    onFileSelect({ filePath: file.filePath, versionRef: file.versionRef });
-  };
 
   const folderEntries = attachedFolders ? Object.values(attachedFolders) : [];
 
@@ -240,7 +233,7 @@ export function ProjectExplorer({
             }
             key={i}
             node={node}
-            onFileClick={handleFileClick}
+            onFileClick={onFileSelect}
           />
         ))}
         {computed.hiddenTree.length > 0 && (
@@ -257,7 +250,7 @@ export function ProjectExplorer({
                   activeFilePath={activeFilePath}
                   key={i}
                   node={node}
-                  onFileClick={handleFileClick}
+                  onFileClick={onFileSelect}
                 />
               ))}
             </CollapsibleTreeSection>
