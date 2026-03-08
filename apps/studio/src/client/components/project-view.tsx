@@ -114,7 +114,7 @@ export function ProjectView({
       replace: true,
       search: (prev) => ({
         ...prev,
-        artifactPanel: { type: "app" as const },
+        artifactPanel: { type: "app" },
       }),
     });
   };
@@ -144,7 +144,7 @@ export function ProjectView({
         artifactPanel: {
           filePath,
           fileVersion: versionRef || undefined,
-          type: "file" as const,
+          type: "file",
         },
       }),
     });

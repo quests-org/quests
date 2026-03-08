@@ -74,7 +74,10 @@ export function VersionOverlay({
             params={{
               subdomain: projectSubdomain,
             }}
-            search={(prev) => ({ ...prev, panel: { type: "app" as const } })}
+            search={(prev) => ({
+              ...prev,
+              artifactPanel: { type: "app" },
+            })}
           >
             Close
           </InternalLink>

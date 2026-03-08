@@ -111,7 +111,7 @@ function extractMediaParts(output: ContentOutput): FilePart[] {
     .map((item) => ({
       data: item.data,
       mediaType: item.mediaType,
-      type: "file" as const,
+      type: "file",
     }));
 }
 

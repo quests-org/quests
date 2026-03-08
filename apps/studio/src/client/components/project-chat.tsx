@@ -273,7 +273,7 @@ export function ProjectChat({
                         replace: true,
                         search: (prev) => ({
                           ...prev,
-                          panel: { type: "app" as const },
+                          artifactPanel: { type: "app" },
                           selectedSessionId: sessionId,
                           showVersions: undefined,
                         }),

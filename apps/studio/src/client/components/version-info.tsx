@@ -118,7 +118,7 @@ export function VersionFileChanges({
       replace: true,
       search: (prev) => ({
         ...prev,
-        panel: {
+        artifactPanel: {
           filePath: file.filePath,
           fileVersion: versionRef || undefined,
           type: "file",

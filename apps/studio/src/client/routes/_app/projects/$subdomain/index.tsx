@@ -107,7 +107,7 @@ export const Route = createFileRoute("/_app/projects/$subdomain/")({
           ...prev,
           ...(newestSession ? { selectedSessionId: newestSession.id } : {}),
           ...(hasModifications && needsArtifactPanelDefault
-            ? { artifactPanel: { type: "app" as const } }
+            ? { artifactPanel: { type: "app" } }
             : {}),
         }),
         to: "/projects/$subdomain",

@@ -111,7 +111,7 @@ export function ProjectHeaderToolbar({
       replace: true,
       search: (prev) => ({
         ...prev,
-        artifactPanel: { type: "app" as const },
+        artifactPanel: { type: "app" },
       }),
     });
   };

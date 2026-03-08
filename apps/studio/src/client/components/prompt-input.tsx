@@ -199,7 +199,7 @@ export const PromptInput = ({
             mimeType: file.type,
             name: file.name,
             size: file.size,
-            type: "file" as const,
+            type: "file",
             url: shouldCreatePreview ? dataUrl : undefined,
           },
         ]);
@@ -420,7 +420,7 @@ export const PromptInput = ({
             mimeType: "text/plain",
             name: filename,
             size: blob.size,
-            type: "file" as const,
+            type: "file",
           },
         ]);
       });

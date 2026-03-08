@@ -104,7 +104,7 @@ export function RestoreVersionModal({
           subdomain: projectSubdomain,
         },
         replace: true,
-        search: (prev) => ({ ...prev, panel: { type: "app" as const } }),
+        search: (prev) => ({ ...prev, artifactPanel: { type: "app" } }),
       });
 
       onClose();

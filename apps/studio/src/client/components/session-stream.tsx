@@ -168,8 +168,8 @@ export function SessionStream({
                 replace: true,
                 search: (prev) => ({
                   ...prev,
-                  panel: {
-                    type: "app" as const,
+                  artifactPanel: {
+                    type: "app",
                     versionRef: shouldSetVersion ? part.data.ref : undefined,
                   },
                 }),
