@@ -2,14 +2,12 @@ import { cn } from "../lib/utils";
 
 export function SandboxedHtmlIframe({
   className,
-  htmlContent,
   restrictInteractive = false,
   src,
   style,
   title,
 }: {
   className?: string;
-  htmlContent?: string;
   restrictInteractive?: boolean;
   src: string;
   style?: React.CSSProperties;
@@ -29,7 +27,6 @@ export function SandboxedHtmlIframe({
       className={cn("bg-white", className)}
       sandbox={sandbox}
       src={src}
-      srcDoc={htmlContent}
       style={style}
       title={title}
     />
