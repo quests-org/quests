@@ -32,9 +32,27 @@ export function isProjectFileSrcFile(filePath: string): boolean {
   return filePath.startsWith(`./${APP_FOLDER_NAMES.src}/`);
 }
 
+const ROOT_SOURCE_EXTENSIONS = [
+  ".cjs",
+  ".cts",
+  ".js",
+  ".jsx",
+  ".mjs",
+  ".mts",
+  ".ts",
+  ".tsx",
+];
+
 export function shouldFilterProjectFile(filePath: string): boolean {
   const baseName = filenameFromFilePath(filePath).toLowerCase();
-  return FILTERED_FILENAMES.some(
-    (filtered) => baseName === filtered.toLowerCase(),
-  );
+  if (
+    FILTERED_FILENAMES.some((filtered) => baseName === filtered.toLowerCase())
+  ) {
+    return true;
+  }
+  const isRootFile = !filePath.slice(2).includes("/");
+  if (isRootFile) {
+    return ROOT_SOURCE_EXTENSIONS.some((ext) => baseName.endsWith(ext));
+  }
+  return false;
 }
