@@ -402,11 +402,8 @@ export const PromptInput = ({
       e.preventDefault();
 
       const blob = new Blob([text], { type: "text/plain" });
-      const timestamp = new Date()
-        .toISOString()
-        .replaceAll(":", "-")
-        .replaceAll(".", "-");
-      const filename = `pasted-text-${timestamp}.txt`;
+      const lineCount = text.split("\n").length;
+      const filename = `pasted-text-${lineCount}-lines.txt`;
 
       const reader = new FileReader();
       reader.addEventListener("load", () => {
