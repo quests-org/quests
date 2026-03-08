@@ -32,18 +32,16 @@ export const openFileViewerAtom = atom(
     {
       currentIndex = 0,
       files,
-      isOpen = false,
     }: {
       currentIndex?: number;
       files: ProjectFileViewerFile[];
-      isOpen?: boolean;
     },
   ) => {
     set(projectFileViewerAtom, (prev) => ({
       ...prev,
       currentIndex,
       files,
-      isModalOpen: isOpen,
+      isModalOpen: true,
     }));
   },
 );

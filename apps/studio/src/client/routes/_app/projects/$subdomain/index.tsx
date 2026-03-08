@@ -17,7 +17,6 @@ import {
 import {
   CancelledError,
   keepPreviousData,
-  skipToken,
   useQuery,
 } from "@tanstack/react-query";
 import {
@@ -223,21 +222,6 @@ function RouteComponent() {
     }),
   );
 
-  const fileArtifactPanel =
-    artifactPanel?.type === "file" ? artifactPanel : undefined;
-
-  const { data: viewFileInfo } = useQuery(
-    rpcClient.workspace.project.git.fileInfo.queryOptions({
-      input: fileArtifactPanel
-        ? {
-            filePath: fileArtifactPanel.filePath,
-            projectSubdomain: subdomain,
-            versionRef: fileArtifactPanel.fileVersion,
-          }
-        : skipToken,
-    }),
-  );
-
   const isLoading = isProjectLoading || isProjectStateLoading;
 
   const error = projectError ?? projectStateError;
@@ -268,7 +252,6 @@ function RouteComponent() {
         selectedModelURI={projectState.selectedModelURI}
         selectedSessionId={selectedSessionId}
         showVersions={showVersions}
-        viewFileInfo={viewFileInfo}
       />
 
       <ProjectDeleteDialog

@@ -1,8 +1,11 @@
-import { type ProjectFileViewerFile } from "@/client/atoms/project-file-viewer";
+import {
+  openFileViewerAtom,
+  type ProjectFileViewerFile,
+} from "@/client/atoms/project-file-viewer";
 import { AppView } from "@/client/components/app-view";
 import { ProjectChat } from "@/client/components/project-chat";
 import { ProjectExplorer } from "@/client/components/project-explorer";
-import { ProjectFileViewerPanel } from "@/client/components/project-file-viewer-panel";
+import { ProjectFileViewer } from "@/client/components/project-file-viewer";
 import { ProjectHeaderToolbar } from "@/client/components/project-header-toolbar";
 import { Button } from "@/client/components/ui/button";
 import { VersionList } from "@/client/components/version-list";
@@ -10,14 +13,16 @@ import { VersionOverlay } from "@/client/components/version-overlay";
 import { useReload } from "@/client/hooks/use-reload";
 import { hasVisibleProjectFiles } from "@/client/lib/project-file-groups";
 import { cn } from "@/client/lib/utils";
-import { type RPCOutput } from "@/client/rpc/client";
+import { rpcClient, type RPCOutput } from "@/client/rpc/client";
 import { type ArtifactPanel } from "@/client/schemas/artifact-panel";
 import { type AIGatewayModelURI } from "@quests/ai-gateway/client";
 import {
   type StoreId,
   type WorkspaceAppProject,
 } from "@quests/workspace/client";
+import { keepPreviousData, skipToken, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
+import { useSetAtom } from "jotai";
 import { X } from "lucide-react";
 import { Activity, useCallback } from "react";
 import { type DividerProps, Pane, SplitPane } from "react-split-pane";
@@ -76,7 +81,6 @@ export function ProjectView({
   selectedModelURI,
   selectedSessionId,
   showVersions,
-  viewFileInfo,
 }: {
   artifactPanel: ArtifactPanel | undefined;
   attachedFolders: RPCOutput["workspace"]["project"]["state"]["get"]["attachedFolders"];
@@ -88,20 +92,32 @@ export function ProjectView({
   selectedModelURI: AIGatewayModelURI.Type | undefined;
   selectedSessionId?: StoreId.Session;
   showVersions?: boolean;
-  viewFileInfo:
-    | RPCOutput["workspace"]["project"]["git"]["fileInfo"]
-    | undefined;
 }) {
   const navigate = useNavigate();
+  const openFileViewer = useSetAtom(openFileViewerAtom);
 
   const isViewingApp = artifactPanel?.type === "app";
   const isViewingFile = artifactPanel?.type === "file";
-  const selectedVersion =
+  const selectedAppVersion =
     artifactPanel?.type === "app" ? artifactPanel.versionRef : undefined;
   const showArtifactPanel = isViewingApp || isViewingFile;
 
-  const currentViewFile: null | ProjectFileViewerFile = viewFileInfo
-    ? { ...viewFileInfo, projectSubdomain: project.subdomain }
+  const { data: fileInfo } = useQuery(
+    rpcClient.workspace.project.git.fileInfo.queryOptions({
+      input:
+        artifactPanel?.type === "file"
+          ? {
+              filePath: artifactPanel.filePath,
+              projectSubdomain: project.subdomain,
+              versionRef: artifactPanel.fileVersion,
+            }
+          : skipToken,
+      placeholderData: keepPreviousData,
+    }),
+  );
+
+  const currentFile: null | ProjectFileViewerFile = fileInfo
+    ? { ...fileInfo, projectSubdomain: project.subdomain }
     : null;
 
   const handleAppSelect = () => {
@@ -202,7 +218,7 @@ export function ProjectView({
     selectedModelURI,
     selectedSessionId,
     showVersions,
-    versionRef: selectedVersion,
+    versionRef: selectedAppVersion,
   };
 
   const explorerPane = (
@@ -251,7 +267,7 @@ export function ProjectView({
         project={project}
         selectedSessionId={selectedSessionId}
         showChatToggle={showArtifactPanel || hasAppModifications}
-        versionRef={selectedVersion}
+        versionRef={selectedAppVersion}
       />
 
       <div className={cn("min-h-0 flex-1", !showArtifactPanel && "border-t")}>
@@ -314,7 +330,7 @@ export function ProjectView({
                       filterByPath="./src"
                       isViewingApp={isViewingApp}
                       projectSubdomain={project.subdomain}
-                      versionRef={selectedVersion}
+                      versionRef={selectedAppVersion}
                     />
                   </div>
                 </div>
@@ -332,13 +348,22 @@ export function ProjectView({
                   !explorerCollapsed && "rounded-tr-lg border-r",
                 )}
               >
-                {isViewingFile && currentViewFile ? (
-                  <div className="flex h-full overflow-hidden">
-                    <ProjectFileViewerPanel
-                      file={currentViewFile}
-                      onClose={handleArtifactPanelClose}
-                    />
-                  </div>
+                {isViewingFile ? (
+                  currentFile ? (
+                    <div className="flex h-full overflow-hidden">
+                      <ProjectFileViewer
+                        file={currentFile}
+                        fullSize
+                        isInPanel
+                        onClose={handleArtifactPanelClose}
+                        onExpand={() => {
+                          openFileViewer({
+                            files: [currentFile],
+                          });
+                        }}
+                      />
+                    </div>
+                  ) : null
                 ) : (
                   <div className="relative flex flex-1 flex-col">
                     <AppView
@@ -347,13 +372,13 @@ export function ProjectView({
                       isVersionsOpen={showVersions}
                       onClose={handleArtifactPanelClose}
                       onVersionsToggle={handleVersionsToggle}
-                      shouldReload={!selectedVersion}
+                      shouldReload={!selectedAppVersion}
                     />
 
-                    {selectedVersion && (
+                    {selectedAppVersion && (
                       <VersionOverlay
                         projectSubdomain={project.subdomain}
-                        versionRef={selectedVersion}
+                        versionRef={selectedAppVersion}
                       />
                     )}
                   </div>
