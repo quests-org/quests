@@ -8,7 +8,6 @@ import { FileText } from "lucide-react";
 import { sift } from "radashi";
 import { useMemo, useState } from "react";
 
-import { formatNumber } from "../lib/format-number";
 import { formatDuration } from "../lib/format-time";
 import { cn } from "../lib/utils";
 import { rpcClient } from "../rpc/client";
@@ -24,7 +23,7 @@ import {
   CollapsibleTrigger,
 } from "./ui/collapsible";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
-import { UsageStatsTooltip } from "./usage-stats-tooltip";
+import { UsageStatsTooltip, UsageSummaryText } from "./usage-stats-tooltip";
 
 interface AssistantMessagesFooterProps {
   messages: SessionMessage.AssistantWithParts[];
@@ -252,6 +251,7 @@ export function AssistantMessagesFooter({
         )}
         {isDeveloperMode && usageSummary && (
           <UsageStatsTooltip
+            messageCount={usageSummary.messageCount}
             stats={{
               inputTokenDetails: usageSummary.inputTokenDetails,
               inputTokens: usageSummary.inputTokens,
@@ -261,17 +261,16 @@ export function AssistantMessagesFooter({
               totalTokens: usageSummary.totalTokens,
             }}
           >
-            <span className="min-w-0 text-[10px] break-words text-warning-foreground/60 transition-colors hover:text-warning-foreground">
-              {usageSummary.messageCount}{" "}
-              {usageSummary.messageCount === 1 ? "message" : "messages"}
-              {usageSummary.totalTokens > 0 &&
-                ` · ${formatNumber(usageSummary.totalTokens)} ${usageSummary.totalTokens === 1 ? "token" : "tokens"}`}
-            </span>
+            <UsageSummaryText
+              className="min-w-0 text-[10px] text-warning-foreground/60 transition-colors hover:text-warning-foreground"
+              messageCount={usageSummary.messageCount}
+              totalTokens={usageSummary.totalTokens}
+            />
           </UsageStatsTooltip>
         )}
         {latestCreatedAt && (
           <RelativeTime
-            className="ml-auto shrink-0 cursor-default text-xs whitespace-nowrap text-muted-foreground"
+            className="ml-auto cursor-default text-xs whitespace-nowrap text-muted-foreground"
             date={latestCreatedAt}
           />
         )}

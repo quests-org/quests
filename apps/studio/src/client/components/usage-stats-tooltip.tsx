@@ -1,7 +1,9 @@
 import { formatNumber } from "@/client/lib/format-number";
 import { formatDuration } from "@/client/lib/format-time";
 import { isValidNumber } from "@/client/lib/usage-utils";
+import { cn } from "@/client/lib/utils";
 import { type SessionMessage } from "@quests/workspace/client";
+import { Coins, MessageCircle } from "lucide-react";
 import { type ReactNode } from "react";
 
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
@@ -19,9 +21,11 @@ interface UsageStats extends SessionMessage.Usage {
 
 export function UsageStatsTooltip({
   children,
+  messageCount,
   stats,
 }: {
   children: ReactNode;
+  messageCount?: number;
   stats: UsageStats;
 }) {
   const rows: StatRow[] = [
@@ -64,15 +68,23 @@ export function UsageStatsTooltip({
 
   const visibleRows = rows.filter((row) => isValidNumber(row.value));
 
-  if (visibleRows.length === 0) {
+  if (visibleRows.length === 0 && messageCount === undefined) {
     return <>{children}</>;
   }
 
   return (
     <Tooltip>
-      <TooltipTrigger asChild>{children}</TooltipTrigger>
+      <TooltipTrigger className="flex min-w-0">{children}</TooltipTrigger>
       <TooltipContent align="start" className="p-3 text-xs" side="top">
         <div className="space-y-2">
+          {messageCount !== undefined && (
+            <div className="flex items-baseline justify-between gap-6">
+              <span className="opacity-80">Messages:</span>
+              <span className="font-medium tabular-nums">
+                {formatNumber(messageCount)}
+              </span>
+            </div>
+          )}
           {visibleRows.map((row) => (
             <div
               className="flex items-baseline justify-between gap-6"
@@ -87,5 +99,30 @@ export function UsageStatsTooltip({
         </div>
       </TooltipContent>
     </Tooltip>
+  );
+}
+
+export function UsageSummaryText({
+  className,
+  messageCount,
+  totalTokens,
+}: {
+  className?: string;
+  messageCount: number;
+  totalTokens: number;
+}) {
+  return (
+    <span className={cn("inline-flex items-center gap-2 truncate", className)}>
+      <span className="inline-flex shrink-0 items-center gap-1">
+        <MessageCircle className="size-3 shrink-0" />
+        <span className="tabular-nums">{formatNumber(messageCount)}</span>
+      </span>
+      {totalTokens > 0 && (
+        <span className="inline-flex shrink-0 items-center gap-1">
+          <Coins className="size-3 shrink-0" />
+          <span className="tabular-nums">{formatNumber(totalTokens)}</span>
+        </span>
+      )}
+    </span>
   );
 }
