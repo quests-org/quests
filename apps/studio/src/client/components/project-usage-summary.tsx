@@ -32,21 +32,15 @@ export function ProjectUsageSummary({
             totalTokens: data.totalTokens,
           }}
         >
-          <div className="flex items-center gap-2 transition-colors hover:text-warning-foreground">
-            <span className="whitespace-nowrap">
-              {data.messageCount}{" "}
-              {data.messageCount === 1 ? "message" : "messages"}
-            </span>
-            {data.totalTokens > 0 && (
-              <span className="whitespace-nowrap tabular-nums">
-                {formatNumber(data.totalTokens)}{" "}
-                {data.totalTokens === 1 ? "token" : "tokens"}
-              </span>
-            )}
-          </div>
+          <span className="min-w-0 truncate text-[10px] transition-colors hover:text-warning-foreground">
+            {data.messageCount}{" "}
+            {data.messageCount === 1 ? "message" : "messages"}
+            {data.totalTokens > 0 &&
+              ` · ${formatNumber(data.totalTokens)} ${data.totalTokens === 1 ? "token" : "tokens"}`}
+          </span>
         </UsageStatsTooltip>
       ) : (
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           <Skeleton className="h-3 w-16 rounded-sm bg-warning-foreground/20" />
           <Skeleton className="h-3 w-20 rounded-sm bg-warning-foreground/20" />
         </div>

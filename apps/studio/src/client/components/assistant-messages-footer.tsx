@@ -182,7 +182,7 @@ export function AssistantMessagesFooter({
     >
       <div
         className={cn(
-          "flex items-center gap-2 transition-opacity",
+          "flex min-w-0 items-center gap-2 transition-opacity",
           sources.length > 0
             ? "opacity-100"
             : "opacity-0 group-hover/assistant-message-footer:opacity-100",
@@ -216,7 +216,7 @@ export function AssistantMessagesFooter({
           </CollapsibleTrigger>
         )}
         {modelsUsed.length > 0 && (
-          <div className="flex min-w-0 items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2">
             {modelsUsed.map((model, index) => (
               <div
                 className="flex min-w-0 items-center gap-1.5"
@@ -261,23 +261,17 @@ export function AssistantMessagesFooter({
               totalTokens: usageSummary.totalTokens,
             }}
           >
-            <div className="flex items-center gap-2 text-[10px] text-warning-foreground/60 transition-colors hover:text-warning-foreground">
-              <span className="whitespace-nowrap">
-                {usageSummary.messageCount}{" "}
-                {usageSummary.messageCount === 1 ? "message" : "messages"}
-              </span>
-              {usageSummary.totalTokens > 0 && (
-                <span className="whitespace-nowrap tabular-nums">
-                  {formatNumber(usageSummary.totalTokens)}{" "}
-                  {usageSummary.totalTokens === 1 ? "token" : "tokens"}
-                </span>
-              )}
-            </div>
+            <span className="min-w-0 text-[10px] break-words text-warning-foreground/60 transition-colors hover:text-warning-foreground">
+              {usageSummary.messageCount}{" "}
+              {usageSummary.messageCount === 1 ? "message" : "messages"}
+              {usageSummary.totalTokens > 0 &&
+                ` · ${formatNumber(usageSummary.totalTokens)} ${usageSummary.totalTokens === 1 ? "token" : "tokens"}`}
+            </span>
           </UsageStatsTooltip>
         )}
         {latestCreatedAt && (
           <RelativeTime
-            className="ml-auto cursor-default text-xs text-muted-foreground"
+            className="ml-auto shrink-0 cursor-default text-xs whitespace-nowrap text-muted-foreground"
             date={latestCreatedAt}
           />
         )}

@@ -170,7 +170,7 @@ export function ProjectHeaderToolbar({
 
           <div className="flex min-w-0 items-center gap-3">
             {isDeveloperMode && (
-              <div className="min-w-0 shrink truncate">
+              <div className="min-w-0 shrink">
                 <ProjectUsageSummary project={project} />
               </div>
             )}
