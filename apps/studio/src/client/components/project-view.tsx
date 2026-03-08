@@ -10,6 +10,7 @@ import { ProjectHeaderToolbar } from "@/client/components/project-header-toolbar
 import { Button } from "@/client/components/ui/button";
 import { VersionList } from "@/client/components/version-list";
 import { VersionOverlay } from "@/client/components/version-overlay";
+import { useMediaQuery } from "@/client/hooks/use-media-query";
 import { useReload } from "@/client/hooks/use-reload";
 import { hasVisibleProjectFiles } from "@/client/lib/project-file-groups";
 import { cn } from "@/client/lib/utils";
@@ -24,7 +25,7 @@ import { keepPreviousData, skipToken, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useSetAtom } from "jotai";
 import { X } from "lucide-react";
-import { Activity, useCallback } from "react";
+import { useCallback } from "react";
 import { type DividerProps, Pane, SplitPane } from "react-split-pane";
 
 function SplitDivider({
@@ -160,6 +161,8 @@ export function ProjectView({
     });
   };
 
+  // tailwind: lg (1024px)
+  const isLargeScreen = useMediaQuery("(min-width: 1024px)");
   const hasProjectFiles = files ? hasVisibleProjectFiles(files) : false;
   const chatCollapsed = !chatOpen;
   const explorerCollapsed =
@@ -204,7 +207,9 @@ export function ProjectView({
   };
 
   const chatSize = chatCollapsed ? 0 : PANEL_SIZES.chatDefault;
-  const explorerSize = explorerCollapsed ? 0 : PANEL_SIZES.explorerDefault;
+  const explorerFloating = !isLargeScreen && showArtifactPanel;
+  const explorerSize =
+    explorerCollapsed || explorerFloating ? 0 : PANEL_SIZES.explorerDefault;
 
   const sidebarProps = {
     isViewingApp,
@@ -215,7 +220,7 @@ export function ProjectView({
     versionRef: selectedAppVersion,
   };
 
-  const explorerPane = (
+  const explorerPaneInner = (
     <div
       className={cn(
         "flex h-full flex-col overflow-hidden bg-background",
@@ -250,8 +255,16 @@ export function ProjectView({
     </div>
   );
 
+  const floatingExplorer = explorerFloating && !explorerCollapsed && (
+    <div className="absolute inset-y-0 right-0 z-20 flex w-56 flex-col border-l">
+      {explorerPaneInner}
+    </div>
+  );
+
+  const explorerPane = explorerFloating ? null : explorerPaneInner;
+
   return (
-    <div className="flex h-dvh w-full flex-col overflow-hidden">
+    <div className="relative flex h-dvh w-full flex-col overflow-hidden">
       <ProjectHeaderToolbar
         canCollapseChat={showArtifactPanel}
         chatCollapsed={chatCollapsed}
@@ -264,25 +277,21 @@ export function ProjectView({
         versionRef={selectedAppVersion}
       />
 
-      <div className={cn("min-h-0 flex-1", !showArtifactPanel && "border-t")}>
+      <div
+        className={cn(
+          "relative min-h-0 flex-1",
+          !showArtifactPanel && "border-t",
+        )}
+      >
+        {floatingExplorer}
         {showArtifactPanel ? (
           <SplitPane
             direction="horizontal"
             divider={SplitDivider}
             onResizeEnd={(sizes) => {
-              const [newChat, newCenter, newExplorer] = sizes;
+              const [newChat, _center, newExplorer] = sizes;
               const chatNowOpen = (newChat ?? 0) > 0;
               const explorerNowOpen = (newExplorer ?? 0) > 0;
-              const centerTooSmall = (newCenter ?? 0) < PANEL_SIZES.centerMin;
-              if (centerTooSmall) {
-                void navigate({
-                  from: "/projects/$subdomain",
-                  params: { subdomain: project.subdomain },
-                  replace: true,
-                  search: (prev) => ({ ...prev, artifactPanel: undefined }),
-                });
-                return;
-              }
               if (chatNowOpen !== !chatCollapsed) {
                 void navigate({
                   from: "/projects/$subdomain",
@@ -329,9 +338,7 @@ export function ProjectView({
                   </div>
                 </div>
               )}
-              <Activity mode={showVersions ? "hidden" : "visible"}>
-                <ProjectChat {...sidebarProps} />
-              </Activity>
+              {!showVersions && <ProjectChat {...sidebarProps} />}
             </Pane>
 
             <Pane minSize={200}>
