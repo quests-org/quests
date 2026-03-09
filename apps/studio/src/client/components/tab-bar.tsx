@@ -3,7 +3,7 @@ import { useSelectedTabId } from "@/client/hooks/use-selected-tab-id";
 import { useTabActions } from "@/client/hooks/use-tab-actions";
 import { useTabs } from "@/client/hooks/use-tabs";
 import { Plus } from "lucide-react";
-import { motion, Reorder } from "motion/react";
+import { AnimatePresence, motion, Reorder } from "motion/react";
 
 export default function TabBar() {
   const { addTab, closeTab, reorderTabs, selectTab } = useTabActions();
@@ -28,23 +28,25 @@ export default function TabBar() {
         }}
         values={tabs}
       >
-        {tabs.map((item, index) => (
-          <Tab
-            isSelected={selectedTabId === item.id}
-            item={item}
-            key={item.id}
-            onClick={() => {
-              void selectTab({ id: item.id });
-            }}
-            onRemove={() => {
-              void closeTab({ id: item.id });
-            }}
-            showSeparator={
-              index !== tabs.findIndex((t) => t.id === selectedTabId) - 1 &&
-              tabs.length > 2
-            }
-          />
-        ))}
+        <AnimatePresence initial={false}>
+          {tabs.map((item, index) => (
+            <Tab
+              isSelected={selectedTabId === item.id}
+              item={item}
+              key={item.id}
+              onClick={() => {
+                void selectTab({ id: item.id });
+              }}
+              onRemove={() => {
+                void closeTab({ id: item.id });
+              }}
+              showSeparator={
+                index !== tabs.findIndex((t) => t.id === selectedTabId) - 1 &&
+                tabs.length > 2
+              }
+            />
+          ))}
+        </AnimatePresence>
         <li className="flex shrink-0 items-center">
           <motion.button
             className="mx-2 flex size-6 shrink-0 items-center justify-center rounded-full [-webkit-app-region:no-drag] hover:bg-muted/60"

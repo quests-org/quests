@@ -38,22 +38,22 @@ export const Tab = ({ isSelected, item, onClick, onRemove }: Props) => {
       animate={{
         opacity: 1,
         transition: { duration: 0.1, ease: "easeInOut" },
-        y: 0,
       }}
       className={cn(
         "group border-r border-border/50 [-webkit-app-region:no-drag]",
         isSelected ? "bg-background shadow-sm" : "hover:bg-muted/60",
-        "min-w-0",
+        "overflow-hidden",
         item.pinned ? "px-3" : "w-full max-w-60 flex-1 pl-4",
         "relative flex h-svh items-center justify-between select-none",
       )}
       dragListener={!item.pinned}
-      exit={{ opacity: 0, transition: { duration: 0.1 }, y: 20 }}
-      id={item.id}
-      initial={{
-        opacity: 1,
-        y: 0,
+      exit={{
+        maxWidth: 0,
+        opacity: 0,
+        transition: { duration: 0.15, ease: "linear" },
       }}
+      id={item.id}
+      initial={{ opacity: 1 }}
       onPointerDown={(event: React.PointerEvent<HTMLLIElement>) => {
         if (event.button === 1) {
           // Close tab on middle click
@@ -63,6 +63,7 @@ export const Tab = ({ isSelected, item, onClick, onRemove }: Props) => {
         }
       }}
       title={item.title || ""}
+      transition={{ duration: 0.15, ease: "easeOut", type: "tween" }}
       value={item}
     >
       <motion.div className="flex min-w-0 flex-1 items-center">
