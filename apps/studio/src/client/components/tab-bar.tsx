@@ -45,16 +45,17 @@ export default function TabBar() {
             }
           />
         ))}
-        <motion.button
-          className="mx-2 flex size-6
-             shrink-0 items-center justify-center rounded-full [-webkit-app-region:no-drag] hover:bg-muted/60"
-          onClick={() => {
-            void addTab({ to: "/new-tab" });
-          }}
-          whileTap={{ scale: 0.9 }}
-        >
-          <Plus className="size-4 text-muted-foreground opacity-90 transition-colors hover:text-foreground hover:opacity-100" />
-        </motion.button>
+        <li className="flex shrink-0 items-center">
+          <motion.button
+            className="mx-2 flex size-6 shrink-0 items-center justify-center rounded-full [-webkit-app-region:no-drag] hover:bg-muted/60"
+            onClick={() => {
+              void addTab({ to: "/new-tab" });
+            }}
+            whileTap={{ scale: 0.9 }}
+          >
+            <Plus className="size-4 text-muted-foreground opacity-90 transition-colors hover:text-foreground hover:opacity-100" />
+          </motion.button>
+        </li>
       </Reorder.Group>
     </div>
   );
