@@ -121,6 +121,33 @@ const hasAppModificationsEndpoint = base
     return result.value;
   });
 
+const liveHasAppModifications = base
+  .input(
+    z.object({
+      projectSubdomain: ProjectSubdomainSchema,
+    }),
+  )
+  .output(eventIterator(z.boolean()))
+  .handler(async function* ({ context, input, signal }) {
+    yield call(hasAppModificationsEndpoint, input, { context, signal });
+
+    const partUpdates = publisher.subscribe("part.updated", {
+      signal,
+    });
+
+    for await (const payload of partUpdates) {
+      if (
+        payload.subdomain === input.projectSubdomain &&
+        payload.part.type === "data-gitCommit"
+      ) {
+        yield call(hasAppModificationsEndpoint, input, {
+          context,
+          signal,
+        });
+      }
+    }
+  });
+
 const fileVersionRefs = base
   .input(
     z.object({
@@ -234,39 +261,10 @@ export const projectGit = {
   fileInfo,
   filesAddedSinceInitial,
   fileVersionRefs,
-  hasAppModifications: {
-    check: hasAppModificationsEndpoint,
-    live: {
-      check: base
-        .input(
-          z.object({
-            projectSubdomain: ProjectSubdomainSchema,
-          }),
-        )
-        .output(eventIterator(z.boolean()))
-        .handler(async function* ({ context, input, signal }) {
-          yield call(hasAppModificationsEndpoint, input, { context, signal });
-
-          const partUpdates = publisher.subscribe("part.updated", {
-            signal,
-          });
-
-          for await (const payload of partUpdates) {
-            if (
-              payload.subdomain === input.projectSubdomain &&
-              payload.part.type === "data-gitCommit"
-            ) {
-              yield call(hasAppModificationsEndpoint, input, {
-                context,
-                signal,
-              });
-            }
-          }
-        }),
-    },
-  },
+  hasAppModifications: hasAppModificationsEndpoint,
   listFiles,
   live: {
+    hasAppModifications: liveHasAppModifications,
     listFiles: base
       .input(
         z.object({

@@ -25,6 +25,7 @@ import {
   redirect,
   useNavigate,
 } from "@tanstack/react-router";
+import { useEffect, useRef } from "react";
 import { z } from "zod";
 
 const projectSearchSchema = z.object({
@@ -92,7 +93,7 @@ export const Route = createFileRoute("/_app/projects/$subdomain/")({
 
     const [, hasModifications] = needsArtifactPanelDefault
       ? await safe(
-          rpcClient.workspace.project.git.hasAppModifications.check.call({
+          rpcClient.workspace.project.git.hasAppModifications.call({
             projectSubdomain: params.subdomain,
           }),
         )
@@ -207,7 +208,7 @@ function RouteComponent() {
   );
 
   const { data: hasAppModifications } = useQuery(
-    rpcClient.workspace.project.git.hasAppModifications.live.check.experimental_liveOptions(
+    rpcClient.workspace.project.git.live.hasAppModifications.experimental_liveOptions(
       {
         input: { projectSubdomain: subdomain },
         placeholderData: keepPreviousData,
@@ -221,6 +222,33 @@ function RouteComponent() {
       placeholderData: keepPreviousData,
     }),
   );
+
+  // Tracks the settled (post-load) value. Stays undefined until the query resolves
+  // for the first time, so we don't treat undefined→true as a live transition.
+  const settledHasAppModificationsRef = useRef<boolean | undefined>(undefined);
+
+  useEffect(() => {
+    if (hasAppModifications === undefined) {
+      return;
+    }
+
+    const prev = settledHasAppModificationsRef.current;
+    settledHasAppModificationsRef.current = hasAppModifications;
+
+    // Only navigate when transitioning from false to true after initial load
+    if (
+      prev === false &&
+      hasAppModifications &&
+      artifactPanel?.type !== "app"
+    ) {
+      void navigate({
+        from: "/projects/$subdomain",
+        params: { subdomain },
+        replace: true,
+        search: (s) => ({ ...s, artifactPanel: { type: "app" } }),
+      });
+    }
+  }, [hasAppModifications, artifactPanel, navigate, subdomain]);
 
   const isLoading = isProjectLoading || isProjectStateLoading;
 
