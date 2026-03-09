@@ -1,6 +1,6 @@
 import type { SessionMessagePart } from "@quests/workspace/client";
 
-import { Loader2Icon } from "lucide-react";
+import { ChevronDown, Loader2Icon } from "lucide-react";
 import { throttle } from "radashi";
 import { useEffect, useState } from "react";
 
@@ -104,6 +104,7 @@ export function FileModification({
   }, [cleanedContent, detectedLanguage, resolvedTheme, content]);
 
   const reasoning = part.input?.explanation;
+  const [isExpanded, setIsExpanded] = useState(false);
 
   if (!isDone) {
     return (
@@ -140,11 +141,31 @@ export function FileModification({
 
   return (
     <ToolCard>
-      <ToolCardHeader>
+      <ToolCardHeader
+        className={cn(!isExpanded && !isLoading && "border-b-0")}
+        onClick={
+          isLoading
+            ? undefined
+            : () => {
+                setIsExpanded((v) => !v);
+              }
+        }
+      >
         {isLoading ? (
           <Loader2Icon className="size-3 shrink-0 animate-spin text-accent-foreground/80" />
         ) : (
-          <FileIcon className="size-3 shrink-0" filename={filename || "file"} />
+          <span className="relative size-3 shrink-0">
+            <FileIcon
+              className="size-3 transition-opacity group-hover:opacity-0"
+              filename={filename || "file"}
+            />
+            <ChevronDown
+              className={cn(
+                "absolute inset-0 size-3 text-muted-foreground opacity-0 transition-[opacity,transform] group-hover:opacity-100",
+                isExpanded && "rotate-180",
+              )}
+            />
+          </span>
         )}
         <span
           className={cn(
@@ -186,13 +207,15 @@ export function FileModification({
         )}
       </ToolCardHeader>
 
-      <VirtualizedScrollingText
-        autoScrollToBottom={isLoading}
-        content={cleanedContent}
-        highlightedLines={
-          highlightedLines.length > 0 ? highlightedLines : undefined
-        }
-      />
+      {(isExpanded || isLoading) && (
+        <VirtualizedScrollingText
+          autoScrollToBottom={isLoading}
+          content={cleanedContent}
+          highlightedLines={
+            highlightedLines.length > 0 ? highlightedLines : undefined
+          }
+        />
+      )}
     </ToolCard>
   );
 }

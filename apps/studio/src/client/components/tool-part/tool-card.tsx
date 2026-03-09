@@ -22,18 +22,22 @@ export function ToolCard({
 export function ToolCardHeader({
   children,
   className,
+  onClick,
 }: {
   children: React.ReactNode;
   className?: string;
+  onClick?: () => void;
 }) {
+  const Tag = onClick ? "button" : "div";
   return (
-    <div
+    <Tag
       className={cn(
-        "flex items-center gap-2 border-b border-border px-2 py-1.5 text-xs",
+        "flex w-full items-center gap-2 border-b border-border px-2 py-1.5 text-xs",
         className,
       )}
+      onClick={onClick}
     >
       {children}
-    </div>
+    </Tag>
   );
 }

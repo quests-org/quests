@@ -4,9 +4,17 @@ import type {
 } from "@quests/workspace/client";
 
 import { useSetAtom } from "jotai";
-import { Copy, Loader2Icon, MessageSquare, Terminal } from "lucide-react";
+import {
+  ChevronDown,
+  Copy,
+  Loader2Icon,
+  MessageSquare,
+  Terminal,
+} from "lucide-react";
+import { useState } from "react";
 
 import { appendToPromptAtom } from "../../atoms/prompt-value";
+import { cn } from "../../lib/utils";
 import { ConfirmedIconButton } from "../confirmed-icon-button";
 import { ToolCard, ToolCardHeader } from "./tool-card";
 import { VirtualizedScrollingText } from "./virtualized-scrolling-text";
@@ -26,6 +34,7 @@ export function ShellCommandCard({
   projectSubdomain: ProjectSubdomain;
 }) {
   const appendToPrompt = useSetAtom(appendToPromptAtom);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   if (!part.input) {
     return null;
@@ -65,39 +74,56 @@ export function ShellCommandCard({
   };
 
   const hasError = isError || (hasOutput && part.output.exitCode !== 0);
-
-  const statusText = isLoading
-    ? "Running..."
-    : hasError
-      ? "Error"
-      : hasOutput
-        ? "Success"
-        : "Pending";
-
   const reasoning = part.input.explanation;
+  const hasContent = hasOutput || isError;
+  const showContent = isExpanded || isLoading;
 
   return (
     <ToolCard>
-      <ToolCardHeader>
-        {isLoading ? (
-          <Loader2Icon className="size-3 shrink-0 animate-spin text-accent-foreground/80" />
-        ) : (
-          <Terminal className="size-3 shrink-0 text-muted-foreground" />
+      <ToolCardHeader
+        className={cn(
+          hasContent && "cursor-pointer select-none",
+          !showContent && "border-b-0",
         )}
-        <span className="shrink-0 text-muted-foreground">{statusText}</span>
-        {reasoning && (
-          <span className="ml-auto min-w-0 truncate text-muted-foreground/60">
-            {reasoning}
-          </span>
+        onClick={
+          hasContent
+            ? () => {
+                setIsExpanded((v) => !v);
+              }
+            : undefined
+        }
+      >
+        <span className="relative size-3 shrink-0">
+          {isLoading ? (
+            <Loader2Icon className="size-3 animate-spin text-accent-foreground/80" />
+          ) : (
+            <>
+              <Terminal className="size-3 text-muted-foreground transition-opacity group-hover:opacity-0" />
+              <ChevronDown
+                className={cn(
+                  "absolute inset-0 size-3 text-muted-foreground opacity-0 transition-[opacity,transform] group-hover:opacity-100",
+                  isExpanded && "rotate-180",
+                )}
+              />
+            </>
+          )}
+        </span>
+        {hasError && (
+          <span className="shrink-0 text-muted-foreground">Error</span>
         )}
+        <span className="min-w-0 truncate text-foreground/80">
+          {reasoning ?? command}
+        </span>
       </ToolCardHeader>
 
-      <VirtualizedScrollingText
-        autoScrollToBottom={isLoading}
-        content={content}
-      />
+      {showContent && (
+        <VirtualizedScrollingText
+          autoScrollToBottom={isLoading}
+          content={content}
+        />
+      )}
 
-      {!isLoading && projectSubdomain && (
+      {!isLoading && projectSubdomain && isExpanded && (
         <div className="absolute top-8 right-2 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
           <ConfirmedIconButton
             className="size-5 border border-border/50 bg-muted hover:bg-accent!"
