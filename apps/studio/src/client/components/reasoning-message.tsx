@@ -77,6 +77,10 @@ export const ReasoningMessage = memo(function ReasoningMessage({
 
   const displayText = text.replaceAll("[REDACTED]", "");
 
+  if (!isLoading && !displayText.trim()) {
+    return null;
+  }
+
   const headerContent = (
     <ToolPartListItemCompact
       icon={hideIcon ? undefined : <Brain className="size-3" />}
