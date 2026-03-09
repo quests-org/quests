@@ -99,7 +99,20 @@ export const Route = createFileRoute("/_app/projects/$subdomain/")({
         )
       : ([null, false] as const);
 
-    if (newestSession ?? (hasModifications && needsArtifactPanelDefault)) {
+    // On the lg breakpoint, the explorer floats and covers content. So we close
+    // it by default if the route is loaded when it would float.
+    const isFloatingScreen = window.innerWidth < 1024;
+    const shouldCloseExplorer =
+      (cause === "enter" || isProjectSwitch) &&
+      isFloatingScreen &&
+      search.explorerOpen !== false &&
+      Boolean(search.artifactPanel);
+
+    if (
+      newestSession ||
+      (hasModifications && needsArtifactPanelDefault) ||
+      shouldCloseExplorer
+    ) {
       // eslint-disable-next-line @typescript-eslint/only-throw-error
       throw redirect({
         params: { subdomain: params.subdomain },
@@ -109,6 +122,7 @@ export const Route = createFileRoute("/_app/projects/$subdomain/")({
           ...(hasModifications && needsArtifactPanelDefault
             ? { artifactPanel: { type: "app" } }
             : {}),
+          ...(shouldCloseExplorer ? { explorerOpen: false } : {}),
         }),
         to: "/projects/$subdomain",
       });
