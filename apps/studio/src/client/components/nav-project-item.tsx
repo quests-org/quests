@@ -151,6 +151,7 @@ export const NavProjectItem = memo(function NavProjectItem({
             }}
           >
             <InternalLink
+              className="pr-6"
               onDoubleClick={handleStartEdit}
               openInCurrentTab
               params={{ subdomain: project.subdomain }}
