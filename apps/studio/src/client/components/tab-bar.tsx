@@ -2,8 +2,8 @@ import { Tab } from "@/client/components/tab";
 import { useSelectedTabId } from "@/client/hooks/use-selected-tab-id";
 import { useTabActions } from "@/client/hooks/use-tab-actions";
 import { useTabs } from "@/client/hooks/use-tabs";
-import { motion, Reorder } from "framer-motion";
 import { Plus } from "lucide-react";
+import { motion, Reorder } from "motion/react";
 
 export default function TabBar() {
   const { addTab, closeTab, reorderTabs, selectTab } = useTabActions();

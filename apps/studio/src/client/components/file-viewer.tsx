@@ -3,8 +3,8 @@ import { downloadFile, isFileDownloadable } from "@/client/lib/file-actions";
 import { getLanguageFromFilePath } from "@/client/lib/file-extension-to-language";
 import { getFileType } from "@/client/lib/get-file-type";
 import { useQuery } from "@tanstack/react-query";
-import { motion } from "framer-motion";
 import { Code2, Eye, Loader2, Maximize2, X } from "lucide-react";
+import { motion } from "motion/react";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { tv } from "tailwind-variants";
 

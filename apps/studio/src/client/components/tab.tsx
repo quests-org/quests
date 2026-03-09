@@ -2,8 +2,8 @@ import { AppIcon } from "@/client/components/app-icon";
 import { AppStatusIcon } from "@/client/components/app-status-icon";
 import { cn } from "@/client/lib/utils";
 import { type Tab as TabData } from "@/shared/tabs";
-import { motion, Reorder } from "framer-motion";
 import { X } from "lucide-react";
+import { motion, Reorder } from "motion/react";
 
 const SkeletonIcon = ({ isPinned = false }: { isPinned?: boolean }) => {
   return (
@@ -54,7 +54,7 @@ export const Tab = ({ isSelected, item, onClick, onRemove }: Props) => {
         opacity: 1,
         y: 0,
       }}
-      onPointerDown={(event: React.PointerEvent<HTMLDivElement>) => {
+      onPointerDown={(event: React.PointerEvent<HTMLLIElement>) => {
         if (event.button === 1) {
           // Close tab on middle click
           onRemove();
