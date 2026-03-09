@@ -32,12 +32,12 @@ export function StudioToolbar() {
       className="flex w-full items-end overflow-hidden"
       style={{ height: `${TOOLBAR_HEIGHT}px` }}
     >
-      {/* Sidebar region: transparent so the sidebar vibrancy/background shows through */}
+      {/* Sidebar region: transparent on macOS (vibrancy shows through), bg-sidebar elsewhere */}
       <div
         className={cn(
           "flex h-full shrink-0 items-center border-r border-border [-webkit-app-region:drag]",
           !isSidebarOpen && "hidden",
-          isMacOS() ? "pl-20" : "pl-4",
+          isMacOS() ? "pl-20" : "bg-sidebar pl-4",
         )}
         style={{ width: `${SIDEBAR_WIDTH}px` }}
       >
