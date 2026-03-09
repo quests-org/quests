@@ -74,19 +74,16 @@ export async function createMainWindow() {
   };
 
   const debouncedSaveState = debounce({ delay: 500 }, saveState);
-  const debouncedResizeViews = debounce({ delay: 100 }, resizeViews);
 
   mainWindow.on("close", () => {
     const tabsManager = getTabsManager();
     debouncedSaveState.cancel();
-    debouncedResizeViews.cancel();
     saveState();
     tabsManager?.teardown();
   });
 
   mainWindow.on("closed", () => {
     debouncedSaveState.cancel();
-    debouncedResizeViews.cancel();
     saveState();
   });
 
@@ -131,7 +128,7 @@ export async function createMainWindow() {
     mainWindow,
     onResize: () => {
       debouncedSaveState();
-      debouncedResizeViews();
+      resizeViews();
     },
   });
 
@@ -146,7 +143,7 @@ export async function createMainWindow() {
   });
 
   // Required or the initial size may be wrong
-  debouncedResizeViews();
+  resizeViews();
 
   return mainWindow;
 }
