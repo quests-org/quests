@@ -215,7 +215,7 @@ export function AssistantMessagesFooter({
           </CollapsibleTrigger>
         )}
         {modelsUsed.length > 0 && (
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex min-w-0 items-center gap-2">
             {modelsUsed.map((model, index) => (
               <div
                 className="flex min-w-0 items-center gap-1.5"
@@ -226,7 +226,7 @@ export function AssistantMessagesFooter({
                 )}
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div>
+                    <div className="min-w-0">
                       <ModelChip
                         aiGatewayModel={model.aiGatewayModel}
                         modelId={model.modelId}

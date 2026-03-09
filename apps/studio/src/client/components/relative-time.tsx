@@ -30,7 +30,10 @@ export function RelativeTime({
     <Tooltip>
       <TooltipTrigger asChild>
         <span className={className}>
-          {formatDistanceToNow(date, { addSuffix: true })}
+          {formatDistanceToNow(date, { addSuffix: true }).replace(
+            "less than a minute",
+            "< 1 minute",
+          )}
         </span>
       </TooltipTrigger>
       <TooltipContent>{format(date, "PPpp")}</TooltipContent>
