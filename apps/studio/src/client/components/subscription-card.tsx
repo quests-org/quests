@@ -104,9 +104,9 @@ export function SubscriptionCard() {
   return (
     <Card className="bg-accent/30 p-4 shadow-sm">
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <div className="mb-1 flex items-center gap-2">
+            <div className="mb-1 flex flex-wrap items-center gap-2">
               <h4 className="font-medium">Subscription & Usage</h4>
               <Badge
                 className={cn(planBadgeVariants({ plan: planVariant }))}
@@ -153,7 +153,7 @@ export function SubscriptionCard() {
             </p>
           )}
           {hasPaidPlan && (
-            <div className="flex justify-end gap-2 pt-2">
+            <div className="flex flex-wrap justify-end gap-2 pt-2">
               <Button
                 className="font-medium"
                 onClick={handleManageSubscription}

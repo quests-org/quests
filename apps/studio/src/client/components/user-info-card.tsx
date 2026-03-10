@@ -18,23 +18,23 @@ export function UserInfoCard() {
 
   return (
     <Card className="bg-accent/30 p-4 shadow-sm">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Avatar className="size-16">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <Avatar className="size-10 shrink-0">
             <AvatarImage alt={user.name} src={user.image || undefined} />
-            <AvatarFallback className="text-lg font-medium">
+            <AvatarFallback className="text-sm font-medium">
               {getInitials(user.name)}
             </AvatarFallback>
           </Avatar>
-          <div>
-            <div className="flex items-center gap-2">
-              <h4 className="text-lg font-semibold">{user.name}</h4>
-            </div>
-            <p className="text-sm text-muted-foreground">{user.email}</p>
+          <div className="min-w-0">
+            <h4 className="truncate text-sm font-semibold">{user.name}</h4>
+            <p className="truncate text-xs text-muted-foreground">
+              {user.email}
+            </p>
           </div>
         </div>
         <Button
-          className="font-medium"
+          className="shrink-0 font-medium"
           onClick={() => {
             void signOut();
           }}

@@ -41,9 +41,9 @@ export function AccountInfo() {
             {hasToken ? (
               <>
                 {isLoading && (
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-4">
-                      <Skeleton className="size-16 rounded-full" />
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <Skeleton className="size-10 shrink-0 rounded-full" />
                       <div className="space-y-2">
                         <Skeleton className="h-5 w-32" />
                         <Skeleton className="h-4 w-48" />
@@ -102,7 +102,7 @@ export function AccountInfo() {
                 )}
               </>
             ) : (
-              <div className="flex items-start justify-between gap-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="space-y-0.5">
                   <div className="text-sm font-medium">
                     Access the best AI models for free
