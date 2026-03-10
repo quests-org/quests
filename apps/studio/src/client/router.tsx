@@ -8,6 +8,8 @@ import {
   createRouter as createTanStackRouter,
 } from "@tanstack/react-router";
 
+import type { FileRoutesById } from "./routeTree.gen";
+
 import { telemetry } from "./lib/telemetry";
 import { routeTree } from "./routeTree.gen";
 
@@ -62,6 +64,23 @@ const history = createHashHistory({});
 
 export const { queryClient, router } = createRouter({ history });
 
+// Routes where re-navigating to the same path is skipped to preserve query
+// parameters. Without this, clicking an already-open project in the sidebar
+// would strip all search params by navigating to the bare path.
+const NO_REPEAT_NAVIGATE_ROUTE_IDS = new Set<keyof FileRoutesById>([
+  "/_app/projects/$subdomain/",
+]);
+
 window.api.onNavigate((url) => {
+  const currentPath = router.state.location.pathname;
+  if (currentPath === url) {
+    const matches = router.matchRoutes(url, {});
+    const isNoRepeat = matches.some((m) =>
+      NO_REPEAT_NAVIGATE_ROUTE_IDS.has(m.routeId),
+    );
+    if (isNoRepeat) {
+      return;
+    }
+  }
   void router.navigate({ to: url });
 });
