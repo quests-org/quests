@@ -12,6 +12,10 @@ import { type FileOperationResult } from "./types";
 
 const COMMAND_NAME = "ts";
 export const TS_COMMAND = {
+  // "tsx" is a well-known CLI tool for running TypeScript code, so if the agent
+  // attempts to use it we silently remap it to this command rather than failing.
+  // It is intentionally omitted from the tool description and visible command list.
+  alias: "tsx",
   description: "Execute a TypeScript or JavaScript file, powered by Jiti.",
   examples: [`${COMMAND_NAME} scripts/setup.ts`],
   name: COMMAND_NAME,

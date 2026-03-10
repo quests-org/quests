@@ -154,11 +154,14 @@ export const RunShellCommand = setupTool({
       return executeError(parseResult.error.message);
     }
 
-    const [commandName, ...args] = parseResult.value;
+    const [rawCommandName, ...args] = parseResult.value;
 
-    if (!commandName) {
+    if (!rawCommandName) {
       return executeError("No command name found when parsing command.");
     }
+
+    const commandName =
+      rawCommandName === TS_COMMAND.alias ? TS_COMMAND.name : rawCommandName;
 
     const commandValidation = CommandNameSchema.safeParse(commandName);
     if (!commandValidation.success) {
@@ -200,7 +203,9 @@ export const RunShellCommand = setupTool({
     try {
       const parseResult = translateShellCommand(input.command);
       if (parseResult.isOk()) {
-        const [commandName] = parseResult.value;
+        const [rawName] = parseResult.value;
+        const commandName =
+          rawName === TS_COMMAND.alias ? TS_COMMAND.name : rawName;
         if (commandName === TS_COMMAND.name) {
           // Allow extra time for `pnpm dlx jiti` if not cached
           timeoutMs += ms("10 seconds");
