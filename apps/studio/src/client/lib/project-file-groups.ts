@@ -21,10 +21,7 @@ export function hasVisibleProjectFiles(
 ): boolean {
   return rawFiles.some(
     (f) =>
-      !isProjectFileSrcFile(f.filePath) &&
-      !shouldFilterProjectFile(f.filePath) &&
-      // TODO(skills): Remove this once skills are no longer in the project folder
-      !f.filePath.startsWith("./skills/"),
+      !isProjectFileSrcFile(f.filePath) && !shouldFilterProjectFile(f.filePath),
   );
 }
 
@@ -43,7 +40,12 @@ const ROOT_SOURCE_EXTENSIONS = [
   ".tsx",
 ];
 
+const FILTERED_DIRECTORY_PREFIXES = [".agents/"];
+
 export function shouldFilterProjectFile(filePath: string): boolean {
+  if (isFilteredFolder(filePath)) {
+    return true;
+  }
   const baseName = filenameFromFilePath(filePath).toLowerCase();
   if (
     FILTERED_FILENAMES.some((filtered) => baseName === filtered.toLowerCase())
@@ -55,4 +57,11 @@ export function shouldFilterProjectFile(filePath: string): boolean {
     return ROOT_SOURCE_EXTENSIONS.some((ext) => baseName.endsWith(ext));
   }
   return false;
+}
+
+function isFilteredFolder(filePath: string): boolean {
+  const normalized = filePath.startsWith("./") ? filePath.slice(2) : filePath;
+  return FILTERED_DIRECTORY_PREFIXES.some((prefix) =>
+    normalized.startsWith(prefix),
+  );
 }

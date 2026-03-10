@@ -112,9 +112,7 @@ export function ProjectExplorer({
     for (const f of files) {
       if (
         isProjectFileSrcFile(f.filePath) ||
-        shouldFilterProjectFile(f.filePath) ||
-        // TODO(skills): Remove this once skills are no longer in the project folder
-        f.filePath.startsWith("./skills/")
+        shouldFilterProjectFile(f.filePath)
       ) {
         hiddenFiles.push(toViewerFile(f));
       } else {

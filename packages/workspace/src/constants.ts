@@ -5,6 +5,8 @@ export const REGISTRY_FOLDER_NAMES = {
 
 export const APP_FOLDER_NAMES = {
   agentRetrieved: "agent-retrieved",
+  agents: ".agents",
+  agentsSkills: "skills",
   output: "output",
   private: ".quests",
   scripts: "scripts",
