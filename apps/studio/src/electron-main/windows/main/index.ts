@@ -37,6 +37,8 @@ export async function createMainWindow() {
 
   const mainWindow = new BrowserWindow({
     ...getWindowState().bounds,
+    minHeight: 480,
+    minWidth: 720,
     show: false,
     titleBarStyle: process.platform === "darwin" ? "hiddenInset" : "hidden",
     trafficLightPosition: { x: 12, y: 12 },
