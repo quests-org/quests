@@ -88,7 +88,10 @@ const create = base
       if (sessionId) {
         finalSessionId = sessionId;
       } else {
-        const sessionResult = await createSession({ appConfig });
+        const sessionResult = await createSession({
+          appConfig,
+          sessionId: StoreId.newSessionId(),
+        });
         if (sessionResult.isErr()) {
           context.workspaceConfig.captureException(sessionResult.error);
           throw toORPCError(sessionResult.error, errors);

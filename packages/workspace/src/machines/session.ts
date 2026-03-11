@@ -133,6 +133,7 @@ export const sessionMachine = setup({
             const result = await createSession({
               appConfig,
               parentSessionId,
+              sessionId,
               sessionNamePrefix,
               signal,
             });

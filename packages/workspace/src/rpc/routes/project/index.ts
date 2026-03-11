@@ -185,6 +185,7 @@ const create = base
 
       const sessionResult = await createSession({
         appConfig: projectConfig,
+        sessionId: StoreId.newSessionId(),
         signal,
       });
 

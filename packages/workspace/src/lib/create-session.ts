@@ -1,4 +1,4 @@
-import { StoreId } from "../schemas/store-id";
+import { type StoreId } from "../schemas/store-id";
 import { type AppConfig } from "./app-config/types";
 import { generateSessionTitle } from "./generate-session-title";
 import { Store } from "./store";
@@ -6,11 +6,13 @@ import { Store } from "./store";
 export async function createSession({
   appConfig,
   parentSessionId,
+  sessionId,
   sessionNamePrefix,
   signal,
 }: {
   appConfig: AppConfig;
   parentSessionId?: StoreId.Session;
+  sessionId: StoreId.Session;
   sessionNamePrefix?: string;
   signal?: AbortSignal;
 }) {
@@ -19,7 +21,6 @@ export async function createSession({
     sessionNamePrefix,
     signal,
   });
-  const sessionId = StoreId.newSessionId();
   const result = await Store.saveSession(
     {
       ...(parentSessionId ? { parentId: parentSessionId } : {}),
