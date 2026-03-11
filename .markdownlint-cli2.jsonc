@@ -1,0 +1,9 @@
+{
+  "ignores": [
+    "**/node_modules/**",
+    "**/out/**",
+    "**/dist/**",
+    "registry/**",
+    "**/*.local/**"
+  ]
+}
