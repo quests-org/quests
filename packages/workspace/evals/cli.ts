@@ -44,18 +44,29 @@ const outputDir = path.resolve(
 
 function printSummary({
   outputDir: out,
+  rollup,
   workspaceRootDir,
 }: {
   outputDir: string;
+  rollup: Awaited<ReturnType<typeof generateReport>>;
   workspaceRootDir: string;
 }) {
   const relativeOutputDir = `./${path.relative(process.cwd(), out)}`;
+  const { assertions } = rollup;
+  const passRate =
+    assertions.total > 0 ? `${Math.round(assertions.pass_rate * 100)}%` : "n/a";
   process.stdout.write(
     [
       "",
       "┌─ Eval Results ──────────────────────────────────────",
-      `│  Workspace : ${workspaceRootDir}`,
-      `│  Results   : ${relativeOutputDir}`,
+      `│  Workspace  : ${workspaceRootDir}`,
+      `│  Results    : ${relativeOutputDir}`,
+      `│  Projects   : ${rollup.projects}`,
+      ...(assertions.total > 0
+        ? [
+            `│  Assertions : ${assertions.passed}/${assertions.total} passed (${passRate})`,
+          ]
+        : []),
       "└─────────────────────────────────────────────────────",
       "",
     ].join("\n"),
@@ -77,19 +88,25 @@ if (subcommand === "report") {
   const absoluteWorkspaceDir = path.resolve(workspaceRootDir);
   process.stdout.write(`Workspace: ${absoluteWorkspaceDir}\n`);
 
-  await generateReport({
+  const rollup = await generateReport({
+    evalCases: EVALS,
     includeContextMessages,
     outputDir,
     workspaceRootDir: absoluteWorkspaceDir,
   });
 
-  printSummary({ outputDir, workspaceRootDir: absoluteWorkspaceDir });
+  printSummary({ outputDir, rollup, workspaceRootDir: absoluteWorkspaceDir });
 } else {
   const { workspaceRootDir } = await runEvals(EVALS);
 
   process.stdout.write(`\nAll evals complete. Generating report...\n`);
 
-  await generateReport({ includeContextMessages, outputDir, workspaceRootDir });
+  const rollup = await generateReport({
+    evalCases: EVALS,
+    includeContextMessages,
+    outputDir,
+    workspaceRootDir,
+  });
 
-  printSummary({ outputDir, workspaceRootDir });
+  printSummary({ outputDir, rollup, workspaceRootDir });
 }

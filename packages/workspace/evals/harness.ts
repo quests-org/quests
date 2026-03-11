@@ -12,17 +12,34 @@ import { publisher } from "../src/rpc/publisher";
 import { project as projectRoute } from "../src/rpc/routes/project";
 import { session as sessionRoute } from "../src/rpc/routes/session";
 import { type FileUpload } from "../src/schemas/file-upload";
+import { type Session } from "../src/schemas/session";
 import { type SessionMessagePart } from "../src/schemas/session/message-part";
 import { type StoreId } from "../src/schemas/store-id";
 import { buildProviderConfigs } from "./utils";
 
-interface EvalCase {
+export interface Assertion {
+  check: (ctx: AssertionContext) => AssertionResult | Promise<AssertionResult>;
+  text: string;
+}
+
+export interface AssertionResult {
+  evidence: string;
+  passed: boolean;
+  text: string;
+}
+
+export interface EvalCase {
+  assertions?: Assertion[];
   files?: FileUpload.Type[];
   folders?: { path: string }[];
   modelURI: string;
   name: string;
   prompt: string;
   shouldStop?: (part: SessionMessagePart.Type) => boolean;
+}
+
+interface AssertionContext {
+  sessions: Session.WithMessagesAndParts[];
 }
 
 export function defineEval(evalCase: EvalCase): EvalCase {

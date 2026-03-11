@@ -9,8 +9,10 @@ import { alphabetical } from "radashi";
 
 import { type Session } from "../schemas/session";
 import { SessionMessage } from "../schemas/session/message";
+import { type SessionMessagePart } from "../schemas/session/message-part";
 import { type StoreId } from "../schemas/store-id";
 import { TOOLS_FOR_MODEL_OUTPUT } from "../tools/all";
+import { isToolPart } from "./is-tool-part";
 
 export async function sessionToMarkdown(
   rootSession: Session.WithMessagesAndParts,
@@ -99,6 +101,32 @@ export async function sessionToMarkdown(
     }
     parts.push("");
     i++;
+  }
+
+  const lastMessage = orderedMessages.at(-1);
+  if (lastMessage?.role === "assistant") {
+    const pendingToolParts = lastMessage.parts.filter(
+      (p) =>
+        isToolPart(p) &&
+        (p.state === "input-available" || p.state === "input-streaming"),
+    ) as SessionMessagePart.ToolPart[];
+
+    if (pendingToolParts.length > 0) {
+      turn++;
+      parts.push(`## Assistant (Turn ${turn})`, "");
+      for (const part of pendingToolParts) {
+        toolCounter.count++;
+        // Tool name is encoded in the type as "tool-{name}"
+        const toolName = part.type.slice("tool-".length);
+        parts.push(
+          "",
+          `### Tool Call ${toolCounter.count}: ${toolName} *(incomplete)*`,
+          "",
+          inputToXml(toolName, part.input),
+        );
+      }
+      parts.push("");
+    }
   }
 
   return parts.join("\n");
