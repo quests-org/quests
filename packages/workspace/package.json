@@ -20,6 +20,8 @@
   "scripts": {
     "check:lint": "eslint . --max-warnings 0 --cache",
     "check:types": "tsc --noEmit",
+    "eval": "NODE_ENV=development NODE_OPTIONS=--disable-warning=ExperimentalWarning tsx evals/cli.ts run",
+    "eval:report": "NODE_ENV=development NODE_OPTIONS=--disable-warning=ExperimentalWarning tsx evals/cli.ts report",
     "script:dump-sessions": "tsx scripts/dump-sessions.ts",
     "script:run-workspace": "NODE_ENV=development tsx scripts/run-workspace.ts",
     "test": "vitest",

@@ -3,5 +3,5 @@
   "compilerOptions": {
     "plugins": [{ "name": "xstate-tsserver" }]
   },
-  "include": ["src", "*.ts", "*.js", "*.cjs", "scripts", "__mocks__"]
+  "include": ["src", "*.ts", "*.js", "*.cjs", "scripts", "evals", "__mocks__"]
 }
