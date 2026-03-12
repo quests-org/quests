@@ -120,6 +120,9 @@ importers:
       knip:
         specifier: ^5.75.2
         version: 5.75.2(@types/node@22.19.2)(typescript@5.9.2)
+      markdownlint:
+        specifier: ^0.40.0
+        version: 0.40.0
       markdownlint-cli2:
         specifier: ^0.21.0
         version: 0.21.0
