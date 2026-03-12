@@ -1,8 +1,5 @@
 import { type SessionMessagePart } from "../../src/schemas/session/message-part";
 import { type Assertion, defineEval } from "../harness";
-import { modelURI } from "../utils";
-
-const MODEL = modelURI.openRouter("anthropic/claude-sonnet-4.5");
 
 const stopOnWebSearch = (part: SessionMessagePart.Type) =>
   part.type === "tool-web_search" &&
@@ -48,57 +45,41 @@ export const WEB_SEARCH_EVALS = [
   // Should trigger web search
   defineEval({
     assertions: [assertUsedWebSearch],
-    modelURI: MODEL,
     name: "arc-raiders-latest-update",
     prompt: "What is the latest update to Arc Raiders?",
     shouldStop: stopOnWebSearch,
   }),
   defineEval({
     assertions: [assertUsedWebSearch],
-    modelURI: MODEL,
-    name: "current-weather-new-york",
-    prompt: "What's the weather like in New York right now?",
+    // Ambiguous: model knows what BTC is, but price is time-sensitive
+    name: "bitcoin-price-today",
+    prompt: "What's the price of Bitcoin today?",
     shouldStop: stopOnWebSearch,
   }),
   defineEval({
     assertions: [assertUsedWebSearch],
-    modelURI: MODEL,
-    name: "recent-spacex-launch",
-    prompt: "Did SpaceX launch anything recently?",
-    shouldStop: stopOnWebSearch,
-  }),
-  defineEval({
-    assertions: [assertUsedWebSearch],
-    modelURI: MODEL,
-    name: "latest-iphone-release",
-    prompt: "What's the newest iPhone out right now?",
-    shouldStop: stopOnWebSearch,
-  }),
-  defineEval({
-    assertions: [assertUsedWebSearch],
-    modelURI: MODEL,
-    name: "todays-top-news",
-    prompt: "What are the big news stories today?",
+    // Tricky: a well-known company but their current status is time-sensitive
+    name: "openai-current-valuation",
+    prompt: "What is OpenAI's current valuation?",
     shouldStop: stopOnWebSearch,
   }),
 
   // Should NOT trigger web search
   defineEval({
     assertions: [assertDidNotUseWebSearch],
-    modelURI: MODEL,
-    name: "python-hello-world",
-    prompt: "Write a hello world program in Python",
-  }),
-  defineEval({
-    assertions: [assertDidNotUseWebSearch],
-    modelURI: MODEL,
     name: "what-is-a-linked-list",
     prompt: "Can you explain how a linked list works?",
   }),
   defineEval({
     assertions: [assertDidNotUseWebSearch],
-    modelURI: MODEL,
-    name: "sort-array-javascript",
-    prompt: "How do I sort an array of numbers in JavaScript?",
+    // Tricky: sounds like it could be recent news, but the answer is static
+    name: "why-was-the-eiffel-tower-built",
+    prompt: "Why was the Eiffel Tower built?",
+  }),
+  defineEval({
+    assertions: [assertDidNotUseWebSearch],
+    // Tricky: model knows GPT-4 well, might feel tempted to search for "latest" info
+    name: "explain-gpt4-architecture",
+    prompt: "Can you explain how GPT-4 works at a high level?",
   }),
 ];

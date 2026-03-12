@@ -1,4 +1,7 @@
-import { type AIGatewayProviderConfig } from "@quests/ai-gateway";
+import {
+  AIGatewayModelURI,
+  type AIGatewayProviderConfig,
+} from "@quests/ai-gateway";
 import { AIProviderConfigIdSchema } from "@quests/shared";
 import path from "node:path";
 import { ulid } from "ulid";
@@ -55,7 +58,9 @@ function providerConfigId(type: AIGatewayProviderConfig.Type["type"]): string {
 
 export const modelURI = {
   openRouter: (model: string) =>
-    `${model}?provider=openrouter&providerConfigId=${providerConfigId("openrouter")}`,
+    AIGatewayModelURI.Schema.parse(
+      `${model}?provider=openrouter&providerConfigId=${providerConfigId("openrouter")}`,
+    ),
 };
 
 export function buildProviderConfigs(): AIGatewayProviderConfig.Type[] {

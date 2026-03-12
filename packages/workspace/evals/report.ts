@@ -3,6 +3,7 @@ import path from "node:path";
 
 import { createAppConfig } from "../src/lib/app-config/create";
 import { getProjects } from "../src/lib/get-apps";
+import { getMigratedProjectState } from "../src/lib/project-state-store";
 import { sessionToMarkdown } from "../src/lib/session-to-markdown";
 import { Store } from "../src/lib/store";
 import { getProjectUsageSummary } from "../src/lib/usage-summary";
@@ -18,6 +19,7 @@ interface RollupSummary {
     passed: number;
     total: number;
   };
+  modelURIs: string[];
   projects: number;
 }
 
@@ -45,6 +47,7 @@ export async function generateReport({
     process.stdout.write("No projects found in workspace.\n");
     return {
       assertions: { failed: 0, pass_rate: 0, passed: 0, total: 0 },
+      modelURIs: [],
       projects: 0,
     };
   }
@@ -55,12 +58,23 @@ export async function generateReport({
 
   let rollupPassed = 0;
   let rollupFailed = 0;
+  const rollupModelURIs = new Set<string>();
 
   for (const project of projects) {
     const appConfig = createAppConfig({
       subdomain: project.subdomain,
       workspaceConfig,
     });
+
+    const projectState = await getMigratedProjectState({
+      appDir: appConfig.appDir,
+      captureException: workspaceConfig.captureException,
+      configs: workspaceConfig.getAIProviderConfigs(),
+    });
+    const projectModelURI = projectState.selectedModelURI;
+    if (projectModelURI) {
+      rollupModelURIs.add(projectModelURI);
+    }
 
     const sessionsResult = await Store.getSessions(appConfig, {
       includeChildSessions: true,
@@ -150,10 +164,20 @@ export async function generateReport({
     });
 
     const evalCase = evalCasesByName.get(project.folderName);
+    await fs.writeFile(
+      path.join(projectOutputDir, "eval-case.json"),
+      JSON.stringify(
+        { modelURI: projectModelURI, name: project.folderName },
+        null,
+        2,
+      ),
+      "utf8",
+    );
+
     if (evalCase?.assertions && evalCase.assertions.length > 0) {
       const sessions = [...sessionMap.values()];
       const assertionResults: AssertionResult[] = await Promise.all(
-        evalCase.assertions.map((a) => a.check({ sessions })),
+        evalCase.assertions.map((a) => a.check({ appConfig, sessions })),
       );
       const passed = assertionResults.filter((r) => r.passed).length;
       const failed = assertionResults.filter((r) => !r.passed).length;
@@ -196,6 +220,7 @@ export async function generateReport({
       passed: rollupPassed,
       total: rollupTotal,
     },
+    modelURIs: [...rollupModelURIs],
     projects: projects.length,
   };
 

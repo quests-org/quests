@@ -61,6 +61,11 @@ function printSummary({
       "┌─ Eval Results ──────────────────────────────────────",
       `│  Workspace  : ${workspaceRootDir}`,
       `│  Results    : ${relativeOutputDir}`,
+      ...(rollup.modelURIs.length > 0
+        ? rollup.modelURIs.map(
+            (m, i) => `│  ${i === 0 ? "Models     " : "           "} : ${m}`,
+          )
+        : []),
       `│  Projects   : ${rollup.projects}`,
       ...(assertions.total > 0
         ? [

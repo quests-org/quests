@@ -7,15 +7,17 @@ import path from "node:path";
 import { ulid } from "ulid";
 import { createActor } from "xstate";
 
+import type { Session } from "../src/schemas/session";
+
 import { workspaceMachine } from "../src/electron";
+import { type AppConfig } from "../src/lib/app-config/types";
 import { publisher } from "../src/rpc/publisher";
 import { project as projectRoute } from "../src/rpc/routes/project";
 import { session as sessionRoute } from "../src/rpc/routes/session";
 import { type FileUpload } from "../src/schemas/file-upload";
-import { type Session } from "../src/schemas/session";
 import { type SessionMessagePart } from "../src/schemas/session/message-part";
 import { type StoreId } from "../src/schemas/store-id";
-import { buildProviderConfigs } from "./utils";
+import { buildProviderConfigs, modelURI } from "./utils";
 
 export interface Assertion {
   check: (ctx: AssertionContext) => AssertionResult | Promise<AssertionResult>;
@@ -28,17 +30,19 @@ export interface AssertionResult {
   text: string;
 }
 
+const DEFAULT_MODEL_URI = modelURI.openRouter("anthropic/claude-haiku-4.5");
+
 export interface EvalCase {
   assertions?: Assertion[];
   files?: FileUpload.Type[];
   folders?: { path: string }[];
-  modelURI: string;
   name: string;
   prompt: string;
   shouldStop?: (part: SessionMessagePart.Type) => boolean;
 }
 
 interface AssertionContext {
+  appConfig: AppConfig;
   sessions: Session.WithMessagesAndParts[];
 }
 
@@ -77,7 +81,8 @@ export async function runEvals(
 
   actor.start();
 
-  process.stdout.write(`Workspace: ${workspaceRootDir}\n\n`);
+  process.stdout.write(`Workspace: ${workspaceRootDir}\n`);
+  process.stdout.write(`Model    : ${DEFAULT_MODEL_URI}\n\n`);
 
   for (const evalCase of evals) {
     process.stdout.write(`[${evalCase.name}] Starting...\n`);
@@ -92,7 +97,7 @@ export async function runEvals(
       {
         files: evalCase.files,
         folders: evalCase.folders,
-        modelURI: evalCase.modelURI,
+        modelURI: DEFAULT_MODEL_URI,
         name: evalCase.name,
         preferredFolderName: evalCase.name,
         prompt: evalCase.prompt,
