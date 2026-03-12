@@ -1,4 +1,5 @@
 const IS_DEVELOPMENT = process.env.NODE_ENV === "development";
+const IS_TEST = process.env.NODE_ENV === "test";
 
 export const APPS_SERVER_API_PATH = "/_quests";
 export const SHIM_IFRAME_BASE_PATH = `${APPS_SERVER_API_PATH}/shim-iframe`;
@@ -10,8 +11,16 @@ export const APPS_SERVER_DOMAINS = [
   LOCAL_LOOPBACK_APPS_SERVER_DOMAIN,
   LOCALHOST_APPS_SERVER_DOMAIN,
 ];
-export const DEFAULT_APPS_SERVER_PORT = IS_DEVELOPMENT ? 8100 : 9100;
-export const DEFAULT_RUNTIME_BASE_PORT = IS_DEVELOPMENT ? 8200 : 9200;
+export const DEFAULT_APPS_SERVER_PORT = IS_DEVELOPMENT
+  ? 8100
+  : IS_TEST
+    ? 7100
+    : 9100;
+export const DEFAULT_RUNTIME_BASE_PORT = IS_DEVELOPMENT
+  ? 8200
+  : IS_TEST
+    ? 7200
+    : 9200;
 export const SHIM_SCRIPTS = {
   iframeHTML: "index.html",
   iframeJS: "index.js",
