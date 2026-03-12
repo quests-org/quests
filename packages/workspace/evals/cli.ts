@@ -14,12 +14,16 @@ import { generateReport } from "./report";
 const { positionals, values } = parseArgs({
   allowPositionals: true,
   options: {
+    concurrency: { default: "8", type: "string" },
+    "dry-run": { default: false, type: "boolean" },
     "include-context": { default: false, type: "boolean" },
   },
 });
 
 const subcommand = positionals[0];
 const includeContextMessages = values["include-context"];
+const dryRun = values["dry-run"];
+const concurrency = Number.parseInt(values.concurrency, 10);
 
 if (subcommand !== "run" && subcommand !== "report") {
   process.stderr.write(
@@ -102,16 +106,18 @@ if (subcommand === "report") {
 
   printSummary({ outputDir, rollup, workspaceRootDir: absoluteWorkspaceDir });
 } else {
-  const { workspaceRootDir } = await runEvals(EVALS);
+  const { workspaceRootDir } = await runEvals(EVALS, { concurrency, dryRun });
 
-  process.stdout.write(`\nAll evals complete. Generating report...\n`);
+  if (!dryRun) {
+    process.stdout.write(`\nAll evals complete. Generating report...\n`);
 
-  const rollup = await generateReport({
-    evalCases: EVALS,
-    includeContextMessages,
-    outputDir,
-    workspaceRootDir,
-  });
+    const rollup = await generateReport({
+      evalCases: EVALS,
+      includeContextMessages,
+      outputDir,
+      workspaceRootDir,
+    });
 
-  printSummary({ outputDir, rollup, workspaceRootDir });
+    printSummary({ outputDir, rollup, workspaceRootDir });
+  }
 }

@@ -4,13 +4,17 @@ import { aiGatewayApp } from "@quests/ai-gateway";
 import { execa } from "execa";
 import os from "node:os";
 import path from "node:path";
+import * as _ from "radashi";
 import { ulid } from "ulid";
 import { createActor } from "xstate";
 
 import type { Session } from "../src/schemas/session";
 
+import { env } from "../scripts/lib/env";
 import { workspaceMachine } from "../src/electron";
+import { createAppConfig } from "../src/lib/app-config/create";
 import { type AppConfig } from "../src/lib/app-config/types";
+import { isToolPart } from "../src/lib/is-tool-part";
 import { publisher } from "../src/rpc/publisher";
 import { project as projectRoute } from "../src/rpc/routes/project";
 import { session as sessionRoute } from "../src/rpc/routes/session";
@@ -38,7 +42,10 @@ export interface EvalCase {
   folders?: { path: string }[];
   name: string;
   prompt: string;
-  shouldStop?: (part: SessionMessagePart.Type) => boolean;
+  shouldStop?: (
+    part: SessionMessagePart.Type,
+    appConfig: AppConfig,
+  ) => boolean | Promise<boolean>;
 }
 
 interface AssertionContext {
@@ -52,10 +59,32 @@ export function defineEval(evalCase: EvalCase): EvalCase {
 
 export async function runEvals(
   evals: EvalCase[],
+  {
+    concurrency = 3,
+    dryRun = false,
+  }: { concurrency?: number; dryRun?: boolean } = {},
 ): Promise<{ workspaceRootDir: string }> {
   const workspaceRootDir = path.join(os.tmpdir(), "quests-evals", ulid());
   const providerConfigs = buildProviderConfigs();
-  const registryDir = path.resolve(import.meta.dirname, "../../../registry");
+  const registryDir = env.QUESTS_REGISTRY_DIR_PATH
+    ? path.resolve(env.QUESTS_REGISTRY_DIR_PATH)
+    : path.resolve(import.meta.dirname, "../../../registry");
+
+  process.stdout.write(`Workspace  : ${workspaceRootDir}\n`);
+  process.stdout.write(
+    `Registry   : ${registryDir}${env.QUESTS_REGISTRY_DIR_PATH ? " (from QUESTS_REGISTRY_DIR_PATH)" : ""}\n`,
+  );
+  process.stdout.write(`Model      : ${DEFAULT_MODEL_URI}\n`);
+  process.stdout.write(`Concurrency: ${concurrency}\n`);
+  process.stdout.write(`Evals (${evals.length}):\n`);
+  for (const evalCase of evals) {
+    process.stdout.write(`  - ${evalCase.name}\n`);
+  }
+  process.stdout.write("\n");
+
+  if (dryRun) {
+    return { workspaceRootDir };
+  }
 
   const actor = createActor(workspaceMachine, {
     input: {
@@ -81,10 +110,7 @@ export async function runEvals(
 
   actor.start();
 
-  process.stdout.write(`Workspace: ${workspaceRootDir}\n`);
-  process.stdout.write(`Model    : ${DEFAULT_MODEL_URI}\n\n`);
-
-  for (const evalCase of evals) {
+  await _.parallel(concurrency, evals, async (evalCase) => {
     process.stdout.write(`[${evalCase.name}] Starting...\n`);
 
     const context = {
@@ -123,13 +149,7 @@ export async function runEvals(
 
           const part = event.part;
 
-          if (
-            part.type.startsWith("tool-") &&
-            "state" in part &&
-            (part.state === "input-available" ||
-              part.state === "output-available" ||
-              part.state === "output-error")
-          ) {
+          if (isToolPart(part) && part.state !== "input-streaming") {
             const stream =
               part.state === "output-error" ? process.stderr : process.stdout;
             stream.write(
@@ -137,7 +157,15 @@ export async function runEvals(
             );
           }
 
-          if (evalCase.shouldStop?.(part)) {
+          if (
+            await evalCase.shouldStop?.(
+              part,
+              createAppConfig({
+                subdomain,
+                workspaceConfig: context.workspaceConfig,
+              }),
+            )
+          ) {
             process.stdout.write(
               `[${evalCase.name}] shouldStop returned true, stopping session...\n`,
             );
@@ -155,7 +183,7 @@ export async function runEvals(
     abortController.abort();
 
     process.stdout.write(`[${evalCase.name}] Done.\n`);
-  }
+  });
 
   actor.stop();
 

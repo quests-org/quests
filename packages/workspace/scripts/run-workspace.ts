@@ -51,7 +51,9 @@ for (const { envKey, type } of providerConfigs) {
   }
 }
 
-const registryDir = path.resolve("../../registry");
+const registryDir = env.QUESTS_REGISTRY_DIR_PATH
+  ? path.resolve(env.QUESTS_REGISTRY_DIR_PATH)
+  : path.resolve("../../registry");
 const actor = createActor(workspaceMachine, {
   input: {
     aiGatewayApp,

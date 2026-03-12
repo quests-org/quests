@@ -14,6 +14,7 @@ export const env = createEnv({
     QUESTS_GROQ_API_KEY: z.string().optional(),
     QUESTS_OPENAI_API_KEY: z.string().optional(),
     QUESTS_OPENROUTER_API_KEY: z.string().optional(),
+    QUESTS_REGISTRY_DIR_PATH: z.string().optional(),
     QUESTS_ZAI_API_KEY: z.string().optional(),
   },
 });

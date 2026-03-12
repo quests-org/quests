@@ -1,4 +1,4 @@
-import { PDF_EVALS } from "./cases/pdf";
+import { RETRIEVAL_EVALS } from "./cases/retrieval";
 import { WEB_SEARCH_EVALS } from "./cases/web-search";
 
-export const EVALS = [...PDF_EVALS, ...WEB_SEARCH_EVALS];
+export const EVALS = [...RETRIEVAL_EVALS, ...WEB_SEARCH_EVALS];
