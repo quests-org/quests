@@ -24,13 +24,12 @@ const subcommand = positionals[0];
 const includeContextMessages = values["include-context"];
 const dryRun = values["dry-run"];
 const concurrency = Number.parseInt(values.concurrency, 10);
+const nameFilter = positionals[1];
 
 if (subcommand !== "run" && subcommand !== "report") {
+  process.stderr.write("Usage: tsx evals/run.ts <run|report> [options]\n");
   process.stderr.write(
-    "Usage: tsx evals/run.ts <run|report> [workspace-dir]\n",
-  );
-  process.stderr.write(
-    "  run              Run all evals then generate report\n",
+    "  run [pattern]    Run evals matching name pattern, then generate report\n",
   );
   process.stderr.write(
     "  report <dir>     Generate report from an existing workspace dir\n",
@@ -106,13 +105,27 @@ if (subcommand === "report") {
 
   printSummary({ outputDir, rollup, workspaceRootDir: absoluteWorkspaceDir });
 } else {
-  const { workspaceRootDir } = await runEvals(EVALS, { concurrency, dryRun });
+  const filteredEvals = nameFilter
+    ? EVALS.filter((e) =>
+        e.name.toLowerCase().includes(nameFilter.toLowerCase()),
+      )
+    : EVALS;
+
+  if (filteredEvals.length === 0) {
+    process.stderr.write(`No evals matched pattern: "${nameFilter ?? ""}"\n`);
+    throw new Error(`No evals matched pattern: "${nameFilter ?? ""}"`);
+  }
+
+  const { workspaceRootDir } = await runEvals(filteredEvals, {
+    concurrency,
+    dryRun,
+  });
 
   if (!dryRun) {
     process.stdout.write(`\nAll evals complete. Generating report...\n`);
 
     const rollup = await generateReport({
-      evalCases: EVALS,
+      evalCases: filteredEvals,
       includeContextMessages,
       outputDir,
       workspaceRootDir,
