@@ -783,6 +783,7 @@ describe("sessionMachine", () => {
               {
                 "result": "Task completed",
                 "sessionId": "ses_00000000ZC888888888888888F",
+                "status": "done",
                 "summary": "nothing"
               }
             </output>

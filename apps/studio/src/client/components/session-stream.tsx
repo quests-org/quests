@@ -19,6 +19,7 @@ import { MessageError } from "./message-error";
 import { ReasoningMessage } from "./reasoning-message";
 import { ContextMessage } from "./session-context-message";
 import { ToolPart } from "./tool-part";
+import { type RenderStream } from "./tool-part/task";
 import { Alert, AlertDescription } from "./ui/alert";
 import { Button } from "./ui/button";
 import { UnknownPart } from "./unknown-part";
@@ -82,12 +83,10 @@ export function SessionStream({
     return lastMessage?.id;
   }, [regularMessages]);
 
-  const renderStream = useCallback(
-    (nestedMessages: SessionMessage.WithParts[]) => (
+  const renderStream: RenderStream = useCallback(
+    ({ isAgentRunning: isNestedAgentRunning, messages: nestedMessages }) => (
       <SessionStream
-        // For now, the child session streams are only shown when they
-        // are done. So avoid showing the loading state.
-        isAgentRunning={false}
+        isAgentRunning={isNestedAgentRunning}
         isDeveloperMode={isDeveloperMode}
         isViewingApp={isViewingApp}
         messages={nestedMessages}
@@ -194,7 +193,9 @@ export function SessionStream({
               isAgentRunning &&
               lastMessageId === message.id &&
               (part.state === "input-streaming" ||
-                part.state === "input-available")
+                part.state === "input-available" ||
+                (part.state === "output-available" &&
+                  part.preliminary === true))
             }
             key={part.metadata.id}
             onRetry={onRetry}
@@ -422,7 +423,8 @@ export function SessionStream({
     if (isToolPart(lastPart)) {
       return (
         lastPart.state === "input-streaming" ||
-        lastPart.state === "input-available"
+        lastPart.state === "input-available" ||
+        (lastPart.state === "output-available" && lastPart.preliminary === true)
       );
     }
 

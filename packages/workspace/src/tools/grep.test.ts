@@ -6,6 +6,7 @@ import { AppDirSchema } from "../schemas/paths";
 import { ProjectSubdomainSchema } from "../schemas/subdomains";
 import { createMockAIGatewayModel } from "../test/helpers/mock-ai-gateway-model";
 import { createMockAppConfig } from "../test/helpers/mock-app-config";
+import { runTool } from "../test/helpers/run-tool";
 import { TOOLS } from "./all";
 import { Grep } from "./grep";
 
@@ -179,7 +180,7 @@ describe("Grep", () => {
 
   describe("execute", () => {
     it("should find matches for a specific pattern in fixtures", async () => {
-      const result = await TOOLS.Grep.execute({
+      const result = await runTool(TOOLS.Grep, {
         agentName: "main",
         appConfig: createFixturesAppConfig(),
         input: {
@@ -227,7 +228,7 @@ describe("Grep", () => {
     });
 
     it("should return no matches when pattern is not found", async () => {
-      const result = await TOOLS.Grep.execute({
+      const result = await runTool(TOOLS.Grep, {
         agentName: "main",
         appConfig: createFixturesAppConfig(),
         input: {
@@ -247,7 +248,7 @@ describe("Grep", () => {
     });
 
     it("should use smart case to match case insensitively for lowercase patterns", async () => {
-      const result = await TOOLS.Grep.execute({
+      const result = await runTool(TOOLS.Grep, {
         agentName: "main",
         appConfig: createFixturesAppConfig(),
         input: {
@@ -299,7 +300,7 @@ describe("Grep", () => {
     });
 
     it("should use smart case to match case sensitively for uppercase patterns", async () => {
-      const result = await TOOLS.Grep.execute({
+      const result = await runTool(TOOLS.Grep, {
         agentName: "main",
         appConfig: createFixturesAppConfig(),
         input: {
@@ -336,7 +337,7 @@ describe("Grep", () => {
     });
 
     it("should match all text after the first colon", async () => {
-      const result = await TOOLS.Grep.execute({
+      const result = await runTool(TOOLS.Grep, {
         agentName: "main",
         appConfig: createFixturesAppConfig(),
         input: {
@@ -368,7 +369,7 @@ describe("Grep", () => {
     });
 
     it("should handle nested folders with vertical bars", async () => {
-      const result = await TOOLS.Grep.execute({
+      const result = await runTool(TOOLS.Grep, {
         agentName: "main",
         appConfig: createFixturesAppConfig(),
         input: {
@@ -405,7 +406,7 @@ describe("Grep", () => {
     });
 
     it("should search within a specific subdirectory when path is provided", async () => {
-      const result = await TOOLS.Grep.execute({
+      const result = await runTool(TOOLS.Grep, {
         agentName: "main",
         appConfig: createFixturesAppConfig(),
         input: {
@@ -458,7 +459,7 @@ describe("Grep", () => {
     };
 
     it("should require a path parameter", async () => {
-      const result = await TOOLS.Grep.execute({
+      const result = await runTool(TOOLS.Grep, {
         agentName: "retrieval",
         appConfig: createFixturesAppConfig(),
         input: {
@@ -476,7 +477,7 @@ describe("Grep", () => {
     });
 
     it("should reject relative paths", async () => {
-      const result = await TOOLS.Grep.execute({
+      const result = await runTool(TOOLS.Grep, {
         agentName: "retrieval",
         appConfig: createFixturesAppConfig(),
         input: {
@@ -495,7 +496,7 @@ describe("Grep", () => {
     });
 
     it("should reject paths outside attached folders", async () => {
-      const result = await TOOLS.Grep.execute({
+      const result = await runTool(TOOLS.Grep, {
         agentName: "retrieval",
         appConfig: createFixturesAppConfig(),
         input: {
@@ -514,7 +515,7 @@ describe("Grep", () => {
     });
 
     it("should find matches within attached folder", async () => {
-      const result = await TOOLS.Grep.execute({
+      const result = await runTool(TOOLS.Grep, {
         agentName: "retrieval",
         appConfig: createFixturesAppConfig(),
         input: {
@@ -563,7 +564,7 @@ describe("Grep", () => {
 
     it("should find matches in nested subdirectory of attached folder", async () => {
       const nestedPath = path.join(fixturesPath, "nested");
-      const result = await TOOLS.Grep.execute({
+      const result = await runTool(TOOLS.Grep, {
         agentName: "retrieval",
         appConfig: createFixturesAppConfig(),
         input: {

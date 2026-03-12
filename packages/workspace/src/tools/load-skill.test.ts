@@ -8,6 +8,7 @@ import { AbsolutePathSchema, AppDirSchema } from "../schemas/paths";
 import { ProjectSubdomainSchema } from "../schemas/subdomains";
 import { createMockAIGatewayModel } from "../test/helpers/mock-ai-gateway-model";
 import { createMockAppConfig } from "../test/helpers/mock-app-config";
+import { runTool } from "../test/helpers/run-tool";
 import { LoadSkill } from "./load-skill";
 
 const model = createMockAIGatewayModel();
@@ -83,7 +84,7 @@ describe("LoadSkill", () => {
     await createSkill({ name: "existing-skill" });
 
     const result = (
-      await LoadSkill.execute({
+      await runTool(LoadSkill, {
         ...baseExecuteArgs(),
         input: { explanation: "loading", name: "nonexistent" },
       })
@@ -104,7 +105,7 @@ describe("LoadSkill", () => {
       name: "my-skill",
     });
 
-    await LoadSkill.execute({
+    await runTool(LoadSkill, {
       ...baseExecuteArgs(),
       input: { explanation: "loading", name: "my-skill" },
     });
@@ -145,7 +146,7 @@ describe("LoadSkill", () => {
     });
 
     const result = (
-      await LoadSkill.execute({
+      await runTool(LoadSkill, {
         ...baseExecuteArgs(),
         input: { explanation: "loading", name: "my-skill" },
       })
@@ -179,7 +180,7 @@ describe("LoadSkill", () => {
       input: { explanation: "loading", name: "my-skill" },
     };
 
-    await LoadSkill.execute(args);
+    await runTool(LoadSkill, args);
 
     const destScript = path.join(
       appDir,
@@ -191,7 +192,7 @@ describe("LoadSkill", () => {
     );
 
     await fs.writeFile(destScript, "modified");
-    await LoadSkill.execute(args);
+    await runTool(LoadSkill, args);
 
     const content = await fs.readFile(destScript, "utf8");
     expect(content).toMatchInlineSnapshot(`"modified"`);
@@ -201,7 +202,7 @@ describe("LoadSkill", () => {
     await createSkill({ name: "my-skill" });
 
     const result = (
-      await LoadSkill.execute({
+      await runTool(LoadSkill, {
         ...baseExecuteArgs(),
         input: { explanation: "loading", name: "my-skill" },
       })
@@ -220,7 +221,7 @@ describe("LoadSkill", () => {
     await createSkill({ name: "my-skill" });
 
     const result = (
-      await LoadSkill.execute({
+      await runTool(LoadSkill, {
         ...baseExecuteArgs(),
         input: { explanation: "loading", name: "my-skill" },
       })

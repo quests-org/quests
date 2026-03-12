@@ -36,7 +36,9 @@ export interface AgentTool<
     projectState: ProjectState;
     signal: AbortSignal;
     spawnAgent: SpawnAgentFunction;
-  }) => Promise<ExecuteResult<z.output<TOutputSchema>>>;
+  }) =>
+    | AsyncGenerator<ExecuteResult<z.output<TOutputSchema>>>
+    | Promise<ExecuteResult<z.output<TOutputSchema>>>;
   inputSchema: ((agentName: AgentName) => TInputSchema) | TInputSchema;
   name: TName;
   outputSchema: TOutputSchema;

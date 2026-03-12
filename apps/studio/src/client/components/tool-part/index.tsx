@@ -1,12 +1,11 @@
 import {
   getToolNameByType,
-  type SessionMessage,
   type SessionMessagePart,
   type WorkspaceAppProject,
 } from "@quests/workspace/client";
 import { Loader2Icon } from "lucide-react";
 import { sift } from "radashi";
-import { type ReactNode, useState } from "react";
+import { useState } from "react";
 
 import { filenameFromFilePath } from "../../lib/path-utils";
 import { getToolLabelForPart } from "../../lib/tool-display";
@@ -28,6 +27,7 @@ import { ToolPartExpanded } from "./expanded";
 import { FileModification } from "./file-modification";
 import { ToolPartListItemCompact } from "./list-item-compact";
 import { ShellCommandCard } from "./shell-command-card";
+import { type RenderStream, TaskToolCard } from "./task";
 
 export function ToolPart({
   isDeveloperMode,
@@ -42,7 +42,7 @@ export function ToolPart({
   onRetry: (prompt: string) => void;
   part: SessionMessagePart.ToolPart;
   project: WorkspaceAppProject;
-  renderStream: (messages: SessionMessage.WithParts[]) => ReactNode;
+  renderStream: RenderStream;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const toolName = getToolNameByType(part.type);
@@ -66,7 +66,11 @@ export function ToolPart({
   // (not loading, no terminal state).
   if (!hasTerminalState && !isLoading && isDeveloperMode) {
     return (
-      <Collapsible className="w-full">
+      <Collapsible
+        className="w-full"
+        onOpenChange={setIsExpanded}
+        open={isExpanded}
+      >
         <CollapsibleTrigger asChild>
           <CollapsiblePartTrigger>
             <ToolPartListItemCompact
@@ -109,6 +113,17 @@ export function ToolPart({
         isLoading={isLoading}
         part={part}
         projectSubdomain={project.subdomain}
+      />
+    );
+  }
+
+  if (part.type === "tool-task") {
+    return (
+      <TaskToolCard
+        isLoading={isLoading}
+        part={part}
+        project={project}
+        renderStream={renderStream}
       />
     );
   }
@@ -271,12 +286,7 @@ export function ToolPart({
       <CollapsibleContent>
         {isSuccess && (
           <CollapsiblePartMainContent>
-            <ToolPartExpanded
-              onRetry={onRetry}
-              part={part}
-              project={project}
-              renderStream={renderStream}
-            />
+            <ToolPartExpanded onRetry={onRetry} part={part} project={project} />
           </CollapsiblePartMainContent>
         )}
 
@@ -484,7 +494,10 @@ function getToolOutputDescription(
       return part.output.command || "command executed";
     }
     case "tool-task": {
-      return part.output.summary;
+      if (part.output.status === "done") {
+        return part.output.summary;
+      }
+      return "running";
     }
     case "tool-unavailable": {
       return "";

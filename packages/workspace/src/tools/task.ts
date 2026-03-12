@@ -36,6 +36,18 @@ const TASK_AGENT_DESCRIPTIONS: Record<TaskAgentName, string> = {
   `.trim(),
 };
 
+const RunningOutputSchema = z.object({
+  sessionId: StoreId.SessionSchema,
+  status: z.literal("running"),
+});
+
+const DoneOutputSchema = z.object({
+  result: z.string(),
+  sessionId: StoreId.SessionSchema,
+  status: z.literal("done"),
+  summary: z.string(),
+});
+
 export const Task = setupTool({
   inputSchema: BaseInputSchema.extend({
     [INPUT_PARAMS.prompt]: z
@@ -47,11 +59,10 @@ export const Task = setupTool({
     }),
   }),
   name: TOOL_NAME,
-  outputSchema: z.object({
-    result: z.string(),
-    sessionId: StoreId.SessionSchema,
-    summary: z.string(),
-  }),
+  outputSchema: z.discriminatedUnion("status", [
+    DoneOutputSchema,
+    RunningOutputSchema,
+  ]),
 }).create({
   description: ({ agentName }) => {
     if (agentName === "main") {
@@ -75,29 +86,40 @@ export const Task = setupTool({
 
     return "Only the main agent can spawn agents";
   },
-  execute: async ({ agentName, input, signal, spawnAgent }) => {
+  async *execute({ agentName, input, signal, spawnAgent }) {
     if (agentName !== "main") {
-      return executeError("Only the main agent can spawn subagents");
+      yield executeError("Only the main agent can spawn subagents");
+      return;
     }
 
     const requestedAgentName = input.subagent_type as TaskAgentName;
     if (!TASK_AGENT_NAMES.includes(requestedAgentName)) {
-      return executeError(
+      yield executeError(
         `Unknown agent type: ${requestedAgentName}. Available types: ${TASK_AGENT_NAMES.join(", ")}`,
       );
+      return;
     }
 
     const agentDisplayName = TASK_AGENT_DISPLAY_NAMES[requestedAgentName];
 
-    const { messagesResult, sessionId } = await spawnAgent({
+    const { completion, sessionId } = spawnAgent({
       agentName: requestedAgentName,
       prompt: input.prompt,
       sessionNamePrefix: agentDisplayName,
       signal,
     });
 
+    yield ok({ sessionId, status: "running" as const });
+
+    const messagesResult = await completion;
+
+    if (signal.aborted) {
+      return;
+    }
+
     if (messagesResult.isErr()) {
-      return executeError(messagesResult.error.message);
+      yield executeError(messagesResult.error.message);
+      return;
     }
     const messages = messagesResult.value;
 
@@ -106,7 +128,8 @@ export const Task = setupTool({
       .find((msg) => msg.role === "assistant");
 
     if (!lastAssistantMessage) {
-      return executeError("Subagent did not produce a response");
+      yield executeError("Subagent did not produce a response");
+      return;
     }
 
     const resultText: string = lastAssistantMessage.parts
@@ -214,9 +237,10 @@ export const Task = setupTool({
     const summary =
       summaryParts.length > 0 ? summaryParts.join(", ") : "nothing";
 
-    return ok({
+    yield ok({
       result: resultWithFileList,
       sessionId,
+      status: "done" as const,
       summary,
     });
   },
@@ -225,7 +249,7 @@ export const Task = setupTool({
   toModelOutput: ({ output }) => {
     return {
       type: "text",
-      value: output.result,
+      value: output.status === "done" ? output.result : "",
     };
   },
 });

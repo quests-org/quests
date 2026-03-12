@@ -9,7 +9,9 @@ export type SpawnAgentFunction = (params: {
   prompt: string;
   sessionNamePrefix?: string;
   signal: AbortSignal;
-}) => Promise<{
-  messagesResult: Result<SessionMessage.WithParts[], TypedError.Type>;
+}) => SpawnAgentResult;
+
+export interface SpawnAgentResult {
+  completion: Promise<Result<SessionMessage.WithParts[], TypedError.Type>>;
   sessionId: StoreId.Session;
-}>;
+}

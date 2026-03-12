@@ -8,6 +8,7 @@ import { AppDirSchema, RelativePathSchema } from "../schemas/paths";
 import { ProjectSubdomainSchema } from "../schemas/subdomains";
 import { createMockAIGatewayModel } from "../test/helpers/mock-ai-gateway-model";
 import { createMockAppConfig } from "../test/helpers/mock-app-config";
+import { runTool } from "../test/helpers/run-tool";
 import { TOOLS } from "./all";
 import { CopyToProject } from "./copy-to-project";
 
@@ -261,7 +262,7 @@ describe("CopyToProject", () => {
 
   describe("execute", () => {
     it("should return error when not the retrieval agent", async () => {
-      const result = await TOOLS.CopyToProject.execute({
+      const result = await runTool(TOOLS.CopyToProject, {
         ...baseExecuteArgs(),
         agentName: "main",
         input: { path: FIXTURES_PATH, pattern: "*.txt" },
@@ -273,7 +274,7 @@ describe("CopyToProject", () => {
     });
 
     it("should return error when no attached folders", async () => {
-      const result = await TOOLS.CopyToProject.execute({
+      const result = await runTool(TOOLS.CopyToProject, {
         ...baseExecuteArgs(),
         input: { path: FIXTURES_PATH, pattern: "*.txt" },
         projectState: {},
@@ -285,7 +286,7 @@ describe("CopyToProject", () => {
     });
 
     it("should return error when path is not within attached folders", async () => {
-      const result = await TOOLS.CopyToProject.execute({
+      const result = await runTool(TOOLS.CopyToProject, {
         ...baseExecuteArgs(),
         input: { path: "/some/random/path", pattern: "*.txt" },
       });
@@ -296,7 +297,7 @@ describe("CopyToProject", () => {
     });
 
     it("should return error when no files match the pattern", async () => {
-      const result = await TOOLS.CopyToProject.execute({
+      const result = await runTool(TOOLS.CopyToProject, {
         ...baseExecuteArgs(),
         input: {
           path: FIXTURES_PATH,
@@ -308,7 +309,7 @@ describe("CopyToProject", () => {
     });
 
     it("should copy a single matching file to agent-retrieved folder", async () => {
-      const result = await TOOLS.CopyToProject.execute({
+      const result = await runTool(TOOLS.CopyToProject, {
         ...baseExecuteArgs(),
         input: { path: FIXTURES_PATH, pattern: "file-a.txt" },
       });
@@ -321,7 +322,7 @@ describe("CopyToProject", () => {
     });
 
     it("should copy multiple files matching a glob pattern", async () => {
-      const result = await TOOLS.CopyToProject.execute({
+      const result = await runTool(TOOLS.CopyToProject, {
         ...baseExecuteArgs(),
         input: { path: FIXTURES_PATH, pattern: "file-*.txt" },
       });
@@ -339,13 +340,13 @@ describe("CopyToProject", () => {
     it("should rename conflicting files with a counter suffix", async () => {
       const args = baseExecuteArgs();
 
-      const firstResult = await TOOLS.CopyToProject.execute({
+      const firstResult = await runTool(TOOLS.CopyToProject, {
         ...args,
         input: { path: FIXTURES_PATH, pattern: "file-a.txt" },
       });
       const first = firstResult._unsafeUnwrap();
 
-      const secondResult = await TOOLS.CopyToProject.execute({
+      const secondResult = await runTool(TOOLS.CopyToProject, {
         ...args,
         input: { path: FIXTURES_PATH, pattern: "file-a.txt" },
       });
@@ -358,7 +359,7 @@ describe("CopyToProject", () => {
     });
 
     it("should reject maxFileSizeBytes above the 1GB hard cap", async () => {
-      const result = await TOOLS.CopyToProject.execute({
+      const result = await runTool(TOOLS.CopyToProject, {
         ...baseExecuteArgs(),
         input: {
           maxFileSizeBytes: 1024 * 1024 * 1024 + 1,
@@ -373,7 +374,7 @@ describe("CopyToProject", () => {
     });
 
     it("should reject maxTotalSizeBytes above the 10GB hard cap", async () => {
-      const result = await TOOLS.CopyToProject.execute({
+      const result = await runTool(TOOLS.CopyToProject, {
         ...baseExecuteArgs(),
         input: {
           maxTotalSizeBytes: 1024 * 1024 * 1024 * 10 + 1,
@@ -388,7 +389,7 @@ describe("CopyToProject", () => {
     });
 
     it("should skip a file that exceeds a custom maxFileSizeBytes override", async () => {
-      const result = await TOOLS.CopyToProject.execute({
+      const result = await runTool(TOOLS.CopyToProject, {
         ...baseExecuteArgs(),
         input: {
           maxFileSizeBytes: 1, // 1 byte — everything will be too large
@@ -405,7 +406,7 @@ describe("CopyToProject", () => {
     });
 
     it("should truncate when files exceed a custom maxTotalSizeBytes override", async () => {
-      const result = await TOOLS.CopyToProject.execute({
+      const result = await runTool(TOOLS.CopyToProject, {
         ...baseExecuteArgs(),
         input: {
           maxTotalSizeBytes: 1, // 1 byte — only first file will be within budget
@@ -420,7 +421,7 @@ describe("CopyToProject", () => {
     });
 
     it("should sanitize Unicode characters in filenames when copying", async () => {
-      const result = await TOOLS.CopyToProject.execute({
+      const result = await runTool(TOOLS.CopyToProject, {
         ...baseExecuteArgs(),
         // cspell:ignore résumé
         input: { path: FIXTURES_PATH, pattern: "résumé.pdf" },
@@ -435,7 +436,7 @@ describe("CopyToProject", () => {
     it("should copy a file when the pattern is the full absolute path to the file", async () => {
       const absoluteFilePath = path.join(FIXTURES_PATH, "file-a.txt");
 
-      const result = await TOOLS.CopyToProject.execute({
+      const result = await runTool(TOOLS.CopyToProject, {
         ...baseExecuteArgs(),
         input: { path: FIXTURES_PATH, pattern: absoluteFilePath },
       });
@@ -459,7 +460,7 @@ describe("CopyToProject", () => {
         },
       };
 
-      const result = await TOOLS.CopyToProject.execute({
+      const result = await runTool(TOOLS.CopyToProject, {
         ...baseExecuteArgs(),
         input: { path: nestedPath, pattern: "*.txt" },
         projectState: { attachedFolders: nestedAttachedFolders },

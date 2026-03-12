@@ -17,7 +17,10 @@ import { createAssignEventError } from "../lib/assign-event-error";
 import { createSession } from "../lib/create-session";
 import { getCurrentDate } from "../lib/get-current-date";
 import { logUnhandledEvent } from "../lib/log-unhandled-event";
-import { type SpawnAgentFunction } from "../lib/spawn-agent";
+import {
+  type SpawnAgentFunction,
+  type SpawnAgentResult,
+} from "../lib/spawn-agent";
 import { Store } from "../lib/store";
 import { publisher } from "../rpc/publisher";
 import { type SessionTag } from "../schemas/app-state";
@@ -226,7 +229,7 @@ export const sessionMachine = setup({
       subdomain: input.appConfig.subdomain,
     });
 
-    const spawnAgent: SpawnAgentFunction = async ({
+    const spawnAgent: SpawnAgentFunction = ({
       agentName,
       prompt,
       sessionNamePrefix,
@@ -265,30 +268,34 @@ export const sessionMachine = setup({
         },
       });
 
-      return new Promise((resolve, reject) => {
-        void (async () => {
-          try {
-            for await (const payload of publisher.subscribe(
-              "appState.session.done",
-              { signal },
-            )) {
-              if (payload.sessionId === newSessionId) {
-                const messagesResult = await Store.getMessagesWithParts(
-                  {
-                    appConfig: input.appConfig,
-                    sessionId: newSessionId,
-                  },
-                  { signal },
-                );
-                resolve({ messagesResult, sessionId: newSessionId });
-                return;
+      const completion: SpawnAgentResult["completion"] = new Promise(
+        (resolve, reject) => {
+          void (async () => {
+            try {
+              for await (const payload of publisher.subscribe(
+                "appState.session.done",
+                { signal },
+              )) {
+                if (payload.sessionId === newSessionId) {
+                  const messagesResult = await Store.getMessagesWithParts(
+                    {
+                      appConfig: input.appConfig,
+                      sessionId: newSessionId,
+                    },
+                    { signal },
+                  );
+                  resolve(messagesResult);
+                  return;
+                }
               }
+            } catch (error) {
+              reject(error instanceof Error ? error : new Error(String(error)));
             }
-          } catch (error) {
-            reject(error instanceof Error ? error : new Error(String(error)));
-          }
-        })();
-      });
+          })();
+        },
+      );
+
+      return { completion, sessionId: newSessionId };
     };
 
     return {

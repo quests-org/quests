@@ -6,6 +6,7 @@ import { AppDirSchema } from "../schemas/paths";
 import { ProjectSubdomainSchema } from "../schemas/subdomains";
 import { createMockAIGatewayModel } from "../test/helpers/mock-ai-gateway-model";
 import { createMockAppConfig } from "../test/helpers/mock-app-config";
+import { runTool } from "../test/helpers/run-tool";
 import { TOOLS } from "./all";
 
 vi.mock(import("ulid"));
@@ -40,7 +41,7 @@ function stripFixturesPath(files: string[]) {
 
 describe("Glob", () => {
   it("should find files matching a specific pattern", async () => {
-    const result = await TOOLS.Glob.execute({
+    const result = await runTool(TOOLS.Glob, {
       agentName: "main",
       appConfig: createFixturesAppConfig(),
       input: {
@@ -63,7 +64,7 @@ describe("Glob", () => {
   });
 
   it("should find files in a subdirectory when path is provided", async () => {
-    const result = await TOOLS.Glob.execute({
+    const result = await runTool(TOOLS.Glob, {
       agentName: "main",
       appConfig: createFixturesAppConfig(),
       input: {
@@ -87,7 +88,7 @@ describe("Glob", () => {
   });
 
   it("should return empty array when no files match", async () => {
-    const result = await TOOLS.Glob.execute({
+    const result = await runTool(TOOLS.Glob, {
       agentName: "main",
       appConfig: createFixturesAppConfig(),
       input: {
@@ -117,7 +118,7 @@ describe("Glob", () => {
     };
 
     it("should require a path parameter", async () => {
-      const result = await TOOLS.Glob.execute({
+      const result = await runTool(TOOLS.Glob, {
         agentName: "retrieval",
         appConfig: createFixturesAppConfig(),
         input: {
@@ -138,7 +139,7 @@ describe("Glob", () => {
     });
 
     it("should reject relative paths", async () => {
-      const result = await TOOLS.Glob.execute({
+      const result = await runTool(TOOLS.Glob, {
         agentName: "retrieval",
         appConfig: createFixturesAppConfig(),
         input: {
@@ -157,7 +158,7 @@ describe("Glob", () => {
     });
 
     it("should reject paths outside attached folders", async () => {
-      const result = await TOOLS.Glob.execute({
+      const result = await runTool(TOOLS.Glob, {
         agentName: "retrieval",
         appConfig: createFixturesAppConfig(),
         input: {
@@ -179,7 +180,7 @@ describe("Glob", () => {
     });
 
     it("should find ts files in attached folder with absolute paths", async () => {
-      const result = await TOOLS.Glob.execute({
+      const result = await runTool(TOOLS.Glob, {
         agentName: "retrieval",
         appConfig: createFixturesAppConfig(),
         input: {
@@ -202,7 +203,7 @@ describe("Glob", () => {
     });
 
     it("should find files recursively in attached folder", async () => {
-      const result = await TOOLS.Glob.execute({
+      const result = await runTool(TOOLS.Glob, {
         agentName: "retrieval",
         appConfig: createFixturesAppConfig(),
         input: {
@@ -236,7 +237,7 @@ describe("Glob", () => {
     it("should find a file when the pattern is the full absolute path to the file", async () => {
       const absoluteFilePath = path.join(FIXTURES_PATH, "test1.txt");
 
-      const result = await TOOLS.Glob.execute({
+      const result = await runTool(TOOLS.Glob, {
         agentName: "retrieval",
         appConfig: createFixturesAppConfig(),
         input: {
@@ -257,7 +258,7 @@ describe("Glob", () => {
 
     it("should search within nested subdirectory of attached folder", async () => {
       const nestedPath = path.join(FIXTURES_PATH, "nested");
-      const result = await TOOLS.Glob.execute({
+      const result = await runTool(TOOLS.Glob, {
         agentName: "retrieval",
         appConfig: createFixturesAppConfig(),
         input: {

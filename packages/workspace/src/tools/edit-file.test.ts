@@ -7,6 +7,7 @@ import {
   createMockAppConfig,
   MOCK_WORKSPACE_DIRS,
 } from "../test/helpers/mock-app-config";
+import { runTool } from "../test/helpers/run-tool";
 import { TOOLS } from "./all";
 
 const model = createMockAIGatewayModel();
@@ -81,7 +82,8 @@ describe("EditFile", () => {
     });
 
     it("should return error when file does not exist", async () => {
-      const result = await TOOLS.EditFile.execute(
+      const result = await runTool(
+        TOOLS.EditFile,
         makeExecuteArgs({
           filePath: "./non-existent-file.txt",
           newString: "new text",
@@ -98,7 +100,8 @@ describe("EditFile", () => {
     });
 
     it("should return error when path is a directory", async () => {
-      const result = await TOOLS.EditFile.execute(
+      const result = await runTool(
+        TOOLS.EditFile,
         makeExecuteArgs({
           filePath: "./",
           newString: "new text",
@@ -115,7 +118,8 @@ describe("EditFile", () => {
     });
 
     it("should return error when oldString is not found in file content", async () => {
-      const result = await TOOLS.EditFile.execute(
+      const result = await runTool(
+        TOOLS.EditFile,
         makeExecuteArgs({
           filePath: "./grep-test.txt",
           newString: "new text",
@@ -132,7 +136,8 @@ describe("EditFile", () => {
     });
 
     it("should return error when oldString has multiple matches and needs more context", async () => {
-      const result = await TOOLS.EditFile.execute(
+      const result = await runTool(
+        TOOLS.EditFile,
         makeExecuteArgs({
           filePath: "./grep-test.txt",
           newString: "new text",
@@ -155,7 +160,8 @@ describe("EditFile", () => {
     });
 
     it("should replace all occurrences when replaceAll is true", async () => {
-      const result = await TOOLS.EditFile.execute(
+      const result = await runTool(
+        TOOLS.EditFile,
         makeExecuteArgs({
           filePath: "./grep-test.txt",
           newString: "GREP",
@@ -208,7 +214,8 @@ describe("EditFile", () => {
     });
 
     it("should error on multiple matches without replaceAll", async () => {
-      const result = await TOOLS.EditFile.execute(
+      const result = await runTool(
+        TOOLS.EditFile,
         makeExecuteArgs({
           filePath: "./grep-test.txt",
           newString: "GREP",

@@ -6,6 +6,7 @@ import { AppDirSchema } from "../schemas/paths";
 import { ProjectSubdomainSchema } from "../schemas/subdomains";
 import { createMockAIGatewayModel } from "../test/helpers/mock-ai-gateway-model";
 import { createMockAppConfig } from "../test/helpers/mock-app-config";
+import { runTool } from "../test/helpers/run-tool";
 import { TOOLS } from "./all";
 import { ReadFile } from "./read-file";
 
@@ -44,7 +45,7 @@ describe("ReadFile", () => {
 
     it("should list files when given a directory path", async () => {
       const value = (
-        await TOOLS.ReadFile.execute({
+        await runTool(TOOLS.ReadFile, {
           ...baseInput,
           input: { explanation: "read", filePath: "./a-folder" },
         })
@@ -61,7 +62,7 @@ describe("ReadFile", () => {
 
     it("should read a file by relative path", async () => {
       const value = (
-        await TOOLS.ReadFile.execute({
+        await runTool(TOOLS.ReadFile, {
           ...baseInput,
           input: { explanation: "read", filePath: "./grep-test.txt" },
         })
@@ -76,7 +77,7 @@ describe("ReadFile", () => {
 
     it("should return does-not-exist with suggestions for a similarly-named file", async () => {
       const value = (
-        await TOOLS.ReadFile.execute({
+        await runTool(TOOLS.ReadFile, {
           ...baseInput,
           input: { explanation: "read", filePath: "./grep-test.ts" },
         })
@@ -90,7 +91,7 @@ describe("ReadFile", () => {
 
     it("should respect limit and offset", async () => {
       const value = (
-        await TOOLS.ReadFile.execute({
+        await runTool(TOOLS.ReadFile, {
           ...baseInput,
           input: {
             explanation: "read",
@@ -111,7 +112,7 @@ describe("ReadFile", () => {
 
     it("should return a specialized error when an absolute path matches an attached folder", async () => {
       const error = (
-        await TOOLS.ReadFile.execute({
+        await runTool(TOOLS.ReadFile, {
           ...baseInput,
           input: {
             explanation: "read",
@@ -139,7 +140,7 @@ describe("ReadFile", () => {
 
     it("should reject relative paths", async () => {
       const error = (
-        await TOOLS.ReadFile.execute({
+        await runTool(TOOLS.ReadFile, {
           ...baseInput,
           input: { explanation: "read", filePath: "./grep-test.txt" },
         })
@@ -150,7 +151,7 @@ describe("ReadFile", () => {
 
     it("should reject paths outside attached folders", async () => {
       const error = (
-        await TOOLS.ReadFile.execute({
+        await runTool(TOOLS.ReadFile, {
           ...baseInput,
           input: { explanation: "read", filePath: "/some/random/file.txt" },
         })
@@ -162,7 +163,7 @@ describe("ReadFile", () => {
 
     it("should read a file within an attached folder", async () => {
       const value = (
-        await TOOLS.ReadFile.execute({
+        await runTool(TOOLS.ReadFile, {
           ...baseInput,
           input: {
             explanation: "read",
@@ -180,7 +181,7 @@ describe("ReadFile", () => {
 
     it("should read a file in a nested subdirectory of an attached folder", async () => {
       const value = (
-        await TOOLS.ReadFile.execute({
+        await runTool(TOOLS.ReadFile, {
           ...baseInput,
           input: {
             explanation: "read",
@@ -194,7 +195,7 @@ describe("ReadFile", () => {
 
     it("should return does-not-exist with suggestions for a similarly-named file", async () => {
       const value = (
-        await TOOLS.ReadFile.execute({
+        await runTool(TOOLS.ReadFile, {
           ...baseInput,
           input: {
             explanation: "read",

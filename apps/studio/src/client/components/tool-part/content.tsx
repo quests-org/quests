@@ -2,11 +2,9 @@ import { type ProjectFileViewerFile } from "@/client/atoms/project-file-viewer";
 import { getAssetUrl } from "@/client/lib/get-asset-url";
 import {
   formatBytes,
-  type SessionMessage,
   type SessionMessagePart,
   type WorkspaceAppProject,
 } from "@quests/workspace/client";
-import { type ReactNode } from "react";
 
 import { filenameFromFilePath } from "../../lib/path-utils";
 import { AIProviderIcon } from "../ai-provider-icon";
@@ -22,18 +20,15 @@ import { MonoText } from "./mono-text";
 import { ToolPartReadFile } from "./read-file";
 import { ScrollableCodeBlock } from "./scrollable-code-block";
 import { SectionHeader } from "./section-header";
-import { ToolPartTask } from "./task";
 
 export function ToolContent({
   onRetry,
   part,
   project,
-  renderStream,
 }: {
   onRetry?: (message: string) => void;
   part: Extract<SessionMessagePart.ToolPart, { state: "output-available" }>;
   project: WorkspaceAppProject;
-  renderStream: (messages: SessionMessage.WithParts[]) => ReactNode;
 }) {
   switch (part.type) {
     case "tool-choose": {
@@ -380,13 +375,7 @@ export function ToolContent({
       );
     }
     case "tool-task": {
-      return (
-        <ToolPartTask
-          project={project}
-          renderStream={renderStream}
-          sessionId={part.output.sessionId}
-        />
-      );
+      return null;
     }
     case "tool-think": {
       return (

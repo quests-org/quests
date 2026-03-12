@@ -9,14 +9,14 @@ import { getCurrentDate } from "../lib/get-current-date";
 import { getProjectState } from "../lib/project-state-store";
 import { type SpawnAgentFunction } from "../lib/spawn-agent";
 import { Store } from "../lib/store";
+import { streamTool } from "../lib/stream-tool";
 import { type SessionMessagePart } from "../schemas/session/message-part";
 import { getToolByType } from "../tools/all";
 
 type CancellationReason = "manual" | "timeout" | "unknown";
 
 const executeToolLogic = fromPromise<
-  // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-  void,
+  { preliminarySaved: boolean },
   {
     agentName: AgentName;
     appConfig: AppConfig;
@@ -30,55 +30,74 @@ const executeToolLogic = fromPromise<
     signal,
   }) => {
     const tool = getToolByType(part.type);
+    let preliminarySaved = false;
     try {
       const projectState = await getProjectState(appConfig.appDir);
 
-      const output = await tool.execute({
-        agentName,
-        appConfig,
-        input: part.input as never,
-        model,
-        projectState,
-        signal,
-        spawnAgent,
-      });
+      for await (const { output, type } of streamTool({
+        execute: tool.execute,
+        options: {
+          agentName,
+          appConfig,
+          input: part.input as never,
+          model,
+          projectState,
+          signal,
+          spawnAgent,
+        },
+      })) {
+        if (signal.aborted) {
+          return { preliminarySaved };
+        }
 
-      if (signal.aborted) {
-        return;
+        if (type === "preliminary") {
+          if (output.isOk()) {
+            await Store.savePart(
+              {
+                ...part,
+                metadata: { ...part.metadata, endedAt: getCurrentDate() },
+                output: output.value as never,
+                preliminary: true,
+                state: "output-available",
+              },
+              appConfig,
+              { signal },
+            );
+            preliminarySaved = true;
+          }
+        } else {
+          await (output.isOk()
+            ? Store.savePart(
+                {
+                  ...part,
+                  metadata: { ...part.metadata, endedAt: getCurrentDate() },
+                  output: output.value as never,
+                  preliminary: false,
+                  state: "output-available",
+                },
+                appConfig,
+                { signal },
+              )
+            : Store.savePart(
+                {
+                  ...part,
+                  errorText: output.error.message,
+                  metadata: { ...part.metadata, endedAt: getCurrentDate() },
+                  state: "output-error",
+                },
+                appConfig,
+                { signal },
+              ));
+          appConfig.workspaceConfig.captureEvent("llm.tool_executed", {
+            success: output.isOk(),
+            tool_name: part.type,
+          });
+        }
       }
-
-      await (output.isOk()
-        ? Store.savePart(
-            {
-              ...part,
-              metadata: {
-                ...part.metadata,
-                endedAt: getCurrentDate(),
-              },
-              output: output.value as never,
-              state: "output-available",
-            },
-            appConfig,
-            { signal },
-          )
-        : Store.savePart(
-            {
-              ...part,
-              errorText: output.error.message,
-              metadata: {
-                ...part.metadata,
-                endedAt: getCurrentDate(),
-              },
-              state: "output-error",
-            },
-            appConfig,
-            { signal },
-          ));
-      appConfig.workspaceConfig.captureEvent("llm.tool_executed", {
-        success: output.isOk(),
-        tool_name: part.type,
-      });
     } catch (error) {
+      if (signal.aborted) {
+        return { preliminarySaved };
+      }
       await Store.savePart(
         {
           ...part,
@@ -93,6 +112,7 @@ const executeToolLogic = fromPromise<
         { signal },
       );
     }
+    return { preliminarySaved };
   },
 );
 
@@ -202,7 +222,15 @@ export const executeToolCallMachine = setup({
           part: context.part,
           spawnAgent: context.spawnAgent,
         }),
-        onDone: "Done",
+        onDone: [
+          {
+            guard: ({ context, event }) =>
+              context.cancellationReason !== "unknown" &&
+              !event.output.preliminarySaved,
+            target: "Cancelling",
+          },
+          { target: "Done" },
+        ],
         onError: { actions: log(({ event }) => event.error), target: "Done" },
         src: "executeToolLogic",
       },
