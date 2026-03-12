@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 
 import { APP_FOLDER_NAMES } from "../../src/constants";
-import { type SessionMessagePart } from "../../src/schemas/session/message-part";
+import { type AppConfig } from "../../src/lib/app-config/types";
 import { type Assertion, defineEval } from "../harness";
 
 const assertHasOutputMarkdown: Assertion = {
@@ -60,12 +60,27 @@ const assertHasAgentRetrievedPdf: Assertion = {
   text: "Has a PDF in the agent-retrieved folder",
 };
 
-const stopOnCopyToProject = (part: SessionMessagePart.Type) =>
-  part.type === "tool-copy_to_project" &&
-  "state" in part &&
-  part.state === "input-available";
+async function hasMdInOutput(appConfig: AppConfig): Promise<boolean> {
+  const dir = path.join(appConfig.appDir, APP_FOLDER_NAMES.output);
+  try {
+    const files = await fs.readdir(dir);
+    return files.some((f) => f.endsWith(".md"));
+  } catch {
+    return false;
+  }
+}
 
-export const PDF_EVALS = [
+async function hasPdfInAgentRetrieved(appConfig: AppConfig): Promise<boolean> {
+  const dir = path.join(appConfig.appDir, APP_FOLDER_NAMES.agentRetrieved);
+  try {
+    const files = await fs.readdir(dir);
+    return files.some((f) => f.toLowerCase().endsWith(".pdf"));
+  } catch {
+    return false;
+  }
+}
+
+export const RETRIEVAL_EVALS = [
   defineEval({
     assertions: [assertHasAgentRetrievedPdf],
     folders: [
@@ -73,7 +88,15 @@ export const PDF_EVALS = [
     ],
     name: "pdf-retrieval",
     prompt: "Add a blank page to the pdf in this folder",
-    shouldStop: stopOnCopyToProject,
+    shouldStop: async (part, appConfig) => {
+      if (
+        part.type !== "tool-copy_to_project" ||
+        part.state !== "output-available"
+      ) {
+        return false;
+      }
+      return hasPdfInAgentRetrieved(appConfig);
+    },
   }),
   defineEval({
     assertions: [assertHasOutputMarkdown],
@@ -82,5 +105,14 @@ export const PDF_EVALS = [
     ],
     name: "pdf-to-markdown",
     prompt: "Convert the pdf in this folder to markdown",
+    shouldStop: async (part, appConfig) => {
+      if (
+        part.type !== "tool-copy_to_project" ||
+        part.state !== "output-available"
+      ) {
+        return false;
+      }
+      return hasMdInOutput(appConfig);
+    },
   }),
 ];
