@@ -245,11 +245,14 @@ export const Task = setupTool({
     });
   },
   readOnly: false,
-  timeoutMs: ms("10 minutes"),
+  timeoutMs: ms("5 minutes"),
   toModelOutput: ({ output }) => {
     return {
       type: "text",
-      value: output.status === "done" ? output.result : "",
+      value:
+        output.status === "done"
+          ? output.result
+          : "Agent was stopped before it completed. Some tools may have been executed.",
     };
   },
 });
