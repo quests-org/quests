@@ -39,7 +39,10 @@ export async function copySkill({
     }
   }
   await fs.mkdir(destDir, { recursive: true });
-  const ignore = await getIgnore(appDir, { signal });
+  const baseIgnore = await getIgnore(appDir, { signal });
+  // Omit test infrastructure -- it's only used during skill development before
+  // the skill is committed to the registry and made available to the agent.
+  const ignore = baseIgnore.add(["tests", "vitest.config.ts"]);
   await fs.cp(skillDir, destDir, {
     filter: (src) => {
       const relativePath = path.relative(skillDir, src);
