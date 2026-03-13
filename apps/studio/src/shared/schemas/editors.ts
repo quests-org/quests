@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 const SupportedEditorIdSchema = z.enum([
+  "alacritty",
   "cmd",
   "cursor",
   "iterm",

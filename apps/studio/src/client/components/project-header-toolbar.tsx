@@ -38,7 +38,14 @@ import { ExportZipModal } from "./export-zip-modal";
 import { ProjectMenu } from "./project-menu";
 import { ProjectUsageSummary } from "./project-usage-summary";
 import { RestoreVersionModal } from "./restore-version-modal";
-import { CMD, Cursor, ITerm, MacOSTerminal, VSCode } from "./service-icons";
+import {
+  Alacritty,
+  CMD,
+  Cursor,
+  ITerm,
+  MacOSTerminal,
+  VSCode,
+} from "./service-icons";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -51,6 +58,7 @@ const EDITOR_ICON_MAP: Record<
   SupportedEditorId,
   React.ComponentType<{ className?: string }>
 > = {
+  alacritty: Alacritty,
   cmd: CMD,
   cursor: Cursor,
   iterm: ITerm,
@@ -125,7 +133,9 @@ export function ProjectHeaderToolbar({
   );
 
   const availableTerminals = supportedEditors.filter(
-    (editor) => editor.available && ["iterm", "terminal"].includes(editor.id),
+    (editor) =>
+      editor.available &&
+      ["alacritty", "iterm", "terminal"].includes(editor.id),
   );
 
   return (

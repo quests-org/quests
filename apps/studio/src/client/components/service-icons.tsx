@@ -1,3 +1,20 @@
+export function Alacritty({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      height="16"
+      viewBox="0 0 24 24"
+      width="16"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="m10.065 0l-8.57 21.269H5.09L12 5.025l6.91 16.244h3.594L13.934 0zM12 9.935L9.702 15.5c1.475 4.54 1.475 4.54 2.298 8.5c.823-3.96.823-3.96 2.297-8.5z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
 export function CMD({ className }: { className?: string }) {
   return (
     <svg

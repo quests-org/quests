@@ -46,6 +46,7 @@ const EDITORS_BY_PLATFORM: Record<string, EditorConfig[]> = {
     { appName: "Visual Studio Code", id: "vscode", name: "VS Code" },
     { appName: "iTerm", id: "iterm", name: "iTerm" },
     { appName: "Terminal", id: "terminal", name: "Terminal" },
+    { appName: "Alacritty", id: "alacritty", name: "Alacritty" },
   ],
   linux: [
     { appName: "Cursor", id: "cursor", name: "Cursor" },
@@ -53,6 +54,7 @@ const EDITORS_BY_PLATFORM: Record<string, EditorConfig[]> = {
     { appName: "gnome-terminal", id: "terminal", name: "Terminal" },
     { appName: "konsole", id: "terminal", name: "Konsole" },
     { appName: "xterm", id: "terminal", name: "XTerm" },
+    { appName: "alacritty", id: "alacritty", name: "Alacritty" },
   ],
   win32: [
     { appName: "Cursor", id: "cursor", name: "Cursor" },
@@ -117,6 +119,12 @@ const APP_COMMAND_MAP: Partial<
 const SPECIAL_COMMANDS: Partial<
   Record<SupportedEditorId, (appDir: string, platform: string) => string>
 > = {
+  alacritty: (appDir: string, platform: string) => {
+    if (platform === "darwin") {
+      return `open -na "Alacritty" --args --working-directory "${appDir}"`;
+    }
+    return `alacritty --working-directory "${appDir}"`;
+  },
   cmd: (appDir: string, platform: string) => {
     if (platform !== "win32") {
       throw new Error("Command Prompt is only available on Windows");
