@@ -57,7 +57,8 @@ async function findSkillsInDir(dir: AbsolutePath): Promise<SkillInfo[]> {
     skills.push({
       content: parsed.body,
       description: parsed.description,
-      name: parsed.name,
+      // Folder name is used as the skill identifier because it's guaranteed unique within the registry.
+      name: entry.name,
       skillDir,
     });
   }
@@ -67,7 +68,7 @@ async function findSkillsInDir(dir: AbsolutePath): Promise<SkillInfo[]> {
 
 function parseFrontmatter(
   raw: string,
-): null | { body: string; description: string; name: string } {
+): null | { body: string; description: string } {
   const match = /^---\n([\s\S]*?)\n---\n([\s\S]*)$/.exec(raw);
   if (!match) {
     return null;
@@ -82,15 +83,12 @@ function parseFrontmatter(
 
   const body = bodyRaw.trim();
 
-  const nameMatch = /^name:[ \t]*(\S[^\n]*)$/m.exec(frontmatter);
   const descriptionMatch = /^description:[ \t]*(\S[^\n]*)$/m.exec(frontmatter);
-
-  const name = nameMatch?.[1]?.trim();
   const description = descriptionMatch?.[1]?.trim();
 
-  if (!name || !description) {
+  if (!description) {
     return null;
   }
 
-  return { body, description, name };
+  return { body, description };
 }
