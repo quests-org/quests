@@ -15,6 +15,7 @@ import { workspaceMachine } from "../src/electron";
 import { createAppConfig } from "../src/lib/app-config/create";
 import { type AppConfig } from "../src/lib/app-config/types";
 import { isToolPart } from "../src/lib/is-tool-part";
+import { getProjectUsageSummary } from "../src/lib/usage-summary";
 import { publisher } from "../src/rpc/publisher";
 import { project as projectRoute } from "../src/rpc/routes/project";
 import { session as sessionRoute } from "../src/rpc/routes/session";
@@ -32,6 +33,29 @@ export interface AssertionResult {
   evidence: string;
   passed: boolean;
   text: string;
+}
+
+const c = {
+  cyan: "\u001B[36m",
+  dim: "\u001B[2m",
+  green: "\u001B[32m",
+  red: "\u001B[31m",
+  reset: "\u001B[0m",
+  yellow: "\u001B[33m",
+};
+
+function evalPrefix(name: string): string {
+  return `${c.dim}[${name}]${c.reset} `;
+}
+
+function formatNumber(num: number): string {
+  if (num >= 1_000_000) {
+    return `${(num / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
+  }
+  if (num >= 1000) {
+    return `${(num / 1000).toFixed(1).replace(/\.0$/, "")}K`;
+  }
+  return num.toString();
 }
 
 const DEFAULT_MODEL_URI = modelURI.openRouter("anthropic/claude-haiku-4.5");
@@ -70,15 +94,17 @@ export async function runEvals(
     ? path.resolve(env.QUESTS_REGISTRY_DIR_PATH)
     : path.resolve(import.meta.dirname, "../../../registry");
 
-  process.stdout.write(`Workspace  : ${workspaceRootDir}\n`);
+  process.stdout.write(`${c.dim}Workspace  :${c.reset} ${workspaceRootDir}\n`);
   process.stdout.write(
-    `Registry   : ${registryDir}${env.QUESTS_REGISTRY_DIR_PATH ? " (from QUESTS_REGISTRY_DIR_PATH)" : ""}\n`,
+    `${c.dim}Registry   :${c.reset} ${registryDir}${env.QUESTS_REGISTRY_DIR_PATH ? c.dim + " (from QUESTS_REGISTRY_DIR_PATH)" + c.reset : ""}\n`,
   );
-  process.stdout.write(`Model      : ${DEFAULT_MODEL_URI}\n`);
-  process.stdout.write(`Concurrency: ${concurrency}\n`);
-  process.stdout.write(`Evals (${evals.length}):\n`);
+  process.stdout.write(
+    `${c.dim}Model      :${c.reset} ${c.cyan}${DEFAULT_MODEL_URI}${c.reset}\n`,
+  );
+  process.stdout.write(`${c.dim}Concurrency:${c.reset} ${concurrency}\n`);
+  process.stdout.write(`${c.dim}Evals (${evals.length}):${c.reset}\n`);
   for (const evalCase of evals) {
-    process.stdout.write(`  - ${evalCase.name}\n`);
+    process.stdout.write(`  ${c.dim}-${c.reset} ${evalCase.name}\n`);
   }
   process.stdout.write("\n");
 
@@ -111,7 +137,9 @@ export async function runEvals(
   actor.start();
 
   await _.parallel(concurrency, evals, async (evalCase) => {
-    process.stdout.write(`[${evalCase.name}] Starting...\n`);
+    process.stdout.write(
+      `${evalPrefix(evalCase.name)}${c.dim}Starting...${c.reset}\n`,
+    );
 
     const context = {
       workspaceConfig: actor.getSnapshot().context.config,
@@ -132,7 +160,7 @@ export async function runEvals(
     );
 
     process.stdout.write(
-      `[${evalCase.name}] Project created (subdomain: ${subdomain})\n`,
+      `${evalPrefix(evalCase.name)}${c.green}Project created${c.reset}${c.dim} (subdomain: ${subdomain})${c.reset}\n`,
     );
 
     const abortController = new AbortController();
@@ -149,11 +177,25 @@ export async function runEvals(
 
           const part = event.part;
 
-          if (isToolPart(part) && part.state !== "input-streaming") {
-            const stream =
-              part.state === "output-error" ? process.stderr : process.stdout;
+          if (
+            isToolPart(part) &&
+            part.state !== "input-streaming" &&
+            part.state !== "input-available"
+          ) {
+            const isError = part.state === "output-error";
+            const stream = isError ? process.stderr : process.stdout;
+            const appConfig = createAppConfig({
+              subdomain,
+              workspaceConfig: context.workspaceConfig,
+            });
+            const usage = await getProjectUsageSummary(appConfig);
+            const toolName = part.type.replace("tool-", "");
+            const toolLabel = isError
+              ? `${c.red}${toolName} ERROR${c.reset}`
+              : `${c.cyan}${toolName}${c.reset}`;
+            const statsSuffix = `  ${c.dim}tokens=${c.reset}${formatNumber(usage.totalTokens)}${c.dim} (in=${formatNumber(usage.inputTokens)} out=${formatNumber(usage.outputTokens)}) msgs=${c.reset}${c.yellow}${usage.messageCount}${c.reset}`;
             stream.write(
-              `[${evalCase.name}] tool="${part.type.replace("tool-", "")}" state="${part.state}"\n`,
+              `${evalPrefix(evalCase.name)}${toolLabel}${statsSuffix}\n`,
             );
           }
 
@@ -167,7 +209,7 @@ export async function runEvals(
             )
           ) {
             process.stdout.write(
-              `[${evalCase.name}] shouldStop returned true, stopping session...\n`,
+              `${evalPrefix(evalCase.name)}${c.yellow}shouldStop returned true, stopping session...${c.reset}\n`,
             );
             void call(sessionRoute.stop, { subdomain }, { context });
           }
@@ -182,7 +224,9 @@ export async function runEvals(
     await waitForSessionDone(sessionId, subdomain);
     abortController.abort();
 
-    process.stdout.write(`[${evalCase.name}] Done.\n`);
+    process.stdout.write(
+      `${evalPrefix(evalCase.name)}${c.green}Done.${c.reset}\n`,
+    );
   });
 
   actor.stop();
