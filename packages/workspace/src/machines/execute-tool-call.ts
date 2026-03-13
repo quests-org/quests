@@ -185,12 +185,6 @@ export const executeToolCallMachine = setup({
   }),
   id: "executeToolCall",
   initial: "Executing",
-  on: {
-    stop: {
-      actions: assign({ cancellationReason: "manual" }),
-      target: ".Cancelling",
-    },
-  },
   states: {
     Cancelling: {
       invoke: {
@@ -233,6 +227,12 @@ export const executeToolCallMachine = setup({
         ],
         onError: { actions: log(({ event }) => event.error), target: "Done" },
         src: "executeToolLogic",
+      },
+      on: {
+        stop: {
+          actions: assign({ cancellationReason: "manual" }),
+          target: "Cancelling",
+        },
       },
     },
   },
