@@ -158,7 +158,7 @@ describe("LoadSkill", () => {
 
       Skill instructions here.
 
-      The skill files listed below have been copied into your project. Prefer using them as-is before modifying or replacing them.
+      The skill files below are copied into your project and are yours to edit. Before writing anything new, read the relevant script(s) with read_file and run them with \`ts\` if they fit. Only write a custom script if the existing ones cannot handle the task even with modification.
 
       <skill_files>
       <file>.agents/skills/my-skill/references/notes.md</file>

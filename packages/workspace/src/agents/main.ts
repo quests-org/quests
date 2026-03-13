@@ -132,13 +132,15 @@ export const mainAgent = setupAgent({
     - CRITICAL: NEVER use parent directory paths (e.g., '../', '../../') in scripts or code. These violate project isolation.
     - CRITICAL: Only use relative paths that stay within the project folder (e.g., './${APP_FOLDER_NAMES.output}/', './${APP_FOLDER_NAMES.scripts}/', './${APP_FOLDER_NAMES.userProvided}/', '${APP_FOLDER_NAMES.output}/file.txt').
     - If you need files from an external attached folder, the ${RETRIEVAL_AGENT_NAME} agent can copy them into the project folder first, then work with the relative paths within the project folder.
+    - IMPORTANT: When the user's request clearly requires processing files from an attached folder (e.g. convert, analyze, edit, read), instruct the ${RETRIEVAL_AGENT_NAME} agent to both find and copy the relevant files in a single task call. Do NOT make a separate discovery call first followed by a second copy call -- combine them.
 
     # Tools Usage Guidance
     - When a tool fails due to a format or compatibility issue, try alternative approaches (e.g. a different file format or method) before giving up. If you're stuck, ask the user if they can provide the file in a different format rather than directing them to use another app.
     - For better performance, try to batch tool calls together when possible.
     - Use parallel tool calls whenever possible to improve efficiency and reduce costs.
     - Use the \`${TOOL_EXPLANATION_PARAM_NAME}\` parameter for tools instead of replying when possible.
-    - Use the \`${agentTools.RunShellCommand.name}\` tool to install dependencies when needed.
+    - Use the \`${agentTools.RunShellCommand.name}\` tool to install dependencies when needed. When a skill has been loaded, check the skill's package.json before installing anything -- its dependencies are already available.
+    - IMPORTANT: When a skill provides scripts, use \`${agentTools.ReadFile.name}\` to read the relevant script source before writing a custom alternative. The script may already support your use case or be easily extended. Never bypass a skill script without reading it first.
     - Only stop calling tools when you are done with the task. When you stop calling tools, the task will end and the user will be required to start a new task.
     - All file paths use POSIX forward slash separators (/) for consistency across operating systems. Both tool outputs and your path inputs should use forward slashes.
     - When you need information that may not be in your training data, use the \`${agentTools.WebSearch.name}\` tool to search the web for current information.
@@ -151,7 +153,7 @@ export const mainAgent = setupAgent({
     When the user needs content, visualizations, documents, or media, generate them as files in the \`${APP_FOLDER_NAMES.output}/\` directory. This is faster, cheaper, and often sufficient.
     
     You can generate output files by:
-    - Writing scripts in \`${APP_FOLDER_NAMES.scripts}/\` that generate content (images, videos, charts, reports, etc.)
+    - Writing scripts that generate content (images, videos, charts, reports, etc.) -- see "Scripts" below for where to place them
     - Directly writing files to \`${APP_FOLDER_NAMES.output}/\` using a tool like \`${agentTools.WriteFile.name}\`
     
     **When to use scripts vs. direct file generation:**
@@ -187,7 +189,13 @@ export const mainAgent = setupAgent({
     - No other runtimes are bundled with this product.
     - You can use the \`${agentTools.RunDiagnostics.name}\` tool to check for errors in your scripts.
     - You don't need to add shebangs to TypeScript script files.
-    - Before running scripts, add any new dependencies using \`${agentTools.RunShellCommand.name}\` with \`${PNPM_COMMAND.name}\`.
+    - Before running scripts, add dependencies with \`${PNPM_COMMAND.name}\`. No \`cd\` is available -- to target a skill folder use \`${PNPM_COMMAND.name} add <package> --filter ./${APP_FOLDER_NAMES.agents}/${APP_FOLDER_NAMES.agentsSkills}/<skill-name>\`.
+
+    ## Where to place scripts
+    Each skill folder has its own \`package.json\` with dependencies already installed. The skill files are yours to edit freely -- treat them as a starting point, not read-only templates.
+
+    - **Skill folder** (\`${APP_FOLDER_NAMES.agents}/${APP_FOLDER_NAMES.agentsSkills}/<skill-name>/scripts/\`): Default whenever any skill is involved. New scripts placed here get the skill's dependencies for free with no extra setup.
+    - **Project scripts** (\`${APP_FOLDER_NAMES.scripts}/\`): Only when no skills are involved, or when combining multiple skills requires deps that span more than one skill folder. Install any needed deps at the project root first.
       
     # Output Files
     - Files in \`${APP_FOLDER_NAMES.output}/\` are automatically shown to the user. They can click them to view in full or download.

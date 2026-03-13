@@ -7,7 +7,8 @@ import { z } from "zod";
 
 import { APP_FOLDER_NAMES } from "../constants";
 import { copySkill } from "../lib/copy-skill";
-import { pnpmCommand } from "../lib/shell-commands/pnpm";
+import { PNPM_COMMAND, pnpmCommand } from "../lib/shell-commands/pnpm";
+import { TS_COMMAND } from "../lib/shell-commands/ts";
 import {
   FILE_LIST_LIMIT,
   findSkill,
@@ -18,6 +19,7 @@ import {
 import { type AbsolutePath } from "../schemas/paths";
 import { BaseInputSchema } from "./base";
 import { setupTool } from "./create-tool";
+import { ReadFile } from "./read-file";
 
 const TAGS = {
   availableSkills: "available_skills",
@@ -136,7 +138,7 @@ export const LoadSkill = setupTool({
         const { combined, exitCode } = installResult.value;
         installSection =
           exitCode === 0
-            ? "\n\n`pnpm install` was run at the project root. All workspace packages, including those added by this skill, have been installed and linked correctly."
+            ? `\n\n\`${PNPM_COMMAND.name} install\` was run. This is a monorepo -- skill dependencies are scoped to this skill's folder and are ready to use. Do not run \`${PNPM_COMMAND.name} add\` for packages this skill already provides.`
             : `\n\n\`pnpm install\` was run at the project root but exited with code ${exitCode}. The skill's dependencies may not be fully installed. Raw output:\n\`\`\`\n${combined}\n\`\`\``;
       } else {
         installSection = `\n\n\`pnpm install\` could not be run: ${installResult.error.message}`;
@@ -148,7 +150,7 @@ export const LoadSkill = setupTool({
       : "";
     const fileSection =
       copiedFiles.length > 0
-        ? `\n\nThe skill files listed below have been copied into your project. Prefer using them as-is before modifying or replacing them.\n\n<${TAGS.skillFiles}>\n${copiedFiles.map((f) => `<${TAGS.file}>${relativeSkillRoot}/${f}</${TAGS.file}>`).join("\n")}\n</${TAGS.skillFiles}>${truncationNote}`
+        ? `\n\nThe skill files below are copied into your project and are yours to edit. Before writing anything new, read the relevant script(s) with ${ReadFile.name} and run them with \`${TS_COMMAND.name}\` if they fit. Only write a custom script if the existing ones cannot handle the task even with modification.\n\n<${TAGS.skillFiles}>\n${copiedFiles.map((f) => `<${TAGS.file}>${relativeSkillRoot}/${f}</${TAGS.file}>`).join("\n")}\n</${TAGS.skillFiles}>${truncationNote}`
         : "";
 
     const content = `<${TAGS.skillContent} name="${skill.name}">\n${skill.content}${fileSection}${installSection}\n</${TAGS.skillContent}>`;
