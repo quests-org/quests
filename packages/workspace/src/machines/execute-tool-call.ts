@@ -150,6 +150,7 @@ export const executeToolCallMachine = setup({
       const tool = getToolByType(context.part.type);
       return typeof tool.timeoutMs === "function"
         ? tool.timeoutMs({
+            appConfig: context.appConfig,
             input: context.part.input as never,
           })
         : tool.timeoutMs;

@@ -1,12 +1,15 @@
 import ms from "ms";
 import { ok } from "neverthrow";
-import fs from "node:fs/promises";
+import fs from "node:fs";
+import fsPromises from "node:fs/promises";
 import path from "node:path";
 import { dedent } from "radashi";
 import { z } from "zod";
 
 import { APP_FOLDER_NAMES, REGISTRY_FOLDER_NAMES } from "../constants";
 import { absolutePathJoin } from "../lib/absolute-path-join";
+import { copySkill } from "../lib/copy-skill";
+import { pnpmCommand } from "../lib/shell-commands/pnpm";
 import { findSkills } from "../lib/skills";
 import { type AbsolutePath } from "../schemas/paths";
 import { BaseInputSchema } from "./base";
@@ -24,34 +27,10 @@ const TAGS = {
   skillFiles: "skill_files",
 } as const;
 
-async function copySkillToProject(
-  skillDir: AbsolutePath,
-  destDir: AbsolutePath,
-  signal: AbortSignal,
-) {
-  signal.throwIfAborted();
-  try {
-    await fs.access(destDir);
-    return;
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
-      throw error;
-    }
-    // Destination does not exist yet, proceed with copy
-  }
-  signal.throwIfAborted();
-  await fs.mkdir(destDir, { recursive: true });
-  signal.throwIfAborted();
-  await fs.cp(skillDir, destDir, { recursive: true });
-}
-
-function getSkillDestDir(appDir: AbsolutePath, skillName: string) {
-  return absolutePathJoin(
-    appDir,
-    APP_FOLDER_NAMES.agents,
-    APP_FOLDER_NAMES.agentsSkills,
-    skillName,
-  );
+async function findSkill(registryDir: AbsolutePath, name: string) {
+  const sources = getSkillSources(registryDir);
+  const all = await findSkills(sources);
+  return { all, skill: all.find((s) => s.name === name) };
 }
 
 function getSkillSources(registryDir: AbsolutePath) {
@@ -72,7 +51,7 @@ async function listSkillFiles(
     }
     let entries;
     try {
-      entries = await fs.readdir(dir, { withFileTypes: true });
+      entries = await fsPromises.readdir(dir, { withFileTypes: true });
     } catch {
       return;
     }
@@ -92,6 +71,19 @@ async function listSkillFiles(
 
   await walk(destDir, "");
   return { files: results, truncated };
+}
+
+function skillHasPackageJson(registryDir: AbsolutePath, name: string) {
+  const sources = getSkillSources(registryDir);
+  const skillsDir = sources[0];
+  try {
+    return (
+      skillsDir !== undefined &&
+      fs.existsSync(path.join(skillsDir, name, "package.json"))
+    );
+  } catch {
+    return false;
+  }
 }
 
 export const LoadSkill = setupTool({
@@ -135,19 +127,19 @@ export const LoadSkill = setupTool({
       Invoke this tool to load a skill when a task matches one of the available skills listed below${hint}:
 
       ${skillsBlock}
+
+      Note: if the skill includes a package.json, pnpm install will be run automatically in the project after the skill is copied.
     `.trim();
   },
   execute: async ({ appConfig, input, signal }) => {
-    const sources = getSkillSources(appConfig.workspaceConfig.registryDir);
-    const skills = await findSkills(sources);
-
-    const skill = skills.find((s) => s.name === input.name);
+    const { registryDir } = appConfig.workspaceConfig;
+    const { all, skill } = await findSkill(registryDir, input.name);
 
     if (!skill) {
       const listing =
-        skills.length === 0
+        all.length === 0
           ? "No skills are currently available."
-          : skills.map((s) => `- ${s.name}: ${s.description}`).join("\n");
+          : all.map((s) => `- ${s.name}: ${s.description}`).join("\n");
 
       return ok({
         content: `Skill "${input.name}" not found.\n\nAvailable skills:\n\n${listing}`,
@@ -155,9 +147,21 @@ export const LoadSkill = setupTool({
       });
     }
 
-    const destDir = getSkillDestDir(appConfig.appDir, skill.name);
-    await copySkillToProject(skill.skillDir, destDir, signal);
+    const copyResult = await copySkill({
+      appDir: appConfig.appDir,
+      signal,
+      skillDir: skill.skillDir,
+      skillName: skill.name,
+    });
 
+    if (copyResult.isErr()) {
+      return ok({
+        content: copyResult.error.message,
+        name: skill.name,
+      });
+    }
+
+    const destDir = copyResult.value;
     const relativeSkillRoot = path.join(
       APP_FOLDER_NAMES.agents,
       APP_FOLDER_NAMES.agentsSkills,
@@ -168,6 +172,22 @@ export const LoadSkill = setupTool({
       signal,
     );
 
+    const hasPackageJson = copiedFiles.includes("package.json");
+
+    let installSection = "";
+    if (hasPackageJson) {
+      const installResult = await pnpmCommand(["install"], appConfig, signal);
+      if (installResult.isOk()) {
+        const { combined, exitCode } = installResult.value;
+        installSection =
+          exitCode === 0
+            ? "\n\n`pnpm install` was run at the project root. All workspace packages, including those added by this skill, have been installed and linked correctly."
+            : `\n\n\`pnpm install\` was run at the project root but exited with code ${exitCode}. The skill's dependencies may not be fully installed. Raw output:\n\`\`\`\n${combined}\n\`\`\``;
+      } else {
+        installSection = `\n\n\`pnpm install\` could not be run: ${installResult.error.message}`;
+      }
+    }
+
     const truncationNote = truncated
       ? `\nNote: file list truncated at ${FILE_LIST_LIMIT} entries.`
       : "";
@@ -176,12 +196,21 @@ export const LoadSkill = setupTool({
         ? `\n\nThe skill files listed below have been copied into your project. Prefer using them as-is before modifying or replacing them.\n\n<${TAGS.skillFiles}>\n${copiedFiles.map((f) => `<${TAGS.file}>${relativeSkillRoot}/${f}</${TAGS.file}>`).join("\n")}\n</${TAGS.skillFiles}>${truncationNote}`
         : "";
 
-    const content = `<${TAGS.skillContent} name="${skill.name}">\n${skill.content}${fileSection}\n</${TAGS.skillContent}>`;
+    const content = `<${TAGS.skillContent} name="${skill.name}">\n${skill.content}${fileSection}${installSection}\n</${TAGS.skillContent}>`;
 
     return ok({ content, name: skill.name });
   },
   readOnly: false,
-  timeoutMs: ms("10 seconds"),
+  timeoutMs: ({ appConfig, input }) => {
+    const base = ms("10 seconds");
+    const extra = skillHasPackageJson(
+      appConfig.workspaceConfig.registryDir,
+      input.name,
+    )
+      ? ms("2 minutes")
+      : 0;
+    return base + extra;
+  },
   toModelOutput: ({ output }) => ({
     type: "text",
     value: output.content,

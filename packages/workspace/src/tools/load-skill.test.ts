@@ -192,10 +192,14 @@ describe("LoadSkill", () => {
     );
 
     await fs.writeFile(destScript, "modified");
-    await runTool(LoadSkill, args);
 
-    const content = await fs.readFile(destScript, "utf8");
-    expect(content).toMatchInlineSnapshot(`"modified"`);
+    const result = (await runTool(LoadSkill, args))._unsafeUnwrap();
+
+    const fileContent = await fs.readFile(destScript, "utf8");
+    expect(fileContent).toMatchInlineSnapshot(`"modified"`);
+    expect(result.content).toMatchInlineSnapshot(
+      `"Skill "my-skill" is already loaded at .agents/skills/my-skill."`,
+    );
   });
 
   it("returns skill content wrapped in skill_content tag", async () => {

@@ -46,7 +46,12 @@ export interface AgentTool<
   // Description-free variant used for static type inference and toModelOutput mapping.
   // Does not call description(), so it is safe to call synchronously without appConfig.
   staticAISDKTool: () => Tool<z.output<TInputSchema>, z.output<TOutputSchema>>;
-  timeoutMs: ((options: { input: z.output<TInputSchema> }) => number) | number;
+  timeoutMs:
+    | ((options: {
+        appConfig: AppConfig;
+        input: z.output<TInputSchema>;
+      }) => number)
+    | number;
   toModelOutput: (options: {
     input: z.output<TInputSchema>;
     output: z.output<TOutputSchema>;
