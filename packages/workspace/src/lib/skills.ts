@@ -1,15 +1,27 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
+import { REGISTRY_FOLDER_NAMES } from "../constants";
 import { type AbsolutePath } from "../schemas/paths";
 import { absolutePathJoin } from "./absolute-path-join";
 import { pathExists } from "./path-exists";
+
+export const FILE_LIST_LIMIT = 50;
 
 interface SkillInfo {
   content: string;
   description: string;
   name: string;
   skillDir: AbsolutePath;
+}
+
+export async function findSkill(
+  registryDir: AbsolutePath,
+  name: string,
+): Promise<{ all: SkillInfo[]; skill: SkillInfo | undefined }> {
+  const sources = getSkillSources(registryDir);
+  const all = await findSkills(sources);
+  return { all, skill: all.find((s) => s.name === name) };
 }
 
 export async function findSkills(dirs: AbsolutePath[]): Promise<SkillInfo[]> {
@@ -23,6 +35,46 @@ export async function findSkills(dirs: AbsolutePath[]): Promise<SkillInfo[]> {
   }
 
   return [...skillMap.values()];
+}
+
+export function getSkillSources(registryDir: AbsolutePath): AbsolutePath[] {
+  return [absolutePathJoin(registryDir, REGISTRY_FOLDER_NAMES.skills)];
+}
+
+export async function listSkillFiles(
+  destDir: AbsolutePath,
+  signal: AbortSignal,
+): Promise<{ files: string[]; truncated: boolean }> {
+  const results: string[] = [];
+  let truncated = false;
+
+  async function walk(dir: string, relBase: string) {
+    signal.throwIfAborted();
+    if (truncated) {
+      return;
+    }
+    let entries;
+    try {
+      entries = await fs.readdir(dir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      const relPath = relBase ? `${relBase}/${entry.name}` : entry.name;
+      if (entry.isDirectory()) {
+        await walk(path.join(dir, entry.name), relPath);
+      } else if (entry.name !== "SKILL.md") {
+        results.push(relPath);
+        if (results.length >= FILE_LIST_LIMIT) {
+          truncated = true;
+          return;
+        }
+      }
+    }
+  }
+
+  await walk(destDir, "");
+  return { files: results, truncated };
 }
 
 async function findSkillsInDir(dir: AbsolutePath): Promise<SkillInfo[]> {

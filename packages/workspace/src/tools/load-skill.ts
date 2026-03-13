@@ -1,21 +1,23 @@
 import ms from "ms";
 import { ok } from "neverthrow";
-import fs from "node:fs";
-import fsPromises from "node:fs/promises";
+import fsSync from "node:fs";
 import path from "node:path";
 import { dedent } from "radashi";
 import { z } from "zod";
 
-import { APP_FOLDER_NAMES, REGISTRY_FOLDER_NAMES } from "../constants";
-import { absolutePathJoin } from "../lib/absolute-path-join";
+import { APP_FOLDER_NAMES } from "../constants";
 import { copySkill } from "../lib/copy-skill";
 import { pnpmCommand } from "../lib/shell-commands/pnpm";
-import { findSkills } from "../lib/skills";
+import {
+  FILE_LIST_LIMIT,
+  findSkill,
+  findSkills,
+  getSkillSources,
+  listSkillFiles,
+} from "../lib/skills";
 import { type AbsolutePath } from "../schemas/paths";
 import { BaseInputSchema } from "./base";
 import { setupTool } from "./create-tool";
-
-const FILE_LIST_LIMIT = 50;
 
 const TAGS = {
   availableSkills: "available_skills",
@@ -27,59 +29,12 @@ const TAGS = {
   skillFiles: "skill_files",
 } as const;
 
-async function findSkill(registryDir: AbsolutePath, name: string) {
-  const sources = getSkillSources(registryDir);
-  const all = await findSkills(sources);
-  return { all, skill: all.find((s) => s.name === name) };
-}
-
-function getSkillSources(registryDir: AbsolutePath) {
-  return [absolutePathJoin(registryDir, REGISTRY_FOLDER_NAMES.skills)];
-}
-
-async function listSkillFiles(
-  destDir: AbsolutePath,
-  signal: AbortSignal,
-): Promise<{ files: string[]; truncated: boolean }> {
-  const results: string[] = [];
-  let truncated = false;
-
-  async function walk(dir: string, relBase: string) {
-    signal.throwIfAborted();
-    if (truncated) {
-      return;
-    }
-    let entries;
-    try {
-      entries = await fsPromises.readdir(dir, { withFileTypes: true });
-    } catch {
-      return;
-    }
-    for (const entry of entries) {
-      const relPath = relBase ? `${relBase}/${entry.name}` : entry.name;
-      if (entry.isDirectory()) {
-        await walk(path.join(dir, entry.name), relPath);
-      } else if (entry.name !== "SKILL.md") {
-        results.push(relPath);
-        if (results.length >= FILE_LIST_LIMIT) {
-          truncated = true;
-          return;
-        }
-      }
-    }
-  }
-
-  await walk(destDir, "");
-  return { files: results, truncated };
-}
-
 function skillHasPackageJson(registryDir: AbsolutePath, name: string) {
-  const sources = getSkillSources(registryDir);
-  const skillsDir = sources[0];
+  const skillsDir = getSkillSources(registryDir)[0];
   try {
     return (
       skillsDir !== undefined &&
-      fs.existsSync(path.join(skillsDir, name, "package.json"))
+      fsSync.existsSync(path.join(skillsDir, name, "package.json"))
     );
   } catch {
     return false;
