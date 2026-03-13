@@ -304,10 +304,7 @@ export function ToolContent({
     }
     case "tool-load_skill": {
       return (
-        <div>
-          <SectionHeader>Skill learned: {part.output.name}</SectionHeader>
-          <ScrollableCodeBlock>{part.output.content}</ScrollableCodeBlock>
-        </div>
+        <SessionMarkdown className="w-full" markdown={part.output.content} />
       );
     }
     case "tool-read_file": {
