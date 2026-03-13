@@ -1,8 +1,8 @@
 import path from "node:path";
 import { parseArgs } from "node:util";
 
+import { EVALS } from "./cases";
 import { runEvals } from "./harness";
-import { EVALS } from "./index";
 import { generateReport } from "./report";
 
 // Suppress unstorage db0 experimental warning
