@@ -8,3 +8,12 @@ alwaysApply: true
 - Do NOT remove comments that are already present.
 - NEVER use em dashes in text.
 - For fallible operations: use neverthrow `Result` in workspace; use the `typescript-result` package in ai-gateway. Prefer these over throwing.
+
+## ⚠️ WARNING: PNPM Install in Sandbox Terminals
+
+**NEVER run `pnpm install` (or any `pnpm add`/`pnpm remove`) from within a sandbox terminal (i.e. Shell tool calls with sandboxing enabled).** Doing so causes a divergence between the sandbox's PNPM store and the main PNPM store, leaving the lockfile and node_modules in an inconsistent state.
+
+If a package installation is needed, either:
+
+1. Ask the user to run the install command themselves, OR
+2. Run the command using `required_permissions: ["all"]` to disable sandboxing
