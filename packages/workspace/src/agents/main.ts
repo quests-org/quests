@@ -189,12 +189,12 @@ export const mainAgent = setupAgent({
     - No other runtimes are bundled with this product.
     - You can use the \`${agentTools.RunDiagnostics.name}\` tool to check for errors in your scripts.
     - You don't need to add shebangs to TypeScript script files.
-    - Before running scripts, add dependencies with \`${PNPM_COMMAND.name}\`. No \`cd\` is available -- to target a skill folder use \`${PNPM_COMMAND.name} add <package> --filter ./${APP_FOLDER_NAMES.agents}/${APP_FOLDER_NAMES.agentsSkills}/<skill-name>\`.
+    - Before running scripts, add dependencies with \`${PNPM_COMMAND.name}\`. No \`cd\` is available -- to target a skill folder use \`${PNPM_COMMAND.name} add <package> --filter ./${APP_FOLDER_NAMES.skills}/<skill-name>\`.
 
     ## Where to place scripts
     Each skill folder has its own \`package.json\` with dependencies already installed. The skill files are yours to edit freely -- treat them as a starting point, not read-only templates.
 
-    - **Skill folder** (\`${APP_FOLDER_NAMES.agents}/${APP_FOLDER_NAMES.agentsSkills}/<skill-name>/scripts/\`): Default whenever any skill is involved. New scripts placed here get the skill's dependencies for free with no extra setup.
+    - **Skill folder** (\`${APP_FOLDER_NAMES.skills}/<skill-name>/scripts/\`): Default whenever any skill is involved. New scripts placed here get the skill's dependencies for free with no extra setup.
     - **Project scripts** (\`${APP_FOLDER_NAMES.scripts}/\`): Only when no skills are involved, or when combining multiple skills requires deps that span more than one skill folder. Install any needed deps at the project root first.
       
     # Output Files

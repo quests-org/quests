@@ -36,14 +36,16 @@ export function FilesGrid({
   const navigate = useNavigate({ from: "/projects/$subdomain" });
   const [isExpanded, setIsExpanded] = useState(false);
   const [isScriptsExpanded, setIsScriptsExpanded] = useState(false);
+  const [isSkillsExpanded, setIsSkillsExpanded] = useState(false);
   const [isUserProvidedExpanded, setIsUserProvidedExpanded] = useState(false);
   const [isAgentRetrievedExpanded, setIsAgentRetrievedExpanded] =
     useState(false);
 
   const [outputFiles, nonOutputFiles] = fork(files, isOutputFile);
   const [scriptFiles, nonScriptFiles] = fork(nonOutputFiles, isScriptFile);
+  const [skillFiles, nonSkillFiles] = fork(nonScriptFiles, isSkillFile);
   const [userProvidedFiles, nonUserProvidedFiles] = fork(
-    nonScriptFiles,
+    nonSkillFiles,
     isUserProvidedFile,
   );
   const [agentRetrievedFiles, regularFiles] = fork(
@@ -81,6 +83,7 @@ export function FilesGrid({
   const hasMoreFiles =
     mainFiles.length > initialVisibleCount ||
     scriptFiles.length > 0 ||
+    skillFiles.length > 0 ||
     collapsedUserProvidedFiles.length > 0 ||
     agentRetrievedFiles.length > 0;
 
@@ -89,6 +92,7 @@ export function FilesGrid({
   const hiddenFileCount =
     expandedFiles.length +
     scriptFiles.length +
+    skillFiles.length +
     collapsedUserProvidedFiles.length +
     agentRetrievedFiles.length;
 
@@ -174,6 +178,7 @@ export function FilesGrid({
                 collapsedUserProvidedFiles.length === 0
               ) {
                 setIsScriptsExpanded(true);
+                setIsSkillsExpanded(true);
                 setIsUserProvidedExpanded(true);
                 setIsAgentRetrievedExpanded(true);
               }
@@ -205,6 +210,19 @@ export function FilesGrid({
             setIsScriptsExpanded(!isScriptsExpanded);
           }}
           title="Scripts"
+        />
+      )}
+
+      {isExpanded && skillFiles.length > 0 && (
+        <CategorizedFileSection
+          alignEnd={alignEnd}
+          files={skillFiles}
+          isExpanded={isSkillsExpanded}
+          onFileClick={handleFileClick}
+          onToggle={() => {
+            setIsSkillsExpanded(!isSkillsExpanded);
+          }}
+          title="Skills"
         />
       )}
 
@@ -240,6 +258,7 @@ export function FilesGrid({
             onClick={() => {
               setIsExpanded(false);
               setIsScriptsExpanded(false);
+              setIsSkillsExpanded(false);
               setIsUserProvidedExpanded(false);
               setIsAgentRetrievedExpanded(false);
             }}
@@ -336,6 +355,10 @@ function isOutputFile(file: ProjectFileViewerFile) {
 
 function isScriptFile(file: ProjectFileViewerFile) {
   return file.filePath.startsWith(`${APP_FOLDER_NAMES.scripts}/`);
+}
+
+function isSkillFile(file: ProjectFileViewerFile) {
+  return file.filePath.startsWith(`${APP_FOLDER_NAMES.skills}/`);
 }
 
 function isUserProvidedFile(file: ProjectFileViewerFile) {

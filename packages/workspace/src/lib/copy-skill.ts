@@ -19,18 +19,13 @@ export async function copySkill({
   skillDir: AbsolutePath;
   skillName: string;
 }): Promise<Result<AbsolutePath, TypedError.Conflict>> {
-  const destDir = absolutePathJoin(
-    appDir,
-    APP_FOLDER_NAMES.agents,
-    APP_FOLDER_NAMES.agentsSkills,
-    skillName,
-  );
+  const destDir = absolutePathJoin(appDir, APP_FOLDER_NAMES.skills, skillName);
 
   try {
     await fs.access(destDir);
     return err(
       new TypedError.Conflict(
-        `Skill "${skillName}" is already loaded at ${path.join(APP_FOLDER_NAMES.agents, APP_FOLDER_NAMES.agentsSkills, skillName)}.`,
+        `Skill "${skillName}" is already loaded at ${path.join(APP_FOLDER_NAMES.skills, skillName)}.`,
       ),
     );
   } catch (error) {

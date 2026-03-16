@@ -110,12 +110,7 @@ describe("LoadSkill", () => {
       input: { explanation: "loading", name: "my-skill" },
     });
 
-    const destBase = path.join(
-      appDir,
-      APP_FOLDER_NAMES.agents,
-      APP_FOLDER_NAMES.agentsSkills,
-      "my-skill",
-    );
+    const destBase = path.join(appDir, APP_FOLDER_NAMES.skills, "my-skill");
     const md = await fs.readFile(path.join(destBase, "SKILL.md"), "utf8");
     expect(md).toMatchInlineSnapshot(`
       "---
@@ -161,9 +156,9 @@ describe("LoadSkill", () => {
       The skill files below are copied into your project and are yours to edit. Before writing anything new, read the relevant script(s) with read_file and run them with \`ts\` if they fit. Only write a custom script if the existing ones cannot handle the task even with modification.
 
       <skill_files>
-      <file>.agents/skills/my-skill/references/notes.md</file>
-      <file>.agents/skills/my-skill/scripts/lib/helper.ts</file>
-      <file>.agents/skills/my-skill/scripts/run.ts</file>
+      <file>skills/my-skill/references/notes.md</file>
+      <file>skills/my-skill/scripts/lib/helper.ts</file>
+      <file>skills/my-skill/scripts/run.ts</file>
       </skill_files>
       </skill_content>"
     `);
@@ -184,8 +179,7 @@ describe("LoadSkill", () => {
 
     const destScript = path.join(
       appDir,
-      APP_FOLDER_NAMES.agents,
-      APP_FOLDER_NAMES.agentsSkills,
+      APP_FOLDER_NAMES.skills,
       "my-skill",
       "scripts",
       "run.ts",
@@ -198,7 +192,7 @@ describe("LoadSkill", () => {
     const fileContent = await fs.readFile(destScript, "utf8");
     expect(fileContent).toMatchInlineSnapshot(`"modified"`);
     expect(result.content).toMatchInlineSnapshot(
-      `"Skill "my-skill" is already loaded at .agents/skills/my-skill."`,
+      `"Skill "my-skill" is already loaded at skills/my-skill."`,
     );
   });
 

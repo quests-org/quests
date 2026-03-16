@@ -119,11 +119,7 @@ export const LoadSkill = setupTool({
     }
 
     const destDir = copyResult.value;
-    const relativeSkillRoot = path.join(
-      APP_FOLDER_NAMES.agents,
-      APP_FOLDER_NAMES.agentsSkills,
-      skill.name,
-    );
+    const relativeSkillRoot = path.join(APP_FOLDER_NAMES.skills, skill.name);
     const { files: copiedFiles, truncated } = await listSkillFiles(
       destDir,
       signal,

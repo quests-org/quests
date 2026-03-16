@@ -81,7 +81,7 @@ const TOOL_STREAMING_DISPLAY_NAMES_WITH_VALUE: Record<
   generate_image: "Generating",
   glob: "Searching for",
   grep: "Searching for",
-  load_skill: "Loading",
+  load_skill: "Loading skill",
   read_file: "Reading",
   run_diagnostics: TOOL_STREAMING_DISPLAY_NAMES.run_diagnostics,
   run_shell_command: TOOL_STREAMING_DISPLAY_NAMES.run_shell_command,
