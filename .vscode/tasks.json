@@ -2,7 +2,7 @@
   "tasks": [
     {
       "command": "bash scripts/sync.sh",
-      "detail": "Pull latest main, update submodules, and install dependencies",
+      "detail": "Pull latest main, update submodules, and install dependencies with scripts/sync.sh script",
       "label": "Sync with main",
       "presentation": {
         "clear": true,
@@ -29,7 +29,22 @@
       },
       "problemMatcher": ["$eslint-stylish", "$tsc"],
       "type": "shell"
-    }
+    },
+    {
+      "command": "bash scripts/setup.sh",
+      "detail": "First time setup of the project with scripts/setup.sh script",
+      "label": "Setup the project",
+      "presentation": {
+        "clear": true,
+        "echo": true,
+        "focus": true,
+        "panel": "shared",
+        "reveal": "always",
+        "showReuseMessage": false
+      },
+      "problemMatcher": [],
+      "type": "shell"
+    },
   ],
   "version": "2.0.0"
 }
