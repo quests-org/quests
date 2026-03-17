@@ -61,7 +61,7 @@ describe("Grep", () => {
       });
       expect(result).toMatchInlineSnapshot(`
         {
-          "type": "error-text",
+          "type": "text",
           "value": "No matches found",
         }
       `);

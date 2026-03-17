@@ -24,7 +24,7 @@ export const Unavailable = setupTool({
   timeoutMs: ms("1 second"),
   toModelOutput: () => {
     return {
-      type: "text",
+      type: "error-text",
       value: "This tool is not available.",
     };
   },

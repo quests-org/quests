@@ -209,7 +209,7 @@ export const GenerateImage = setupTool({
   toModelOutput: ({ output }) => {
     if (output.state === "failure") {
       return {
-        type: "text",
+        type: "error-text",
         value: output.errorMessage,
       };
     }
@@ -218,7 +218,7 @@ export const GenerateImage = setupTool({
 
     if (imageCount === 0) {
       return {
-        type: "text",
+        type: "error-text",
         value: "No images were generated",
       };
     }

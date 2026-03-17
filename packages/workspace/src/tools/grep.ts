@@ -137,7 +137,7 @@ export const Grep = setupTool({
   toModelOutput: ({ output }) => {
     if (output.matches.length === 0) {
       return {
-        type: "error-text",
+        type: "text",
         value: "No matches found",
       };
     }

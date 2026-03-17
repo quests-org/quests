@@ -124,7 +124,7 @@ export const WebSearch = setupTool({
   toModelOutput: ({ output }) => {
     if (output.state === "failure") {
       return {
-        type: "text",
+        type: "error-text",
         value: output.errorMessage,
       };
     }
