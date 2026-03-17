@@ -5,7 +5,7 @@ jobs:
     name: Check Format
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-ripgrep-cache
       - uses: ./.github/actions/prepare
         with:
@@ -16,7 +16,7 @@ jobs:
     name: Check Markdown
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-ripgrep-cache
       - uses: ./.github/actions/prepare
         with:
@@ -27,7 +27,7 @@ jobs:
     name: Check Packages
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-ripgrep-cache
       - uses: ./.github/actions/prepare
         with:
@@ -38,7 +38,7 @@ jobs:
     name: Check Spelling
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-ripgrep-cache
       - uses: ./.github/actions/prepare
         with:
@@ -49,7 +49,7 @@ jobs:
     name: Check Unused
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-ripgrep-cache
       - uses: ./.github/actions/prepare
         with:
@@ -60,7 +60,7 @@ jobs:
     name: Check ESLint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-ripgrep-cache
       - uses: ./.github/actions/prepare
         with:
@@ -73,7 +73,7 @@ jobs:
     name: Check Prettier
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-ripgrep-cache
       - uses: ./.github/actions/prepare
         with:
@@ -84,7 +84,7 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: recursive # Some tests use the registry
       - uses: ./.github/actions/setup-ripgrep-cache
@@ -98,7 +98,7 @@ jobs:
     name: Check Build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-ripgrep-cache
       - uses: ./.github/actions/prepare
         with:
@@ -109,7 +109,7 @@ jobs:
     name: Type Check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-ripgrep-cache
       - uses: ./.github/actions/prepare
         with:
@@ -120,7 +120,7 @@ jobs:
     name: Check Electron Node Version
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: recursive
           # A fine-grained GitHub personal access token is required to checkout submodules

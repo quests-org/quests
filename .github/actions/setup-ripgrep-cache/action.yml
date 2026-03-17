@@ -8,7 +8,7 @@ runs:
   steps:
     - id: cache-ripgrep-restore
       name: Cache @vscode/ripgrep bin
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         key: vscode-ripgrep-bin-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('pnpm-lock.yaml') }}
         path: |

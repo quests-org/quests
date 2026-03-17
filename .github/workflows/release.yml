@@ -54,7 +54,7 @@ jobs:
             runner: macos-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: recursive
           # A fine-grained GitHub personal access token is required to checkout submodules
