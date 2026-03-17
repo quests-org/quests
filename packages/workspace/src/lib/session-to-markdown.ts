@@ -3,6 +3,7 @@ import {
   type ModelMessage,
   type SystemModelMessage,
   type ToolModelMessage,
+  type ToolResultPart,
   type UserModelMessage,
 } from "ai";
 import { alphabetical } from "radashi";
@@ -180,7 +181,7 @@ async function renderAssistantMessage(
   // Build a map of toolCallId -> tool result from the tool message
   const toolResultMap = new Map<
     string,
-    { output: unknown; toolName: string }
+    { output: ToolResultPart["output"]; toolName: string }
   >();
   if (toolMessage) {
     for (const part of toolMessage.content) {
@@ -337,7 +338,7 @@ function renderSystemMessage(message: SystemModelMessage): string[] {
 
 function renderToolResult(
   toolName: string,
-  output: unknown,
+  output: ToolResultPart["output"],
   toolCallIndex: number,
 ): string[] {
   const lines: string[] = [
@@ -346,21 +347,23 @@ function renderToolResult(
     "",
   ];
 
-  if (
-    output !== null &&
-    typeof output === "object" &&
-    "type" in output &&
-    "value" in output
-  ) {
-    const typedOutput = output as { type: string; value: unknown };
-
-    if (typedOutput.type === "text" && typeof typedOutput.value === "string") {
-      lines.push(typedOutput.value);
-    } else if (typedOutput.type === "json") {
-      lines.push("```json", JSON.stringify(typedOutput.value, null, 2), "```");
+  switch (output.type) {
+    case "error-json":
+    case "json": {
+      lines.push("```json", JSON.stringify(output.value, null, 2), "```");
+      break;
     }
-  } else {
-    lines.push("```json", JSON.stringify(output, null, 2), "```");
+    case "error-text":
+    case "text": {
+      lines.push(output.value);
+      break;
+    }
+    case "execution-denied": {
+      lines.push(
+        `*Execution denied${output.reason ? `: ${output.reason}` : ""}*`,
+      );
+      break;
+    }
   }
 
   return lines;
