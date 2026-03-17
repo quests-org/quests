@@ -1,128 +1,15 @@
 env:
+  CI: "true"
   DO_NOT_TRACK: "1"
+  NODE_OPTIONS: "--max_old_space_size=4096"
 jobs:
-  check_format:
-    name: Check Format
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: ./.github/actions/setup-ripgrep-cache
-      - uses: ./.github/actions/prepare
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: rharkor/caching-for-turbo@v2.3.11
-      - run: pnpm turbo:check:format
-  check_markdown:
-    name: Check Markdown
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: ./.github/actions/setup-ripgrep-cache
-      - uses: ./.github/actions/prepare
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: rharkor/caching-for-turbo@v2.3.11
-      - run: pnpm turbo:check:md
-  check_packages:
-    name: Check Packages
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: ./.github/actions/setup-ripgrep-cache
-      - uses: ./.github/actions/prepare
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: rharkor/caching-for-turbo@v2.3.11
-      - run: pnpm turbo:check:packages
-  check_spelling:
-    name: Check Spelling
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: ./.github/actions/setup-ripgrep-cache
-      - uses: ./.github/actions/prepare
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: rharkor/caching-for-turbo@v2.3.11
-      - run: pnpm turbo:check:spelling
-  check_unused:
-    name: Check Unused
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: ./.github/actions/setup-ripgrep-cache
-      - uses: ./.github/actions/prepare
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: rharkor/caching-for-turbo@v2.3.11
-      - run: pnpm turbo:check:unused
-  lint:
-    name: Check ESLint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: ./.github/actions/setup-ripgrep-cache
-      - uses: ./.github/actions/prepare
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: rharkor/caching-for-turbo@v2.3.11
-      - run: |
-          export NODE_OPTIONS="--max_old_space_size=4096"
-          pnpm turbo:check:lint:ci
-  prettier:
-    name: Check Prettier
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: ./.github/actions/setup-ripgrep-cache
-      - uses: ./.github/actions/prepare
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: rharkor/caching-for-turbo@v2.3.11
-      - run: pnpm prettier --list-different
-  test:
-    name: Test
+  check:
+    name: Check and Test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
         with:
           submodules: recursive # Some tests use the registry
-      - uses: ./.github/actions/setup-ripgrep-cache
-      - uses: ./.github/actions/prepare
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: rharkor/caching-for-turbo@v2.3.11
-      - run: pnpm turbo:test:ci
-      - uses: codecov/codecov-action@v3
-  check_build:
-    name: Check Build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: ./.github/actions/setup-ripgrep-cache
-      - uses: ./.github/actions/prepare
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: rharkor/caching-for-turbo@v2.3.11
-      - run: pnpm turbo:check:build
-  type_check:
-    name: Type Check
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: ./.github/actions/setup-ripgrep-cache
-      - uses: ./.github/actions/prepare
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: rharkor/caching-for-turbo@v2.3.11
-      - run: pnpm turbo:check:types
-  check_electron_node_version:
-    name: Check Electron Node Version
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          submodules: recursive
           # A fine-grained GitHub personal access token is required to checkout submodules
           # https://github.com/actions/checkout/issues/287
           # Permissions required:
@@ -135,7 +22,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       - uses: rharkor/caching-for-turbo@v2.3.11
-      - run: pnpm check:electron-node-version
+      - run: pnpm check-and-test
 
 name: CI
 
