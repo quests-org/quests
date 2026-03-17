@@ -41,15 +41,15 @@ const ROOT_SOURCE_EXTENSIONS = [
 ];
 
 export function shouldFilterProjectFile(filePath: string): boolean {
+  const isRootFile = !filePath.slice(2).includes("/");
+  if (!isRootFile) {
+    return false;
+  }
   const baseName = filenameFromFilePath(filePath).toLowerCase();
   if (
     FILTERED_FILENAMES.some((filtered) => baseName === filtered.toLowerCase())
   ) {
     return true;
   }
-  const isRootFile = !filePath.slice(2).includes("/");
-  if (isRootFile) {
-    return ROOT_SOURCE_EXTENSIONS.some((ext) => baseName.endsWith(ext));
-  }
-  return false;
+  return ROOT_SOURCE_EXTENSIONS.some((ext) => baseName.endsWith(ext));
 }
