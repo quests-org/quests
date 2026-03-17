@@ -34,6 +34,37 @@ export async function pnpmCommand(
     );
   }
 
+  // Skip auto-install when the subcommand is itself a package management operation
+  const PACKAGE_MANAGEMENT_SUBCOMMANDS = new Set([
+    "add",
+    "dedupe",
+    "fetch",
+    "i", // short for install
+    "import",
+    "install",
+    "install-test",
+    "it", // short for install-test
+    "link",
+    "ln", // short for link
+    "prune",
+    "rb", // short for rebuild
+    "rebuild",
+    "remove",
+    "rm", // short for remove
+    "uninstall",
+    "unlink",
+    "up", // short for update
+    "update",
+  ]);
+  if (!subcommand || !PACKAGE_MANAGEMENT_SUBCOMMANDS.has(subcommand)) {
+    await execaNodeForApp(
+      appConfig,
+      appConfig.workspaceConfig.pnpmBinPath,
+      ["install"],
+      { all: true, cancelSignal: signal, reject: false },
+    );
+  }
+
   const execResult = await execaNodeForApp(
     appConfig,
     appConfig.workspaceConfig.pnpmBinPath,
