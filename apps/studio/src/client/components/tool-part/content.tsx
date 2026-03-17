@@ -322,35 +322,6 @@ export function ToolContent({
     case "tool-read_file": {
       return <ToolPartReadFile input={part.input} output={part.output} />;
     }
-    case "tool-run_diagnostics": {
-      const errors = part.output.errors;
-      return (
-        <div>
-          <SectionHeader>
-            Diagnostics Results:{" "}
-            {errors.length > 0
-              ? `${errors.length} error${errors.length === 1 ? "" : "s"} found`
-              : "No errors found"}
-          </SectionHeader>
-          {errors.length > 0 ? (
-            <div className="space-y-1">
-              {errors.map((error, index) => (
-                <div
-                  className="border-l-2 border-red-300 pl-2 font-mono text-xs dark:border-red-600"
-                  key={index}
-                >
-                  {error}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-sm text-muted-foreground">
-              No diagnostic errors found in the project.
-            </div>
-          )}
-        </div>
-      );
-    }
     case "tool-run_shell_command": {
       return (
         <div>
@@ -385,14 +356,6 @@ export function ToolContent({
     }
     case "tool-task": {
       return null;
-    }
-    case "tool-think": {
-      return (
-        <div>
-          <SectionHeader>Thought</SectionHeader>
-          <div className="text-sm italic">{part.output.thought}</div>
-        </div>
-      );
     }
     case "tool-unavailable": {
       return (

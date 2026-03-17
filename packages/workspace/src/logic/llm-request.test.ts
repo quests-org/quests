@@ -998,7 +998,7 @@ describe("llmRequestLogic", () => {
               "type": "step-start",
             },
             {
-              "errorText": "Model tried to call unavailable tool 'non_existent_tool'. Available tools: choose, copy_to_project, edit_file, generate_image, glob, grep, load_skill, read_file, run_diagnostics, run_shell_command, task, think, unavailable, web_search, write_file.",
+              "errorText": "Model tried to call unavailable tool 'non_existent_tool'. Available tools: choose, copy_to_project, edit_file, generate_image, glob, grep, load_skill, read_file, run_shell_command, task, unavailable, web_search, write_file.",
               "input": undefined,
               "metadata": {
                 "createdAt": 2013-08-31T12:00:04.000Z,
@@ -1081,7 +1081,7 @@ describe("llmRequestLogic", () => {
               "type": "step-start",
             },
             {
-              "errorText": "Model tried to call unavailable tool 'non_existent_tool'. Available tools: choose, copy_to_project, edit_file, generate_image, glob, grep, load_skill, read_file, run_diagnostics, run_shell_command, task, think, unavailable, web_search, write_file.",
+              "errorText": "Model tried to call unavailable tool 'non_existent_tool'. Available tools: choose, copy_to_project, edit_file, generate_image, glob, grep, load_skill, read_file, run_shell_command, task, unavailable, web_search, write_file.",
               "input": undefined,
               "metadata": {
                 "createdAt": 2013-08-31T12:00:04.000Z,
@@ -1159,7 +1159,7 @@ describe("llmRequestLogic", () => {
               "type": "step-start",
             },
             {
-              "errorText": "Model tried to call unavailable tool 'non_existent_tool'. Available tools: choose, copy_to_project, edit_file, generate_image, glob, grep, load_skill, read_file, run_diagnostics, run_shell_command, task, think, unavailable, web_search, write_file.",
+              "errorText": "Model tried to call unavailable tool 'non_existent_tool'. Available tools: choose, copy_to_project, edit_file, generate_image, glob, grep, load_skill, read_file, run_shell_command, task, unavailable, web_search, write_file.",
               "input": {
                 "filePath": "test.txt",
               },
@@ -1874,7 +1874,7 @@ describe("llmRequestLogic", () => {
                     "type": "text",
                     "value": "Successfully wrote new file ./foo.ts
 
-        When you're done with your current set of changes to this file, you should call the run_diagnostics tool to check for any new errors.",
+        Run \`tsc --noEmit\` using the \`run_shell_command\` tool to check for type errors before finishing.",
                   },
                   "providerOptions": undefined,
                   "toolCallId": "2",

@@ -761,12 +761,12 @@ export const EditFile = setupTool({
   },
   readOnly: false,
   timeoutMs: ms("30 seconds"),
-  toModelOutput: ({ output: result }) => {
+  toModelOutput: ({ output }) => {
     return {
       type: "text",
       value: sift([
-        `Successfully edited file ${result.filePath}`,
-        checkReminder(result.filePath),
+        `Successfully edited file ${output.filePath}`,
+        checkReminder(output.filePath),
       ]).join("\n\n"),
     };
   },

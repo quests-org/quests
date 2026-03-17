@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { call } from "@orpc/server";
-import { aiGatewayApp } from "@quests/ai-gateway";
+import { aiGatewayApp, AIGatewayModelURI } from "@quests/ai-gateway";
 import { execa } from "execa";
 import os from "node:os";
 import path from "node:path";
@@ -58,7 +58,13 @@ function formatNumber(num: number): string {
   return num.toString();
 }
 
-const DEFAULT_MODEL_URI = modelURI.openRouter("anthropic/claude-haiku-4.5");
+const MODELS = [
+  modelURI.openRouter("anthropic/claude-haiku-4.5"),
+  modelURI.openRouter("openai/gpt-oss-120b"),
+  modelURI.openRouter("moonshotai/kimi-k2.5"),
+  modelURI.openRouter("openai/gpt-5.4-mini"),
+  modelURI.openRouter("openai/gpt-5.4-nano"),
+];
 
 export interface EvalCase {
   assertions?: Assertion[];
@@ -98,9 +104,10 @@ export async function runEvals(
   process.stdout.write(
     `${c.dim}Registry   :${c.reset} ${registryDir}${env.QUESTS_REGISTRY_DIR_PATH ? c.dim + " (from QUESTS_REGISTRY_DIR_PATH)" + c.reset : ""}\n`,
   );
-  process.stdout.write(
-    `${c.dim}Model      :${c.reset} ${c.cyan}${DEFAULT_MODEL_URI}${c.reset}\n`,
-  );
+  process.stdout.write(`${c.dim}Models (${MODELS.length}):${c.reset}\n`);
+  for (const m of MODELS) {
+    process.stdout.write(`  ${c.dim}-${c.reset} ${c.cyan}${m}${c.reset}\n`);
+  }
   process.stdout.write(`${c.dim}Concurrency:${c.reset} ${concurrency}\n`);
   process.stdout.write(`${c.dim}Evals (${evals.length}):${c.reset}\n`);
   for (const evalCase of evals) {
@@ -136,102 +143,119 @@ export async function runEvals(
 
   actor.start();
 
-  await _.parallel(concurrency, evals, async (evalCase) => {
-    process.stdout.write(
-      `${evalPrefix(evalCase.name)}${c.dim}Starting...${c.reset}\n`,
-    );
+  const runs = MODELS.flatMap((uri) => {
+    const parsed = AIGatewayModelURI.parse(uri);
+    const canonicalId = parsed.ok ? parsed.value.canonicalId : uri;
+    const modelPrefix = sanitizeCanonicalId(canonicalId);
+    return evals.map((evalCase) => ({ evalCase, modelPrefix, uri }));
+  });
 
-    const context = {
-      workspaceConfig: actor.getSnapshot().context.config,
-      workspaceRef: actor,
-    };
+  await _.parallel(
+    concurrency,
+    runs,
+    async ({ evalCase, modelPrefix, uri }) => {
+      const label =
+        MODELS.length > 1 ? `${evalCase.name}/${modelPrefix}` : evalCase.name;
 
-    const { sessionId, subdomain } = await call(
-      projectRoute.create,
-      {
-        files: evalCase.files,
-        folders: evalCase.folders,
-        modelURI: DEFAULT_MODEL_URI,
-        name: evalCase.name,
-        preferredFolderName: evalCase.name,
-        prompt: evalCase.prompt,
-      },
-      { context },
-    );
+      process.stdout.write(
+        `${evalPrefix(label)}${c.dim}Starting...${c.reset}\n`,
+      );
 
-    process.stdout.write(
-      `${evalPrefix(evalCase.name)}${c.green}Project created${c.reset}${c.dim} (subdomain: ${subdomain})${c.reset}\n`,
-    );
+      const context = {
+        workspaceConfig: actor.getSnapshot().context.config,
+        workspaceRef: actor,
+      };
 
-    const abortController = new AbortController();
-    const partUpdates = publisher.subscribe("part.updated", {
-      signal: abortController.signal,
-    });
+      const { sessionId, subdomain } = await call(
+        projectRoute.create,
+        {
+          files: evalCase.files,
+          folders: evalCase.folders,
+          modelURI: uri,
+          name: evalCase.name,
+          preferredFolderName:
+            MODELS.length > 1
+              ? `${modelPrefix}-${evalCase.name}`
+              : evalCase.name,
+          prompt: evalCase.prompt,
+        },
+        { context },
+      );
 
-    void (async () => {
-      try {
-        for await (const event of partUpdates) {
-          if (event.subdomain !== subdomain) {
-            continue;
-          }
+      process.stdout.write(
+        `${evalPrefix(label)}${c.green}Project created${c.reset}${c.dim} (subdomain: ${subdomain})${c.reset}\n`,
+      );
 
-          const part = event.part;
+      const abortController = new AbortController();
+      const partUpdates = publisher.subscribe("part.updated", {
+        signal: abortController.signal,
+      });
 
-          if (
-            isToolPart(part) &&
-            part.state !== "input-streaming" &&
-            part.state !== "input-available"
-          ) {
-            const isError = part.state === "output-error";
-            const stream = isError ? process.stderr : process.stdout;
-            const appConfig = createAppConfig({
-              subdomain,
-              workspaceConfig: context.workspaceConfig,
-            });
-            const usage = await getProjectUsageSummary(appConfig);
-            const toolName = part.type.replace("tool-", "");
-            const toolLabel = isError
-              ? `${c.red}${toolName} ERROR${c.reset}`
-              : `${c.cyan}${toolName}${c.reset}`;
-            const statsSuffix = `  ${c.dim}tokens=${c.reset}${formatNumber(usage.totalTokens)}${c.dim} (in=${formatNumber(usage.inputTokens)} out=${formatNumber(usage.outputTokens)}) msgs=${c.reset}${c.yellow}${usage.messageCount}${c.reset}`;
-            stream.write(
-              `${evalPrefix(evalCase.name)}${toolLabel}${statsSuffix}\n`,
-            );
-          }
+      void (async () => {
+        try {
+          for await (const event of partUpdates) {
+            if (event.subdomain !== subdomain) {
+              continue;
+            }
 
-          if (
-            await evalCase.shouldStop?.(
-              part,
-              createAppConfig({
+            const part = event.part;
+
+            if (
+              isToolPart(part) &&
+              part.state !== "input-streaming" &&
+              part.state !== "input-available"
+            ) {
+              const isError = part.state === "output-error";
+              const stream = isError ? process.stderr : process.stdout;
+              const appConfig = createAppConfig({
                 subdomain,
                 workspaceConfig: context.workspaceConfig,
-              }),
-            )
-          ) {
-            process.stdout.write(
-              `${evalPrefix(evalCase.name)}${c.yellow}shouldStop returned true, stopping session...${c.reset}\n`,
-            );
-            void call(sessionRoute.stop, { subdomain }, { context });
+              });
+              const usage = await getProjectUsageSummary(appConfig);
+              const toolName = part.type.replace("tool-", "");
+              const toolLabel = isError
+                ? `${c.red}${toolName} ERROR${c.reset}`
+                : `${c.cyan}${toolName}${c.reset}`;
+              const statsSuffix = `  ${c.dim}tokens=${c.reset}${formatNumber(usage.totalTokens)}${c.dim} (in=${formatNumber(usage.inputTokens)} out=${formatNumber(usage.outputTokens)}) msgs=${c.reset}${c.yellow}${usage.messageCount}${c.reset}`;
+              stream.write(`${evalPrefix(label)}${toolLabel}${statsSuffix}\n`);
+            }
+
+            if (
+              await evalCase.shouldStop?.(
+                part,
+                createAppConfig({
+                  subdomain,
+                  workspaceConfig: context.workspaceConfig,
+                }),
+              )
+            ) {
+              process.stdout.write(
+                `${evalPrefix(label)}${c.yellow}shouldStop returned true, stopping session...${c.reset}\n`,
+              );
+              void call(sessionRoute.stop, { subdomain }, { context });
+            }
+          }
+        } catch (error) {
+          if (!(error instanceof DOMException && error.name === "AbortError")) {
+            throw error;
           }
         }
-      } catch (error) {
-        if (!(error instanceof DOMException && error.name === "AbortError")) {
-          throw error;
-        }
-      }
-    })();
+      })();
 
-    await waitForSessionDone(sessionId, subdomain);
-    abortController.abort();
+      await waitForSessionDone(sessionId, subdomain);
+      abortController.abort();
 
-    process.stdout.write(
-      `${evalPrefix(evalCase.name)}${c.green}Done.${c.reset}\n`,
-    );
-  });
+      process.stdout.write(`${evalPrefix(label)}${c.green}Done.${c.reset}\n`);
+    },
+  );
 
   actor.stop();
 
   return { workspaceRootDir };
+}
+
+function sanitizeCanonicalId(canonicalId: string): string {
+  return canonicalId.replaceAll(/[^a-z0-9-]/gi, "-");
 }
 
 async function waitForSessionDone(

@@ -163,7 +163,11 @@ export async function generateReport({
       return;
     });
 
-    const evalCase = evalCasesByName.get(project.folderName);
+    const evalCase =
+      evalCasesByName.get(project.folderName) ??
+      [...evalCasesByName.entries()].find(([name]) =>
+        project.folderName.endsWith(`-${name}`),
+      )?.[1];
     await fs.writeFile(
       path.join(projectOutputDir, "eval-case.json"),
       JSON.stringify(
@@ -205,10 +209,10 @@ export async function generateReport({
         return `    ${icon} ${r.text} — ${r.evidence}`;
       });
       process.stdout.write(
-        `  [${project.title}] ${passed}/${total} assertions passed\n${lines.join("\n")}\n`,
+        `  [${project.folderName}] ${passed}/${total} assertions passed\n${lines.join("\n")}\n`,
       );
     } else {
-      process.stdout.write(`  [${project.title}]\n`);
+      process.stdout.write(`  [${project.folderName}]\n`);
     }
   }
 

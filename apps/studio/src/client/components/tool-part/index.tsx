@@ -15,7 +15,6 @@ import {
   CollapsiblePartTrigger,
 } from "../collapsible-part";
 import { Favicon } from "../favicon";
-import { ReasoningMessage } from "../reasoning-message";
 import { ToolIcon } from "../tool-icon";
 import {
   Collapsible,
@@ -158,18 +157,13 @@ export function ToolPart({
       break;
     }
     case "output-available": {
-      if (part.type === "tool-think") {
-        label = getToolLabelForPart({ part, state: "completed", toolName });
-        value = truncateText(part.output.thought, 80);
-      } else {
-        label = getToolLabelForPart({
-          hasCapabilityFailure,
-          part,
-          state: "completed",
-          toolName,
-        });
-        value = getToolOutputDescription(part);
-      }
+      label = getToolLabelForPart({
+        hasCapabilityFailure,
+        part,
+        state: "completed",
+        toolName,
+      });
+      value = getToolOutputDescription(part);
       break;
     }
     case "output-error": {
@@ -188,26 +182,6 @@ export function ToolPart({
     if (query) {
       value = `"${query}"`;
     }
-  }
-
-  if (toolName === "think") {
-    const text =
-      part.state === "output-available" && part.type === "tool-think"
-        ? part.output.thought || ""
-        : "";
-
-    return (
-      <ReasoningMessage
-        createdAt={part.metadata.createdAt}
-        endedAt={
-          part.state === "output-available" || part.state === "output-error"
-            ? part.metadata.endedAt
-            : undefined
-        }
-        isLoading={isLoading}
-        text={text}
-      />
-    );
   }
 
   const webSearchSources = getWebSearchSources(part);
@@ -384,17 +358,11 @@ function getToolInputValue(
         ? filenameFromFilePath(part.input.filePath)
         : undefined;
     }
-    case "tool-run_diagnostics": {
-      return undefined;
-    }
     case "tool-run_shell_command": {
       return part.input.command;
     }
     case "tool-task": {
       return ""; // Empty because the explanation is in the summary
-    }
-    case "tool-think": {
-      return part.input.thought;
     }
     case "tool-unavailable": {
       return undefined;
@@ -417,9 +385,7 @@ function getToolInputValue(
 }
 
 function getToolOutputDescription(
-  part: Extract<SessionMessagePart.ToolPart, { state: "output-available" }> & {
-    type: Exclude<SessionMessagePart.ToolPart["type"], "tool-think">;
-  },
+  part: Extract<SessionMessagePart.ToolPart, { state: "output-available" }>,
 ): string {
   switch (part.type) {
     case "tool-choose": {
@@ -484,12 +450,6 @@ function getToolOutputDescription(
         ? `file not found: ${part.output.filePath}`
         : filenameFromFilePath(part.output.filePath);
     }
-    case "tool-run_diagnostics": {
-      const errorCount = part.output.errors.length;
-      return errorCount > 0
-        ? `${errorCount} error${errorCount === 1 ? "" : "s"} found`
-        : "no errors found";
-    }
     case "tool-run_shell_command": {
       return part.output.command || "command executed";
     }
@@ -518,7 +478,11 @@ function getToolOutputDescription(
       const _exhaustiveCheck: never = part;
       // eslint-disable-next-line no-console
       console.warn("Unknown tool", _exhaustiveCheck);
-      return (part as { type: string }).type;
+      const type =
+        typeof (_exhaustiveCheck as { type?: unknown }).type === "string"
+          ? (_exhaustiveCheck as { type: string }).type
+          : "unknown";
+      return type.startsWith("tool-") ? type.slice("tool-".length) : type;
     }
   }
 }
@@ -553,11 +517,4 @@ function hasOutputFailureState(part: SessionMessagePart.ToolPart): boolean {
     return part.output.state === "failure";
   }
   return false;
-}
-
-function truncateText(text: string, maxLength = 100) {
-  if (text.length <= maxLength) {
-    return text;
-  }
-  return text.slice(0, maxLength) + "...";
 }

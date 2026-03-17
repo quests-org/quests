@@ -92,20 +92,6 @@ registerSession({
           "Found usages. Let me run diagnostics to check for any issues.",
           assistantMessageId,
         ),
-        builder.toolPart(assistantMessageId, "output-available", {
-          input: {
-            explanation: "Check for TypeScript errors in the codebase",
-          },
-          output: {
-            diagnostics:
-              "src/utils/helpers.ts:7:20 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'Date'.\nsrc/app.ts:15:10 - error TS2322: Type 'number' is not assignable to type 'string'.",
-            errors: [
-              "src/utils/helpers.ts:7:20 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'Date'.",
-              "src/app.ts:15:10 - error TS2322: Type 'number' is not assignable to type 'string'.",
-            ],
-          },
-          type: "tool-run_diagnostics",
-        }),
         builder.textPart(
           "Found errors. Let me read the helpers file to understand the issue better.",
           assistantMessageId,

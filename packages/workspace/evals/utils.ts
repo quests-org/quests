@@ -4,7 +4,6 @@ import {
 } from "@quests/ai-gateway";
 import { AIProviderConfigIdSchema } from "@quests/shared";
 import path from "node:path";
-import { ulid } from "ulid";
 
 import { env } from "../scripts/lib/env";
 import { AbsolutePathSchema, WorkspaceDirSchema } from "../src/schemas/paths";
@@ -66,12 +65,13 @@ export const modelURI = {
 export function buildProviderConfigs(): AIGatewayProviderConfig.Type[] {
   const cacheIdentifier = "quests-evals";
   const configs: AIGatewayProviderConfig.Type[] = [
-    {
-      apiKey: "ollama",
-      cacheIdentifier,
-      id: AIProviderConfigIdSchema.parse(ulid()),
-      type: "ollama",
-    },
+    // Uncomment to test with Ollama
+    // {
+    //   apiKey: "ollama",
+    //   cacheIdentifier,
+    //   id: providerConfigId("ollama"),
+    //   type: "ollama",
+    // },
   ];
 
   for (const { envKey, type } of PROVIDER_MAP) {

@@ -85,9 +85,6 @@ const AVAILABLE_COMMANDS: Record<
   },
   [TSC_COMMAND.name]: {
     ...TSC_COMMAND,
-    // Hidden because the diagnostics tool should suffice and don't want agent
-    // to think it needs to compile scripts to run them
-    hidden: true,
     isFileOperation: false,
   },
 };

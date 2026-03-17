@@ -78,11 +78,6 @@ registerSession({
           type: "tool-read_file",
         }),
         builder.toolPart(assistantMessageId, "output-error", {
-          errorText: "Failed to run diagnostics: TypeScript compiler not found",
-          input: {},
-          type: "tool-run_diagnostics",
-        }),
-        builder.toolPart(assistantMessageId, "output-error", {
           errorText:
             "Invalid command. The available commands are: cp, ls, mkdir, mv, rm, pnpm, tsc, tsx.",
           input: {
@@ -91,13 +86,6 @@ registerSession({
             timeoutMs: 5000,
           },
           type: "tool-run_shell_command",
-        }),
-        builder.toolPart(assistantMessageId, "output-error", {
-          errorText: "Think tool execution failed unexpectedly",
-          input: {
-            thought: "Let me consider...",
-          },
-          type: "tool-think",
         }),
         builder.toolPart(assistantMessageId, "output-error", {
           errorText: "Tool 'foobar' is not available",

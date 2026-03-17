@@ -19,7 +19,7 @@ import { isToolPart } from "../lib/is-tool-part";
 import { pathExists } from "../lib/path-exists";
 import { getProjectState } from "../lib/project-state-store";
 import { readFileWithAnyCase } from "../lib/read-file-with-any-case";
-import { PNPM_COMMAND, TS_COMMAND } from "../lib/shell-commands";
+import { PNPM_COMMAND, TS_COMMAND, TSC_COMMAND } from "../lib/shell-commands";
 import { Store } from "../lib/store";
 import { textForMessage } from "../lib/text-for-message";
 import { StoreId } from "../schemas/store-id";
@@ -49,14 +49,12 @@ export const mainAgent = setupAgent({
     "GenerateImage",
     "Glob",
     "Grep",
-    // "LoadSkill", not yet...
+    "LoadSkill",
     "ReadFile",
-    "RunDiagnostics",
     "RunShellCommand",
     "Task",
     "WebSearch",
     "WriteFile",
-    // "Think", // Removed on 2026-01-08, as most models don't use it
   ]),
   name: "main",
 }).create(({ agentTools, name }) => ({
@@ -187,7 +185,7 @@ export const mainAgent = setupAgent({
     - The only way to run scripts is by executing TypeScript files using the \`${agentTools.RunShellCommand.name}\` tool with the \`${TS_COMMAND.name}\` command.
     - You MUST create the scripts before using ${TS_COMMAND.name} to run them.
     - No other runtimes are bundled with this product.
-    - You can use the \`${agentTools.RunDiagnostics.name}\` tool to check for errors in your scripts.
+    - You can use the \`${agentTools.RunShellCommand.name}\` tool with the \`${TSC_COMMAND.name}\` command to check for type errors in your scripts.
     - You don't need to add shebangs to TypeScript script files.
     - Before running scripts, add dependencies with \`${PNPM_COMMAND.name}\`. No \`cd\` is available -- to target a skill folder use \`${PNPM_COMMAND.name} add <package> --filter ./${APP_FOLDER_NAMES.skills}/<skill-name>\`.
 

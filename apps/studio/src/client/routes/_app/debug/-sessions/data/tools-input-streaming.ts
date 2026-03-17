@@ -67,24 +67,11 @@ registerSession({
         }),
         builder.toolPart(assistantMessageId, "input-streaming", {
           input: {
-            explanation: "Check for TypeScript errors",
-          },
-          type: "tool-run_diagnostics",
-        }),
-        builder.toolPart(assistantMessageId, "input-streaming", {
-          input: {
             command: "npm test -- helpers.test.ts",
             explanation: "Run tests for helpers module",
             timeoutMs: 30_000,
           },
           type: "tool-run_shell_command",
-        }),
-        builder.toolPart(assistantMessageId, "input-streaming", {
-          input: {
-            thought:
-              "Let me consider the best approach for refactoring this module.",
-          },
-          type: "tool-think",
         }),
         builder.toolPart(assistantMessageId, "input-streaming", {
           input: {},

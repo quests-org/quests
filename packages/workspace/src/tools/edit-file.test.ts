@@ -60,7 +60,7 @@ function makeExecuteArgs(
   };
 }
 
-function setupMockFs(files: Record<string, string> = {}) {
+function setupMockFs(files: NonNullable<Parameters<typeof mockFs>[0]> = {}) {
   mockFs({
     [MOCK_WORKSPACE_DIRS.projects]: {
       [appConfig.folderName]: {
@@ -149,6 +149,68 @@ describe("EditFile", () => {
         {
           "message": "Failed to edit file ./grep-test.txt: Found multiple matches for oldString. Include more surrounding code lines in oldString to uniquely identify which occurrence to replace.",
           "type": "execute-error",
+        }
+      `);
+    });
+  });
+
+  describe("checkReminder in toModelOutput", () => {
+    it("should include tsc --noEmit reminder for a root TypeScript file", async () => {
+      setupMockFs({ "index.ts": "const x = 1;" });
+
+      const input = {
+        filePath: "./index.ts",
+        newString: "const x = 2;",
+        oldString: "const x = 1;",
+      };
+      const result = await runTool(TOOLS.EditFile, makeExecuteArgs(input));
+      const output = result._unsafeUnwrap();
+      const modelOutput = TOOLS.EditFile.toModelOutput({
+        input,
+        output,
+        toolCallId: "test",
+      });
+      expect(modelOutput).toMatchInlineSnapshot(`
+        {
+          "type": "text",
+          "value": "Successfully edited file ./index.ts
+
+        Run \`tsc --noEmit\` using the \`run_shell_command\` tool to check for type errors before finishing.",
+        }
+      `);
+    });
+
+    it("should include skill-scoped tsc reminder for a TypeScript file inside a skill folder", async () => {
+      setupMockFs({
+        skills: {
+          "my-skill": {
+            scripts: {
+              "test.ts": "const x = 1;",
+            },
+            "tsconfig.json": "{}",
+          },
+        },
+      });
+
+      const input = {
+        filePath: "./skills/my-skill/scripts/test.ts",
+        newString: "const x = 2;",
+        oldString: "const x = 1;",
+      };
+      const result = await runTool(TOOLS.EditFile, makeExecuteArgs(input));
+
+      const output = result._unsafeUnwrap();
+      const modelOutput = TOOLS.EditFile.toModelOutput({
+        input,
+        output,
+        toolCallId: "test",
+      });
+      expect(modelOutput).toMatchInlineSnapshot(`
+        {
+          "type": "text",
+          "value": "Successfully edited file ./skills/my-skill/scripts/test.ts
+
+        Run \`tsc --noEmit --project skills/my-skill/tsconfig.json\` using the \`run_shell_command\` tool to check for type errors before finishing.",
         }
       `);
     });

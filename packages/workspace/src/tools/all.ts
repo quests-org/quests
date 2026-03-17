@@ -11,10 +11,8 @@ import { Glob } from "./glob";
 import { Grep } from "./grep";
 import { LoadSkill } from "./load-skill";
 import { ReadFile } from "./read-file";
-import { RunDiagnostics } from "./run-diagnostics";
 import { RunShellCommand } from "./run-shell-command";
 import { Task } from "./task";
-import { Think } from "./think";
 import { Unavailable } from "./unavailable";
 import { WebSearch } from "./web-search";
 import { WriteFile } from "./write-file";
@@ -28,10 +26,8 @@ export const TOOLS = {
   Grep,
   LoadSkill,
   ReadFile,
-  RunDiagnostics,
   RunShellCommand,
   Task,
-  Think,
   Unavailable,
   WebSearch,
   WriteFile,
@@ -48,10 +44,8 @@ export const TOOLS_BY_NAME = {
   [TOOLS.Grep.name]: TOOLS.Grep,
   [TOOLS.LoadSkill.name]: TOOLS.LoadSkill,
   [TOOLS.ReadFile.name]: TOOLS.ReadFile,
-  [TOOLS.RunDiagnostics.name]: TOOLS.RunDiagnostics,
   [TOOLS.RunShellCommand.name]: TOOLS.RunShellCommand,
   [TOOLS.Task.name]: TOOLS.Task,
-  [TOOLS.Think.name]: TOOLS.Think,
   [TOOLS.Unavailable.name]: TOOLS.Unavailable,
   [TOOLS.WebSearch.name]: TOOLS.WebSearch,
   [TOOLS.WriteFile.name]: TOOLS.WriteFile,
