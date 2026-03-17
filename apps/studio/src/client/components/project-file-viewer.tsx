@@ -109,7 +109,7 @@ export function ProjectFileViewer({
                 }
                 fallbackClassName="size-32 rounded-lg"
                 filename={file.filename}
-                onClick={onClose}
+                onClick={isInPanel ? undefined : onClose}
                 showCheckerboard
                 src={file.url}
               />
