@@ -8,6 +8,7 @@ import {
 
 import { filenameFromFilePath } from "../../lib/path-utils";
 import { AIProviderIcon } from "../ai-provider-icon";
+import { CopyButton } from "../copy-button";
 import { ExternalLink } from "../external-link";
 import { Favicon } from "../favicon";
 import { FilesGrid } from "../files-grid";
@@ -193,6 +194,17 @@ export function ToolContent({
               type={part.output.provider.type}
             />
             <MonoText className="text-xs">{part.output.modelId}</MonoText>
+          </div>
+          <div className="mb-3">
+            <div className="mb-1 flex items-center justify-between">
+              <div className="text-muted-foreground">Prompt</div>
+              <CopyButton
+                className="rounded-sm p-1 text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground disabled:opacity-50"
+                iconSize={12}
+                onCopy={() => navigator.clipboard.writeText(part.input.prompt)}
+              />
+            </div>
+            <div className="text-sm">{part.input.prompt}</div>
           </div>
           {sourceImageThumbnails}
           <SectionHeader>
