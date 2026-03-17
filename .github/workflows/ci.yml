@@ -10,7 +10,7 @@ jobs:
       - uses: ./.github/actions/prepare
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: rharkor/caching-for-turbo@v1.8
+      - uses: rharkor/caching-for-turbo@v2.3.11
       - run: pnpm turbo:check:format
   check_markdown:
     name: Check Markdown
@@ -21,7 +21,7 @@ jobs:
       - uses: ./.github/actions/prepare
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: rharkor/caching-for-turbo@v1.8
+      - uses: rharkor/caching-for-turbo@v2.3.11
       - run: pnpm turbo:check:md
   check_packages:
     name: Check Packages
@@ -32,7 +32,7 @@ jobs:
       - uses: ./.github/actions/prepare
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: rharkor/caching-for-turbo@v1.8
+      - uses: rharkor/caching-for-turbo@v2.3.11
       - run: pnpm turbo:check:packages
   check_spelling:
     name: Check Spelling
@@ -43,7 +43,7 @@ jobs:
       - uses: ./.github/actions/prepare
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: rharkor/caching-for-turbo@v1.8
+      - uses: rharkor/caching-for-turbo@v2.3.11
       - run: pnpm turbo:check:spelling
   check_unused:
     name: Check Unused
@@ -54,7 +54,7 @@ jobs:
       - uses: ./.github/actions/prepare
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: rharkor/caching-for-turbo@v1.8
+      - uses: rharkor/caching-for-turbo@v2.3.11
       - run: pnpm turbo:check:unused
   lint:
     name: Check ESLint
@@ -65,7 +65,7 @@ jobs:
       - uses: ./.github/actions/prepare
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: rharkor/caching-for-turbo@v1.8
+      - uses: rharkor/caching-for-turbo@v2.3.11
       - run: |
           export NODE_OPTIONS="--max_old_space_size=4096"
           pnpm turbo:check:lint:ci
@@ -78,7 +78,7 @@ jobs:
       - uses: ./.github/actions/prepare
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: rharkor/caching-for-turbo@v1.8
+      - uses: rharkor/caching-for-turbo@v2.3.11
       - run: pnpm prettier --list-different
   test:
     name: Test
@@ -91,7 +91,7 @@ jobs:
       - uses: ./.github/actions/prepare
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: rharkor/caching-for-turbo@v1.8
+      - uses: rharkor/caching-for-turbo@v2.3.11
       - run: pnpm turbo:test:ci
       - uses: codecov/codecov-action@v3
   check_build:
@@ -103,7 +103,7 @@ jobs:
       - uses: ./.github/actions/prepare
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: rharkor/caching-for-turbo@v1.8
+      - uses: rharkor/caching-for-turbo@v2.3.11
       - run: pnpm turbo:check:build
   type_check:
     name: Type Check
@@ -114,7 +114,7 @@ jobs:
       - uses: ./.github/actions/prepare
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: rharkor/caching-for-turbo@v1.8
+      - uses: rharkor/caching-for-turbo@v2.3.11
       - run: pnpm turbo:check:types
   check_electron_node_version:
     name: Check Electron Node Version
@@ -134,7 +134,7 @@ jobs:
       - uses: ./.github/actions/prepare
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: rharkor/caching-for-turbo@v1.8
+      - uses: rharkor/caching-for-turbo@v2.3.11
       - run: pnpm check:electron-node-version
 
 name: CI
