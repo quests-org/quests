@@ -209,9 +209,11 @@ async function renderAssistantMessage(
         break;
       }
       case "reasoning": {
-        lines.push(
-          `*[Reasoning: ${part.text.slice(0, 100)}${part.text.length > 100 ? "..." : ""}]*`,
-        );
+        const indented = part.text
+          .split("\n")
+          .map((l) => `> ${l}`)
+          .join("\n");
+        lines.push("", `*[Reasoning]*`, "", indented, "");
         break;
       }
       case "text": {
@@ -333,7 +335,11 @@ function renderOrphanedToolMessage(
 }
 
 function renderSystemMessage(message: SystemModelMessage): string[] {
-  return ["## System", "", message.content];
+  const indented = message.content
+    .split("\n")
+    .map((l) => `> ${l}`)
+    .join("\n");
+  return ["## System", "", indented];
 }
 
 function renderToolResult(
@@ -348,20 +354,41 @@ function renderToolResult(
   ];
 
   switch (output.type) {
-    case "error-json":
+    case "error-json": {
+      lines.push(
+        "**Error (JSON):**",
+        "```json",
+        JSON.stringify(output.value, null, 2),
+        "```",
+      );
+      break;
+    }
+    case "error-text": {
+      const indented = output.value
+        .split("\n")
+        .map((l) => `> ${l}`)
+        .join("\n");
+      lines.push(`> **Error:**`, indented);
+      break;
+    }
+    case "execution-denied": {
+      if (output.reason) {
+        const indented = output.reason
+          .split("\n")
+          .map((l) => `> ${l}`)
+          .join("\n");
+        lines.push(`*Execution denied:*`, indented);
+      } else {
+        lines.push(`*Execution denied*`);
+      }
+      break;
+    }
     case "json": {
       lines.push("```json", JSON.stringify(output.value, null, 2), "```");
       break;
     }
-    case "error-text":
     case "text": {
       lines.push(output.value);
-      break;
-    }
-    case "execution-denied": {
-      lines.push(
-        `*Execution denied${output.reason ? `: ${output.reason}` : ""}*`,
-      );
       break;
     }
   }
