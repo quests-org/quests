@@ -129,44 +129,45 @@
         "vitest.smoke.config.ts"
       ]
     },
-    "check:unused": { "dependsOn": ["^check:unused"] },
+    "transit": { "dependsOn": ["^transit"] },
+    "check:unused": { "dependsOn": ["transit"] },
     "//#check:unused": {},
     "//#check:electron-node-version": {},
     "check:electron-node-version": {
-      "dependsOn": ["^check:electron-node-version"]
+      "dependsOn": ["transit"]
     },
     "check:unused-words": {
-      "dependsOn": ["^check:unused-words"]
+      "dependsOn": ["transit"]
     },
     "//#check:unused-words": {},
     "//#check:packages": {
       "inputs": ["pnpm-lock.yaml"]
     },
     "check:spelling": {
-      "dependsOn": ["^check:spelling"]
+      "dependsOn": ["transit"]
     },
     "//#check:spelling": {},
     "check:md": {
-      "dependsOn": ["^check:md"]
+      "dependsOn": ["transit"]
     },
     "//#check:md": {},
     "check:format": {
-      "dependsOn": ["^check:format"]
+      "dependsOn": ["transit"]
     },
     "//#check:format": {},
     "check:lint": {
-      "dependsOn": ["^check:lint"]
+      "dependsOn": ["transit"]
     },
     "//#check:lint": {},
     "check:types": {
-      "dependsOn": ["^check:types"]
+      "dependsOn": ["transit"]
     },
     "//#check:types": {},
     "check:build": {
-      "dependsOn": ["^check:build"]
+      "dependsOn": ["transit"]
     },
     "//#check:build": {},
-    "test:ci": {},
+    "test:ci": { "dependsOn": ["transit"] },
     "//#test:ci": {},
     "dev": {
       "cache": false,
