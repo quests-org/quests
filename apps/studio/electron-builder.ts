@@ -52,6 +52,11 @@ const config: Configuration = {
       to: "registry/api",
     },
     {
+      filter: ["**/*"],
+      from: "../../registry/skills",
+      to: "registry/skills",
+    },
+    {
       from: "../../packages/shim-client/dist",
       to: "shim-client",
     },
@@ -73,6 +78,7 @@ const config: Configuration = {
     "!**/{__pycache__,thumbs.db,.flowconfig,.idea,.vs,.nyc_output}",
     "!**/{appveyor.yml,.travis.yml,circle.yml}",
     "!**/{npm-debug.log,yarn.lock,.yarn-integrity,.yarn-metadata.json}",
+    "!**/*.local/**",
     /* cspell:enable */
   ],
   generateUpdatesFilesForAllChannels: true,
