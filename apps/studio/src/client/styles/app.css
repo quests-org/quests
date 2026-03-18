@@ -167,15 +167,16 @@ html:has(meta[name="opaque-background"]) body {
   --checkerboard-tile: #d0d0d0;
 
   background-color: var(--checkerboard-bg);
-  background-image: linear-gradient(
-      45deg,
-      var(--checkerboard-tile) 25%,
-      transparent 25%
-    ),
+  background-image:
+    linear-gradient(45deg, var(--checkerboard-tile) 25%, transparent 25%),
     linear-gradient(-45deg, var(--checkerboard-tile) 25%, transparent 25%),
     linear-gradient(45deg, transparent 75%, var(--checkerboard-tile) 75%),
     linear-gradient(-45deg, transparent 75%, var(--checkerboard-tile) 75%);
-  background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+  background-position:
+    0 0,
+    0 8px,
+    8px -8px,
+    -8px 0px;
   background-size: 16px 16px;
 
   :is(.dark *) & {

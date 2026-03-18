@@ -188,7 +188,9 @@ export async function generateReport({
         `  ${c.dim}[${c.reset}${project.folderName}${c.dim}]${c.reset} ${passColor}${passed}/${total} passed${c.reset}\n${lines.join("\n")}\n`,
       );
     } else {
-      process.stdout.write(`  ${c.dim}[${c.reset}${project.folderName}${c.dim}]${c.reset}\n`);
+      process.stdout.write(
+        `  ${c.dim}[${c.reset}${project.folderName}${c.dim}]${c.reset}\n`,
+      );
     }
   }
 

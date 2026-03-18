@@ -29,9 +29,7 @@ const concurrency = Number.parseInt(values.concurrency, 10);
 const nameFilter = positionals[1];
 
 if (subcommand !== "run" && subcommand !== "report" && subcommand !== "list") {
-  process.stderr.write(
-    "Usage: tsx evals/run.ts <run|report|list> [options]\n",
-  );
+  process.stderr.write("Usage: tsx evals/run.ts <run|report|list> [options]\n");
   process.stderr.write(
     "  run [pattern]    Run evals matching name pattern, then generate report\n",
   );

@@ -74,115 +74,113 @@ export function AssistantMessagesFooter({
     sources,
     totalDuration,
   } = useMemo(() => {
-      const seenSourceIds = new Set<string>();
-      const allSources: (
-        | SessionMessagePart.SourceDocumentPart
-        | SessionMessagePart.SourceUrlPart
-      )[] = [];
-      let combinedText = "";
-      let latestDate: Date | undefined;
+    const seenSourceIds = new Set<string>();
+    const allSources: (
+      | SessionMessagePart.SourceDocumentPart
+      | SessionMessagePart.SourceUrlPart
+    )[] = [];
+    let combinedText = "";
+    let latestDate: Date | undefined;
 
-      const modelMap = new Map<string, ModelUsageData>();
+    const modelMap = new Map<string, ModelUsageData>();
 
-      for (const message of messages) {
-        for (const part of message.parts) {
-          if (
-            (part.type === "source-document" || part.type === "source-url") &&
-            !seenSourceIds.has(part.sourceId)
-          ) {
-            seenSourceIds.add(part.sourceId);
-            allSources.push(part);
-          }
-          if (part.type === "text") {
-            combinedText += part.text;
-          }
+    for (const message of messages) {
+      for (const part of message.parts) {
+        if (
+          (part.type === "source-document" || part.type === "source-url") &&
+          !seenSourceIds.has(part.sourceId)
+        ) {
+          seenSourceIds.add(part.sourceId);
+          allSources.push(part);
         }
-
-        if (!latestDate || message.metadata.createdAt > latestDate) {
-          latestDate = message.metadata.createdAt;
-        }
-
-        if (message.metadata.modelId && !message.metadata.synthetic) {
-          const modelId = message.metadata.modelId;
-          const aiGatewayModel = message.metadata.aiGatewayModel;
-          const key = aiGatewayModel?.uri ?? modelId;
-          const label = aiGatewayModel?.name ?? modelId;
-          const existing = modelMap.get(key);
-
-          modelMap.set(key, {
-            aiGatewayModel,
-            label,
-            modelId,
-            stats: {
-              inputTokenDetails: {
-                cacheReadTokens:
-                  (existing?.stats.inputTokenDetails.cacheReadTokens ?? 0) +
-                  (message.metadata.usage?.inputTokenDetails.cacheReadTokens ??
-                    0),
-                cacheWriteTokens:
-                  (existing?.stats.inputTokenDetails.cacheWriteTokens ?? 0) +
-                  (message.metadata.usage?.inputTokenDetails.cacheWriteTokens ??
-                    0),
-                noCacheTokens:
-                  (existing?.stats.inputTokenDetails.noCacheTokens ?? 0) +
-                  (message.metadata.usage?.inputTokenDetails.noCacheTokens ??
-                    0),
-              },
-              inputTokens:
-                (existing?.stats.inputTokens ?? 0) +
-                (message.metadata.usage?.inputTokens ?? 0),
-              msToFinish:
-                (existing?.stats.msToFinish ?? 0) +
-                (message.metadata.msToFinish ?? 0),
-              msToFirstChunk:
-                existing?.stats.msToFirstChunk ??
-                message.metadata.msToFirstChunk,
-              outputTokenDetails: {
-                reasoningTokens:
-                  (existing?.stats.outputTokenDetails.reasoningTokens ?? 0) +
-                  (message.metadata.usage?.outputTokenDetails.reasoningTokens ??
-                    0),
-                textTokens:
-                  (existing?.stats.outputTokenDetails.textTokens ?? 0) +
-                  (message.metadata.usage?.outputTokenDetails.textTokens ?? 0),
-              },
-              outputTokens:
-                (existing?.stats.outputTokens ?? 0) +
-                (message.metadata.usage?.outputTokens ?? 0),
-              totalTokens:
-                (existing?.stats.totalTokens ?? 0) +
-                (message.metadata.usage?.totalTokens ?? 0),
-            },
-          });
+        if (part.type === "text") {
+          combinedText += part.text;
         }
       }
 
-      const totalMs = [...modelMap.values()].reduce(
-        (acc, model) => acc + model.stats.msToFinish,
-        0,
-      );
+      if (!latestDate || message.metadata.createdAt > latestDate) {
+        latestDate = message.metadata.createdAt;
+      }
 
-      const firstCreatedAt = messages[0]?.metadata.createdAt;
-      const lastMessage = messages.at(-1);
-      const lastEndedAt =
-        lastMessage?.metadata.endedAt ?? lastMessage?.metadata.finishedAt;
+      if (message.metadata.modelId && !message.metadata.synthetic) {
+        const modelId = message.metadata.modelId;
+        const aiGatewayModel = message.metadata.aiGatewayModel;
+        const key = aiGatewayModel?.uri ?? modelId;
+        const label = aiGatewayModel?.name ?? modelId;
+        const existing = modelMap.get(key);
 
-      const elapsed =
-        firstCreatedAt && lastEndedAt
-          ? lastEndedAt.getTime() - firstCreatedAt.getTime()
-          : undefined;
+        modelMap.set(key, {
+          aiGatewayModel,
+          label,
+          modelId,
+          stats: {
+            inputTokenDetails: {
+              cacheReadTokens:
+                (existing?.stats.inputTokenDetails.cacheReadTokens ?? 0) +
+                (message.metadata.usage?.inputTokenDetails.cacheReadTokens ??
+                  0),
+              cacheWriteTokens:
+                (existing?.stats.inputTokenDetails.cacheWriteTokens ?? 0) +
+                (message.metadata.usage?.inputTokenDetails.cacheWriteTokens ??
+                  0),
+              noCacheTokens:
+                (existing?.stats.inputTokenDetails.noCacheTokens ?? 0) +
+                (message.metadata.usage?.inputTokenDetails.noCacheTokens ?? 0),
+            },
+            inputTokens:
+              (existing?.stats.inputTokens ?? 0) +
+              (message.metadata.usage?.inputTokens ?? 0),
+            msToFinish:
+              (existing?.stats.msToFinish ?? 0) +
+              (message.metadata.msToFinish ?? 0),
+            msToFirstChunk:
+              existing?.stats.msToFirstChunk ?? message.metadata.msToFirstChunk,
+            outputTokenDetails: {
+              reasoningTokens:
+                (existing?.stats.outputTokenDetails.reasoningTokens ?? 0) +
+                (message.metadata.usage?.outputTokenDetails.reasoningTokens ??
+                  0),
+              textTokens:
+                (existing?.stats.outputTokenDetails.textTokens ?? 0) +
+                (message.metadata.usage?.outputTokenDetails.textTokens ?? 0),
+            },
+            outputTokens:
+              (existing?.stats.outputTokens ?? 0) +
+              (message.metadata.usage?.outputTokens ?? 0),
+            totalTokens:
+              (existing?.stats.totalTokens ?? 0) +
+              (message.metadata.usage?.totalTokens ?? 0),
+          },
+        });
+      }
+    }
 
-      return {
-        elapsedDuration: elapsed,
-        latestCreatedAt: latestDate,
-        messageText: combinedText,
-        modelsUsed: [...modelMap.entries()]
-          .sort(([a], [b]) => a.localeCompare(b))
-          .map(([, data]) => data),
-        sources: allSources,
-        totalDuration: totalMs,
-      };
-    }, [messages]);
+    const totalMs = [...modelMap.values()].reduce(
+      (acc, model) => acc + model.stats.msToFinish,
+      0,
+    );
+
+    const firstCreatedAt = messages[0]?.metadata.createdAt;
+    const lastMessage = messages.at(-1);
+    const lastEndedAt =
+      lastMessage?.metadata.endedAt ?? lastMessage?.metadata.finishedAt;
+
+    const elapsed =
+      firstCreatedAt && lastEndedAt
+        ? lastEndedAt.getTime() - firstCreatedAt.getTime()
+        : undefined;
+
+    return {
+      elapsedDuration: elapsed,
+      latestCreatedAt: latestDate,
+      messageText: combinedText,
+      modelsUsed: [...modelMap.entries()]
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([, data]) => data),
+      sources: allSources,
+      totalDuration: totalMs,
+    };
+  }, [messages]);
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(messageText);
