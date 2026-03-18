@@ -28,14 +28,17 @@ const dryRun = values["dry-run"];
 const concurrency = Number.parseInt(values.concurrency, 10);
 const nameFilter = positionals[1];
 
-if (subcommand !== "run" && subcommand !== "report") {
-  process.stderr.write("Usage: tsx evals/run.ts <run|report> [options]\n");
+if (subcommand !== "run" && subcommand !== "report" && subcommand !== "list") {
+  process.stderr.write(
+    "Usage: tsx evals/run.ts <run|report|list> [options]\n",
+  );
   process.stderr.write(
     "  run [pattern]    Run evals matching name pattern, then generate report\n",
   );
   process.stderr.write(
     "  report <dir>     Generate report from an existing workspace dir\n",
   );
+  process.stderr.write("  list [pattern]   List available evals\n");
   throw new Error(`Unknown subcommand: "${subcommand ?? "(none)"}"`);
 }
 
@@ -84,7 +87,28 @@ function printSummary({
   );
 }
 
-if (subcommand === "report") {
+if (subcommand === "list") {
+  const filtered = nameFilter
+    ? EVALS.filter((e) =>
+        e.name.toLowerCase().includes(nameFilter.toLowerCase()),
+      )
+    : EVALS;
+
+  if (filtered.length === 0) {
+    process.stderr.write(`No evals matched pattern: "${nameFilter ?? ""}"\n`);
+    // eslint-disable-next-line n/no-process-exit, unicorn/no-process-exit
+    process.exit(1);
+  }
+
+  process.stdout.write(
+    [
+      "",
+      `${c.dim}Available evals (${filtered.length}):${c.reset}`,
+      ...filtered.map((e) => `  ${c.dim}-${c.reset} ${e.name}`),
+      "",
+    ].join("\n"),
+  );
+} else if (subcommand === "report") {
   const workspaceRootDir = positionals[1];
 
   if (!workspaceRootDir) {
