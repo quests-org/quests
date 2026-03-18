@@ -55,23 +55,9 @@ export function ImageWithFallback({
     <img
       {...props}
       alt={alt}
-      className={className}
+      className={cn(className, showCheckerboard && "checkerboard")}
       onError={handleError}
       src={src}
-      style={{
-        ...props.style,
-        ...(showCheckerboard && {
-          backgroundColor: "#f5f5f5",
-          backgroundImage: `
-            linear-gradient(45deg, #d0d0d0 25%, transparent 25%),
-            linear-gradient(-45deg, #d0d0d0 25%, transparent 25%),
-            linear-gradient(45deg, transparent 75%, #d0d0d0 75%),
-            linear-gradient(-45deg, transparent 75%, #d0d0d0 75%)
-          `,
-          backgroundPosition: "0 0, 0 8px, 8px -8px, -8px 0px",
-          backgroundSize: "16px 16px",
-        }),
-      }}
     />
   );
 }
