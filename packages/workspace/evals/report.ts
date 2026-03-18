@@ -4,11 +4,10 @@ import path from "node:path";
 import { createAppConfig } from "../src/lib/app-config/create";
 import { getProjects } from "../src/lib/get-apps";
 import { getMigratedProjectState } from "../src/lib/project-state-store";
-import { sessionToMarkdown } from "../src/lib/session-to-markdown";
+import { getSessionMarkdown } from "../src/lib/session-to-markdown";
 import { Store } from "../src/lib/store";
 import { getProjectUsageSummary } from "../src/lib/usage-summary";
 import { type Session } from "../src/schemas/session";
-import { type StoreId } from "../src/schemas/store-id";
 import { type AssertionResult, type EvalCase } from "./harness";
 import { buildReportWorkspaceConfig } from "./utils";
 
@@ -76,9 +75,7 @@ export async function generateReport({
       rollupModelURIs.add(projectModelURI);
     }
 
-    const sessionsResult = await Store.getSessions(appConfig, {
-      includeChildSessions: true,
-    });
+    const sessionsResult = await Store.getSessions(appConfig);
 
     if (sessionsResult.isErr()) {
       process.stderr.write(
@@ -87,8 +84,7 @@ export async function generateReport({
       continue;
     }
 
-    const allSessions = sessionsResult.value;
-    const rootSessions = allSessions.filter((s) => !s.parentId);
+    const rootSessions = sessionsResult.value;
 
     if (rootSessions.length > 1) {
       process.stderr.write(
@@ -104,45 +100,11 @@ export async function generateReport({
       continue;
     }
 
-    const sessionMap = new Map<StoreId.Session, Session.WithMessagesAndParts>();
-
-    for (const session of allSessions) {
-      const result = await Store.getSessionWithMessagesAndParts(
-        session.id,
-        appConfig,
-      );
-      if (result.isErr()) {
-        process.stderr.write(
-          `Error loading session ${session.id}: ${result.error.message}\n`,
-        );
-        continue;
-      }
-      sessionMap.set(session.id, result.value);
-    }
-
-    const rootSessionWithParts = sessionMap.get(rootSession.id);
-    if (!rootSessionWithParts) {
-      process.stderr.write(
-        `Error: could not load root session for "${project.title}", skipping.\n`,
-      );
-      continue;
-    }
-
-    const childSessionsMap = new Map<
-      StoreId.Session,
-      Session.WithMessagesAndParts
-    >();
-    for (const [id, session] of sessionMap) {
-      if (id !== rootSession.id) {
-        childSessionsMap.set(id, session);
-      }
-    }
-
-    const markdown = await sessionToMarkdown(
-      rootSessionWithParts,
-      childSessionsMap,
-      { includeContextMessages },
-    );
+    const markdown = await getSessionMarkdown({
+      appConfig,
+      includeContextMessages,
+      sessionId: rootSession.id,
+    });
 
     const stats = await getProjectUsageSummary(appConfig);
 
@@ -179,7 +141,20 @@ export async function generateReport({
     );
 
     if (evalCase?.assertions && evalCase.assertions.length > 0) {
-      const sessions = [...sessionMap.values()];
+      const allSessionsResult = await Store.getSessions(appConfig, {
+        includeChildSessions: true,
+      });
+      const allSessionsList = allSessionsResult.isOk()
+        ? allSessionsResult.value
+        : [];
+      const sessionsWithParts: Session.WithMessagesAndParts[] = [];
+      for (const s of allSessionsList) {
+        const r = await Store.getSessionWithMessagesAndParts(s.id, appConfig);
+        if (r.isOk()) {
+          sessionsWithParts.push(r.value);
+        }
+      }
+      const sessions = sessionsWithParts;
       const assertionResults: AssertionResult[] = await Promise.all(
         evalCase.assertions.map((a) => a.check({ appConfig, sessions })),
       );

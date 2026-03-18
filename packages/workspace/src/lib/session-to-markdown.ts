@@ -13,124 +13,58 @@ import { SessionMessage } from "../schemas/session/message";
 import { type SessionMessagePart } from "../schemas/session/message-part";
 import { type StoreId } from "../schemas/store-id";
 import { TOOLS_FOR_MODEL_OUTPUT } from "../tools/all";
+import { type AppConfig } from "./app-config/types";
 import { isToolPart } from "./is-tool-part";
+import { Store } from "./store";
 
-export async function sessionToMarkdown(
-  rootSession: Session.WithMessagesAndParts,
-  childSessions: Map<StoreId.Session, Session.WithMessagesAndParts>,
-  { includeContextMessages = false }: { includeContextMessages?: boolean } = {},
-): Promise<string> {
-  const contextMessages = rootSession.messages.filter(
-    (m) => m.role === "session-context",
-  );
-  const nonContextMessages = rootSession.messages.filter(
-    (m) => m.role !== "session-context",
-  );
+export async function getSessionMarkdown({
+  appConfig,
+  includeContextMessages = false,
+  sessionId,
+}: {
+  appConfig: AppConfig;
+  includeContextMessages?: boolean;
+  sessionId: StoreId.Session;
+}): Promise<string> {
+  const allSessionsResult = await Store.getSessions(appConfig, {
+    includeChildSessions: true,
+  });
 
-  const orderedMessages = [
-    ...(includeContextMessages
-      ? alphabetical(contextMessages, (m) => m.id)
-      : []),
-    ...alphabetical(nonContextMessages, (m) => m.id),
-  ];
+  if (allSessionsResult.isErr()) {
+    throw allSessionsResult.error;
+  }
 
-  const modelMessages = await SessionMessage.toModelMessages(
-    orderedMessages,
-    TOOLS_FOR_MODEL_OUTPUT,
-  );
+  const allSessions = allSessionsResult.value;
 
-  const taskSessionIds = buildTaskSessionIdMap(rootSession);
-
-  const parts: string[] = [`# Session: ${rootSession.title}`, ""];
-
-  let turn = 0;
-  const toolCounter = { count: 0 };
-  let i = 0;
-  while (i < modelMessages.length) {
-    const message = modelMessages[i];
-    if (!message) {
-      i++;
-      continue;
-    }
-
-    if (message.role === "user" || message.role === "assistant") {
-      turn++;
-    }
-
-    if (message.role === "assistant") {
-      const nextMessage = modelMessages[i + 1];
-      const toolMessage =
-        nextMessage?.role === "tool" ? nextMessage : undefined;
-
-      const rendered = await renderAssistantMessage(
-        message,
-        toolMessage,
-        childSessions,
-        taskSessionIds,
-        turn,
-        toolCounter,
-      );
-      for (const line of rendered) {
-        parts.push(line);
-      }
-      parts.push("");
-
-      i += toolMessage ? 2 : 1;
-      continue;
-    }
-
-    if (message.role === "tool") {
-      // Orphaned tool message (not consumed by an assistant message above)
-      const rendered = renderOrphanedToolMessage(message, toolCounter);
-      for (const line of rendered) {
-        parts.push(line);
-      }
-      parts.push("");
-      i++;
-      continue;
-    }
-
-    const rendered = await renderMessage(
-      message,
-      childSessions,
-      taskSessionIds,
-      turn,
-      toolCounter,
+  const sessionMap = new Map<StoreId.Session, Session.WithMessagesAndParts>();
+  for (const session of allSessions) {
+    const result = await Store.getSessionWithMessagesAndParts(
+      session.id,
+      appConfig,
     );
-    for (const line of rendered) {
-      parts.push(line);
-    }
-    parts.push("");
-    i++;
-  }
-
-  const lastMessage = orderedMessages.at(-1);
-  if (lastMessage?.role === "assistant") {
-    const pendingToolParts = lastMessage.parts.filter(
-      (p) =>
-        isToolPart(p) &&
-        (p.state === "input-available" || p.state === "input-streaming"),
-    ) as SessionMessagePart.ToolPart[];
-
-    if (pendingToolParts.length > 0) {
-      turn++;
-      parts.push(`## Assistant (Turn ${turn})`, "");
-      for (const part of pendingToolParts) {
-        toolCounter.count++;
-        // Tool name is encoded in the type as "tool-{name}"
-        const toolName = part.type.slice("tool-".length);
-        parts.push(
-          "",
-          `### Tool Call ${toolCounter.count}: ${toolName} *(incomplete)*`,
-          "",
-          inputToXml(toolName, part.input),
-        );
-      }
-      parts.push("");
+    if (result.isOk()) {
+      sessionMap.set(session.id, result.value);
     }
   }
 
-  return parts.join("\n");
+  const rootSession = sessionMap.get(sessionId);
+  if (!rootSession) {
+    throw new Error(`Session ${sessionId} not found`);
+  }
+
+  const childSessions = new Map<
+    StoreId.Session,
+    Session.WithMessagesAndParts
+  >();
+  for (const [id, session] of sessionMap) {
+    if (id !== sessionId) {
+      childSessions.set(id, session);
+    }
+  }
+
+  return sessionToMarkdown(rootSession, childSessions, {
+    includeContextMessages,
+  });
 }
 
 function buildTaskSessionIdMap(
@@ -425,4 +359,122 @@ function renderUserMessage(message: UserModelMessage, turn: number): string[] {
   }
 
   return lines;
+}
+
+async function sessionToMarkdown(
+  rootSession: Session.WithMessagesAndParts,
+  childSessions: Map<StoreId.Session, Session.WithMessagesAndParts>,
+  { includeContextMessages = false }: { includeContextMessages?: boolean } = {},
+): Promise<string> {
+  const contextMessages = rootSession.messages.filter(
+    (m) => m.role === "session-context",
+  );
+  const nonContextMessages = rootSession.messages.filter(
+    (m) => m.role !== "session-context",
+  );
+
+  const orderedMessages = [
+    ...(includeContextMessages
+      ? alphabetical(contextMessages, (m) => m.id)
+      : []),
+    ...alphabetical(nonContextMessages, (m) => m.id),
+  ];
+
+  const modelMessages = await SessionMessage.toModelMessages(
+    orderedMessages,
+    TOOLS_FOR_MODEL_OUTPUT,
+  );
+
+  const taskSessionIds = buildTaskSessionIdMap(rootSession);
+
+  const parts: string[] = [`# Session: ${rootSession.title}`, ""];
+
+  let turn = 0;
+  const toolCounter = { count: 0 };
+  let i = 0;
+  while (i < modelMessages.length) {
+    const message = modelMessages[i];
+    if (!message) {
+      i++;
+      continue;
+    }
+
+    if (message.role === "user" || message.role === "assistant") {
+      turn++;
+    }
+
+    if (message.role === "assistant") {
+      const nextMessage = modelMessages[i + 1];
+      const toolMessage =
+        nextMessage?.role === "tool" ? nextMessage : undefined;
+
+      const rendered = await renderAssistantMessage(
+        message,
+        toolMessage,
+        childSessions,
+        taskSessionIds,
+        turn,
+        toolCounter,
+      );
+      for (const line of rendered) {
+        parts.push(line);
+      }
+      parts.push("");
+
+      i += toolMessage ? 2 : 1;
+      continue;
+    }
+
+    if (message.role === "tool") {
+      // Orphaned tool message (not consumed by an assistant message above)
+      const rendered = renderOrphanedToolMessage(message, toolCounter);
+      for (const line of rendered) {
+        parts.push(line);
+      }
+      parts.push("");
+      i++;
+      continue;
+    }
+
+    const rendered = await renderMessage(
+      message,
+      childSessions,
+      taskSessionIds,
+      turn,
+      toolCounter,
+    );
+    for (const line of rendered) {
+      parts.push(line);
+    }
+    parts.push("");
+    i++;
+  }
+
+  const lastMessage = orderedMessages.at(-1);
+  if (lastMessage?.role === "assistant") {
+    const pendingToolParts = lastMessage.parts.filter(
+      (p) =>
+        isToolPart(p) &&
+        (p.state === "input-available" || p.state === "input-streaming"),
+    ) as SessionMessagePart.ToolPart[];
+
+    if (pendingToolParts.length > 0) {
+      turn++;
+      parts.push(`## Assistant (Turn ${turn})`, "");
+      for (const part of pendingToolParts) {
+        toolCounter.count++;
+        // Tool name is encoded in the type as "tool-{name}"
+        const toolName = part.type.slice("tool-".length);
+        parts.push(
+          "",
+          `### Tool Call ${toolCounter.count}: ${toolName} *(incomplete)*`,
+          "",
+          inputToXml(toolName, part.input),
+        );
+      }
+      parts.push("");
+    }
+  }
+
+  return parts.join("\n");
 }

@@ -1,6 +1,5 @@
 import { formatBytes } from "@quests/workspace/client";
-import { Download, Eye } from "lucide-react";
-import { useCallback, useMemo } from "react";
+import { Download, FileText } from "lucide-react";
 
 import { CopyButton } from "./copy-button";
 import { Button } from "./ui/button";
@@ -12,92 +11,60 @@ import {
   DialogTitle,
 } from "./ui/dialog";
 
-interface JsonViewerProps {
-  data: unknown;
+export function MarkdownViewer({
+  data,
+  downloadFilename = "session",
+  maxDisplaySize = 100_000,
+  onOpenChange,
+  open,
+  title = "Markdown Viewer",
+}: {
+  data: null | string;
   downloadFilename?: string;
   maxDisplaySize?: number;
   onOpenChange: (open: boolean) => void;
   open: boolean;
   title?: string;
-}
+}) {
+  const content = data ?? "";
+  const bytes = new TextEncoder().encode(content).length;
+  const isTruncated = bytes > maxDisplaySize;
+  const displayContent = isTruncated
+    ? content.slice(0, Math.floor(maxDisplaySize * 0.8)) + "\n\n... [truncated]"
+    : content;
 
-export function JsonViewer({
-  data,
-  downloadFilename = "data",
-  maxDisplaySize = 50_000, // 50KB default limit for display
-  onOpenChange,
-  open,
-  title = "JSON Viewer",
-}: JsonViewerProps) {
-  const handleCopy = useCallback(async () => {
-    const jsonData = JSON.stringify(data, null, 2);
-    await navigator.clipboard.writeText(jsonData);
-  }, [data]);
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(content);
+  };
 
-  const handleDownload = useCallback(() => {
-    const jsonData = JSON.stringify(data, null, 2);
-    const blob = new Blob([jsonData], { type: "application/json" });
+  const handleDownload = () => {
+    const blob = new Blob([content], { type: "text/markdown" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${downloadFilename}-${Date.now()}.json`;
+    a.download = `${downloadFilename}-${Date.now()}.md`;
     // eslint-disable-next-line unicorn/prefer-dom-node-append
     document.body.appendChild(a);
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
-  }, [data, downloadFilename]);
-
-  const { displayData, isTruncated, originalSize } = useMemo(() => {
-    const fullJsonString = JSON.stringify(data, null, 2);
-    const bytes = new TextEncoder().encode(fullJsonString).length;
-
-    if (bytes <= maxDisplaySize) {
-      return {
-        displayData: fullJsonString,
-        isTruncated: false,
-        originalSize: bytes,
-      };
-    }
-
-    // Truncate at character level to stay under byte limit
-    let truncated = fullJsonString.slice(0, Math.floor(maxDisplaySize * 0.8));
-
-    // Try to truncate at a reasonable JSON boundary
-    const lastNewline = truncated.lastIndexOf("\n");
-    const lastComma = truncated.lastIndexOf(",");
-    const lastBrace = Math.max(
-      truncated.lastIndexOf("}"),
-      truncated.lastIndexOf("]"),
-    );
-
-    const cutPoint = Math.max(lastNewline, lastComma, lastBrace);
-    if (cutPoint > truncated.length * 0.5) {
-      truncated = truncated.slice(0, cutPoint);
-    }
-
-    return {
-      displayData: truncated + "\n\n... [truncated]",
-      isTruncated: true,
-      originalSize: bytes,
-    };
-  }, [data, maxDisplaySize]);
+  };
 
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
       <DialogContent className="max-h-[90vh] w-[95vw] bg-background sm:max-w-[95vw]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-warning-foreground">
-            <Eye className="size-4 text-warning-foreground" />
+            <FileText className="size-4 text-warning-foreground" />
             {title}
             {isTruncated && (
               <span className="text-xs text-muted-foreground">
-                (showing partial data - {formatBytes(originalSize)} total)
+                (showing partial data - {formatBytes(bytes)} total)
               </span>
             )}
           </DialogTitle>
           <DialogDescription className="sr-only">
-            View and download JSON data
+            View and download session markdown
           </DialogDescription>
         </DialogHeader>
         <div className="relative min-w-0">
@@ -109,7 +76,7 @@ export function JsonViewer({
             <Button
               onClick={handleDownload}
               size="sm"
-              title="Download full JSON"
+              title="Download markdown"
               variant="ghost"
             >
               <Download className="size-4" />
@@ -117,7 +84,7 @@ export function JsonViewer({
           </div>
           <div className="max-h-[75vh] min-w-0 overflow-auto">
             <pre className="min-w-0 rounded-md bg-muted p-4 text-xs break-all whitespace-pre-wrap text-foreground">
-              {displayData}
+              {displayContent}
             </pre>
           </div>
         </div>

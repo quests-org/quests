@@ -140,6 +140,8 @@ export const RunShellCommand = setupTool({
     - One command per call (no &&, ||, ;, |, >, <)
     - No glob patterns (*, ?, [], {})
     - Paths relative to project root
+    - Always single-quote argument values that contain parentheses, spaces, or special characters: --flag 'value (with parens)'
+    - Also single-quote key=value pairs where the key contains spaces: --field 'Key With Spaces=value'
     
     ${VISIBLE_COMMANDS.map(([command, config]) => `${command}: ${config.description}`).join("\n")}
       

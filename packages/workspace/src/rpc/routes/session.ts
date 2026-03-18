@@ -4,6 +4,7 @@ import { z } from "zod";
 
 import { createAppConfig } from "../../lib/app-config/create";
 import { createSession } from "../../lib/create-session";
+import { getSessionMarkdown } from "../../lib/session-to-markdown";
 import { Store } from "../../lib/store";
 import { Session } from "../../schemas/session";
 import { StoreId } from "../../schemas/store-id";
@@ -147,6 +148,23 @@ const stop = base
     context.workspaceConfig.captureEvent("session.stopped");
   });
 
+const toMarkdown = base
+  .input(
+    z.object({
+      sessionId: StoreId.SessionSchema,
+      subdomain: AppSubdomainSchema,
+    }),
+  )
+  .output(z.object({ markdown: z.string() }))
+  .handler(async ({ context, input }) => {
+    const { sessionId, subdomain } = input;
+    const { workspaceConfig } = context;
+    const appConfig = createAppConfig({ subdomain, workspaceConfig });
+
+    const markdown = await getSessionMarkdown({ appConfig, sessionId });
+    return { markdown };
+  });
+
 const live = {
   list: base
     .input(
@@ -188,4 +206,5 @@ export const session = {
   live,
   remove,
   stop,
+  toMarkdown,
 };
