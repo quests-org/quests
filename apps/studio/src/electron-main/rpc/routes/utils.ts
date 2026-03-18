@@ -481,7 +481,7 @@ const showFolderPicker = base
   .output(z.object({ path: z.string() }).nullable())
   .handler(async () => {
     const result = await dialog.showOpenDialog({
-      properties: ["openDirectory"],
+      properties: ["openDirectory", "createDirectory"],
     });
     if (result.canceled || result.filePaths.length === 0) {
       return null;
