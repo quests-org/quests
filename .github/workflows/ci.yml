@@ -16,7 +16,7 @@ jobs:
           # - Repository access to quests-org/quests & quests-org/registry
           # - Read access to "Contents" and "Metadata"
           # - Read/Write access to actions and workflows
-          token: ${{ secrets.CHECKOUT_ACCESS_TOKEN }}
+          token: ${{ secrets.CHECKOUT_ACCESS_TOKEN || github.token }}
       - uses: ./.github/actions/setup-ripgrep-cache
       - uses: ./.github/actions/prepare
         with:
