@@ -66,8 +66,14 @@ export function AssistantMessagesFooter({
     enabled: isDeveloperMode,
   });
 
-  const { latestCreatedAt, messageText, modelsUsed, sources, totalDuration } =
-    useMemo(() => {
+  const {
+    elapsedDuration,
+    latestCreatedAt,
+    messageText,
+    modelsUsed,
+    sources,
+    totalDuration,
+  } = useMemo(() => {
       const seenSourceIds = new Set<string>();
       const allSources: (
         | SessionMessagePart.SourceDocumentPart
@@ -156,7 +162,18 @@ export function AssistantMessagesFooter({
         0,
       );
 
+      const firstCreatedAt = messages[0]?.metadata.createdAt;
+      const lastMessage = messages.at(-1);
+      const lastEndedAt =
+        lastMessage?.metadata.endedAt ?? lastMessage?.metadata.finishedAt;
+
+      const elapsed =
+        firstCreatedAt && lastEndedAt
+          ? lastEndedAt.getTime() - firstCreatedAt.getTime()
+          : undefined;
+
       return {
+        elapsedDuration: elapsed,
         latestCreatedAt: latestDate,
         messageText: combinedText,
         modelsUsed: [...modelMap.entries()]
@@ -194,9 +211,29 @@ export function AssistantMessagesFooter({
           <TooltipContent>Copy message</TooltipContent>
         </Tooltip>
         {totalDuration > 0 && (
-          <span className="cursor-default text-xs text-muted-foreground">
-            {formatDuration(totalDuration)}
-          </span>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="cursor-default text-xs text-muted-foreground">
+                {formatDuration(totalDuration)}
+              </span>
+            </TooltipTrigger>
+            <TooltipContent className="p-3 text-xs">
+              <div className="space-y-2">
+                <TooltipRow
+                  label="Generation time:"
+                  tabular
+                  value={formatDuration(totalDuration)}
+                />
+                {elapsedDuration != null && (
+                  <TooltipRow
+                    label="Total time:"
+                    tabular
+                    value={formatDuration(elapsedDuration)}
+                  />
+                )}
+              </div>
+            </TooltipContent>
+          </Tooltip>
         )}
         {sources.length > 0 && (
           <CollapsibleTrigger asChild>
