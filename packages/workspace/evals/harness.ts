@@ -81,6 +81,11 @@ export async function runEvals(
     ? path.resolve(env.QUESTS_REGISTRY_DIR_PATH)
     : path.resolve(import.meta.dirname, "../../../registry");
 
+  process.stdout.write(`${c.dim}Workspace :${c.reset} ${workspaceRootDir}\n`);
+  process.stdout.write(
+    `${c.dim}Registry  :${c.reset} ${registryDir}${env.QUESTS_REGISTRY_DIR_PATH ? ` ${c.dim}(from QUESTS_REGISTRY_DIR_PATH)${c.reset}` : ""}\n`,
+  );
+
   if (dryRun) {
     return { workspaceRootDir };
   }

@@ -63,21 +63,22 @@ function printSummary({
   process.stdout.write(
     [
       "",
-      "┌─ Eval Results ──────────────────────────────────────",
-      `│  Workspace  : ${workspaceRootDir}`,
-      `│  Results    : ${relativeOutputDir}`,
+      `${c.dim}┌─ Eval Results ──────────────────────────────────────${c.reset}`,
+      `${c.dim}│${c.reset}  ${c.dim}Workspace  :${c.reset} ${workspaceRootDir}`,
+      `${c.dim}│${c.reset}  ${c.dim}Results    :${c.reset} ${relativeOutputDir}`,
       ...(rollup.modelURIs.length > 0
         ? rollup.modelURIs.map(
-            (m, i) => `│  ${i === 0 ? "Models     " : "           "} : ${m}`,
+            (m, i) =>
+              `${c.dim}│${c.reset}  ${c.dim}${i === 0 ? "Models     " : "           "} :${c.reset} ${c.cyan}${m}${c.reset}`,
           )
         : []),
-      `│  Projects   : ${rollup.projects}`,
+      `${c.dim}│${c.reset}  ${c.dim}Projects   :${c.reset} ${c.yellow}${rollup.projects}${c.reset}`,
       ...(assertions.total > 0
         ? [
-            `│  Assertions : ${assertions.passed}/${assertions.total} passed (${passRate})`,
+            `${c.dim}│${c.reset}  ${c.dim}Assertions :${c.reset} ${assertions.passed === assertions.total ? c.green : c.yellow}${assertions.passed}/${assertions.total} passed (${passRate})${c.reset}`,
           ]
         : []),
-      "└─────────────────────────────────────────────────────",
+      `${c.dim}└─────────────────────────────────────────────────────${c.reset}`,
       "",
     ].join("\n"),
   );
@@ -155,6 +156,7 @@ if (subcommand === "report") {
       // eslint-disable-next-line n/no-process-exit, unicorn/no-process-exit
       process.exit(0);
     }
+    process.stdout.write("\n");
   }
 
   const { workspaceRootDir } = await runEvals(filteredEvals, {
@@ -163,7 +165,9 @@ if (subcommand === "report") {
   });
 
   if (!dryRun) {
-    process.stdout.write(`\nAll evals complete. Generating report...\n`);
+    process.stdout.write(
+      `\n${c.green}All evals complete.${c.reset} ${c.dim}Generating report...${c.reset}\n`,
+    );
 
     const rollup = await generateReport({
       evalCases: filteredEvals,
