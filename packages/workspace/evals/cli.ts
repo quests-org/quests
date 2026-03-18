@@ -1,9 +1,11 @@
 import path from "node:path";
+import readline from "node:readline/promises";
 import { parseArgs } from "node:util";
 
 import { EVALS } from "./cases";
-import { runEvals } from "./harness";
+import { MODELS, runEvals } from "./harness";
 import { generateReport } from "./report";
+import { c } from "./utils";
 
 // Suppress unstorage db0 experimental warning
 // https://github.com/unjs/unstorage/blob/main/src/drivers/db0.ts
@@ -114,6 +116,45 @@ if (subcommand === "report") {
   if (filteredEvals.length === 0) {
     process.stderr.write(`No evals matched pattern: "${nameFilter ?? ""}"\n`);
     throw new Error(`No evals matched pattern: "${nameFilter ?? ""}"`);
+  }
+
+  const totalRuns = filteredEvals.length * MODELS.length;
+
+  process.stdout.write(
+    [
+      "",
+      `${c.dim}┌─ Eval Plan ─────────────────────────────────────────${c.reset}`,
+      `${c.dim}│${c.reset}  ${c.dim}Evals       :${c.reset} ${c.yellow}${filteredEvals.length}${c.reset}`,
+      `${c.dim}│${c.reset}  ${c.dim}Models      :${c.reset} ${c.yellow}${MODELS.length}${c.reset}`,
+      `${c.dim}│${c.reset}  ${c.dim}Total runs  :${c.reset} ${c.yellow}${totalRuns}${c.reset}`,
+      `${c.dim}│${c.reset}  ${c.dim}Concurrency :${c.reset} ${concurrency}`,
+      `${c.dim}│${c.reset}  ${c.dim}Dry run     :${c.reset} ${dryRun ? "yes" : "no"}`,
+      `${c.dim}├─────────────────────────────────────────────────────${c.reset}`,
+      ...filteredEvals.map(
+        (e) => `${c.dim}│${c.reset}  ${c.dim}-${c.reset} ${e.name}`,
+      ),
+      `${c.dim}├─────────────────────────────────────────────────────${c.reset}`,
+      ...MODELS.map(
+        (m) =>
+          `${c.dim}│${c.reset}  ${c.dim}-${c.reset} ${c.cyan}${m}${c.reset}`,
+      ),
+      `${c.dim}└─────────────────────────────────────────────────────${c.reset}`,
+      "",
+    ].join("\n"),
+  );
+
+  if (!dryRun) {
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout,
+    });
+    const answer = await rl.question("Proceed? (y/N) ");
+    rl.close();
+    if (answer.toLowerCase() !== "y") {
+      process.stdout.write("Aborted.\n");
+      // eslint-disable-next-line n/no-process-exit, unicorn/no-process-exit
+      process.exit(0);
+    }
   }
 
   const { workspaceRootDir } = await runEvals(filteredEvals, {

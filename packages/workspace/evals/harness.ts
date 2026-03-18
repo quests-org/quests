@@ -22,7 +22,7 @@ import { session as sessionRoute } from "../src/rpc/routes/session";
 import { type FileUpload } from "../src/schemas/file-upload";
 import { type SessionMessagePart } from "../src/schemas/session/message-part";
 import { type StoreId } from "../src/schemas/store-id";
-import { buildProviderConfigs, modelURI } from "./utils";
+import { buildProviderConfigs, c, formatNumber, modelURI } from "./utils";
 
 export interface Assertion {
   check: (ctx: AssertionContext) => AssertionResult | Promise<AssertionResult>;
@@ -35,35 +35,16 @@ export interface AssertionResult {
   text: string;
 }
 
-const c = {
-  cyan: "\u001B[36m",
-  dim: "\u001B[2m",
-  green: "\u001B[32m",
-  red: "\u001B[31m",
-  reset: "\u001B[0m",
-  yellow: "\u001B[33m",
-};
-
 function evalPrefix(name: string): string {
   return `${c.dim}[${name}]${c.reset} `;
 }
 
-function formatNumber(num: number): string {
-  if (num >= 1_000_000) {
-    return `${(num / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
-  }
-  if (num >= 1000) {
-    return `${(num / 1000).toFixed(1).replace(/\.0$/, "")}K`;
-  }
-  return num.toString();
-}
-
-const MODELS = [
+export const MODELS = [
   modelURI.openRouter("anthropic/claude-haiku-4.5"),
-  modelURI.openRouter("openai/gpt-oss-120b"),
-  modelURI.openRouter("moonshotai/kimi-k2.5"),
-  modelURI.openRouter("openai/gpt-5.4-mini"),
-  modelURI.openRouter("openai/gpt-5.4-nano"),
+  // modelURI.openRouter("openai/gpt-oss-120b"),
+  // modelURI.openRouter("moonshotai/kimi-k2.5"),
+  // modelURI.openRouter("openai/gpt-5.4-mini"),
+  // modelURI.openRouter("openai/gpt-5.4-nano"),
 ];
 
 export interface EvalCase {
@@ -99,21 +80,6 @@ export async function runEvals(
   const registryDir = env.QUESTS_REGISTRY_DIR_PATH
     ? path.resolve(env.QUESTS_REGISTRY_DIR_PATH)
     : path.resolve(import.meta.dirname, "../../../registry");
-
-  process.stdout.write(`${c.dim}Workspace  :${c.reset} ${workspaceRootDir}\n`);
-  process.stdout.write(
-    `${c.dim}Registry   :${c.reset} ${registryDir}${env.QUESTS_REGISTRY_DIR_PATH ? c.dim + " (from QUESTS_REGISTRY_DIR_PATH)" + c.reset : ""}\n`,
-  );
-  process.stdout.write(`${c.dim}Models (${MODELS.length}):${c.reset}\n`);
-  for (const m of MODELS) {
-    process.stdout.write(`  ${c.dim}-${c.reset} ${c.cyan}${m}${c.reset}\n`);
-  }
-  process.stdout.write(`${c.dim}Concurrency:${c.reset} ${concurrency}\n`);
-  process.stdout.write(`${c.dim}Evals (${evals.length}):${c.reset}\n`);
-  for (const evalCase of evals) {
-    process.stdout.write(`  ${c.dim}-${c.reset} ${evalCase.name}\n`);
-  }
-  process.stdout.write("\n");
 
   if (dryRun) {
     return { workspaceRootDir };

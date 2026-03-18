@@ -9,6 +9,15 @@ import { env } from "../scripts/lib/env";
 import { AbsolutePathSchema, WorkspaceDirSchema } from "../src/schemas/paths";
 import { type WorkspaceConfig } from "../src/types";
 
+export const c = {
+  cyan: "\u001B[36m",
+  dim: "\u001B[2m",
+  green: "\u001B[32m",
+  red: "\u001B[31m",
+  reset: "\u001B[0m",
+  yellow: "\u001B[33m",
+};
+
 export function buildReportWorkspaceConfig(
   absoluteWorkspaceDir: string,
 ): WorkspaceConfig {
@@ -35,6 +44,16 @@ export function buildReportWorkspaceConfig(
     ),
     trashItem: () => Promise.resolve(),
   };
+}
+
+export function formatNumber(num: number): string {
+  if (num >= 1_000_000) {
+    return `${(num / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
+  }
+  if (num >= 1000) {
+    return `${(num / 1000).toFixed(1).replace(/\.0$/, "")}K`;
+  }
+  return num.toString();
 }
 
 const PROVIDER_MAP: {
