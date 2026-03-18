@@ -125,6 +125,16 @@ export function ProjectMenu({
     }
   };
 
+  const sanitizedTitle = project.title
+    .normalize("NFKD")
+    .replaceAll(/[\u0300-\u036F]/g, "")
+    .replaceAll(/[^\w\s-]/g, "")
+    .trim()
+    .replaceAll(/\s+/g, "-")
+    .toLowerCase();
+
+  const downloadFilename = sanitizedTitle ? `${sanitizedTitle}-chat` : "chat";
+
   const showChatsSubmenu = sessions.length > 1;
 
   return (
@@ -258,7 +268,7 @@ export function ProjectMenu({
 
       <JsonViewer
         data={jsonViewerData}
-        downloadFilename="chat"
+        downloadFilename={downloadFilename}
         onOpenChange={setShowJsonViewer}
         open={showJsonViewer}
         title="Chat Data"
@@ -266,7 +276,7 @@ export function ProjectMenu({
 
       <MarkdownViewer
         data={markdownData}
-        downloadFilename="chat"
+        downloadFilename={downloadFilename}
         onOpenChange={setShowMarkdownViewer}
         open={showMarkdownViewer}
         title="Chat Markdown"
