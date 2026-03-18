@@ -1,3 +1,4 @@
+import { useSyntaxHighlighting } from "@/client/hooks/use-syntax-highlighting";
 import { formatBytes } from "@quests/workspace/client";
 import { Download, Eye } from "lucide-react";
 import { useCallback, useMemo } from "react";
@@ -115,13 +116,31 @@ export function JsonViewer({
               <Download className="size-4" />
             </Button>
           </div>
-          <div className="max-h-[75vh] min-w-0 overflow-auto">
-            <pre className="min-w-0 rounded-md bg-muted p-4 text-xs break-all whitespace-pre-wrap text-foreground">
-              {displayData}
-            </pre>
-          </div>
+          <HighlightedContent content={displayData} />
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function HighlightedContent({ content }: { content: string }) {
+  const { highlightedHtml } = useSyntaxHighlighting({
+    code: content,
+    language: "json",
+  });
+
+  return (
+    <div className="max-h-[75vh] min-w-0 overflow-auto">
+      {highlightedHtml ? (
+        <div
+          className="min-w-0 rounded-md bg-muted p-4 text-xs break-all whitespace-pre-wrap"
+          dangerouslySetInnerHTML={{ __html: highlightedHtml.join("\n") }}
+        />
+      ) : (
+        <pre className="min-w-0 rounded-md bg-muted p-4 text-xs break-all whitespace-pre-wrap text-foreground">
+          {content}
+        </pre>
+      )}
+    </div>
   );
 }
