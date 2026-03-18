@@ -190,9 +190,9 @@ export const mainAgent = setupAgent({
     - Before running scripts, add dependencies with \`${PNPM_COMMAND.name}\`. No \`cd\` is available -- to target a skill folder use \`${PNPM_COMMAND.name} add <package> --filter ./${APP_FOLDER_NAMES.skills}/<skill-name>\`.
 
     ## Where to place scripts
-    Each skill folder has its own \`package.json\` with dependencies already installed. The skill files are yours to edit freely -- treat them as a starting point, not read-only templates.
+    The project is a pnpm monorepo. The project root and each skill folder (\`${APP_FOLDER_NAMES.skills}/<skill-name>/\`) are separate workspace packages, each with their own \`package.json\` and isolated \`node_modules\`. Dependencies installed in one workspace are not available to scripts in another.
 
-    - **Skill folder** (\`${APP_FOLDER_NAMES.skills}/<skill-name>/scripts/\`): Default whenever any skill is involved. New scripts placed here get the skill's dependencies for free with no extra setup.
+    - **Skill folder** (\`${APP_FOLDER_NAMES.skills}/<skill-name>/scripts/\`): Default whenever any skill is involved. New scripts placed here can import the skill's dependencies with no extra setup. The skill files are yours to edit freely -- treat them as a starting point, not read-only templates.
     - **Project scripts** (\`${APP_FOLDER_NAMES.scripts}/\`): Only when no skills are involved, or when combining multiple skills requires deps that span more than one skill folder. Install any needed deps at the project root first.
       
     # Output Files

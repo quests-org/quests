@@ -16,7 +16,8 @@ export const TS_COMMAND = {
   // attempts to use it we silently remap it to this command rather than failing.
   // It is intentionally omitted from the tool description and visible command list.
   alias: "tsx",
-  description: "Execute a TypeScript or JavaScript file, powered by Jiti.",
+  description:
+    "Execute a TypeScript or JavaScript file, powered by Jiti. Does not support -e/--eval; always write code to a file first.",
   examples: [`${COMMAND_NAME} scripts/setup.ts`],
   name: COMMAND_NAME,
 } as const;
