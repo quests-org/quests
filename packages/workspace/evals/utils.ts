@@ -37,7 +37,7 @@ export function buildReportWorkspaceConfig(
     projectsDir: WorkspaceDirSchema.parse(
       path.join(absoluteWorkspaceDir, "projects"),
     ),
-    registryDir: WorkspaceDirSchema.parse("/tmp/registry"),
+    registryDir: WorkspaceDirSchema.parse(resolveRegistryDir()),
     rootDir: WorkspaceDirSchema.parse(absoluteWorkspaceDir),
     templatesDir: WorkspaceDirSchema.parse(
       path.join(absoluteWorkspaceDir, "registry", "templates"),
@@ -54,6 +54,12 @@ export function formatNumber(num: number): string {
     return `${(num / 1000).toFixed(1).replace(/\.0$/, "")}K`;
   }
   return num.toString();
+}
+
+export function resolveRegistryDir(): string {
+  return env.QUESTS_REGISTRY_DIR_PATH
+    ? path.resolve(env.QUESTS_REGISTRY_DIR_PATH)
+    : path.resolve(import.meta.dirname, "../../../registry");
 }
 
 const PROVIDER_MAP: {

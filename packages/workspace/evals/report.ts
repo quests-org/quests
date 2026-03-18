@@ -9,7 +9,7 @@ import { Store } from "../src/lib/store";
 import { getProjectUsageSummary } from "../src/lib/usage-summary";
 import { type Session } from "../src/schemas/session";
 import { type AssertionResult, type EvalCase } from "./harness";
-import { buildReportWorkspaceConfig } from "./utils";
+import { buildReportWorkspaceConfig, c } from "./utils";
 
 interface RollupSummary {
   assertions: {
@@ -52,7 +52,7 @@ export async function generateReport({
   }
 
   process.stdout.write(
-    `Generating report for ${projects.length} project(s)...\n`,
+    `${c.dim}Generating report for${c.reset} ${c.yellow}${projects.length}${c.reset} ${c.dim}project(s)...${c.reset}\n`,
   );
 
   let rollupPassed = 0;
@@ -180,14 +180,15 @@ export async function generateReport({
       );
 
       const lines = assertionResults.map((r) => {
-        const icon = r.passed ? "✓" : "✗";
-        return `    ${icon} ${r.text} — ${r.evidence}`;
+        const icon = r.passed ? `${c.green}✓${c.reset}` : `${c.red}✗${c.reset}`;
+        return `    ${icon} ${r.text} ${c.dim}—${c.reset} ${r.evidence}`;
       });
+      const passColor = passed === total ? c.green : c.yellow;
       process.stdout.write(
-        `  [${project.folderName}] ${passed}/${total} assertions passed\n${lines.join("\n")}\n`,
+        `  ${c.dim}[${c.reset}${project.folderName}${c.dim}]${c.reset} ${passColor}${passed}/${total} passed${c.reset}\n${lines.join("\n")}\n`,
       );
     } else {
-      process.stdout.write(`  [${project.folderName}]\n`);
+      process.stdout.write(`  ${c.dim}[${c.reset}${project.folderName}${c.dim}]${c.reset}\n`);
     }
   }
 

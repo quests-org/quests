@@ -10,7 +10,6 @@ import { createActor } from "xstate";
 
 import type { Session } from "../src/schemas/session";
 
-import { env } from "../scripts/lib/env";
 import { workspaceMachine } from "../src/electron";
 import { createAppConfig } from "../src/lib/app-config/create";
 import { type AppConfig } from "../src/lib/app-config/types";
@@ -22,7 +21,13 @@ import { session as sessionRoute } from "../src/rpc/routes/session";
 import { type FileUpload } from "../src/schemas/file-upload";
 import { type SessionMessagePart } from "../src/schemas/session/message-part";
 import { type StoreId } from "../src/schemas/store-id";
-import { buildProviderConfigs, c, formatNumber, modelURI } from "./utils";
+import {
+  buildProviderConfigs,
+  c,
+  formatNumber,
+  modelURI,
+  resolveRegistryDir,
+} from "./utils";
 
 export interface Assertion {
   check: (ctx: AssertionContext) => AssertionResult | Promise<AssertionResult>;
@@ -77,14 +82,10 @@ export async function runEvals(
 ): Promise<{ workspaceRootDir: string }> {
   const workspaceRootDir = path.join(os.tmpdir(), "quests-evals", ulid());
   const providerConfigs = buildProviderConfigs();
-  const registryDir = env.QUESTS_REGISTRY_DIR_PATH
-    ? path.resolve(env.QUESTS_REGISTRY_DIR_PATH)
-    : path.resolve(import.meta.dirname, "../../../registry");
+  const registryDir = resolveRegistryDir();
 
   process.stdout.write(`${c.dim}Workspace :${c.reset} ${workspaceRootDir}\n`);
-  process.stdout.write(
-    `${c.dim}Registry  :${c.reset} ${registryDir}${env.QUESTS_REGISTRY_DIR_PATH ? ` ${c.dim}(from QUESTS_REGISTRY_DIR_PATH)${c.reset}` : ""}\n`,
-  );
+  process.stdout.write(`${c.dim}Registry  :${c.reset} ${registryDir}\n`);
 
   if (dryRun) {
     return { workspaceRootDir };
