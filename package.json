@@ -15,7 +15,7 @@
   "scripts": {
     "build": "turbo run build",
     "check-and-test": "turbo run check:electron-node-version check:format check:unused check:unused-words check:packages check:spelling check:md check:types check:lint check:build test:ci --ui tui --continue=dependencies-successful --output-logs errors-only",
-    "check:electron-node-version": "tsx scripts/check-electron-node-version.ts",
+    "check:electron-node-version": "node --experimental-strip-types scripts/check-electron-node-version.ts",
     "check:format": "prettier --check .",
     "check:lint": "eslint . --max-warnings 0 --cache",
     "check:md": "markdownlint-cli2 \"**/*.md\" \".github/**/*.md\"",
@@ -30,9 +30,8 @@
     "fix:unused-words": "cspell-check-unused-words --fix",
     "format": "prettier --write \"**/*.{ts,tsx,md,json,css,mjs,js}\"",
     "lint:fix": "eslint . --fix",
-    "scripts:convert-screenshots": "tsx scripts/convert-screenshots.ts",
-    "scripts:delete-dated-dev-folders": "tsx scripts/delete-dated-dev-folders.ts",
-    "scripts:update-registry": "tsx scripts/update-registry.ts",
+    "scripts:delete-dated-dev-folders": "node --experimental-strip-types scripts/delete-dated-dev-folders.ts",
+    "scripts:update-registry": "node --experimental-strip-types scripts/update-registry.ts",
     "test": "vitest",
     "turbo:check-without-packages": "turbo run check:format check:unused check:unused-words check:spelling check:md check:types check:lint --ui tui --continue=dependencies-successful --output-logs errors-only",
     "turbo:check:build": "turbo run check:build",
@@ -69,7 +68,6 @@
     "prettier-plugin-sh": "^0.14.0",
     "prettier-plugin-sql": "^0.19.2",
     "tailwindcss": "^4.1.18",
-    "tsx": "^4.20.3",
     "turbo": "^2.7.3",
     "typescript": "catalog:",
     "vitest": "catalog:"

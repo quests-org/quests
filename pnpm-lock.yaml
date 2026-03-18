@@ -144,9 +144,6 @@ importers:
       tailwindcss:
         specifier: ^4.1.18
         version: 4.1.18
-      tsx:
-        specifier: ^4.20.3
-        version: 4.20.3
       turbo:
         specifier: ^2.7.3
         version: 2.8.1
@@ -490,9 +487,6 @@ importers:
       tailwindcss:
         specifier: ^4.1.18
         version: 4.1.18
-      tsx:
-        specifier: ^4.20.3
-        version: 4.20.3
       tw-animate-css:
         specifier: ^1.3.5
         version: 1.3.5
