@@ -446,9 +446,18 @@ function getToolOutputDescription(
       return part.output.name;
     }
     case "tool-read_file": {
-      return part.output.state === "does-not-exist"
-        ? `file not found: ${part.output.filePath}`
-        : filenameFromFilePath(part.output.filePath);
+      if (part.output.state === "does-not-exist") {
+        return `file not found: ${part.output.filePath}`;
+      }
+      const filename = filenameFromFilePath(part.output.filePath);
+      if (part.output.state === "exists") {
+        const endLine = part.output.offset + part.output.displayedLines - 1;
+        const isPartial = part.output.offset > 1 || part.output.hasMoreLines;
+        if (isPartial) {
+          return `${filename} L${part.output.offset}-${endLine}`;
+        }
+      }
+      return filename;
     }
     case "tool-run_shell_command": {
       return part.output.command || "command executed";
