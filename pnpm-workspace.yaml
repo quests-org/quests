@@ -3,8 +3,10 @@ packages:
   - apps/*
 
 allowBuilds:
+  "@mongodb-js/zstd": true
   "@swc/core": true
   core-js: true
+  node-liblzma: true
   tree-sitter-javascript: true
   unrs-resolver: true
 

@@ -15,9 +15,9 @@ import { PNPM_COMMAND } from "../lib/shell-commands/pnpm";
 import { writeFileWithDir } from "../lib/write-file-with-dir";
 import { RelativePathSchema } from "../schemas/paths";
 import { BaseInputSchema, TOOL_EXPLANATION_PARAM_NAME } from "./base";
+import { BashTool } from "./bash";
 import { setupTool } from "./create-tool";
 import { ReadFile } from "./read-file";
-import { RunShellCommand } from "./run-shell-command";
 
 const INPUT_PARAMS = {
   content: "content",
@@ -28,7 +28,7 @@ function scriptsDirectoryReminder(filePath: string): string | undefined {
   // Scripts will often use new dependencies, so we remind the agent to add them.
   if (filePath.startsWith(`${APP_FOLDER_NAMES.scripts}/`)) {
     return dedent`
-      Before running this script, add any new dependencies using the ${RunShellCommand.name} tool with the ${PNPM_COMMAND.name} command.
+      Before running this script, add any new dependencies using the ${BashTool.name} tool with the ${PNPM_COMMAND.name} command.
     `;
   }
   return undefined;

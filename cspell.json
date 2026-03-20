@@ -71,6 +71,7 @@
     "qwen",
     "qwik",
     "radashi",
+    "redirections",
     "retryable",
     "rharkor",
     "rmrf",
@@ -90,7 +91,8 @@
     "wireframes",
     "worktree",
     "XAISDK",
-    "zkochan"
+    "zkochan",
+    "zstd"
   ],
   "import": [
     "@cspell/dict-typescript/cspell-ext.json",

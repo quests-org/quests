@@ -106,7 +106,7 @@ export function ToolPart({
     return <FileModification isLoading={isLoading} part={part} />;
   }
 
-  if (part.type === "tool-run_shell_command") {
+  if (part.type === "tool-bash") {
     return (
       <ShellCommandCard
         isLoading={isLoading}
@@ -325,6 +325,9 @@ function getToolInputValue(
   }
 
   switch (part.type) {
+    case "tool-bash": {
+      return part.input.command;
+    }
     case "tool-choose": {
       return part.input.question;
     }
@@ -358,9 +361,6 @@ function getToolInputValue(
         ? filenameFromFilePath(part.input.filePath)
         : undefined;
     }
-    case "tool-run_shell_command": {
-      return part.input.command;
-    }
     case "tool-task": {
       return ""; // Empty because the explanation is in the summary
     }
@@ -388,6 +388,9 @@ function getToolOutputDescription(
   part: Extract<SessionMessagePart.ToolPart, { state: "output-available" }>,
 ): string {
   switch (part.type) {
+    case "tool-bash": {
+      return part.output.command || "command executed";
+    }
     case "tool-choose": {
       return part.output.selectedChoice || "answered";
     }
@@ -458,9 +461,6 @@ function getToolOutputDescription(
         }
       }
       return filename;
-    }
-    case "tool-run_shell_command": {
-      return part.output.command || "command executed";
     }
     case "tool-task": {
       if (part.output.status === "done") {

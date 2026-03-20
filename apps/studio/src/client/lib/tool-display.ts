@@ -34,6 +34,7 @@ const TASK_FAILED_DISPLAY_NAMES: Record<TaskAgentName, string> = {
 
 // | undefined ensures runtime type safety
 const TOOL_DISPLAY_NAMES: Record<ToolName, string | undefined> = {
+  bash: "Ran command",
   choose: "Waiting for answer",
   copy_to_project: "Copied to project",
   edit_file: "Edited",
@@ -42,7 +43,6 @@ const TOOL_DISPLAY_NAMES: Record<ToolName, string | undefined> = {
   grep: "Searched text",
   load_skill: "Loaded skill",
   read_file: "Read",
-  run_shell_command: "Ran command",
   task: "Task",
   unavailable: "Unknown tool",
   web_search: "Searched web",
@@ -50,6 +50,7 @@ const TOOL_DISPLAY_NAMES: Record<ToolName, string | undefined> = {
 };
 
 const TOOL_STREAMING_DISPLAY_NAMES: Record<ToolName, string | undefined> = {
+  bash: "Running command",
   choose: "Thinking about answer",
   copy_to_project: "Copying to project",
   edit_file: "Editing a file",
@@ -58,7 +59,6 @@ const TOOL_STREAMING_DISPLAY_NAMES: Record<ToolName, string | undefined> = {
   grep: "Searching text",
   load_skill: "Loading skill",
   read_file: "Reading file",
-  run_shell_command: "Running command",
   task: "Task",
   unavailable: "Unknown tool",
   web_search: "Searching the web",
@@ -69,6 +69,7 @@ const TOOL_STREAMING_DISPLAY_NAMES_WITH_VALUE: Record<
   ToolName,
   string | undefined
 > = {
+  bash: TOOL_STREAMING_DISPLAY_NAMES.bash,
   choose: TOOL_STREAMING_DISPLAY_NAMES.choose,
   copy_to_project: "Copying",
   edit_file: "Editing",
@@ -77,7 +78,6 @@ const TOOL_STREAMING_DISPLAY_NAMES_WITH_VALUE: Record<
   grep: "Searching for",
   load_skill: "Loading skill",
   read_file: "Reading",
-  run_shell_command: TOOL_STREAMING_DISPLAY_NAMES.run_shell_command,
   task: TOOL_STREAMING_DISPLAY_NAMES.task,
   unavailable: TOOL_STREAMING_DISPLAY_NAMES.unavailable,
   web_search: "Searching for",
@@ -85,6 +85,7 @@ const TOOL_STREAMING_DISPLAY_NAMES_WITH_VALUE: Record<
 };
 
 const TOOL_FAILED_DISPLAY_NAMES: Record<ToolName, string | undefined> = {
+  bash: "Failed to run command",
   choose: "Failed to answer",
   copy_to_project: "Failed to copy to project",
   edit_file: "Failed to edit file",
@@ -93,7 +94,6 @@ const TOOL_FAILED_DISPLAY_NAMES: Record<ToolName, string | undefined> = {
   grep: "Failed to search text",
   load_skill: "Failed to load skill",
   read_file: "Failed to read file",
-  run_shell_command: "Failed to run command",
   task: "Failed to run task",
   unavailable: "Unknown tool",
   web_search: "Failed to search the web",
@@ -101,6 +101,7 @@ const TOOL_FAILED_DISPLAY_NAMES: Record<ToolName, string | undefined> = {
 };
 
 export const TOOL_ICONS: Record<ToolName, LucideIcon | undefined> = {
+  bash: Terminal,
   choose: HelpCircle,
   copy_to_project: FolderInput,
   edit_file: Pencil,
@@ -109,7 +110,6 @@ export const TOOL_ICONS: Record<ToolName, LucideIcon | undefined> = {
   grep: Search,
   load_skill: BookOpen,
   read_file: Eye,
-  run_shell_command: Terminal,
   task: undefined,
   unavailable: TriangleAlert,
   web_search: Globe,

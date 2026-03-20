@@ -7,6 +7,7 @@ export default [
   globalIgnores([
     "apps",
     "packages",
+    ".cursor/plans",
     ".turbo",
     "pnpm-lock.yaml",
     "pnpm-workspace.yaml",

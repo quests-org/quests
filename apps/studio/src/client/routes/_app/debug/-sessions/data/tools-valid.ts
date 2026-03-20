@@ -160,7 +160,7 @@ registerSession({
             command: "npm test -- helpers.test.ts",
             exitCode: 0,
           },
-          type: "tool-run_shell_command",
+          type: "tool-bash",
         }),
         builder.textPart(
           "Let me search the web for the latest Vitest configuration best practices.",

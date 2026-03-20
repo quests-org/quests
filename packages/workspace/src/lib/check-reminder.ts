@@ -20,7 +20,7 @@ const SUPPORTED_EXTENSIONS = new Set([
 export function checkReminder(filePath: string): null | string {
   if (supportsDiagnostics(filePath)) {
     const tscCommand = buildTscCommand(filePath);
-    return `Run \`${tscCommand}\` using the \`${TOOL_NAMES.runShellCommand}\` tool to check for type errors before finishing.`;
+    return `Run \`${tscCommand}\` using the \`${TOOL_NAMES.bash}\` tool to check for type errors before finishing.`;
   }
 
   const ext = path.extname(filePath).toLowerCase();

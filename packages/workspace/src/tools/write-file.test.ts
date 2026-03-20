@@ -51,7 +51,7 @@ describe("WriteFile - checkReminder in toModelOutput", () => {
           "type": "text",
           "value": "Successfully wrote new file ./index.ts
 
-        Run \`tsc --noEmit\` using the \`run_shell_command\` tool to check for type errors before finishing.",
+        Run \`tsc --noEmit\` using the \`bash\` tool to check for type errors before finishing.",
         }
       `);
   });
@@ -83,7 +83,7 @@ describe("WriteFile - checkReminder in toModelOutput", () => {
           "type": "text",
           "value": "Successfully wrote new file ./skills/my-skill/scripts/test.ts
 
-        Run \`tsc --noEmit --project skills/my-skill/tsconfig.json\` using the \`run_shell_command\` tool to check for type errors before finishing.",
+        Run \`tsc --noEmit --project skills/my-skill/tsconfig.json\` using the \`bash\` tool to check for type errors before finishing.",
         }
       `);
   });

@@ -51,7 +51,7 @@ export const mainAgent = setupAgent({
     "Grep",
     "LoadSkill",
     "ReadFile",
-    "RunShellCommand",
+    "BashTool",
     "Task",
     "WebSearch",
     "WriteFile",
@@ -137,7 +137,7 @@ export const mainAgent = setupAgent({
     - For better performance, try to batch tool calls together when possible.
     - Use parallel tool calls whenever possible to improve efficiency and reduce costs.
     - Use the \`${TOOL_EXPLANATION_PARAM_NAME}\` parameter for tools instead of replying when possible.
-    - Use the \`${agentTools.RunShellCommand.name}\` tool to install dependencies when needed. When a skill has been loaded, check the skill's package.json before installing anything -- its dependencies are already available.
+    - Use the \`${agentTools.BashTool.name}\` tool to install dependencies when needed. When a skill has been loaded, check the skill's package.json before installing anything -- its dependencies are already available.
     - IMPORTANT: When a skill provides scripts, use \`${agentTools.ReadFile.name}\` to read the relevant script source before writing a custom alternative. The script may already support your use case or be easily extended. Never bypass a skill script without reading it first.
     - Only stop calling tools when you are done with the task. When you stop calling tools, the task will end and the user will be required to start a new task.
     - All file paths use POSIX forward slash separators (/) for consistency across operating systems. Both tool outputs and your path inputs should use forward slashes.
@@ -182,12 +182,12 @@ export const mainAgent = setupAgent({
     
     # Scripts
     - Node.js and ${PNPM_COMMAND.name} are pre-installed for package management.
-    - The only way to run scripts is by executing TypeScript files using the \`${agentTools.RunShellCommand.name}\` tool with the \`${TS_COMMAND.name}\` command.
+    - Run TypeScript files with the \`${TS_COMMAND.name}\` command (e.g. \`${TS_COMMAND.name} scripts/seed.ts\`).
     - You MUST create the scripts before using ${TS_COMMAND.name} to run them.
     - No other runtimes are bundled with this product.
-    - You can use the \`${agentTools.RunShellCommand.name}\` tool with the \`${TSC_COMMAND.name}\` command to check for type errors in your scripts.
+    - Use the \`${TSC_COMMAND.name}\` command to check for type errors in your scripts.
     - You don't need to add shebangs to TypeScript script files.
-    - Before running scripts, add dependencies with \`${PNPM_COMMAND.name}\`. No \`cd\` is available -- to target a skill folder use \`${PNPM_COMMAND.name} add <package> --filter ./${APP_FOLDER_NAMES.skills}/<skill-name>\`.
+    - Before running scripts, add dependencies with \`${PNPM_COMMAND.name}\`. To target a skill folder use \`${PNPM_COMMAND.name} add <package> --filter ./${APP_FOLDER_NAMES.skills}/<skill-name>\`.
 
     ## Where to place scripts
     The project is a pnpm monorepo. The project root and each skill folder (\`${APP_FOLDER_NAMES.skills}/<skill-name>/\`) are separate workspace packages, each with their own \`package.json\` and isolated \`node_modules\`. Dependencies installed in one workspace are not available to scripts in another.
@@ -245,7 +245,7 @@ export const mainAgent = setupAgent({
         !nodeModulesStatus &&
           dedent`
             <dependencies>
-            Dependencies have not yet been installed for this project. If you need to run scripts that require dependencies, you can install them by running \`${PNPM_COMMAND.name} install\` using the \`${agentTools.RunShellCommand.name}\` tool.
+            Dependencies have not yet been installed for this project. If you need to run scripts that require dependencies, you can install them by running \`${PNPM_COMMAND.name} install\` using the \`${agentTools.BashTool.name}\` tool.
             </dependencies>
           `,
         await (async () => {

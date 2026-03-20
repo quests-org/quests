@@ -3,6 +3,7 @@ import { type z } from "zod";
 
 import type { AnyAgentTool, ToolName } from "./types";
 
+import { BashTool } from "./bash";
 import { Choose } from "./choose";
 import { CopyToProject } from "./copy-to-project";
 import { EditFile } from "./edit-file";
@@ -11,13 +12,13 @@ import { Glob } from "./glob";
 import { Grep } from "./grep";
 import { LoadSkill } from "./load-skill";
 import { ReadFile } from "./read-file";
-import { RunShellCommand } from "./run-shell-command";
 import { Task } from "./task";
 import { Unavailable } from "./unavailable";
 import { WebSearch } from "./web-search";
 import { WriteFile } from "./write-file";
 
 export const TOOLS = {
+  BashTool,
   Choose,
   CopyToProject,
   EditFile,
@@ -26,7 +27,6 @@ export const TOOLS = {
   Grep,
   LoadSkill,
   ReadFile,
-  RunShellCommand,
   Task,
   Unavailable,
   WebSearch,
@@ -36,6 +36,7 @@ export const TOOLS = {
 export type InternalToolName = keyof typeof TOOLS;
 
 export const TOOLS_BY_NAME = {
+  [TOOLS.BashTool.name]: TOOLS.BashTool,
   [TOOLS.Choose.name]: TOOLS.Choose,
   [TOOLS.CopyToProject.name]: TOOLS.CopyToProject,
   [TOOLS.EditFile.name]: TOOLS.EditFile,
@@ -44,7 +45,6 @@ export const TOOLS_BY_NAME = {
   [TOOLS.Grep.name]: TOOLS.Grep,
   [TOOLS.LoadSkill.name]: TOOLS.LoadSkill,
   [TOOLS.ReadFile.name]: TOOLS.ReadFile,
-  [TOOLS.RunShellCommand.name]: TOOLS.RunShellCommand,
   [TOOLS.Task.name]: TOOLS.Task,
   [TOOLS.Unavailable.name]: TOOLS.Unavailable,
   [TOOLS.WebSearch.name]: TOOLS.WebSearch,
