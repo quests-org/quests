@@ -1,6 +1,7 @@
 import { type Options } from "execa";
 import { err, ok } from "neverthrow";
 
+import { type AbsolutePath } from "../schemas/paths";
 import { absolutePathJoin } from "./absolute-path-join";
 import { type AppConfig } from "./app-config/types";
 import { ensurePnpmShim } from "./ensure-pnpm-shim";
@@ -9,7 +10,13 @@ import { execaNodeForApp } from "./execa-node-for-app";
 
 export async function runNodeModulesBin<
   OptionsType extends Omit<Options, "cwd"> = Omit<Options, "cwd">,
->(appConfig: AppConfig, bin: string, args: string[], options?: OptionsType) {
+>(
+  appConfig: AppConfig,
+  bin: string,
+  args: string[],
+  options?: OptionsType,
+  cwd?: AbsolutePath,
+) {
   const shimPath = absolutePathJoin(
     appConfig.appDir,
     "node_modules",
@@ -27,12 +34,7 @@ export async function runNodeModulesBin<
   const binPath = binPathResult.value;
 
   try {
-    return ok(
-      execaNodeForApp(appConfig, binPath, args, {
-        cwd: appConfig.appDir,
-        ...options,
-      } as unknown as OptionsType & { cwd: string }),
-    );
+    return ok(execaNodeForApp(appConfig, binPath, args, options, cwd));
   } catch (error) {
     return err(
       new TypedError.NotFound(

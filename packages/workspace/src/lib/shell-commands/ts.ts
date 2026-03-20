@@ -5,6 +5,7 @@ import { parseArgs } from "node:util";
 import type { AppConfig } from "../app-config/types";
 
 import { getWorkspaceServerURL } from "../../logic/server/url";
+import { type AbsolutePath } from "../../schemas/paths";
 import { execaNodeForApp } from "../execa-node-for-app";
 import { executeError } from "../execute-error";
 import { filterShellOutput } from "../filter-shell-output";
@@ -26,6 +27,7 @@ export async function tsCommand(
   args: string[],
   appConfig: AppConfig,
   signal?: AbortSignal,
+  cwd?: AbsolutePath,
 ): Promise<FileOperationResult> {
   if (args.length === 0) {
     return executeError(
@@ -78,6 +80,7 @@ export async function tsCommand(
     ["dlx", "jiti", filePath, ...scriptArgs],
     // Don't reject so we can filter the output
     { all: true, cancelSignal: signal, env: providerEnv, reject: false },
+    cwd,
   );
   const combined = filterShellOutput(execResult.all, appConfig.appDir);
 

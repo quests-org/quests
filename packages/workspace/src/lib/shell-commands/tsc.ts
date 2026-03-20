@@ -2,6 +2,7 @@ import { ok } from "neverthrow";
 
 import type { AppConfig } from "../app-config/types";
 
+import { type AbsolutePath } from "../../schemas/paths";
 import { executeError } from "../execute-error";
 import { filterShellOutput } from "../filter-shell-output";
 import { runNodeModulesBin } from "../run-node-modules-bin";
@@ -22,13 +23,20 @@ export async function tscCommand(
   args: string[],
   appConfig: AppConfig,
   signal?: AbortSignal,
+  cwd?: AbsolutePath,
 ): Promise<FileOperationResult> {
-  const binResult = await runNodeModulesBin(appConfig, "tsc", args, {
-    all: true,
-    cancelSignal: signal,
-    // Don't reject so we can filter the output
-    reject: false,
-  });
+  const binResult = await runNodeModulesBin(
+    appConfig,
+    "tsc",
+    args,
+    {
+      all: true,
+      cancelSignal: signal,
+      // Don't reject so we can filter the output
+      reject: false,
+    },
+    cwd,
+  );
   if (binResult.isErr()) {
     return executeError(binResult.error.message);
   }

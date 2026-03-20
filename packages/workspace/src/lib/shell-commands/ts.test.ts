@@ -88,6 +88,7 @@ describe("tsCommand", () => {
         "./output/test.md",
       ],
       expect.any(Object),
+      undefined,
     );
   });
 });
