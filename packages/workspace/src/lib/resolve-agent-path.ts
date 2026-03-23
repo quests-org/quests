@@ -1,4 +1,5 @@
 import { ok } from "neverthrow";
+import { accessSync, constants } from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
 
@@ -12,6 +13,54 @@ import { executeError } from "./execute-error";
 import { normalizePath } from "./normalize-path";
 import { pathExists } from "./path-exists";
 import { validateAttachedFolderPath } from "./validate-attached-folder-path";
+
+const NARROW_NO_BREAK_SPACE = "\u202F";
+
+/**
+ * Applies macOS-specific Unicode filename fallbacks to find an existing file.
+ * macOS screenshots use U+202F (narrow no-break space) before AM/PM, store
+ * filenames in NFD form, and use U+2019 (curly apostrophe) in French names.
+ * Returns the resolved path if a variant exists, otherwise the original.
+ *
+ * Adapted from https://github.com/badlogic/pi-mono/blob/main/packages/coding-agent/src/core/tools/path-utils.ts
+ */
+export function applyUnicodeFallbacks(
+  resolvedPath: AbsolutePath,
+): AbsolutePath {
+  if (fileExistsSync(resolvedPath)) {
+    return resolvedPath;
+  }
+
+  // macOS screenshots: narrow no-break space before AM/PM
+  const amPmVariant = resolvedPath.replaceAll(
+    / (AM|PM)\./g,
+    `${NARROW_NO_BREAK_SPACE}$1.`,
+  );
+  if (amPmVariant !== resolvedPath && fileExistsSync(amPmVariant)) {
+    return AbsolutePathSchema.parse(amPmVariant);
+  }
+
+  // macOS stores filenames in NFD (decomposed) form
+  const nfdVariant = resolvedPath.normalize("NFD");
+  if (nfdVariant !== resolvedPath && fileExistsSync(nfdVariant)) {
+    return AbsolutePathSchema.parse(nfdVariant);
+  }
+
+  // macOS uses U+2019 (right single quotation mark) in screenshot names
+  const curlyVariant = resolvedPath.replaceAll("'", "\u2019");
+  if (curlyVariant !== resolvedPath && fileExistsSync(curlyVariant)) {
+    return AbsolutePathSchema.parse(curlyVariant);
+  }
+
+  // cspell:ignore d'écran
+  // Combined NFD + curly quote (e.g. French macOS: "Capture d'écran")
+  const nfdCurlyVariant = nfdVariant.replaceAll("'", "\u2019");
+  if (nfdCurlyVariant !== resolvedPath && fileExistsSync(nfdCurlyVariant)) {
+    return AbsolutePathSchema.parse(nfdCurlyVariant);
+  }
+
+  return resolvedPath;
+}
 
 export async function getSimilarPathSuggestions({
   absolutePath,
@@ -138,4 +187,35 @@ export function resolveAgentPath(options: {
     absolutePath: absolutePathJoin(appDir, fixedPath),
     displayPath: fixedPath,
   });
+}
+
+/**
+ * Resolves an agent path and applies Unicode fallbacks for existing-file
+ * lookups. Use this instead of resolveAgentPath when the path must refer to
+ * an already-existing file (read, edit). Do not use for writes/creates.
+ */
+export function resolveExistingFilePath(options: {
+  agentName: AgentName;
+  appDir: AbsolutePath;
+  attachedFolders?: Record<string, FolderAttachment.Type>;
+  inputPath?: string;
+}) {
+  const result = resolveAgentPath({ ...options, isRequired: true });
+  if (result.isErr()) {
+    return result;
+  }
+  const { absolutePath, displayPath } = result.value;
+  return ok({
+    absolutePath: applyUnicodeFallbacks(absolutePath),
+    displayPath,
+  });
+}
+
+function fileExistsSync(filePath: string): boolean {
+  try {
+    accessSync(filePath, constants.F_OK);
+    return true;
+  } catch {
+    return false;
+  }
 }
