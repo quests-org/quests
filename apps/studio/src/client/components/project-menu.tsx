@@ -5,7 +5,6 @@ import {
   Bug,
   ChevronDown,
   Copy,
-  FileText,
   MessageCircle,
   Pencil,
   Plus,
@@ -16,8 +15,7 @@ import { toast } from "sonner";
 
 import { rpcClient } from "../rpc/client";
 import { AppIcon } from "./app-icon";
-import { JsonViewer } from "./json-viewer";
-import { MarkdownViewer } from "./markdown-viewer";
+import { DebugViewer } from "./debug-viewer";
 import { Button } from "./ui/button";
 import {
   DropdownMenu,
@@ -53,10 +51,11 @@ export function ProjectMenu({
     rpcClient.preferences.live.get.experimental_liveOptions(),
   );
 
-  const [showJsonViewer, setShowJsonViewer] = useState(false);
-  const [jsonViewerData, setJsonViewerData] = useState<unknown>(null);
-  const [showMarkdownViewer, setShowMarkdownViewer] = useState(false);
-  const [markdownData, setMarkdownData] = useState<null | string>(null);
+  const [debugViewerOpen, setDebugViewerOpen] = useState(false);
+  const [debugData, setDebugData] = useState<{
+    jsonData: unknown;
+    markdownData: null | string;
+  }>({ jsonData: null, markdownData: null });
 
   const createEmptySession = useMutation(
     rpcClient.workspace.session.create.mutationOptions(),
@@ -94,34 +93,24 @@ export function ProjectMenu({
     }
 
     try {
-      const result =
-        await rpcClient.workspace.session.byIdWithMessagesAndParts.call({
+      const [jsonResult, markdownResult] = await Promise.all([
+        rpcClient.workspace.session.byIdWithMessagesAndParts.call({
           sessionId: selectedSessionId,
           subdomain: project.subdomain,
-        });
+        }),
+        rpcClient.workspace.session.toMarkdown.call({
+          sessionId: selectedSessionId,
+          subdomain: project.subdomain,
+        }),
+      ]);
 
-      setJsonViewerData(result);
-      setShowJsonViewer(true);
-    } catch {
-      toast.error("Failed to load chat data");
-    }
-  };
-
-  const handleViewMarkdown = async () => {
-    if (!selectedSessionId) {
-      return;
-    }
-
-    try {
-      const result = await rpcClient.workspace.session.toMarkdown.call({
-        sessionId: selectedSessionId,
-        subdomain: project.subdomain,
+      setDebugData({
+        jsonData: jsonResult,
+        markdownData: markdownResult.markdown,
       });
-
-      setMarkdownData(result.markdown);
-      setShowMarkdownViewer(true);
+      setDebugViewerOpen(true);
     } catch {
-      toast.error("Failed to load session markdown");
+      toast.error("Failed to load chat debug data");
     }
   };
 
@@ -235,15 +224,7 @@ export function ProjectMenu({
                 onClick={handleDebugChat}
               >
                 <Bug className="size-4 text-warning-foreground" />
-                View chat as JSON
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="text-warning-foreground"
-                disabled={!selectedSessionId}
-                onClick={handleViewMarkdown}
-              >
-                <FileText className="size-4 text-warning-foreground" />
-                View chat as Markdown
+                Debug chat
               </DropdownMenuItem>
             </>
           )}
@@ -266,20 +247,13 @@ export function ProjectMenu({
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <JsonViewer
-        data={jsonViewerData}
+      <DebugViewer
         downloadFilename={downloadFilename}
-        onOpenChange={setShowJsonViewer}
-        open={showJsonViewer}
-        title="Chat Data"
-      />
-
-      <MarkdownViewer
-        data={markdownData}
-        downloadFilename={downloadFilename}
-        onOpenChange={setShowMarkdownViewer}
-        open={showMarkdownViewer}
-        title="Chat Markdown"
+        jsonData={debugData.jsonData}
+        markdownData={debugData.markdownData}
+        onOpenChange={setDebugViewerOpen}
+        open={debugViewerOpen}
+        title="Debug Chat"
       />
     </>
   );
