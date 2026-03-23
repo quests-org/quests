@@ -3,8 +3,8 @@ import { ok } from "neverthrow";
 import { dedent } from "radashi";
 import { z } from "zod";
 
-import { createBashEnv } from "../lib/create-bash-env";
-import { PNPM_COMMAND, TS_COMMAND, TSC_COMMAND } from "../lib/shell-commands";
+import { createBashDescription, createBashEnv } from "../lib/create-bash-env";
+import { PNPM_COMMAND } from "../lib/shell-commands";
 import { BaseInputSchema } from "./base";
 import { setupTool } from "./create-tool";
 
@@ -26,26 +26,7 @@ export const BashTool = setupTool({
     stdout: z.string(),
   }),
 }).create({
-  description: dedent`
-		Run bash commands in the project directory. Full bash syntax is supported including
-		pipes (|), redirections (>, >>), chaining (&&, ||, ;), variables, loops, and scripts.
-
-		IMPORTANT: This is a sandboxed environment. node, npm, python, and other runtimes are
-		NOT available. Do NOT attempt to run them. Only use the commands listed below.
-
-		Built-in commands: cat, head, tail, wc, sort, uniq, diff, find, sed, awk, tr, cut,
-		xargs, tee, cp, mv, rm, mkdir, ls, chmod, and many more standard Unix utilities.
-
-		Custom commands: ${PNPM_COMMAND.name} (package manager), ${TS_COMMAND.name}/${TS_COMMAND.alias} (run TypeScript),
-		${TSC_COMMAND.name} (type check).
-
-		Examples:
-		- cat package.json | grep "dependencies"
-		- find src -name "*.ts" | wc -l
-		- ${PNPM_COMMAND.name} install && ${TS_COMMAND.name} scripts/seed.ts
-		- for f in src/*.ts; do wc -l "$f"; done
-		- diff <(cat file1.txt) <(cat file2.txt)
-	`,
+  description: createBashDescription(),
   execute: async ({ appConfig, input, signal }) => {
     const bash = createBashEnv(appConfig);
     const result = await bash.exec(input.command, { signal });

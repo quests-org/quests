@@ -1,18 +1,34 @@
-import type {
-  CommandNode,
-  ScriptNode,
-  StatementNode,
-  TransformPlugin,
+import { bashTools } from "bash-tool";
+import {
+  Bash,
+  type CommandName,
+  type CommandNode,
+  defineCommand,
+  getCommandNames,
+  ReadWriteFs,
+  type ScriptNode,
+  type StatementNode,
+  type TransformPlugin,
 } from "just-bash";
-
-import { Bash, defineCommand, ReadWriteFs } from "just-bash";
 
 import type { AppConfig } from "./app-config/types";
 
 import { absolutePathJoin } from "./absolute-path-join";
-import { pnpmCommand } from "./shell-commands/pnpm";
-import { tsCommand } from "./shell-commands/ts";
-import { tscCommand } from "./shell-commands/tsc";
+import { PNPM_COMMAND, pnpmCommand } from "./shell-commands/pnpm";
+import { TS_COMMAND, tsCommand } from "./shell-commands/ts";
+import { TSC_COMMAND, tscCommand } from "./shell-commands/tsc";
+
+// cspell:ignore mixmark papaparse
+
+// These just-bash commands have third-party dependencies that are not properly
+// declared in just-bash's own package.json, causing runtime resolution failures
+// in pnpm's isolated node_modules. Exclude them until fixed upstream.
+//
+// - html-to-markdown: depends on `turndown`, which requires `@mixmark-io/domino`
+//   as an undeclared peer dependency
+// - yq: depends on `papaparse`, which uses a CJS dynamic require("process") that
+//   is incompatible with just-bash's ESM bundle
+const BROKEN_COMMANDS = new Set<CommandName>(["html-to-markdown", "yq"]);
 
 const commandOrderPlugin: TransformPlugin<{ commands: string[] }> = {
   name: "command-order",
@@ -89,10 +105,57 @@ const commandOrderPlugin: TransformPlugin<{ commands: string[] }> = {
   },
 };
 
+// Commands non-obvious enough to warrant a description alongside their name.
+const DESCRIBED_COMMANDS = new Set(["jq", "xan"]);
+
+export function createBashDescription() {
+  const allowedCommandNames = new Set(
+    getCommandNames().filter(
+      (name) => !BROKEN_COMMANDS.has(name as CommandName),
+    ),
+  );
+
+  const builtinNames = bashTools
+    .filter((t) => allowedCommandNames.has(t.name))
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  const namedOnly = builtinNames
+    .filter((t) => !DESCRIBED_COMMANDS.has(t.name))
+    .map((t) => t.name);
+
+  const described = builtinNames
+    .filter((t) => DESCRIBED_COMMANDS.has(t.name))
+    .map(({ name, purpose }) => `  ${name} - ${purpose}`);
+
+  const customLines = [
+    `  ${PNPM_COMMAND.name} - ${PNPM_COMMAND.description}`,
+    `  ${TS_COMMAND.name}/${TS_COMMAND.alias} - ${TS_COMMAND.description}`,
+    `  ${TSC_COMMAND.name} - ${TSC_COMMAND.description}`,
+  ];
+
+  return [
+    "Execute bash commands in the project directory.",
+    "",
+    "IMPORTANT: This is a sandboxed environment. node, npm, python, and other runtimes are",
+    "NOT available. Do NOT attempt to run them.",
+    "",
+    `Available commands: ${namedOnly.join(", ")}`,
+    "",
+    "Specialized commands:",
+    ...described,
+    ...customLines,
+  ].join("\n");
+}
+
 export function createBashEnv(appConfig: AppConfig) {
   const fs = new ReadWriteFs({ root: appConfig.appDir });
 
+  const allowedCommands = getCommandNames().filter(
+    (name) => !BROKEN_COMMANDS.has(name as CommandName),
+  ) as CommandName[];
+
   const bash = new Bash({
+    commands: allowedCommands,
     customCommands: [
       createPnpmCommand(appConfig),
       createTsCommand(appConfig),
