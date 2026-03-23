@@ -493,6 +493,28 @@ const EscapeNormalizedReplacer: Replacer = function* (content, find) {
   }
 };
 
+const normalizeUnicode = (text: string) =>
+  text
+    .normalize("NFKC")
+    .split("\n")
+    .map((line) => line.trimEnd())
+    .join("\n")
+    .replaceAll(/[\u2018\u2019\u201A\u201B]/g, "'")
+    .replaceAll(/[\u201C\u201D\u201E\u201F]/g, '"')
+    .replaceAll(/[\u2010\u2011\u2012\u2013\u2014\u2015\u2212]/g, "-")
+    .replaceAll(/[\u00A0\u2002-\u200A\u202F\u205F\u3000]/g, " ");
+
+// Inspired by https://github.com/badlogic/pi-mono/blob/main/packages/coding-agent/src/core/tools/edit-diff.ts
+const UnicodeNormalizedReplacer: Replacer = function* (content, find) {
+  const normalizedFind = normalizeUnicode(find);
+  const normalizedContent = normalizeUnicode(content);
+
+  const index = normalizedContent.indexOf(normalizedFind);
+  if (index !== -1) {
+    yield content.substring(index, index + normalizedFind.length);
+  }
+};
+
 const TrimmedBoundaryReplacer: Replacer = function* (content, find) {
   const trimmedFind = find.trim();
 
@@ -623,6 +645,7 @@ function replace(
     WhitespaceNormalizedReplacer,
     IndentationFlexibleReplacer,
     EscapeNormalizedReplacer,
+    UnicodeNormalizedReplacer,
     TrimmedBoundaryReplacer,
     ContextAwareReplacer,
     MultiOccurrenceReplacer,

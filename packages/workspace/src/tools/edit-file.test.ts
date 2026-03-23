@@ -216,6 +216,51 @@ describe("EditFile", () => {
     });
   });
 
+  describe("execute - unicode normalization", () => {
+    it.each([
+      {
+        description: "smart double quotes",
+        fileContent: 'const msg = "Hello world";',
+        newString: 'const msg = "Goodbye world";',
+        oldString: "const msg = \u201CHello world\u201D;",
+      },
+      {
+        description: "smart single quotes",
+        fileContent: "const msg = 'Hello world';",
+        newString: "const msg = 'Goodbye world';",
+        oldString: "const msg = \u2018Hello world\u2019;",
+      },
+      {
+        description: "em dash",
+        fileContent: "// range: 1-10",
+        newString: "// range: 1-100",
+        oldString: "// range: 1\u201410",
+      },
+      {
+        description: "non-breaking space",
+        fileContent: "const x = 1;",
+        newString: "const x = 2;",
+        oldString: "const\u00A0x = 1;",
+      },
+    ])(
+      "should match via unicode normalization: $description",
+      async ({ fileContent, newString, oldString }) => {
+        setupMockFs({ "unicode-test.ts": fileContent });
+
+        const result = await runTool(
+          TOOLS.EditFile,
+          makeExecuteArgs({
+            filePath: "./unicode-test.ts",
+            newString,
+            oldString,
+          }),
+        );
+
+        expect(result.isOk()).toBe(true);
+      },
+    );
+  });
+
   describe("execute - replaceAll", () => {
     beforeEach(() => {
       setupMockFs();
