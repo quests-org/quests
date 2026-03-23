@@ -190,6 +190,9 @@ describe("executeToolCallMachine", () => {
           },
           "output": {
             "command": "pnpm install",
+            "commands": [
+              "pnpm",
+            ],
             "exitCode": 0,
             "stderr": "",
             "stdout": "mocked all",
@@ -239,6 +242,9 @@ describe("executeToolCallMachine", () => {
           },
           "output": {
             "command": "pnpm throw-error",
+            "commands": [
+              "pnpm",
+            ],
             "exitCode": 1,
             "stderr": "pnpm: Shell command failed
         ",
@@ -463,6 +469,9 @@ describe("executeToolCallMachine", () => {
           },
           "output": {
             "command": "pnpm dev",
+            "commands": [
+              "pnpm",
+            ],
             "exitCode": 1,
             "stderr": "Quests already starts and runs the apps for you. You don't need to run 'pnpm dev'.",
             "stdout": "",
@@ -492,6 +501,9 @@ describe("executeToolCallMachine", () => {
           },
           "output": {
             "command": "pnpm start",
+            "commands": [
+              "pnpm",
+            ],
             "exitCode": 1,
             "stderr": "Quests already starts and runs the apps for you. You don't need to run 'pnpm start'.",
             "stdout": "",
@@ -521,6 +533,9 @@ describe("executeToolCallMachine", () => {
           },
           "output": {
             "command": "pnpm run dev",
+            "commands": [
+              "pnpm",
+            ],
             "exitCode": 1,
             "stderr": "Quests already starts and runs the apps for you. You don't need to run 'pnpm run dev'.",
             "stdout": "",
@@ -550,6 +565,9 @@ describe("executeToolCallMachine", () => {
           },
           "output": {
             "command": "pnpm run start",
+            "commands": [
+              "pnpm",
+            ],
             "exitCode": 1,
             "stderr": "Quests already starts and runs the apps for you. You don't need to run 'pnpm run start'.",
             "stdout": "",

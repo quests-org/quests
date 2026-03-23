@@ -111,6 +111,11 @@ export function ShellCommandCard({
         <span className="min-w-0 truncate text-foreground/80">
           {reasoning ?? command}
         </span>
+        {hasOutput && part.output.commands.length > 0 && (
+          <span className="shrink-0 text-xs text-muted-foreground/60">
+            {part.output.commands.join(", ")}
+          </span>
+        )}
       </ToolCardHeader>
 
       {showContent && (

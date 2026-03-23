@@ -20,6 +20,7 @@ export const BashTool = setupTool({
   name: "bash",
   outputSchema: z.object({
     command: z.string(),
+    commands: z.array(z.string()),
     exitCode: z.number(),
     stderr: z.string(),
     stdout: z.string(),
@@ -29,10 +30,13 @@ export const BashTool = setupTool({
 		Run bash commands in the project directory. Full bash syntax is supported including
 		pipes (|), redirections (>, >>), chaining (&&, ||, ;), variables, loops, and scripts.
 
+		IMPORTANT: This is a sandboxed environment. node, npm, python, and other runtimes are
+		NOT available. Do NOT attempt to run them. Only use the commands listed below.
+
 		Built-in commands: cat, head, tail, wc, sort, uniq, diff, find, sed, awk, tr, cut,
 		xargs, tee, cp, mv, rm, mkdir, ls, chmod, and many more standard Unix utilities.
 
-		Custom commands: ${PNPM_COMMAND.name} (package manager), ${TS_COMMAND.name} (run TypeScript),
+		Custom commands: ${PNPM_COMMAND.name} (package manager), ${TS_COMMAND.name}/${TS_COMMAND.alias} (run TypeScript),
 		${TSC_COMMAND.name} (type check).
 
 		Examples:
@@ -46,8 +50,13 @@ export const BashTool = setupTool({
     const bash = createBashEnv(appConfig);
     const result = await bash.exec(input.command, { signal });
 
+    const commands = Array.isArray(result.metadata?.commands)
+      ? result.metadata.commands
+      : [];
+
     return ok({
       command: input.command,
+      commands,
       exitCode: result.exitCode,
       stderr: result.stderr,
       stdout: result.stdout,
