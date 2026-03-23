@@ -133,7 +133,7 @@ function HighlightedContent({ content }: { content: string }) {
     <div className="max-h-[75vh] min-w-0 overflow-auto">
       {highlightedHtml ? (
         <div
-          className="min-w-0 rounded-md bg-muted p-4 text-xs break-all whitespace-pre-wrap"
+          className="min-w-0 rounded-md bg-muted p-4 text-xs [&_code]:break-all [&_code]:!whitespace-pre-wrap [&_pre]:break-all [&_pre]:!whitespace-pre-wrap"
           dangerouslySetInnerHTML={{ __html: highlightedHtml.join("\n") }}
         />
       ) : (
