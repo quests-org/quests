@@ -15,7 +15,7 @@ import { listFiles } from "../lib/list-files";
 import { pathExists } from "../lib/path-exists";
 import {
   getSimilarPathSuggestions,
-  resolveAgentPath,
+  resolveExistingFilePath,
 } from "../lib/resolve-agent-path";
 import { BaseInputSchema } from "./base";
 import { setupTool } from "./create-tool";
@@ -203,12 +203,11 @@ export const ReadFile = setupTool({
     `;
   },
   execute: async ({ agentName, appConfig, input, projectState, signal }) => {
-    const pathResult = resolveAgentPath({
+    const pathResult = resolveExistingFilePath({
       agentName,
       appDir: appConfig.appDir,
       attachedFolders: projectState.attachedFolders,
       inputPath: input.filePath,
-      isRequired: true,
     });
 
     if (pathResult.isErr()) {

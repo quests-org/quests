@@ -14,6 +14,7 @@ import { checkReminder } from "../lib/check-reminder";
 import { ensureRelativePath } from "../lib/ensure-relative-path";
 import { executeError } from "../lib/execute-error";
 import { pathExists } from "../lib/path-exists";
+import { applyUnicodeFallbacks } from "../lib/resolve-agent-path";
 import { writeFileWithDir } from "../lib/write-file-with-dir";
 import { RelativePathSchema } from "../schemas/paths";
 import { BaseInputSchema, TOOL_EXPLANATION_PARAM_NAME } from "./base";
@@ -737,7 +738,11 @@ export const EditFile = setupTool({
     }
     const fixedPath = fixedPathResult.value;
 
-    const absolutePath = absolutePathJoin(appConfig.appDir, fixedPath);
+    const resolvedPath = absolutePathJoin(appConfig.appDir, fixedPath);
+    const absolutePath =
+      input.oldString === ""
+        ? resolvedPath
+        : applyUnicodeFallbacks(resolvedPath);
     const exists = await pathExists(absolutePath);
 
     let contentOld = "";

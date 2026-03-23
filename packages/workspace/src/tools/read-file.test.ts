@@ -1,5 +1,7 @@
+import fs from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { FolderAttachment } from "../schemas/folder-attachment";
 import { AppDirSchema } from "../schemas/paths";
@@ -215,6 +217,47 @@ describe("ReadFile", () => {
 });
 
 /* eslint-enable unicorn/no-await-expression-member */
+
+describe("ReadFile Unicode path fallbacks", () => {
+  let tmpDir: string;
+  let tmpAppConfig: ReturnType<typeof createMockAppConfig> & {
+    appDir: ReturnType<typeof AppDirSchema.parse>;
+  };
+
+  beforeEach(async () => {
+    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "quests-read-unicode-"));
+    tmpAppConfig = {
+      ...createMockAppConfig(ProjectSubdomainSchema.parse("test"), { model }),
+      appDir: AppDirSchema.parse(tmpDir),
+    };
+  });
+
+  afterEach(async () => {
+    await fs.rm(tmpDir, { force: true, recursive: true });
+  });
+
+  it("reads a macOS screenshot with U+202F narrow no-break space before AM/PM", async () => {
+    const diskName = `Screenshot 2025-01-01 at 9.00\u202FAM.png`;
+    const inputName = `Screenshot 2025-01-01 at 9.00 AM.png`;
+    await fs.writeFile(path.join(tmpDir, diskName), "fake-png-data");
+
+    const value = (
+      await runTool(TOOLS.ReadFile, {
+        agentName: "main" as const,
+        appConfig: tmpAppConfig,
+        input: { explanation: "read", filePath: `./${inputName}` },
+        model,
+        projectState: {},
+        signal: AbortSignal.timeout(10_000),
+        spawnAgent: vi.fn(),
+      })
+    )
+      // eslint-disable-next-line unicorn/no-await-expression-member
+      ._unsafeUnwrap();
+
+    expect(value.state).not.toBe("does-not-exist");
+  });
+});
 
 describe("toModelOutput", () => {
   it("should return error text when file does not exist with suggestions", () => {
