@@ -51,9 +51,10 @@ export const BashTool = setupTool({
     let displayOutput = combined;
 
     if (displayOutput.length > MAX_OUTPUT_LENGTH) {
+      const truncated = displayOutput.length - MAX_OUTPUT_LENGTH;
       displayOutput =
-        displayOutput.slice(0, MAX_OUTPUT_LENGTH) +
-        `\n... (truncated ${displayOutput.length - MAX_OUTPUT_LENGTH} characters)`;
+        `... (truncated ${truncated} characters)\n` +
+        displayOutput.slice(displayOutput.length - MAX_OUTPUT_LENGTH);
     }
 
     if (!hasErrors && !displayOutput) {
@@ -66,6 +67,7 @@ export const BashTool = setupTool({
     }
 
     if (
+      output.commands.includes("pnpm") &&
       displayOutput.includes("Ignored build scripts:") &&
       displayOutput.includes("Warning")
     ) {

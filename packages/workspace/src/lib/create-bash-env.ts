@@ -139,6 +139,8 @@ export function createBashDescription() {
     "IMPORTANT: This is a sandboxed environment. node, npm, python, and other runtimes are",
     "NOT available. Do NOT attempt to run them.",
     "",
+    "TIP: Before using an unfamiliar command, run `<command> --help` to check its argument syntax.",
+    "",
     `Available commands: ${namedOnly.join(", ")}`,
     "",
     "Specialized commands:",
