@@ -1,6 +1,7 @@
 import path from "node:path";
 
 import { APP_FOLDER_NAMES } from "../constants";
+import { type RelativePath } from "../schemas/paths";
 import { TOOL_NAMES } from "../tools/name";
 import { TSC_COMMAND } from "./shell-commands/tsc";
 
@@ -17,7 +18,7 @@ const SUPPORTED_EXTENSIONS = new Set([
   ".tsx",
 ]);
 
-export function checkReminder(filePath: string): null | string {
+export function checkReminder(filePath: RelativePath): null | string {
   if (supportsDiagnostics(filePath)) {
     const tscCommand = buildTscCommand(filePath);
     return `Run \`${tscCommand}\` using the \`${TOOL_NAMES.bash}\` tool to check for type errors before finishing.`;
@@ -32,15 +33,15 @@ export function checkReminder(filePath: string): null | string {
   return null;
 }
 
-function buildTscCommand(filePath: string): string {
+function buildTscCommand(filePath: RelativePath): string {
   const normalized = filePath.replace(/^\.\//, "");
   const parts = normalized.split("/");
 
-  // If the file is inside a skill folder (skills/<name>/...), use that skill's tsconfig
+  // If the file is inside a skill folder (skills/<name>/...), cd into it first
   if (parts[0] === APP_FOLDER_NAMES.skills && parts.length >= 3) {
     const skillName = parts[1];
     if (skillName) {
-      return `${TSC_COMMAND.name} --noEmit --project ${parts[0]}/${skillName}/tsconfig.json`;
+      return `cd ${parts[0]}/${skillName} && ${TSC_COMMAND.name} --noEmit`;
     }
   }
 

@@ -8,11 +8,9 @@ import { executeError } from "../execute-error";
 import { filterShellOutput } from "../filter-shell-output";
 import { type FileOperationResult } from "./types";
 
-const COMMAND_NAME = "pnpm";
 export const PNPM_COMMAND = {
   description: "CLI tool for managing JavaScript packages.",
-  examples: [`${COMMAND_NAME} add <package-name>`],
-  name: COMMAND_NAME,
+  name: "pnpm",
 } as const;
 
 export async function pnpmCommand(

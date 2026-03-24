@@ -11,7 +11,6 @@ import { executeError } from "../execute-error";
 import { filterShellOutput } from "../filter-shell-output";
 import { type FileOperationResult } from "./types";
 
-const COMMAND_NAME = "ts";
 export const TS_COMMAND = {
   // "tsx" is a well-known CLI tool for running TypeScript code, so if the agent
   // attempts to use it we silently remap it to this command rather than failing.
@@ -19,8 +18,7 @@ export const TS_COMMAND = {
   alias: "tsx",
   description:
     "Execute a TypeScript or JavaScript file, powered by Jiti. Does not support -e/--eval; always write code to a file first.",
-  examples: [`${COMMAND_NAME} scripts/setup.ts`],
-  name: COMMAND_NAME,
+  name: "ts",
 } as const;
 
 export async function tsCommand(

@@ -8,15 +8,10 @@ import { filterShellOutput } from "../filter-shell-output";
 import { runNodeModulesBin } from "../run-node-modules-bin";
 import { type FileOperationResult } from "./types";
 
-const COMMAND_NAME = "tsc";
 export const TSC_COMMAND = {
   description:
     "TypeScript compiler for type-checking files. Do not pass individual file paths -- this bypasses tsconfig.json and skips the project's compiler settings.",
-  examples: [
-    "tsc --noEmit # check the root project",
-    "tsc --noEmit --project skills/[name]/tsconfig.json # check a specific skill",
-  ],
-  name: COMMAND_NAME,
+  name: "tsc",
 } as const;
 
 export async function tscCommand(
