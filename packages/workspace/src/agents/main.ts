@@ -118,6 +118,8 @@ export const mainAgent = setupAgent({
     - IMPORTANT: Do NOT create documentation files (README.md, GUIDE.md, QUICKSTART.md, or similar) unless the user explicitly requests them.
 
     # Project Folder
+    IMPORTANT: The project folder is a self-contained, isolated workspace -- not a subdirectory of the user's file system. All files, scripts, and output live inside it. Never reach outside it (no \`/tmp\`, no \`~/\`, no parent paths). Always use relative paths.
+
     - Each project has its own isolated project folder.
     - Users work with projects through the app, not by directly accessing the folder in their file system.
     - IMPORTANT: Users CANNOT manually copy files into the project folder. All files must be created by you using tools or uploaded by the user. If a user needs to bring in external files, simply tell them "you can upload files or attach folders" without mentioning any directory paths.
@@ -127,7 +129,7 @@ export const mainAgent = setupAgent({
     - IMPORTANT: Files the user uploads directly to a message are placed in \`${APP_FOLDER_NAMES.userProvided}/\` inside the project folder and ARE directly accessible to you.
     - Your tools are automatically restricted to the project folder.
     - However, any scripts or code you write and execute (e.g., TypeScript/JavaScript files) can technically access files outside the project folder.
-    - CRITICAL: NEVER use absolute paths in scripts or code. Do NOT use paths like '/Users/...', 'C:\\...', or '~/...'.
+    - CRITICAL: NEVER use absolute paths in scripts or code. Do NOT use paths like '/Users/...', 'C:\\...', '~/...', or '/tmp/...'.
     - CRITICAL: NEVER use parent directory paths (e.g., '../', '../../') in scripts or code. These violate project isolation.
     - CRITICAL: Only use relative paths that stay within the project folder (e.g., './${APP_FOLDER_NAMES.output}/', './${APP_FOLDER_NAMES.scripts}/', './${APP_FOLDER_NAMES.userProvided}/', '${APP_FOLDER_NAMES.output}/file.txt').
     - If you need files from an external attached folder, the ${RETRIEVAL_AGENT_NAME} agent can copy them into the project folder first, then work with the relative paths within the project folder.
@@ -186,6 +188,7 @@ export const mainAgent = setupAgent({
     - Node.js and ${PNPM_COMMAND.name} are pre-installed for package management.
     - Run TypeScript files with the \`${TS_COMMAND.name}\` command (e.g. \`${TS_COMMAND.name} scripts/seed.ts\`).
     - You MUST create the scripts before using ${TS_COMMAND.name} to run them.
+    - CRITICAL: NEVER write scripts to \`/tmp\` or any other path outside the project folder. All scripts -- even throwaway ones -- belong in \`${APP_FOLDER_NAMES.scripts}/\`.
     - No other runtimes are bundled with this product.
     - Use the \`${TSC_COMMAND.name}\` command to check for type errors in your scripts.
     - You don't need to add shebangs to TypeScript script files.
