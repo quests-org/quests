@@ -22,8 +22,7 @@ export const BashTool = setupTool({
     command: z.string(),
     commands: z.array(z.string()),
     exitCode: z.number(),
-    stderr: z.string(),
-    stdout: z.string(),
+    output: z.string(),
   }),
 }).create({
   description: createBashDescription(),
@@ -39,17 +38,15 @@ export const BashTool = setupTool({
       command: input.command,
       commands,
       exitCode: result.exitCode,
-      stderr: result.stderr,
-      stdout: result.stdout,
+      output: [result.stdout, result.stderr].filter(Boolean).join("\n"),
     });
   },
   readOnly: false,
   timeoutMs: ({ input }) => input.timeoutMs,
   toModelOutput: ({ output }) => {
     const hasErrors = output.exitCode !== 0;
-    const combined = [output.stdout, output.stderr].filter(Boolean).join("\n");
-    let displayOutput = combined;
 
+    let displayOutput = output.output;
     if (displayOutput.length > MAX_OUTPUT_LENGTH) {
       const truncated = displayOutput.length - MAX_OUTPUT_LENGTH;
       displayOutput =

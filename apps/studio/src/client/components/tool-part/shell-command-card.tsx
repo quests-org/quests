@@ -47,11 +47,8 @@ export function ShellCommandCard({
   const isError = part.state === "output-error";
 
   if (hasOutput) {
-    const displayOutput = [part.output.stdout, part.output.stderr]
-      .filter(Boolean)
-      .join("\n");
-    if (displayOutput) {
-      parts.push(displayOutput);
+    if (part.output.output) {
+      parts.push(part.output.output);
     }
   } else if (isError) {
     parts.push(`Error: ${part.errorText || "Command failed"}`);
