@@ -24,14 +24,26 @@ const INPUT_PARAMS = {
   filePath: "filePath",
 } as const;
 
-function scriptsDirectoryReminder(filePath: string): string | undefined {
-  // Scripts will often use new dependencies, so we remind the agent to add them.
-  if (filePath.startsWith(`${APP_FOLDER_NAMES.scripts}/`)) {
-    return dedent`
-      Before running this script, add any new dependencies using the ${BashTool.name} tool with the ${PNPM_COMMAND.name} command.
-    `;
+function scriptsDirectoryReminder(
+  filePath: string,
+  content: string,
+): string | undefined {
+  if (!filePath.startsWith(`${APP_FOLDER_NAMES.scripts}/`)) {
+    return undefined;
   }
-  return undefined;
+
+  const parts: string[] = [
+    // Scripts will often use new dependencies, so we remind the agent to add them.
+    `Before running this script, add any new dependencies using the ${BashTool.name} tool with the ${PNPM_COMMAND.name} command.`,
+  ];
+
+  if (content.includes("import.meta.url")) {
+    parts.push(
+      `If checking whether this script is the main module, use \`pathToFileURL(process.argv[1]).href\` from \`node:url\` instead of \`\`file://\${process.argv[1]}\`\` -- the latter breaks on paths with spaces.`,
+    );
+  }
+
+  return parts.join("\n");
 }
 
 export const WriteFile = setupTool({
@@ -100,7 +112,7 @@ export const WriteFile = setupTool({
       value: sift([
         `${baseContent} ${output.filePath}`,
         checkReminder(output.filePath),
-        scriptsDirectoryReminder(output.filePath),
+        scriptsDirectoryReminder(output.filePath, output.content),
       ]).join("\n\n"),
     };
   },
