@@ -9,6 +9,7 @@ import { type AbsolutePath } from "../../schemas/paths";
 import { execaNodeForApp } from "../execa-node-for-app";
 import { executeError } from "../execute-error";
 import { filterShellOutput } from "../filter-shell-output";
+import { fixRelativePath } from "../fix-relative-path";
 import { type FileOperationResult } from "./types";
 
 export const TS_COMMAND = {
@@ -60,6 +61,8 @@ export async function tsCommand(
     return executeError(`${TS_COMMAND.name} requires a file path argument.`);
   }
 
+  const fixedFilePath = fixRelativePath(filePath) ?? filePath;
+
   // Everything after the file path token in the original args is forwarded to
   // the script as its own argv (flags like --file, --output, extra positionals).
   const filePathIndex = args.indexOf(filePath);
@@ -75,7 +78,7 @@ export async function tsCommand(
   const execResult = await execaNodeForApp(
     appConfig,
     appConfig.workspaceConfig.pnpmBinPath,
-    ["dlx", "jiti", filePath, ...scriptArgs],
+    ["dlx", "jiti", fixedFilePath, ...scriptArgs],
     // Don't reject so we can filter the output
     { all: true, cancelSignal: signal, env: providerEnv, reject: false },
     cwd,
