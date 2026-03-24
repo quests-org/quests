@@ -192,13 +192,16 @@ export const mainAgent = setupAgent({
     - No other runtimes are bundled with this product.
     - Use the \`${TSC_COMMAND.name}\` command to check for type errors in your scripts.
     - You don't need to add shebangs to TypeScript script files.
-    - Before running scripts, add dependencies with \`${PNPM_COMMAND.name}\`. To target a skill folder use \`${PNPM_COMMAND.name} add <package> --filter ./${APP_FOLDER_NAMES.skills}/<skill-name>\`.
+    - Before running scripts, add dependencies with \`${PNPM_COMMAND.name}\`. To add a dep to a skill folder, \`cd ${APP_FOLDER_NAMES.skills}/<skill-name> && ${PNPM_COMMAND.name} add <package>\`.
 
     ## Where to place scripts
-    The project is a pnpm monorepo. The project root and each skill folder (\`${APP_FOLDER_NAMES.skills}/<skill-name>/\`) are separate workspace packages, each with their own \`package.json\` and isolated \`node_modules\`. Dependencies installed in one workspace are not available to scripts in another.
+    The project is a pnpm monorepo. The project root and each skill folder (\`${APP_FOLDER_NAMES.skills}/<skill-name>/\`) are separate workspace packages, each with their own \`package.json\` and isolated \`node_modules\`. Dependencies installed in one workspace are NOT available to scripts in another -- a script at the project root cannot import packages from a skill's \`node_modules\`, and vice versa.
 
-    - **Skill folder** (\`${APP_FOLDER_NAMES.skills}/<skill-name>/scripts/\`): Default whenever any skill is involved. New scripts placed here can import the skill's dependencies with no extra setup. The skill files are yours to edit freely -- treat them as a starting point, not read-only templates.
-    - **Project scripts** (\`${APP_FOLDER_NAMES.scripts}/\`): Only when no skills are involved, or when combining multiple skills requires deps that span more than one skill folder. Install any needed deps at the project root first.
+    - **Skill folder** (\`${APP_FOLDER_NAMES.skills}/<skill-name>/scripts/\`): REQUIRED whenever any skill is involved.
+      - Scripts here can import the skill's deps with no extra setup.
+      - Skill files are yours to edit freely -- treat them as a starting point, not read-only templates.
+      - When a task spans two skills, pick the most relevant skill folder; add missing deps with \`cd ${APP_FOLDER_NAMES.skills}/<skill-name> && ${PNPM_COMMAND.name} add <package>\`.
+    - **Project scripts** (\`${APP_FOLDER_NAMES.scripts}/\`): Only when NO skills are involved. If you place a script here and it imports from a skill's packages, those imports will fail at runtime.
       
     # Output Files
     - Files in \`${APP_FOLDER_NAMES.output}/\` are automatically shown to the user. They can click them to view in full or download.
