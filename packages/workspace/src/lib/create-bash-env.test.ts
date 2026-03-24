@@ -11,6 +11,8 @@ describe("createBashDescription", () => {
       IMPORTANT: This is a sandboxed environment. node, npm, python, and other runtimes are
       NOT available. Do NOT attempt to run them.
 
+      IMPORTANT: Each call starts fresh from the project root -- \`cd\` does not persist between calls.
+
       TIP: Before using an unfamiliar command, run \`<command> --help\` to check its argument syntax.
 
       Available commands: awk, cat, column, comm, cut, diff, expand, find, fold, grep, head, join, nl, od, paste, printf, rev, sed, sort, split, strings, tail, tee, tr, unexpand, uniq, wc, xargs
