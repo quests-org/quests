@@ -1,7 +1,8 @@
-// Adapted from
-// https://github.com/sst/opencode/blob/dev/packages/opencode/src/tool/write.ts
 import ms from "ms";
 import { err, ok } from "neverthrow";
+// Adapted from
+// https://github.com/sst/opencode/blob/dev/packages/opencode/src/tool/write.ts
+import path from "node:path";
 import { dedent, sift } from "radashi";
 import { z } from "zod";
 
@@ -24,26 +25,35 @@ const INPUT_PARAMS = {
   filePath: "filePath",
 } as const;
 
-function scriptsDirectoryReminder(
+function scriptsDirectoryReminder(filePath: string): string | undefined {
+  // Scripts will often use new dependencies, so we remind the agent to add them.
+  if (!filePath.startsWith(`./${APP_FOLDER_NAMES.scripts}/`)) {
+    return undefined;
+  }
+  return `Before running this script, add any new dependencies using the ${BashTool.name} tool with the ${PNPM_COMMAND.name} command.`;
+}
+
+const SCRIPT_EXTENSIONS = new Set([
+  ".cjs",
+  ".cts",
+  ".js",
+  ".mjs",
+  ".mts",
+  ".ts",
+]);
+
+function importMetaUrlReminder(
   filePath: string,
   content: string,
 ): string | undefined {
-  if (!filePath.startsWith(`${APP_FOLDER_NAMES.scripts}/`)) {
+  const ext = path.extname(filePath).toLowerCase();
+  if (!SCRIPT_EXTENSIONS.has(ext)) {
     return undefined;
   }
-
-  const parts: string[] = [
-    // Scripts will often use new dependencies, so we remind the agent to add them.
-    `Before running this script, add any new dependencies using the ${BashTool.name} tool with the ${PNPM_COMMAND.name} command.`,
-  ];
-
-  if (content.includes("import.meta.url")) {
-    parts.push(
-      `If checking whether this script is the main module, use \`pathToFileURL(process.argv[1]).href\` from \`node:url\` instead of \`\`file://\${process.argv[1]}\`\` -- the latter breaks on paths with spaces.`,
-    );
+  if (!content.includes("import.meta.url")) {
+    return undefined;
   }
-
-  return parts.join("\n");
+  return `If checking whether this script is the main module, use \`pathToFileURL(process.argv[1]).href\` from \`node:url\` instead of \`\`file://\${process.argv[1]}\`\` -- the latter breaks on paths with spaces.`;
 }
 
 export const WriteFile = setupTool({
@@ -112,7 +122,8 @@ export const WriteFile = setupTool({
       value: sift([
         `${baseContent} ${output.filePath}`,
         checkReminder(output.filePath),
-        scriptsDirectoryReminder(output.filePath, output.content),
+        scriptsDirectoryReminder(output.filePath),
+        importMetaUrlReminder(output.filePath, output.content),
       ]).join("\n\n"),
     };
   },
