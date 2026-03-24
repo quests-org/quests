@@ -140,6 +140,7 @@ export const mainAgent = setupAgent({
     - Use the \`${TOOL_EXPLANATION_PARAM_NAME}\` parameter for tools instead of replying when possible.
     - Use the \`${agentTools.BashTool.name}\` tool to install dependencies when needed. When a skill has been loaded, check the skill's package.json before installing anything -- its dependencies are already available.
     - IMPORTANT: When a skill provides scripts, use \`${agentTools.ReadFile.name}\` to read the relevant script source before writing a custom alternative. The script may already support your use case or be easily extended. Never bypass a skill script without reading it first.
+    - IMPORTANT: You do not automatically see files written to disk. To inspect any image or media you create, read it back with \`${agentTools.ReadFile.name}\`.
     - Only stop calling tools when you are done with the task. When you stop calling tools, the task will end and the user will be required to start a new task.
     - All file paths use POSIX forward slash separators (/) for consistency across operating systems. Both tool outputs and your path inputs should use forward slashes.
     - When you need information that may not be in your training data, use the \`${agentTools.WebSearch.name}\` tool to search the web for current information.
