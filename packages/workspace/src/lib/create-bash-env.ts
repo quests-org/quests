@@ -136,7 +136,7 @@ export function createBashDescription() {
   return [
     "Execute bash commands in the project directory.",
     "",
-    "IMPORTANT: This is a sandboxed environment. node, npm, python, and other runtimes are",
+    "IMPORTANT: This is a sandboxed environment. npm, python, and other runtimes are",
     "NOT available. Do NOT attempt to run them.",
     "",
     "IMPORTANT: Each call starts fresh from the project root -- `cd` does not persist between calls.",

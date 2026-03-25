@@ -1,11 +1,14 @@
 import { envForProviderConfigs } from "@quests/ai-gateway";
 import { ok } from "neverthrow";
+import { mkdir, writeFile } from "node:fs/promises";
 import { parseArgs } from "node:util";
 
 import type { AppConfig } from "../app-config/types";
 
+import { APP_FOLDER_NAMES } from "../../constants";
 import { getWorkspaceServerURL } from "../../logic/server/url";
 import { type AbsolutePath } from "../../schemas/paths";
+import { absolutePathJoin } from "../absolute-path-join";
 import { execaNodeForApp } from "../execa-node-for-app";
 import { executeError } from "../execute-error";
 import { filterShellOutput } from "../filter-shell-output";
@@ -18,7 +21,7 @@ export const TS_COMMAND = {
   // It is intentionally omitted from the tool description and visible command list.
   alias: "tsx",
   description:
-    "Execute a TypeScript or JavaScript file, powered by Jiti. Does not support -e/--eval; always write code to a file first.",
+    "Execute a TypeScript or JavaScript file, powered by Jiti. Supports -e/--eval for inline code evaluation.",
   name: "ts",
 } as const;
 
@@ -34,7 +37,7 @@ export async function tsCommand(
     );
   }
 
-  const { positionals, values } = parseArgs({
+  const { positionals, tokens, values } = parseArgs({
     allowPositionals: true,
     args,
     options: {
@@ -42,12 +45,51 @@ export async function tsCommand(
       eval: { type: "string" },
     },
     strict: false,
+    tokens: true,
   });
 
-  if (values.e !== undefined || values.eval !== undefined) {
-    return executeError(
-      `${TS_COMMAND.name} does not support the -e/--eval flag for evaluating code strings directly. Instead, write your code to a .ts or .js file and execute it with ${TS_COMMAND.name}.`,
+  const unknownOptions = tokens
+    .filter((t) => t.kind === "option" && !(t.name in values))
+    .map((t) => `--${(t as { kind: "option"; name: string }).name}`);
+  if (unknownOptions.length > 0) {
+    appConfig.workspaceConfig.captureException(
+      new Error(
+        `[ts] Unrecognized options ignored: ${unknownOptions.join(", ")}`,
+      ),
     );
+  }
+
+  const evalCode =
+    typeof values.e === "string"
+      ? values.e
+      : typeof values.eval === "string"
+        ? values.eval
+        : undefined;
+
+  if (evalCode !== undefined) {
+    const tmpDir = absolutePathJoin(appConfig.appDir, APP_FOLDER_NAMES.tmp);
+    await mkdir(tmpDir, { recursive: true });
+    const tmpFile = absolutePathJoin(tmpDir, `ts-eval-${Date.now()}.ts`);
+    await writeFile(tmpFile, evalCode, "utf8");
+
+    const providerEnv = envForProviderConfigs({
+      configs: appConfig.workspaceConfig.getAIProviderConfigs(),
+      workspaceServerURL: getWorkspaceServerURL(),
+    });
+
+    const execResult = await execaNodeForApp(
+      appConfig,
+      appConfig.workspaceConfig.pnpmBinPath,
+      ["dlx", "jiti", tmpFile],
+      { all: true, cancelSignal: signal, env: providerEnv, reject: false },
+      cwd,
+    );
+    const combined = filterShellOutput(execResult.all, appConfig.appDir);
+    return ok({
+      combined,
+      command: `${TS_COMMAND.name} -e <code>`,
+      exitCode: execResult.exitCode ?? 1,
+    });
   }
 
   if (positionals.length === 0) {
