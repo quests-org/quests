@@ -19,8 +19,6 @@ import {
 import { type AbsolutePath } from "../schemas/paths";
 import { BaseInputSchema } from "./base";
 import { setupTool } from "./create-tool";
-import { ReadFile } from "./read-file";
-
 const TAGS = {
   availableSkills: "available_skills",
   description: "description",
@@ -64,7 +62,16 @@ export const LoadSkill = setupTool({
         ? `<${TAGS.availableSkills} />`
         : dedent`
             <${TAGS.availableSkills}>
-            ${skills.map((s) => `  <${TAGS.skill}>\n    <${TAGS.name}>${s.name}</${TAGS.name}>\n    <${TAGS.description}>${s.description}</${TAGS.description}>\n  </${TAGS.skill}>`).join("\n")}
+            ${skills
+              .map((s) =>
+                [
+                  `  <${TAGS.skill}>`,
+                  `    <${TAGS.name}>${s.name}</${TAGS.name}>`,
+                  `    <${TAGS.description}>${s.description}</${TAGS.description}>`,
+                  `  </${TAGS.skill}>`,
+                ].join("\n"),
+              )
+              .join("\n")}
             </${TAGS.availableSkills}>
           `;
 
@@ -134,22 +141,53 @@ export const LoadSkill = setupTool({
         const { combined, exitCode } = installResult.value;
         installSection =
           exitCode === 0
-            ? `\n\n\`${PNPM_COMMAND.name} install\` was run. This is a monorepo -- skill dependencies are scoped to this skill's folder and are ready to use. Do not run \`${PNPM_COMMAND.name} add\` for packages this skill already provides.`
-            : `\n\n\`${PNPM_COMMAND.name} install\` was run at the project root but exited with code ${exitCode}. The skill's dependencies may not be fully installed. Raw output:\n\`\`\`\n${combined}\n\`\`\``;
+            ? [
+                `\`${PNPM_COMMAND.name} install\` was run at the project root.`,
+                `This is a monorepo -- skill dependencies are scoped to this skill's folder and are ready to use.`,
+                `Do not run \`${PNPM_COMMAND.name} add\` for packages this skill already provides.`,
+              ].join(" ")
+            : [
+                `\`${PNPM_COMMAND.name} install\` was run at the project root but exited with code ${exitCode}.`,
+                `The skill's dependencies may not be fully installed.`,
+                `Raw output:\n\`\`\`\n${combined}\n\`\`\``,
+              ].join(" ");
+        installSection = `\n\n${installSection}`;
       } else {
-        installSection = `\n\n\`${PNPM_COMMAND.name} install\` could not be run: ${installResult.error.message}`;
+        installSection =
+          `\n\n\`${PNPM_COMMAND.name} install\` could not be run: ` +
+          installResult.error.message;
       }
     }
 
     const truncationNote = truncated
       ? `\nNote: file list truncated at ${FILE_LIST_LIMIT} entries.`
       : "";
+
+    const fileListXml = [
+      `<${TAGS.skillFiles}>`,
+      ...copiedFiles.map(
+        (f) => `<${TAGS.file}>${relativeSkillRoot}/${f}</${TAGS.file}>`,
+      ),
+      `</${TAGS.skillFiles}>`,
+    ].join("\n");
+
+    const fileSectionText = [
+      `The skill files below are copied into your project and are yours to edit.`,
+      `Before writing anything new, read the relevant script(s) and run them with \`${TS_COMMAND.name}\` if they fit.`,
+      `Only write a custom script if the existing ones cannot handle the task even with modification.`,
+    ].join(" ");
+
     const fileSection =
       copiedFiles.length > 0
-        ? `\n\nThe skill files below are copied into your project and are yours to edit. Before writing anything new, read the relevant script(s) with ${ReadFile.name} and run them with \`${TS_COMMAND.name}\` if they fit. Only write a custom script if the existing ones cannot handle the task even with modification.\n\n<${TAGS.skillFiles}>\n${copiedFiles.map((f) => `<${TAGS.file}>${relativeSkillRoot}/${f}</${TAGS.file}>`).join("\n")}\n</${TAGS.skillFiles}>${truncationNote}`
+        ? `\n\n${fileSectionText}\n\n${fileListXml}${truncationNote}`
         : "";
 
-    const content = `<${TAGS.skillContent} name="${skill.name}">\n${skill.content}${fileSection}${installSection}\n</${TAGS.skillContent}>`;
+    const content =
+      `<${TAGS.skillContent} name="${skill.name}">\n` +
+      skill.content +
+      fileSection +
+      installSection +
+      `\n</${TAGS.skillContent}>`;
 
     return ok({ content, name: skill.name });
   },
