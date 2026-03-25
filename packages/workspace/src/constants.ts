@@ -10,6 +10,7 @@ export const APP_FOLDER_NAMES = {
   scripts: "scripts",
   skills: "skills",
   src: "src",
+  tmp: "tmp",
   userProvided: "user-provided",
 } as const;
 export const SESSIONS_DB_FILE_NAME = "sessions.db";

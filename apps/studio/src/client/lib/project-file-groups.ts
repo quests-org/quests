@@ -41,7 +41,7 @@ const ROOT_SOURCE_EXTENSIONS = [
 ];
 
 export function shouldFilterProjectFile(filePath: string): boolean {
-  if (filePath.startsWith("./patches/")) {
+  if (filePath.startsWith("./patches/") || filePath.startsWith("./tmp/")) {
     return true;
   }
   const isRootFile = !filePath.slice(2).includes("/");

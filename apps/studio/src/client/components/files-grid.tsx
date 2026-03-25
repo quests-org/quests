@@ -22,8 +22,29 @@ interface FilesGridProps {
   prioritizeUserFiles?: boolean;
 }
 
+type SupportingSectionKey =
+  | "agentRetrieved"
+  | "scripts"
+  | "skills"
+  | "temporary"
+  | "uploaded";
+
 const DEFAULT_INITIAL_VISIBLE_COUNT = 6;
 const EMPTY_FOLDERS: SessionMessageDataPart.FolderAttachmentDataPart[] = [];
+const EMPTY_EXPANDED_SECTIONS: Record<SupportingSectionKey, boolean> = {
+  agentRetrieved: false,
+  scripts: false,
+  skills: false,
+  temporary: false,
+  uploaded: false,
+};
+const EXPANDED_SECTIONS: Record<SupportingSectionKey, boolean> = {
+  agentRetrieved: true,
+  scripts: true,
+  skills: true,
+  temporary: true,
+  uploaded: true,
+};
 
 export function FilesGrid({
   alignEnd = false,
@@ -35,23 +56,14 @@ export function FilesGrid({
 }: FilesGridProps) {
   const navigate = useNavigate({ from: "/projects/$subdomain" });
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isScriptsExpanded, setIsScriptsExpanded] = useState(false);
-  const [isSkillsExpanded, setIsSkillsExpanded] = useState(false);
-  const [isUserProvidedExpanded, setIsUserProvidedExpanded] = useState(false);
-  const [isAgentRetrievedExpanded, setIsAgentRetrievedExpanded] =
-    useState(false);
+  const [expandedSections, setExpandedSections] = useState(
+    EMPTY_EXPANDED_SECTIONS,
+  );
 
   const [outputFiles, nonOutputFiles] = fork(files, isOutputFile);
-  const [scriptFiles, nonScriptFiles] = fork(nonOutputFiles, isScriptFile);
-  const [skillFiles, nonSkillFiles] = fork(nonScriptFiles, isSkillFile);
-  const [userProvidedFiles, nonUserProvidedFiles] = fork(
-    nonSkillFiles,
-    isUserProvidedFile,
-  );
-  const [agentRetrievedFiles, regularFiles] = fork(
-    nonUserProvidedFiles,
-    isAgentRetrievedFile,
-  );
+  const [supportingFilesByKey, regularFiles] =
+    splitSupportingFiles(nonOutputFiles);
+  const userProvidedFiles = supportingFilesByKey.uploaded;
 
   const sortedOutputFiles = sortByRichPreview(outputFiles);
   const sortedRegularFiles = sortByRichPreview(regularFiles);
@@ -79,22 +91,43 @@ export function FilesGrid({
   const collapsedUserProvidedFiles = prioritizeUserFiles
     ? []
     : userProvidedFiles;
+  const supportingSections = [
+    {
+      files: supportingFilesByKey.scripts,
+      key: "scripts" as const,
+      title: "Scripts",
+    },
+    {
+      files: supportingFilesByKey.skills,
+      key: "skills" as const,
+      title: "Skills",
+    },
+    {
+      files: supportingFilesByKey.temporary,
+      key: "temporary" as const,
+      title: "Temporary",
+    },
+    {
+      files: collapsedUserProvidedFiles,
+      key: "uploaded" as const,
+      title: "Uploaded",
+    },
+    {
+      files: supportingFilesByKey.agentRetrieved,
+      key: "agentRetrieved" as const,
+      title: "Agent Retrieved",
+    },
+  ];
+  const supportingFileCount = supportingSections.reduce((count, section) => {
+    return count + section.files.length;
+  }, 0);
 
   const hasMoreFiles =
-    mainFiles.length > initialVisibleCount ||
-    scriptFiles.length > 0 ||
-    skillFiles.length > 0 ||
-    collapsedUserProvidedFiles.length > 0 ||
-    agentRetrievedFiles.length > 0;
+    mainFiles.length > initialVisibleCount || supportingFileCount > 0;
 
   const expandedFiles = mainFiles.slice(initialVisibleCount);
 
-  const hiddenFileCount =
-    expandedFiles.length +
-    scriptFiles.length +
-    skillFiles.length +
-    collapsedUserProvidedFiles.length +
-    agentRetrievedFiles.length;
+  const hiddenFileCount = expandedFiles.length + supportingFileCount;
 
   const mainFilesToShow = isExpanded ? mainFiles : visibleMainFiles;
 
@@ -177,10 +210,7 @@ export function FilesGrid({
                 outputFiles.length === 0 &&
                 collapsedUserProvidedFiles.length === 0
               ) {
-                setIsScriptsExpanded(true);
-                setIsSkillsExpanded(true);
-                setIsUserProvidedExpanded(true);
-                setIsAgentRetrievedExpanded(true);
+                setExpandedSections(EXPANDED_SECTIONS);
               }
             }}
             size="sm"
@@ -200,67 +230,36 @@ export function FilesGrid({
         </div>
       )}
 
-      {isExpanded && scriptFiles.length > 0 && (
-        <CategorizedFileSection
-          alignEnd={alignEnd}
-          files={scriptFiles}
-          isExpanded={isScriptsExpanded}
-          onFileClick={handleFileClick}
-          onToggle={() => {
-            setIsScriptsExpanded(!isScriptsExpanded);
-          }}
-          title="Scripts"
-        />
-      )}
+      {isExpanded &&
+        supportingSections.map((section) => {
+          if (section.files.length === 0) {
+            return null;
+          }
 
-      {isExpanded && skillFiles.length > 0 && (
-        <CategorizedFileSection
-          alignEnd={alignEnd}
-          files={skillFiles}
-          isExpanded={isSkillsExpanded}
-          onFileClick={handleFileClick}
-          onToggle={() => {
-            setIsSkillsExpanded(!isSkillsExpanded);
-          }}
-          title="Skills"
-        />
-      )}
-
-      {isExpanded && collapsedUserProvidedFiles.length > 0 && (
-        <CategorizedFileSection
-          alignEnd={alignEnd}
-          files={collapsedUserProvidedFiles}
-          isExpanded={isUserProvidedExpanded}
-          onFileClick={handleFileClick}
-          onToggle={() => {
-            setIsUserProvidedExpanded(!isUserProvidedExpanded);
-          }}
-          title="Uploaded"
-        />
-      )}
-
-      {isExpanded && agentRetrievedFiles.length > 0 && (
-        <CategorizedFileSection
-          alignEnd={alignEnd}
-          files={agentRetrievedFiles}
-          isExpanded={isAgentRetrievedExpanded}
-          onFileClick={handleFileClick}
-          onToggle={() => {
-            setIsAgentRetrievedExpanded(!isAgentRetrievedExpanded);
-          }}
-          title="Agent Retrieved"
-        />
-      )}
+          return (
+            <CategorizedFileSection
+              alignEnd={alignEnd}
+              files={section.files}
+              isExpanded={expandedSections[section.key]}
+              key={section.key}
+              onFileClick={handleFileClick}
+              onToggle={() => {
+                setExpandedSections((prev) => ({
+                  ...prev,
+                  [section.key]: !prev[section.key],
+                }));
+              }}
+              title={section.title}
+            />
+          );
+        })}
 
       {isExpanded && (
         <div className={cn("flex", alignEnd ? "justify-end" : "justify-start")}>
           <Button
             onClick={() => {
               setIsExpanded(false);
-              setIsScriptsExpanded(false);
-              setIsSkillsExpanded(false);
-              setIsUserProvidedExpanded(false);
-              setIsAgentRetrievedExpanded(false);
+              setExpandedSections(EMPTY_EXPANDED_SECTIONS);
             }}
             size="sm"
             type="button"
@@ -286,10 +285,7 @@ function CategorizedFileSection({
   alignEnd: boolean;
   files: ProjectFileViewerFile[];
   isExpanded: boolean;
-  onFileClick: (
-    file: ProjectFileViewerFile,
-    galleryFiles: ProjectFileViewerFile[],
-  ) => void;
+  onFileClick: (file: ProjectFileViewerFile) => void;
   onToggle: () => void;
   title: string;
 }) {
@@ -322,7 +318,7 @@ function CategorizedFileSection({
               <FilePreviewListItem
                 file={file}
                 onClick={() => {
-                  onFileClick(file, files);
+                  onFileClick(file);
                 }}
               />
             </div>
@@ -361,6 +357,10 @@ function isSkillFile(file: ProjectFileViewerFile) {
   return file.filePath.startsWith(`${APP_FOLDER_NAMES.skills}/`);
 }
 
+function isTempFile(file: ProjectFileViewerFile) {
+  return file.filePath.startsWith("tmp/");
+}
+
 function isUserProvidedFile(file: ProjectFileViewerFile) {
   return file.filePath.startsWith(`${APP_FOLDER_NAMES.userProvided}/`);
 }
@@ -368,4 +368,37 @@ function isUserProvidedFile(file: ProjectFileViewerFile) {
 function sortByRichPreview(files: ProjectFileViewerFile[]) {
   const [rich, nonRich] = fork(files, hasRichPreview);
   return [...rich, ...nonRich];
+}
+
+function splitSupportingFiles(files: ProjectFileViewerFile[]) {
+  const supportingFilesByKey: Record<
+    SupportingSectionKey,
+    ProjectFileViewerFile[]
+  > = {
+    agentRetrieved: [],
+    scripts: [],
+    skills: [],
+    temporary: [],
+    uploaded: [],
+  };
+
+  let remainingFiles = files;
+  const matchingOrder: {
+    key: SupportingSectionKey;
+    matches: (file: ProjectFileViewerFile) => boolean;
+  }[] = [
+    { key: "scripts", matches: isScriptFile },
+    { key: "skills", matches: isSkillFile },
+    { key: "temporary", matches: isTempFile },
+    { key: "uploaded", matches: isUserProvidedFile },
+    { key: "agentRetrieved", matches: isAgentRetrievedFile },
+  ];
+
+  for (const { key, matches } of matchingOrder) {
+    const [matchedFiles, unmatchedFiles] = fork(remainingFiles, matches);
+    supportingFilesByKey[key] = matchedFiles;
+    remainingFiles = unmatchedFiles;
+  }
+
+  return [supportingFilesByKey, remainingFiles] as const;
 }

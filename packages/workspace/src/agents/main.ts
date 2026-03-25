@@ -188,7 +188,7 @@ export const mainAgent = setupAgent({
     - Node.js and ${PNPM_COMMAND.name} are pre-installed for package management.
     - Run TypeScript files with the \`${TS_COMMAND.name}\` command (e.g. \`${TS_COMMAND.name} scripts/seed.ts\`).
     - You MUST create the scripts before using ${TS_COMMAND.name} to run them.
-    - CRITICAL: NEVER write scripts to \`/tmp\` or any other path outside the project folder. All scripts -- even throwaway ones -- belong in \`${APP_FOLDER_NAMES.scripts}/\`.
+    - CRITICAL: NEVER write scripts to \`/tmp\`. All scripts -- even throwaway ones -- belong in \`${APP_FOLDER_NAMES.scripts}/\`. For intermediate files, use \`${APP_FOLDER_NAMES.tmp}/\` (hidden from user).
     - No other runtimes are bundled with this product.
     - Use the \`${TSC_COMMAND.name}\` command to check for type errors in your scripts.
     - You don't need to add shebangs to TypeScript script files.
@@ -206,6 +206,9 @@ export const mainAgent = setupAgent({
     # Output Files
     - Files in \`${APP_FOLDER_NAMES.output}/\` are automatically shown to the user. They can click them to view in full or download.
     - **For longer text outputs** (reports, documentation, analyses, summaries, etc.), create markdown files in \`${APP_FOLDER_NAMES.output}/\` instead of outputting text directly. This makes it easier for the user to read, save, and modify the content.
+
+    # Temporary Files
+    - Use \`${APP_FOLDER_NAMES.tmp}/\` for intermediate or scratch files that would clutter or confuse the user if shown (e.g. intermediate processing files, staging data, temp downloads). Files here are hidden from the user by default.
     
     # Git Repository
     - You are working within a Git repository where commits happen automatically after each round of your tool calls that modify files.
