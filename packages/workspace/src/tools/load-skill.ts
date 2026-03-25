@@ -135,9 +135,9 @@ export const LoadSkill = setupTool({
         installSection =
           exitCode === 0
             ? `\n\n\`${PNPM_COMMAND.name} install\` was run. This is a monorepo -- skill dependencies are scoped to this skill's folder and are ready to use. Do not run \`${PNPM_COMMAND.name} add\` for packages this skill already provides.`
-            : `\n\n\`pnpm install\` was run at the project root but exited with code ${exitCode}. The skill's dependencies may not be fully installed. Raw output:\n\`\`\`\n${combined}\n\`\`\``;
+            : `\n\n\`${PNPM_COMMAND.name} install\` was run at the project root but exited with code ${exitCode}. The skill's dependencies may not be fully installed. Raw output:\n\`\`\`\n${combined}\n\`\`\``;
       } else {
-        installSection = `\n\n\`pnpm install\` could not be run: ${installResult.error.message}`;
+        installSection = `\n\n\`${PNPM_COMMAND.name} install\` could not be run: ${installResult.error.message}`;
       }
     }
 
