@@ -1,5 +1,4 @@
 import { envForProviderConfigs } from "@quests/ai-gateway";
-import { bashTools } from "bash-tool";
 import {
   Bash,
   type CommandName,
@@ -108,26 +107,23 @@ const commandOrderPlugin: TransformPlugin<{ commands: string[] }> = {
 };
 
 // Commands non-obvious enough to warrant a description alongside their name.
-const DESCRIBED_COMMANDS = new Set(["jq", "xan"]);
+const DESCRIBED_COMMANDS: Record<string, string> = {
+  jq: "Parse and manipulate JSON",
+  xan: "Fast CSV processing, filtering, aggregation, and visualization",
+};
 
 export function createBashDescription() {
-  const allowedCommandNames = new Set(
-    getCommandNames().filter(
-      (name) => !BROKEN_COMMANDS.has(name as CommandName),
-    ),
+  const allowedCommandNames = getCommandNames().filter(
+    (name) => !BROKEN_COMMANDS.has(name as CommandName),
   );
 
-  const builtinNames = bashTools
-    .filter((t) => allowedCommandNames.has(t.name))
-    .sort((a, b) => a.name.localeCompare(b.name));
+  const namedOnly = allowedCommandNames
+    .filter((name) => !(name in DESCRIBED_COMMANDS))
+    .sort();
 
-  const namedOnly = builtinNames
-    .filter((t) => !DESCRIBED_COMMANDS.has(t.name))
-    .map((t) => t.name);
-
-  const described = builtinNames
-    .filter((t) => DESCRIBED_COMMANDS.has(t.name))
-    .map(({ name, purpose }) => `  ${name} - ${purpose}`);
+  const described = Object.entries(DESCRIBED_COMMANDS)
+    .filter(([name]) => allowedCommandNames.includes(name))
+    .map(([name, description]) => `  ${name} - ${description}`);
 
   const customLines = [
     `  ${FFMPEG_COMMAND.name} - ${FFMPEG_COMMAND.description}`,
