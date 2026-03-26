@@ -5,10 +5,16 @@ import tailwindcss from "@tailwindcss/vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "electron-vite";
+import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { readPackage } from "read-pkg";
 import { analyzer } from "vite-bundle-analyzer";
+
+const require = createRequire(import.meta.url);
+// Resolve the ffmpeg-static entry path at build time so it can be baked into
+// the bundle via `define`, avoiding __dirname issues in the ESM output.
+const FFMPEG_STATIC_PATH = require.resolve("ffmpeg-static");
 
 const isAnalyzing = process.env.ANALYZE_BUILD === "true";
 
@@ -117,6 +123,9 @@ export default defineConfig(({ command }) => ({
         },
       },
       watch: {}, // Enable hot reloading
+    },
+    define: {
+      __FFMPEG_STATIC_PATH__: JSON.stringify(FFMPEG_STATIC_PATH),
     },
     plugins: [
       ...(isAnalyzing ? [analyzer()] : []),

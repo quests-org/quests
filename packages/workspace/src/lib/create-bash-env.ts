@@ -14,6 +14,7 @@ import {
 import type { AppConfig } from "./app-config/types";
 
 import { getWorkspaceServerURL } from "../logic/server/url";
+import { createFfmpegCommand, FFMPEG_COMMAND } from "./shell-commands/ffmpeg";
 import { createNodeCommand } from "./shell-commands/node";
 import { createPnpmCommand, PNPM_COMMAND } from "./shell-commands/pnpm";
 import { createTsCommand, TS_COMMAND } from "./shell-commands/ts";
@@ -129,6 +130,7 @@ export function createBashDescription() {
     .map(({ name, purpose }) => `  ${name} - ${purpose}`);
 
   const customLines = [
+    `  ${FFMPEG_COMMAND.name} - ${FFMPEG_COMMAND.description}`,
     `  ${PNPM_COMMAND.name} - ${PNPM_COMMAND.description}`,
     `  ${TS_COMMAND.name} - ${TS_COMMAND.description}`,
     `  ${TSC_COMMAND.name} - ${TSC_COMMAND.description}`,
@@ -169,6 +171,7 @@ export function createBashEnv(appConfig: AppConfig) {
   const bash = new Bash({
     commands: allowedCommands,
     customCommands: [
+      createFfmpegCommand(appConfig),
       createNodeCommand(appConfig),
       createPnpmCommand(appConfig),
       createTsCommand(appConfig),
