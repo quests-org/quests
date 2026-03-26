@@ -138,8 +138,9 @@ export function createBashDescription() {
   return [
     "Execute bash commands in the project directory.",
     "",
-    "IMPORTANT: This is a sandboxed environment. npm, python, and other runtimes are",
-    "NOT available. Do NOT attempt to run them.",
+    "IMPORTANT: This is a sandboxed environment. python and other runtimes",
+    "are NOT available as system binaries. Do NOT attempt to run them directly.",
+    "Use the specialized `tsx` command below to execute TypeScript/JavaScript files.",
     "",
     "IMPORTANT: Not a persistent terminal -- each call starts fresh from the project root.",
     "",
