@@ -41,6 +41,7 @@ const BROKEN_COMMANDS = new Set<CommandName>([
   // cspell:ignore compressjs
   "file", // depends on `file-type`, which uses a CJS dynamic require("tty") incompatible with just-bash's ESM bundle
   "html-to-markdown", // depends on `turndown`, which requires `@mixmark-io/domino` as an undeclared peer dependency
+  "sqlite3", // requires a separately compiled worker.js on disk (via import.meta.url resolution) that is not present in the asar bundle; sql.js is excluded from the build
   "tar", // depends on `compressjs`, whose default export is undefined in the ESM bundle context, crashing on load
   "which", // always errors in this environment; replaced with a stub below
   "yq", // depends on `papaparse`, which uses a CJS dynamic require("process") incompatible with just-bash's ESM bundle
@@ -52,6 +53,7 @@ const STUB_COMMANDS = [
     "not found as a system binary. This is a sandboxed environment -- commands are available to use directly, but they are not backed by real filesystem paths",
   ),
   stubCommand("file"),
+  stubCommand("sqlite3", "SQLite is not available in this environment"),
   stubCommand("tar"),
   stubCommand("yq"),
 ];

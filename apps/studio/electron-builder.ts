@@ -69,6 +69,7 @@ const config: Configuration = {
     "!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}",
     "!**/node_modules/*.d.ts",
     "!**/node_modules/.bin",
+    "!**/node_modules/sql.js/**", // just-bash peer dep for sqlite3 command; non-functional in asar (worker.js missing), stubbed out -- saves ~18MB
     "!**/*.map", // someday we may want to keep these for debugging
     /* cspell:disable */
     "!**/*.{iml,o,hprof,orig,pyc,pyo,rbc,swp,csproj,sln,xproj}",
