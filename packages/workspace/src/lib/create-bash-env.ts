@@ -3,6 +3,7 @@ import {
   Bash,
   type CommandName,
   type CommandNode,
+  defineCommand,
   getCommandNames,
   ReadWriteFs,
   type ScriptNode,
@@ -21,15 +22,39 @@ import { createTscCommand, TSC_COMMAND } from "./shell-commands/tsc";
 
 // cspell:ignore mixmark papaparse
 
-// These just-bash commands have third-party dependencies that are not properly
-// declared in just-bash's own package.json, causing runtime resolution failures
-// in pnpm's isolated node_modules. Exclude them until fixed upstream.
-//
-// - html-to-markdown: depends on `turndown`, which requires `@mixmark-io/domino`
-//   as an undeclared peer dependency
-// - yq: depends on `papaparse`, which uses a CJS dynamic require("process") that
-//   is incompatible with just-bash's ESM bundle
-const BROKEN_COMMANDS = new Set<CommandName>(["html-to-markdown", "yq"]);
+function stubCommand(
+  name: string,
+  message = "this command is non-functional in the sandboxed environment",
+) {
+  return defineCommand(name, () =>
+    Promise.resolve({
+      exitCode: 1,
+      stderr: `${name}: ${message}\n`,
+      stdout: "",
+    }),
+  );
+}
+
+// Commands excluded due to upstream bugs and replaced with stubs that explain
+// the situation to the agent. Each entry explains why.
+const BROKEN_COMMANDS = new Set<CommandName>([
+  // cspell:ignore compressjs
+  "file", // depends on `file-type`, which uses a CJS dynamic require("tty") incompatible with just-bash's ESM bundle
+  "html-to-markdown", // depends on `turndown`, which requires `@mixmark-io/domino` as an undeclared peer dependency
+  "tar", // depends on `compressjs`, whose default export is undefined in the ESM bundle context, crashing on load
+  "which", // always errors in this environment; replaced with a stub below
+  "yq", // depends on `papaparse`, which uses a CJS dynamic require("process") incompatible with just-bash's ESM bundle
+]);
+
+const STUB_COMMANDS = [
+  stubCommand(
+    "which",
+    "not found as a system binary. This is a sandboxed environment -- commands are available to use directly, but they are not backed by real filesystem paths",
+  ),
+  stubCommand("file"),
+  stubCommand("tar"),
+  stubCommand("yq"),
+];
 
 const commandOrderPlugin: TransformPlugin<{ commands: string[] }> = {
   name: "command-order",
@@ -146,8 +171,6 @@ export function createBashDescription() {
     "",
     `Available commands: ${namedOnly.join(", ")}`,
     "",
-    "NOTE: `which` is listed above but does not function in this environment and will always return an error.",
-    "",
     "Specialized commands:",
     ...described,
     ...customLines,
@@ -174,6 +197,7 @@ export function createBashEnv(appConfig: AppConfig) {
       createPnpmCommand(appConfig),
       createTsCommand(appConfig),
       createTscCommand(appConfig),
+      ...STUB_COMMANDS,
     ],
     cwd: "/",
     // Seed with process.env so PATH and other system vars are available to
