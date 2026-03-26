@@ -8,10 +8,11 @@ describe("createBashDescription", () => {
     expect(createBashDescription()).toMatchInlineSnapshot(`
       "Execute bash commands in the project directory.
 
-      IMPORTANT: This is a sandboxed environment. npm, python, and other runtimes are
-      NOT available. Do NOT attempt to run them.
+      IMPORTANT: This is a sandboxed environment. python and other runtimes
+      are NOT available as system binaries. Do NOT attempt to run them directly.
+      Use the specialized \`tsx\` command below to execute TypeScript/JavaScript files.
 
-      IMPORTANT: Not a persistent terminal -- each call starts fresh from the project root.
+      IMPORTANT: Not a persistent terminal -- each call starts fresh from the project root, so \`cd .\` is always a no-op.
 
       TIP: Before using an unfamiliar command, run \`<command> --help\` to check its argument syntax.
 

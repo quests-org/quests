@@ -142,7 +142,7 @@ export function createBashDescription() {
     "are NOT available as system binaries. Do NOT attempt to run them directly.",
     "Use the specialized `tsx` command below to execute TypeScript/JavaScript files.",
     "",
-    "IMPORTANT: Not a persistent terminal -- each call starts fresh from the project root.",
+    "IMPORTANT: Not a persistent terminal -- each call starts fresh from the project root, so `cd .` is always a no-op.",
     "",
     "TIP: Before using an unfamiliar command, run `<command> --help` to check its argument syntax.",
     "",
@@ -175,7 +175,14 @@ export function createBashEnv(appConfig: AppConfig) {
       createTscCommand(appConfig),
     ],
     cwd: "/",
-    env: providerEnv,
+    // Seed with process.env so PATH and other system vars are available to
+    // commands that pass ctx.env explicitly (e.g. pnpm, tsx). Provider env
+    // overrides last so AI keys are always present. pnpm shim files also
+    // use sed, uname, etc when on unix systems.
+    env: {
+      ...(process.env.PATH && { PATH: process.env.PATH }),
+      ...providerEnv,
+    },
     fs,
   });
 
