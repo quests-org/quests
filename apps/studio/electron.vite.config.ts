@@ -5,6 +5,7 @@ import tailwindcss from "@tailwindcss/vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "electron-vite";
+import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { readPackage } from "read-pkg";
@@ -86,83 +87,95 @@ function createValidateProductionEnv(
   };
 }
 
-export default defineConfig(({ command }) => ({
-  main: {
-    build: {
-      externalizeDeps: {
-        exclude: mainExternalizeExclude,
-        include:
-          // In dev, we must include all dependencies
-          command === "serve"
-            ? []
-            : monorepoDeps.filter(
-                (dep) => !mainExternalizeExclude.includes(dep),
-              ),
-      },
-      lib: {
-        entry: path.join(process.cwd(), "src/electron-main/index.ts"),
-      },
-      rollupOptions: {
-        onwarn(warning, warn) {
-          if (
-            warning.code === "UNUSED_EXTERNAL_IMPORT" &&
-            warning.message.includes("ZodFirstPartyTypeKind")
-          ) {
-            // Suppresses "ZodFirstPartyTypeKind" is imported from external module "zod" but never used
-            // Due to OpenRouter AI SDK Provider using older Zod
-            // Remove this if they update https://github.com/OpenRouterTeam/ai-sdk-provider
-            return;
-          }
-          warn(warning);
+export default defineConfig(({ command }) => {
+  const require = createRequire(import.meta.url);
+  // In dev, ffmpeg-static is external but node_modules isn't next to the output,
+  // so we resolve and bake in the absolute path. In prod, the packaged app has
+  // node_modules alongside the bundle, so a bare specifier resolves correctly.
+  const ffmpegStaticValue =
+    command === "serve" ? require.resolve("ffmpeg-static") : "ffmpeg-static";
+
+  return {
+    main: {
+      build: {
+        externalizeDeps: {
+          exclude: mainExternalizeExclude,
+          include:
+            // In dev, we must include all dependencies
+            command === "serve"
+              ? []
+              : monorepoDeps.filter(
+                  (dep) => !mainExternalizeExclude.includes(dep),
+                ),
         },
-      },
-      watch: {}, // Enable hot reloading
-    },
-    plugins: [
-      ...(isAnalyzing ? [analyzer()] : []),
-      createValidateProductionEnv("main"),
-      ValidateEnv({ configFile: "./validate-env" }),
-    ],
-    resolve,
-  },
-  preload: {
-    build: {
-      lib: {
-        entry: path.join(process.cwd(), "src/electron-preload/index.ts"),
-      },
-      watch: {}, // Enable hot reloading
-    },
-    plugins: [
-      ...(isAnalyzing ? [analyzer()] : []),
-      createValidateProductionEnv("preload"),
-    ],
-    resolve,
-  },
-  renderer: {
-    build: {
-      rollupOptions: {
-        input: {
-          browser: path.join(process.cwd(), "src/index.html"),
+        lib: {
+          entry: path.join(process.cwd(), "src/electron-main/index.ts"),
         },
-      },
-      watch: {}, // Enable hot reloading
-    },
-    plugins: [
-      ...(isAnalyzing ? [analyzer()] : []),
-      createValidateProductionEnv("renderer"),
-      tanstackRouter({
-        autoCodeSplitting: true,
-        generatedRouteTree: "./src/client/routeTree.gen.ts",
-        routesDirectory: "./src/client/routes",
-      }),
-      react({
-        babel: {
-          plugins: ["babel-plugin-react-compiler"],
+        rollupOptions: {
+          onwarn(warning, warn) {
+            if (
+              warning.code === "UNUSED_EXTERNAL_IMPORT" &&
+              warning.message.includes("ZodFirstPartyTypeKind")
+            ) {
+              // Suppresses "ZodFirstPartyTypeKind" is imported from external module "zod" but never used
+              // Due to OpenRouter AI SDK Provider using older Zod
+              // Remove this if they update https://github.com/OpenRouterTeam/ai-sdk-provider
+              return;
+            }
+            warn(warning);
+          },
         },
-      }),
-      tailwindcss(),
-    ],
-    resolve,
-    root: path.resolve("src"),
-  },
-}));
+        watch: {}, // Enable hot reloading
+      },
+      define: {
+        __FFMPEG_STATIC_PATH__: JSON.stringify(ffmpegStaticValue),
+      },
+      plugins: [
+        ...(isAnalyzing ? [analyzer()] : []),
+        createValidateProductionEnv("main"),
+        ValidateEnv({ configFile: "./validate-env" }),
+      ],
+      resolve,
+    },
+    preload: {
+      build: {
+        lib: {
+          entry: path.join(process.cwd(), "src/electron-preload/index.ts"),
+        },
+        watch: {}, // Enable hot reloading
+      },
+      plugins: [
+        ...(isAnalyzing ? [analyzer()] : []),
+        createValidateProductionEnv("preload"),
+      ],
+      resolve,
+    },
+    renderer: {
+      build: {
+        rollupOptions: {
+          input: {
+            browser: path.join(process.cwd(), "src/index.html"),
+          },
+        },
+        watch: {}, // Enable hot reloading
+      },
+      plugins: [
+        ...(isAnalyzing ? [analyzer()] : []),
+        createValidateProductionEnv("renderer"),
+        tanstackRouter({
+          autoCodeSplitting: true,
+          generatedRouteTree: "./src/client/routeTree.gen.ts",
+          routesDirectory: "./src/client/routes",
+        }),
+        react({
+          babel: {
+            plugins: ["babel-plugin-react-compiler"],
+          },
+        }),
+        tailwindcss(),
+      ],
+      resolve,
+      root: path.resolve("src"),
+    },
+  };
+});
