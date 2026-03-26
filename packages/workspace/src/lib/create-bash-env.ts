@@ -150,6 +150,8 @@ export function createBashDescription() {
     "",
     `Available commands: ${namedOnly.join(", ")}`,
     "",
+    "NOTE: `which` is listed above but does not function in this environment and will always return an error.",
+    "",
     "Specialized commands:",
     ...described,
     ...customLines,

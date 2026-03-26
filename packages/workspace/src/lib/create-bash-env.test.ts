@@ -18,6 +18,8 @@ describe("createBashDescription", () => {
 
       Available commands: awk, cat, column, comm, cut, diff, expand, find, fold, grep, head, join, nl, od, paste, printf, rev, sed, sort, split, strings, tail, tee, tr, unexpand, uniq, wc, xargs
 
+      NOTE: \`which\` is listed above but does not function in this environment and will always return an error.
+
       Specialized commands:
         jq - Parse and manipulate JSON
         xan - Fast CSV processing, filtering, aggregation, and visualization
