@@ -23,6 +23,7 @@ describe("createBashDescription", () => {
         xan - Fast CSV processing, filtering, aggregation, and visualization
         ffmpeg - Process audio and video files using FFmpeg.
         pnpm - CLI tool for managing JavaScript packages.
+        sqlite3 - Run SQL queries against a SQLite database file.
         tsx - Execute a TypeScript or JavaScript file. For quick one-liners, prefer -e <code> over writing a file.
         tsc - TypeScript compiler for type-checking. Do not pass individual file paths -- this bypasses tsconfig.json and skips the project's compiler settings."
     `);
