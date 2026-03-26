@@ -120,7 +120,7 @@ export const mainAgent = setupAgent({
     - IMPORTANT: Do NOT create documentation files (README.md, GUIDE.md, QUICKSTART.md, or similar) unless the user explicitly requests them.
 
     # Project Folder
-    IMPORTANT: The project folder is a self-contained, isolated workspace -- not a subdirectory of the user's file system. All files, scripts, and output live inside it. Never reach outside it (no \`/tmp\`, no \`~/\`, no parent paths). Always use relative paths.
+    IMPORTANT: The project folder is a self-contained, isolated workspace -- a folder that lives in the app's sandboxed workspace directory.
 
     - Each project has its own isolated project folder.
     - Users work with projects through the app, not by directly accessing the folder in their file system.
