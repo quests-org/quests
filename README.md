@@ -86,6 +86,7 @@ pnpm dev:studio
 ## Dependencies
 
 - `@types/node` locked in package.json to avoid constant `pnpm dedupe --check` failures.
+- `node-liblzma` is not built by default because it's a native module that requires a lot of dependencies to build.
 
 ## License
 

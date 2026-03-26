@@ -6,7 +6,7 @@ allowBuilds:
   "@mongodb-js/zstd": true
   "@swc/core": true
   core-js: true
-  node-liblzma: true
+  node-liblzma: false
   tree-sitter-javascript: true
   unrs-resolver: true
 
