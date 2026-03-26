@@ -177,7 +177,11 @@ export const Markdown = memo(({ allowRawHtml, markdown }: MarkdownProps) => {
         },
       }}
       rehypePlugins={rehypePlugins}
-      remarkPlugins={[remarkGfm, remarkMath, remarkBreaks]}
+      remarkPlugins={[
+        remarkGfm,
+        [remarkMath, { singleDollarTextMath: false }],
+        remarkBreaks,
+      ]}
     >
       {remend(markdown)}
     </ReactMarkdown>
