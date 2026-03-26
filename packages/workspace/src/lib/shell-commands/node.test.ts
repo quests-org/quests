@@ -166,23 +166,27 @@ describe("nodeCommand", () => {
 
   describe("path escape prevention", () => {
     it.each([
-      ["../../../etc/passwd", "dot-dot traversal from root cwd"],
-      ["../../etc/passwd", "dot-dot traversal from nested cwd"],
-      ["/etc/passwd", "absolute path outside appDir"],
-      ["~/secret.js", "tilde home path"],
-    ])("clamps %s (%s) inside appDir", async (filePath, _desc) => {
-      const { execa } = await import("execa");
-      vi.mocked(execa).mockResolvedValueOnce({
-        all: "",
-        exitCode: 0,
-      } as never);
+      ["../../../etc/passwd", "etc/passwd"],
+      ["../../etc/passwd", "etc/passwd"],
+      ["/etc/passwd", "etc/passwd"],
+      ["~/secret.js", "~/secret.js"],
+    ])(
+      "clamps %s to a relative path without escaping",
+      async (filePath, expectedPath) => {
+        const { execa } = await import("execa");
+        vi.mocked(execa).mockResolvedValueOnce({
+          all: "",
+          exitCode: 0,
+        } as never);
 
-      await command.execute([filePath], mockCtx);
+        await command.execute([filePath], mockCtx);
 
-      const calledArgs = vi.mocked(execa).mock.calls.at(-1)?.[1];
-      assert(Array.isArray(calledArgs), "expected args array");
-      expect(calledArgs[0]).toMatch(new RegExp(`^${appConfig.appDir}`));
-    });
+        const calledArgs = vi.mocked(execa).mock.calls.at(-1)?.[1];
+        assert(Array.isArray(calledArgs), "expected args array");
+        expect(calledArgs[0]).not.toMatch(/^\//);
+        expect(calledArgs[0]).toBe(expectedPath);
+      },
+    );
 
     it("clamps dot-dot traversal from a nested cwd inside appDir", async () => {
       const { execa } = await import("execa");
@@ -196,7 +200,8 @@ describe("nodeCommand", () => {
 
       const calledArgs = vi.mocked(execa).mock.calls.at(-1)?.[1];
       assert(Array.isArray(calledArgs), "expected args array");
-      expect(calledArgs[0]).toMatch(new RegExp(`^${appConfig.appDir}`));
+      expect(calledArgs[0]).not.toMatch(/^\//);
+      expect(calledArgs[0]).toBe("etc/passwd");
     });
   });
 });

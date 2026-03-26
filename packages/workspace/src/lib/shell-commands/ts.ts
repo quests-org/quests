@@ -7,7 +7,7 @@ import type { AppConfig } from "../app-config/types";
 import { APP_FOLDER_NAMES } from "../../constants";
 import { absolutePathJoin } from "../absolute-path-join";
 import { runPnpmCommand } from "../run-pnpm";
-import { firstString } from "./utils";
+import { firstString, virtualToRelativePath } from "./utils";
 
 export const TS_COMMAND = {
   description:
@@ -80,10 +80,7 @@ export function createTsCommand(appConfig: AppConfig) {
         };
       }
 
-      // Use the virtual FS to resolve the path so that traversals like ../foo.ts
-      // are clamped within the sandbox root before mapping to the host filesystem.
-      filePath = absolutePathJoin(
-        appConfig.appDir,
+      filePath = virtualToRelativePath(
         ctx.fs.resolvePath(ctx.cwd, rawFilePath),
       );
 

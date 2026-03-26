@@ -170,23 +170,29 @@ describe("tsCommand", () => {
 
   describe("path escape prevention", () => {
     it.each([
-      ["../../../etc/passwd", "dot-dot traversal from root cwd"],
-      ["../../etc/passwd", "dot-dot traversal from nested cwd"],
-      ["/etc/passwd", "absolute path outside appDir"],
-      ["~/secret.ts", "tilde home path"],
-    ])("clamps %s (%s) inside appDir", async (filePath, _desc) => {
-      const { execaNodeForApp } = await import("../execa-node-for-app");
-      vi.mocked(execaNodeForApp).mockResolvedValueOnce({
-        all: "",
-        exitCode: 0,
-      } as never);
+      ["../../../etc/passwd", "etc/passwd"],
+      ["../../etc/passwd", "etc/passwd"],
+      ["/etc/passwd", "etc/passwd"],
+      ["~/secret.ts", "~/secret.ts"],
+    ])(
+      "clamps %s to a relative path without escaping",
+      async (filePath, expectedPath) => {
+        const { execaNodeForApp } = await import("../execa-node-for-app");
+        vi.mocked(execaNodeForApp).mockResolvedValueOnce({
+          all: "",
+          exitCode: 0,
+        } as never);
 
-      await command.execute([filePath], mockCtx);
+        await command.execute([filePath], mockCtx);
 
-      const calledPath = vi.mocked(execaNodeForApp).mock.calls.at(-1)?.[2]?.[2];
-      expect(calledPath).toBeDefined();
-      expect(calledPath).toMatch(new RegExp(`^${appConfig.appDir}`));
-    });
+        const calledPath = vi
+          .mocked(execaNodeForApp)
+          .mock.calls.at(-1)?.[2]?.[2];
+        expect(calledPath).toBeDefined();
+        expect(calledPath).not.toMatch(/^\//);
+        expect(calledPath).toBe(expectedPath);
+      },
+    );
 
     it("clamps dot-dot traversal from a nested cwd inside appDir", async () => {
       const { execaNodeForApp } = await import("../execa-node-for-app");
@@ -200,7 +206,8 @@ describe("tsCommand", () => {
 
       const calledPath = vi.mocked(execaNodeForApp).mock.calls.at(-1)?.[2]?.[2];
       expect(calledPath).toBeDefined();
-      expect(calledPath).toMatch(new RegExp(`^${appConfig.appDir}`));
+      expect(calledPath).not.toMatch(/^\//);
+      expect(calledPath).toBe("etc/passwd");
     });
   });
 });

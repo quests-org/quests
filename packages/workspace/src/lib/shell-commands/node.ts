@@ -8,7 +8,7 @@ import { type AbsolutePath } from "../../schemas/paths";
 import { absolutePathJoin } from "../absolute-path-join";
 import { filterShellOutput } from "../filter-shell-output";
 import { TS_COMMAND } from "./ts";
-import { firstString, stringArray } from "./utils";
+import { firstString, stringArray, virtualToRelativePath } from "./utils";
 
 function execNode(
   appConfig: AppConfig,
@@ -147,8 +147,7 @@ export function createNodeCommand(appConfig: AppConfig) {
       };
     }
 
-    const filePath = absolutePathJoin(
-      appConfig.appDir,
+    const filePath = virtualToRelativePath(
       ctx.fs.resolvePath(ctx.cwd, rawFilePath),
     );
 

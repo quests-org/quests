@@ -13,3 +13,8 @@ export function stringArray(
     ? value.filter((v): v is string => typeof v === "string")
     : [];
 }
+
+/** Strip the leading `/` from a virtual sandbox path to make it relative to the sandbox root. */
+export function virtualToRelativePath(virtualPath: string): string {
+  return virtualPath.startsWith("/") ? virtualPath.slice(1) : virtualPath;
+}
