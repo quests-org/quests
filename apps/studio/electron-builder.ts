@@ -27,7 +27,7 @@ const config: Configuration = {
   appImage: {
     artifactName: "${productName}-${os}-${version}-${arch}.${ext}",
   },
-  asarUnpack: ["resources/**"],
+  asarUnpack: ["resources/**", "**/node_modules/ffmpeg-static/**"],
   directories: {
     buildResources: "build",
     output: process.env.ELECTRON_BUILDER_OUTPUT_DIR ?? "dist",

@@ -1,15 +1,12 @@
 import { createRequire } from "node:module";
 import path from "node:path";
 
-declare const __FFMPEG_STATIC_PATH__: string;
-
-// ffmpeg-static is CJS and uses __dirname, which breaks in an ESM context.
-// The vite config resolves and bakes in the absolute path to ffmpeg-static's
-// index.js at build time so createRequire can load it as CJS in both dev and
-// prod, regardless of where the bundled output lives.
+// ffmpeg-static is CJS and uses __dirname. We keep it external (not bundled)
+// so Node's CJS loader resolves it at runtime from the packaged node_modules,
+// avoiding the build-machine absolute path being baked into the bundle.
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const ffmpegPath: null | string = createRequire(import.meta.url)(
-  __FFMPEG_STATIC_PATH__,
+  "ffmpeg-static",
 );
 
 // Fix the path to the ffmpeg binary if it's in an .asar file
