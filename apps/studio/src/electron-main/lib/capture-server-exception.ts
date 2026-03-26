@@ -3,7 +3,7 @@ import { app } from "electron";
 import { unique } from "radashi";
 
 import { getAppStateStore } from "../stores/app-state";
-import { isDeveloperMode, isUsageMetricsEnabled } from "../stores/preferences";
+import { isDeveloperMode } from "../stores/preferences";
 import { logger } from "./electron-logger";
 import { addServerException } from "./server-exceptions";
 import { getSystemProperties } from "./system-properties";
@@ -97,7 +97,7 @@ export const captureServerException: CaptureExceptionFunction = function (
       stack: errorStack,
     });
     /* eslint-enable no-console */
-  } else if (!isUsageMetricsEnabled()) {
+  } else {
     logger.error(error);
   }
 };
