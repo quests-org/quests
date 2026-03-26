@@ -14,8 +14,9 @@ import {
 import type { AppConfig } from "./app-config/types";
 
 import { absolutePathJoin } from "./absolute-path-join";
+import { createNodeCommand } from "./shell-commands/node";
 import { PNPM_COMMAND, pnpmCommand } from "./shell-commands/pnpm";
-import { TS_COMMAND, tsCommand } from "./shell-commands/ts";
+import { createTsCommand, TS_COMMAND } from "./shell-commands/ts";
 import { TSC_COMMAND, tscCommand } from "./shell-commands/tsc";
 
 // cspell:ignore mixmark papaparse
@@ -129,8 +130,9 @@ export function createBashDescription() {
 
   const customLines = [
     `  ${PNPM_COMMAND.name} - ${PNPM_COMMAND.description}`,
-    `  ${TS_COMMAND.name}/${TS_COMMAND.alias} - ${TS_COMMAND.description}`,
+    `  ${TS_COMMAND.name} - ${TS_COMMAND.description}`,
     `  ${TSC_COMMAND.name} - ${TSC_COMMAND.description}`,
+    // Intentionally not listing Node because we want the agent to prefer TypeScript
   ];
 
   return [
@@ -161,9 +163,9 @@ export function createBashEnv(appConfig: AppConfig) {
   const bash = new Bash({
     commands: allowedCommands,
     customCommands: [
+      createNodeCommand(appConfig),
       createPnpmCommand(appConfig),
       createTsCommand(appConfig),
-      createTsxAliasCommand(appConfig),
       createTscCommand(appConfig),
     ],
     cwd: "/",
@@ -194,36 +196,6 @@ function createTscCommand(appConfig: AppConfig) {
   return defineCommand("tsc", async (args, ctx) => {
     const cwd = resolveRealCwd(appConfig, ctx.cwd);
     const result = await tscCommand(args, appConfig, ctx.signal, cwd);
-    if (result.isOk()) {
-      return {
-        exitCode: result.value.exitCode,
-        stderr: "",
-        stdout: result.value.combined,
-      };
-    }
-    return { exitCode: 1, stderr: result.error.message, stdout: "" };
-  });
-}
-
-function createTsCommand(appConfig: AppConfig) {
-  return defineCommand("ts", async (args, ctx) => {
-    const cwd = resolveRealCwd(appConfig, ctx.cwd);
-    const result = await tsCommand(args, appConfig, ctx.signal, cwd);
-    if (result.isOk()) {
-      return {
-        exitCode: result.value.exitCode,
-        stderr: "",
-        stdout: result.value.combined,
-      };
-    }
-    return { exitCode: 1, stderr: result.error.message, stdout: "" };
-  });
-}
-
-function createTsxAliasCommand(appConfig: AppConfig) {
-  return defineCommand("tsx", async (args, ctx) => {
-    const cwd = resolveRealCwd(appConfig, ctx.cwd);
-    const result = await tsCommand(args, appConfig, ctx.signal, cwd);
     if (result.isOk()) {
       return {
         exitCode: result.value.exitCode,

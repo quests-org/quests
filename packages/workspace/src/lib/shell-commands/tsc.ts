@@ -10,7 +10,7 @@ import { type FileOperationResult } from "./types";
 
 export const TSC_COMMAND = {
   description:
-    "TypeScript compiler for type-checking files. Do not pass individual file paths -- this bypasses tsconfig.json and skips the project's compiler settings.",
+    "TypeScript compiler for type-checking. Do not pass individual file paths -- this bypasses tsconfig.json and skips the project's compiler settings.",
   name: "tsc",
 } as const;
 

@@ -4,7 +4,7 @@ import { dedent } from "radashi";
 import { z } from "zod";
 
 import { createBashDescription, createBashEnv } from "../lib/create-bash-env";
-import { PNPM_COMMAND } from "../lib/shell-commands";
+import { PNPM_COMMAND } from "../lib/shell-commands/pnpm";
 import { BaseInputSchema } from "./base";
 import { setupTool } from "./create-tool";
 

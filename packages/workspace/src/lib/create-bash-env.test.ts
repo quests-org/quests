@@ -8,10 +8,10 @@ describe("createBashDescription", () => {
     expect(createBashDescription()).toMatchInlineSnapshot(`
       "Execute bash commands in the project directory.
 
-      IMPORTANT: This is a sandboxed environment. node, npm, python, and other runtimes are
+      IMPORTANT: This is a sandboxed environment. npm, python, and other runtimes are
       NOT available. Do NOT attempt to run them.
 
-      IMPORTANT: Each call starts fresh from the project root -- \`cd\` does not persist between calls.
+      IMPORTANT: Not a persistent terminal -- each call starts fresh from the project root.
 
       TIP: Before using an unfamiliar command, run \`<command> --help\` to check its argument syntax.
 
@@ -21,8 +21,8 @@ describe("createBashDescription", () => {
         jq - Parse and manipulate JSON
         xan - Fast CSV processing, filtering, aggregation, and visualization
         pnpm - CLI tool for managing JavaScript packages.
-        ts/tsx - Execute a TypeScript or JavaScript file, powered by Jiti. Does not support -e/--eval; always write code to a file first.
-        tsc - TypeScript compiler for type-checking files. Do not pass individual file paths -- this bypasses tsconfig.json and skips the project's compiler settings."
+        tsx - Execute a TypeScript or JavaScript file. For quick one-liners, prefer -e <code> over writing a file.
+        tsc - TypeScript compiler for type-checking. Do not pass individual file paths -- this bypasses tsconfig.json and skips the project's compiler settings."
     `);
   });
 
