@@ -1,14 +1,18 @@
 import { execa } from "execa";
 import { defineCommand } from "just-bash";
-import { parseArgs } from "node:util";
 
 import type { AppConfig } from "../app-config/types";
 
 import { type AbsolutePath } from "../../schemas/paths";
-import { absolutePathJoin } from "../absolute-path-join";
 import { filterShellOutput } from "../filter-shell-output";
 import { TS_COMMAND } from "./ts";
-import { firstString, stringArray, virtualToRelativePath } from "./utils";
+import {
+  extractFileAndScriptArgs,
+  firstString,
+  parseCommandArgs,
+  resolveCommandContext,
+  stringArray,
+} from "./utils";
 
 function execNode(
   appConfig: AppConfig,
@@ -43,11 +47,7 @@ const KNOWN_OPTIONS = {
 
 export function createNodeCommand(appConfig: AppConfig) {
   return defineCommand("node", async (args, ctx) => {
-    const appCwd = absolutePathJoin(
-      appConfig.appDir,
-      ctx.fs.resolvePath(ctx.cwd, "."),
-    );
-    const env = Object.fromEntries(ctx.env);
+    const { appCwd, env } = resolveCommandContext(appConfig, ctx);
 
     if (args.length === 0) {
       return {
@@ -57,24 +57,12 @@ export function createNodeCommand(appConfig: AppConfig) {
       };
     }
 
-    const { positionals, tokens, values } = parseArgs({
-      allowPositionals: true,
+    const { positionals, values } = parseCommandArgs(
+      appConfig,
+      "node",
       args,
-      options: KNOWN_OPTIONS,
-      strict: false,
-      tokens: true,
-    });
-
-    const unknownOptions = tokens
-      .filter((t) => t.kind === "option" && !(t.name in KNOWN_OPTIONS))
-      .map((t) => `--${(t as { kind: "option"; name: string }).name}`);
-    if (unknownOptions.length > 0) {
-      appConfig.workspaceConfig.captureException(
-        new Error(
-          `[node] Unrecognized options ignored: ${unknownOptions.join(", ")}`,
-        ),
-      );
-    }
+      KNOWN_OPTIONS,
+    );
 
     const isVersion = values.v === true || values.version === true;
 
@@ -138,8 +126,11 @@ export function createNodeCommand(appConfig: AppConfig) {
       };
     }
 
-    const rawFilePath = positionals[0];
-    if (rawFilePath === undefined) {
+    const fileAndArgs = extractFileAndScriptArgs(positionals, args, (p) =>
+      ctx.fs.resolvePath(ctx.cwd, p),
+    );
+
+    if (fileAndArgs === undefined) {
       return {
         exitCode: 1,
         stderr: "node requires a file path argument.",
@@ -147,13 +138,7 @@ export function createNodeCommand(appConfig: AppConfig) {
       };
     }
 
-    const filePath = virtualToRelativePath(
-      ctx.fs.resolvePath(ctx.cwd, rawFilePath),
-    );
-
-    const filePathIndex = args.indexOf(rawFilePath);
-    const scriptArgs = args.slice(filePathIndex + 1);
-
+    const { filePath, scriptArgs } = fileAndArgs;
     const execResult = await execNode(
       appConfig,
       [...nodeFlags, filePath, ...scriptArgs],

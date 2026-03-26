@@ -1,13 +1,17 @@
 import { defineCommand } from "just-bash";
 import { mkdir, writeFile } from "node:fs/promises";
-import { parseArgs } from "node:util";
 
 import type { AppConfig } from "../app-config/types";
 
 import { APP_FOLDER_NAMES } from "../../constants";
 import { absolutePathJoin } from "../absolute-path-join";
 import { runPnpmCommand } from "../run-pnpm";
-import { firstString, virtualToRelativePath } from "./utils";
+import {
+  extractFileAndScriptArgs,
+  firstString,
+  parseCommandArgs,
+  resolveCommandContext,
+} from "./utils";
 
 export const TS_COMMAND = {
   description:
@@ -15,12 +19,16 @@ export const TS_COMMAND = {
   name: "tsx",
 } as const;
 
+const KNOWN_OPTIONS = {
+  e: { type: "string" },
+  eval: { type: "string" },
+  v: { type: "boolean" },
+  version: { type: "boolean" },
+} as const;
+
 export function createTsCommand(appConfig: AppConfig) {
   return defineCommand(TS_COMMAND.name, async (args, ctx) => {
-    const appCwd = absolutePathJoin(
-      appConfig.appDir,
-      ctx.fs.resolvePath(ctx.cwd, "."),
-    );
+    const { appCwd, env } = resolveCommandContext(appConfig, ctx);
 
     if (args.length === 0) {
       return {
@@ -30,20 +38,12 @@ export function createTsCommand(appConfig: AppConfig) {
       };
     }
 
-    const KNOWN_OPTIONS = {
-      e: { type: "string" },
-      eval: { type: "string" },
-      v: { type: "boolean" },
-      version: { type: "boolean" },
-    } as const;
-
-    const { positionals, tokens, values } = parseArgs({
-      allowPositionals: true,
+    const { positionals, values } = parseCommandArgs(
+      appConfig,
+      "ts",
       args,
-      options: KNOWN_OPTIONS,
-      strict: false,
-      tokens: true,
-    });
+      KNOWN_OPTIONS,
+    );
 
     if (values.v === true || values.version === true) {
       return {
@@ -53,26 +53,17 @@ export function createTsCommand(appConfig: AppConfig) {
       };
     }
 
-    const unknownOptions = tokens
-      .filter((t) => t.kind === "option" && !(t.name in KNOWN_OPTIONS))
-      .map((t) => `--${(t as { kind: "option"; name: string }).name}`);
-    if (unknownOptions.length > 0) {
-      appConfig.workspaceConfig.captureException(
-        new Error(
-          `[ts] Unrecognized options ignored: ${unknownOptions.join(", ")}`,
-        ),
-      );
-    }
-
     const evalCode = firstString(values.e, values.eval);
 
     let filePath: string;
     let scriptArgs: string[];
 
     if (evalCode === undefined) {
-      const rawFilePath = positionals[0];
+      const fileAndArgs = extractFileAndScriptArgs(positionals, args, (p) =>
+        ctx.fs.resolvePath(ctx.cwd, p),
+      );
 
-      if (rawFilePath === undefined) {
+      if (fileAndArgs === undefined) {
         return {
           exitCode: 1,
           stderr: `${TS_COMMAND.name} requires exactly one file path as a positional argument (e.g., ${TS_COMMAND.name} scripts/setup.ts).`,
@@ -80,14 +71,7 @@ export function createTsCommand(appConfig: AppConfig) {
         };
       }
 
-      filePath = virtualToRelativePath(
-        ctx.fs.resolvePath(ctx.cwd, rawFilePath),
-      );
-
-      // Everything after the file path token in the original args is forwarded to
-      // the script as its own argv (flags like --file, --output, extra positionals).
-      const filePathIndex = args.indexOf(rawFilePath);
-      scriptArgs = args.slice(filePathIndex + 1);
+      ({ filePath, scriptArgs } = fileAndArgs);
     } else {
       const tmpDir = absolutePathJoin(appConfig.appDir, APP_FOLDER_NAMES.tmp);
       await mkdir(tmpDir, { recursive: true });
@@ -98,7 +82,6 @@ export function createTsCommand(appConfig: AppConfig) {
 
     // Use pnpm dlx for faster execution via cached packages and avoid
     // installing all packages eagerly.
-    const env = Object.fromEntries(ctx.env);
     const result = await runPnpmCommand({
       appConfig,
       args: ["dlx", "jiti", filePath, ...scriptArgs],
