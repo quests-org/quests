@@ -7,7 +7,8 @@ import { z } from "zod";
 
 import { APP_FOLDER_NAMES } from "../constants";
 import { copySkill } from "../lib/copy-skill";
-import { PNPM_COMMAND, pnpmCommand } from "../lib/shell-commands/pnpm";
+import { runPnpmCommand } from "../lib/run-pnpm";
+import { PNPM_COMMAND } from "../lib/shell-commands/pnpm";
 import { TS_COMMAND } from "../lib/shell-commands/ts";
 import {
   FILE_LIST_LIMIT,
@@ -136,27 +137,24 @@ export const LoadSkill = setupTool({
 
     let installSection = "";
     if (hasPackageJson) {
-      const installResult = await pnpmCommand(["install"], appConfig, signal);
-      if (installResult.isOk()) {
-        const { combined, exitCode } = installResult.value;
-        installSection =
-          exitCode === 0
-            ? [
-                `\`${PNPM_COMMAND.name} install\` was run at the project root.`,
-                `This is a monorepo -- skill dependencies are scoped to this skill's folder and are ready to use.`,
-                `Do not run \`${PNPM_COMMAND.name} add\` for packages this skill already provides.`,
-              ].join(" ")
-            : [
-                `\`${PNPM_COMMAND.name} install\` was run at the project root but exited with code ${exitCode}.`,
-                `The skill's dependencies may not be fully installed.`,
-                `Raw output:\n\`\`\`\n${combined}\n\`\`\``,
-              ].join(" ");
-        installSection = `\n\n${installSection}`;
-      } else {
-        installSection =
-          `\n\n\`${PNPM_COMMAND.name} install\` could not be run: ` +
-          installResult.error.message;
-      }
+      const { combined, exitCode } = await runPnpmCommand({
+        appConfig,
+        args: ["install"],
+        signal,
+      });
+      installSection =
+        exitCode === 0
+          ? [
+              `\`${PNPM_COMMAND.name} install\` was run at the project root.`,
+              `This is a monorepo -- skill dependencies are scoped to this skill's folder and are ready to use.`,
+              `Do not run \`${PNPM_COMMAND.name} add\` for packages this skill already provides.`,
+            ].join(" ")
+          : [
+              `\`${PNPM_COMMAND.name} install\` was run at the project root but exited with code ${exitCode}.`,
+              `The skill's dependencies may not be fully installed.`,
+              `Raw output:\n\`\`\`\n${combined}\n\`\`\``,
+            ].join(" ");
+      installSection = `\n\n${installSection}`;
     }
 
     const truncationNote = truncated

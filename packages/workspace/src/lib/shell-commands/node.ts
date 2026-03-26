@@ -15,6 +15,7 @@ function execNode(
   args: string[],
   signal?: AbortSignal,
   cwd?: AbsolutePath,
+  env?: Record<string, string>,
 ) {
   return execa(process.execPath, args, {
     all: true,
@@ -22,6 +23,7 @@ function execNode(
     cwd: cwd ?? appConfig.appDir,
     env: {
       ...appConfig.workspaceConfig.nodeExecEnv,
+      ...env,
     },
     reject: false,
     stdin: "ignore",
@@ -45,6 +47,7 @@ export function createNodeCommand(appConfig: AppConfig) {
       appConfig.appDir,
       ctx.fs.resolvePath(ctx.cwd, "."),
     );
+    const env = Object.fromEntries(ctx.env);
 
     if (args.length === 0) {
       return {
@@ -81,6 +84,7 @@ export function createNodeCommand(appConfig: AppConfig) {
         ["--version"],
         ctx.signal,
         appCwd,
+        env,
       );
       const combined = filterShellOutput(execResult.all, appConfig.appDir);
       return {
@@ -116,6 +120,7 @@ export function createNodeCommand(appConfig: AppConfig) {
         [...nodeFlags, "-e", evalCode],
         ctx.signal,
         appCwd,
+        env,
       );
       const combined = filterShellOutput(execResult.all, appConfig.appDir);
       return {
@@ -155,6 +160,7 @@ export function createNodeCommand(appConfig: AppConfig) {
       [...nodeFlags, filePath, ...scriptArgs],
       ctx.signal,
       appCwd,
+      env,
     );
     const combined = filterShellOutput(execResult.all, appConfig.appDir);
 

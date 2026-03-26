@@ -1,4 +1,3 @@
-import { envForProviderConfigs } from "@quests/ai-gateway";
 import { defineCommand } from "just-bash";
 import { mkdir, writeFile } from "node:fs/promises";
 import { parseArgs } from "node:util";
@@ -6,10 +5,8 @@ import { parseArgs } from "node:util";
 import type { AppConfig } from "../app-config/types";
 
 import { APP_FOLDER_NAMES } from "../../constants";
-import { getWorkspaceServerURL } from "../../logic/server/url";
 import { absolutePathJoin } from "../absolute-path-join";
-import { execaNodeForApp } from "../execa-node-for-app";
-import { filterShellOutput } from "../filter-shell-output";
+import { runPnpmCommand } from "../run-pnpm";
 import { firstString } from "./utils";
 
 export const TS_COMMAND = {
@@ -102,27 +99,21 @@ export function createTsCommand(appConfig: AppConfig) {
       scriptArgs = [];
     }
 
-    const providerEnv = envForProviderConfigs({
-      configs: appConfig.workspaceConfig.getAIProviderConfigs(),
-      workspaceServerURL: getWorkspaceServerURL(),
-    });
-
     // Use pnpm dlx for faster execution via cached packages and avoid
     // installing all packages eagerly.
-    const execResult = await execaNodeForApp(
+    const env = Object.fromEntries(ctx.env);
+    const result = await runPnpmCommand({
       appConfig,
-      appConfig.workspaceConfig.pnpmBinPath,
-      ["dlx", "jiti", filePath, ...scriptArgs],
-      // Don't reject so we can filter the output
-      { all: true, cancelSignal: ctx.signal, env: providerEnv, reject: false },
-      appCwd,
-    );
-    const combined = filterShellOutput(execResult.all, appConfig.appDir);
+      args: ["dlx", "jiti", filePath, ...scriptArgs],
+      cwd: appCwd,
+      env,
+      signal: ctx.signal,
+    });
 
     return {
-      exitCode: execResult.exitCode ?? 1,
+      exitCode: result.exitCode,
       stderr: "",
-      stdout: combined,
+      stdout: result.combined,
     };
   });
 }

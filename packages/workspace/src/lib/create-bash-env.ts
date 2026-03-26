@@ -1,9 +1,9 @@
+import { envForProviderConfigs } from "@quests/ai-gateway";
 import { bashTools } from "bash-tool";
 import {
   Bash,
   type CommandName,
   type CommandNode,
-  defineCommand,
   getCommandNames,
   ReadWriteFs,
   type ScriptNode,
@@ -13,11 +13,11 @@ import {
 
 import type { AppConfig } from "./app-config/types";
 
-import { absolutePathJoin } from "./absolute-path-join";
+import { getWorkspaceServerURL } from "../logic/server/url";
 import { createNodeCommand } from "./shell-commands/node";
-import { PNPM_COMMAND, pnpmCommand } from "./shell-commands/pnpm";
+import { createPnpmCommand, PNPM_COMMAND } from "./shell-commands/pnpm";
 import { createTsCommand, TS_COMMAND } from "./shell-commands/ts";
-import { TSC_COMMAND, tscCommand } from "./shell-commands/tsc";
+import { createTscCommand, TSC_COMMAND } from "./shell-commands/tsc";
 
 // cspell:ignore mixmark papaparse
 
@@ -160,6 +160,11 @@ export function createBashEnv(appConfig: AppConfig) {
     (name) => !BROKEN_COMMANDS.has(name as CommandName),
   ) as CommandName[];
 
+  const providerEnv = envForProviderConfigs({
+    configs: appConfig.workspaceConfig.getAIProviderConfigs(),
+    workspaceServerURL: getWorkspaceServerURL(),
+  });
+
   const bash = new Bash({
     commands: allowedCommands,
     customCommands: [
@@ -169,44 +174,11 @@ export function createBashEnv(appConfig: AppConfig) {
       createTscCommand(appConfig),
     ],
     cwd: "/",
+    env: providerEnv,
     fs,
   });
 
   bash.registerTransformPlugin(commandOrderPlugin);
 
   return bash;
-}
-
-function createPnpmCommand(appConfig: AppConfig) {
-  return defineCommand("pnpm", async (args, ctx) => {
-    const cwd = resolveRealCwd(appConfig, ctx.cwd);
-    const result = await pnpmCommand(args, appConfig, ctx.signal, cwd);
-    if (result.isOk()) {
-      return {
-        exitCode: result.value.exitCode,
-        stderr: "",
-        stdout: result.value.combined,
-      };
-    }
-    return { exitCode: 1, stderr: result.error.message, stdout: "" };
-  });
-}
-
-function createTscCommand(appConfig: AppConfig) {
-  return defineCommand("tsc", async (args, ctx) => {
-    const cwd = resolveRealCwd(appConfig, ctx.cwd);
-    const result = await tscCommand(args, appConfig, ctx.signal, cwd);
-    if (result.isOk()) {
-      return {
-        exitCode: result.value.exitCode,
-        stderr: "",
-        stdout: result.value.combined,
-      };
-    }
-    return { exitCode: 1, stderr: result.error.message, stdout: "" };
-  });
-}
-
-function resolveRealCwd(appConfig: AppConfig, virtualCwd: string) {
-  return absolutePathJoin(appConfig.appDir, virtualCwd);
 }
