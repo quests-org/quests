@@ -22,6 +22,7 @@ describe("createBashDescription", () => {
         jq - Parse and manipulate JSON
         xan - Fast CSV processing, filtering, aggregation, and visualization
         ffmpeg - Process audio and video files using FFmpeg.
+        ffprobe - Probe and inspect audio and video files using FFprobe.
         pnpm - CLI tool for managing JavaScript packages.
         tsx - Execute a TypeScript or JavaScript file. For quick one-liners, prefer -e <code> over writing a file.
         tsc - TypeScript compiler for type-checking. Do not pass individual file paths -- this bypasses tsconfig.json and skips the project's compiler settings."

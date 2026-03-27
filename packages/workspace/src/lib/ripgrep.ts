@@ -1,13 +1,9 @@
 import { rgPath } from "@vscode/ripgrep";
 import { spawn } from "node:child_process";
-import path from "node:path";
 
-// Fix the path to the ripgrep binary if it's in an .asar file
-// via https://github.com/desktop/dugite/blob/0a316c7028f073ad05cea17fe219324e7ef13967/lib/git-environment.ts#L24
-const RG_DISK_PATH = rgPath.replace(
-  /[\\/]app.asar[\\/]/,
-  `${path.sep}app.asar.unpacked${path.sep}`,
-);
+import { unpackAsarPath } from "./asar";
+
+const RG_DISK_PATH = unpackAsarPath(rgPath);
 
 interface RipgrepResult {
   code: null | number;

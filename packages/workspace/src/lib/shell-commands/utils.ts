@@ -1,13 +1,21 @@
+import path from "node:path";
 import { parseArgs, type ParseArgsConfig } from "node:util";
 
 import type { AppConfig } from "../app-config/types";
 
 import { absolutePathJoin } from "../absolute-path-join";
 
-/** Extract the resolved file path and trailing script args from positionals + original args. */
+/**
+ * Extract the resolved file path and trailing script args from positionals + original args.
+ * Paths are returned relative to appCwd so the real host appDir is not exposed.
+ * All path-like script args (absolute or relative traversals) are resolved through
+ * the virtual FS so they land correctly regardless of the agent's cwd.
+ */
 export function extractFileAndScriptArgs(
   positionals: string[],
   args: string[],
+  appConfig: AppConfig,
+  appCwd: string,
   resolvePath: (path: string) => string,
 ): undefined | { filePath: string; scriptArgs: string[] } {
   const rawFilePath = positionals[0];
@@ -15,9 +23,19 @@ export function extractFileAndScriptArgs(
     return undefined;
   }
 
-  const filePath = virtualToRelativePath(resolvePath(rawFilePath));
+  const filePath = virtualToRealRelative(
+    rawFilePath,
+    appConfig,
+    appCwd,
+    resolvePath,
+  );
   const filePathIndex = args.indexOf(rawFilePath);
-  const scriptArgs = args.slice(filePathIndex + 1);
+  const rawScriptArgs = args.slice(filePathIndex + 1);
+  const scriptArgs = rawScriptArgs.map((arg) =>
+    looksLikePath(arg)
+      ? virtualToRealRelative(arg, appConfig, appCwd, resolvePath)
+      : arg,
+  );
 
   return { filePath, scriptArgs };
 }
@@ -74,6 +92,28 @@ export function resolveCommandContext(
   };
 }
 
+/**
+ * Resolves any argument that looks like a virtual absolute path (starts with `/`)
+ * into a real filesystem path under appDir. Non-path arguments are returned as-is.
+ * This prevents sandbox-virtual absolute paths from leaking to the host system.
+ */
+export function resolvePathArgs(
+  args: string[],
+  appConfig: AppConfig,
+  ctx: {
+    cwd: string;
+    fs: { resolvePath(cwd: string, path: string): string };
+  },
+): string[] {
+  return args.map((arg) => {
+    if (!arg.startsWith("/")) {
+      return arg;
+    }
+    const virtualPath = ctx.fs.resolvePath(ctx.cwd, arg);
+    return absolutePathJoin(appConfig.appDir, virtualPath);
+  });
+}
+
 /** Extract a string array from a parseArgs multi-value option. */
 export function stringArray(
   value: (boolean | string)[] | boolean | string | undefined,
@@ -83,7 +123,24 @@ export function stringArray(
     : [];
 }
 
-/** Strip the leading `/` from a virtual sandbox path to make it relative to the sandbox root. */
-function virtualToRelativePath(virtualPath: string): string {
-  return virtualPath.startsWith("/") ? virtualPath.slice(1) : virtualPath;
+/**
+ * Returns true for args that look like a file path and need sandbox resolution:
+ * starts with `/` (virtual absolute) or starts with `.` or contains `/` (relative traversal).
+ */
+function looksLikePath(arg: string): boolean {
+  return arg.startsWith("/") || arg.startsWith(".") || arg.includes("/");
+}
+
+/**
+ * Resolve a virtual path to a real path, then relativize from appCwd so the
+ * host appDir is never exposed to the subprocess.
+ */
+function virtualToRealRelative(
+  virtualPath: string,
+  appConfig: AppConfig,
+  appCwd: string,
+  resolvePath: (p: string) => string,
+): string {
+  const realAbs = absolutePathJoin(appConfig.appDir, resolvePath(virtualPath));
+  return path.relative(appCwd, realAbs);
 }

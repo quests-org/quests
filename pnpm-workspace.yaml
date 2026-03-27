@@ -3,6 +3,7 @@ packages:
   - apps/*
 
 allowBuilds:
+  "@derhuerst/ffprobe-static": true
   "@swc/core": true
   core-js: true
   tree-sitter-javascript: true

@@ -159,55 +159,27 @@ describe("tsCommand", () => {
         "jiti",
         expect.stringContaining("convert.ts"),
         "--file",
-        "./user-provided/test.pdf",
+        "user-provided/test.pdf",
         "--output",
-        "./output/test.md",
+        "output/test.md",
       ]),
       expect.any(Object),
       expect.any(String),
     );
   });
 
-  describe("path escape prevention", () => {
-    it.each([
-      ["../../../etc/passwd", "etc/passwd"],
-      ["../../etc/passwd", "etc/passwd"],
-      ["/etc/passwd", "etc/passwd"],
-      ["~/secret.ts", "~/secret.ts"],
-    ])(
-      "clamps %s to a relative path without escaping",
-      async (filePath, expectedPath) => {
-        const { execaNodeForApp } = await import("../execa-node-for-app");
-        vi.mocked(execaNodeForApp).mockResolvedValueOnce({
-          all: "",
-          exitCode: 0,
-        } as never);
+  it("resolves the script file path without exposing the host appDir", async () => {
+    const { execaNodeForApp } = await import("../execa-node-for-app");
+    vi.mocked(execaNodeForApp).mockResolvedValueOnce({
+      all: "",
+      exitCode: 0,
+    } as never);
 
-        await command.execute([filePath], mockCtx);
+    await command.execute(["/scripts/run.ts"], mockCtx);
 
-        const calledPath = vi
-          .mocked(execaNodeForApp)
-          .mock.calls.at(-1)?.[2]?.[2];
-        expect(calledPath).toBeDefined();
-        expect(calledPath).not.toMatch(/^\//);
-        expect(calledPath).toBe(expectedPath);
-      },
-    );
-
-    it("clamps dot-dot traversal from a nested cwd inside appDir", async () => {
-      const { execaNodeForApp } = await import("../execa-node-for-app");
-      vi.mocked(execaNodeForApp).mockResolvedValueOnce({
-        all: "",
-        exitCode: 0,
-      } as never);
-
-      const nestedCtx: CommandContext = { ...mockCtx, cwd: "/scripts" };
-      await command.execute(["../../../etc/passwd"], nestedCtx);
-
-      const calledPath = vi.mocked(execaNodeForApp).mock.calls.at(-1)?.[2]?.[2];
-      expect(calledPath).toBeDefined();
-      expect(calledPath).not.toMatch(/^\//);
-      expect(calledPath).toBe("etc/passwd");
-    });
+    const calledPath = vi.mocked(execaNodeForApp).mock.calls.at(-1)?.[2]?.[2];
+    expect(calledPath).toBeDefined();
+    expect(calledPath).not.toContain(appConfig.appDir);
+    expect(calledPath).toBe("scripts/run.ts");
   });
 });

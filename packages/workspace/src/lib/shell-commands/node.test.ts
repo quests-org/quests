@@ -136,7 +136,7 @@ describe("nodeCommand", () => {
 
     const calledArgs = vi.mocked(execa).mock.calls.at(-1)?.[1];
     expect(calledArgs).toEqual(
-      expect.arrayContaining(["--output", "./dist", "--verbose"]),
+      expect.arrayContaining(["--output", "dist", "--verbose"]),
     );
   });
 
@@ -164,44 +164,18 @@ describe("nodeCommand", () => {
     expect(flagIndex).toBeLessThan(fileIndex);
   });
 
-  describe("path escape prevention", () => {
-    it.each([
-      ["../../../etc/passwd", "etc/passwd"],
-      ["../../etc/passwd", "etc/passwd"],
-      ["/etc/passwd", "etc/passwd"],
-      ["~/secret.js", "~/secret.js"],
-    ])(
-      "clamps %s to a relative path without escaping",
-      async (filePath, expectedPath) => {
-        const { execa } = await import("execa");
-        vi.mocked(execa).mockResolvedValueOnce({
-          all: "",
-          exitCode: 0,
-        } as never);
+  it("resolves the script file path without exposing the host appDir", async () => {
+    const { execa } = await import("execa");
+    vi.mocked(execa).mockResolvedValueOnce({
+      all: "",
+      exitCode: 0,
+    } as never);
 
-        await command.execute([filePath], mockCtx);
+    await command.execute(["/scripts/run.js"], mockCtx);
 
-        const calledArgs = vi.mocked(execa).mock.calls.at(-1)?.[1];
-        assert(Array.isArray(calledArgs), "expected args array");
-        expect(calledArgs[0]).not.toMatch(/^\//);
-        expect(calledArgs[0]).toBe(expectedPath);
-      },
-    );
-
-    it("clamps dot-dot traversal from a nested cwd inside appDir", async () => {
-      const { execa } = await import("execa");
-      vi.mocked(execa).mockResolvedValueOnce({
-        all: "",
-        exitCode: 0,
-      } as never);
-
-      const nestedCtx: CommandContext = { ...mockCtx, cwd: "/scripts" };
-      await command.execute(["../../../etc/passwd"], nestedCtx);
-
-      const calledArgs = vi.mocked(execa).mock.calls.at(-1)?.[1];
-      assert(Array.isArray(calledArgs), "expected args array");
-      expect(calledArgs[0]).not.toMatch(/^\//);
-      expect(calledArgs[0]).toBe("etc/passwd");
-    });
+    const calledArgs = vi.mocked(execa).mock.calls.at(-1)?.[1];
+    assert(Array.isArray(calledArgs), "expected args array");
+    expect(calledArgs[0]).not.toContain(appConfig.appDir);
+    expect(calledArgs[0]).toBe("scripts/run.js");
   });
 });

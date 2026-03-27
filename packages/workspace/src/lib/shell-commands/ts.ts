@@ -59,8 +59,12 @@ export function createTsCommand(appConfig: AppConfig) {
     let scriptArgs: string[];
 
     if (evalCode === undefined) {
-      const fileAndArgs = extractFileAndScriptArgs(positionals, args, (p) =>
-        ctx.fs.resolvePath(ctx.cwd, p),
+      const fileAndArgs = extractFileAndScriptArgs(
+        positionals,
+        args,
+        appConfig,
+        appCwd,
+        (p) => ctx.fs.resolvePath(ctx.cwd, p),
       );
 
       if (fileAndArgs === undefined) {

@@ -807,6 +807,9 @@ importers:
 
   packages/workspace:
     dependencies:
+      '@derhuerst/ffprobe-static':
+        specifier: ^5.3.0
+        version: 5.3.0
       '@hono/node-server':
         specifier: ^1.18.1
         version: 1.18.1(hono@4.8.5)
@@ -1511,6 +1514,10 @@ packages:
   '@cspell/url@9.2.1':
     resolution: {integrity: sha512-9EHCoGKtisPNsEdBQ28tKxKeBmiVS3D4j+AN8Yjr+Dmtu+YACKGWiMOddNZG2VejQNIdFx7FwzU00BGX68ELhA==}
     engines: {node: '>=20'}
+
+  '@derhuerst/ffprobe-static@5.3.0':
+    resolution: {integrity: sha512-Ka4MiaFdO6xAWpyKWWE5sRAQ8kSl0ddrLnDKPJzLtg/yEkmCr+GV841GGFzfVYomwVbVvmemLlkL4uvTYpJIbQ==}
+    engines: {node: '>=16'}
 
   '@derhuerst/http-basic@8.2.4':
     resolution: {integrity: sha512-F9rL9k9Xjf5blCz8HsJRO4diy111cayL2vkY2XE4r4t3n0yPXVYy3KD3nJ1qbrSn9743UWSXH4IwuCa/HWlGFw==}
@@ -9830,6 +9837,15 @@ snapshots:
   '@cspell/url@8.19.4': {}
 
   '@cspell/url@9.2.1': {}
+
+  '@derhuerst/ffprobe-static@5.3.0':
+    dependencies:
+      '@derhuerst/http-basic': 8.2.4
+      env-paths: 2.2.1
+      https-proxy-agent: 5.0.1
+      progress: 2.0.3
+    transitivePeerDependencies:
+      - supports-color
 
   '@derhuerst/http-basic@8.2.4':
     dependencies:

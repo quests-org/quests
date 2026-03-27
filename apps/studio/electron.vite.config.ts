@@ -89,11 +89,16 @@ function createValidateProductionEnv(
 
 export default defineConfig(({ command }) => {
   const require = createRequire(import.meta.url);
-  // In dev, ffmpeg-static is external but node_modules isn't next to the output,
-  // so we resolve and bake in the absolute path. In prod, the packaged app has
-  // node_modules alongside the bundle, so a bare specifier resolves correctly.
+  // In dev, ffmpeg-static/ffprobe-static are external but node_modules isn't
+  // next to the output, so we resolve and bake in the absolute path. In prod,
+  // the packaged app has node_modules alongside the bundle, so a bare specifier
+  // resolves correctly.
   const ffmpegStaticValue =
     command === "serve" ? require.resolve("ffmpeg-static") : "ffmpeg-static";
+  const ffprobeStaticValue =
+    command === "serve"
+      ? require.resolve("@derhuerst/ffprobe-static")
+      : "@derhuerst/ffprobe-static";
 
   return {
     main: {
@@ -112,6 +117,8 @@ export default defineConfig(({ command }) => {
           entry: path.join(process.cwd(), "src/electron-main/index.ts"),
         },
         rollupOptions: {
+          // node-liblzma and @mongodb-js/zstd are optional dependencies of just-bash that fail to build in CI
+          external: ["node-liblzma", "@mongodb-js/zstd"],
           onwarn(warning, warn) {
             if (
               warning.code === "UNUSED_EXTERNAL_IMPORT" &&
@@ -122,6 +129,9 @@ export default defineConfig(({ command }) => {
               // Remove this if they update https://github.com/OpenRouterTeam/ai-sdk-provider
               return;
             }
+            if (warning.code === "UNRESOLVED_IMPORT") {
+              throw new Error(warning.message);
+            }
             warn(warning);
           },
         },
@@ -129,6 +139,7 @@ export default defineConfig(({ command }) => {
       },
       define: {
         __FFMPEG_STATIC_PATH__: JSON.stringify(ffmpegStaticValue),
+        __FFPROBE_STATIC_PATH__: JSON.stringify(ffprobeStaticValue),
       },
       plugins: [
         ...(isAnalyzing ? [analyzer()] : []),

@@ -34,7 +34,8 @@ const config: KnipConfig = {
       ignore: ["fixtures/**/*", "templates/**/*", "__mocks__/**/*"],
       ignoreBinaries: ["tail", "op"],
       ignoreDependencies: [
-        "ffmpeg-static", // We import it in Vite build to determine the path for injecting as a string to avoid __dirname issues in the ESM output
+        "@derhuerst/ffprobe-static", // Imported in Vite build to fix import issues
+        "ffmpeg-static", // Imported in Vite build to fix import issues
         "dugite", // Needed to ensure the git binary is available
         "@vscode/ripgrep", // Maybe needed to ensure the ripgrep binary is available
         "babel-plugin-react-compiler", // Used in electron.vite.config.ts as Babel plugin
