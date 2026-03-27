@@ -16,6 +16,7 @@
         "ELECTRON_USER_DATA_DIR",
         "ELECTRON_USE_NEW_USER_FOLDER",
         "FORCE_DEV_AUTO_UPDATE",
+        "HOME",
         "NODE_ENV",
         "PATH",
         "SKIP_MOVE_TO_APPLICATIONS",
