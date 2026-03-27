@@ -37,6 +37,7 @@ declare namespace NodeJS {
       ELECTRON_USER_DATA_DIR: string | undefined;
       FORCE_DEV_AUTO_UPDATE: string | undefined;
       GDK_BACKEND: string | undefined;
+      HOME: string | undefined; // Only used in workspace
       NODE_ENV: string | undefined;
       PATH: string | undefined;
       SIGNTOOL_PATH: string | undefined;
