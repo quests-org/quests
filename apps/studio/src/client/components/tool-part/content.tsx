@@ -32,6 +32,30 @@ export function ToolContent({
   project: WorkspaceAppProject;
 }) {
   switch (part.type) {
+    case "tool-bash": {
+      return (
+        <div>
+          <SectionHeader>Command executed</SectionHeader>
+          <MonoText className="mb-2 text-xs">$ {part.output.command}</MonoText>
+          <div className="mb-2 flex items-center gap-2">
+            <Badge
+              variant={part.output.exitCode === 0 ? "secondary" : "destructive"}
+            >
+              Exit code: {part.output.exitCode}
+            </Badge>
+            {part.input.timeoutMs && (
+              <Badge variant="outline">Timeout: {part.input.timeoutMs}ms</Badge>
+            )}
+          </div>
+          {part.output.output && (
+            <>
+              <SectionHeader>Output</SectionHeader>
+              <ScrollableCodeBlock>{part.output.output}</ScrollableCodeBlock>
+            </>
+          )}
+        </div>
+      );
+    }
     case "tool-choose": {
       return (
         <div>
@@ -321,38 +345,6 @@ export function ToolContent({
     }
     case "tool-read_file": {
       return <ToolPartReadFile input={part.input} output={part.output} />;
-    }
-    case "tool-run_shell_command": {
-      return (
-        <div>
-          <SectionHeader>Command executed</SectionHeader>
-          <MonoText className="mb-2 text-xs">$ {part.output.command}</MonoText>
-          <div className="mb-2 flex items-center gap-2">
-            <Badge
-              variant={part.output.exitCode === 0 ? "secondary" : "destructive"}
-            >
-              Exit code: {part.output.exitCode}
-            </Badge>
-            {part.input.timeoutMs && (
-              <Badge variant="outline">Timeout: {part.input.timeoutMs}ms</Badge>
-            )}
-          </div>
-          {part.output.stdout && (
-            <>
-              <SectionHeader>Output</SectionHeader>
-              <ScrollableCodeBlock>{part.output.stdout}</ScrollableCodeBlock>
-            </>
-          )}
-          {part.output.stderr && (
-            <>
-              <div className="mb-1 text-red-600 dark:text-red-400">Error</div>
-              <CodeBlock className="max-h-32 overflow-y-auto rounded-sm border bg-red-50 p-2 text-xs whitespace-pre-wrap text-red-600 dark:bg-red-900/20 dark:text-red-400">
-                {part.output.stderr}
-              </CodeBlock>
-            </>
-          )}
-        </div>
-      );
     }
     case "tool-task": {
       return null;

@@ -51,6 +51,7 @@
     "logprobs",
     "moonshotai",
     "msiexec",
+    "mutewinter",
     "neverthrow",
     "Nextdotjs",
     "nosystem",
@@ -75,6 +76,7 @@
     "retryable",
     "rharkor",
     "rmrf",
+    "sandboxing",
     "serviceworker",
     "SETLOCAL",
     "shiki",
@@ -86,12 +88,14 @@
     "togetherai",
     "togglefullscreen",
     "unrs",
+    "unstub",
     "Vuedotjs",
     "waitlist",
     "wireframes",
     "worktree",
     "XAISDK",
-    "zkochan"
+    "zkochan",
+    "zstd"
   ],
   "import": [
     "@cspell/dict-typescript/cspell-ext.json",

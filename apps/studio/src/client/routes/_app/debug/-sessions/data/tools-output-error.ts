@@ -85,7 +85,7 @@ registerSession({
             explanation: "Delete everything",
             timeoutMs: 5000,
           },
-          type: "tool-run_shell_command",
+          type: "tool-bash",
         }),
         builder.toolPart(assistantMessageId, "output-error", {
           errorText: "Tool 'foobar' is not available",

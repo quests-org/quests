@@ -158,9 +158,10 @@ registerSession({
             combined:
               "PASS src/utils/helpers.test.ts\n  helpers\n    ✓ should format date (2ms)\n    ✓ should parse JSON (1ms)\n\nTest Suites: 1 passed, 1 total\nTests:       2 passed, 2 total",
             command: "npm test -- helpers.test.ts",
+            commands: ["npm"],
             exitCode: 0,
           },
-          type: "tool-run_shell_command",
+          type: "tool-bash",
         }),
         builder.textPart(
           "Let me search the web for the latest Vitest configuration best practices.",

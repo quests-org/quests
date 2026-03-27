@@ -14,7 +14,7 @@ const ROOT_TSC_COMMAND_EQUIVALENTS = new Set([
 ]);
 
 function getTscCommand(part: SessionMessagePart.Type): string | undefined {
-  if (part.type !== "tool-run_shell_command") {
+  if (part.type !== "tool-bash") {
     return undefined;
   }
   const command: unknown = part.input?.command;

@@ -8,6 +8,10 @@ allowBuilds:
   tree-sitter-javascript: true
   unrs-resolver: true
 
+ignoredOptionalDependencies:
+  - "@mongodb-js/zstd"
+  - node-liblzma
+
 catalog:
   "@orpc/client": ^1.12.2
   "@orpc/contract": ^1.12.2

@@ -153,7 +153,7 @@ describe("LoadSkill", () => {
 
       Skill instructions here.
 
-      The skill files below are copied into your project and are yours to edit. Before writing anything new, read the relevant script(s) with read_file and run them with \`ts\` if they fit. Only write a custom script if the existing ones cannot handle the task even with modification.
+      The skill files below are copied into your project and are yours to edit. Before writing anything new, read the relevant script(s) and run them with \`tsx\` if they fit. Only write a custom script if the existing ones cannot handle the task even with modification.
 
       <skill_files>
       <file>skills/my-skill/references/notes.md</file>

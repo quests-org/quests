@@ -23,6 +23,17 @@ import { ReadFile } from "./read-file";
 
 const MAX_FILE_SIZE = 250 * 1024; // 250KB
 
+function convertToLineEnding(text: string, ending: "\n" | "\r\n"): string {
+  if (ending === "\n") {
+    return text;
+  }
+  return text.replaceAll("\n", "\r\n");
+}
+
+function detectLineEnding(text: string): "\n" | "\r\n" {
+  return text.includes("\r\n") ? "\r\n" : "\n";
+}
+
 function normalizeLineEndings(text: string): string {
   return text.replaceAll("\r\n", "\n");
 }
@@ -734,22 +745,6 @@ export const EditFile = setupTool({
         : applyUnicodeFallbacks(resolvedPath);
     const exists = await pathExists(absolutePath);
 
-    if (!exists) {
-      return executeError(`File ${fixedPath} not found`);
-    }
-
-    // Check file size
-    const stats = await fs.stat(absolutePath);
-    if (stats.size > MAX_FILE_SIZE) {
-      return executeError(
-        `File is too large (${stats.size} bytes). Maximum size is ${MAX_FILE_SIZE} bytes`,
-      );
-    }
-
-    if (stats.isDirectory()) {
-      return executeError(`Path is a directory, not a file: ${fixedPath}`);
-    }
-
     let contentOld = "";
     let contentNew = "";
 
@@ -758,11 +753,36 @@ export const EditFile = setupTool({
         contentNew = input.newString;
         await writeFileWithDir(absolutePath, input.newString, { signal });
       } else {
+        if (!exists) {
+          return executeError(`File ${fixedPath} not found`);
+        }
+
+        // Check file size
+        const stats = await fs.stat(absolutePath);
+        if (stats.size > MAX_FILE_SIZE) {
+          return executeError(
+            `File is too large (${stats.size} bytes). Maximum size is ${MAX_FILE_SIZE} bytes`,
+          );
+        }
+
+        if (stats.isDirectory()) {
+          return executeError(`Path is a directory, not a file: ${fixedPath}`);
+        }
+
         contentOld = await fs.readFile(absolutePath, "utf8");
+        const ending = detectLineEnding(contentOld);
+        const oldStringConverted = convertToLineEnding(
+          normalizeLineEndings(input.oldString),
+          ending,
+        );
+        const newStringConverted = convertToLineEnding(
+          normalizeLineEndings(input.newString),
+          ending,
+        );
         contentNew = replace(
           contentOld,
-          input.oldString,
-          input.newString,
+          oldStringConverted,
+          newStringConverted,
           input.replaceAll,
         );
         await writeFileWithDir(absolutePath, contentNew, { signal });

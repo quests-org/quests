@@ -150,7 +150,7 @@ describe("executeToolCallMachine", () => {
       },
       state: "input-available",
       toolCallId: StoreId.ToolCallSchema.parse("test_tool_call_1"),
-      type: "tool-run_shell_command",
+      type: "tool-bash",
     };
   }
 
@@ -171,9 +171,7 @@ describe("executeToolCallMachine", () => {
       const updatedPart = session.messages
         .flatMap((m) => m.parts)
         .find(
-          (p) =>
-            p.type === "tool-run_shell_command" &&
-            p.toolCallId === "test_tool_call_1",
+          (p) => p.type === "tool-bash" && p.toolCallId === "test_tool_call_1",
         );
 
       expect(updatedPart).toMatchInlineSnapshot(`
@@ -191,14 +189,17 @@ describe("executeToolCallMachine", () => {
             "sessionId": "ses_00000000018888888888888888",
           },
           "output": {
-            "combined": "mocked all",
             "command": "pnpm install",
+            "commands": [
+              "pnpm",
+            ],
             "exitCode": 0,
+            "output": "mocked all",
           },
           "preliminary": false,
           "state": "output-available",
           "toolCallId": "test_tool_call_1",
-          "type": "tool-run_shell_command",
+          "type": "tool-bash",
         }
       `);
     });
@@ -221,14 +222,11 @@ describe("executeToolCallMachine", () => {
       const updatedPart = session.messages
         .flatMap((m) => m.parts)
         .find(
-          (p) =>
-            p.type === "tool-run_shell_command" &&
-            p.toolCallId === "test_tool_call_1",
+          (p) => p.type === "tool-bash" && p.toolCallId === "test_tool_call_1",
         );
 
       expect(updatedPart).toMatchInlineSnapshot(`
         {
-          "errorText": "Something went wrong while running 'tool-run_shell_command': Shell command failed",
           "input": {
             "command": "pnpm throw-error",
             "explanation": "Installing packages",
@@ -241,9 +239,19 @@ describe("executeToolCallMachine", () => {
             "messageId": "msg_00000000018888888888888889",
             "sessionId": "ses_00000000018888888888888888",
           },
-          "state": "output-error",
+          "output": {
+            "command": "pnpm throw-error",
+            "commands": [
+              "pnpm",
+            ],
+            "exitCode": 1,
+            "output": "pnpm: Shell command failed
+        ",
+          },
+          "preliminary": false,
+          "state": "output-available",
           "toolCallId": "test_tool_call_1",
-          "type": "tool-run_shell_command",
+          "type": "tool-bash",
         }
       `);
     });
@@ -266,9 +274,7 @@ describe("executeToolCallMachine", () => {
       const updatedPart = session.messages
         .flatMap((m) => m.parts)
         .find(
-          (p) =>
-            p.type === "tool-run_shell_command" &&
-            p.toolCallId === "test_tool_call_1",
+          (p) => p.type === "tool-bash" && p.toolCallId === "test_tool_call_1",
         );
 
       expect(updatedPart).toMatchInlineSnapshot(`
@@ -288,7 +294,7 @@ describe("executeToolCallMachine", () => {
           },
           "state": "output-error",
           "toolCallId": "test_tool_call_1",
-          "type": "tool-run_shell_command",
+          "type": "tool-bash",
         }
       `);
     });
@@ -440,16 +446,13 @@ describe("executeToolCallMachine", () => {
       return session.messages
         .flatMap((m) => m.parts)
         .find(
-          (p) =>
-            p.type === "tool-run_shell_command" &&
-            p.toolCallId === "test_tool_call_1",
+          (p) => p.type === "tool-bash" && p.toolCallId === "test_tool_call_1",
         );
     }
 
     it("should block pnpm dev command", async () => {
       expect(await testBlockedCommand("pnpm dev")).toMatchInlineSnapshot(`
         {
-          "errorText": "Quests already starts and runs the apps for you. You don't need to run 'pnpm dev'.",
           "input": {
             "command": "pnpm dev",
             "explanation": "Installing packages",
@@ -462,9 +465,18 @@ describe("executeToolCallMachine", () => {
             "messageId": "msg_00000000018888888888888889",
             "sessionId": "ses_00000000018888888888888888",
           },
-          "state": "output-error",
+          "output": {
+            "command": "pnpm dev",
+            "commands": [
+              "pnpm",
+            ],
+            "exitCode": 1,
+            "output": "Quests already starts and runs the apps for you. You don't need to run 'pnpm dev'.",
+          },
+          "preliminary": false,
+          "state": "output-available",
           "toolCallId": "test_tool_call_1",
-          "type": "tool-run_shell_command",
+          "type": "tool-bash",
         }
       `);
     });
@@ -472,7 +484,6 @@ describe("executeToolCallMachine", () => {
     it("should block pnpm start command", async () => {
       expect(await testBlockedCommand("pnpm start")).toMatchInlineSnapshot(`
         {
-          "errorText": "Quests already starts and runs the apps for you. You don't need to run 'pnpm start'.",
           "input": {
             "command": "pnpm start",
             "explanation": "Installing packages",
@@ -485,9 +496,18 @@ describe("executeToolCallMachine", () => {
             "messageId": "msg_00000000018888888888888889",
             "sessionId": "ses_00000000018888888888888888",
           },
-          "state": "output-error",
+          "output": {
+            "command": "pnpm start",
+            "commands": [
+              "pnpm",
+            ],
+            "exitCode": 1,
+            "output": "Quests already starts and runs the apps for you. You don't need to run 'pnpm start'.",
+          },
+          "preliminary": false,
+          "state": "output-available",
           "toolCallId": "test_tool_call_1",
-          "type": "tool-run_shell_command",
+          "type": "tool-bash",
         }
       `);
     });
@@ -495,7 +515,6 @@ describe("executeToolCallMachine", () => {
     it("should block pnpm run dev command", async () => {
       expect(await testBlockedCommand("pnpm run dev")).toMatchInlineSnapshot(`
         {
-          "errorText": "Quests already starts and runs the apps for you. You don't need to run 'pnpm run dev'.",
           "input": {
             "command": "pnpm run dev",
             "explanation": "Installing packages",
@@ -508,9 +527,18 @@ describe("executeToolCallMachine", () => {
             "messageId": "msg_00000000018888888888888889",
             "sessionId": "ses_00000000018888888888888888",
           },
-          "state": "output-error",
+          "output": {
+            "command": "pnpm run dev",
+            "commands": [
+              "pnpm",
+            ],
+            "exitCode": 1,
+            "output": "Quests already starts and runs the apps for you. You don't need to run 'pnpm run dev'.",
+          },
+          "preliminary": false,
+          "state": "output-available",
           "toolCallId": "test_tool_call_1",
-          "type": "tool-run_shell_command",
+          "type": "tool-bash",
         }
       `);
     });
@@ -518,7 +546,6 @@ describe("executeToolCallMachine", () => {
     it("should block pnpm run start command", async () => {
       expect(await testBlockedCommand("pnpm run start")).toMatchInlineSnapshot(`
         {
-          "errorText": "Quests already starts and runs the apps for you. You don't need to run 'pnpm run start'.",
           "input": {
             "command": "pnpm run start",
             "explanation": "Installing packages",
@@ -531,9 +558,18 @@ describe("executeToolCallMachine", () => {
             "messageId": "msg_00000000018888888888888889",
             "sessionId": "ses_00000000018888888888888888",
           },
-          "state": "output-error",
+          "output": {
+            "command": "pnpm run start",
+            "commands": [
+              "pnpm",
+            ],
+            "exitCode": 1,
+            "output": "Quests already starts and runs the apps for you. You don't need to run 'pnpm run start'.",
+          },
+          "preliminary": false,
+          "state": "output-available",
           "toolCallId": "test_tool_call_1",
-          "type": "tool-run_shell_command",
+          "type": "tool-bash",
         }
       `);
     });

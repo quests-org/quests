@@ -86,6 +86,7 @@ pnpm dev:studio
 ## Dependencies
 
 - `@types/node` locked in package.json to avoid constant `pnpm dedupe --check` failures.
+- `node-liblzma` and `@mongodb-js/zstd` are ignored optional dependencies of just-bash because they fail to build in CI.
 
 ## License
 

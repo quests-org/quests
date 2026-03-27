@@ -1,57 +1,133 @@
-import { describe, expect, it, vi } from "vitest";
+import { type CommandContext, InMemoryFs } from "just-bash";
+import mockFs from "mock-fs";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { ProjectSubdomainSchema } from "../../schemas/subdomains";
 import { createMockAppConfig } from "../../test/helpers/mock-app-config";
-import { tsCommand } from "./ts";
+import { createTsCommand } from "./ts";
 
 vi.mock(import("../execa-node-for-app"));
 
+const realFs = new InMemoryFs();
+
+const mockCtx: CommandContext = {
+  cwd: "/",
+  env: new Map<string, string>(),
+  fs: realFs,
+  stdin: "",
+};
+
 describe("tsCommand", () => {
   const appConfig = createMockAppConfig(ProjectSubdomainSchema.parse("test"));
+  const command = createTsCommand(appConfig);
+
+  afterEach(() => {
+    mockFs.restore();
+    vi.unstubAllGlobals();
+  });
+
+  it("returns version string for --version", async () => {
+    vi.stubGlobal("process", { ...process, version: "v20.0.0" });
+    const result = await command.execute(["--version"], mockCtx);
+
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "exitCode": 0,
+        "stderr": "",
+        "stdout": "node v20.0.0",
+      }
+    `);
+  });
+
+  it("returns version string for -v", async () => {
+    vi.stubGlobal("process", { ...process, version: "v20.0.0" });
+    const result = await command.execute(["-v"], mockCtx);
+
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "exitCode": 0,
+        "stderr": "",
+        "stdout": "node v20.0.0",
+      }
+    `);
+  });
 
   it("errors when no file argument provided", async () => {
-    const result = await tsCommand([], appConfig);
+    const result = await command.execute([], mockCtx);
 
-    expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
+    expect(result).toMatchInlineSnapshot(`
       {
-        "message": "ts command requires a file argument (e.g., ts scripts/setup.ts). Running ts without arguments spawns an interactive shell.",
-        "type": "execute-error",
+        "exitCode": 1,
+        "stderr": "tsx command requires a file argument (e.g., tsx scripts/setup.ts). Running tsx without arguments spawns an interactive shell.",
+        "stdout": "",
       }
     `);
   });
 
-  it("errors when -e flag is used", async () => {
-    const result = await tsCommand(["-e", "console.log('test')"], appConfig);
+  it("executes eval code via -e flag by writing a tmp file", async () => {
+    mockFs({ [appConfig.appDir]: {} });
 
-    expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
-      {
-        "message": "ts does not support the -e/--eval flag for evaluating code strings directly. Instead, write your code to a .ts or .js file and execute it with ts.",
-        "type": "execute-error",
-      }
-    `);
-  });
+    const { execaNodeForApp } = await import("../execa-node-for-app");
+    vi.mocked(execaNodeForApp).mockResolvedValueOnce({
+      all: "hello",
+      exitCode: 0,
+    } as never);
 
-  it("errors when --eval flag is used", async () => {
-    const result = await tsCommand(
-      ["--eval", "console.log('test')"],
-      appConfig,
+    const result = await command.execute(
+      ["-e", "console.log('hello')"],
+      mockCtx,
     );
 
-    expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
-      {
-        "message": "ts does not support the -e/--eval flag for evaluating code strings directly. Instead, write your code to a .ts or .js file and execute it with ts.",
-        "type": "execute-error",
-      }
-    `);
+    expect(result.exitCode).toBe(0);
+    expect(vi.mocked(execaNodeForApp)).toHaveBeenCalledWith(
+      appConfig,
+      appConfig.workspaceConfig.pnpmBinPath,
+      expect.arrayContaining([
+        "dlx",
+        "jiti",
+        expect.stringContaining("ts-eval-"),
+      ]),
+      expect.any(Object),
+      expect.any(String),
+    );
+  });
+
+  it("executes eval code via --eval flag by writing a tmp file", async () => {
+    mockFs({ [appConfig.appDir]: {} });
+
+    const { execaNodeForApp } = await import("../execa-node-for-app");
+    vi.mocked(execaNodeForApp).mockResolvedValueOnce({
+      all: "hello",
+      exitCode: 0,
+    } as never);
+
+    const result = await command.execute(
+      ["--eval", "console.log('hello')"],
+      mockCtx,
+    );
+
+    expect(result.exitCode).toBe(0);
+    expect(vi.mocked(execaNodeForApp)).toHaveBeenCalledWith(
+      appConfig,
+      appConfig.workspaceConfig.pnpmBinPath,
+      expect.arrayContaining([
+        "dlx",
+        "jiti",
+        expect.stringContaining("ts-eval-"),
+      ]),
+      expect.any(Object),
+      expect.any(String),
+    );
   });
 
   it("errors when only flags are provided with no file", async () => {
-    const result = await tsCommand(["--verbose"], appConfig);
+    const result = await command.execute(["--verbose"], mockCtx);
 
-    expect(result._unsafeUnwrapErr()).toMatchInlineSnapshot(`
+    expect(result).toMatchInlineSnapshot(`
       {
-        "message": "ts requires exactly one file path as a positional argument (e.g., ts scripts/setup.ts).",
-        "type": "execute-error",
+        "exitCode": 1,
+        "stderr": "tsx requires exactly one file path as a positional argument (e.g., tsx scripts/setup.ts).",
+        "stdout": "",
       }
     `);
   });
@@ -63,7 +139,7 @@ describe("tsCommand", () => {
       exitCode: 0,
     } as never);
 
-    const result = await tsCommand(
+    const result = await command.execute(
       [
         "./skills/pdf-to-markdown/scripts/convert.ts",
         "--file",
@@ -71,23 +147,67 @@ describe("tsCommand", () => {
         "--output",
         "./output/test.md",
       ],
-      appConfig,
+      mockCtx,
     );
 
-    expect(result.isOk()).toBe(true);
+    expect(result.exitCode).toBe(0);
     expect(vi.mocked(execaNodeForApp)).toHaveBeenCalledWith(
       appConfig,
       appConfig.workspaceConfig.pnpmBinPath,
-      [
+      expect.arrayContaining([
         "dlx",
         "jiti",
-        "./skills/pdf-to-markdown/scripts/convert.ts",
+        expect.stringContaining("convert.ts"),
         "--file",
         "./user-provided/test.pdf",
         "--output",
         "./output/test.md",
-      ],
+      ]),
       expect.any(Object),
+      expect.any(String),
     );
+  });
+
+  describe("path escape prevention", () => {
+    it.each([
+      ["../../../etc/passwd", "etc/passwd"],
+      ["../../etc/passwd", "etc/passwd"],
+      ["/etc/passwd", "etc/passwd"],
+      ["~/secret.ts", "~/secret.ts"],
+    ])(
+      "clamps %s to a relative path without escaping",
+      async (filePath, expectedPath) => {
+        const { execaNodeForApp } = await import("../execa-node-for-app");
+        vi.mocked(execaNodeForApp).mockResolvedValueOnce({
+          all: "",
+          exitCode: 0,
+        } as never);
+
+        await command.execute([filePath], mockCtx);
+
+        const calledPath = vi
+          .mocked(execaNodeForApp)
+          .mock.calls.at(-1)?.[2]?.[2];
+        expect(calledPath).toBeDefined();
+        expect(calledPath).not.toMatch(/^\//);
+        expect(calledPath).toBe(expectedPath);
+      },
+    );
+
+    it("clamps dot-dot traversal from a nested cwd inside appDir", async () => {
+      const { execaNodeForApp } = await import("../execa-node-for-app");
+      vi.mocked(execaNodeForApp).mockResolvedValueOnce({
+        all: "",
+        exitCode: 0,
+      } as never);
+
+      const nestedCtx: CommandContext = { ...mockCtx, cwd: "/scripts" };
+      await command.execute(["../../../etc/passwd"], nestedCtx);
+
+      const calledPath = vi.mocked(execaNodeForApp).mock.calls.at(-1)?.[2]?.[2];
+      expect(calledPath).toBeDefined();
+      expect(calledPath).not.toMatch(/^\//);
+      expect(calledPath).toBe("etc/passwd");
+    });
   });
 });

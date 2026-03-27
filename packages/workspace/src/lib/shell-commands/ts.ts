@@ -1,89 +1,99 @@
-import { envForProviderConfigs } from "@quests/ai-gateway";
-import { ok } from "neverthrow";
-import { parseArgs } from "node:util";
+import { defineCommand } from "just-bash";
+import { mkdir, writeFile } from "node:fs/promises";
 
 import type { AppConfig } from "../app-config/types";
 
-import { getWorkspaceServerURL } from "../../logic/server/url";
-import { execaNodeForApp } from "../execa-node-for-app";
-import { executeError } from "../execute-error";
-import { filterShellOutput } from "../filter-shell-output";
-import { type FileOperationResult } from "./types";
+import { APP_FOLDER_NAMES } from "../../constants";
+import { absolutePathJoin } from "../absolute-path-join";
+import { runPnpmCommand } from "../run-pnpm";
+import {
+  extractFileAndScriptArgs,
+  firstString,
+  parseCommandArgs,
+  resolveCommandContext,
+} from "./utils";
 
-const COMMAND_NAME = "ts";
 export const TS_COMMAND = {
-  // "tsx" is a well-known CLI tool for running TypeScript code, so if the agent
-  // attempts to use it we silently remap it to this command rather than failing.
-  // It is intentionally omitted from the tool description and visible command list.
-  alias: "tsx",
   description:
-    "Execute a TypeScript or JavaScript file, powered by Jiti. Does not support -e/--eval; always write code to a file first.",
-  examples: [`${COMMAND_NAME} scripts/setup.ts`],
-  name: COMMAND_NAME,
+    "Execute a TypeScript or JavaScript file. For quick one-liners, prefer -e <code> over writing a file.",
+  name: "tsx",
 } as const;
 
-export async function tsCommand(
-  args: string[],
-  appConfig: AppConfig,
-  signal?: AbortSignal,
-): Promise<FileOperationResult> {
-  if (args.length === 0) {
-    return executeError(
-      `${TS_COMMAND.name} command requires a file argument (e.g., ${TS_COMMAND.name} scripts/setup.ts). Running ${TS_COMMAND.name} without arguments spawns an interactive shell.`,
+const KNOWN_OPTIONS = {
+  e: { type: "string" },
+  eval: { type: "string" },
+  v: { type: "boolean" },
+  version: { type: "boolean" },
+} as const;
+
+export function createTsCommand(appConfig: AppConfig) {
+  return defineCommand(TS_COMMAND.name, async (args, ctx) => {
+    const { appCwd, env } = resolveCommandContext(appConfig, ctx);
+
+    if (args.length === 0) {
+      return {
+        exitCode: 1,
+        stderr: `${TS_COMMAND.name} command requires a file argument (e.g., ${TS_COMMAND.name} scripts/setup.ts). Running ${TS_COMMAND.name} without arguments spawns an interactive shell.`,
+        stdout: "",
+      };
+    }
+
+    const { positionals, values } = parseCommandArgs(
+      appConfig,
+      "ts",
+      args,
+      KNOWN_OPTIONS,
     );
-  }
 
-  const { positionals, values } = parseArgs({
-    allowPositionals: true,
-    args,
-    options: {
-      e: { type: "string" },
-      eval: { type: "string" },
-    },
-    strict: false,
-  });
+    if (values.v === true || values.version === true) {
+      return {
+        exitCode: 0,
+        stderr: "",
+        stdout: `node ${process.version}`,
+      };
+    }
 
-  if (values.e !== undefined || values.eval !== undefined) {
-    return executeError(
-      `${TS_COMMAND.name} does not support the -e/--eval flag for evaluating code strings directly. Instead, write your code to a .ts or .js file and execute it with ${TS_COMMAND.name}.`,
-    );
-  }
+    const evalCode = firstString(values.e, values.eval);
 
-  if (positionals.length === 0) {
-    return executeError(
-      `${TS_COMMAND.name} requires exactly one file path as a positional argument (e.g., ${TS_COMMAND.name} scripts/setup.ts).`,
-    );
-  }
+    let filePath: string;
+    let scriptArgs: string[];
 
-  const filePath = positionals[0];
-  if (!filePath) {
-    return executeError(`${TS_COMMAND.name} requires a file path argument.`);
-  }
+    if (evalCode === undefined) {
+      const fileAndArgs = extractFileAndScriptArgs(positionals, args, (p) =>
+        ctx.fs.resolvePath(ctx.cwd, p),
+      );
 
-  // Everything after the file path token in the original args is forwarded to
-  // the script as its own argv (flags like --file, --output, extra positionals).
-  const filePathIndex = args.indexOf(filePath);
-  const scriptArgs = args.slice(filePathIndex + 1);
+      if (fileAndArgs === undefined) {
+        return {
+          exitCode: 1,
+          stderr: `${TS_COMMAND.name} requires exactly one file path as a positional argument (e.g., ${TS_COMMAND.name} scripts/setup.ts).`,
+          stdout: "",
+        };
+      }
 
-  const providerEnv = envForProviderConfigs({
-    configs: appConfig.workspaceConfig.getAIProviderConfigs(),
-    workspaceServerURL: getWorkspaceServerURL(),
-  });
+      ({ filePath, scriptArgs } = fileAndArgs);
+    } else {
+      const tmpDir = absolutePathJoin(appConfig.appDir, APP_FOLDER_NAMES.tmp);
+      await mkdir(tmpDir, { recursive: true });
+      filePath = absolutePathJoin(tmpDir, `ts-eval-${Date.now()}.ts`);
+      await writeFile(filePath, evalCode, "utf8");
+      scriptArgs = [];
+    }
 
-  // Use pnpm dlx for faster execution via cached packages and avoid
-  // installing all packages eagerly.
-  const execResult = await execaNodeForApp(
-    appConfig,
-    appConfig.workspaceConfig.pnpmBinPath,
-    ["dlx", "jiti", filePath, ...scriptArgs],
-    // Don't reject so we can filter the output
-    { all: true, cancelSignal: signal, env: providerEnv, reject: false },
-  );
-  const combined = filterShellOutput(execResult.all, appConfig.appDir);
+    // Use pnpm dlx for faster execution via cached packages and avoid
+    // installing all packages eagerly.
+    const result = await runPnpmCommand({
+      appConfig,
+      args: ["dlx", "jiti", filePath, ...scriptArgs],
+      cwd: appCwd,
+      env,
+      signal: ctx.signal,
+    });
 
-  return ok({
-    combined,
-    command: `${TS_COMMAND.name} ${args.join(" ")}`,
-    exitCode: execResult.exitCode ?? 1,
+    return {
+      exitCode: result.exitCode,
+      stderr: "",
+      stdout: result.combined,
+    };
   });
 }

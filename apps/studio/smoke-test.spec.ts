@@ -31,6 +31,42 @@ describe("Studio Smoke Test", () => {
     await fs.rm(tempUserDataDir, { force: true, recursive: true });
   });
 
+  it("should not contain monorepo paths baked into compiled bundles", async () => {
+    // Guards against build-time path resolution leaking into the bundle as a
+    // hardcoded string (e.g. require.resolve() in dev mode). First caught with
+    // ffmpeg-static: the app passed the smoke test but launched with no window
+    // on any other machine. Only main/preload run in Node and can do fs requires;
+    // the renderer is irrelevant here.
+    const repoRoot = path.resolve(process.cwd(), "../..");
+    // Check both slash styles -- vite may normalize to "/" even on Windows.
+    const repoRootForward = repoRoot.replaceAll("\\", "/");
+
+    const bundleFiles = [
+      path.join(process.cwd(), "out/main/index.js"),
+      path.join(process.cwd(), "out/preload/index.mjs"),
+    ];
+
+    for (const bundleFile of bundleFiles) {
+      const label = `${path.basename(path.dirname(bundleFile))}/${path.basename(bundleFile)}`;
+      const content = await fs.readFile(bundleFile, "utf8");
+
+      for (const needle of [repoRoot, repoRootForward]) {
+        const idx = content.indexOf(needle);
+        if (idx === -1) continue;
+
+        // Snippet avoids vitest diffing the entire bundle (thousands of lines).
+        const snippetStart = Math.max(0, idx - 60);
+        const snippetEnd = Math.min(content.length, idx + needle.length + 60);
+        const snippet = content.slice(snippetStart, snippetEnd).trim();
+        expect.fail(
+          `${label} contains a baked-in monorepo path.\n` +
+            `  needle: ${needle}\n` +
+            `  context: ...${snippet}...`,
+        );
+      }
+    }
+  });
+
   it("should launch the app and verify basic functionality", async () => {
     const platform = process.platform;
     let executablePath: string;

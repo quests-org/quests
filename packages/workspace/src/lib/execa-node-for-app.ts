@@ -1,5 +1,6 @@
 import { execa, type Options } from "execa";
 
+import { type AbsolutePath } from "../schemas/paths";
 import { type AppConfig } from "./app-config/types";
 
 export function execaNodeForApp<
@@ -9,10 +10,11 @@ export function execaNodeForApp<
   file: string | URL,
   arguments_?: readonly string[],
   options?: OptionsType,
+  cwd?: AbsolutePath,
 ) {
   return execa(file, arguments_, {
     ...options,
-    cwd: appConfig.appDir,
+    cwd: cwd ?? appConfig.appDir,
     env: {
       ...options?.env,
       ...appConfig.workspaceConfig.nodeExecEnv,

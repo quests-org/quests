@@ -21,7 +21,7 @@ import { VirtualizedScrollingText } from "./virtualized-scrolling-text";
 
 type ShellCommandPart = Extract<
   SessionMessagePart.ToolPart,
-  { type: "tool-run_shell_command" }
+  { type: "tool-bash" }
 >;
 
 export function ShellCommandCard({
@@ -46,15 +46,9 @@ export function ShellCommandCard({
   const hasOutput = part.state === "output-available";
   const isError = part.state === "output-error";
 
-  // Format output - support both new combined field and legacy stdout/stderr
   if (hasOutput) {
-    const displayOutput =
-      part.output.combined ??
-      (part.output.stderr && part.output.stdout
-        ? `${part.output.stdout}${part.output.stderr}`
-        : (part.output.stderr ?? part.output.stdout));
-    if (displayOutput) {
-      parts.push(displayOutput);
+    if (part.output.output) {
+      parts.push(part.output.output);
     }
   } else if (isError) {
     parts.push(`Error: ${part.errorText || "Command failed"}`);
@@ -114,6 +108,11 @@ export function ShellCommandCard({
         <span className="min-w-0 truncate text-foreground/80">
           {reasoning ?? command}
         </span>
+        {hasOutput && part.output.commands.length > 0 && (
+          <span className="shrink-0 text-xs text-muted-foreground/60">
+            {part.output.commands.join(", ")}
+          </span>
+        )}
       </ToolCardHeader>
 
       {showContent && (

@@ -71,7 +71,7 @@ registerSession({
             explanation: "Run tests for helpers module",
             timeoutMs: 30_000,
           },
-          type: "tool-run_shell_command",
+          type: "tool-bash",
         }),
         builder.toolPart(assistantMessageId, "input-streaming", {
           input: {},

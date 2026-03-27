@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const TOOL_NAMES = {
+  bash: "bash",
   choose: "choose",
   copyToProject: "copy_to_project",
   editFile: "edit_file",
@@ -9,7 +10,6 @@ export const TOOL_NAMES = {
   grep: "grep",
   loadSkill: "load_skill",
   readFile: "read_file",
-  runShellCommand: "run_shell_command",
   task: "task",
   unavailable: "unavailable",
   webSearch: "web_search",
@@ -25,7 +25,7 @@ export const ToolNameSchema = z.enum([
   TOOL_NAMES.grep,
   TOOL_NAMES.loadSkill,
   TOOL_NAMES.readFile,
-  TOOL_NAMES.runShellCommand,
+  TOOL_NAMES.bash,
   TOOL_NAMES.task,
   TOOL_NAMES.unavailable,
   TOOL_NAMES.webSearch,
