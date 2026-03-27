@@ -52,7 +52,9 @@ describe("Studio Smoke Test", () => {
 
       for (const needle of [repoRoot, repoRootForward]) {
         const idx = content.indexOf(needle);
-        if (idx === -1) continue;
+        if (idx === -1) {
+          continue;
+        }
 
         // Snippet avoids vitest diffing the entire bundle (thousands of lines).
         const snippetStart = Math.max(0, idx - 60);
