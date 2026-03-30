@@ -95,7 +95,7 @@ describe("LoadSkill", () => {
 
       Available skills:
 
-      - existing-skill: "A test skill""
+      - existing-skill: A test skill"
     `);
   });
 

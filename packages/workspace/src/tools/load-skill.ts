@@ -7,6 +7,7 @@ import { z } from "zod";
 
 import { APP_FOLDER_NAMES } from "../constants";
 import { copySkill } from "../lib/copy-skill";
+import { toAgentPath } from "../lib/normalize-path";
 import { runPnpmCommand } from "../lib/run-pnpm";
 import { PNPM_COMMAND } from "../lib/shell-commands/pnpm";
 import { TS_COMMAND } from "../lib/shell-commands/ts";
@@ -127,7 +128,7 @@ export const LoadSkill = setupTool({
     }
 
     const destDir = copyResult.value;
-    const relativeSkillRoot = path.join(APP_FOLDER_NAMES.skills, skill.name);
+    const relativeSkillRoot = toAgentPath(APP_FOLDER_NAMES.skills, skill.name);
     const { files: copiedFiles, truncated } = await listSkillFiles(
       destDir,
       signal,

@@ -1,3 +1,4 @@
+import matter from "gray-matter";
 import fs from "node:fs/promises";
 import path from "node:path";
 
@@ -77,6 +78,31 @@ export async function listSkillFiles(
   return { files: results, truncated };
 }
 
+export function parseFrontmatter(
+  raw: string,
+): null | { body: string; description: string } {
+  let parsed: matter.GrayMatterFile<string>;
+  try {
+    parsed = matter(raw);
+  } catch {
+    try {
+      parsed = matter(sanitizeFrontmatter(raw));
+    } catch {
+      return null;
+    }
+  }
+
+  const description =
+    typeof parsed.data.description === "string"
+      ? parsed.data.description.trim()
+      : undefined;
+  if (!description) {
+    return null;
+  }
+
+  return { body: parsed.content.trim(), description };
+}
+
 async function findSkillsInDir(dir: AbsolutePath): Promise<SkillInfo[]> {
   const exists = await pathExists(dir);
   if (!exists) {
@@ -118,29 +144,54 @@ async function findSkillsInDir(dir: AbsolutePath): Promise<SkillInfo[]> {
   return skills;
 }
 
-function parseFrontmatter(
-  raw: string,
-): null | { body: string; description: string } {
-  const match = /^---\n([\s\S]*?)\n---\n([\s\S]*)$/.exec(raw);
-  if (!match) {
-    return null;
+// Adapted from https://github.com/sst/opencode/blob/main/packages/opencode/src/config/markdown.ts
+function sanitizeFrontmatter(raw: string): string {
+  const match = /^---\r?\n([\s\S]*?)\r?\n---/.exec(raw);
+  if (!match?.[1]) {
+    return raw;
   }
 
   const frontmatter = match[1];
-  const bodyRaw = match[2];
+  const lines = frontmatter.split(/\r?\n/);
+  const result: string[] = [];
 
-  if (!frontmatter || bodyRaw === undefined) {
-    return null;
+  for (const line of lines) {
+    if (
+      line.trim().startsWith("#") ||
+      line.trim() === "" ||
+      /^\s+/.test(line)
+    ) {
+      result.push(line);
+      continue;
+    }
+
+    const kvMatch = /^(\w+):(.*)$/.exec(line);
+    if (!kvMatch?.[1] || kvMatch[2] === undefined) {
+      result.push(line);
+      continue;
+    }
+
+    const key = kvMatch[1];
+    const value = kvMatch[2].trim();
+
+    if (
+      value === "" ||
+      value === ">" ||
+      value === "|" ||
+      value.startsWith('"') ||
+      value.startsWith("'")
+    ) {
+      result.push(line);
+      continue;
+    }
+
+    if (value.includes(":")) {
+      result.push(`${key}: |-\n  ${value}`);
+      continue;
+    }
+
+    result.push(line);
   }
 
-  const body = bodyRaw.trim();
-
-  const descriptionMatch = /^description:[ \t]*(\S[^\n]*)$/m.exec(frontmatter);
-  const description = descriptionMatch?.[1]?.trim();
-
-  if (!description) {
-    return null;
-  }
-
-  return { body, description };
+  return raw.replace(frontmatter, () => result.join("\n"));
 }
