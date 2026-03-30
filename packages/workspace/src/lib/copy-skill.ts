@@ -7,6 +7,7 @@ import { type AbsolutePath, type AppDir } from "../schemas/paths";
 import { absolutePathJoin } from "./absolute-path-join";
 import { TypedError } from "./errors";
 import { getIgnore } from "./get-ignore";
+import { normalizedPathJoin, normalizePath } from "./normalize-path";
 
 export async function copySkill({
   appDir,
@@ -25,7 +26,7 @@ export async function copySkill({
     await fs.access(destDir);
     return err(
       new TypedError.Conflict(
-        `Skill "${skillName}" is already loaded at ${path.join(APP_FOLDER_NAMES.skills, skillName)}.`,
+        `Skill "${skillName}" is already loaded at ${normalizedPathJoin(APP_FOLDER_NAMES.skills, skillName)}.`,
       ),
     );
   } catch (error) {
@@ -48,7 +49,7 @@ export async function copySkill({
       if (relativePath === "") {
         return true;
       }
-      return !ignore.ignores(relativePath);
+      return !ignore.ignores(normalizePath(relativePath));
     },
     recursive: true,
   });

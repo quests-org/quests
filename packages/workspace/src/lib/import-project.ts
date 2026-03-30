@@ -14,6 +14,7 @@ import { folderNameForSubdomain } from "./folder-name-for-subdomain";
 import { git } from "./git";
 import { GitCommands } from "./git/commands";
 import { ensureGitRepo } from "./git/ensure-git-repo";
+import { normalizePath } from "./normalize-path";
 import { pathExists } from "./path-exists";
 
 interface ImportProjectOptions {
@@ -75,7 +76,7 @@ export async function importProject(
           }
 
           // Needed for importing a project from Windows on a POSIX machine.
-          const normalizedFilename = entry.filename.replaceAll("\\", "/");
+          const normalizedFilename = normalizePath(entry.filename);
           const fullPath = absolutePathJoin(projectDir, normalizedFilename);
           const dirPath = path.dirname(fullPath);
           await fs.mkdir(dirPath, { recursive: true });

@@ -7,6 +7,7 @@ import { APP_FOLDER_NAMES } from "../constants";
 import { type AbsolutePath } from "../schemas/paths";
 import { TypedError } from "./errors";
 import { getIgnore } from "./get-ignore";
+import { normalizePath } from "./normalize-path";
 
 export function copyProject({
   includePrivateFolder,
@@ -50,7 +51,7 @@ export function copyProject({
             ) {
               return true;
             }
-            return !ignore.ignores(relativePath);
+            return !ignore.ignores(normalizePath(relativePath));
           },
           recursive: true,
         }),
