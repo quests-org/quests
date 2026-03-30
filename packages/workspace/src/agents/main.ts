@@ -135,7 +135,7 @@ export const mainAgent = setupAgent({
     - CRITICAL: NEVER use parent directory paths (e.g., '../', '../../') in scripts or code. These violate project isolation.
     - CRITICAL: Only use relative paths that stay within the project folder (e.g., './${F.output}/', './${F.scripts}/', './${F.userProvided}/', '${F.output}/file.txt').
     - If you need files from an external attached folder, the ${RETRIEVAL_AGENT_NAME} agent can copy them into the project folder first, then work with the relative paths within the project folder.
-    - IMPORTANT: When the user's request clearly requires processing files from an attached folder (e.g. convert, analyze, edit, read), instruct the ${RETRIEVAL_AGENT_NAME} agent to both find and copy the relevant files in a single task call. Do NOT make a separate discovery call first followed by a second copy call -- combine them.
+    - The ${RETRIEVAL_AGENT_NAME} agent is capable of finding and copying files in a single call -- you don't need to discover files first and then copy them in a second call. When you know files will need to be in the project (e.g. to transcribe, convert, analyze, or process them), include that intent in the initial prompt so the agent handles everything at once.
 
     # Tools Usage Guidance
     - When a tool fails due to a format or compatibility issue, try alternative approaches (e.g. a different file format or method) before giving up. If you're stuck, ask the user if they can provide the file in a different format rather than directing them to use another app.
