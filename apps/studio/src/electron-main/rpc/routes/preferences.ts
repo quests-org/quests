@@ -44,6 +44,13 @@ const setEnableUsageMetrics = base
     preferencesStore.set("enableUsageMetrics", input.enabled);
   });
 
+const setDeveloperMode = base
+  .input(z.object({ enabled: z.boolean() }))
+  .handler(({ input }) => {
+    const preferencesStore = getPreferencesStore();
+    preferencesStore.set("developerMode", input.enabled);
+  });
+
 const openSettingsWindow = base
   .input(
     z.object({
@@ -115,6 +122,7 @@ export const preferences = {
   openSettingsWindow,
   quitAndInstall,
   setDefaultModelURI,
+  setDeveloperMode,
   setEnableUsageMetrics,
   setPreferApiKeyOverAccount,
   setTheme,

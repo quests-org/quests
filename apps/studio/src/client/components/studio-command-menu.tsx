@@ -12,7 +12,7 @@ import { useTabActions } from "@/client/hooks/use-tab-actions";
 import { useToggleCommandMenu } from "@/client/hooks/use-toggle-command-menu";
 import { rpcClient } from "@/client/rpc/client";
 import { type ProjectSubdomain } from "@quests/workspace/client";
-import { skipToken, useQuery } from "@tanstack/react-query";
+import { skipToken, useMutation, useQuery } from "@tanstack/react-query";
 import { useMatch, useNavigate } from "@tanstack/react-router";
 import {
   format,
@@ -23,13 +23,34 @@ import {
   startOfDay,
   subDays,
 } from "date-fns";
-import { Copy, LayoutGrid, Pencil, Plus, Star, TrashIcon } from "lucide-react";
+import {
+  Copy,
+  LayoutGrid,
+  Pencil,
+  Plus,
+  RefreshCw,
+  Star,
+  TrashIcon,
+} from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 
 export function StudioCommandMenu() {
   const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
   const navigate = useNavigate();
   const { navigateTab } = useTabActions();
+
+  const { data: preferences } = useQuery(
+    rpcClient.preferences.live.get.experimental_liveOptions({ enabled: open }),
+  );
+
+  const { mutate: setDeveloperMode } = useMutation(
+    rpcClient.preferences.setDeveloperMode.mutationOptions(),
+  );
+
+  const { mutate: checkForUpdates } = useMutation(
+    rpcClient.preferences.checkForUpdates.mutationOptions(),
+  );
   const projectRouteMatch = useMatch({
     from: "/_app/projects/$subdomain/",
     shouldThrow: false,
@@ -103,8 +124,16 @@ export function StudioCommandMenu() {
     }, []),
   );
 
-  const handleSelectProject = (subdomain: ProjectSubdomain) => {
+  const handleClose = () => {
     setOpen(false);
+    // Delay reset until after the close animation (200ms) to avoid a flicker.
+    setTimeout(() => {
+      setSearch("");
+    }, 200);
+  };
+
+  const handleSelectProject = (subdomain: ProjectSubdomain) => {
+    handleClose();
     void navigateTab({
       params: { subdomain },
       to: "/projects/$subdomain",
@@ -112,12 +141,12 @@ export function StudioCommandMenu() {
   };
 
   const handleNewProject = () => {
-    setOpen(false);
+    handleClose();
     void navigate({ to: "/new-tab" });
   };
 
   const handleAllProjects = () => {
-    setOpen(false);
+    handleClose();
     void navigate({ to: "/projects" });
   };
 
@@ -127,7 +156,7 @@ export function StudioCommandMenu() {
     if (!currentProjectSubdomain) {
       return;
     }
-    setOpen(false);
+    handleClose();
     void navigate({
       from: "/projects/$subdomain",
       params: { subdomain: currentProjectSubdomain },
@@ -138,11 +167,21 @@ export function StudioCommandMenu() {
   return (
     <CommandDialog
       description="Search for a project to open..."
-      onOpenChange={setOpen}
+      onOpenChange={(value) => {
+        if (value) {
+          setOpen(true);
+        } else {
+          handleClose();
+        }
+      }}
       open={open}
       title="Open Project"
     >
-      <CommandInput placeholder="Search projects..." />
+      <CommandInput
+        onValueChange={setSearch}
+        placeholder="Search projects..."
+        value={search}
+      />
       <CommandList className="h-96">
         {isLoading && projects.length === 0 ? (
           <div className="space-y-4 px-2 py-3">
@@ -218,6 +257,33 @@ export function StudioCommandMenu() {
                 )}
               </CommandGroup>
             )}
+            <CommandGroup heading="App">
+              <CommandItem
+                onSelect={() => {
+                  handleClose();
+                  checkForUpdates({});
+                }}
+                value="check-for-updates"
+              >
+                <RefreshCw className="size-4" />
+                <span>Check for updates</span>
+              </CommandItem>
+              {/* Only renders when "!dev" is typed exactly, so it never appears in the default list. */}
+              {search === "!dev" && (
+                <CommandItem
+                  keywords={["!dev"]}
+                  onSelect={() => {
+                    handleClose();
+                    setDeveloperMode({
+                      enabled: !(preferences?.developerMode ?? false),
+                    });
+                  }}
+                  value="toggle-developer-mode"
+                >
+                  <span>Toggle developer mode</span>
+                </CommandItem>
+              )}
+            </CommandGroup>
             {(["Today", "Yesterday", "Last 7 Days", "Older"] as const).map(
               (groupName) => {
                 const groupProjects = groupedProjects[groupName];
