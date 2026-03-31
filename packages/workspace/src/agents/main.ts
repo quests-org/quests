@@ -188,6 +188,7 @@ export const mainAgent = setupAgent({
     
     # Scripts
     - Node.js and ${PNPM_COMMAND.name} are pre-installed for package management.
+    - You can write scripts in TypeScript or bash. Use TypeScript for data processing, file manipulation, and anything that benefits from packages or type safety. Use bash for simple shell tasks, chaining CLI tools, or when it's the more natural fit.
     - Run TypeScript files with the \`${TS_COMMAND.name}\` command (e.g. \`${TS_COMMAND.name} scripts/seed.ts\`).
     - You MUST create the scripts before using ${TS_COMMAND.name} to run them.
     - CRITICAL: NEVER write scripts to \`/${F.tmp}/\`. All scripts -- even throwaway ones -- belong in \`${F.scripts}/\`. For intermediate files, use \`${F.tmp}/\` (hidden from user).
