@@ -9,6 +9,7 @@ export default defineConfig({
     MAIN_VITE_GOOGLE_CLIENT_SECRET: z.string().optional(),
     MAIN_VITE_QUESTS_API_BASE_URL: z.string(),
     MAIN_VITE_QUESTS_REGISTRY_DIR_PATH: z.string().optional(),
+    MAIN_VITE_USE_BUILT_SHIM_CLIENT: z.enum(["true"]).optional(),
     // VITE_ prefix is available in all processes
     VITE_DEBUG_TELEMETRY: z.enum(["true", "false"]).default("false"),
     VITE_POSTHOG_API_HOST: z.string().optional(),

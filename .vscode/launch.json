@@ -4,16 +4,19 @@
   // rather than the system/shell default.
   "compounds": [
     {
-      "configurations": ["Debug Studio Main Process", "Dev Shim Client"],
-      "name": "🐛 Studio",
+      "configurations": [
+        "Debug Studio Main Process (Dev Shim)",
+        "Dev Shim Client"
+      ],
+      "name": "🐛 Studio with Dev Shim Client",
       "presentation": {
-        "order": 1
+        "order": 2
       },
       "stopAll": true
     },
     {
       "configurations": [
-        "Debug Studio Main Process",
+        "Debug Studio Main Process (Dev Shim)",
         "Debug Studio Renderer Process",
         "Dev Shim Client"
       ],
@@ -38,17 +41,31 @@
         "order": 4
       },
       "stopAll": true
-    },
-    {
-      "configurations": ["Debug Studio Main Process Fresh", "Dev Shim Client"],
-      "name": "🐛 Studio Fresh",
-      "presentation": {
-        "order": 1
-      },
-      "stopAll": true
     }
   ],
   "configurations": [
+    {
+      "cwd": "${workspaceRoot}/apps/studio",
+      "env": {
+        "MAIN_VITE_USE_BUILT_SHIM_CLIENT": "true",
+        "NODE_OPTIONS": "--enable-source-maps",
+        "PATH": "${workspaceRoot}/node_modules/.bin:${env:PATH}",
+        "REMOTE_DEBUGGING_PORT": "9160"
+      },
+      "internalConsoleOptions": "openOnFirstSessionStart",
+      "name": "🐛 Studio",
+      "preLaunchTask": "Build Shim Client",
+      "presentation": {
+        "order": 1
+      },
+      "request": "launch",
+      "runtimeArgs": ["--sourcemap"],
+      "runtimeExecutable": "${workspaceRoot}/apps/studio/node_modules/.bin/electron-vite",
+      "type": "node",
+      "windows": {
+        "runtimeExecutable": "${workspaceRoot}/apps/studio/node_modules/.bin/electron-vite.cmd"
+      }
+    },
     {
       "cwd": "${workspaceRoot}/apps/studio",
       "env": {
@@ -57,7 +74,10 @@
         "REMOTE_DEBUGGING_PORT": "9160"
       },
       "internalConsoleOptions": "openOnFirstSessionStart",
-      "name": "Debug Studio Main Process",
+      "name": "Debug Studio Main Process (Dev Shim)",
+      "presentation": {
+        "hidden": true
+      },
       "request": "launch",
       "runtimeArgs": ["--sourcemap"],
       "runtimeExecutable": "${workspaceRoot}/apps/studio/node_modules/.bin/electron-vite",
@@ -70,12 +90,17 @@
       "cwd": "${workspaceRoot}/apps/studio",
       "env": {
         "ELECTRON_USE_NEW_USER_FOLDER": "true",
+        "MAIN_VITE_USE_BUILT_SHIM_CLIENT": "true",
         "NODE_OPTIONS": "--enable-source-maps",
         "PATH": "${workspaceRoot}/node_modules/.bin:${env:PATH}",
         "REMOTE_DEBUGGING_PORT": "9160"
       },
       "internalConsoleOptions": "openOnFirstSessionStart",
-      "name": "Debug Studio Main Process Fresh",
+      "name": "🐛 Studio Fresh",
+      "preLaunchTask": "Build Shim Client",
+      "presentation": {
+        "order": 5
+      },
       "request": "launch",
       "runtimeArgs": ["--sourcemap"],
       "runtimeExecutable": "${workspaceRoot}/apps/studio/node_modules/.bin/electron-vite",

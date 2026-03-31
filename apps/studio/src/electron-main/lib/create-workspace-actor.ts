@@ -48,9 +48,12 @@ export function createWorkspaceActor() {
       rootDir,
       shimClientDir: app.isPackaged
         ? path.resolve(process.resourcesPath, "shim-client")
-        : // Uncomment to test built shim
-          // path.resolve(import.meta.dirname, "../../../../packages/shim-client/dist"),
-          "dev-server",
+        : import.meta.env.MAIN_VITE_USE_BUILT_SHIM_CLIENT
+          ? path.resolve(
+              import.meta.dirname,
+              "../../../../packages/shim-client/dist",
+            )
+          : "dev-server",
       trashItem: (pathToTrash) => shell.trashItem(pathToTrash),
     },
     inspect(event) {

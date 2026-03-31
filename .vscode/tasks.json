@@ -1,6 +1,27 @@
 {
   "tasks": [
     {
+      "command": "turbo run build --filter=@quests/shim-client",
+      "detail": "Build the shim client bundle (cached via Turbo)",
+      "label": "Build Shim Client",
+      "options": {
+        "cwd": "${workspaceRoot}",
+        "env": {
+          "PATH": "${workspaceRoot}/node_modules/.bin:${env:PATH}"
+        }
+      },
+      "presentation": {
+        "clear": true,
+        "echo": false,
+        "focus": false,
+        "panel": "shared",
+        "reveal": "silent",
+        "showReuseMessage": false
+      },
+      "problemMatcher": [],
+      "type": "shell"
+    },
+    {
       "command": "bash scripts/sync.sh",
       "detail": "Pull latest main, update submodules, and install dependencies with scripts/sync.sh script",
       "label": "Sync with main",
