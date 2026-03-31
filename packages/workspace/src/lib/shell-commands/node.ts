@@ -45,21 +45,26 @@ const KNOWN_OPTIONS = {
   version: { type: "boolean" },
 } as const;
 
+export const NODE_COMMAND = {
+  description: "Run a JavaScript/CommonJS file with Node.js.",
+  name: "node",
+} as const;
+
 export function createNodeCommand(appConfig: AppConfig) {
-  return defineCommand("node", async (args, ctx) => {
+  return defineCommand(NODE_COMMAND.name, async (args, ctx) => {
     const { appCwd, env } = resolveCommandContext(appConfig, ctx);
 
     if (args.length === 0) {
       return {
         exitCode: 1,
-        stderr: `node command requires a file argument or -e <code>. Prefer \`${TS_COMMAND.name}\` for TypeScript files.`,
+        stderr: `${NODE_COMMAND.name} command requires a file argument or -e <code>. Prefer \`${TS_COMMAND.name}\` for TypeScript files.`,
         stdout: "",
       };
     }
 
     const { positionals, values } = parseCommandArgs(
       appConfig,
-      "node",
+      NODE_COMMAND.name,
       args,
       KNOWN_OPTIONS,
     );
@@ -121,7 +126,7 @@ export function createNodeCommand(appConfig: AppConfig) {
     if (positionals.length === 0) {
       return {
         exitCode: 1,
-        stderr: "node requires a file path argument or -e <code>.",
+        stderr: `${NODE_COMMAND.name} requires a file path argument or -e <code>.`,
         stdout: "",
       };
     }
@@ -137,7 +142,7 @@ export function createNodeCommand(appConfig: AppConfig) {
     if (fileAndArgs === undefined) {
       return {
         exitCode: 1,
-        stderr: "node requires a file path argument.",
+        stderr: `${NODE_COMMAND.name} requires a file path argument.`,
         stdout: "",
       };
     }

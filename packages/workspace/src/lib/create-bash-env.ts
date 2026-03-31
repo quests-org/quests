@@ -19,10 +19,11 @@ import {
   createFfprobeCommand,
   FFPROBE_COMMAND,
 } from "./shell-commands/ffprobe";
-import { createNodeCommand } from "./shell-commands/node";
+import { createNodeCommand, NODE_COMMAND } from "./shell-commands/node";
 import { createPnpmCommand, PNPM_COMMAND } from "./shell-commands/pnpm";
 import { createTsCommand, TS_COMMAND } from "./shell-commands/ts";
 import { createTscCommand, TSC_COMMAND } from "./shell-commands/tsc";
+import { createWhichCommand } from "./shell-commands/which";
 
 // cspell:ignore mixmark papaparse
 
@@ -51,11 +52,7 @@ const BROKEN_COMMANDS = new Set<CommandName>([
   "yq", // depends on `papaparse`, which uses a CJS dynamic require("process") incompatible with just-bash's ESM bundle
 ]);
 
-const STUB_COMMANDS = [
-  stubCommand(
-    "which",
-    "not found as a system binary. This is a sandboxed environment -- commands are available to use directly, but they are not backed by real filesystem paths",
-  ),
+const STATIC_STUB_COMMANDS = [
   stubCommand("file"),
   stubCommand("sqlite3", "SQLite is not available in this environment"),
   stubCommand("tar"),
@@ -143,6 +140,55 @@ const DESCRIBED_COMMANDS: Record<string, string> = {
   xan: "Fast CSV processing, filtering, aggregation, and visualization",
 };
 
+interface CustomCommandDef {
+  description: string;
+  factory: (appConfig: AppConfig) => ReturnType<typeof defineCommand>;
+  // When false, the command is available (including via `which`) but omitted
+  // from the agent-facing description to discourage its use.
+  listInDescription: boolean;
+  name: string;
+}
+
+const CUSTOM_COMMAND_DEFS: CustomCommandDef[] = [
+  {
+    description: FFMPEG_COMMAND.description,
+    factory: createFfmpegCommand,
+    listInDescription: true,
+    name: FFMPEG_COMMAND.name,
+  },
+  {
+    description: FFPROBE_COMMAND.description,
+    factory: createFfprobeCommand,
+    listInDescription: true,
+    name: FFPROBE_COMMAND.name,
+  },
+  {
+    description: NODE_COMMAND.description,
+    factory: createNodeCommand,
+    // Omitted from the description so the agent prefers TypeScript via `tsx`.
+    listInDescription: false,
+    name: NODE_COMMAND.name,
+  },
+  {
+    description: PNPM_COMMAND.description,
+    factory: createPnpmCommand,
+    listInDescription: true,
+    name: PNPM_COMMAND.name,
+  },
+  {
+    description: TS_COMMAND.description,
+    factory: createTsCommand,
+    listInDescription: true,
+    name: TS_COMMAND.name,
+  },
+  {
+    description: TSC_COMMAND.description,
+    factory: createTscCommand,
+    listInDescription: true,
+    name: TSC_COMMAND.name,
+  },
+];
+
 export function createBashDescription() {
   const allowedCommandNames = getCommandNames().filter(
     (name) => !BROKEN_COMMANDS.has(name as CommandName),
@@ -156,14 +202,9 @@ export function createBashDescription() {
     .filter(([name]) => allowedCommandNames.includes(name))
     .map(([name, description]) => `  ${name} - ${description}`);
 
-  const customLines = [
-    `  ${FFMPEG_COMMAND.name} - ${FFMPEG_COMMAND.description}`,
-    `  ${FFPROBE_COMMAND.name} - ${FFPROBE_COMMAND.description}`,
-    `  ${PNPM_COMMAND.name} - ${PNPM_COMMAND.description}`,
-    `  ${TS_COMMAND.name} - ${TS_COMMAND.description}`,
-    `  ${TSC_COMMAND.name} - ${TSC_COMMAND.description}`,
-    // Intentionally not listing Node because we want the agent to prefer TypeScript
-  ];
+  const customLines = CUSTOM_COMMAND_DEFS.filter(
+    (cmd) => cmd.listInDescription,
+  ).map((cmd) => `  ${cmd.name} - ${cmd.description}`);
 
   return [
     "Execute bash commands in the project directory.",
@@ -199,13 +240,14 @@ export function createBashEnv(appConfig: AppConfig) {
   const bash = new Bash({
     commands: allowedCommands,
     customCommands: [
-      createFfmpegCommand(appConfig),
-      createFfprobeCommand(appConfig),
-      createNodeCommand(appConfig),
-      createPnpmCommand(appConfig),
-      createTsCommand(appConfig),
-      createTscCommand(appConfig),
-      ...STUB_COMMANDS,
+      ...CUSTOM_COMMAND_DEFS.map((cmd) => cmd.factory(appConfig)),
+      createWhichCommand(
+        new Set([
+          ...allowedCommands,
+          ...CUSTOM_COMMAND_DEFS.map((cmd) => cmd.name),
+        ]),
+      ),
+      ...STATIC_STUB_COMMANDS,
     ],
     cwd: "/",
     // Seed with process.env so PATH and other system vars are available to
