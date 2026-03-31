@@ -8,11 +8,13 @@ export function CollapsiblePartMainContent({
   className,
   contentClassName,
   contentRef,
+  footer,
 }: {
   children: ReactNode;
   className?: string;
   contentClassName?: string;
   contentRef?: React.Ref<HTMLDivElement>;
+  footer?: ReactNode;
 }) {
   return (
     <div className={cn("mt-2 text-xs", className)}>
@@ -25,6 +27,7 @@ export function CollapsiblePartMainContent({
       >
         {children}
       </div>
+      {footer}
     </div>
   );
 }

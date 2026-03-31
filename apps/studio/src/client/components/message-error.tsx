@@ -178,7 +178,36 @@ export function MessageError({
         </CollapsibleTrigger>
 
         <CollapsibleContent>
-          <CollapsiblePartMainContent>
+          <CollapsiblePartMainContent
+            footer={
+              showActions && onStartNewChat && !questsError ? (
+                <div className="mt-2 flex gap-2">
+                  <Tooltip delayDuration={0}>
+                    <TooltipTrigger asChild>
+                      <Button
+                        onClick={onStartNewChat}
+                        size="sm"
+                        variant="outline"
+                      >
+                        Start new chat
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Starts a fresh chat in this project</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <Button
+                    onClick={() => {
+                      onRetry("Try that again.");
+                    }}
+                    size="sm"
+                  >
+                    Try again
+                  </Button>
+                </div>
+              ) : undefined
+            }
+          >
             <div className="mb-2">
               <div className="mb-1 font-semibold">Error:</div>
               <pre className="font-mono text-xs wrap-break-word whitespace-pre-wrap">
@@ -222,33 +251,6 @@ export function MessageError({
             {error.kind === "no-such-tool" && (
               <div>
                 <strong>Tool:</strong> {error.toolName}
-              </div>
-            )}
-
-            {showActions && onStartNewChat && !questsError && (
-              <div className="mt-4 flex gap-2 border-t pt-4">
-                <Tooltip delayDuration={0}>
-                  <TooltipTrigger asChild>
-                    <Button
-                      onClick={onStartNewChat}
-                      size="sm"
-                      variant="outline"
-                    >
-                      Start new chat
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Starts a fresh chat in this project</p>
-                  </TooltipContent>
-                </Tooltip>
-                <Button
-                  onClick={() => {
-                    onRetry("Try that again.");
-                  }}
-                  size="sm"
-                >
-                  Try again
-                </Button>
               </div>
             )}
           </CollapsiblePartMainContent>
