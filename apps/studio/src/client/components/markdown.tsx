@@ -20,6 +20,7 @@ import "katex/dist/katex.min.css";
 
 interface MarkdownProps {
   allowRawHtml?: boolean;
+  assetBaseUrl?: string;
   markdown: string;
 }
 
@@ -89,103 +90,124 @@ const ImagePlaceholder = ({ alt, src }: { alt?: string; src?: string }) => (
   </div>
 );
 
-export const Markdown = memo(({ allowRawHtml, markdown }: MarkdownProps) => {
-  const openFilePreview = useSetAtom(openFilePreviewAtom);
+const resolveImageSrc = (
+  src: string | undefined,
+  assetBaseUrl: string | undefined,
+): string | undefined => {
+  if (!src || !assetBaseUrl) {
+    return src;
+  }
+  if (src.startsWith("./") || src.startsWith("../")) {
+    return `${assetBaseUrl}/${src.replace(/^\.\//, "")}`;
+  }
+  return src;
+};
 
-  const handleImageClick = useCallback(
-    (event: React.MouseEvent<HTMLImageElement>) => {
-      const src = event.currentTarget.src;
-      const alt = event.currentTarget.alt || "image";
-      if (src) {
-        openFilePreview({ filename: alt, url: src });
-      }
-    },
-    [openFilePreview],
-  );
+export const Markdown = memo(
+  ({ allowRawHtml, assetBaseUrl, markdown }: MarkdownProps) => {
+    const openFilePreview = useSetAtom(openFilePreviewAtom);
 
-  const handleHashLinkClick = useHashLinkScroll();
+    const handleImageClick = useCallback(
+      (event: React.MouseEvent<HTMLImageElement>) => {
+        const src = event.currentTarget.src;
+        const alt = event.currentTarget.alt || "image";
+        if (src) {
+          openFilePreview({ filename: alt, url: src });
+        }
+      },
+      [openFilePreview],
+    );
 
-  const rehypePlugins = allowRawHtml ? [rehypeRaw, rehypeKatex] : [rehypeKatex];
+    const handleHashLinkClick = useHashLinkScroll();
 
-  return (
-    <ReactMarkdown
-      components={{
-        a: ({ children, className, href, node: _node, ...props }) => {
-          if (href?.startsWith("#")) {
+    const rehypePlugins = allowRawHtml
+      ? [rehypeRaw, rehypeKatex]
+      : [rehypeKatex];
+
+    return (
+      <ReactMarkdown
+        components={{
+          a: ({ children, className, href, node: _node, ...props }) => {
+            if (href?.startsWith("#")) {
+              return (
+                // eslint-disable-next-line no-restricted-syntax
+                <a
+                  {...props}
+                  className={cn("cursor-pointer!", className)}
+                  href={href}
+                  onClick={handleHashLinkClick}
+                >
+                  {children}
+                </a>
+              );
+            }
+
             return (
-              // eslint-disable-next-line no-restricted-syntax
-              <a
+              <ExternalLink {...props} className={className} href={href}>
+                {children}
+              </ExternalLink>
+            );
+          },
+          code: ({ children, className, node: _node, ref: _ref, ...props }) => {
+            const match = /language-(\w+)/.exec(className ?? "");
+            const language = match?.[1];
+            const isInline = !language;
+
+            if (isInline) {
+              return (
+                <code {...props} className={className}>
+                  {children}
+                </code>
+              );
+            }
+
+            const codeString =
+              typeof children === "string"
+                ? children.replace(/\n$/, "")
+                : Array.isArray(children)
+                  ? children.join("")
+                  : "";
+
+            return (
+              <CodeWithCopy content={codeString}>
+                <CodeBlock code={codeString} language={language} />
+              </CodeWithCopy>
+            );
+          },
+          img: ({ alt, className, node: _node, ref: _ref, src, ...props }) => {
+            const resolvedSrc = resolveImageSrc(src, assetBaseUrl);
+            if (!isImageAllowed(resolvedSrc)) {
+              return <ImagePlaceholder alt={alt} src={resolvedSrc} />;
+            }
+
+            return (
+              <img
                 {...props}
-                className={cn("cursor-pointer!", className)}
-                href={href}
-                onClick={handleHashLinkClick}
-              >
-                {children}
-              </a>
+                alt={alt}
+                className={cn(
+                  "max-w-full cursor-pointer! rounded-md",
+                  className,
+                )}
+                onClick={handleImageClick}
+                src={resolvedSrc}
+              />
             );
-          }
-
-          return (
-            <ExternalLink {...props} className={className} href={href}>
-              {children}
-            </ExternalLink>
-          );
-        },
-        code: ({ children, className, node: _node, ref: _ref, ...props }) => {
-          const match = /language-(\w+)/.exec(className ?? "");
-          const language = match?.[1];
-          const isInline = !language;
-
-          if (isInline) {
-            return (
-              <code {...props} className={className}>
-                {children}
-              </code>
-            );
-          }
-
-          const codeString =
-            typeof children === "string"
-              ? children.replace(/\n$/, "")
-              : Array.isArray(children)
-                ? children.join("")
-                : "";
-
-          return (
-            <CodeWithCopy content={codeString}>
-              <CodeBlock code={codeString} language={language} />
-            </CodeWithCopy>
-          );
-        },
-        img: ({ alt, className, node: _node, ref: _ref, src, ...props }) => {
-          if (!isImageAllowed(src)) {
-            return <ImagePlaceholder alt={alt} src={src} />;
-          }
-
-          return (
-            <img
-              {...props}
-              alt={alt}
-              className={cn("max-w-full cursor-pointer! rounded-md", className)}
-              onClick={handleImageClick}
-              src={src}
-            />
-          );
-        },
-        pre: ({ children }) => {
-          return <>{children}</>;
-        },
-      }}
-      rehypePlugins={rehypePlugins}
-      remarkPlugins={[
-        remarkGfm,
-        [remarkMath, { singleDollarTextMath: false }],
-        remarkBreaks,
-      ]}
-    >
-      {remend(markdown)}
-    </ReactMarkdown>
-  );
-});
+          },
+          pre: ({ children }) => {
+            return <>{children}</>;
+          },
+        }}
+        rehypePlugins={rehypePlugins}
+        remarkPlugins={[
+          remarkGfm,
+          [remarkMath, { singleDollarTextMath: false }],
+          remarkBreaks,
+        ]}
+      >
+        {remend(markdown)}
+      </ReactMarkdown>
+    );
+  },
+);
 
 Markdown.displayName = "Markdown";

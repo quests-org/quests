@@ -4,10 +4,12 @@ import { type Ref } from "react";
 import { Markdown } from "./markdown";
 
 export const SessionMarkdown = ({
+  assetBaseUrl,
   className,
   markdown,
   ref,
 }: {
+  assetBaseUrl?: string;
   className?: string;
   markdown: string;
   ref?: Ref<HTMLDivElement>;
@@ -20,7 +22,7 @@ export const SessionMarkdown = ({
       )}
       ref={ref}
     >
-      <Markdown markdown={markdown} />
+      <Markdown assetBaseUrl={assetBaseUrl} markdown={markdown} />
     </div>
   );
 };

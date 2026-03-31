@@ -121,7 +121,13 @@ export function SessionStream({
 
         switch (message.role) {
           case "assistant": {
-            return <AssistantMessage key={part.metadata.id} part={part} />;
+            return (
+              <AssistantMessage
+                assetBaseUrl={project.urls.assetBase}
+                key={part.metadata.id}
+                part={part}
+              />
+            );
           }
           case "session-context": {
             return (
