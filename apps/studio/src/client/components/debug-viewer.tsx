@@ -20,7 +20,7 @@ export function DebugViewer({
   downloadFilename = "data",
   jsonData,
   markdownData,
-  maxDisplaySize = 100_000,
+  maxDisplaySize = 1_000_000,
   onOpenChange,
   open,
   title = "Debug Viewer",
