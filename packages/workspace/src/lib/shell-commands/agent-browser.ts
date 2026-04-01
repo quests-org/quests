@@ -1,11 +1,15 @@
 import { execa } from "execa";
 import { defineCommand } from "just-bash";
+import os from "node:os";
+import path from "node:path";
 import { dedent } from "radashi";
 
 import type { AppConfig } from "../app-config/types";
 
+import { APP_FOLDER_NAMES } from "../../constants";
 import { CDP_PAGE_PATH_PREFIX } from "../../logic/server/routes/cdp-bridge";
 import { getWorkspaceServerPort } from "../../logic/server/url";
+import { absolutePathJoin } from "../absolute-path-join";
 import { AGENT_BROWSER_PATH } from "../agent-browser";
 import { isProjectSubdomain } from "../is-app";
 import { resolveCommandContext, resolvePathArgs } from "./utils";
@@ -19,6 +23,10 @@ export const AGENT_BROWSER_COMMAND = {
   name: "agent-browser",
 } as const;
 const MAX_OUTPUT_LENGTH = 30_000;
+
+// Fixed short path to avoid the OS unix socket path limit (~104/108 bytes on macOS/Linux)
+// and prevent conflicts with other agent-browser instances on the system.
+const SOCKET_DIR = path.join(os.tmpdir(), "quests-agent-browser");
 
 // Flags that configure the CDP endpoint or session - these are injected
 // automatically and must not be passed by the caller.
@@ -65,15 +73,7 @@ export function createAgentBrowserCommand(appConfig: AppConfig) {
     const cdpUrl = `ws://127.0.0.1:${serverPort}${CDP_PAGE_PATH_PREFIX}${targetId}`;
     const sessionName = `quests-${subdomain}`;
 
-    // FIXME this isn't enough. need to kill at boot too
-    // Kill any stale daemon from a previous session. The daemon caches the CDP
-    // WS URL it connected to, so if the app restarted the old daemon would be
-    // connected to a dead WebSocket and ignore the --cdp flag on reconnect.
-    await execa(AGENT_BROWSER_PATH, ["--session", sessionName, "close"], {
-      reject: false,
-    });
-
-    const { appCwd } = resolveCommandContext(appConfig, ctx);
+    const { appCwd, env } = resolveCommandContext(appConfig, ctx);
     const resolvedArgs = resolvePathArgs(args, appConfig, ctx);
     const commandArgs = [
       "--cdp",
@@ -83,9 +83,28 @@ export function createAgentBrowserCommand(appConfig: AppConfig) {
       ...resolvedArgs,
     ];
 
+    const tmpDir = absolutePathJoin(appConfig.appDir, APP_FOLDER_NAMES.tmp);
+    const screenshotDir = absolutePathJoin(tmpDir, "agent-browser-screenshots");
+    const downloadPath = absolutePathJoin(tmpDir, "agent-browser-downloads");
+    // just-bash sets HOME=/ which causes read-only FS errors when agent-browser
+    // tries to write temp files. Use a writable dir under the workspace root,
+    // shared across projects and isolated from app files.
+    const homeDir = absolutePathJoin(
+      appConfig.workspaceConfig.rootDir,
+      "agent-browser-home",
+    );
+
     const result = await execa(AGENT_BROWSER_PATH, commandArgs, {
       cancelSignal: ctx.signal,
       cwd: appCwd,
+      env: {
+        ...env,
+        AGENT_BROWSER_DOWNLOAD_PATH: downloadPath,
+        AGENT_BROWSER_SCREENSHOT_DIR: screenshotDir,
+        AGENT_BROWSER_SOCKET_DIR: SOCKET_DIR,
+        HOME: homeDir,
+      },
+      input: ctx.stdin || undefined,
       reject: false,
     });
 
