@@ -20,7 +20,7 @@ export function execaNodeForApp<
       ...appConfig.workspaceConfig.nodeExecEnv,
     },
     node: true,
-    stdin: options?.stdin ?? "ignore",
+    stdin: options?.input === undefined ? (options?.stdin ?? "ignore") : "pipe",
     // Ensures callers can use stderr and stdout without null check
   } as unknown as OptionsType & {
     cwd: string;

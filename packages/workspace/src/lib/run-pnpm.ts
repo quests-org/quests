@@ -11,12 +11,14 @@ export async function runPnpmCommand({
   cwd,
   env,
   signal,
+  stdin,
 }: {
   appConfig: AppConfig;
   args: string[];
   cwd?: AbsolutePath;
   env?: Record<string, string>;
   signal?: AbortSignal;
+  stdin?: string;
 }) {
   const execResult = await execaNodeForApp(
     appConfig,
@@ -36,6 +38,7 @@ export async function runPnpmCommand({
       },
       // Don't reject so we can filter the output
       reject: false,
+      ...(stdin && { input: stdin }),
     },
     cwd,
   );

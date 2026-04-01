@@ -20,6 +20,7 @@ function execNode(
   signal?: AbortSignal,
   cwd?: AbsolutePath,
   env?: Record<string, string>,
+  stdin?: string,
 ) {
   return execa(process.execPath, args, {
     all: true,
@@ -30,7 +31,7 @@ function execNode(
       ...env,
     },
     reject: false,
-    stdin: "ignore",
+    ...(stdin ? { input: stdin } : { stdin: "ignore" }),
   });
 }
 
@@ -114,6 +115,7 @@ export function createNodeCommand(appConfig: AppConfig) {
         ctx.signal,
         appCwd,
         env,
+        ctx.stdin || undefined,
       );
       const combined = filterShellOutput(execResult.all, appConfig.appDir);
       return {
@@ -154,6 +156,7 @@ export function createNodeCommand(appConfig: AppConfig) {
       ctx.signal,
       appCwd,
       env,
+      ctx.stdin || undefined,
     );
     const combined = filterShellOutput(execResult.all, appConfig.appDir);
 

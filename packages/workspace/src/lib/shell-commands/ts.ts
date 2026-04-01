@@ -92,6 +92,7 @@ export function createTsCommand(appConfig: AppConfig) {
       cwd: appCwd,
       env,
       signal: ctx.signal,
+      stdin: ctx.stdin || undefined,
     });
 
     return {

@@ -100,6 +100,7 @@ export function createPnpmCommand(appConfig: AppConfig) {
       cwd,
       env,
       signal: ctx.signal,
+      stdin: ctx.stdin || undefined,
     });
     return {
       exitCode: result.exitCode,

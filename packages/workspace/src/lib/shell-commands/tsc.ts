@@ -23,6 +23,7 @@ export function createTscCommand(appConfig: AppConfig) {
         all: true,
         cancelSignal: ctx.signal,
         env: Object.fromEntries(ctx.env),
+        ...(ctx.stdin && { input: ctx.stdin }),
         // Don't reject so we can filter the output
         reject: false,
       },
