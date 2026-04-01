@@ -274,6 +274,7 @@ export function createBashEnv(appConfig: AppConfig) {
     // overrides last so AI keys are always present. pnpm shim files also
     // use sed, uname, etc when on unix systems.
     env: {
+      NO_COLOR: "1",
       ...(process.env.PATH && { PATH: process.env.PATH }),
       ...providerEnv,
     },
