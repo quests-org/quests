@@ -21,6 +21,7 @@ import { session as sessionRoute } from "../src/rpc/routes/session";
 import { type FileUpload } from "../src/schemas/file-upload";
 import { type SessionMessagePart } from "../src/schemas/session/message-part";
 import { type StoreId } from "../src/schemas/store-id";
+import { createStubBrowserConfig } from "../src/test/helpers/mock-app-config";
 import {
   buildProviderConfigs,
   c,
@@ -94,6 +95,7 @@ export async function runEvals(
   const actor = createActor(workspaceMachine, {
     input: {
       aiGatewayApp,
+      browser: createStubBrowserConfig(),
       captureEvent: () => {
         return;
       },

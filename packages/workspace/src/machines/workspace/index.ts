@@ -46,7 +46,7 @@ import {
 import { type SessionMessage } from "../../schemas/session/message";
 import { type StoreId } from "../../schemas/store-id";
 import { type AppSubdomain } from "../../schemas/subdomains";
-import { type WorkspaceConfig } from "../../types";
+import { type BrowserConfig, type WorkspaceConfig } from "../../types";
 import { type ToolCallUpdate } from "../agent";
 import { runtimeMachine } from "../runtime";
 import {
@@ -232,6 +232,7 @@ export const workspaceMachine = setup({
     events: {} as WorkspaceEvent,
     input: {} as {
       aiGatewayApp: AIGatewayApp;
+      browser: BrowserConfig;
       captureEvent: CaptureEventFunction;
       captureException: CaptureExceptionFunction;
       getAIProviderConfigs: GetProviderConfigs;
@@ -250,6 +251,7 @@ export const workspaceMachine = setup({
     const registryDir = AbsolutePathSchema.parse(input.registryDir);
     const rootDir = WorkspaceDirSchema.parse(input.rootDir);
     const workspaceConfig: WorkspaceConfig = {
+      browser: input.browser,
       captureEvent: input.captureEvent,
       captureException: input.captureException,
       getAIProviderConfigs: input.getAIProviderConfigs,
@@ -744,9 +746,11 @@ export const workspaceMachine = setup({
     },
 
     "workspaceServer.started": {
-      actions: log(({ event }) => {
-        return `Workspace server started on port ${event.value.port}`;
-      }),
+      actions: [
+        log(({ event }) => {
+          return `Workspace server started on port ${event.value.port}`;
+        }),
+      ],
     },
   },
   states: {

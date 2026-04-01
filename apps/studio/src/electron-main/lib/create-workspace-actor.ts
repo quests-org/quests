@@ -7,6 +7,8 @@ import ms from "ms";
 import path from "node:path";
 import { createActor } from "xstate";
 
+import { isDeveloperMode } from "../stores/preferences";
+import { BrowserViewManager } from "./browser-view-manager";
 import { captureServerEvent } from "./capture-server-event";
 import { captureServerException } from "./capture-server-exception";
 import { logger } from "./electron-logger";
@@ -29,9 +31,18 @@ if (ENV_REGISTRY_DIR) {
 
 export function createWorkspaceActor() {
   const rootDir = getWorkspaceFolder();
+  const browserViewManager = new BrowserViewManager({
+    developerMode: isDeveloperMode(),
+  });
+
+  app.on("before-quit", () => {
+    browserViewManager.teardown();
+  });
+
   const actor = createActor(workspaceMachine, {
     input: {
       aiGatewayApp,
+      browser: browserViewManager.browser,
       captureEvent: captureServerEvent,
       captureException: captureServerException,
       getAIProviderConfigs,

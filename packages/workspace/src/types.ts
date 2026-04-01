@@ -6,10 +6,35 @@ import {
 
 import { type APP_STATUSES } from "./constants";
 import { type AbsolutePath, type WorkspaceDir } from "./schemas/paths";
+import { type ProjectSubdomain } from "./schemas/subdomains";
 
 export type AppStatus = (typeof APP_STATUSES)[number];
 
+export interface BrowserConfig {
+  closeTarget: (targetId: string) => Promise<void>;
+  createTarget: (subdomain: ProjectSubdomain) => Promise<{ targetId: string }>;
+  listTargets: (subdomain: ProjectSubdomain) => Promise<BrowserTarget[]>;
+  sendCommand: (
+    targetId: string,
+    method: string,
+    params: unknown,
+  ) => Promise<unknown>;
+  subscribeEvents: (
+    targetId: string,
+    onDetach: () => void,
+    onEvent: (method: string, params: unknown) => void,
+  ) => () => void;
+}
+
+export interface BrowserTarget {
+  id: string;
+  title: string;
+  type: "page";
+  url: string;
+}
+
 export interface WorkspaceConfig {
+  browser: BrowserConfig;
   captureEvent: CaptureEventFunction;
   captureException: CaptureExceptionFunction;
   getAIProviderConfigs: GetProviderConfigs;

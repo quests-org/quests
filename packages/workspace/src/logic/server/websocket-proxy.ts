@@ -6,6 +6,7 @@ import invariant from "tiny-invariant";
 import { WebSocket, WebSocketServer } from "ws";
 
 import { SHIM_IFRAME_BASE_PATH } from "./constants";
+import { CDP_PAGE_PATH_PREFIX } from "./routes/cdp-bridge";
 import { type WorkspaceServerParentRef } from "./types";
 import { uriDetailsForHost } from "./uri-details-for-host";
 
@@ -16,6 +17,10 @@ export function setupWebSocketProxy(
   server.on("upgrade", (req: IncomingMessage, socket: Duplex, head: Buffer) => {
     if (req.url?.startsWith(SHIM_IFRAME_BASE_PATH)) {
       socket.destroy();
+      return;
+    }
+
+    if (req.url?.startsWith(CDP_PAGE_PATH_PREFIX)) {
       return;
     }
 

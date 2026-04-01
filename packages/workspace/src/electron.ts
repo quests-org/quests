@@ -17,4 +17,4 @@ export {
   type ProjectSubdomain,
   ProjectSubdomainSchema,
 } from "./schemas/subdomains";
-export type { WorkspaceConfig } from "./types";
+export type { BrowserConfig, BrowserTarget, WorkspaceConfig } from "./types";

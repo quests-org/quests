@@ -6,6 +6,7 @@ import { createAppConfig } from "../src/lib/app-config/create";
 import { getProjects } from "../src/lib/get-apps";
 import { Store } from "../src/lib/store";
 import { WorkspaceDirSchema } from "../src/schemas/paths";
+import { createStubBrowserConfig } from "../src/test/helpers/mock-app-config";
 import { type WorkspaceConfig } from "../src/types";
 
 const workspaceDir = process.argv[2];
@@ -18,6 +19,7 @@ const absoluteWorkspaceDir = path.resolve(workspaceDir);
 const projectsDir = path.join(absoluteWorkspaceDir, "projects");
 
 const workspaceConfig: WorkspaceConfig = {
+  browser: createStubBrowserConfig(),
   captureEvent: () => {
     return;
   },

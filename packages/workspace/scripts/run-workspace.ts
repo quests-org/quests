@@ -13,6 +13,7 @@ import { workspaceMachine } from "../src/electron";
 import { message as messageRoute } from "../src/rpc/routes/message";
 import { project as projectRoute } from "../src/rpc/routes/project";
 import { type StoreId } from "../src/schemas/store-id";
+import { createStubBrowserConfig } from "../src/test/helpers/mock-app-config";
 import { env } from "./lib/env";
 
 const cacheIdentifier = "quests-run-workspace";
@@ -57,6 +58,7 @@ const registryDir = env.QUESTS_REGISTRY_DIR_PATH
 const actor = createActor(workspaceMachine, {
   input: {
     aiGatewayApp,
+    browser: createStubBrowserConfig(),
     captureEvent: (...args: unknown[]) => {
       // eslint-disable-next-line no-console
       console.log("captureEvent", args);

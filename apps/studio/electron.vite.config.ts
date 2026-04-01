@@ -99,6 +99,10 @@ export default defineConfig(({ command }) => {
     command === "serve"
       ? require.resolve("@derhuerst/ffprobe-static")
       : "@derhuerst/ffprobe-static";
+  const agentBrowserBinDir =
+    command === "serve"
+      ? path.dirname(require.resolve("agent-browser/bin/agent-browser.js"))
+      : null;
 
   return {
     main: {
@@ -138,6 +142,7 @@ export default defineConfig(({ command }) => {
         watch: {}, // Enable hot reloading
       },
       define: {
+        __AGENT_BROWSER_BIN_DIR__: JSON.stringify(agentBrowserBinDir),
         __FFMPEG_STATIC_PATH__: JSON.stringify(ffmpegStaticValue),
         __FFPROBE_STATIC_PATH__: JSON.stringify(ffprobeStaticValue),
       },

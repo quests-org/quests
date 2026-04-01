@@ -11,6 +11,7 @@ import { type WorkspaceConfig } from "../../types";
 import { DEFAULT_APPS_SERVER_PORT } from "./constants";
 import { allProxyRoute } from "./routes/all-proxy";
 import { assetsRoute } from "./routes/assets";
+import { cdpBridgeRoute, setupCdpWebSocketBridge } from "./routes/cdp-bridge";
 import { heartbeatRoute } from "./routes/heartbeat";
 import { redirectRoute } from "./routes/redirect";
 import { shimIFrameRoute } from "./routes/shim-iframe";
@@ -51,6 +52,7 @@ export const workspaceServerLogic = fromCallback<
   app.route("/", heartbeatRoute);
   app.route("/", assetsRoute);
   app.route("/", redirectRoute);
+  app.route("/", cdpBridgeRoute);
   // Note: Must be after all app-specific routes
   app.route("/", allProxyRoute);
   if (input.aiGatewayApp) {
@@ -80,6 +82,7 @@ export const workspaceServerLogic = fromCallback<
       server = serve({ fetch: app.fetch, port });
 
       setupWebSocketProxy(server, input.parentRef);
+      setupCdpWebSocketBridge(server, input.workspaceConfig);
 
       input.parentRef.send({
         type: "workspaceServer.started",

@@ -39,6 +39,7 @@ const config: KnipConfig = {
         "dugite", // Needed to ensure the git binary is available
         "@vscode/ripgrep", // Maybe needed to ensure the ripgrep binary is available
         "babel-plugin-react-compiler", // Used in electron.vite.config.ts as Babel plugin
+        "agent-browser", // Imported in Vite build to resolve the binary path
       ],
       paths: {
         "@/*": ["src/*"],

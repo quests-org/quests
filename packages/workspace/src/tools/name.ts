@@ -17,6 +17,7 @@ export const TOOL_NAMES = {
 } as const;
 
 export const ToolNameSchema = z.enum([
+  TOOL_NAMES.bash,
   TOOL_NAMES.choose,
   TOOL_NAMES.copyToProject,
   TOOL_NAMES.editFile,
@@ -25,7 +26,6 @@ export const ToolNameSchema = z.enum([
   TOOL_NAMES.grep,
   TOOL_NAMES.loadSkill,
   TOOL_NAMES.readFile,
-  TOOL_NAMES.bash,
   TOOL_NAMES.task,
   TOOL_NAMES.unavailable,
   TOOL_NAMES.webSearch,

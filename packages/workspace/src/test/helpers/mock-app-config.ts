@@ -9,10 +9,12 @@ import {
   TEST_WEB_SEARCH_MODEL_OVERRIDE_KEY,
 } from "@quests/ai-gateway";
 import { AI_GATEWAY_API_KEY_NOT_NEEDED } from "@quests/shared";
+import { noop } from "radashi";
 
 import { createAppConfig } from "../../lib/app-config/create";
 import { AbsolutePathSchema, WorkspaceDirSchema } from "../../schemas/paths";
 import { type AppSubdomain } from "../../schemas/subdomains";
+import { type BrowserConfig } from "../../types";
 import { createMockAIGatewayModel } from "./mock-ai-gateway-model";
 
 const MOCK_WORKSPACE_DIR = "/tmp/workspace";
@@ -70,6 +72,7 @@ export function createMockAppConfig(
   return createAppConfig({
     subdomain,
     workspaceConfig: {
+      browser: createStubBrowserConfig(),
       captureEvent: () => {
         // No-op
       },
@@ -88,4 +91,14 @@ export function createMockAppConfig(
       trashItem: () => Promise.resolve(),
     },
   });
+}
+
+export function createStubBrowserConfig(): BrowserConfig {
+  return {
+    closeTarget: () => Promise.resolve(),
+    createTarget: () => Promise.resolve({ targetId: "stub" }),
+    listTargets: () => Promise.resolve([]),
+    sendCommand: () => Promise.resolve({}),
+    subscribeEvents: () => noop,
+  };
 }
