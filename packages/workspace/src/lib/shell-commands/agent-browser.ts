@@ -86,6 +86,8 @@ export function createAgentBrowserCommand(appConfig: AppConfig) {
     const tmpDir = absolutePathJoin(appConfig.appDir, APP_FOLDER_NAMES.tmp);
     const screenshotDir = absolutePathJoin(tmpDir, "agent-browser-screenshots");
     const downloadPath = absolutePathJoin(tmpDir, "agent-browser-downloads");
+    const screenshotDirRelative = path.relative(appCwd, screenshotDir);
+    const downloadPathRelative = path.relative(appCwd, downloadPath);
     // just-bash sets HOME=/ which causes read-only FS errors when agent-browser
     // tries to write temp files. Use a writable dir under the workspace root,
     // shared across projects and isolated from app files.
@@ -99,8 +101,8 @@ export function createAgentBrowserCommand(appConfig: AppConfig) {
       cwd: appCwd,
       env: {
         ...env,
-        AGENT_BROWSER_DOWNLOAD_PATH: downloadPath,
-        AGENT_BROWSER_SCREENSHOT_DIR: screenshotDir,
+        AGENT_BROWSER_DOWNLOAD_PATH: downloadPathRelative,
+        AGENT_BROWSER_SCREENSHOT_DIR: screenshotDirRelative,
         AGENT_BROWSER_SOCKET_DIR: SOCKET_DIR,
         HOME: homeDir,
       },
