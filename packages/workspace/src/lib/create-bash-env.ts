@@ -201,75 +201,6 @@ const CUSTOM_COMMAND_DEFS: CustomCommandDef[] = [
   },
 ];
 
-const AGENT_BROWSER_DESCRIPTION = `  agent-browser - Control a built-in browser (Chromium) to navigate the web, interact with pages, and extract content.
-    The browser is sandboxed per project -- cookies, localStorage, and sessions are isolated from other projects.
-    The browser session persists across multiple agent-browser calls within the same project.
-    Do NOT pass --cdp, --session, or --auto-connect flags; these are injected automatically.
-
-    Core navigation:
-      agent-browser open <url>          Navigate to a URL
-      agent-browser back / forward      Browser history navigation
-      agent-browser reload              Reload the current page
-
-    Reading page content (prefer snapshot over screenshot for text extraction):
-      agent-browser snapshot            Get accessibility tree with element refs (best for AI)
-      agent-browser screenshot [path]   Take a screenshot (saved to a temp file if no path given)
-      agent-browser get text [sel]      Get text content of element or full page
-      agent-browser get html [sel]      Get innerHTML
-      agent-browser get title           Get page title
-      agent-browser get url             Get current URL
-
-    Interacting with elements (use refs from snapshot, e.g. @e2, or CSS selectors):
-      agent-browser click <sel>         Click an element
-      agent-browser fill <sel> <value>  Clear and fill an input
-      agent-browser type <sel> <text>   Type into an element
-      agent-browser press <key>         Press a key (Enter, Tab, Control+a, etc.)
-      agent-browser hover <sel>         Hover over an element
-      agent-browser scroll up|down [px] Scroll the page (or --selector <sel> to scroll an element)
-      agent-browser select <sel> <val>  Select a dropdown option
-
-    Waiting:
-      agent-browser wait <selector>     Wait for element to be visible
-      agent-browser wait <ms>           Wait for a number of milliseconds
-      agent-browser wait --text <text>  Wait for text to appear on the page
-      agent-browser wait --url <pattern> Wait for URL to match a pattern
-      agent-browser wait --load networkidle Wait for network to be idle
-
-    Semantic element finders (useful when CSS selectors are unclear):
-      agent-browser find role <role> <action> [--name <name>]
-      agent-browser find text <text> <action>
-      agent-browser find label <label> fill <value>
-
-    JavaScript execution:
-      agent-browser eval <js>           Run JavaScript and return the result
-
-    Tabs:
-      agent-browser tab                 List open tabs
-      agent-browser tab new [url]       Open a new tab
-      agent-browser tab <n>             Switch to tab n
-      agent-browser tab close [n]       Close a tab
-
-    Cookies and storage:
-      agent-browser cookies             Get all cookies
-      agent-browser storage local       Get all localStorage
-      agent-browser storage local <key> Get a specific localStorage key
-
-    Dialogs:
-      agent-browser dialog accept [text] Accept a dialog (with optional prompt text)
-      agent-browser dialog dismiss       Dismiss a dialog
-
-    Batch execution (avoids per-command startup overhead):
-      echo '[["open","https://example.com"],["snapshot"]]' | agent-browser batch --json
-
-    Example workflow:
-      agent-browser open https://example.com
-      agent-browser snapshot
-      agent-browser click @e3
-      agent-browser fill @e5 "hello world"
-      agent-browser press Enter
-      agent-browser wait --text "Results"
-      agent-browser get text`;
-
 export function createBashDescription() {
   const allowedCommandNames = getCommandNames().filter(
     (name) => !BROKEN_COMMANDS.has(name as CommandName),
@@ -284,7 +215,7 @@ export function createBashDescription() {
     .map(([name, description]) => `  ${name} - ${description}`);
 
   const customLines = CUSTOM_COMMAND_DEFS.filter(
-    (cmd) => cmd.listInDescription && cmd.name !== AGENT_BROWSER_COMMAND.name,
+    (cmd) => cmd.listInDescription,
   ).map((cmd) => `  ${cmd.name} - ${cmd.description}`);
 
   return [
@@ -303,9 +234,6 @@ export function createBashDescription() {
     "Specialized commands:",
     ...described,
     ...customLines,
-    "",
-    "Built-in browser (agent-browser):",
-    AGENT_BROWSER_DESCRIPTION,
   ].join("\n");
 }
 

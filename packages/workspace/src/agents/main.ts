@@ -19,6 +19,7 @@ import { isToolPart } from "../lib/is-tool-part";
 import { pathExists } from "../lib/path-exists";
 import { getProjectState } from "../lib/project-state-store";
 import { readFileWithAnyCase } from "../lib/read-file-with-any-case";
+import { AGENT_BROWSER_COMMAND } from "../lib/shell-commands/agent-browser";
 import { PNPM_COMMAND } from "../lib/shell-commands/pnpm";
 import { TS_COMMAND } from "../lib/shell-commands/ts";
 import { TSC_COMMAND } from "../lib/shell-commands/tsc";
@@ -147,6 +148,7 @@ export const mainAgent = setupAgent({
     - Use parallel tool calls whenever possible to improve efficiency and reduce costs.
     - Use the \`${TOOL_EXPLANATION_PARAM_NAME}\` parameter for tools instead of replying when possible.
     - Use the \`${agentTools.BashTool.name}\` tool to install dependencies when needed. When a skill has been loaded, check the skill's package.json before installing anything -- its dependencies are already available.
+    - You have access to a full Chromium browser via the \`${AGENT_BROWSER_COMMAND.name}\` bash command. Load the \`${AGENT_BROWSER_COMMAND.name}\` skill for full usage instructions.
     - IMPORTANT: When a skill provides scripts, use \`${agentTools.ReadFile.name}\` to read the relevant script source before writing a custom alternative. The script may already support your use case or be easily extended. Never bypass a skill script without reading it first.
     - IMPORTANT: You do not automatically see files written to disk. To inspect any image or media you create, read it back with \`${agentTools.ReadFile.name}\`.
     - Only stop calling tools when you are done with the task. When you stop calling tools, the task will end and the user will be required to start a new task.

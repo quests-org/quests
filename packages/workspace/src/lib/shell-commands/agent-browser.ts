@@ -1,5 +1,6 @@
 import { execa } from "execa";
 import { defineCommand } from "just-bash";
+import { dedent } from "radashi";
 
 import type { AppConfig } from "../app-config/types";
 
@@ -10,8 +11,11 @@ import { isProjectSubdomain } from "../is-app";
 import { resolveCommandContext, resolvePathArgs } from "./utils";
 
 export const AGENT_BROWSER_COMMAND = {
-  description:
-    "Control a built-in browser to navigate the web, interact with pages, and extract content.",
+  description: dedent`
+    Control a built-in Chromium browser to navigate the web, interact with pages, and extract content.
+    IMPORTANT: You MUST load the \`agent-browser\` skill before using this command. Do not run any agent-browser commands until the skill is loaded.
+    Do NOT pass --cdp, --session, or --auto-connect flags; these are injected automatically.
+  `.trim(),
   name: "agent-browser",
 } as const;
 const MAX_OUTPUT_LENGTH = 30_000;
