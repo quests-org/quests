@@ -116,10 +116,20 @@ export function ShellCommandCard({
       </ToolCardHeader>
 
       {showContent && (
-        <VirtualizedScrollingText
-          autoScrollToBottom={isLoading}
-          content={content}
-        />
+        <>
+          <div className="border-b border-border/50 bg-muted/40 px-3 py-1.5">
+            <pre className="font-mono text-xs leading-[1.4] whitespace-pre-wrap text-foreground/90">
+              <span className="mr-1.5 text-muted-foreground select-none">
+                $
+              </span>
+              {command}
+            </pre>
+          </div>
+          <VirtualizedScrollingText
+            autoScrollToBottom={isLoading}
+            content={hasOutput || isError ? parts.slice(1).join("\n") : ""}
+          />
+        </>
       )}
 
       {!isLoading && projectSubdomain && isExpanded && (
