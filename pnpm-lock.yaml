@@ -880,8 +880,8 @@ importers:
         specifier: ^6.0.0
         version: 6.0.0
       just-bash:
-        specifier: github:mutewinter/just-bash#fix/path-sep-isPathWithinRoot-dist
-        version: https://codeload.github.com/mutewinter/just-bash/tar.gz/d44ae8db17a523dad31fff9ef6a224aa66259003
+        specifier: github:mutewinter/just-bash#fix/combined-dist
+        version: https://codeload.github.com/mutewinter/just-bash/tar.gz/a39271afa0d1f7ec1810ebd0e64e640b24de7af4
       mime-types:
         specifier: ^3.0.2
         version: 3.0.2
@@ -6402,8 +6402,8 @@ packages:
     resolution: {integrity: sha512-ZZow9HBI5O6EPgSJLUb8n2NKgmVWTwCvHGwFuJlMjvLFqlGG6pjirPhtdsseaLZjSibD8eegzmYpUZwoIlj2cQ==}
     engines: {node: '>=4.0'}
 
-  just-bash@https://codeload.github.com/mutewinter/just-bash/tar.gz/d44ae8db17a523dad31fff9ef6a224aa66259003:
-    resolution: {tarball: https://codeload.github.com/mutewinter/just-bash/tar.gz/d44ae8db17a523dad31fff9ef6a224aa66259003}
+  just-bash@https://codeload.github.com/mutewinter/just-bash/tar.gz/a39271afa0d1f7ec1810ebd0e64e640b24de7af4:
+    resolution: {tarball: https://codeload.github.com/mutewinter/just-bash/tar.gz/a39271afa0d1f7ec1810ebd0e64e640b24de7af4}
     version: 2.13.1
     hasBin: true
 
@@ -15304,7 +15304,7 @@ snapshots:
       object.assign: 4.1.7
       object.values: 1.2.1
 
-  just-bash@https://codeload.github.com/mutewinter/just-bash/tar.gz/d44ae8db17a523dad31fff9ef6a224aa66259003:
+  just-bash@https://codeload.github.com/mutewinter/just-bash/tar.gz/a39271afa0d1f7ec1810ebd0e64e640b24de7af4:
     dependencies:
       compressjs: 1.0.3
       diff: 8.0.3
