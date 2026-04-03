@@ -73,10 +73,37 @@ export class BrowserViewManager {
     ses.on("will-download", (_event, item) => {
       const entry = this.entries.get(targetId);
       if (entry?.authorizedDownloadPath) {
-        const guid = entry.pendingDownloadGuids.get(item.getURL());
+        const guid =
+          entry.pendingDownloadGuids.get(item.getURL()) ?? crypto.randomUUID();
         entry.pendingDownloadGuids.delete(item.getURL());
-        const filename = guid ?? item.getFilename();
+        const filename = guid;
         item.setSavePath(`${entry.authorizedDownloadPath}/${filename}`);
+
+        // Synthesize Page.downloadWillBegin so agent-browser's download command
+        // can capture the GUID and start waiting for completion.
+        for (const listener of entry.eventListeners) {
+          listener("Page.downloadWillBegin", {
+            frameId: targetId,
+            guid,
+            url: item.getURL(),
+          });
+        }
+
+        item.once("done", (_doneEvent, state) => {
+          const currentEntry = this.entries.get(targetId);
+          if (!currentEntry) {
+            return;
+          }
+          // Synthesize Page.downloadProgress so agent-browser resolves or errors.
+          for (const listener of currentEntry.eventListeners) {
+            listener("Page.downloadProgress", {
+              guid,
+              receivedBytes: item.getReceivedBytes(),
+              state: state === "completed" ? "completed" : "canceled",
+              totalBytes: item.getTotalBytes(),
+            });
+          }
+        });
       } else {
         item.cancel();
       }
@@ -151,7 +178,25 @@ export class BrowserViewManager {
     // the CDP debugger tries to enable page events.
     return new Promise((resolve) => {
       view.webContents.once("did-finish-load", () => {
-        resolve({ targetId });
+        // Set a default 1280x720 layout viewport so DOM.getBoxModel coordinates
+        // and Input.dispatchMouseEvent coordinates are consistent when the view
+        // has no physical bounds (i.e. outside of developer mode).
+        this.ensureDebuggerAttached(entry);
+        void view.webContents.debugger
+          .sendCommand("Emulation.setDeviceMetricsOverride", {
+            deviceScaleFactor: 1,
+            // 1280x800: matches a 13" MacBook viewport in Chrome (1280 CSS px wide,
+            // ~90px consumed by browser chrome on a 900px-tall screen).
+            height: 800,
+            mobile: false,
+            width: 1280,
+          })
+          .catch(() => {
+            // Non-fatal; the view will fall back to its physical bounds.
+          })
+          .finally(() => {
+            resolve({ targetId });
+          });
       });
       void view.webContents.loadURL("about:blank");
     });
