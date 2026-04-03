@@ -165,7 +165,75 @@ const toMarkdown = base
     return { markdown };
   });
 
+const contextTokens = base
+  .input(
+    z.object({
+      sessionId: StoreId.SessionSchema,
+      subdomain: AppSubdomainSchema,
+    }),
+  )
+  .output(z.object({ inputTokens: z.number() }))
+  .handler(async ({ context, errors, input }) => {
+    const { sessionId, subdomain } = input;
+    const { workspaceConfig } = context;
+    const appConfig = createAppConfig({ subdomain, workspaceConfig });
+
+    const messages = await Store.getMessagesWithParts({ appConfig, sessionId });
+    if (messages.isErr()) {
+      throw toORPCError(messages.error, errors);
+    }
+
+    const lastWithTokens = messages.value.findLast(
+      (m) =>
+        m.role === "assistant" &&
+        Number.isFinite(m.metadata.usage?.inputTokens) &&
+        (m.metadata.usage?.inputTokens ?? 0) > 0,
+    );
+
+    const inputTokens =
+      lastWithTokens?.role === "assistant"
+        ? (lastWithTokens.metadata.usage?.inputTokens ?? 0)
+        : 0;
+
+    return { inputTokens };
+  });
+
 const live = {
+  contextTokens: base
+    .input(
+      z.object({
+        sessionId: StoreId.SessionSchema,
+        subdomain: AppSubdomainSchema,
+      }),
+    )
+    .handler(async function* ({ context, input, signal }) {
+      yield call(contextTokens, input, { context, signal });
+
+      const messageUpdates = publisher.subscribe("message.updated", { signal });
+      const messageRemoved = publisher.subscribe("message.removed", { signal });
+      const partUpdates = publisher.subscribe("part.updated", { signal });
+
+      async function* filterBySubdomain(
+        generator:
+          | typeof messageRemoved
+          | typeof messageUpdates
+          | typeof partUpdates,
+      ) {
+        for await (const payload of generator) {
+          if (payload.subdomain === input.subdomain) {
+            yield null;
+          }
+        }
+      }
+
+      for await (const _ of mergeGenerators([
+        filterBySubdomain(messageUpdates),
+        filterBySubdomain(messageRemoved),
+        filterBySubdomain(partUpdates),
+      ])) {
+        yield call(contextTokens, input, { context, signal });
+      }
+    }),
   list: base
     .input(
       z.object({
@@ -201,6 +269,7 @@ const live = {
 export const session = {
   byId,
   byIdWithMessagesAndParts,
+  contextTokens,
   create,
   list,
   live,

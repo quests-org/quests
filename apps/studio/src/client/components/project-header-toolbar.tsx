@@ -46,6 +46,7 @@ import {
   MacOSTerminal,
   VSCode,
 } from "./service-icons";
+import { SessionContextRing } from "./session-context-ring";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -183,6 +184,12 @@ export function ProjectHeaderToolbar({
               <div className="min-w-0 shrink">
                 <ProjectUsageSummary project={project} />
               </div>
+            )}
+            {isDeveloperMode && selectedSessionId && (
+              <SessionContextRing
+                selectedSessionId={selectedSessionId}
+                subdomain={project.subdomain}
+              />
             )}
             <Tooltip>
               <TooltipTrigger asChild>
