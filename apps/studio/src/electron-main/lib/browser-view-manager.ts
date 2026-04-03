@@ -242,6 +242,29 @@ export class BrowserViewManager {
       `[BrowserViewManager] sendCommand targetId=${targetId} method=${method} params=${JSON.stringify(params)}`,
     );
 
+    // Electron's debugger protocol does not expose Page.printToPDF. Use the
+    // native webContents.printToPDF() API and return a CDP-compatible response.
+    if (method === "Page.printToPDF") {
+      const p = (params ?? {}) as Record<string, unknown>;
+      try {
+        const data = await entry.view.webContents.printToPDF({
+          landscape: p.landscape === true,
+          preferCSSPageSize: p.preferCSSPageSize === true,
+          printBackground: p.printBackground !== false,
+        });
+        const result = { data: data.toString("base64") };
+        console.log(
+          `[BrowserViewManager] sendCommand result targetId=${targetId} method=${method} result=(pdf ${data.byteLength} bytes)`,
+        );
+        return result;
+      } catch (error) {
+        console.error(
+          `[BrowserViewManager] sendCommand error targetId=${targetId} method=${method} error=${String(error)}`,
+        );
+        throw error;
+      }
+    }
+
     try {
       const result = await entry.view.webContents.debugger.sendCommand(
         method,
