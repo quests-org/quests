@@ -1,5 +1,5 @@
 import { createRequire } from "node:module";
-import { arch, platform } from "node:os";
+import os, { arch, platform } from "node:os";
 import path from "node:path";
 
 import { unpackAsarPath } from "./asar";
@@ -13,11 +13,11 @@ const req = createRequire(import.meta.url);
 
 // Via agent-browser/bin/agent-browser.js wrapper
 function getBinaryName() {
-  const os = platform();
+  const userPlatform = platform();
   const cpuArch = arch();
 
   let osKey: string;
-  switch (os) {
+  switch (userPlatform) {
     case "darwin": {
       osKey = "darwin";
       break;
@@ -31,7 +31,7 @@ function getBinaryName() {
       break;
     }
     default: {
-      throw new Error(`Unsupported platform: ${os}`);
+      throw new Error(`Unsupported platform: ${userPlatform}`);
     }
   }
 
@@ -50,7 +50,7 @@ function getBinaryName() {
     }
   }
 
-  const ext = os === "win32" ? ".exe" : "";
+  const ext = userPlatform === "win32" ? ".exe" : "";
   return `agent-browser-${osKey}-${archKey}${ext}`;
 }
 
@@ -60,4 +60,11 @@ const binDir =
 
 export const AGENT_BROWSER_PATH = unpackAsarPath(
   path.join(binDir, getBinaryName()),
+);
+
+// Fixed short path to avoid the OS unix socket path limit (~104/108 bytes on macOS/Linux)
+// and prevent conflicts with other agent-browser instances on the system.
+export const AGENT_BROWSER_SOCKET_DIR = path.join(
+  os.tmpdir(),
+  "quests-agent-browser",
 );

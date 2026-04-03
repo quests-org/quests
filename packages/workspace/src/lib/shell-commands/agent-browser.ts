@@ -1,6 +1,5 @@
 import { execa } from "execa";
 import { defineCommand } from "just-bash";
-import os from "node:os";
 import path from "node:path";
 import { dedent } from "radashi";
 
@@ -10,7 +9,7 @@ import { APP_FOLDER_NAMES } from "../../constants";
 import { CDP_PAGE_PATH_PREFIX } from "../../logic/server/routes/cdp-bridge";
 import { getWorkspaceServerPort } from "../../logic/server/url";
 import { absolutePathJoin } from "../absolute-path-join";
-import { AGENT_BROWSER_PATH } from "../agent-browser";
+import { AGENT_BROWSER_PATH, AGENT_BROWSER_SOCKET_DIR } from "../agent-browser";
 import { isProjectSubdomain } from "../is-app";
 import { resolveCommandContext, resolvePathArgs } from "./utils";
 
@@ -23,10 +22,6 @@ export const AGENT_BROWSER_COMMAND = {
   name: "agent-browser",
 } as const;
 const MAX_OUTPUT_LENGTH = 30_000;
-
-// Fixed short path to avoid the OS unix socket path limit (~104/108 bytes on macOS/Linux)
-// and prevent conflicts with other agent-browser instances on the system.
-const SOCKET_DIR = path.join(os.tmpdir(), "quests-agent-browser");
 
 // Flags that configure the CDP endpoint or session - these are injected
 // automatically and must not be passed by the caller.
@@ -105,7 +100,7 @@ export function createAgentBrowserCommand(appConfig: AppConfig) {
         // Absolute: passed to Chrome via CDP setDownloadBehavior, which requires an absolute path.
         AGENT_BROWSER_DOWNLOAD_PATH: downloadPath,
         AGENT_BROWSER_SCREENSHOT_DIR: screenshotDirRelative,
-        AGENT_BROWSER_SOCKET_DIR: SOCKET_DIR,
+        AGENT_BROWSER_SOCKET_DIR,
         HOME: homeDir,
       },
       input: ctx.stdin || undefined,

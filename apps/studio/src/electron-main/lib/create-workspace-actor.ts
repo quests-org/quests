@@ -35,10 +35,6 @@ export function createWorkspaceActor() {
     developerMode: isDeveloperMode(),
   });
 
-  app.on("before-quit", () => {
-    browserViewManager.teardown();
-  });
-
   const actor = createActor(workspaceMachine, {
     input: {
       aiGatewayApp,
@@ -133,5 +129,11 @@ export function createWorkspaceActor() {
     captureServerException(error, { scopes: ["studio"] });
     throw error;
   }
+
+  app.on("before-quit", () => {
+    browserViewManager.teardown();
+    actor.stop();
+  });
+
   return { actor, workspaceConfig: snapshot.context.config };
 }

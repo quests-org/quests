@@ -23,6 +23,7 @@ import { AGENTS } from "../../agents/all";
 import { type AgentName } from "../../agents/types";
 import { REGISTRY_FOLDER_NAMES } from "../../constants";
 import { absolutePathJoin } from "../../lib/absolute-path-join";
+import { closeAllAgentBrowserSessions } from "../../lib/agent-browser-cleanup";
 import { createAppConfig } from "../../lib/app-config/create";
 import { type AppConfig } from "../../lib/app-config/types";
 import { createAssignEventError } from "../../lib/assign-event-error";
@@ -140,6 +141,10 @@ export type WorkspaceEvent =
 export const workspaceMachine = setup({
   actions: {
     assignEventError: createAssignEventError(),
+
+    cleanupAgentBrowserSessions: () => {
+      void closeAllAgentBrowserSessions();
+    },
 
     clearSessionRefsBySubdomain: assign(
       ({ context }, { subdomain }: { subdomain: AppSubdomain }) => {
@@ -754,7 +759,10 @@ export const workspaceMachine = setup({
     },
   },
   states: {
-    Running: {},
+    Running: {
+      entry: [{ type: "cleanupAgentBrowserSessions" }],
+      exit: [{ type: "cleanupAgentBrowserSessions" }],
+    },
   },
 });
 
