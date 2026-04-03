@@ -392,6 +392,7 @@ export class BrowserViewManager {
     }
 
     try {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const result = await entry.view.webContents.debugger.sendCommand(
         method,
         params as Record<string, unknown>,
