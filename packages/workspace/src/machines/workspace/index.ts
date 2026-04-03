@@ -142,9 +142,9 @@ export const workspaceMachine = setup({
   actions: {
     assignEventError: createAssignEventError(),
 
-    cleanupAgentBrowserSessions: () => {
+    cleanupAgentBrowserSessions: enqueueActions(() => {
       void closeAllAgentBrowserSessions();
-    },
+    }),
 
     clearSessionRefsBySubdomain: assign(
       ({ context }, { subdomain }: { subdomain: AppSubdomain }) => {
