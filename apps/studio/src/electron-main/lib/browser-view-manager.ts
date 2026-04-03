@@ -120,6 +120,8 @@ export class BrowserViewManager {
         title: `Agent Browser [${subdomain}]`,
         width: 1280,
       });
+      // Prevent the user from accidentally interacting with the agent's browser.
+      devWindow.setIgnoreMouseEvents(true, { forward: true });
       devWindow.contentView.addChildView(view);
       const fitViewToWindow = () => {
         if (!devWindow || devWindow.isDestroyed()) {
