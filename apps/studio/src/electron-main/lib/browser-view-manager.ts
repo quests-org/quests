@@ -5,10 +5,17 @@ import {
 } from "@quests/workspace/electron";
 import { BrowserWindow, session, WebContentsView } from "electron";
 
+const SCREENCAST_INTERVAL_MS = 100;
+
 interface BrowserEntry {
+  authorizedDownloadPath: null | string;
   detachListeners: Set<() => void>;
   devWindow: BrowserWindow | null;
   eventListeners: Set<(method: string, params: unknown) => void>;
+  // Maps download URL -> GUID from Page.downloadWillBegin, consumed by will-download.
+  pendingDownloadGuids: Map<string, string>;
+  screencastInterval: null | ReturnType<typeof setInterval>;
+  screencastSessionId: number;
   subdomain: ProjectSubdomain;
   view: WebContentsView;
 }
@@ -53,12 +60,27 @@ export class BrowserViewManager {
     const view = new WebContentsView({
       webPreferences: {
         contextIsolation: true,
-        nodeIntegration: false,
         session: ses,
       },
     });
 
     const targetId = String(view.webContents.id);
+
+    // Register a single will-download handler for this session. If the agent
+    // has authorized a download path via setDownloadBehavior, route the file
+    // there using the GUID as filename (matching agent-browser's "allowAndName"
+    // expectation), falling back to the original filename if no GUID was captured.
+    ses.on("will-download", (_event, item) => {
+      const entry = this.entries.get(targetId);
+      if (entry?.authorizedDownloadPath) {
+        const guid = entry.pendingDownloadGuids.get(item.getURL());
+        entry.pendingDownloadGuids.delete(item.getURL());
+        const filename = guid ?? item.getFilename();
+        item.setSavePath(`${entry.authorizedDownloadPath}/${filename}`);
+      } else {
+        item.cancel();
+      }
+    });
 
     console.log(
       `[BrowserViewManager] createTarget subdomain=${subdomain} targetId=${targetId}`,
@@ -107,9 +129,13 @@ export class BrowserViewManager {
     );
 
     const entry: BrowserEntry = {
+      authorizedDownloadPath: null,
       detachListeners: new Set(),
       devWindow,
       eventListeners: new Set(),
+      pendingDownloadGuids: new Map(),
+      screencastInterval: null,
+      screencastSessionId: 0,
       subdomain,
       view,
     };
@@ -136,6 +162,8 @@ export class BrowserViewManager {
     if (!entry) {
       return;
     }
+
+    this.stopScreencast(entry);
 
     const { devWindow, view } = entry;
 
@@ -169,6 +197,14 @@ export class BrowserViewManager {
           const current = this.entries.get(targetId);
           if (!current) {
             return;
+          }
+          // Capture the GUID from Page.downloadWillBegin so will-download can
+          // save with the GUID filename that agent-browser expects to find.
+          if (method === "Page.downloadWillBegin") {
+            const p = params as { guid?: string; url?: string };
+            if (p.guid && p.url) {
+              current.pendingDownloadGuids.set(p.url, p.guid);
+            }
           }
           for (const listener of current.eventListeners) {
             listener(method, params as unknown);
@@ -265,6 +301,49 @@ export class BrowserViewManager {
       }
     }
 
+    // Electron's debugger does not expose Page.startScreencast / stopScreencast.
+    // Emulate them by polling webContents.capturePage() and emitting synthetic
+    // Page.screencastFrame events into the event listener set.
+    if (method === "Page.startScreencast") {
+      const p = (params ?? {}) as Record<string, unknown>;
+      const format = typeof p.format === "string" ? p.format : "jpeg";
+      const quality = typeof p.quality === "number" ? p.quality : 80;
+      const maxWidth = typeof p.maxWidth === "number" ? p.maxWidth : 1280;
+      const maxHeight = typeof p.maxHeight === "number" ? p.maxHeight : 720;
+      this.startScreencast(entry, format, quality, maxWidth, maxHeight);
+      return {};
+    }
+
+    if (method === "Page.stopScreencast") {
+      this.stopScreencast(entry);
+      return {};
+    }
+
+    // screencastFrameAck is a flow-control signal back to the browser; since
+    // we drive the capture loop ourselves we can silently acknowledge it.
+    if (method === "Page.screencastFrameAck") {
+      return {};
+    }
+
+    // Electron does not support CDP browser context management. Map
+    // Browser.setDownloadBehavior to the native Electron session API instead.
+    if (method === "Browser.setDownloadBehavior") {
+      const p = (params ?? {}) as Record<string, unknown>;
+      const downloadPath =
+        typeof p.downloadPath === "string" ? p.downloadPath : null;
+      const behavior = typeof p.behavior === "string" ? p.behavior : "default";
+      if (
+        (behavior === "allow" || behavior === "allowAndName") &&
+        downloadPath
+      ) {
+        entry.authorizedDownloadPath = downloadPath;
+        entry.view.webContents.session.setDownloadPath(downloadPath);
+      } else {
+        entry.authorizedDownloadPath = null;
+      }
+      return {};
+    }
+
     try {
       const result = await entry.view.webContents.debugger.sendCommand(
         method,
@@ -279,6 +358,62 @@ export class BrowserViewManager {
         `[BrowserViewManager] sendCommand error targetId=${targetId} method=${method} error=${String(error)}`,
       );
       throw error;
+    }
+  }
+
+  private startScreencast(
+    entry: BrowserEntry,
+    format: string,
+    quality: number,
+    maxWidth: number,
+    maxHeight: number,
+  ) {
+    this.stopScreencast(entry);
+    entry.screencastSessionId += 1;
+    const screencastSessionId = entry.screencastSessionId;
+
+    const captureAndEmit = () => {
+      if (entry.view.webContents.isDestroyed()) {
+        this.stopScreencast(entry);
+        return;
+      }
+      void entry.view.webContents
+        .capturePage({ height: maxHeight, width: maxWidth, x: 0, y: 0 })
+        .then((image) => {
+          const data =
+            format === "png"
+              ? image.toPNG().toString("base64")
+              : image.toJPEG(quality).toString("base64");
+          const params = {
+            data,
+            metadata: {
+              deviceHeight: maxHeight,
+              deviceWidth: maxWidth,
+              offsetTop: 0,
+              pageScaleFactor: 1,
+              scrollOffsetX: 0,
+              scrollOffsetY: 0,
+              timestamp: Date.now() / 1000,
+            },
+            sessionId: screencastSessionId,
+          };
+          for (const listener of entry.eventListeners) {
+            listener("Page.screencastFrame", params);
+          }
+        });
+    };
+
+    entry.screencastInterval = setInterval(
+      captureAndEmit,
+      SCREENCAST_INTERVAL_MS,
+    );
+    captureAndEmit();
+  }
+
+  private stopScreencast(entry: BrowserEntry) {
+    if (entry.screencastInterval !== null) {
+      clearInterval(entry.screencastInterval);
+      entry.screencastInterval = null;
     }
   }
 

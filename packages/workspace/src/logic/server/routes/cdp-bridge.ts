@@ -81,7 +81,9 @@ const INTERCEPTED_TARGET_COMMANDS = new Set([
   "Target.activateTarget",
   "Target.attachToTarget",
   "Target.closeTarget",
+  "Target.createBrowserContext",
   "Target.createTarget",
+  "Target.disposeBrowserContext",
   "Target.getTargets",
   "Target.setDiscoverTargets",
 ]);
@@ -266,6 +268,15 @@ function handleInterceptedTargetCommand(
       // targetId. Return a synthetic sessionId - commands sent with this
       // sessionId are stripped of it and forwarded directly to the debugger.
       send({ id, result: { sessionId: `session-${targetId}` } });
+      return;
+    }
+    case "Target.createBrowserContext":
+    case "Target.disposeBrowserContext": {
+      // Electron doesn't support CDP browser context management. Return a
+      // synthetic context ID so agent-browser's recording flow can proceed.
+      // Download behavior is handled via Browser.setDownloadBehavior interception
+      // in BrowserViewManager.
+      send({ id, result: { browserContextId: `context-${targetId}` } });
       return;
     }
 
