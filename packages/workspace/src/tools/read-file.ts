@@ -1,3 +1,4 @@
+import { imageSize } from "image-size";
 // Adapted from
 // https://github.com/sst/opencode/blob/dev/packages/opencode/src/tool/read.ts
 import { isBinaryFile } from "isbinaryfile";
@@ -41,7 +42,9 @@ const MEDIA_CONFIG: Record<MediaFileState, { label: string; maxSize: number }> =
     },
     image: {
       label: "Image",
-      maxSize: 10 * 1024 * 1024,
+      // Anthropic's limit is 5 MB per image (base64-encoded).
+      // We use 5 MB on the raw file to stay safely under the encoded limit.
+      maxSize: 5 * 1024 * 1024,
     },
     pdf: {
       label: "PDF",
@@ -52,6 +55,8 @@ const MEDIA_CONFIG: Record<MediaFileState, { label: string; maxSize: number }> =
       maxSize: 10 * 1024 * 1024,
     },
   };
+
+const IMAGE_MAX_DIMENSION = 8000;
 
 // Some models support more formats, but this should be safe across most.
 const SUPPORTED_IMAGE_FORMATS = ["image/jpeg", "image/png", "image/webp"];
@@ -92,6 +97,25 @@ async function handleMediaFile({
   }
 
   const fileData = await fs.readFile(absolutePath, { signal });
+
+  if (state === "image") {
+    try {
+      const dimensions = imageSize(fileData);
+      const { height, width } = dimensions;
+      if (width > IMAGE_MAX_DIMENSION || height > IMAGE_MAX_DIMENSION) {
+        return executeError(
+          [
+            `Image dimensions too large: ${fixedPath}`,
+            `(${width}x${height} px, max ${IMAGE_MAX_DIMENSION}x${IMAGE_MAX_DIMENSION} px).`,
+            "Please resize the image before reading.",
+          ].join(" "),
+        );
+      }
+    } catch {
+      // If we can't determine dimensions, proceed and let the model API reject it.
+    }
+  }
+
   const base64Data = fileData.toString("base64");
 
   return ok({
