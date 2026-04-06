@@ -4,6 +4,7 @@ import "@/electron-main/setup-environment"; // This must be imported first
 import { startAuthCallbackServer } from "@/electron-main/auth/server";
 import { StudioAppUpdater } from "@/electron-main/lib/update";
 import { createApplicationMenu } from "@/electron-main/menus";
+import { getFeaturesStore } from "@/electron-main/stores/features";
 import { getTabsManager } from "@/electron-main/tabs";
 import {
   createMainWindow,
@@ -156,7 +157,10 @@ void app.whenReady().then(async () => {
 
   await createMainWindow();
 
-  void startAuthCallbackServer();
+  const features = getFeaturesStore();
+  if (features.get("questsAccounts")) {
+    void startAuthCallbackServer();
+  }
 
   app.on("activate", function () {
     // On macOS it's common to re-create a window in the app when the

@@ -1,3 +1,4 @@
+import { questsAccountsEnabledAtom } from "@/client/atoms/features";
 import { AddProviderDialog } from "@/client/components/add-provider/dialog";
 import { GoogleSignInButton } from "@/client/components/google-sign-in-button";
 import { ManualProviderButton } from "@/client/components/manual-provider-button";
@@ -12,6 +13,7 @@ import {
 import { rpcClient } from "@/client/rpc/client";
 import { QuestsAnimatedLogo } from "@quests/components/animated-logo";
 import { useQuery } from "@tanstack/react-query";
+import { useAtomValue } from "jotai";
 import { useState } from "react";
 
 export function AIProviderGuardDialog({
@@ -26,6 +28,7 @@ export function AIProviderGuardDialog({
   open: boolean;
 }) {
   const [showAddProviderDialog, setShowAddProviderDialog] = useState(false);
+  const questsAccountsEnabled = useAtomValue(questsAccountsEnabledAtom);
 
   const { data: providerConfigs } = useQuery(
     rpcClient.providerConfig.live.list.experimental_liveOptions(),
@@ -52,15 +55,18 @@ export function AIProviderGuardDialog({
           </div>
 
           <div className="flex w-full max-w-xs flex-col gap-4">
-            <GoogleSignInButton
-              className="w-full"
-              onSuccess={() => {
-                onSuccess?.();
-                onOpenChange(false);
-              }}
-            />
+            {questsAccountsEnabled && (
+              <GoogleSignInButton
+                className="w-full"
+                onSuccess={() => {
+                  onSuccess?.();
+                  onOpenChange(false);
+                }}
+              />
+            )}
 
             <ManualProviderButton
+              isPrimary={!questsAccountsEnabled}
               onClick={() => {
                 setShowAddProviderDialog(true);
               }}
@@ -78,7 +84,9 @@ export function AIProviderGuardDialog({
             providers={providerConfigs ?? []}
           />
 
-          <TermsFooter className="text-center text-xs text-muted-foreground/50" />
+          {questsAccountsEnabled && (
+            <TermsFooter className="text-center text-xs text-muted-foreground/50" />
+          )}
         </div>
       </DialogContent>
     </Dialog>

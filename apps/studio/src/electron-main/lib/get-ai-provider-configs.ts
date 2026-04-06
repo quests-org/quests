@@ -1,4 +1,5 @@
 import { getToken } from "@/electron-main/api/utils";
+import { getFeaturesStore } from "@/electron-main/stores/features";
 import { getProviderConfigsStore } from "@/electron-main/stores/provider-configs";
 import { type AIGatewayProviderConfig } from "@quests/ai-gateway";
 
@@ -6,16 +7,19 @@ import { type AIGatewayProviderConfig } from "@quests/ai-gateway";
 export function getAIProviderConfigs(): AIGatewayProviderConfig.Type[] {
   const providerConfigsStore = getProviderConfigsStore();
   const keyBasedProviderConfigs = [...providerConfigsStore.get("providers")];
-  const token = getToken();
+  const featuresStore = getFeaturesStore();
 
-  if (token) {
-    keyBasedProviderConfigs.push({
-      apiKey: token,
-      baseURL: `${import.meta.env.MAIN_VITE_QUESTS_API_BASE_URL}/gateway/openrouter`,
-      cacheIdentifier: "quests",
-      id: "quests",
-      type: "quests",
-    });
+  if (featuresStore.get("questsAccounts")) {
+    const token = getToken();
+    if (token) {
+      keyBasedProviderConfigs.push({
+        apiKey: token,
+        baseURL: `${import.meta.env.MAIN_VITE_QUESTS_API_BASE_URL}/gateway/openrouter`,
+        cacheIdentifier: "quests",
+        id: "quests",
+        type: "quests",
+      });
+    }
   }
 
   return keyBasedProviderConfigs;

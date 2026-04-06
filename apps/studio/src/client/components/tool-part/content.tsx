@@ -177,7 +177,7 @@ export function ToolContent({
               onRetry={onRetry}
               providerGuardDescription={
                 part.output.errorType === "no-image-model"
-                  ? "Sign up for Quests or add an AI provider that supports image generation."
+                  ? "Add an AI provider that supports image generation."
                   : undefined
               }
               responseBody={part.output.responseBody}
@@ -412,7 +412,7 @@ export function ToolContent({
             onRetry={onRetry}
             providerGuardDescription={
               part.output.errorType === "no-web-search-model"
-                ? "Sign up for Quests or add an AI provider that supports web search."
+                ? "Add an AI provider that supports web search."
                 : undefined
             }
             responseBody={part.output.responseBody}

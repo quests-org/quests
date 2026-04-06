@@ -1,4 +1,5 @@
 import { base } from "@/electron-main/rpc/base";
+import { getFeaturesStore } from "@/electron-main/stores/features";
 import { call, eventIterator } from "@orpc/server";
 import {
   AIGatewayModel,
@@ -68,15 +69,16 @@ const live = {
         signal,
       },
     );
-    const apiBearerTokenUpdated = publisher.subscribe(
-      "session.apiBearerToken.updated",
-      { signal },
-    );
 
-    for await (const _ of mergeGenerators([
-      providerConfigUpdates,
-      apiBearerTokenUpdated,
-    ])) {
+    const generators = [providerConfigUpdates];
+
+    if (getFeaturesStore().get("questsAccounts")) {
+      generators.push(
+        publisher.subscribe("session.apiBearerToken.updated", { signal }),
+      );
+    }
+
+    for await (const _ of mergeGenerators(generators)) {
       yield call(list, {}, { context, signal });
     }
   }),

@@ -1,3 +1,4 @@
+import { questsAccountsEnabledAtom } from "@/client/atoms/features";
 import { providerMetadataAtom } from "@/client/atoms/provider-metadata";
 import { AddProviderDialog } from "@/client/components/add-provider/dialog";
 import { AIProviderIcon } from "@/client/components/ai-provider-icon";
@@ -29,6 +30,7 @@ export function AISetupView({ mode }: { mode: "setup" | "sign-in" }) {
   const { error } = useSignInSocial();
   const navigate = useNavigate();
   const { providerMetadataMap } = useAtomValue(providerMetadataAtom);
+  const questsAccountsEnabled = useAtomValue(questsAccountsEnabledAtom);
   const { data: hasToken } = useQuery(
     rpcClient.auth.live.hasToken.experimental_liveOptions(),
   );
@@ -38,7 +40,11 @@ export function AISetupView({ mode }: { mode: "setup" | "sign-in" }) {
   );
 
   const hasProvider = (providerConfigs?.length ?? 0) > 0;
-  const isReady = mode === "setup" ? hasToken || hasProvider : hasToken;
+  const isReady = questsAccountsEnabled
+    ? mode === "setup"
+      ? hasToken || hasProvider
+      : hasToken
+    : hasProvider;
 
   const handleGetStarted = async () => {
     await navigate({ replace: true, to: "/new-tab" });
@@ -48,13 +54,17 @@ export function AISetupView({ mode }: { mode: "setup" | "sign-in" }) {
     }
   };
 
-  const title = mode === "setup" ? "Sign in to Quests" : "Sign in to Quests";
+  const title = questsAccountsEnabled
+    ? "Sign in to Quests"
+    : "Add an AI provider";
   const readyTitle = mode === "setup" ? "You're all set!" : "You're signed in!";
-  const subtitle = "Claim your free AI credits, no card required";
+  const subtitle = questsAccountsEnabled
+    ? "Claim your free AI credits, no card required"
+    : "Connect your own AI provider to get started";
   const readySubtitle = "You're now ready to start building!";
 
   return (
-    <StarryLayout footer={!isReady && <TermsFooter />}>
+    <StarryLayout footer={!isReady && questsAccountsEnabled && <TermsFooter />}>
       <div className="max-w-sm">
         <div className="flex flex-col gap-6 pb-12">
           <div className="flex flex-col items-center gap-6">
@@ -117,7 +127,7 @@ export function AISetupView({ mode }: { mode: "setup" | "sign-in" }) {
               </Button>
             ) : (
               <>
-                {error && (
+                {questsAccountsEnabled && error && (
                   <ContactErrorAlert
                     className="w-full min-w-80"
                     subject="Sign In Error"
@@ -127,10 +137,13 @@ export function AISetupView({ mode }: { mode: "setup" | "sign-in" }) {
                   </ContactErrorAlert>
                 )}
 
-                <GoogleSignInButton className="w-full min-w-80" />
+                {questsAccountsEnabled && (
+                  <GoogleSignInButton className="w-full min-w-80" />
+                )}
 
                 {mode === "setup" && (
                   <ManualProviderButton
+                    isPrimary={!questsAccountsEnabled}
                     onClick={() => {
                       setShowAddProviderDialog(true);
                     }}

@@ -3,10 +3,12 @@ import type { Features } from "@/shared/features";
 import { atomWithoutSuspense } from "@/client/lib/atom-without-suspense";
 import { logger } from "@/client/lib/logger";
 import { rpcClient } from "@/client/rpc/client";
+import { atom } from "jotai";
 import { atomWithRefresh } from "jotai/utils";
 
 const defaultFeatures: Features = {
   na: false,
+  questsAccounts: false,
 };
 
 async function listen(setAtom: () => void) {
@@ -34,4 +36,8 @@ baseFeaturesAtom.onMount = (setAtom) => {
 export const featuresAtom = atomWithoutSuspense(
   baseFeaturesAtom,
   defaultFeatures,
+);
+
+export const questsAccountsEnabledAtom = atom(
+  (get) => get(featuresAtom).questsAccounts,
 );
