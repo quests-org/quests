@@ -1,3 +1,4 @@
+import { questsAccountsEnabledAtom } from "@/client/atoms/features";
 import { Button } from "@/client/components/ui/button";
 import { Skeleton } from "@/client/components/ui/skeleton";
 import { useLiveUser } from "@/client/hooks/use-live-user";
@@ -5,12 +6,14 @@ import { useTabActions } from "@/client/hooks/use-tab-actions";
 import { signOut } from "@/client/lib/sign-out";
 import { rpcClient } from "@/client/rpc/client";
 import { useQuery } from "@tanstack/react-query";
+import { useAtomValue } from "jotai";
 
 import { ContactErrorAlert } from "./contact-error-alert";
 import { SubscriptionCard } from "./subscription-card";
 import { UserInfoCard } from "./user-info-card";
 
 export function AccountInfo() {
+  const questsAccountsEnabled = useAtomValue(questsAccountsEnabledAtom);
   const { data: hasToken } = useQuery(
     rpcClient.auth.live.hasToken.experimental_liveOptions(),
   );
@@ -24,6 +27,10 @@ export function AccountInfo() {
   });
 
   const { addTab } = useTabActions();
+
+  if (!questsAccountsEnabled) {
+    return null;
+  }
 
   return (
     <div className="space-y-3">

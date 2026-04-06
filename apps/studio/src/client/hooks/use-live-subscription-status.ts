@@ -1,15 +1,20 @@
+import { questsAccountsEnabledAtom } from "@/client/atoms/features";
 import { rpcClient, type RPCInput } from "@/client/rpc/client";
-import { useQuery } from "@tanstack/react-query";
+import { skipToken, useQuery } from "@tanstack/react-query";
+import { useAtomValue } from "jotai";
 import { useEffect } from "react";
 
 export function useLiveSubscriptionStatus({
   input,
 }: {
-  input?: RPCInput["user"]["live"]["subscriptionStatus"];
+  input?: RPCInput["user"]["live"]["subscriptionStatus"] | typeof skipToken;
 } = {}) {
+  const questsAccountsEnabled = useAtomValue(questsAccountsEnabledAtom);
+  const resolvedInput =
+    !questsAccountsEnabled || input === skipToken ? skipToken : (input ?? {});
   const { refetch, ...rest } = useQuery(
     rpcClient.user.live.subscriptionStatus.experimental_liveOptions({
-      input: input ?? {},
+      input: resolvedInput,
     }),
   );
   const { data: onWindowFocus } = useQuery(

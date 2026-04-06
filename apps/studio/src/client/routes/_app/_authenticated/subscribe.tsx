@@ -12,13 +12,20 @@ import { createIconMeta } from "@/shared/tabs";
 import { QuestsAnimatedLogo } from "@quests/components/animated-logo";
 import { SALES_EMAIL } from "@quests/shared";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { CheckCircle2, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { tv } from "tailwind-variants";
 
 export const Route = createFileRoute("/_app/_authenticated/subscribe")({
+  beforeLoad: async () => {
+    const features = await rpcClient.features.getAll.call();
+    if (!features.questsAccounts) {
+      // eslint-disable-next-line @typescript-eslint/only-throw-error
+      throw redirect({ to: "/new-tab" });
+    }
+  },
   component: SubscribePage,
   head: () => {
     return {

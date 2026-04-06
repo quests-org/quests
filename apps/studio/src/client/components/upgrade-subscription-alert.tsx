@@ -1,7 +1,9 @@
+import { questsAccountsEnabledAtom } from "@/client/atoms/features";
 import { useLiveSubscriptionStatus } from "@/client/hooks/use-live-subscription-status";
 import { useSignInSocial } from "@/client/hooks/use-sign-in-social";
 import { rpcClient } from "@/client/rpc/client";
 import { useQuery } from "@tanstack/react-query";
+import { useAtomValue } from "jotai";
 
 import { InternalLink } from "./internal-link";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
@@ -13,6 +15,7 @@ export function UpgradeSubscriptionAlert({
 }: {
   onContinue: () => void;
 }) {
+  const questsAccountsEnabled = useAtomValue(questsAccountsEnabledAtom);
   const {
     data: subscription,
     error,
@@ -22,6 +25,10 @@ export function UpgradeSubscriptionAlert({
     rpcClient.auth.live.hasToken.experimental_liveOptions(),
   );
   const { signIn } = useSignInSocial();
+
+  if (!questsAccountsEnabled) {
+    return null;
+  }
 
   if (error) {
     return (
