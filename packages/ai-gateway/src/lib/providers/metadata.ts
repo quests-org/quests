@@ -225,6 +225,17 @@ const PROVIDER_METADATA = {
     type: "openai-compatible",
     url: "",
   },
+  openpaths: {
+    api: {
+      defaultBaseURL: "https://openpaths.io/v1",
+      keyURL: addRef("https://openpaths.io/account"),
+    },
+    description: "Access an extensive catalog of models across providers",
+    name: "OpenPaths",
+    tags: ["recommended"],
+    type: "openpaths",
+    url: "https://openpaths.io",
+  },
   openrouter: {
     api: {
       defaultBaseURL: "https://openrouter.ai/api",

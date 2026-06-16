@@ -60,6 +60,7 @@ const PROVIDER_ICON_MAP: Record<
   ollama: SiOllama,
   openai: SiOpenai,
   "openai-compatible": GrNodes,
+  openpaths: GrNodes,
   openrouter: OpenRouter,
   perplexity: Perplexity,
   quests: QuestsLogoSimpleIcon,
