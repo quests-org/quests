@@ -20,6 +20,7 @@ export const AIProviderTypeSchema = z.enum([
   "ollama",
   "openai-compatible",
   "openai",
+  "openpaths",
   "openrouter",
   "perplexity",
   "quests",
